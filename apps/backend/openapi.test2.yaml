@@ -1,0 +1,2163 @@
+openapi: 3.0.3
+info:
+  title: X-Ear CRM API (auto-generated)
+  version: 0.0.0-auto
+servers:
+- url: http://localhost:5003
+paths:
+  /api/admin/features:
+    patch:
+      summary: 'Patch feature flags. Body: { features: { ''integrations_ui'': true
+        } }'
+      description: 'Authorization: user must have `settings.update` or `features.toggle`.'
+      operationId: admin_patch_features
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/appointments:
+    post:
+      summary: POST /api/appointments
+      operationId: appointments_create_appointment
+      tags:
+      - Appointments
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/appointments/{appointment_id}:
+    delete:
+      summary: DELETE /api/appointments/{appointment_id}
+      operationId: appointments_delete_appointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/appointments/{appointment_id}/cancel:
+    post:
+      summary: POST /api/appointments/{appointment_id}/cancel
+      operationId: appointments_cancel_appointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/appointments/{appointment_id}/complete:
+    post:
+      summary: POST /api/appointments/{appointment_id}/complete
+      operationId: appointments_complete_appointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/appointments/{appointment_id}/reschedule:
+    post:
+      summary: POST /api/appointments/{appointment_id}/reschedule
+      operationId: appointments_reschedule_appointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/appointments/availability:
+    get:
+      summary: GET /api/appointments/availability
+      operationId: appointments_get_availability
+      tags:
+      - Appointments
+      responses:
+        '200':
+          description: Success
+  /api/appointments/list:
+    get:
+      summary: GET /api/appointments/list
+      operationId: appointments_list_appointments
+      tags:
+      - Appointments
+      responses:
+        '200':
+          description: Success
+  /api/apps:
+    post:
+      summary: POST /api/apps
+      operationId: apps_create_app
+      tags:
+      - Apps
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/apps/{app_id}:
+    delete:
+      summary: DELETE /api/apps/{app_id}
+      operationId: apps_delete_app
+      tags:
+      - Apps
+      parameters:
+      - name: app_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/apps/{app_id}/assign:
+    post:
+      summary: POST /api/apps/{app_id}/assign
+      operationId: apps_assign_role_to_user
+      tags:
+      - Apps
+      parameters:
+      - name: app_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/apps/{app_id}/transfer_ownership:
+    post:
+      summary: POST /api/apps/{app_id}/transfer_ownership
+      operationId: apps_transfer_ownership
+      tags:
+      - Apps
+      parameters:
+      - name: app_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/audit:
+    get:
+      summary: GET /api/audit
+      operationId: audit_list_audit
+      tags:
+      - Audit
+      responses:
+        '200':
+          description: Success
+  /api/automation/backup:
+    post:
+      summary: Trigger system backup
+      operationId: automation_trigger_backup
+      tags:
+      - Automation
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/automation/logs:
+    get:
+      summary: Get automation logs
+      operationId: automation_get_automation_logs
+      tags:
+      - Automation
+      responses:
+        '200':
+          description: Success
+  /api/automation/sgk/process:
+    post:
+      summary: Trigger SGK document processing
+      operationId: automation_trigger_sgk_processing
+      tags:
+      - Automation
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/automation/status:
+    get:
+      summary: Get automation system status
+      operationId: automation_get_automation_status
+      tags:
+      - Automation
+      responses:
+        '200':
+          description: Success
+  /api/campaigns:
+    post:
+      summary: POST /api/campaigns
+      operationId: campaigns_create_campaign
+      tags:
+      - Campaigns
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/campaigns/{campaign_id}/send:
+    post:
+      summary: POST /api/campaigns/{campaign_id}/send
+      operationId: campaigns_send_campaign
+      tags:
+      - Campaigns
+      parameters:
+      - name: campaign_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/cash-records:
+    post:
+      summary: Create a new cash record from cashflow.html form submission.
+      operationId: cash_records_create_cash_record
+      tags:
+      - Cash-records
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/cash-records/{record_id}:
+    delete:
+      summary: Delete a cash record by ID.
+      operationId: cash_records_delete_cash_record
+      tags:
+      - Cash-records
+      parameters:
+      - name: record_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/config:
+    get:
+      summary: GET /api/config
+      operationId: config_get_config
+      tags:
+      - Config
+      responses:
+        '200':
+          description: Success
+  /api/config/turnstile:
+    get:
+      summary: GET /api/config/turnstile
+      operationId: registration_get_turnstile_config
+      tags:
+      - Config
+      responses:
+        '200':
+          description: Success
+  /api/dashboard:
+    get:
+      summary: Main dashboard endpoint that returns all dashboard data
+      operationId: dashboard_get_dashboard
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+  /api/dashboard/charts/patient-trends:
+    get:
+      summary: GET /api/dashboard/charts/patient-trends
+      operationId: dashboard_patient_trends
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+  /api/dashboard/charts/revenue-trends:
+    get:
+      summary: GET /api/dashboard/charts/revenue-trends
+      operationId: dashboard_revenue_trends
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+  /api/dashboard/kpis:
+    get:
+      summary: GET /api/dashboard/kpis
+      operationId: dashboard_get_kpis
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+  /api/dashboard/recent-activity:
+    get:
+      summary: GET /api/dashboard/recent-activity
+      operationId: dashboard_recent_activity
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+  /api/devices:
+    post:
+      summary: Create a new device
+      operationId: devices_create_device
+      tags:
+      - Devices
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/devices/{device_id}:
+    delete:
+      summary: Delete a device
+      operationId: devices_delete_device
+      tags:
+      - Devices
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/devices/{device_id}/stock-update:
+    post:
+      summary: Update device stock levels (simplified).
+      description: 'This endpoint is intentionally permissive for tests — real inventory
+        logic
+
+        should live in a dedicated inventory table/service.'
+      operationId: devices_update_device_stock
+      tags:
+      - Devices
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/devices/brands:
+    get:
+      summary: Get available device brands
+      operationId: devices_get_device_brands
+      tags:
+      - Devices
+      responses:
+        '200':
+          description: Success
+  /api/devices/categories:
+    get:
+      summary: Get available device categories
+      operationId: devices_get_device_categories
+      tags:
+      - Devices
+      responses:
+        '200':
+          description: Success
+  /api/devices/low-stock:
+    get:
+      summary: Get devices with low stock levels
+      operationId: devices_get_low_stock_devices
+      tags:
+      - Devices
+      responses:
+        '200':
+          description: Success
+  /api/forgot-password:
+    post:
+      summary: POST /api/forgot-password
+      operationId: auth_forgot_password
+      tags:
+      - Forgot-password
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/health:
+    get:
+      summary: Health endpoint exposing overall status and DB read/write check results.
+      description: Returns 200 when read+write ok, 503 when write fails, and 500 when
+        other errors occur.
+      operationId: health_check
+      tags:
+      - Health
+      responses:
+        '200':
+          description: Success
+  /api/inventory:
+    post:
+      summary: Create a new inventory item
+      operationId: inventory_create_inventory_item
+      tags:
+      - Inventory
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/inventory/{item_id}:
+    delete:
+      summary: Delete an inventory item
+      operationId: inventory_delete_inventory_item
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/inventory/{item_id}/activity:
+    get:
+      summary: Get activity log for an inventory item
+      operationId: inventory_get_inventory_activities
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/inventory/{item_id}/assign:
+    post:
+      summary: Assign inventory item to a patient (reduces stock)
+      operationId: inventory_assign_to_patient
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/inventory/{item_id}/serials:
+    post:
+      summary: Add serial numbers to an inventory item
+      operationId: inventory_add_serial_numbers
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/inventory/low-stock:
+    get:
+      summary: Get all items with low stock levels
+      operationId: inventory_get_low_stock_items
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Success
+  /api/inventory/stats:
+    get:
+      summary: Get inventory statistics
+      operationId: inventory_get_inventory_stats
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Success
+  /api/invoices:
+    post:
+      summary: Create a new invoice
+      operationId: invoices_create_invoice
+      tags:
+      - Invoices
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/invoices/{invoice_id}:
+    delete:
+      summary: Delete an invoice
+      operationId: invoices_delete_invoice
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/invoices/{invoice_id}/send-to-gib:
+    post:
+      summary: Mark invoice as sent to GİB
+      operationId: invoices_send_invoice_to_gib
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/login:
+    post:
+      summary: POST /api/login
+      operationId: auth_login
+      tags:
+      - Login
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/notifications:
+    get:
+      summary: GET /api/notifications
+      operationId: notifications_list_notifications
+      tags:
+      - Notifications
+      responses:
+        '200':
+          description: Success
+  /api/notifications/{notification_id}:
+    delete:
+      summary: DELETE /api/notifications/{notification_id}
+      operationId: notifications_delete_notification
+      tags:
+      - Notifications
+      parameters:
+      - name: notification_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/notifications/{notification_id}/read:
+    put:
+      summary: PUT /api/notifications/{notification_id}/read
+      operationId: notifications_mark_notification_read
+      tags:
+      - Notifications
+      parameters:
+      - name: notification_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/notifications/settings:
+    put:
+      summary: PUT /api/notifications/settings
+      operationId: notifications_set_user_notification_settings
+      tags:
+      - Notifications
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/notifications/stats:
+    get:
+      summary: GET /api/notifications/stats
+      operationId: notifications_notification_stats
+      tags:
+      - Notifications
+      responses:
+        '200':
+          description: Success
+  /api/ocr/process:
+    post:
+      summary: POST /api/ocr/process
+      operationId: sgk_process_ocr
+      tags:
+      - Ocr
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/openapi.yaml:
+    get:
+      summary: Serve the canonical OpenAPI contract for frontend/back-end sync and
+        respond to CORS preflight.
+      description: 'Returns CORS headers so the static Swagger UI served from a different
+        origin (e.g. localhost:8080)
+
+        can fetch the YAML without browser CORS errors.'
+      operationId: serve_openapi_yaml
+      tags:
+      - Openapi.yaml
+      responses:
+        '200':
+          description: Success
+  /api/patients:
+    post:
+      summary: POST /api/patients
+      operationId: patients_create_patient
+      tags:
+      - Patients
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}:
+    delete:
+      summary: DELETE /api/patients/{patient_id}
+      operationId: patients_delete_patient
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/patients/{patient_id}/activities:
+    post:
+      summary: Log an activity for a patient (alias for timeline event)
+      operationId: timeline_log_patient_activity
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/assign-devices-extended:
+    post:
+      summary: POST /api/patients/{patient_id}/assign-devices-extended
+      operationId: sales_assign_devices_extended
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/devices:
+    get:
+      summary: Get all devices assigned to a specific patient
+      operationId: patients_get_patient_devices
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/documents:
+    post:
+      summary: Add a new document to patient
+      operationId: documents_add_patient_document
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/documents/{document_id}:
+    delete:
+      summary: Delete a document
+      operationId: documents_delete_patient_document
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/patients/{patient_id}/ereceipts:
+    post:
+      summary: POST /api/patients/{patient_id}/ereceipts
+      operationId: patient_subresources_create_patient_ereceipt
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/ereceipts/{ereceipt_id}:
+    delete:
+      summary: DELETE /api/patients/{patient_id}/ereceipts/{ereceipt_id}
+      operationId: patient_subresources_delete_patient_ereceipt
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: ereceipt_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/patients/{patient_id}/hearing-tests:
+    post:
+      summary: POST /api/patients/{patient_id}/hearing-tests
+      operationId: patient_subresources_add_patient_hearing_test
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/hearing-tests/{test_id}:
+    delete:
+      summary: DELETE /api/patients/{patient_id}/hearing-tests/{test_id}
+      operationId: patient_subresources_delete_patient_hearing_test
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: test_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/patients/{patient_id}/invoices:
+    get:
+      summary: Get all invoices for a patient
+      operationId: invoices_get_patient_invoices
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/notes:
+    post:
+      summary: POST /api/patients/{patient_id}/notes
+      operationId: patient_subresources_create_patient_note
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/notes/{note_id}:
+    delete:
+      summary: DELETE /api/patients/{patient_id}/notes/{note_id}
+      operationId: patient_subresources_delete_patient_note
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/patients/{patient_id}/payment-records:
+    get:
+      summary: Get all payment records for a patient
+      operationId: payments_get_patient_payment_records
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/product-sales:
+    post:
+      summary: Create a new product sale from inventory
+      operationId: sales_create_product_sale
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/proformas:
+    get:
+      summary: Get all proformas for a patient
+      operationId: proformas_get_patient_proformas
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/promissory-notes:
+    get:
+      summary: Get all promissory notes for a patient
+      operationId: payments_get_patient_promissory_notes
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/replacements:
+    post:
+      summary: Create a new device replacement
+      operationId: replacements_create_replacement
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/sales:
+    get:
+      summary: GET /api/patients/{patient_id}/sales
+      operationId: sales_get_patient_sales
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/sales/{sale_id}:
+    patch:
+      summary: Partially update a Sale resource. Supports updating status, notes,
+        total_amount, and paid_amount.
+      description: 'Expected payload: { "status": "cancelled", "total_amount": 1000.0,
+        "paid_amount": 500.0, "notes": "Updated notes" }'
+      operationId: sales_update_sale_partial
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/sgk-documents:
+    get:
+      summary: GET /api/patients/{patient_id}/sgk-documents
+      operationId: sgk_get_patient_sgk_documents
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/timeline:
+    post:
+      summary: Add a new timeline event for a patient
+      operationId: timeline_add_timeline_event
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/timeline/{event_id}:
+    delete:
+      summary: Delete a timeline event
+      operationId: timeline_delete_timeline_event
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/patients/bulk_upload:
+    post:
+      summary: Accept a multipart/form-data CSV file containing patients and upsert
+        them into the DB.
+      description: 'This endpoint is intentionally forgiving: it returns a summary
+        of created/updated rows
+
+        and reports per-row errors without aborting the entire batch.
+
+        Authentication is optional for uploads in many workflows; we still log the
+        actor when present.'
+      operationId: patients_bulk_upload_patients
+      tags:
+      - Patients
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/export:
+    get:
+      summary: Export patients as CSV. Only admin users are allowed to perform exports.
+      description: 'Supports optional query params: status, segment, q (search term).'
+      operationId: patients_export_patients_csv
+      tags:
+      - Patients
+      responses:
+        '200':
+          description: Success
+  /api/patients/search:
+    get:
+      summary: GET /api/patients/search
+      operationId: patients_search_patients
+      tags:
+      - Patients
+      responses:
+        '200':
+          description: Success
+  /api/payment-records:
+    post:
+      summary: Create a new payment record
+      operationId: payments_create_payment_record
+      tags:
+      - Payment-records
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/payment-records/{record_id}:
+    patch:
+      summary: Update a payment record
+      operationId: payments_update_payment_record
+      tags:
+      - Payment-records
+      parameters:
+      - name: record_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/permissions:
+    post:
+      summary: POST /api/permissions
+      operationId: permissions_create_permission
+      tags:
+      - Permissions
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/pricing-preview:
+    post:
+      summary: POST /api/pricing-preview
+      operationId: sales_pricing_preview
+      tags:
+      - Pricing-preview
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/product-suppliers/{ps_id}:
+    delete:
+      summary: Delete a product-supplier relationship
+      operationId: suppliers_delete_product_supplier
+      tags:
+      - Product-suppliers
+      parameters:
+      - name: ps_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/products/{product_id}/suppliers:
+    post:
+      summary: Add a supplier to a product
+      operationId: suppliers_add_product_supplier
+      tags:
+      - Products
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/proformas:
+    post:
+      summary: Create a new proforma
+      operationId: proformas_create_proforma
+      tags:
+      - Proformas
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/proformas/{proforma_id}:
+    get:
+      summary: Get a specific proforma
+      operationId: proformas_get_proforma
+      tags:
+      - Proformas
+      parameters:
+      - name: proforma_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/proformas/{proforma_id}/convert:
+    post:
+      summary: 'Convert a proforma into a sale: create Sale and DeviceAssignment records
+        and mark proforma converted.'
+      operationId: proformas_convert_proforma_to_sale
+      tags:
+      - Proformas
+      parameters:
+      - name: proforma_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/promissory-notes:
+    post:
+      summary: Create multiple promissory notes
+      operationId: payments_create_promissory_notes
+      tags:
+      - Promissory-notes
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/promissory-notes/{note_id}:
+    patch:
+      summary: Update a promissory note
+      operationId: payments_update_promissory_note
+      tags:
+      - Promissory-notes
+      parameters:
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/promissory-notes/{note_id}/collect:
+    post:
+      summary: Collect payment for a promissory note (full or partial)
+      operationId: payments_collect_promissory_note
+      tags:
+      - Promissory-notes
+      parameters:
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/register-phone:
+    post:
+      summary: POST /api/register-phone
+      operationId: registration_register_phone
+      tags:
+      - Register-phone
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/replacements/{replacement_id}/invoice:
+    post:
+      summary: Create return invoice for a replacement
+      operationId: replacements_create_return_invoice
+      tags:
+      - Replacements
+      parameters:
+      - name: replacement_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/reports/appointments:
+    get:
+      summary: GET /api/reports/appointments
+      operationId: reports_report_appointments
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/campaigns:
+    get:
+      summary: Kampanya raporu
+      operationId: reports_report_campaigns
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/financial:
+    get:
+      summary: Mali rapor
+      operationId: reports_report_financial
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/overview:
+    get:
+      summary: Genel rapor özeti
+      operationId: reports_report_overview
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/patients:
+    get:
+      summary: Hasta analizi raporu
+      operationId: reports_report_patients
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/revenue:
+    get:
+      summary: GET /api/reports/revenue
+      operationId: reports_report_revenue
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/return-invoices/{invoice_id}/send-to-gib:
+    post:
+      summary: Mark invoice as sent to GIB
+      operationId: replacements_send_invoice_to_gib
+      tags:
+      - Return-invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/roles:
+    post:
+      summary: POST /api/roles
+      operationId: roles_create_role
+      tags:
+      - Roles
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/roles/{role_id}/permissions:
+    post:
+      summary: POST /api/roles/{role_id}/permissions
+      operationId: roles_add_permission_to_role
+      tags:
+      - Roles
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/roles/{role_id}/permissions/{permission_id}:
+    delete:
+      summary: DELETE /api/roles/{role_id}/permissions/{permission_id}
+      operationId: roles_remove_permission_from_role
+      tags:
+      - Roles
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: permission_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/sales:
+    get:
+      summary: Get all sales with pagination and filtering
+      operationId: sales_get_sales
+      tags:
+      - Sales
+      responses:
+        '200':
+          description: Success
+  /api/sales/{sale_id}/invoice:
+    get:
+      summary: Get invoice for a sale
+      operationId: invoices_get_sale_invoice
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/sales/{sale_id}/payment-plan:
+    post:
+      summary: POST /api/sales/{sale_id}/payment-plan
+      operationId: sales_create_sale_payment_plan
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sales/{sale_id}/promissory-notes:
+    get:
+      summary: Get all promissory notes for a specific sale
+      operationId: payments_get_sale_promissory_notes
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/sales/logs:
+    post:
+      summary: Create a sales log entry for cashflow.html page
+      operationId: sales_create_sales_log
+      tags:
+      - Sales
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sales/recalc:
+    post:
+      summary: Satış kayıtlarının SGK ve hasta ödeme tutarlarını yeniden hesaplarken
+        kalıcı olarak günceller.
+      description: 'İsteğe bağlı filtreler: body veya query içinde `patientId`, `saleId`,
+        `limit`.'
+      operationId: sales_recalc_sales
+      tags:
+      - Sales
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/settings:
+    patch:
+      summary: Apply partial updates to system settings using dot-path notation.
+      description: 'Request body: { "updates": { "company.name": "New", "system.timezone":
+        "Europe/London" } }'
+      operationId: patch_settings
+      tags:
+      - Settings
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/settings/pricing:
+    get:
+      summary: Get pricing settings specifically
+      operationId: get_pricing_settings
+      tags:
+      - Settings
+      responses:
+        '200':
+          description: Success
+  /api/sgk/documents:
+    post:
+      summary: POST /api/sgk/documents
+      operationId: sgk_upload_sgk_document
+      tags:
+      - Sgk
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sgk/documents/{document_id}:
+    delete:
+      summary: DELETE /api/sgk/documents/{document_id}
+      operationId: sgk_delete_sgk_document
+      tags:
+      - Sgk
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/sgk/seed-test-patients:
+    post:
+      summary: 'Development helper: for each image in the repo images/ folder, run
+        OCR, extract name and tc_partial,'
+      description: 'then insert a Patient record with a generated valid TC that contains
+        the partial substring.
+
+        This endpoint is intended for local/dev only and makes a best-effort to avoid
+        duplicate inserts.'
+      operationId: sgk_seed_test_patients
+      tags:
+      - Sgk
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sgk/upload:
+    post:
+      summary: Accept multipart/form-data uploads under the 'files' field (multiple
+        allowed).
+      description: 'Saves files to a secure temporary path, runs OCR (worker-first)
+        with auto_crop=True
+
+        and returns per-file OCR results including patient_info.'
+      operationId: sgk_upload_and_process_files
+      tags:
+      - Sgk
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sms/monitoring:
+    get:
+      summary: GET /api/sms/monitoring
+      operationId: sms_monitoring
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+  /api/suppliers:
+    post:
+      summary: Create a new supplier
+      operationId: suppliers_create_supplier
+      tags:
+      - Suppliers
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/suppliers/{supplier_id}:
+    delete:
+      summary: Delete a supplier (soft delete by setting is_active=False)
+      operationId: suppliers_delete_supplier
+      tags:
+      - Suppliers
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/suppliers/{supplier_id}/products:
+    get:
+      summary: Get all products for a specific supplier
+      operationId: suppliers_get_supplier_products
+      tags:
+      - Suppliers
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/suppliers/search:
+    get:
+      summary: Fast supplier search for autocomplete
+      operationId: suppliers_search_suppliers
+      tags:
+      - Suppliers
+      responses:
+        '200':
+          description: Success
+  /api/suppliers/stats:
+    get:
+      summary: Get supplier statistics
+      operationId: suppliers_get_supplier_stats
+      tags:
+      - Suppliers
+      responses:
+        '200':
+          description: Success
+  /api/unified-cash-records:
+    get:
+      summary: Birleşik cash records endpoint'i - tüm finansal kayıtları tek yerden
+        döndürür.
+      description: 'Şu kaynak türlerini birleştirir:
+
+        - Sales (satışlar)
+
+        - PaymentRecords (ödeme kayıtları)
+
+        - Cash Records (nakit kayıtları)
+
+        Query parametreleri:
+
+        - limit: maksimum kayıt sayısı (varsayılan: 200)
+
+        - start_date, end_date: tarih filtreleri (ISO format)
+
+        - record_type: kayıt türü filtresi (sale, payment, cash)
+
+        - patient_id: hasta ID filtresi
+
+        - status: durum filtresi (paid, pending, partial)'
+      operationId: unified_cash_get_unified_cash_records
+      tags:
+      - Unified-cash-records
+      responses:
+        '200':
+          description: Success
+  /api/unified-cash-records/summary:
+    get:
+      summary: Finansal özet bilgileri döndürür.
+      description: 'Query parametreleri:
+
+        - period: özet dönemi (today, week, month, year)
+
+        - start_date, end_date: özel tarih aralığı'
+      operationId: unified_cash_get_cash_summary
+      tags:
+      - Unified-cash-records
+      responses:
+        '200':
+          description: Success
+  /api/users:
+    post:
+      summary: POST /api/users
+      operationId: users_create_user
+      tags:
+      - Users
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/users/{user_id}:
+    delete:
+      summary: DELETE /api/users/{user_id}
+      operationId: users_delete_user
+      tags:
+      - Users
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/users/me:
+    get:
+      summary: GET /api/users/me
+      operationId: users_get_me
+      tags:
+      - Users
+      responses:
+        '200':
+          description: Success
+  /api/verify-otp:
+    post:
+      summary: POST /api/verify-otp
+      operationId: auth_verify_otp
+      tags:
+      - Verify-otp
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/verify-registration-otp:
+    post:
+      summary: POST /api/verify-registration-otp
+      operationId: registration_verify_registration_otp
+      tags:
+      - Verify-registration-otp
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /debug_ner:
+    post:
+      summary: Debug endpoint to run HF NER and spaCy on provided text and return
+        detailed outputs.
+      description: 'Request JSON: { "text": "..." }
+
+        Returns: { hf_ner: [...], spacy_entities: [...], tokens: [...] }'
+      operationId: ocr_debug_ner
+      tags:
+      - Debug_ner
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /entities:
+    post:
+      summary: Extract entities from image using OCR
+      operationId: ocr_extract_entities
+      tags:
+      - Entities
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /extract_patient:
+    post:
+      summary: Extract patient name from image using OCR
+      operationId: ocr_extract_patient_name
+      tags:
+      - Extract_patient
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /health:
+    get:
+      summary: Health check endpoint (moved from app.py)
+      operationId: ocr_health_check
+      tags:
+      - Health
+      responses:
+        '200':
+          description: Success
+  /init-db:
+    post:
+      summary: Initialize database and create tables
+      operationId: ocr_init_database
+      tags:
+      - Init-db
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /initialize:
+    post:
+      summary: Initialize NLP/OCR service (non-blocking).
+      description: 'Starts model initialization in a background thread so the HTTP
+        request
+
+        can return quickly and heavy imports/downloads happen asynchronously.'
+      operationId: ocr_initialize_nlp_endpoint
+      tags:
+      - Initialize
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /process:
+    post:
+      summary: Process document with OCR
+      description: 'Accepts either JSON with {''image_path'': ''/abs/path/to/file''}
+        or
+
+        {''text'': ''raw extracted text''} so frontend clients can send text-only
+
+        NLP requests without uploading images to the backend.'
+      operationId: ocr_process_document
+      tags:
+      - Process
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /similarity:
+    post:
+      summary: Calculate similarity between two images or between two pieces of text
+      description: Accepts either {'image_path1':..., 'image_path2':...} or {'text1':...,
+        'text2':...}
+      operationId: ocr_calculate_similarity
+      tags:
+      - Similarity
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /swagger.html:
+    get:
+      summary: Serve the static Swagger UI page from the repository `public/` folder.
+      description: 'This helps local development: visit http://<backend-host>:<port>/swagger.html
+        so the
+
+        Swagger UI and `/api/openapi.yaml` are on the same origin and no CORS overrides
+        are needed.'
+      operationId: serve_swagger_ui
+      tags:
+      - Swagger.html
+      responses:
+        '200':
+          description: Success
+components:
+  schemas: {}

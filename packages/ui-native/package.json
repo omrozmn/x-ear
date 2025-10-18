@@ -1,0 +1,47 @@
+{
+  "name": "@x-ear/ui-native",
+  "version": "0.1.0",
+  "description": "X-EAR React Native UI Components Library",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react-native": "0.73.4",
+    "react-native-vector-icons": "^10.0.3",
+    "react-native-svg": "^14.1.0",
+    "react-native-gesture-handler": "^2.14.1",
+    "react-native-reanimated": "^3.6.2",
+    "react-native-safe-area-context": "^4.8.2",
+    "react-native-screens": "^3.29.0",
+    "zod": "^3.22.4",
+    "axios": "^1.6.7",
+    "date-fns": "^3.3.1",
+    "lodash": "^4.17.21"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-native": "^0.72.0",
+    "@x-ear/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.37",
+    "@types/react-native": "^0.72.6",
+    "eslint": "^8.54.0",
+    "jest": "^29.7.0",
+    "tsup": "^7.2.0",
+    "typescript": "^5.2.2"
+  }
+}

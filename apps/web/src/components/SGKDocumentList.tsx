@@ -1,0 +1,453 @@
+import { Button, Input, Select } from '@x-ear/ui-web';
+// SGK Document List Component
+// Modern React component for displaying and managing SGK documents
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  SGKDocument, 
+  SGKDocumentFilters, 
+  SGKSearchResult,
+  SGKWorkflowStatus,
+  SGKDocumentType
+} from '../types/sgk';
+
+type SGKProcessingStatus = 'pending' | 'processing' | 'completed' | 'failed';
+import { sgkService } from '../services/sgk.service';
+
+interface SGKDocumentListProps {
+  patientId?: string;
+  filters?: SGKDocumentFilters;
+  onDocumentSelect?: (document: SGKDocument) => void;
+  onDocumentEdit?: (document: SGKDocument) => void;
+  onDocumentDelete?: (documentId: string) => void;
+  onWorkflowUpdate?: (documentId: string, status: SGKWorkflowStatus) => void;
+  showActions?: boolean;
+  compact?: boolean;
+}
+
+export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
+  patientId,
+  filters: externalFilters,
+  onDocumentSelect,
+  onDocumentEdit,
+  onDocumentDelete,
+  onWorkflowUpdate: _onWorkflowUpdate,
+  showActions = true,
+  compact = false
+}) => {
+  const [documents, setDocuments] = useState<SGKDocument[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState<SGKDocumentType | ''>('');
+  const [selectedStatus, _setSelectedStatus] = useState<SGKWorkflowStatus | ''>('');
+  const [selectedProcessingStatus, setSelectedProcessingStatus] = useState<SGKProcessingStatus | ''>('');
+  const [sortBy, setSortBy] = useState<'date' | 'name' | 'type' | 'status'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  const filters = useMemo(() => ({
+    ...externalFilters,
+    patientId,
+    search: searchTerm || undefined,
+    documentType: selectedType || undefined,
+    status: selectedStatus || undefined,
+    processingStatus: selectedProcessingStatus || undefined
+  }), [externalFilters, patientId, searchTerm, selectedType, selectedStatus, selectedProcessingStatus]);
+
+  useEffect(() => {
+    loadDocuments();
+  }, [filters]);
+
+  const loadDocuments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result: SGKSearchResult = await sgkService.getDocuments(filters);
+      setDocuments(result.documents);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load documents');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sortedDocuments = useMemo(() => {
+    const sorted = [...documents];
+    
+    sorted.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortBy) {
+        case 'name':
+          aValue = a.filename;
+          bValue = b.filename;
+          break;
+        case 'type':
+          aValue = a.documentType;
+          bValue = b.documentType;
+          break;
+        case 'status':
+          aValue = a.processingStatus;
+          bValue = b.processingStatus;
+          break;
+        case 'date':
+        default:
+          aValue = new Date(a.createdAt);
+          bValue = new Date(b.createdAt);
+          break;
+      }
+
+      if (aValue === undefined || aValue === null) aValue = '';
+      if (bValue === undefined || bValue === null) bValue = '';
+
+      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }, [documents, sortBy, sortOrder]);
+
+  const getDocumentTypeLabel = (type: SGKDocumentType): string => {
+    const labels: Record<SGKDocumentType, string> = {
+      recete: 'E-Reçete',
+      rapor: 'Rapor',
+      belge: 'Belge',
+      fatura: 'Fatura',
+      teslim: 'Teslim Belgesi',
+      iade: 'İade Belgesi'
+    };
+    return labels[type] || type;
+  };
+
+  const getProcessingStatusColor = (status: SGKProcessingStatus): string => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'processing': return 'bg-blue-100 text-blue-800';
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'failed': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getProcessingStatusLabel = (status: SGKProcessingStatus): string => {
+    const labels: Record<SGKProcessingStatus, string> = {
+      pending: 'Bekliyor',
+      processing: 'İşleniyor',
+      completed: 'Tamamlandı',
+      failed: 'Başarısız'
+    };
+    return labels[status] || status;
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const formatDate = (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString('tr-TR', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const handleSort = (field: typeof sortBy) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+  };
+
+  const handleDelete = async (documentId: string) => {
+    if (!window.confirm('Bu belgeyi silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+
+    try {
+      await sgkService.deleteDocument(documentId);
+      await loadDocuments();
+      onDocumentDelete?.(documentId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete document');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-2 text-gray-600">Belgeler yükleniyor...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-red-800">Hata</h3>
+            <p className="mt-1 text-sm text-red-700">{error}</p>
+            <Button
+              onClick={() => setError(null)}
+              className="mt-2 text-sm text-red-600 hover:text-red-500"
+              variant='default'>
+              Tekrar dene
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Filters */}
+      {!compact && (
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Arama
+              </label>
+              <Input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Belge adı veya içerik..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Belge Türü
+              </label>
+              <Select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value as SGKDocumentType | '')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Tümü</option>
+                <option value="recete">E-Reçete</option>
+                <option value="rapor">Rapor</option>
+                <option value="belge">Belge</option>
+                <option value="fatura">Fatura</option>
+                <option value="teslim">Teslim Belgesi</option>
+                <option value="iade">İade Belgesi</option>
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                İşlem Durumu
+              </label>
+              <Select
+                value={selectedProcessingStatus}
+                onChange={(e) => setSelectedProcessingStatus(e.target.value as SGKProcessingStatus | '')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Tümü</option>
+                <option value="pending">Bekliyor</option>
+                <option value="processing">İşleniyor</option>
+                <option value="completed">Tamamlandı</option>
+                <option value="failed">Başarısız</option>
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Sıralama
+              </label>
+              <Select
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [field, order] = e.target.value.split('-');
+                  setSortBy(field as typeof sortBy);
+                  setSortOrder(order as 'asc' | 'desc');
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="date-desc">Tarih (Yeni → Eski)</option>
+                <option value="date-asc">Tarih (Eski → Yeni)</option>
+                <option value="name-asc">Ad (A → Z)</option>
+                <option value="name-desc">Ad (Z → A)</option>
+                <option value="type-asc">Tür (A → Z)</option>
+                <option value="status-asc">Durum (A → Z)</option>
+              </Select>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Document List */}
+      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+        {sortedDocuments.length === 0 ? (
+          <div className="text-center py-8">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">Belge bulunamadı</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Filtreleri değiştirerek tekrar deneyin.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('name')}
+                  >
+                    Belge Adı
+                    {sortBy === 'name' && (
+                      <span className="ml-1">
+                        {sortOrder === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('type')}
+                  >
+                    Tür
+                    {sortBy === 'type' && (
+                      <span className="ml-1">
+                        {sortOrder === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('status')}
+                  >
+                    Durum
+                    {sortBy === 'status' && (
+                      <span className="ml-1">
+                        {sortOrder === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Boyut
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('date')}
+                  >
+                    Tarih
+                    {sortBy === 'date' && (
+                      <span className="ml-1">
+                        {sortOrder === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </th>
+                  {showActions && (
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      İşlemler
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {sortedDocuments.map((document) => (
+                  <tr 
+                    key={document.id} 
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => onDocumentSelect?.(document)}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-8 w-8">
+                          <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {document.filename}
+                          </div>
+                          {document.extractedInfo?.patientName && (
+                            <div className="text-sm text-gray-500">
+                              {document.extractedInfo.patientName}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {getDocumentTypeLabel(document.documentType)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getProcessingStatusColor(document.processingStatus)}`}>
+                        {getProcessingStatusLabel(document.processingStatus)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatFileSize(document.fileSize || 0)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatDate(document.createdAt)}
+                    </td>
+                    {showActions && (
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          {onDocumentEdit && (
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDocumentEdit(document);
+                              }}
+                              className="text-blue-600 hover:text-blue-900"
+                              variant='default'>
+                              Düzenle
+                            </Button>
+                          )}
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(document.id);
+                            }}
+                            className="text-red-600 hover:text-red-900"
+                            variant='default'>
+                            Sil
+                          </Button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      {/* Summary */}
+      {!compact && sortedDocuments.length > 0 && (
+        <div className="text-sm text-gray-500 text-center">
+          Toplam {sortedDocuments.length} belge gösteriliyor
+        </div>
+      )}
+    </div>
+  );
+};

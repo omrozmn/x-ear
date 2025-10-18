@@ -1,0 +1,287 @@
+# Missing JS mapping
+
+Total JS files scanned: 367
+
+Missing from MDs: 279
+
+> Not: "Missing from MDs" means the filename does not appear verbatim in the two reports. Some files are generated/dist artifacts or duplicates; review before migrating.
+
+- public/assets/api-config.js -> referenced by: public/test-mapping.html, public/test-inventory-modal.html, public/test-sgk-pipeline.html, public/suppliers.html, public/test-mobile.html, public/forgot-password.html, public/inventory.html, public/product-details.html, public/register.html, public/login.html, public/test-sidebar-coordination.html, public/dashboard.html, public/patient-details-modular.html, public/patients.html, public/appointments.html
+- public/assets/api/api/generated.js -> referenced by: NO HTML reference found
+- public/assets/api/api/index.js -> referenced by: public/sgk.html
+- public/assets/api/api/legacy.js -> referenced by: public/test-document-components.html
+- public/assets/api/api/smoke-test.js -> referenced by: NO HTML reference found
+- public/assets/api/api/types.js -> referenced by: NO HTML reference found
+- public/assets/api/generated.js -> referenced by: NO HTML reference found
+- public/assets/api/index.js -> referenced by: public/sgk.html
+- public/assets/api/js/generated/index.js -> referenced by: public/sgk.html
+- public/assets/api/legacy.js -> referenced by: public/test-document-components.html
+- public/assets/api/migration-cli.js -> referenced by: NO HTML reference found
+- public/assets/api/migration-flags-browser.js -> referenced by: public/patients.html
+- public/assets/api/migration-flags.js -> referenced by: NO HTML reference found
+- public/assets/api/orval-client.js -> referenced by: NO HTML reference found
+- public/assets/api/smoke-test.js -> referenced by: NO HTML reference found
+- public/assets/api/types.js -> referenced by: NO HTML reference found
+- public/assets/dist/domain/appointments/data-service.js -> referenced by: public/product-details.html
+- public/assets/dist/domain/inventory/data-service.js -> referenced by: public/product-details.html
+- public/assets/dist/domain/patients/data-service.js -> referenced by: public/product-details.html
+- public/assets/dist/domain/sms/data-service.js -> referenced by: public/product-details.html
+- public/assets/dist/domain/uts/data-service.js -> referenced by: public/product-details.html
+- public/assets/js/advanced-automation.js -> referenced by: public/dashboard.html, public/automation-status.html
+- public/assets/js/api-client-wrapper.js -> referenced by: public/inventory.html
+- public/assets/js/api-connectivity-test.js -> referenced by: public/patients.html
+- public/assets/js/api-url-wrapper.js -> referenced by: public/forgot-password.html, public/register.html, public/login.html
+- public/assets/js/appointments/appointment-data.js -> referenced by: public/appointments.html
+- public/assets/js/appointments/keyboard-navigation.js -> referenced by: public/appointments.html
+- public/assets/js/appointments/search-filter.js -> referenced by: public/appointments.html
+- public/assets/js/auth.js -> referenced by: public/admin-panel.html, public/test-header.html, public/dashboard.html
+- public/assets/js/auth/client-auth.js -> referenced by: public/admin-panel.html
+- public/assets/js/automation-manager.js -> referenced by: public/automation.html
+- public/assets/js/automation-rules.js -> referenced by: NO HTML reference found
+- public/assets/js/category-helper.js -> referenced by: NO HTML reference found
+- public/assets/js/components/category-brand-autocomplete.js -> referenced by: public/inventory.html, public/product-details.html
+- public/assets/js/components/multi-select-search.js -> referenced by: public/inventory.html
+- public/assets/js/components/quick-look-modal.js -> referenced by: NO HTML reference found
+- public/assets/js/components/supplier-autocomplete.js -> referenced by: public/test-inventory-modal.html, public/inventory.html, public/product-details.html, public/test-supplier-autocomplete.html, public/patient-details-modular.html
+- public/assets/js/darkMode.js -> referenced by: public/test-inventory-modal.html, public/suppliers.html, public/create-test-suppliers.html, public/sss.html, public/test-mobile.html, public/forgot-password.html, public/test-device-render.html, public/product-details.html, public/test-header.html, public/automation.html, public/packages.html, public/register.html, public/patient-details-backup.html, public/login.html, public/test-promissory-storage.html, public/test-document-components.html, public/test-supplier-autocomplete.html, public/test-sidebar-coordination.html, public/dashboard.html, public/sgk-download.html, public/patient-details-modular.html, public/swagger.html, public/campaigns.html, public/patients.html, public/appointments.html, public/test-devices-comparison.html, public/search-ereceipt.html, public/test-chart.html, public/automation-status.html, public/sgk.html, public/uts-kayitlari.html, public/activity-logs.html, public/invoices.html, public/settings.html, public/reports.html
+- public/assets/js/darkModeInitializer.js -> referenced by: public/test-inventory-modal.html, public/suppliers.html, public/create-test-suppliers.html, public/sss.html, public/test-mobile.html, public/forgot-password.html, public/test-device-render.html, public/product-details.html, public/test-header.html, public/automation.html, public/packages.html, public/register.html, public/patient-details-backup.html, public/login.html, public/test-promissory-storage.html, public/test-document-components.html, public/test-supplier-autocomplete.html, public/test-sidebar-coordination.html, public/dashboard.html, public/sgk-download.html, public/patient-details-modular.html, public/swagger.html, public/campaigns.html, public/patients.html, public/appointments.html, public/test-devices-comparison.html, public/search-ereceipt.html, public/test-chart.html, public/automation-status.html, public/sgk.html, public/uts-kayitlari.html, public/activity-logs.html, public/invoices.html, public/settings.html, public/reports.html
+- public/assets/js/data-export-import.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/document-manager.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/domain/appointments/data-service.js -> referenced by: public/product-details.html
+- public/assets/js/domain/efatura/data-service.js -> referenced by: public/product-details.html
+- public/assets/js/domain/inventory/data-service.js -> referenced by: public/product-details.html
+- public/assets/js/domain/patients/data-service.js -> referenced by: public/product-details.html
+- public/assets/js/domain/patients/patient-matching-service.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/domain/sgk/sgk-document-pipeline.flow.js -> referenced by: NO HTML reference found
+- public/assets/js/domain/sgk/sgk-document-pipeline.image.js -> referenced by: NO HTML reference found
+- public/assets/js/domain/sgk/sgk-document-pipeline.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/domain/sgk/sgk-document-pipeline.ocr.js -> referenced by: NO HTML reference found
+- public/assets/js/domain/sgk/sgk-document-pipeline.pdf.js -> referenced by: NO HTML reference found
+- public/assets/js/domain/sgk/sgk-document-pipeline.storage.js -> referenced by: NO HTML reference found
+- public/assets/js/domain/sgk/sgk-document-pipeline.ui.js -> referenced by: NO HTML reference found
+- public/assets/js/domain/sgk/sgk-document-pipeline.utils.js -> referenced by: NO HTML reference found
+- public/assets/js/domain/sgk/sgk-document-pipeline.workflow.js -> referenced by: NO HTML reference found
+- public/assets/js/domain/sgk/sgk-manager.js -> referenced by: NO HTML reference found
+- public/assets/js/domain/sgk/sgk.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/domain/sms/data-service.js -> referenced by: public/product-details.html
+- public/assets/js/domain/sms/sms-gateway.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/domain/uts/data-service.js -> referenced by: public/product-details.html
+- public/assets/js/domain/uts/uts-records-tab.js -> referenced by: NO HTML reference found
+- public/assets/js/domain/uts/uts-status-indicator.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/email-manager.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/generated/api-types.js -> referenced by: NO HTML reference found
+- public/assets/js/generated/backup-2025-10-12T21-24-49-599Z/orval-api.js -> referenced by: NO HTML reference found
+- public/assets/js/generated/index.js -> referenced by: public/sgk.html
+- public/assets/js/generated/orval-api.js -> referenced by: NO HTML reference found
+- public/assets/js/generated/orval-types.js -> referenced by: NO HTML reference found
+- public/assets/js/global-device-management.js -> referenced by: public/patient-details-modular.html
+- public/assets/js/global-search.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/image-processor.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/indexeddb-outbox.js -> referenced by: NO HTML reference found
+- public/assets/js/inventory/inventory-bulk.js -> referenced by: public/inventory.html
+- public/assets/js/inventory/inventory-orval-adapter.js -> referenced by: NO HTML reference found
+- public/assets/js/inventory/inventory-stats.js -> referenced by: public/inventory.html
+- public/assets/js/inventory/inventory-utils.js -> referenced by: public/inventory.html
+- public/assets/js/invoice-conditional.js -> referenced by: NO HTML reference found
+- public/assets/js/invoices.js -> referenced by: NO HTML reference found
+- public/assets/js/lib/pricing-utils.js -> referenced by: NO HTML reference found
+- public/assets/js/login.js -> referenced by: NO HTML reference found
+- public/assets/js/mobileOptimizer.js -> referenced by: public/test-mobile.html
+- public/assets/js/modules/inventory/inventory-manager.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/modules/patients/patient-details-manager.js -> referenced by: NO HTML reference found
+- public/assets/js/modules/patients/patient-details-modals.js -> referenced by: NO HTML reference found
+- public/assets/js/modules/patients/patient-details-tab-loader.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/modules/patients/patient-details.js -> referenced by: NO HTML reference found
+- public/assets/js/modules/patients/patient-inline-helpers.js -> referenced by: NO HTML reference found
+- public/assets/js/modules/patients/patients.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/modules/products/product-activity.js -> referenced by: public/product-details.html
+- public/assets/js/modules/products/product-direction.js -> referenced by: NO HTML reference found
+- public/assets/js/modules/products/product-serials-api.js -> referenced by: NO HTML reference found
+- public/assets/js/modules/products/product-serials.js -> referenced by: public/product-details.html
+- public/assets/js/new-invoice.js -> referenced by: NO HTML reference found
+- public/assets/js/notifications/notification-client.js -> referenced by: NO HTML reference found
+- public/assets/js/ocr-engine.js -> referenced by: public/test-sgk-pipeline.html, public/patient-details-backup.html
+- public/assets/js/orval-mutator.js -> referenced by: NO HTML reference found
+- public/assets/js/orval-wrapper.js -> referenced by: NO HTML reference found
+- public/assets/js/paddle-backend-client.js -> referenced by: public/test-sgk-pipeline.html, public/patient-details-backup.html
+- public/assets/js/paddle-nlp-service.js -> referenced by: public/test-sgk-pipeline.html, public/patient-details-backup.html
+- public/assets/js/patient-compat.js -> referenced by: public/patients.html
+- public/assets/js/patient-details-modals.js -> referenced by: NO HTML reference found
+- public/assets/js/patient-details-tab-loader.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/patient-details.js -> referenced by: NO HTML reference found
+- public/assets/js/patient-inline-helpers.js -> referenced by: NO HTML reference found
+- public/assets/js/patient-matching-service.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/patients.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/pdf-converter.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/pending-updates-ui.js -> referenced by: NO HTML reference found
+- public/assets/js/quick-look.js -> referenced by: NO HTML reference found
+- public/assets/js/settings.js -> referenced by: NO HTML reference found
+- public/assets/js/sgk-manager.js -> referenced by: NO HTML reference found
+- public/assets/js/sgk.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/sgk/helpers.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/index.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/init.js -> referenced by: public/patient-details-modular.html, public/patients.html, public/sgk.html
+- public/assets/js/sgk/manager/sgk-storage-manager.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/modals/candidate-modal.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/modals/ereceipt-modal.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/modals/upload-modal.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/page.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/processing.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/sgk-api.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/sgk-storage.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/storage.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/ui.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/vendor/advanced-automation-wrapper.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/vendor/core-app-wrapper.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/vendor/header-wrapper.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/vendor/image-processor-wrapper.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/vendor/ocr-engine-wrapper.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/vendor/paddle-backend-wrapper.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/vendor/paddle-nlp-wrapper.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/vendor/patient-matching-wrapper.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/vendor/quicklook-wrapper.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/vendor/sidebar-wrapper.js -> referenced by: NO HTML reference found
+- public/assets/js/sgk/vendor/ts-loader-wrapper.js -> referenced by: public/sgk.html
+- public/assets/js/sgk/vendor/utils-wrapper.js -> referenced by: public/sgk.html
+- public/assets/js/sms-gateway.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/storage-keys.js -> referenced by: public/inventory.html
+- public/assets/js/storage-manager.js -> referenced by: public/search-ereceipt.html, public/sgk.html
+- public/assets/js/suppliers/suppliers-api.js -> referenced by: NO HTML reference found
+- public/assets/js/suppliers/suppliers-events.js -> referenced by: NO HTML reference found
+- public/assets/js/suppliers/suppliers-filters.js -> referenced by: NO HTML reference found
+- public/assets/js/suppliers/suppliers-main.js -> referenced by: public/suppliers.html
+- public/assets/js/suppliers/suppliers-modal.js -> referenced by: NO HTML reference found
+- public/assets/js/suppliers/suppliers-state.js -> referenced by: NO HTML reference found
+- public/assets/js/suppliers/suppliers-table.js -> referenced by: NO HTML reference found
+- public/assets/js/utils/fuzzy-search.js -> referenced by: public/inventory.html, public/product-details.html, public/patient-details-modular.html
+- public/assets/js/uts-records-tab.js -> referenced by: NO HTML reference found
+- public/assets/js/uts-status-indicator.js -> referenced by: public/patient-details-backup.html
+- public/assets/js/widget-loader.js -> referenced by: public/cashflow.html, public/test-mobile.html, public/inventory.html, public/test-header.html, public/patient-details-backup.html, public/dashboard.html, public/appointments.html, public/invoices.html, public/reports.html
+- public/assets/js/widgets/widget-loader.js -> referenced by: public/cashflow.html, public/test-mobile.html, public/inventory.html, public/test-header.html, public/patient-details-backup.html, public/dashboard.html, public/appointments.html, public/invoices.html, public/reports.html
+- public/assets/legacy/public/assets/appointments-data.js -> referenced by: NO HTML reference found
+- public/assets/legacy/public/assets/ereceipt-data.js -> referenced by: NO HTML reference found
+- public/assets/legacy/public/assets/shared/data-manager.js -> referenced by: NO HTML reference found
+- public/assets/legacy/public/assets/shared/ui-components.js -> referenced by: NO HTML reference found
+- public/assets/legacy/public/assets/uts-data.js -> referenced by: NO HTML reference found
+- public/assets/legacy/public/assets/widgets/appointments.js -> referenced by: public/patient-details-backup.html, public/patient-details-modular.html
+- public/assets/legacy/public/assets/widgets/devices.js -> referenced by: public/patient-details-backup.html
+- public/assets/legacy/public/assets/widgets/sgk.js -> referenced by: public/patient-details-backup.html
+- public/assets/modules/components/document-list-widget.js -> referenced by: NO HTML reference found
+- public/assets/modules/components/document-management-legacy.js -> referenced by: public/test-document-components.html
+- public/assets/modules/components/document-viewer-widget.js -> referenced by: NO HTML reference found
+- public/assets/modules/components/patient-sidebar.js -> referenced by: NO HTML reference found
+- public/assets/modules/components/promissory-note.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/components/sales-management-old.js -> referenced by: NO HTML reference found
+- public/assets/modules/components/sales-management.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/inventory/inventory-stats.js -> referenced by: public/inventory.html
+- public/assets/modules/page-module-loader.js -> referenced by: NO HTML reference found
+- public/assets/modules/patient-details-manager.js -> referenced by: NO HTML reference found
+- public/assets/modules/patient-details-module.js -> referenced by: NO HTML reference found
+- public/assets/modules/patient-details/device-assignment-handler.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/patient-details/device-modals.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/patient-details/document-management-enhanced.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/patient-details/document-management-globals.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/patient-details/document-management.js -> referenced by: public/test-document-components.html, public/patient-details-modular.html, public/patient-details-modular.html
+- public/assets/modules/patient-details/patient-appointments.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/patient-details/patient-hearing-test.js -> referenced by: NO HTML reference found
+- public/assets/modules/patient-details/patient-stats-cards.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/patient-details/patient-tab-loader.js -> referenced by: NO HTML reference found
+- public/assets/modules/patient-details/patient-tabs-navigation.js -> referenced by: NO HTML reference found
+- public/assets/modules/patient-details/patient-utils.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/sales/SalesEditWidget.js -> referenced by: NO HTML reference found
+- public/assets/modules/sales/sales-collection.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/sales/sales-details.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/sales/sales-edit.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/sales/sales-form.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/sales/sales-invoice.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/sales/sales-returns.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/settings/service.js -> referenced by: public/test-sgk-pipeline.html, public/product-details.html, public/patient-details-backup.html, public/patient-details-backup.html
+- public/assets/modules/settings/tabs/branches.js -> referenced by: NO HTML reference found
+- public/assets/modules/settings/tabs/general.js -> referenced by: NO HTML reference found
+- public/assets/modules/settings/tabs/integrations.js -> referenced by: NO HTML reference found
+- public/assets/modules/settings/tabs/patient.js -> referenced by: NO HTML reference found
+- public/assets/modules/settings/tabs/profile.js -> referenced by: NO HTML reference found
+- public/assets/modules/settings/tabs/subscription.js -> referenced by: NO HTML reference found
+- public/assets/modules/settings/tabs/tags.js -> referenced by: NO HTML reference found
+- public/assets/modules/settings/tabs/users.js -> referenced by: NO HTML reference found
+- public/assets/modules/utils/patient-normalize-init.js -> referenced by: public/patient-details-modular.html, public/patients.html
+- public/assets/modules/widget-loader.js -> referenced by: public/cashflow.html, public/test-mobile.html, public/inventory.html, public/test-header.html, public/patient-details-backup.html, public/dashboard.html, public/appointments.html, public/invoices.html, public/reports.html
+- public/assets/modules/widgets/appointments.js -> referenced by: public/patient-details-backup.html, public/patient-details-modular.html
+- public/assets/modules/widgets/document-list.js -> referenced by: public/patient-details-modular.html
+- public/assets/modules/widgets/sales.js -> referenced by: NO HTML reference found
+- public/assets/shared/page-module-loader.js -> referenced by: NO HTML reference found
+- public/assets/widgets/invoice-preview.js -> referenced by: public/patient-details-modular.html, public/invoices.html
+- public/assets/widgets/patient-profile.js -> referenced by: NO HTML reference found
+- public/assets/widgets/stats-card.js -> referenced by: public/patient-details-modular.html
+- public/assets/widgets/tab-navigation.js -> referenced by: public/settings.html
+- public/assets/widgets/toast-notification.js -> referenced by: NO HTML reference found
+- public/assets/widgets/widget-loader.js -> referenced by: public/cashflow.html, public/test-mobile.html, public/inventory.html, public/test-header.html, public/patient-details-backup.html, public/dashboard.html, public/appointments.html, public/invoices.html, public/reports.html
+- public/demo/auto-loader.js -> referenced by: public/test-mapping.html, public/test-inventory-modal.html, public/feature-test.html, public/test-sgk-pipeline.html, public/suppliers.html, public/test-sales-edit.html, public/create-test-suppliers.html, public/index.html, public/admin-panel.html, public/sss.html, public/cashflow.html, public/test-proforma.html, public/test-mobile.html, public/forgot-password.html, public/test-device-render.html, public/product-details.html, public/test-header.html, public/automation.html, public/packages.html, public/register.html, public/patient-details-backup.html, public/login.html, public/test-promissory-storage.html, public/test-document-components.html, public/test-supplier-autocomplete.html, public/test-sidebar-coordination.html, public/sgk-download.html, public/patient-details-modular.html, public/swagger.html, public/campaigns.html, public/patients.html, public/appointments.html, public/test-devices-comparison.html, public/search-ereceipt.html, public/test-chart.html, public/automation-status.html, public/sgk.html, public/uts-kayitlari.html, public/activity-logs.html, public/invoices.html, public/settings.html, public/reports.html
+- public/demo/demo-bootstrap.js -> referenced by: public/index.html, public/patients.html
+- public/dist/api/orval-mutator.js -> referenced by: NO HTML reference found
+- public/dist/api/xEarCRMAPIAutoGenerated.js -> referenced by: NO HTML reference found
+- public/dist/api/xEarCRMAPIAutoGenerated.schemas.js -> referenced by: NO HTML reference found
+- public/dist/constants/storage-keys.js -> referenced by: public/inventory.html
+- public/dist/domain/appointments/data-service.js -> referenced by: public/product-details.html
+- public/dist/domain/domain-manager.js -> referenced by: NO HTML reference found
+- public/dist/domain/efatura/data-service.js -> referenced by: public/product-details.html
+- public/dist/domain/inventory/api-service.js -> referenced by: NO HTML reference found
+- public/dist/domain/inventory/data-service.js -> referenced by: public/product-details.html
+- public/dist/domain/legacy-bridge.js -> referenced by: NO HTML reference found
+- public/dist/domain/patients/data-service.js -> referenced by: public/product-details.html
+- public/dist/domain/production/data-manager.js -> referenced by: NO HTML reference found
+- public/dist/domain/sgk/erecete/api.js -> referenced by: public/forgot-password.html, public/register.html, public/login.html, public/sgk.html
+- public/dist/domain/sgk/erecete/mocks.js -> referenced by: NO HTML reference found
+- public/dist/domain/sgk/rapor/api.js -> referenced by: public/forgot-password.html, public/register.html, public/login.html, public/sgk.html
+- public/dist/domain/sms/data-service.js -> referenced by: public/product-details.html
+- public/dist/domain/storage-manager.js -> referenced by: public/search-ereceipt.html, public/sgk.html
+- public/dist/domain/types.js -> referenced by: NO HTML reference found
+- public/dist/domain/uts/data-service.js -> referenced by: public/product-details.html
+- public/dist/domain/uts/possession/api.js -> referenced by: public/forgot-password.html, public/register.html, public/login.html, public/sgk.html
+- public/dist/entry/orval-browser-entry.js -> referenced by: NO HTML reference found
+- public/dist/generated/orval-api.js -> referenced by: NO HTML reference found
+- public/dist/generated/orval-types.js -> referenced by: NO HTML reference found
+- public/dist/managers/PatientManager.js -> referenced by: NO HTML reference found
+- public/dist/modules/file-validator.js -> referenced by: NO HTML reference found
+- public/dist/modules/image-processor-core.js -> referenced by: NO HTML reference found
+- public/dist/modules/types.js -> referenced by: NO HTML reference found
+- public/dist/public/assets/js/generated/index.js -> referenced by: public/sgk.html
+- public/dist/src/api/xEarCRMAPIAutoGenerated.js -> referenced by: NO HTML reference found
+- public/dist/src/api/xEarCRMAPIAutoGenerated.schemas.js -> referenced by: NO HTML reference found
+- public/dist/src/constants/storage-keys.js -> referenced by: public/inventory.html
+- public/dist/src/domain/appointments/data-service.js -> referenced by: public/product-details.html
+- public/dist/src/domain/domain-manager.js -> referenced by: NO HTML reference found
+- public/dist/src/domain/efatura/data-service.js -> referenced by: public/product-details.html
+- public/dist/src/domain/inventory/api-service.js -> referenced by: NO HTML reference found
+- public/dist/src/domain/inventory/data-service.js -> referenced by: public/product-details.html
+- public/dist/src/domain/legacy-bridge.js -> referenced by: NO HTML reference found
+- public/dist/src/domain/patients/data-service.js -> referenced by: public/product-details.html
+- public/dist/src/domain/production/data-manager.js -> referenced by: NO HTML reference found
+- public/dist/src/domain/sgk/erecete/api.js -> referenced by: public/forgot-password.html, public/register.html, public/login.html, public/sgk.html
+- public/dist/src/domain/sgk/erecete/mocks.js -> referenced by: NO HTML reference found
+- public/dist/src/domain/sgk/rapor/api.js -> referenced by: public/forgot-password.html, public/register.html, public/login.html, public/sgk.html
+- public/dist/src/domain/sms/data-service.js -> referenced by: public/product-details.html
+- public/dist/src/domain/storage-manager.js -> referenced by: public/search-ereceipt.html, public/sgk.html
+- public/dist/src/domain/types.js -> referenced by: NO HTML reference found
+- public/dist/src/domain/uts/data-service.js -> referenced by: public/product-details.html
+- public/dist/src/domain/uts/possession/api.js -> referenced by: public/forgot-password.html, public/register.html, public/login.html, public/sgk.html
+- public/dist/src/managers/PatientManager.js -> referenced by: NO HTML reference found
+- public/dist/src/modules/file-validator.js -> referenced by: NO HTML reference found
+- public/dist/src/modules/image-processor-core.js -> referenced by: NO HTML reference found
+- public/dist/src/modules/types.js -> referenced by: NO HTML reference found
+- public/dist/src/types/index.js -> referenced by: public/sgk.html
+- public/dist/src/utils/getBaseUrl.js -> referenced by: NO HTML reference found
+- public/dist/src/utils/unwrapApiResponse.js -> referenced by: NO HTML reference found
+- public/dist/types/index.js -> referenced by: public/sgk.html
+- public/dist/utils/getBaseUrl.js -> referenced by: NO HTML reference found
+- public/dist/utils/unwrapApiResponse.js -> referenced by: NO HTML reference found
+- public/modules/sgk/sgk-core.js -> referenced by: NO HTML reference found
+- public/modules/sgk/sgk-document-classifier.js -> referenced by: NO HTML reference found
+- public/modules/sgk/sgk-ocr-processor.js -> referenced by: NO HTML reference found
+- public/modules/sgk/sgk-patient-matcher.js -> referenced by: NO HTML reference found
+- public/modules/sgk/sgk-storage-manager.js -> referenced by: public/sgk.html
+- public/modules/sgk/sgk-ui-components.js -> referenced by: NO HTML reference found
+- public/modules/sgk/ui.js -> referenced by: public/sgk.html
+- public/shared/module-loader.js -> referenced by: NO HTML reference found
+- public/utils/debug-logger.js -> referenced by: NO HTML reference found
+- public/utils/storage-helper.js -> referenced by: public/suppliers.html, public/index.html, public/forgot-password.html, public/inventory.html, public/register.html, public/login.html, public/dashboard.html, public/patient-details-modular.html, public/patients.html, public/appointments.html, public/settings.html

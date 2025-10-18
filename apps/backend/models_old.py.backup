@@ -1,0 +1,633 @@
+# Database Models for X-Ear CRM
+# SQLite-based models for local testing and development
+
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime, timezone
+import json
+from werkzeug.security import generate_password_hash, check_password_hash
+from uuid import uuid4
+
+def now_utc():
+    """Return current UTC timestamp"""
+    return datetime.now(timezone.utc)
+
+db = SQLAlchemy()
+
+class Patient(db.Model):
+    __tablename__ = 'patients'
+
+    id = db.Column(db.String(50), primary_key=True)
+    tc_number = db.Column(db.String(11), unique=True, nullable=False)
+    conversion_step = db.Column(db.String(50))
+    identity_number = db.Column(db.String(20), unique=False, nullable=True)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(120))
+    birth_date = db.Column(db.DateTime)
+    gender = db.Column(db.String(1))
+    address_city = db.Column(db.String(100))
+    address_district = db.Column(db.String(100))
+    address_full = db.Column(db.Text)
+    status = db.Column(db.String(20), default='active')
+    segment = db.Column(db.String(20), default='lead')
+    acquisition_type = db.Column(db.String(50), default='walk-in')
+    referred_by = db.Column(db.String(100))
+    priority_score = db.Column(db.Integer, default=0)
+    tags = db.Column(db.Text)  # JSON string
+    sgk_info = db.Column(db.Text)  # JSON string
+    created_at = db.Column(db.DateTime, default=now_utc)
+    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc)
+
+    # Relationships
+    devices = db.relationship('Device', backref='patient', lazy=True, cascade='all, delete-orphan')
+    appointments = db.relationship('Appointment', backref='patient', lazy=True, cascade='all, delete-orphan')
+    notes = db.relationship('PatientNote', backref='patient', lazy=True, cascade='all, delete-orphan')
+    ereceipts = db.relationship('EReceipt', backref='patient', lazy=True, cascade='all, delete-orphan')
+    hearing_tests = db.relationship('HearingTest', backref='patient', lazy=True, cascade='all, delete-orphan')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'tcNumber': self.tc_number,
+            'identityNumber': (self.identity_number or self.tc_number),
+            'firstName': self.first_name,
+            'lastName': self.last_name,
+            'phone': self.phone,
+            'email': self.email,
+            'birthDate': (lambda d: (d.isoformat() if hasattr(d, 'isoformat') else (str(d) if d is not None else None)))(self.birth_date),
+            'dob': (lambda d: (d.date().isoformat() if hasattr(d, 'date') else (str(d) if d is not None else None)))(self.birth_date),
+            'gender': self.gender,
+            'address': {
+                'city': self.address_city,
+                'district': self.address_district,
+                'fullAddress': self.address_full
+            } if self.address_city or self.address_district or self.address_full else None,
+            'status': self.status,
+            'segment': self.segment,
+            'acquisitionType': self.acquisition_type,
+            'conversionStep': getattr(self, 'conversion_step', None),
+            'referredBy': self.referred_by,
+            'priorityScore': self.priority_score,
+            'tags': json.loads(self.tags) if self.tags else [],
+            'sgkInfo': json.loads(self.sgk_info) if self.sgk_info else {
+                'rightEarDevice': 'available',
+                'leftEarDevice': 'available',
+                'rightEarBattery': 'available',
+                'leftEarBattery': 'available'
+            },
+            'devices': [device.to_dict() for device in self.devices],
+            'appointments': [apt.to_dict() for apt in self.appointments],
+            'notes': [note.to_dict() for note in self.notes],
+            'ereceiptHistory': [receipt.to_dict() for receipt in self.ereceipts],
+            'hearingTests': [test.to_dict() for test in self.hearing_tests],
+            'createdAt': (self.created_at.isoformat() if hasattr(self.created_at, 'isoformat') else str(self.created_at)),
+            'updatedAt': (self.updated_at.isoformat() if hasattr(self.updated_at, 'isoformat') else str(self.updated_at))
+        }
+
+    @staticmethod
+    def from_dict(data):
+        patient = Patient()
+        patient.id = data.get('id') or f"pat_{now_utc().strftime('%Y%m%d%H%M%S_%f')}_{uuid4().hex[:6]}"
+        # Accept legacy tcNumber or new identityNumber. Ensure tc_number is never null to satisfy DB constraint.
+        patient.tc_number = data.get('tcNumber') or data.get('identityNumber') or f"tc_{uuid4().hex[:10]}"
+        patient.identity_number = data.get('identityNumber') or data.get('tcNumber') or patient.tc_number
+        patient.first_name = data.get('firstName')
+        patient.last_name = data.get('lastName')
+        patient.phone = data.get('phone')
+        patient.email = data.get('email')
+        # Accept multiple date field names for compatibility
+        if data.get('birthDate'):
+            patient.birth_date = datetime.fromisoformat(data['birthDate'])
+        elif data.get('dob'):
+            patient.birth_date = datetime.fromisoformat(data['dob'])
+        patient.gender = data.get('gender')
+        address = data.get('address') or {}
+        patient.address_city = address.get('city')
+        patient.address_district = address.get('district')
+        patient.address_full = address.get('fullAddress')
+        patient.status = data.get('status', 'active')
+        patient.segment = data.get('segment', 'lead')
+        patient.acquisition_type = data.get('acquisitionType') or data.get('acquisition_type') or 'walk-in'
+        # Persist conversion step if provided; stored as conversion_step in DB
+        patient.conversion_step = data.get('conversionStep') or data.get('conversion_step') or None
+        patient.referred_by = data.get('referredBy')
+        patient.priority_score = data.get('priorityScore', 0)
+        patient.tags = json.dumps(data.get('tags') or [])
+        patient.sgk_info = json.dumps(data.get('sgkInfo') or {
+            'rightEarDevice': 'available',
+            'leftEarDevice': 'available',
+            'rightEarBattery': 'available',
+            'leftEarBattery': 'available'
+        })
+        return patient
+
+class Device(db.Model):
+    __tablename__ = 'devices'
+
+    id = db.Column(db.String(50), primary_key=True)
+    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=True)
+    inventory_id = db.Column(db.String(50))
+    serial_number = db.Column(db.String(100), unique=True)
+    brand = db.Column(db.String(50))
+    model = db.Column(db.String(100))
+    device_type = db.Column(db.String(20))  # BTE, ITE, etc.
+    # Semantic category column (e.g. 'hearing_aid', 'battery', 'accessory')
+    category = db.Column(db.String(50))
+    ear = db.Column(db.String(10))  # left, right, both
+    status = db.Column(db.String(20), default='trial')
+    trial_start_date = db.Column(db.DateTime)
+    trial_end_date = db.Column(db.DateTime)
+    trial_extended_until = db.Column(db.DateTime)
+    warranty_start_date = db.Column(db.DateTime)
+    warranty_end_date = db.Column(db.DateTime)
+    warranty_terms = db.Column(db.Text)
+    price = db.Column(db.Float)
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=now_utc)
+    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'patientId': self.patient_id,
+            'inventoryId': self.inventory_id,
+            # 'category' preserved via safe accessor below to handle schema migrations
+            'serialNumber': self.serial_number,
+            'brand': self.brand,
+            'model': self.model,
+            'type': self.device_type,
+            # Accessing category may raise if DB schema hasn't been migrated; fail safely
+            'category': (lambda: (self.category if hasattr(self, 'category') else None))(),
+            'ear': self.ear,
+            'status': self.status,
+            'trialPeriod': {
+                'startDate': self.trial_start_date.isoformat() if self.trial_start_date else None,
+                'endDate': self.trial_end_date.isoformat() if self.trial_end_date else None,
+                'extendedUntil': self.trial_extended_until.isoformat() if self.trial_extended_until else None
+            } if self.trial_start_date or self.trial_end_date else None,
+            'warranty': {
+                'startDate': self.warranty_start_date.isoformat() if self.warranty_start_date else None,
+                'endDate': self.warranty_end_date.isoformat() if self.warranty_end_date else None,
+                'terms': self.warranty_terms
+            } if self.warranty_start_date or self.warranty_end_date else None,
+            'price': self.price,
+            'notes': self.notes,
+            'createdAt': self.created_at.isoformat(),
+            'updatedAt': self.updated_at.isoformat()
+        }
+
+class Appointment(db.Model):
+    __tablename__ = 'appointments'
+
+    id = db.Column(db.String(50), primary_key=True)
+    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    clinician_id = db.Column(db.String(50))
+    branch_id = db.Column(db.String(50))
+    date = db.Column(db.DateTime, nullable=False)
+    time = db.Column(db.String(10), nullable=False)
+    duration = db.Column(db.Integer, default=30)  # minutes
+    appointment_type = db.Column(db.String(30), default='consultation')
+    status = db.Column(db.String(20), default='scheduled')
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=now_utc)
+    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'patientId': self.patient_id,
+            'clinicianId': self.clinician_id,
+            'branchId': self.branch_id,
+            'date': self.date.strftime('%Y-%m-%d'),
+            'time': self.time,
+            'duration': self.duration,
+            'type': self.appointment_type,
+            'status': self.status,
+            'notes': self.notes,
+            'createdAt': self.created_at.isoformat(),
+            'updatedAt': self.updated_at.isoformat()
+        }
+
+class PatientNote(db.Model):
+    __tablename__ = 'patient_notes'
+
+    id = db.Column(db.String(50), primary_key=True)
+    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    author_id = db.Column(db.String(50), nullable=False)
+    appointment_id = db.Column(db.String(50))
+    note_type = db.Column(db.String(20), default='clinical')
+    category = db.Column(db.String(20), default='general')
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    is_private = db.Column(db.Boolean, default=False)
+    tags = db.Column(db.Text)  # JSON string
+    created_at = db.Column(db.DateTime, default=now_utc)
+    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'patientId': self.patient_id,
+            'authorId': self.author_id,
+            'appointmentId': self.appointment_id,
+            'noteType': self.note_type,
+            'category': self.category,
+            'title': self.title,
+            'content': self.content,
+            'isPrivate': self.is_private,
+            'tags': json.loads(self.tags) if self.tags else [],
+            'createdAt': self.created_at.isoformat(),
+            'updatedAt': self.updated_at.isoformat()
+        }
+
+class EReceipt(db.Model):
+    __tablename__ = 'ereceipts'
+
+    id = db.Column(db.String(50), primary_key=True)
+    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    sgk_report_id = db.Column(db.String(50))
+    receipt_number = db.Column(db.String(50), unique=True)
+    doctor_name = db.Column(db.String(100))
+    issue_date = db.Column(db.DateTime)
+    status = db.Column(db.String(20), default='pending')
+    materials = db.Column(db.Text)  # JSON string
+    documents = db.Column(db.Text)  # JSON string
+    created_at = db.Column(db.DateTime, default=now_utc)
+    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'patientId': self.patient_id,
+            'sgkReportId': self.sgk_report_id,
+            'receiptNumber': self.receipt_number,
+            'doctorName': self.doctor_name,
+            'issueDate': self.issue_date.isoformat() if self.issue_date else None,
+            'status': self.status,
+            'materials': json.loads(self.materials) if self.materials else [],
+            'documents': json.loads(self.documents) if self.documents else {},
+            'createdAt': self.created_at.isoformat(),
+            'updatedAt': self.updated_at.isoformat()
+        }
+
+class HearingTest(db.Model):
+    __tablename__ = 'hearing_tests'
+
+    id = db.Column(db.String(50), primary_key=True)
+    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    test_date = db.Column(db.DateTime, nullable=False, default=now_utc)
+    audiologist = db.Column(db.String(100))
+    audiogram_data = db.Column(db.Text)  # JSON string for audiogram
+    created_at = db.Column(db.DateTime, default=now_utc)
+    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'patientId': self.patient_id,
+            'testDate': self.test_date.isoformat(),
+            'audiologist': self.audiologist,
+            'audiogramData': json.loads(self.audiogram_data) if self.audiogram_data else None,
+            'createdAt': self.created_at.isoformat(),
+            'updatedAt': self.updated_at.isoformat()
+        }
+
+class User(db.Model):
+    __tablename__ = 'users'
+
+    id = db.Column(db.String(50), primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(20), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
+    created_at = db.Column(db.DateTime, default=now_utc)
+    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'phone': self.phone,
+            'createdAt': self.created_at.isoformat(),
+            'updatedAt': self.updated_at.isoformat()
+        }
+
+class ActivityLog(db.Model):
+    __tablename__ = 'activity_logs'
+
+    id = db.Column(db.String(50), primary_key=True)
+    user_id = db.Column(db.String(50), db.ForeignKey('users.id'), nullable=False)
+    action = db.Column(db.String(50), nullable=False)  # create, update, delete, login, logout, etc.
+    entity_type = db.Column(db.String(50), nullable=False)  # patient, device, appointment, user, etc.
+    entity_id = db.Column(db.String(50))  # ID of the entity that was acted upon
+    details = db.Column(db.Text)  # JSON string with additional details
+    ip_address = db.Column(db.String(45))  # IPv4/IPv6 address
+    user_agent = db.Column(db.Text)  # Browser/client user agent
+    created_at = db.Column(db.DateTime, default=now_utc)
+
+    # Relationship to User
+    user = db.relationship('User', backref='activity_logs', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'userId': self.user_id,
+            'username': self.user.username if self.user else None,
+            'action': self.action,
+            'entityType': self.entity_type,
+            'entityId': self.entity_id,
+            'details': json.loads(self.details) if self.details else None,
+            'ipAddress': self.ip_address,
+            'userAgent': self.user_agent,
+            'createdAt': self.created_at.isoformat()
+        }
+
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+
+    id = db.Column(db.String(50), primary_key=True)
+    user_id = db.Column(db.String(50), db.ForeignKey('users.id'), nullable=False)
+    type = db.Column(db.String(50), nullable=False)  # appointment, patient, inventory, system, etc.
+    title = db.Column(db.String(200), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    read = db.Column(db.Boolean, default=False)
+    priority = db.Column(db.String(20), default='normal')  # low, normal, high, urgent
+    related_entity_type = db.Column(db.String(50))  # patient, appointment, device, etc.
+    related_entity_id = db.Column(db.String(50))  # ID of related entity
+    action_url = db.Column(db.String(500))  # URL to navigate to when clicked
+    expires_at = db.Column(db.DateTime)  # Optional expiration date
+    created_at = db.Column(db.DateTime, default=now_utc)
+    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc)
+
+    # Relationship to User
+    user = db.relationship('User', backref='notifications', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'userId': self.user_id,
+            'type': self.type,
+            'title': self.title,
+            'message': self.message,
+            'read': self.read,
+            'priority': self.priority,
+            'relatedEntityType': self.related_entity_type,
+            'relatedEntityId': self.related_entity_id,
+            'actionUrl': self.action_url,
+            'expiresAt': self.expires_at.isoformat() if self.expires_at else None,
+            'createdAt': self.created_at.isoformat(),
+            'updatedAt': self.updated_at.isoformat()
+        }
+
+    @staticmethod
+    def from_dict(data):
+        notification = Notification()
+        notification.id = data.get('id')
+        notification.user_id = data.get('userId')
+        notification.type = data.get('type')
+        notification.title = data.get('title')
+        notification.message = data.get('message')
+        notification.read = data.get('read', False)
+        notification.priority = data.get('priority', 'normal')
+        notification.related_entity_type = data.get('relatedEntityType')
+        notification.related_entity_id = data.get('relatedEntityId')
+        notification.action_url = data.get('actionUrl')
+        if data.get('expiresAt'):
+            notification.expires_at = datetime.fromisoformat(data['expiresAt'])
+        return notification
+
+class DeviceAssignment(db.Model):
+    __tablename__ = "device_assignments"
+    id = db.Column(db.String(50), primary_key=True)
+    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    device_id = db.Column(db.String(50), db.ForeignKey('devices.id'), nullable=True)  # manual entries may create a new device row first
+    ear = db.Column(db.String(1))  # 'R' or 'L'
+    reason = db.Column(db.String(50))  # 'Sale', 'ServiceLoaner', 'NewTrial', 'Fitting', 'Other'
+    from_inventory = db.Column(db.Boolean, default=False)
+    list_price = db.Column(db.Numeric(12,2), nullable=True)
+    sale_price = db.Column(db.Numeric(12,2), nullable=True)
+    sgk_scheme = db.Column(db.String(50), nullable=True)     # e.g., 'Retired_Over18'
+    sgk_support = db.Column(db.Numeric(12,2), nullable=True) # applied SGK TL amount
+    discount_type = db.Column(db.String(10), nullable=True)  # 'percent'|'amount'|None
+    discount_value = db.Column(db.Numeric(12,2), nullable=True)
+    net_payable = db.Column(db.Numeric(12,2), nullable=True)
+    payment_method = db.Column(db.String(20), nullable=True) # 'cash','card','transfer','installment'
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=now_utc)
+
+    # Relationships
+    patient = db.relationship('Patient', backref='device_assignments', lazy=True)
+    device = db.relationship('Device', backref='assignments', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'patientId': self.patient_id,
+            'deviceId': self.device_id,
+            'ear': self.ear,
+            'reason': self.reason,
+            'fromInventory': self.from_inventory,
+            'listPrice': float(self.list_price) if self.list_price else None,
+            'salePrice': float(self.sale_price) if self.sale_price else None,
+            'sgkScheme': self.sgk_scheme,
+            'sgkSupport': float(self.sgk_support) if self.sgk_support else None,
+            'discountType': self.discount_type,
+            'discountValue': float(self.discount_value) if self.discount_value else None,
+            'netPayable': float(self.net_payable) if self.net_payable else None,
+            'paymentMethod': self.payment_method,
+            'notes': self.notes,
+            'createdAt': self.created_at.isoformat()
+        }
+
+class Sale(db.Model):
+    __tablename__ = "sales"
+    id = db.Column(db.String(50), primary_key=True)
+    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    right_assignment_id = db.Column(db.String(50), db.ForeignKey('device_assignments.id'), nullable=True)
+    left_assignment_id = db.Column(db.String(50), db.ForeignKey('device_assignments.id'), nullable=True)
+    total_list_price = db.Column(db.Numeric(12,2))
+    total_sgk_support = db.Column(db.Numeric(12,2))
+    total_discount_applied = db.Column(db.Numeric(12,2))
+    total_net_payable = db.Column(db.Numeric(12,2))
+    payment_method = db.Column(db.String(20))  # if both ears sold together
+    status = db.Column(db.String(20), default='completed')  # 'completed','pending','cancelled'
+    created_at = db.Column(db.DateTime, default=now_utc)
+
+    # Relationships
+    patient = db.relationship('Patient', backref='sales', lazy=True)
+    right_assignment = db.relationship('DeviceAssignment', foreign_keys=[right_assignment_id], lazy=True)
+    left_assignment = db.relationship('DeviceAssignment', foreign_keys=[left_assignment_id], lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'patientId': self.patient_id,
+            'rightAssignmentId': self.right_assignment_id,
+            'leftAssignmentId': self.left_assignment_id,
+            'totalListPrice': float(self.total_list_price) if self.total_list_price else None,
+            'totalSgkSupport': float(self.total_sgk_support) if self.total_sgk_support else None,
+            'totalDiscountApplied': float(self.total_discount_applied) if self.total_discount_applied else None,
+            'totalNetPayable': float(self.total_net_payable) if self.total_net_payable else None,
+            'paymentMethod': self.payment_method,
+            'status': self.status,
+            'createdAt': self.created_at.isoformat()
+        }
+
+class PaymentPlan(db.Model):
+    __tablename__ = "payment_plans"
+    id = db.Column(db.String(50), primary_key=True)
+    sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'), nullable=False)
+    installments = db.Column(db.Integer, nullable=False)
+    interest_rate = db.Column(db.Numeric(5,2), nullable=False, default=0.0)
+    principal_amount = db.Column(db.Numeric(12,2), nullable=False)
+    total_amount = db.Column(db.Numeric(12,2), nullable=False)
+    installment_amount = db.Column(db.Numeric(12,2), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='active')
+    created_at = db.Column(db.DateTime, default=now_utc)
+
+    # Relationships
+    sale = db.relationship('Sale', backref='payment_plan', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'saleId': self.sale_id,
+            'installments': self.installments,
+            'interestRate': float(self.interest_rate) if self.interest_rate else 0.0,
+            'principalAmount': float(self.principal_amount) if self.principal_amount else None,
+            'totalAmount': float(self.total_amount) if self.total_amount else None,
+            'installmentAmount': float(self.installment_amount) if self.installment_amount else None,
+            'status': self.status,
+            'createdAt': self.created_at.isoformat()
+        }
+
+class PaymentInstallment(db.Model):
+    __tablename__ = "payment_installments"
+    id = db.Column(db.String(50), primary_key=True)
+    payment_plan_id = db.Column(db.String(50), db.ForeignKey('payment_plans.id'), nullable=False)
+    installment_number = db.Column(db.Integer, nullable=False)
+    amount = db.Column(db.Numeric(12,2), nullable=False)
+    due_date = db.Column(db.DateTime, nullable=False)
+    paid_date = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(20), nullable=False, default='pending')  # pending, paid, overdue
+    created_at = db.Column(db.DateTime, default=now_utc)
+
+    # Relationships
+    payment_plan = db.relationship('PaymentPlan', backref='installment_list', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'paymentPlanId': self.payment_plan_id,
+            'installmentNumber': self.installment_number,
+            'amount': float(self.amount) if self.amount else None,
+            'dueDate': self.due_date.isoformat() if self.due_date else None,
+            'paidDate': self.paid_date.isoformat() if self.paid_date else None,
+            'status': self.status,
+            'createdAt': self.created_at.isoformat()
+        }
+
+class Settings(db.Model):
+    __tablename__ = 'settings'
+
+    id = db.Column(db.String(50), primary_key=True, default='system_settings')
+    settings_data = db.Column(db.Text, nullable=False)  # JSON string
+    created_at = db.Column(db.DateTime, default=now_utc)
+    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'settings': json.loads(self.settings_data) if self.settings_data else {},
+            'createdAt': self.created_at.isoformat(),
+            'updatedAt': self.updated_at.isoformat()
+        }
+
+    @staticmethod
+    def from_dict(data):
+        settings = Settings()
+        settings.id = data.get('id', 'system_settings')
+        settings.settings_data = json.dumps(data.get('settings', {}))
+        return settings
+
+class Campaign(db.Model):
+    __tablename__ = 'campaigns'
+
+    id = db.Column(db.String(50), primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    status = db.Column(db.String(20), default='draft')  # draft, active, completed, paused
+    campaign_type = db.Column(db.String(50), default='sms')  # sms, email, etc.
+    target_audience = db.Column(db.Text)  # JSON string for filters
+    message_template = db.Column(db.Text)
+    scheduled_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=now_utc)
+    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc)
+
+    # Relationships
+    sms_logs = db.relationship('SMSLog', backref='campaign', lazy=True, cascade='all, delete-orphan')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'status': self.status,
+            'campaignType': self.campaign_type,
+            'targetAudience': json.loads(self.target_audience) if self.target_audience else {},
+            'messageTemplate': self.message_template,
+            'scheduledAt': self.scheduled_at.isoformat() if self.scheduled_at else None,
+            'completedAt': self.completed_at.isoformat() if self.completed_at else None,
+            'createdAt': self.created_at.isoformat(),
+            'updatedAt': self.updated_at.isoformat()
+        }
+
+class SMSLog(db.Model):
+    __tablename__ = 'sms_logs'
+
+    id = db.Column(db.String(50), primary_key=True)
+    campaign_id = db.Column(db.String(50), db.ForeignKey('campaigns.id'), nullable=True)
+    patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=True)
+    phone_number = db.Column(db.String(20), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default='pending')  # pending, sent, delivered, failed
+    provider_response = db.Column(db.Text)  # JSON string
+    sent_at = db.Column(db.DateTime)
+    delivered_at = db.Column(db.DateTime)
+    opened_at = db.Column(db.DateTime)  # For tracking links
+    clicked_at = db.Column(db.DateTime)  # For tracking links
+    error_message = db.Column(db.Text)
+    cost = db.Column(db.Float)
+    created_at = db.Column(db.DateTime, default=now_utc)
+    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc)
+
+    # Relationships
+    patient = db.relationship('Patient', backref='sms_logs', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'campaignId': self.campaign_id,
+            'patientId': self.patient_id,
+            'phoneNumber': self.phone_number,
+            'message': self.message,
+            'status': self.status,
+            'providerResponse': json.loads(self.provider_response) if self.provider_response else None,
+            'sentAt': self.sent_at.isoformat() if self.sent_at else None,
+            'deliveredAt': self.delivered_at.isoformat() if self.delivered_at else None,
+            'openedAt': self.opened_at.isoformat() if self.opened_at else None,
+            'clickedAt': self.clicked_at.isoformat() if self.clicked_at else None,
+            'errorMessage': self.error_message,
+            'cost': self.cost,
+            'createdAt': self.created_at.isoformat(),
+            'updatedAt': self.updated_at.isoformat()
+        }

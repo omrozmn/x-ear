@@ -1,0 +1,146 @@
+{
+  "settings": {
+    "company": {
+      "address": "Atat\u00fcrk Cad. No: 123, Kad\u0131k\u00f6y, \u0130stanbul",
+      "email": "info@x-ear.com",
+      "name": "X-Ear \u0130\u015fitme Merkezi",
+      "phone": "+90 216 555 0123",
+      "taxNumber": "1234567890"
+    },
+    "notifications": {
+      "desktop": false,
+      "email": true,
+      "sms": true
+    },
+    "payment": {
+      "default_plan": "cash",
+      "due_dates": [
+        15,
+        30,
+        45
+      ],
+      "plans": {
+        "cash": {
+          "installments": 1,
+          "interest_rate": 0.0,
+          "name": "Pe\u015fin"
+        },
+        "installment_12": {
+          "installments": 12,
+          "interest_rate": 12.0,
+          "name": "12 Taksit"
+        },
+        "installment_3": {
+          "installments": 3,
+          "interest_rate": 5.0,
+          "name": "3 Taksit"
+        },
+        "installment_6": {
+          "installments": 6,
+          "interest_rate": 8.0,
+          "name": "6 Taksit"
+        }
+      }
+    },
+    "pricing": {
+      "accessories": {
+        "battery_pack": 150.0,
+        "case": 100.0,
+        "charger": 200.0,
+        "ear_mold": 300.0
+      },
+      "devices": {
+        "basic": 2500.0,
+        "premium": 5000.0,
+        "standard": 3500.0,
+        "wireless": 6000.0
+      },
+      "services": {
+        "adjustment": 200.0,
+        "fitting": 500.0,
+        "maintenance": 400.0,
+        "repair": 300.0
+      }
+    },
+    "sgk": {
+      "default_scheme": "standard",
+      "enabled": true,
+      "schemes": {
+        "premium": {
+          "coverage_amount": 4239.20,
+          "max_amount": 8478.40,
+          "name": "Premium SGK",
+          "requires_ereceipt": true
+        },
+        "private": {
+          "coverage_amount": 4239.20,
+          "max_amount": 8478.40,
+          "name": "\u00d6zel Sigorta",
+          "requires_ereceipt": false
+        },
+        "standard": {
+          "coverage_amount": 4239.20,
+          "max_amount": 8478.40,
+          "name": "Standart SGK",
+          "requires_ereceipt": true
+        },
+        "over18_retired": {
+          "coverage_amount": 4239.20,
+          "max_amount": 8478.40,
+          "name": "18+ yaş, emekli",
+          "requires_ereceipt": true
+        },
+        "under4_parent_working": {
+          "coverage_amount": 6104.44,
+          "max_amount": 12208.88,
+          "name": "0-4 yaş, çalışan ebeveyn",
+          "requires_ereceipt": true
+        },
+        "under4_parent_retired": {
+          "coverage_amount": 7630.56,
+          "max_amount": 15261.12,
+          "name": "0-4 yaş, emekli ebeveyn",
+          "requires_ereceipt": true
+        },
+        "5to12_parent_working": {
+          "coverage_amount": 5426.17,
+          "max_amount": 10852.34,
+          "name": "5-12 yaş, çalışan ebeveyn",
+          "requires_ereceipt": true
+        },
+        "5to12_parent_retired": {
+          "coverage_amount": 6782.72,
+          "max_amount": 13565.44,
+          "name": "5-12 yaş, emekli ebeveyn",
+          "requires_ereceipt": true
+        },
+        "age13_18_parent_working": {
+          "coverage_amount": 5087.04,
+          "max_amount": 10174.08,
+          "name": "13-18 yaş, çalışan ebeveyn",
+          "requires_ereceipt": true
+        },
+        "age13_18_parent_retired": {
+          "coverage_amount": 6358.88,
+          "max_amount": 12717.76,
+          "name": "13-18 yaş, emekli ebeveyn",
+          "requires_ereceipt": true
+        },
+        "over18_working": {
+          "coverage_amount": 3391.36,
+          "max_amount": 6782.72,
+          "name": "18+ yaş, çalışan",
+          "requires_ereceipt": true
+        }
+      }
+    },
+    "system": {
+      "currency": "TRY",
+      "dateFormat": "DD/MM/YYYY",
+      "language": "tr",
+      "timezone": "Europe/Istanbul"
+    }
+  },
+  "success": true,
+  "timestamp": "2025-09-27T16:13:32.487172"
+}

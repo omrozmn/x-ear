@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login</title>
+</head>
+<body>
+    <h1>Test Login</h1>
+    <button onclick="setAuthData()">Set Auth Data</button>
+    <button onclick="clearAuthData()">Clear Auth Data</button>
+    <button onclick="checkAuthData()">Check Auth Data</button>
+    <button onclick="goToApp()">Go to App</button>
+    
+    <div id="output"></div>
+
+    <script>
+        function setAuthData() {
+            const authData = {
+                user: {
+                    id: "seed-admin-1",
+                    email: "seed-admin@example.com",
+                    name: "System Administrator",
+                    role: "admin"
+                },
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc2MDc5NTIzNiwianRpIjoiNzllY2VmM2EtYmUwOC00YjRjLWI0MTUtNzczNmQ5Njg5MTlmIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InNlZWQtYWRtaW4tMSIsIm5iZiI6MTc2MDc5NTIzNiwiY3NyZiI6ImI0MjQ1Y2UzLWExMTAtNGI2Yi05OWFjLWY3YzUyNTdmZGQ4YiIsImV4cCI6MTc2MDc5NjEzNn0._0UXul5iQ7XZ_L9XuAO3hnJAIco2VNiw5RPNXl2rSWY",
+                refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc2MDc5NTIzNiwianRpIjoiYzBlOGQwOWYtNDU1YS00ODZjLWEwZGUtODgxNTVmOTQzZGViIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6InNlZWQtYWRtaW4tMSIsIm5iZiI6MTc2MDc5NTIzNiwiY3NyZiI6ImNmOGU1MWNlLTUxY2YtNDNkZC1iY2JhLTdlNWQ5YjgyNDRjYiIsImV4cCI6MTc2MzM4NzIzNn0.AnH0ZBQQUoSVOL8yNDSgrmPYdtF9OCVwQB8raXj8zw4",
+                isAuthenticated: true
+            };
+            
+            localStorage.setItem('auth-storage', JSON.stringify({
+                state: authData,
+                version: 0
+            }));
+            
+            localStorage.setItem('auth_token', authData.token);
+            localStorage.setItem('refresh_token', authData.refreshToken);
+            localStorage.setItem('auth_token_timestamp', Date.now().toString());
+            
+            document.getElementById('output').innerHTML = 'Auth data set successfully!';
+        }
+        
+        function clearAuthData() {
+            localStorage.removeItem('auth-storage');
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('auth_token_timestamp');
+            document.getElementById('output').innerHTML = 'Auth data cleared!';
+        }
+        
+        function checkAuthData() {
+            const authStorage = localStorage.getItem('auth-storage');
+            const token = localStorage.getItem('auth_token');
+            document.getElementById('output').innerHTML = `
+                <h3>Auth Storage:</h3>
+                <pre>${authStorage}</pre>
+                <h3>Token:</h3>
+                <pre>${token}</pre>
+            `;
+        }
+        
+        function goToApp() {
+            window.location.href = 'http://localhost:8080';
+        }
+    </script>
+</body>
+</html>

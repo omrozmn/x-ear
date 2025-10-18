@@ -1,0 +1,15 @@
+{
+  "projectToken": "CHROMATIC_PROJECT_TOKEN",
+  "buildScriptName": "build-storybook",
+  "workingDir": "apps/web",
+  "exitZeroOnChanges": true,
+  "onlyChanged": true,
+  "skip": "dependabot/**",
+  "ignoreLastBuildOnBranch": "main",
+  "externals": [
+    "public/**"
+  ],
+  "delay": 300,
+  "diffThreshold": 0.2,
+  "threshold": 0.2
+}

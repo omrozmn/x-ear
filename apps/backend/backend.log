@@ -1,0 +1,148 @@
+WARNING:__main__:Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/backend/backend/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/backend/instance/xear_crm.db
+WARNING:services.otp_store:Failed to initialize RedisOTPStore: No module named 'redis' — falling back to in-memory store
+INFO:__main__:Starting Flask development server on 0.0.0.0:5003
+ * Serving Flask app 'app'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://192.168.1.114:5003
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:23:51] "GET /api/health HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:24] "GET /api/patients/P00002 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:24] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:43] "GET /api/suppliers?per_page=100&is_active=true HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:45] "OPTIONS /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:45] "OPTIONS /api/patients?per_page=1000&page=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:45] "GET /api/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:46] "OPTIONS /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:46] "OPTIONS /api/patients?per_page=1000&page=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:46] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:46] "GET /api/patients?per_page=1000&page=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:46] "GET /api/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:48] "OPTIONS /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:48] "GET /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:48] "GET /api/patients/P00002/replacements HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:24:51] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:25:24] "OPTIONS /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:25:24] "OPTIONS /api/patients?per_page=1000&page=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:25:24] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:25:24] "GET /api/patients?per_page=1000&page=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:25:24] "GET /api/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:25:26] "OPTIONS /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:25:26] "GET /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:25:26] "GET /api/patients/P00002/replacements HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:25:29] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:03] "OPTIONS /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:03] "OPTIONS /api/patients?per_page=1000&page=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:03] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:03] "GET /api/patients?per_page=1000&page=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:03] "GET /api/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:04] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:14] "OPTIONS /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:14] "GET /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:14] "GET /api/patients/P00002/replacements HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:15] "GET /api/patients/P00002/documents HTTP/1.1" 200 -
+WARNING:routes.timeline:Could not load activity logs: 'str' object has no attribute 'get'
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:16] "GET /api/patients/P00002/timeline HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:18] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:19] "GET /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:19] "GET /api/patients/P00002/replacements HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:34] "OPTIONS /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:34] "GET /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:34] "OPTIONS /api/patients/P00002/promissory-notes HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:34] "GET /api/patients/P00002/promissory-notes HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:36] "OPTIONS /api/payment-records HTTP/1.1" 200 -
+INFO:routes.payments:Updated sale sale_20251003_160819_234592: paid_amount=100000.0, status=paid
+INFO:routes.payments:Payment record created: payment_da672452, amount=50000.00
+WARNING:app:Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/backend/backend/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/backend/instance/xear_crm.db
+WARNING:services.otp_store:Failed to initialize RedisOTPStore: No module named 'redis' — falling back to in-memory store
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:36] "[35m[1mPOST /api/payment-records HTTP/1.1[0m" 201 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:36] "GET /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:37] "GET /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:37] "GET /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:37] "GET /api/patients/P00002/replacements HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:38] "GET /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:38] "GET /api/patients/P00002/promissory-notes HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:47] "GET /api/patients/P00002/documents HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:49] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:54] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:54] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:54] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:54] "GET /api/patients/P00002 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:54] "OPTIONS /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:54] "OPTIONS /api/patients?per_page=1000&page=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:54] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:54] "GET /api/patients?per_page=1000&page=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:54] "GET /api/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:26:56] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:24] "OPTIONS /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:24] "GET /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:24] "GET /api/patients/P00002/replacements HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:25] "OPTIONS /api/dashboard/kpis HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:25] "GET /api/dashboard/kpis HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:26] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:34] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:34] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:43] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:43] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:57] "OPTIONS /api/appointments HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:57] "GET /api/appointments HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:57] "OPTIONS /api/patients HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:57] "GET /api/patients HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:28:57] "GET /api/appointments HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:02] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:02] "GET /api/inventory/stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:03] "GET /api/suppliers?per_page=100&is_active=true HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:05] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:05] "GET /api/inventory/stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:05] "GET /api/inventory/stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:05] "GET /api/inventory/stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:06] "GET /api/inventory/stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:06] "GET /api/suppliers?per_page=100&is_active=true HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:25] "GET /api/suppliers?per_page=100&is_active=true HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:30] "OPTIONS /api/inventory/item_8 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:30] "PUT /api/inventory/item_8 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:31] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:31] "GET /api/inventory/stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:32] "GET /api/inventory/stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:32] "GET /api/inventory/stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:32] "GET /api/inventory/stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:32] "GET /api/suppliers?per_page=100&is_active=true HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:36] "GET /api/suppliers?per_page=100&is_active=true HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:47] "OPTIONS /api/inventory/item_20251002011008_5f6087 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:47] "PUT /api/inventory/item_20251002011008_5f6087 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:47] "OPTIONS /api/inventory/item_20251002011008_5f6087/activity HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:47] "[35m[1mPOST /api/inventory/item_20251002011008_5f6087/activity HTTP/1.1[0m" 201 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:48] "PUT /api/inventory/item_20251002011008_5f6087 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:50] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:50] "GET /api/inventory/stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:50] "GET /api/inventory/stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:50] "GET /api/inventory/stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:50] "GET /api/inventory/stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:51] "GET /api/suppliers?per_page=100&is_active=true HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:53] "OPTIONS /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:53] "OPTIONS /api/patients?per_page=1000&page=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:53] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:53] "GET /api/patients?per_page=1000&page=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:53] "GET /api/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:57] "OPTIONS /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:57] "GET /api/patients/P00002/sales HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:57] "GET /api/patients/P00002/replacements HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:29:58] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:17] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:17] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:21] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:21] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:43] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:43] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:43] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:43] "GET /api/patients/P00002 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:43] "OPTIONS /api/patients?per_page=1000&page=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:43] "OPTIONS /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:43] "GET /api/inventory HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:43] "GET /api/patients?per_page=1000&page=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:44] "GET /api/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:30:47] "GET /api/patients/P00002/devices HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:33:25] "OPTIONS /api/dashboard/kpis HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:33:25] "GET /api/dashboard/kpis HTTP/1.1" 200 -
