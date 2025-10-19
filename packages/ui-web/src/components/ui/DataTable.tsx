@@ -211,17 +211,50 @@ export const DataTable = <T extends Record<string, any>>({
     const startItem = (current - 1) * pageSize + 1;
     const endItem = Math.min(current * pageSize, total);
     
+    // Calculate visible page numbers
+    const getVisiblePages = () => {
+      const maxVisible = 5;
+      const pages: number[] = [];
+      
+      if (totalPages <= maxVisible) {
+        for (let i = 1; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        const start = Math.max(1, current - Math.floor(maxVisible / 2));
+        const end = Math.min(totalPages, start + maxVisible - 1);
+        
+        for (let i = start; i <= end; i++) {
+          pages.push(i);
+        }
+        
+        // Add ellipsis if needed
+        if (start > 1) {
+          pages.unshift(-1); // -1 represents ellipsis
+          pages.unshift(1);
+        }
+        if (end < totalPages) {
+          pages.push(-2); // -2 represents ellipsis
+          pages.push(totalPages);
+        }
+      }
+      
+      return pages;
+    };
+    
+    const visiblePages = getVisiblePages();
+    
     return (
       <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
           <span>
-            {startItem}-{endItem} / {total} kayıt gösteriliyor
+            {total > 0 ? `${startItem}-${endItem}` : '0'} / {total} kayıt gösteriliyor
           </span>
           {showSizeChanger && (
             <select
               value={pageSize}
               onChange={(e) => pagination.onChange(1, Number(e.target.value))}
-              className="ml-4 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-sm"
+              className="ml-4 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {pageSizeOptions.map(size => (
                 <option key={size} value={size}>{size} / sayfa</option>
@@ -230,25 +263,74 @@ export const DataTable = <T extends Record<string, any>>({
           )}
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
+          {/* First page button */}
+          <button
+            onClick={() => pagination.onChange(1, pageSize)}
+            disabled={current <= 1}
+            className="px-2 py-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="İlk sayfa"
+          >
+            İlk
+          </button>
+          
+          {/* Previous page button */}
           <button
             onClick={() => pagination.onChange(current - 1, pageSize)}
             disabled={current <= 1}
             className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Önceki sayfa"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4" />
           </button>
           
-          <span className="px-3 py-1 text-sm text-gray-700 dark:text-gray-300">
-            {current} / {totalPages}
-          </span>
+          {/* Page numbers */}
+          <div className="flex items-center space-x-1">
+            {visiblePages.map((page, index) => {
+              if (page === -1 || page === -2) {
+                return (
+                  <span key={`ellipsis-${index}`} className="px-2 py-1 text-gray-400">
+                    ...
+                  </span>
+                );
+              }
+              
+              return (
+                <button
+                  key={page}
+                  onClick={() => pagination.onChange(page, pageSize)}
+                  className={`
+                    px-3 py-1 text-sm rounded-md transition-colors
+                    ${page === current
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }
+                  `}
+                >
+                  {page}
+                </button>
+              );
+            })}
+          </div>
           
+          {/* Next page button */}
           <button
             onClick={() => pagination.onChange(current + 1, pageSize)}
             disabled={current >= totalPages}
             className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Sonraki sayfa"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4" />
+          </button>
+          
+          {/* Last page button */}
+          <button
+            onClick={() => pagination.onChange(totalPages, pageSize)}
+            disabled={current >= totalPages}
+            className="px-2 py-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Son sayfa"
+          >
+            Son
           </button>
         </div>
       </div>

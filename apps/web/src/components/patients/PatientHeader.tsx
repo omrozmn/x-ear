@@ -224,55 +224,60 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
             <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
               <div className="py-1">
                 {onPrint && (
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={onPrint}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 justify-start"
                   >
                     <Printer className="w-4 h-4 mr-3" />
                     Yazdır
-                  </button>
+                  </Button>
                 )}
                 
                 {onExport && (
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={onExport}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 justify-start"
                   >
                     <Download className="w-4 h-4 mr-3" />
                     Dışa Aktar
-                  </button>
+                  </Button>
                 )}
                 
                 {onGenerateReport && (
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={onGenerateReport}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 justify-start"
                   >
                     <FileText className="w-4 h-4 mr-3" />
                     Rapor Oluştur
-                  </button>
+                  </Button>
                 )}
                 
                 {onCopyInfo && (
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={onCopyInfo}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 justify-start"
                   >
                     <Copy className="w-4 h-4 mr-3" />
                     Bilgileri Kopyala
-                  </button>
+                  </Button>
                 )}
                 
                 {onDelete && (
                   <>
                     <div className="border-t border-gray-100 my-1"></div>
-                    <button
+                    <Button
+                      variant="ghost"
                       onClick={onDelete}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 justify-start"
                     >
                       <Trash2 className="w-4 h-4 mr-3" />
                       Sil
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>

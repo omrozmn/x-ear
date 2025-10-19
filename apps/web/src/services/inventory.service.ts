@@ -360,6 +360,7 @@ export class InventoryService {
       lowStock: 0,
       outOfStock: 0,
       totalValue: 0,
+      activeTrials: 0,
       byCategory: {} as Record<InventoryCategory, number>,
       byBrand: {},
       byStatus: {} as Record<InventoryStatus, number>,
@@ -383,6 +384,11 @@ export class InventoryService {
 
       // Total value
       stats.totalValue += item.availableInventory * item.price;
+
+      // Active trials count - sum up all items currently on trial
+      if (item.onTrial && item.onTrial > 0) {
+        stats.activeTrials += item.onTrial;
+      }
 
       // By category
       stats.byCategory[item.category] = (stats.byCategory[item.category] || 0) + 1;

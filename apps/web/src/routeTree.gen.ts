@@ -15,6 +15,7 @@ import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PatientsIndexRouteImport } from './routes/patients/index'
 import { Route as InvoicesIndexRouteImport } from './routes/invoices/index'
 import { Route as PatientsPatientIdRouteImport } from './routes/patients/$patientId'
 import { Route as InvoicesPurchasesRouteImport } from './routes/invoices/purchases'
@@ -50,6 +51,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PatientsIndexRoute = PatientsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PatientsRoute,
+} as any)
 const InvoicesIndexRoute = InvoicesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -82,17 +88,18 @@ export interface FileRoutesByFullPath {
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
   '/invoices/': typeof InvoicesIndexRoute
+  '/patients/': typeof PatientsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/inventory': typeof InventoryRoute
-  '/patients': typeof PatientsRouteWithChildren
   '/test': typeof TestRoute
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
   '/invoices': typeof InvoicesIndexRoute
+  '/patients': typeof PatientsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,6 +113,7 @@ export interface FileRoutesById {
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
   '/invoices/': typeof InvoicesIndexRoute
+  '/patients/': typeof PatientsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,17 +128,18 @@ export interface FileRouteTypes {
     | '/invoices/purchases'
     | '/patients/$patientId'
     | '/invoices/'
+    | '/patients/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/appointments'
     | '/inventory'
-    | '/patients'
     | '/test'
     | '/invoices/new'
     | '/invoices/purchases'
     | '/patients/$patientId'
     | '/invoices'
+    | '/patients'
   id:
     | '__root__'
     | '/'
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/invoices/purchases'
     | '/patients/$patientId'
     | '/invoices/'
+    | '/patients/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -198,6 +208,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/patients/': {
+      id: '/patients/'
+      path: '/'
+      fullPath: '/patients/'
+      preLoaderRoute: typeof PatientsIndexRouteImport
+      parentRoute: typeof PatientsRoute
+    }
     '/invoices/': {
       id: '/invoices/'
       path: '/'
@@ -247,10 +264,12 @@ const InvoicesRouteWithChildren = InvoicesRoute._addFileChildren(
 
 interface PatientsRouteChildren {
   PatientsPatientIdRoute: typeof PatientsPatientIdRoute
+  PatientsIndexRoute: typeof PatientsIndexRoute
 }
 
 const PatientsRouteChildren: PatientsRouteChildren = {
   PatientsPatientIdRoute: PatientsPatientIdRoute,
+  PatientsIndexRoute: PatientsIndexRoute,
 }
 
 const PatientsRouteWithChildren = PatientsRoute._addFileChildren(

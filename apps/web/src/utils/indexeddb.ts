@@ -10,7 +10,7 @@ const CACHE_STORE = 'cache';
 
 interface CacheEntry {
   key: string;
-  data: any;
+  data: unknown;
   timestamp: number;
   ttl?: number; // Time to live in milliseconds
 }
@@ -144,7 +144,7 @@ class IndexedDBManager {
   }
 
   // General cache methods
-  async setCache(key: string, data: any, ttl?: number): Promise<void> {
+  async setCache(key: string, data: unknown, ttl?: number): Promise<void> {
     const db = await this.ensureDB();
     const transaction = db.transaction([CACHE_STORE], 'readwrite');
     const store = transaction.objectStore(CACHE_STORE);
@@ -163,12 +163,12 @@ class IndexedDBManager {
     });
   }
 
-  async getCache(key: string): Promise<any | null> {
+  async getCache(key: string): Promise<unknown | null> {
     const db = await this.ensureDB();
     const transaction = db.transaction([CACHE_STORE], 'readonly');
     const store = transaction.objectStore(CACHE_STORE);
 
-    return new Promise<any | null>((resolve, reject) => {
+    return new Promise<unknown | null>((resolve, reject) => {
       const request = store.get(key);
       request.onsuccess = () => {
         const entry = request.result as CacheEntry | undefined;
@@ -204,7 +204,7 @@ class IndexedDBManager {
   }
 
   // Fallback to localStorage for critical UI state only
-  async fallbackToLocalStorage(key: string): Promise<any | null> {
+  async fallbackToLocalStorage(key: string): Promise<unknown | null> {
     try {
       const stored = localStorage.getItem(key);
       return stored ? JSON.parse(stored) : null;
@@ -214,7 +214,7 @@ class IndexedDBManager {
     }
   }
 
-  async saveFallbackToLocalStorage(key: string, data: any): Promise<void> {
+  async saveFallbackToLocalStorage(key: string, data: unknown): Promise<void> {
     try {
       localStorage.setItem(key, JSON.stringify(data));
     } catch (error) {

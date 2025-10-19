@@ -91,6 +91,18 @@ export interface InventoryFilters {
   maxPrice?: number;
   hasSerials?: boolean;
   isMinistryTracked?: boolean;
+  // Extended filters for advanced filtering
+  priceRange?: {
+    min?: number;
+    max?: number;
+  };
+  dateRange?: {
+    start?: string;
+    end?: string;
+  };
+  stockStatus?: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock' | 'on_trial';
+  features?: string[];
+  warrantyPeriod?: string;
 }
 
 export interface InventoryStats {
@@ -99,6 +111,7 @@ export interface InventoryStats {
   lowStock: number;
   outOfStock: number;
   totalValue: number;
+  activeTrials: number;
   byCategory: Record<InventoryCategory, number>;
   byBrand: Record<string, number>;
   byStatus: Record<InventoryStatus, number>;

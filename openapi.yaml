@@ -1183,6 +1183,25 @@ paths:
       operationId: patients_get_patients
       tags:
       - Patients
+      x-storage-keys:
+        - key: PATIENTS_DATA
+          description: Cached patient list data
+          type: array
+        - key: PATIENT_SEARCH_FILTERS
+          description: User's search filter preferences
+          type: object
+        - key: PATIENT_PAGINATION_STATE
+          description: Current pagination state
+          type: object
+        - key: PATIENT_SORT_PREFERENCES
+          description: User's sorting preferences
+          type: object
+        - key: PATIENT_VIEW_MODE
+          description: List/grid view mode preference
+          type: string
+        - key: PATIENT_SELECTED_COLUMNS
+          description: User's column visibility preferences
+          type: array
       parameters:
       - name: page
         in: query
@@ -1251,6 +1270,13 @@ paths:
       operationId: patients_create_patient
       tags:
       - Patients
+      x-storage-keys:
+        - key: PATIENT_FORM_VALIDATION_STATE
+          description: Form validation state and errors
+          type: object
+        - key: PATIENT_FORM_DRAFT
+          description: Draft form data for auto-save
+          type: object
       requestBody:
         required: false
         content:
@@ -1271,6 +1297,13 @@ paths:
       operationId: patients_delete_patient
       tags:
       - Patients
+      x-storage-keys:
+        - key: PATIENT_DETAILS_TAB
+          description: Active tab in patient details view
+          type: string
+        - key: PATIENT_BULK_ACTIONS_STATE
+          description: Bulk actions selection state
+          type: object
       parameters:
       - name: patient_id
         in: path

@@ -1,409 +1,409 @@
-import { Button, Input } from '@x-ear/ui-web';
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { Patient, PatientFilters } from '../../types/patient';
-import { usePatients } from '../../hooks/usePatients';
-import { MessageSquare, Download, Tag, MoreHorizontal, CheckSquare, Square } from 'lucide-react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { Button, Spinner, Badge, Checkbox } from '@x-ear/ui-web';
+import { 
+  User, 
+  Phone, 
+  Mail, 
+  Calendar, 
+  MapPin, 
+  CreditCard,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  MoreVertical,
+  Eye,
+  Edit,
+  Trash2,
+  Download,
+  Upload
+} from 'lucide-react';
+import { Patient } from '../../api/generated/api.schemas';
 
 interface PatientListProps {
-  onPatientSelect?: (patient: Patient) => void;
-  filters?: PatientFilters;
+  patients: Patient[];
+  loading?: boolean;
+  selectedPatients?: string[];
+  onPatientSelect?: (patientId: string) => void;
+  onPatientClick?: (patient: Patient) => void;
+  onEdit?: (patient: Patient) => void;
+  onDelete?: (patient: Patient) => void;
+  onBulkAction?: (action: string, patientIds: string[]) => void;
+  showSelection?: boolean;
   showActions?: boolean;
-  compact?: boolean;
+  viewMode?: 'list' | 'grid' | 'compact';
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  onSort?: (field: string) => void;
+  className?: string;
 }
 
-export function PatientList({ 
-  onPatientSelect, 
-  filters, 
-  showActions = true, 
-  compact = false 
-}: PatientListProps) {
-  const navigate = useNavigate();
-  const { 
-    patients, 
-    loading, 
-    error, 
-    searchPatients, 
-    deletePatient 
-  } = usePatients(filters);
+interface SortableHeaderProps {
+  field: string;
+  label: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  onSort?: (field: string) => void;
+}
+
+function SortableHeader({ field, label, sortBy, sortOrder, onSort }: SortableHeaderProps) {
+  const isActive = sortBy === field;
   
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [selectedPatients, setSelectedPatients] = useState<Set<string>>(new Set());
-  const [showBulkActions, setShowBulkActions] = useState(false);
+  return (
+    <button
+      onClick={() => onSort?.(field)}
+      className={`flex items-center space-x-1 text-left font-medium text-gray-700 hover:text-gray-900 ${
+        isActive ? 'text-blue-600' : ''
+      }`}
+    >
+      <span>{label}</span>
+      {isActive && (
+        <span className="text-xs">
+          {sortOrder === 'asc' ? '↑' : '↓'}
+        </span>
+      )}
+    </button>
+  );
+}
 
-  // Handle search
-  useEffect(() => {
-    const delayedSearch = setTimeout(() => {
-      if (searchTerm.trim()) {
-        searchPatients({
-          ...filters,
-          search: searchTerm.trim()
-        });
-      } else {
-        searchPatients(filters || {});
-      }
-    }, 300);
+/**
+ * PatientList Component
+ * Displays a list of patients with various view modes and actions
+ */
+export function PatientList({
+  patients,
+  loading = false,
+  selectedPatients = [],
+  onPatientSelect,
+  onPatientClick,
+  onEdit,
+  onDelete,
+  onBulkAction,
+  showSelection = false,
+  showActions = true,
+  viewMode = 'list',
+  sortBy,
+  sortOrder,
+  onSort,
+  className = ''
+}: PatientListProps) {
+  const [hoveredPatient, setHoveredPatient] = useState<string | null>(null);
 
-    return () => clearTimeout(delayedSearch);
-  }, [searchTerm, filters, searchPatients]);
+  const isAllSelected = useMemo(() => {
+    return patients.length > 0 && patients.every(p => p.id && selectedPatients.includes(p.id));
+  }, [patients, selectedPatients]);
 
-  const handlePatientClick = (patient: Patient) => {
-    setSelectedPatient(patient);
-    onPatientSelect?.(patient);
-    
-  // Debug: log patient object and intended navigation
-  console.log('[patients:click] patient', { id: patient?.id, patient });
-    if (!patient?.id) {
-      console.error('[patients:navigate] missing patient.id, cannot navigate', { patient });
-      return;
-    }
+  const isPartiallySelected = useMemo(() => {
+    return selectedPatients.length > 0 && !isAllSelected;
+  }, [selectedPatients, isAllSelected]);
 
-  const params = { patientId: patient.id };
-  console.log('[patients:navigate] navigating to', { to: '/patients/$patientId', params });
-    navigate({ to: '/patients/$patientId', params });
-  };
-
-  const handleDeletePatient = async (patient: Patient, event: React.MouseEvent) => {
-    event.stopPropagation();
-    
-    if (window.confirm(`${patient.firstName} ${patient.lastName} adlı hastayı silmek istediğinizden emin misiniz?`)) {
-      const success = await deletePatient(patient.id);
-      if (success) {
-        // Patient will be removed from list automatically via event listener
-      }
-    }
-  };
-
-  // Bulk actions handlers
-  const handleSelectPatient = (patientId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    const newSelected = new Set(selectedPatients);
-    if (newSelected.has(patientId)) {
-      newSelected.delete(patientId);
+  const handleSelectAll = useCallback(() => {
+    if (isAllSelected) {
+      // Deselect all
+      patients.forEach(p => p.id && onPatientSelect?.(p.id));
     } else {
-      newSelected.add(patientId);
+      // Select all
+      patients.forEach(p => {
+        if (p.id && !selectedPatients.includes(p.id)) {
+          onPatientSelect?.(p.id);
+        }
+      });
     }
-    setSelectedPatients(newSelected);
-    setShowBulkActions(newSelected.size > 0);
-  };
+  }, [patients, selectedPatients, isAllSelected, onPatientSelect]);
 
-  const handleSelectAll = () => {
-    if (selectedPatients.size === patients.length) {
-      setSelectedPatients(new Set());
-      setShowBulkActions(false);
-    } else {
-      setSelectedPatients(new Set(patients.map(p => p.id)));
-      setShowBulkActions(true);
-    }
-  };
-
-  const handleBulkSMS = () => {
-    const selectedPatientsList = patients.filter(p => selectedPatients.has(p.id));
-    // TODO: Implement bulk SMS functionality
-    console.log('Send SMS to:', selectedPatientsList);
-    alert(`${selectedPatients.size} hastaya SMS gönderilecek`);
-  };
-
-  const handleBulkExport = () => {
-    const selectedPatientsList = patients.filter(p => selectedPatients.has(p.id));
-    // TODO: Implement bulk export functionality
-    console.log('Export patients:', selectedPatientsList);
-    alert(`${selectedPatients.size} hasta dışa aktarılacak`);
-  };
-
-  const handleBulkTag = () => {
-    const selectedPatientsList = patients.filter(p => selectedPatients.has(p.id));
-    // TODO: Implement bulk tag functionality
-    console.log('Tag patients:', selectedPatientsList);
-    alert(`${selectedPatients.size} hastaya etiket eklenecek`);
-  };
-
-  const clearSelection = () => {
-    setSelectedPatients(new Set());
-    setShowBulkActions(false);
-  };
-
-  const getPriorityColor = (priorityScore?: number) => {
-    if (!priorityScore) return 'text-gray-600 bg-gray-50';
-    
-    if (priorityScore >= 80) return 'text-red-600 bg-red-50';
-    if (priorityScore >= 50) return 'text-yellow-600 bg-yellow-50';
-    return 'text-green-600 bg-green-50';
-  };
-
-  const getPriorityLabel = (priorityScore?: number) => {
-    if (!priorityScore) return 'Normal';
-    
-    if (priorityScore >= 80) return 'Yüksek';
-    if (priorityScore >= 50) return 'Orta';
-    return 'Düşük';
-  };
-
-  const getStatusColor = (status: Patient['status']) => {
+  const getStatusBadge = (status?: string) => {
     switch (status) {
-      case 'active': return 'text-green-600 bg-green-50';
-      case 'inactive': return 'text-gray-600 bg-gray-50';
-      case 'archived': return 'text-red-600 bg-red-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case 'active':
+        return <Badge variant="success" size="sm">Aktif</Badge>;
+      case 'inactive':
+        return <Badge variant="warning" size="sm">Pasif</Badge>;
+      default:
+        return <Badge variant="secondary" size="sm">Bilinmiyor</Badge>;
     }
   };
 
-  const formatPhoneNumber = (phone: string) => {
-    // Format Turkish phone numbers
-    if (phone.length === 11 && phone.startsWith('0')) {
-      return `${phone.slice(0, 4)} ${phone.slice(4, 7)} ${phone.slice(7, 9)} ${phone.slice(9)}`;
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '-';
+    try {
+      return new Date(dateString).toLocaleDateString('tr-TR');
+    } catch {
+      return '-';
+    }
+  };
+
+  const formatPhone = (phone?: string) => {
+    if (!phone) return '-';
+    // Format Turkish phone number
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length === 11 && cleaned.startsWith('0')) {
+      return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(7, 9)} ${cleaned.slice(9)}`;
     }
     return phone;
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center py-12">
+        <Spinner size="lg" />
         <span className="ml-2 text-gray-600">Hastalar yükleniyor...</span>
       </div>
     );
   }
 
-  if (error) {
+  if (patients.length === 0) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-md p-4">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Hata</h3>
-            <div className="mt-2 text-sm text-red-700">{error}</div>
-          </div>
-        </div>
+      <div className="text-center py-12">
+        <User className="mx-auto h-12 w-12 text-gray-400" />
+        <h3 className="mt-2 text-sm font-medium text-gray-900">Hasta bulunamadı</h3>
+        <p className="mt-1 text-sm text-gray-500">
+          Arama kriterlerinizi değiştirmeyi deneyin.
+        </p>
       </div>
     );
   }
 
-  return (
-    <div className="bg-white shadow rounded-lg">
-      {/* Search Header */}
-      <div className="px-4 py-3 border-b border-gray-200">
-        <div className="flex items-center space-x-4">
-          <div className="flex-1">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <Input
-                type="text"
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Ad, soyad, telefon veya TC kimlik no ile ara..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            {patients.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSelectAll}
-                icon={selectedPatients.size === patients.length ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
-                iconPosition="left"
-              >
-                {selectedPatients.size === patients.length ? 'Tümünü Kaldır' : 'Tümünü Seç'}
-              </Button>
-            )}
-            <div className="text-sm text-gray-500">
-              {patients.length} hasta
-            </div>
-          </div>
-        </div>
-
-        {/* Bulk Actions Bar */}
-        {showBulkActions && (
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-blue-900">
-                  {selectedPatients.size} hasta seçildi
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBulkSMS}
-                  icon={<MessageSquare className="w-4 h-4" />}
-                  iconPosition="left"
-                >
-                  SMS Gönder
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBulkExport}
-                  icon={<Download className="w-4 h-4" />}
-                  iconPosition="left"
-                >
-                  Dışa Aktar
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBulkTag}
-                  icon={<Tag className="w-4 h-4" />}
-                  iconPosition="left"
-                >
-                  Etiket Ekle
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearSelection}
-                >
-                  İptal
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-      {/* Patient List */}
-      <div className="divide-y divide-gray-200">
-        {patients.length === 0 ? (
-          <div className="px-4 py-8 text-center">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Hasta bulunamadı</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {searchTerm ? 'Arama kriterlerinize uygun hasta bulunamadı.' : 'Henüz hasta kaydı bulunmuyor.'}
-            </p>
-          </div>
-        ) : (
-          patients.map((patient) => (
-            <div
-              key={patient.id}
-              className={`px-4 py-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                selectedPatient?.id === patient.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
-              } ${compact ? 'py-2' : ''}`}
-              onClick={() => handlePatientClick(patient)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  {/* Selection Checkbox */}
-                   <div className="flex-shrink-0">
-                      <button
-                        className="p-1 hover:bg-gray-100 rounded transition-colors"
-                        onClick={(e) => handleSelectPatient(patient.id, e)}
-                        title={selectedPatients.has(patient.id) ? "Seçimi kaldır" : "Seç"}
-                      >
-                        {selectedPatients.has(patient.id) ? 
-                          <CheckSquare className="w-4 h-4 text-blue-600" /> : 
-                          <Square className="w-4 h-4 text-gray-400" />
-                        }
-                      </button>
-                    </div>
-
-                  {/* Avatar */}
-                  <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-700">
-                        {(patient.firstName || patient.name || '').charAt(0)}{(patient.lastName || '').charAt(0)}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* Patient Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {patient.firstName && patient.lastName 
-                          ? `${patient.firstName} ${patient.lastName}` 
-                          : patient.name || 'İsimsiz Hasta'}
-                      </p>
-                      
-                      {/* Priority Badge */}
-                      {patient.priorityScore && (
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(patient.priorityScore)}`}>
-                          {getPriorityLabel(patient.priorityScore)}
-                        </span>
-                      )}
-                      
-                      {/* Status Badge */}
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(patient.status)}`}>
-                        {patient.status === 'active' ? 'Aktif' : 
-                         patient.status === 'inactive' ? 'Pasif' : 'Arşiv'}
-                      </span>
-                    </div>
-                    
-                    {!compact && (
-                      <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
-                        {patient.phone && (
-                          <span className="flex items-center">
-                            <svg className="flex-shrink-0 mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            {formatPhoneNumber(patient.phone)}
-                          </span>
-                        )}
-                        
-                        {patient.tcNumber && (
-                          <span>TC: {patient.tcNumber}</span>
-                        )}
-                        
-                        {patient.birthDate && (
-                          <span>
-                            {new Date().getFullYear() - new Date(patient.birthDate).getFullYear()} yaş
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
+  if (viewMode === 'grid') {
+    return (
+      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${className}`}>
+        {patients.map((patient) => (
+          <div
+            key={patient.id}
+            className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+            onClick={() => onPatientClick?.(patient)}
+            onMouseEnter={() => setHoveredPatient(patient.id || null)}
+            onMouseLeave={() => setHoveredPatient(null)}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2">
+                  {showSelection && (
+                    <Checkbox
+                      checked={patient.id ? selectedPatients.includes(patient.id) : false}
+                      onChange={() => patient.id && onPatientSelect?.(patient.id)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  )}
+                  <h3 className="text-sm font-medium text-gray-900">
+                    {patient.firstName} {patient.lastName}
+                  </h3>
                 </div>
                 
-                {/* Actions */}
-                {showActions && (
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Handle edit action
-                      }}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
-                      title="Düzenle"
-                      variant='outline'>
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </Button>
-                    
-                    <Button
-                      onClick={(e) => handleDeletePatient(patient, e)}
-                      className="text-gray-400 hover:text-red-600 transition-colors"
-                      title="Sil"
-                      variant='outline'>
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </Button>
-                  </div>
-                )}
+                <div className="mt-2 space-y-1">
+                  {patient.tcNumber && (
+                    <div className="flex items-center text-xs text-gray-500">
+                      <CreditCard className="h-3 w-3 mr-1" />
+                      {patient.tcNumber}
+                    </div>
+                  )}
+                  {patient.phone && (
+                    <div className="flex items-center text-xs text-gray-500">
+                      <Phone className="h-3 w-3 mr-1" />
+                      {formatPhone(patient.phone)}
+                    </div>
+                  )}
+                  {patient.email && (
+                    <div className="flex items-center text-xs text-gray-500">
+                      <Mail className="h-3 w-3 mr-1" />
+                      {patient.email}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+                  {getStatusBadge(patient.status)}
+                  {patient.createdAt && (
+                    <span className="text-xs text-gray-400">
+                      {formatDate(patient.createdAt)}
+                    </span>
+                  )}
+                </div>
               </div>
-              
-              {/* Additional Info for Compact Mode */}
-              {compact && patient.phone && (
-                <div className="mt-1 text-xs text-gray-500">
-                  {formatPhoneNumber(patient.phone)}
+
+              {showActions && hoveredPatient === patient.id && (
+                <div className="flex space-x-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit?.(patient);
+                    }}
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete?.(patient);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
                 </div>
               )}
             </div>
-          ))
-        )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // List view (default)
+  return (
+    <div className={`bg-white shadow overflow-hidden sm:rounded-md ${className}`}>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              {showSelection && (
+                <th className="px-6 py-3 text-left">
+                  <Checkbox
+                    checked={isAllSelected}
+                    indeterminate={isPartiallySelected}
+                    onChange={handleSelectAll}
+                  />
+                </th>
+              )}
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <SortableHeader
+                  field="firstName"
+                  label="Ad Soyad"
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={onSort}
+                />
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <SortableHeader
+                  field="tcNumber"
+                  label="TC Kimlik"
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={onSort}
+                />
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <SortableHeader
+                  field="phone"
+                  label="Telefon"
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={onSort}
+                />
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <SortableHeader
+                  field="status"
+                  label="Durum"
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={onSort}
+                />
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <SortableHeader
+                  field="createdAt"
+                  label="Kayıt Tarihi"
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={onSort}
+                />
+              </th>
+              {showActions && (
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  İşlemler
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {patients.map((patient) => (
+              <tr
+                key={patient.id}
+                className="hover:bg-gray-50 cursor-pointer"
+                onClick={() => onPatientClick?.(patient)}
+                onMouseEnter={() => setHoveredPatient(patient.id || null)}
+                onMouseLeave={() => setHoveredPatient(null)}
+              >
+                {showSelection && (
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Checkbox
+                      checked={patient.id ? selectedPatients.includes(patient.id) : false}
+                      onChange={() => patient.id && onPatientSelect?.(patient.id)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </td>
+                )}
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 h-8 w-8">
+                      <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                        <User className="h-4 w-4 text-gray-500" />
+                      </div>
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {patient.firstName} {patient.lastName}
+                      </div>
+                      {patient.email && (
+                        <div className="text-sm text-gray-500">{patient.email}</div>
+                      )}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {patient.tcNumber || '-'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {formatPhone(patient.phone)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {getStatusBadge(patient.status)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {formatDate(patient.createdAt)}
+                </td>
+                {showActions && (
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex items-center justify-end space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onPatientClick?.(patient);
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit?.(patient);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete?.(patient);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

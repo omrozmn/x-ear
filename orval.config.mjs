@@ -1,6 +1,8 @@
 export default {
   'x-ear-api': {
-    input: './openapi.yaml',
+    input: {
+      target: './openapi.yaml'
+    },
     output: {
       mode: 'single',
       target: './apps/web/src/generated/orval-api.ts',
@@ -10,20 +12,22 @@ export default {
       override: {
         mutator: {
           path: './apps/web/src/api/orval-mutator.ts',
-          name: 'customInstance',
-        },
-      },
-    },
+          name: 'customInstance'
+        }
+      }
+    }
   },
   'x-ear-types': {
-    input: './openapi.yaml',
+    input: {
+      target: './openapi.yaml'
+    },
     output: {
       mode: 'single',
       target: './apps/web/src/generated/orval-types.ts',
       client: 'axios',
       prettier: false,
       clean: false,
-      mock: false,
-    },
-  },
+      mock: false
+    }
+  }
 };

@@ -32,6 +32,8 @@ export interface Patient {
   
   // Financial information
   installments?: Installment[];
+  // First-class sales (legacy model uses Sale objects, keep installments for backward compat)
+  sales?: Sale[];
   overdueAmount?: number;
   
   // SGK information
@@ -50,6 +52,7 @@ export interface Patient {
   missedAppointments?: number;
   lastPriorityTaskDate?: string;
   renewalContactMade?: boolean;
+  appointments?: Appointment[];
   
   // Clinical information
   assignedClinician?: string;
@@ -75,6 +78,8 @@ export interface PatientDevice {
   warrantyExpiry?: string;
   lastServiceDate?: string;
   batteryType?: string;
+  price?: number;
+  sgkScheme?: boolean;
   settings?: Record<string, unknown>;
 }
 
@@ -85,6 +90,34 @@ export interface Installment {
   paidDate?: string;
   status: 'pending' | 'paid' | 'overdue';
   notes?: string;
+}
+
+export interface PaymentRecord {
+  id: string;
+  saleId?: string;
+  amount: number;
+  date: string; // ISO
+  method?: 'cash' | 'card' | 'bank_transfer' | 'sgk' | string;
+  status?: 'pending' | 'completed' | 'failed';
+  note?: string;
+  createdAt?: string;
+}
+
+export interface Sale {
+  id: string;
+  productId?: string;
+  patientId?: string;
+  saleDate?: string; // ISO
+  listPriceTotal?: number;
+  discountAmount?: number;
+  sgkCoverage?: number;
+  totalAmount: number;
+  paymentMethod?: string;
+  status?: 'draft' | 'confirmed' | 'cancelled' | 'paid';
+  notes?: string;
+  payments?: PaymentRecord[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface SGKInfo {
@@ -151,6 +184,14 @@ export interface EReceiptRecord {
   vatAmount: number;
   status: 'draft' | 'sent' | 'approved' | 'rejected';
   sgkSubmissionId?: string;
+}
+
+export interface Appointment {
+  id: string;
+  date: string; // ISO date
+  note?: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
+  createdAt: string;
 }
 
 export interface EReceiptMaterial {

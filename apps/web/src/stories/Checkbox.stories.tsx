@@ -2,6 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { Checkbox } from '@x-ear/ui-web';
 import { useState } from 'react';
 
+interface CheckboxWrapperProps {
+  label?: string;
+  disabled?: boolean;
+  indeterminate?: boolean;
+}
+
 const meta: Meta<typeof Checkbox> = {
   title: 'Components/Checkbox',
   component: Checkbox,
@@ -22,7 +28,7 @@ const meta: Meta<typeof Checkbox> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const CheckboxWrapper = ({ label, ...props }: any) => {
+const CheckboxWrapper = ({ label, ...props }: CheckboxWrapperProps) => {
   const [checked, setChecked] = useState(false);
   
   return (
@@ -35,6 +41,44 @@ const CheckboxWrapper = ({ label, ...props }: any) => {
   );
 };
 
+const CheckedCheckboxWrapper = () => {
+  const [checked, setChecked] = useState(true);
+  return (
+    <Checkbox 
+      checked={checked} 
+      onChange={(e) => setChecked(e.target.checked)}
+      label="Already checked"
+    />
+  );
+};
+
+const GroupCheckboxWrapper = () => {
+  const [items, setItems] = useState([
+    { id: 1, label: 'Option 1', checked: false },
+    { id: 2, label: 'Option 2', checked: true },
+    { id: 3, label: 'Option 3', checked: false },
+  ]);
+
+  const handleItemChange = (id: number, checked: boolean) => {
+    setItems(prev => prev.map(item => 
+      item.id === id ? { ...item, checked } : item
+    ));
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {items.map(item => (
+        <Checkbox
+          key={item.id}
+          checked={item.checked}
+          onChange={(e) => handleItemChange(item.id, e.target.checked)}
+          label={item.label}
+        />
+      ))}
+    </div>
+  );
+};
+
 export const Default: Story = {
   render: () => (
     <CheckboxWrapper label="Accept terms and conditions" />
@@ -42,16 +86,7 @@ export const Default: Story = {
 };
 
 export const Checked: Story = {
-  render: () => {
-    const [checked, setChecked] = useState(true);
-    return (
-      <Checkbox 
-        checked={checked} 
-        onChange={(e) => setChecked(e.target.checked)}
-        label="Already checked"
-      />
-    );
-  },
+  render: () => <CheckedCheckboxWrapper />,
 };
 
 export const Disabled: Story = {
@@ -80,31 +115,5 @@ export const WithoutLabel: Story = {
 };
 
 export const Group: Story = {
-  render: () => {
-    const [items, setItems] = useState([
-      { id: 1, label: 'Option 1', checked: false },
-      { id: 2, label: 'Option 2', checked: true },
-      { id: 3, label: 'Option 3', checked: false },
-    ]);
-
-    const handleItemChange = (id: number, checked: boolean) => {
-      setItems(prev => prev.map(item => 
-        item.id === id ? { ...item, checked } : item
-      ));
-    };
-
-    return (
-      <div className="space-y-2">
-        <h3 className="font-medium">Select options:</h3>
-        {items.map(item => (
-          <Checkbox
-            key={item.id}
-            checked={item.checked}
-            onChange={(e) => handleItemChange(item.id, e.target.checked)}
-            label={item.label}
-          />
-        ))}
-      </div>
-    );
-  },
+  render: () => <GroupCheckboxWrapper />,
 };

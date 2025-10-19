@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Dropdown } from '@x-ear/ui-web';
+import { Dropdown, Button } from '@x-ear/ui-web';
 
 const meta: Meta<typeof Dropdown> = {
   title: 'Components/Dropdown',
@@ -28,14 +28,14 @@ const sampleItems = [
 
 export const Default: Story = {
   args: {
-    trigger: <button className="px-4 py-2 bg-blue-500 text-white rounded">Open Menu</button>,
+    trigger: <Button variant="primary">Open Menu</Button>,
     items: sampleItems,
   },
 };
 
 export const BottomLeft: Story = {
   args: {
-    trigger: <button className="px-4 py-2 bg-blue-500 text-white rounded">Bottom Left</button>,
+    trigger: <Button variant="primary">Bottom Left</Button>,
     items: sampleItems,
     position: 'bottom-left',
   },
@@ -43,7 +43,7 @@ export const BottomLeft: Story = {
 
 export const BottomRight: Story = {
   args: {
-    trigger: <button className="px-4 py-2 bg-blue-500 text-white rounded">Bottom Right</button>,
+    trigger: <Button variant="primary">Bottom Right</Button>,
     items: sampleItems,
     position: 'bottom-right',
   },
@@ -51,7 +51,7 @@ export const BottomRight: Story = {
 
 export const TopLeft: Story = {
   args: {
-    trigger: <button className="px-4 py-2 bg-blue-500 text-white rounded">Top Left</button>,
+    trigger: <Button variant="primary">Top Left</Button>,
     items: sampleItems,
     position: 'top-left',
   },
@@ -59,7 +59,7 @@ export const TopLeft: Story = {
 
 export const TopRight: Story = {
   args: {
-    trigger: <button className="px-4 py-2 bg-blue-500 text-white rounded">Top Right</button>,
+    trigger: <Button variant="primary">Top Right</Button>,
     items: sampleItems,
     position: 'top-right',
   },
@@ -67,7 +67,7 @@ export const TopRight: Story = {
 
 export const WithDividers: Story = {
   args: {
-    trigger: <button className="px-4 py-2 bg-green-500 text-white rounded">Menu with Dividers</button>,
+    trigger: <Button variant="secondary">Menu with Dividers</Button>,
     items: [
       { label: 'Profile', onClick: () => console.log('Profile clicked') },
       { label: 'Settings', onClick: () => console.log('Settings clicked') },

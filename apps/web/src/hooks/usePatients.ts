@@ -1,406 +1,389 @@
-import { useState, useEffect, useCallback } from 'react';
-import { 
-  Patient, 
-  PatientFilters, 
-  PatientSearchResult, 
-  PatientStats,
-  PatientDevice,
-  PatientNote,
-  Communication,
-  PatientMatchCandidate,
-  PatientMatchRequest
-} from '../types/patient';
-import { patientService } from '../services/patient.service';
+/**
+ * usePatients Hook
+ * @fileoverview Custom hook for managing patient data with caching, search, and real-time updates
+ * @version 1.0.0
+ */
 
-export interface UsePatients {
-  // Data
-  patients: Patient[];
-  currentPatient: Patient | null;
-  stats: PatientStats | null;
-  loading: boolean;
-  error: string | null;
-  
-  // Actions
-  createPatient: (data: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Patient | null>;
-  updatePatient: (id: string, updates: Partial<Patient>) => Promise<Patient | null>;
-  deletePatient: (id: string) => Promise<boolean>;
-  loadPatient: (id: string) => Promise<Patient | null>;
-  searchPatients: (filters: PatientFilters) => Promise<PatientSearchResult>;
-  refreshStats: () => Promise<void>;
-  
-  // Device management
-  addDevice: (patientId: string, device: Omit<PatientDevice, 'id'>) => Promise<PatientDevice | null>;
-  updateDevice: (patientId: string, deviceId: string, updates: Partial<PatientDevice>) => Promise<PatientDevice | null>;
-  
-  // Notes management
-  addNote: (patientId: string, text: string, type?: PatientNote['type']) => Promise<PatientNote | null>;
-  
-  // Communication
-  addCommunication: (patientId: string, communication: Omit<Communication, 'id'>) => Promise<Communication | null>;
-  
-  // Patient matching
-  findMatches: (request: PatientMatchRequest) => Promise<PatientMatchCandidate[]>;
-  
-  // Utility
-  validateTcNumber: (tcNumber: string, excludeId?: string) => Promise<boolean>;
-  getHighPriorityPatients: () => Promise<Patient[]>;
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Patient } from '../types/patient';
+import { PatientSearchResult, PatientFilters } from '../types/patient/patient-search.types';
+import { patientService } from '../services/patient.service';
+import { patientSearchService } from '../services/patient/patient-search.service';
+import { patientCacheService, SimpleCacheFilters } from '../services/patient/patient-cache.service';
+import { patientValidationService } from '../services/patient/patient-validation.service';
+import { patientSyncService } from '../services/patient/patient-sync.service';
+
+export interface UsePatientsOptions {
+  enableRealTimeSync?: boolean;
+  cacheEnabled?: boolean;
+  autoRefresh?: boolean;
+  refreshInterval?: number; // milliseconds
 }
 
-export function usePatients(initialFilters?: PatientFilters): UsePatients {
+export interface UsePatientsReturn {
+  // Data
+  patients: Patient[];
+  searchResults: PatientSearchResult | null;
+  totalCount: number;
+  isLoading: boolean;
+  isSearching: boolean;
+  isSyncing: boolean;
+  error: string | null;
+  
+  // Search & Filter
+  searchPatients: (filters: SimpleCacheFilters) => Promise<void>;
+  clearSearch: () => void;
+  applyFilters: (filters: SimpleCacheFilters) => void;
+  
+  // CRUD Operations
+  createPatient: (patient: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Patient>;
+  updatePatient: (id: string, updates: Partial<Patient>) => Promise<Patient>;
+  deletePatient: (id: string) => Promise<void>;
+  
+  // Data Management
+  refreshPatients: () => Promise<void>;
+  syncPatients: () => Promise<void>;
+  clearCache: () => Promise<void>;
+  
+  // Utilities
+  getPatientById: (id: string) => Patient | undefined;
+  validatePatient: (patient: Partial<Patient>) => { isValid: boolean; errors: string[] };
+}
+
+export const usePatients = (options: UsePatientsOptions = {}): UsePatientsReturn => {
+  const {
+    enableRealTimeSync = true,
+    cacheEnabled = true,
+    autoRefresh = false,
+    refreshInterval = 30000 // 30 seconds
+  } = options;
+
+  // State
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [currentPatient, setCurrentPatient] = useState<Patient | null>(null);
-  const [stats, setStats] = useState<PatientStats | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<PatientSearchResult | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentFilters, setCurrentFilters] = useState<SimpleCacheFilters>({});
 
-  // Load initial data
+  // Initialize patients data
   useEffect(() => {
-    loadPatients(initialFilters);
-    loadStats();
-  }, []);
+    const initializePatients = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-  // Listen for patient updates
-  useEffect(() => {
-    const handlePatientUpdated = (event: CustomEvent) => {
-      const { patient } = event.detail;
-      setPatients(prev => prev.map(p => p.id === patient.id ? patient : p));
-      
-      if (currentPatient && currentPatient.id === patient.id) {
-        setCurrentPatient(patient);
+        // Load patients from cache first if enabled
+        if (cacheEnabled) {
+          const cachedPatients = await patientCacheService.getCachedPatients();
+          if (cachedPatients.length > 0) {
+            setPatients(cachedPatients);
+            setIsLoading(false);
+          }
+        }
+
+        // Load fresh data from service
+        const patientsResult = await patientService.getPatients();
+        setPatients(patientsResult.patients);
+
+      } catch (err) {
+        console.error('Failed to initialize patients:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load patients');
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    const handlePatientCreated = (event: CustomEvent) => {
-      const { patient } = event.detail;
-      setPatients(prev => [...prev, patient]);
-    };
+    initializePatients();
+  }, [cacheEnabled]);
 
-    const handlePatientDeleted = (event: CustomEvent) => {
-      const { patient } = event.detail;
-      setPatients(prev => prev.filter(p => p.id !== patient.id));
-      
-      if (currentPatient && currentPatient.id === patient.id) {
-        setCurrentPatient(null);
+  // Auto refresh setup
+  useEffect(() => {
+    if (!autoRefresh) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const updatedPatientsResult = await patientService.getPatients();
+        setPatients(updatedPatientsResult.patients);
+      } catch (err) {
+        console.error('Auto refresh failed:', err);
+      }
+    }, refreshInterval);
+
+    return () => clearInterval(interval);
+  }, [autoRefresh, refreshInterval]);
+
+  // Real-time sync setup
+  useEffect(() => {
+    if (!enableRealTimeSync) return;
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key?.startsWith('patient_')) {
+        // Reload patients when storage changes
+        patientService.getPatients().then(result => {
+          setPatients(result.patients);
+        });
       }
     };
 
-    window.addEventListener('patient:updated', handlePatientUpdated as EventListener);
-    window.addEventListener('patient:created', handlePatientCreated as EventListener);
-    window.addEventListener('patient:deleted', handlePatientDeleted as EventListener);
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [enableRealTimeSync]);
 
-    return () => {
-      window.removeEventListener('patient:updated', handlePatientUpdated as EventListener);
-      window.removeEventListener('patient:created', handlePatientCreated as EventListener);
-      window.removeEventListener('patient:deleted', handlePatientDeleted as EventListener);
-    };
-  }, [currentPatient]);
-
-  const loadPatients = useCallback(async (filters?: PatientFilters) => {
+  // Search patients
+  const searchPatients = useCallback(async (filters: SimpleCacheFilters) => {
     try {
-      setLoading(true);
+      setIsSearching(true);
       setError(null);
-      const result = await patientService.getPatients(filters);
-      setPatients(result.patients);
+      setCurrentFilters(filters);
+
+      let results: PatientSearchResult;
+
+      if (cacheEnabled && !filters.search) {
+        // Use cache for simple filtering
+        results = await patientCacheService.searchCachedPatients(filters);
+      } else {
+        // Use search service for complex queries
+        const patientFilters = {
+          search: filters.search,
+          status: filters.status as "active" | "inactive" | "archived" | undefined,
+          segment: filters.segment as "new" | "trial" | "purchased" | "control" | "renewal" | undefined,
+          labels: filters.label ? [filters.label[0]] : undefined,
+          hasDevice: filters.hasDevices,
+          page: filters.page,
+          limit: filters.limit
+        };
+        
+        results = await patientSearchService.searchPatients(patients, patientFilters);
+      }
+
+      setSearchResults(results);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load patients');
+      console.error('Search failed:', err);
+      setError(err instanceof Error ? err.message : 'Search failed');
     } finally {
-      setLoading(false);
+      setIsSearching(false);
     }
+  }, [patients, cacheEnabled]);
+
+  // Clear search
+  const clearSearch = useCallback(() => {
+    setSearchResults(null);
+    setCurrentFilters({});
   }, []);
 
-  const loadStats = useCallback(async () => {
-    try {
-      const patientStats = await patientService.getPatientStats();
-      setStats(patientStats);
-    } catch (err) {
-      console.error('Failed to load patient stats:', err);
-    }
-  }, []);
+  // Apply filters
+  const applyFilters = useCallback((filters: SimpleCacheFilters) => {
+    setCurrentFilters(filters);
+    searchPatients(filters);
+  }, [searchPatients]);
 
-  const createPatient = useCallback(async (data: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>): Promise<Patient | null> => {
+  // Create patient
+  const createPatient = useCallback(async (patientData: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>): Promise<Patient> => {
     try {
-      setLoading(true);
       setError(null);
-      const patient = await patientService.createPatient(data);
-      await loadStats(); // Refresh stats
-      return patient;
+
+      // Validate patient data
+      const validation = patientValidationService.validatePatient(patientData);
+      if (!validation.isValid) {
+        throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
+      }
+
+      // Create patient using service
+      const newPatient = await patientService.createPatient(patientData);
+
+      // Update local state
+      setPatients(prev => [...prev, newPatient]);
+
+      // Cache if enabled
+      if (cacheEnabled) {
+        await patientCacheService.updateCachedPatient(newPatient);
+      }
+
+      // Sync to server
+      if (enableRealTimeSync) {
+        await patientSyncService.syncSinglePatient(newPatient.id);
+      }
+
+      return newPatient;
     } catch (err) {
+      console.error('Failed to create patient:', err);
       setError(err instanceof Error ? err.message : 'Failed to create patient');
-      return null;
-    } finally {
-      setLoading(false);
+      throw err;
     }
-  }, [loadStats]);
+  }, [cacheEnabled, enableRealTimeSync]);
 
-  const updatePatient = useCallback(async (id: string, updates: Partial<Patient>): Promise<Patient | null> => {
+  // Update patient
+  const updatePatient = useCallback(async (id: string, updates: Partial<Patient>): Promise<Patient> => {
     try {
-      setLoading(true);
       setError(null);
-      const patient = await patientService.updatePatient(id, updates);
-      await loadStats(); // Refresh stats
-      return patient;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update patient');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [loadStats]);
 
-  const deletePatient = useCallback(async (id: string): Promise<boolean> => {
-    try {
-      setLoading(true);
-      setError(null);
-      const success = await patientService.deletePatient(id);
-      if (success) {
-        await loadStats(); // Refresh stats
+      const existingPatient = patients.find(p => p.id === id);
+      if (!existingPatient) {
+        throw new Error('Patient not found');
       }
-      return success;
+
+      const updatedPatient = await patientService.updatePatient(id, updates);
+      if (!updatedPatient) {
+        throw new Error('Failed to update patient');
+      }
+
+      // Update local state
+      setPatients(prev => prev.map(p => p.id === id ? updatedPatient : p));
+
+      // Update cache if enabled
+      if (cacheEnabled) {
+        await patientCacheService.updateCachedPatient(updatedPatient);
+      }
+
+      // Sync to server
+      if (enableRealTimeSync) {
+        await patientSyncService.syncSinglePatient(id);
+      }
+
+      return updatedPatient;
     } catch (err) {
+      console.error('Failed to update patient:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update patient');
+      throw err;
+    }
+  }, [patients, cacheEnabled, enableRealTimeSync]);
+
+  // Delete patient
+  const deletePatient = useCallback(async (id: string): Promise<void> => {
+    try {
+      setError(null);
+
+      const success = await patientService.deletePatient(id);
+      if (!success) {
+        throw new Error('Failed to delete patient');
+      }
+
+      // Remove from local state
+      setPatients(prev => prev.filter(p => p.id !== id));
+
+      // Remove from cache if enabled
+      if (cacheEnabled) {
+        await patientCacheService.removeCachedPatient(id);
+      }
+
+      // Sync deletion to server
+      if (enableRealTimeSync) {
+        // This would typically mark for deletion in outbox
+        console.log('Marking patient for deletion:', id);
+      }
+    } catch (err) {
+      console.error('Failed to delete patient:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete patient');
-      return false;
+      throw err;
+    }
+  }, [cacheEnabled, enableRealTimeSync]);
+
+  // Refresh patients
+  const refreshPatients = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const freshPatientsResult = await patientService.getPatients();
+      setPatients(freshPatientsResult.patients);
+
+      // Re-apply current filters if any
+      if (Object.keys(currentFilters).length > 0) {
+        await searchPatients(currentFilters);
+      }
+    } catch (err) {
+      console.error('Failed to refresh patients:', err);
+      setError(err instanceof Error ? err.message : 'Failed to refresh patients');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  }, [loadStats]);
+  }, [currentFilters, searchPatients]);
 
-  const loadPatient = useCallback(async (id: string): Promise<Patient | null> => {
+  // Sync patients
+  const syncPatients = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsSyncing(true);
       setError(null);
-      const patient = await patientService.getPatient(id);
-      setCurrentPatient(patient);
-      return patient;
+
+      const syncResult = await patientSyncService.syncPatients();
+      
+      if (syncResult.conflicts.length > 0) {
+        console.warn('Sync conflicts detected:', syncResult.conflicts);
+        // Handle conflicts - could show a modal or notification
+      }
+
+      // Refresh local data after sync
+      await refreshPatients();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load patient');
-      return null;
+      console.error('Failed to sync patients:', err);
+      setError(err instanceof Error ? err.message : 'Failed to sync patients');
     } finally {
-      setLoading(false);
+      setIsSyncing(false);
     }
-  }, []);
+  }, [refreshPatients]);
 
-  const searchPatients = useCallback(async (filters: PatientFilters): Promise<PatientSearchResult> => {
+  // Clear cache
+  const clearCache = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const result = await patientService.getPatients(filters);
-      setPatients(result.patients);
-      return result;
+      if (cacheEnabled) {
+        await patientCacheService.clearCache();
+        // Reload from API
+        await refreshPatients();
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to search patients');
-      return {
-        patients: [],
-        total: 0,
-        page: 1,
-        pageSize: 0,
-        hasMore: false
-      };
-    } finally {
-      setLoading(false);
+      console.error('Failed to clear cache:', err);
+      setError(err instanceof Error ? err.message : 'Failed to clear cache');
     }
+  }, [cacheEnabled, refreshPatients]);
+
+  // Get patient by ID
+  const getPatientById = useCallback((id: string): Patient | undefined => {
+    return patients.find(p => p.id === id);
+  }, [patients]);
+
+  // Validate patient
+  const validatePatient = useCallback((patient: Partial<Patient>) => {
+    const validation = patientValidationService.validatePatient(patient);
+    return {
+      isValid: validation.isValid,
+      errors: validation.errors.map(e => e.message)
+    };
   }, []);
 
-  const refreshStats = useCallback(async () => {
-    await loadStats();
-  }, [loadStats]);
-
-  const addDevice = useCallback(async (patientId: string, device: Omit<PatientDevice, 'id'>): Promise<PatientDevice | null> => {
-    try {
-      setError(null);
-      return await patientService.addDevice(patientId, device);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add device');
-      return null;
-    }
-  }, []);
-
-  const updateDevice = useCallback(async (patientId: string, deviceId: string, updates: Partial<PatientDevice>): Promise<PatientDevice | null> => {
-    try {
-      setError(null);
-      return await patientService.updateDevice(patientId, deviceId, updates);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update device');
-      return null;
-    }
-  }, []);
-
-  const addNote = useCallback(async (patientId: string, text: string, type?: PatientNote['type']): Promise<PatientNote | null> => {
-    try {
-      setError(null);
-      return await patientService.addNote(patientId, text, type);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add note');
-      return null;
-    }
-  }, []);
-
-  const addCommunication = useCallback(async (patientId: string, communication: Omit<Communication, 'id'>): Promise<Communication | null> => {
-    try {
-      setError(null);
-      return await patientService.addCommunication(patientId, communication);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add communication');
-      return null;
-    }
-  }, []);
-
-  const findMatches = useCallback(async (request: PatientMatchRequest): Promise<PatientMatchCandidate[]> => {
-    try {
-      setError(null);
-      return await patientService.findMatches(request);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to find matches');
-      return [];
-    }
-  }, []);
-
-  const validateTcNumber = useCallback(async (tcNumber: string, excludeId?: string): Promise<boolean> => {
-    try {
-      return await patientService.validateTcNumber(tcNumber, excludeId);
-    } catch (err) {
-      console.error('TC number validation failed:', err);
-      return false;
-    }
-  }, []);
-
-  const getHighPriorityPatients = useCallback(async (): Promise<Patient[]> => {
-    try {
-      return await patientService.getHighPriorityPatients();
-    } catch (err) {
-      console.error('Failed to get high priority patients:', err);
-      return [];
-    }
-  }, []);
+  // Memoized total count
+  const totalCount = useMemo(() => {
+    return searchResults ? searchResults.totalCount : patients.length;
+  }, [searchResults, patients.length]);
 
   return {
     // Data
     patients,
-    currentPatient,
-    stats,
-    loading,
+    searchResults,
+    totalCount,
+    isLoading,
+    isSearching,
+    isSyncing,
     error,
     
-    // Actions
+    // Search & Filter
+    searchPatients,
+    clearSearch,
+    applyFilters,
+    
+    // CRUD Operations
     createPatient,
     updatePatient,
     deletePatient,
-    loadPatient,
-    searchPatients,
-    refreshStats,
     
-    // Device management
-    addDevice,
-    updateDevice,
+    // Data Management
+    refreshPatients,
+    syncPatients,
+    clearCache,
     
-    // Notes management
-    addNote,
-    
-    // Communication
-    addCommunication,
-    
-    // Patient matching
-    findMatches,
-    
-    // Utility
-    validateTcNumber,
-    getHighPriorityPatients
+    // Utilities
+    getPatientById,
+    validatePatient
   };
-}
-
-// Specialized hooks for common use cases
-export function usePatient(id: string | null) {
-  const [patient, setPatient] = useState<Patient | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!id) {
-      setPatient(null);
-      return;
-    }
-
-    const loadPatient = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const patientData = await patientService.getPatient(id);
-        setPatient(patientData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load patient');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPatient();
-  }, [id]);
-
-  // Listen for updates to this specific patient
-  useEffect(() => {
-    if (!id) return;
-
-    const handlePatientUpdated = (event: CustomEvent) => {
-      const { patient: updatedPatient } = event.detail;
-      if (updatedPatient.id === id) {
-        setPatient(updatedPatient);
-      }
-    };
-
-    const handlePatientDeleted = (event: CustomEvent) => {
-      const { patient: deletedPatient } = event.detail;
-      if (deletedPatient.id === id) {
-        setPatient(null);
-      }
-    };
-
-    window.addEventListener('patient:updated', handlePatientUpdated as EventListener);
-    window.addEventListener('patient:deleted', handlePatientDeleted as EventListener);
-
-    return () => {
-      window.removeEventListener('patient:updated', handlePatientUpdated as EventListener);
-      window.removeEventListener('patient:deleted', handlePatientDeleted as EventListener);
-    };
-  }, [id]);
-
-  return { patient, loading, error };
-}
-
-export function usePatientStats() {
-  const [stats, setStats] = useState<PatientStats | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const refreshStats = useCallback(async () => {
-    try {
-      setLoading(true);
-      const patientStats = await patientService.getPatientStats();
-      setStats(patientStats);
-    } catch (err) {
-      console.error('Failed to load patient stats:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    refreshStats();
-  }, [refreshStats]);
-
-  // Listen for patient changes to refresh stats
-  useEffect(() => {
-    const handlePatientChange = () => {
-      refreshStats();
-    };
-
-    window.addEventListener('patient:created', handlePatientChange);
-    window.addEventListener('patient:updated', handlePatientChange);
-    window.addEventListener('patient:deleted', handlePatientChange);
-
-    return () => {
-      window.removeEventListener('patient:created', handlePatientChange);
-      window.removeEventListener('patient:updated', handlePatientChange);
-      window.removeEventListener('patient:deleted', handlePatientChange);
-    };
-  }, [refreshStats]);
-
-  return { stats, loading, refreshStats };
-}
+};

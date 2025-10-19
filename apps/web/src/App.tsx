@@ -2,6 +2,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { AuthProvider } from './components/AuthProvider';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { GlobalErrorProvider } from './components/GlobalErrorHandler';
 import { routeTree } from './routeTree.gen';
 
 // Create a new router instance
@@ -32,12 +34,16 @@ function App() {
   });
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RouterProvider router={router} />
-        <ReactQueryDevtools initialIsOpen={false} />
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <GlobalErrorProvider>
+          <AuthProvider>
+            <RouterProvider router={router} />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </AuthProvider>
+        </GlobalErrorProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

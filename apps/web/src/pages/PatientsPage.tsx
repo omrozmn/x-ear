@@ -1,525 +1,380 @@
-import { useState } from 'react';
-import { Patient, PatientFilters } from '../types/patient';
-import { PatientList } from '../components/patients/PatientList';
-import { PatientForm } from '../components/patients/PatientForm';
-import { usePatientStats } from '../hooks/usePatients';
-import { Button } from '@x-ear/ui-web';
+/**
+ * PatientsPage Component
+ * @fileoverview Main patients management page with search, filters, and patient list
+ * @version 1.0.0
+ */
+
+import React, { useState, useEffect } from 'react';
+import { Button, Input, Select, DataTable, Modal } from '@x-ear/ui-web';
+import { useNavigate, Outlet, useParams } from '@tanstack/react-router';
+import { usePatients } from '../hooks/usePatients';
+import { SimpleCacheFilters } from '../services/patient/patient-cache.service';
+import { Patient } from '../types/patient';
+import { PatientSearchItem } from '../types/patient/patient-search.types';
+import { Users, CheckCircle, Flame, Headphones, Filter, Search, Plus, RefreshCw } from 'lucide-react';
 
 export function PatientsPage() {
-  const { stats } = usePatientStats();
-  const [_showForm, setShowForm] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [filters, _setFilters] = useState<PatientFilters>({});
-  const [viewMode, setViewMode] = useState<'list' | 'form' | 'details'>('list');
+  const navigate = useNavigate();
+  const { patientId } = useParams({ strict: false }) as { patientId?: string };
 
-  const handlePatientSelect = (patient: Patient) => {
-    setSelectedPatient(patient);
-    setViewMode('details');
+  // State
+  const [filters, setFilters] = useState<SimpleCacheFilters>({
+    search: '',
+    status: [],
+    segment: [],
+    label: [],
+    hasDevices: undefined,
+    page: 1,
+    limit: 20
+  });
+
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedPatients, setSelectedPatients] = useState<string[]>([]);
+  const [showNewPatientModal, setShowNewPatientModal] = useState(false);
+
+  // Hooks
+  const {
+    patients,
+    searchResults,
+    isLoading,
+    isSyncing,
+    error,
+    searchPatients,
+    refreshPatients,
+    syncPatients
+  } = usePatients({
+    enableRealTimeSync: true,
+    cacheEnabled: true,
+    autoRefresh: true,
+    refreshInterval: 60000
+  });
+
+  // Effects
+  useEffect(() => {
+    searchPatients(filters);
+  }, []);
+
+  // Computed values
+  const totalPatients = searchResults?.totalCount || 0;
+  const filteredPatients = searchResults?.patients || [];
+
+  // Filter options
+  const statusOptions = [
+    { value: '', label: 'Tüm Durumlar' },
+    { value: 'active', label: 'Aktif' },
+    { value: 'inactive', label: 'Pasif' },
+    { value: 'archived', label: 'Arşivlenmiş' }
+  ];
+
+  const segmentOptions = [
+    { value: '', label: 'Tüm Segmentler' },
+    { value: 'new', label: 'Yeni' },
+    { value: 'trial', label: 'Deneme' },
+    { value: 'purchased', label: 'Satın Almış' },
+    { value: 'control', label: 'Kontrol' },
+    { value: 'renewal', label: 'Yenileme' }
+  ];
+
+  const labelOptions = [
+    { value: '', label: 'Tüm Etiketler' },
+    { value: 'yeni', label: 'Yeni' },
+    { value: 'arama-bekliyor', label: 'Arama Bekliyor' },
+    { value: 'randevu-verildi', label: 'Randevu Verildi' },
+    { value: 'deneme-yapildi', label: 'Deneme Yapıldı' },
+    { value: 'kontrol-hastasi', label: 'Kontrol Hastası' },
+    { value: 'satis-tamamlandi', label: 'Satış Tamamlandı' }
+  ];
+
+  // Handlers
+  const handleSearch = (searchTerm: string) => {
+    const updatedFilters = { ...filters, search: searchTerm, page: 1 };
+    setFilters(updatedFilters);
+    searchPatients(updatedFilters);
   };
 
-  const handleNewPatient = () => {
-    setSelectedPatient(null);
-    setShowForm(true);
-    setViewMode('form');
+  const handleFilterChange = (key: keyof SimpleCacheFilters, value: any) => {
+    const updatedFilters = { ...filters, [key]: value, page: 1 };
+    setFilters(updatedFilters);
+    searchPatients(updatedFilters);
   };
 
-  const handleEditPatient = (patient: Patient) => {
-    setSelectedPatient(patient);
-    setShowForm(true);
-    setViewMode('form');
+  const handlePatientClick = (patient: Patient) => {
+    navigate({ to: `/patients/${patient.id}` });
   };
 
-  const handleFormSave = (patient: Patient) => {
-    setShowForm(false);
-    setSelectedPatient(patient);
-    setViewMode('details');
+  const handleRefresh = async () => {
+    await refreshPatients();
   };
 
-  const handleFormCancel = () => {
-    setShowForm(false);
-    setViewMode(selectedPatient ? 'details' : 'list');
+  const handleSync = async () => {
+    await syncPatients();
   };
 
-  const handleBackToList = () => {
-    setSelectedPatient(null);
-    setShowForm(false);
-    setViewMode('list');
-  };
+  // Table columns
+  const columns = [
+    {
+      key: 'name',
+      title: 'Ad Soyad',
+      render: (patient: PatientSearchItem) => (
+        <div className="flex items-center space-x-3">
+          <div className="flex-shrink-0">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+              <Users className="w-4 h-4 text-blue-600" />
+            </div>
+          </div>
+          <div>
+            <div className="font-medium text-gray-900">{patient.firstName} {patient.lastName}</div>
+            <div className="text-sm text-gray-500">{patient.phone}</div>
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'status',
+      title: 'Durum',
+      render: (patient: PatientSearchItem) => {
+        const statusConfig = {
+          active: { color: 'green', icon: CheckCircle, label: 'Aktif' },
+          inactive: { color: 'gray', icon: Users, label: 'Pasif' },
+          archived: { color: 'red', icon: Users, label: 'Arşiv' }
+        };
+        const config = statusConfig[patient.status] || statusConfig.active;
+        const Icon = config.icon;
+        
+        return (
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${config.color}-100 text-${config.color}-800`}>
+            <Icon className="w-3 h-3 mr-1" />
+            {config.label}
+          </span>
+        );
+      }
+    },
+    {
+      key: 'segment',
+      title: 'Segment',
+      render: (patient: PatientSearchItem) => {
+        const segmentConfig = {
+          new: { color: 'blue', label: 'Yeni' },
+          trial: { color: 'yellow', label: 'Deneme' },
+          purchased: { color: 'green', label: 'Satın Almış' },
+          control: { color: 'purple', label: 'Kontrol' },
+          renewal: { color: 'orange', label: 'Yenileme' }
+        };
+        const config = segmentConfig[patient.segment] || segmentConfig.new;
+        
+        return (
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${config.color}-100 text-${config.color}-800`}>
+            {config.label}
+          </span>
+        );
+      }
+    },
+    {
+      key: 'labels',
+      title: 'Etiket',
+      render: (patient: PatientSearchItem) => (
+        <span className="text-sm text-gray-600 capitalize">
+          {patient.labels?.[0]?.replace('-', ' ') || '-'}
+        </span>
+      )
+    },
+    {
+      key: 'priority',
+      title: 'Öncelik',
+      render: (patient: PatientSearchItem) => {
+        const score = patient.priority || 0;
+        const color = score >= 80 ? 'red' : score >= 60 ? 'yellow' : 'green';
+        
+        return (
+          <div className="flex items-center">
+            <Flame className={`w-4 h-4 mr-1 text-${color}-500`} />
+            <span className="text-sm font-medium">{score}</span>
+          </div>
+        );
+      }
+    },
+    {
+      key: 'deviceCount',
+      title: 'Cihaz',
+      render: (patient: PatientSearchItem) => {
+        const hasDevice = patient.deviceCount > 0;
+        return (
+          <div className="flex items-center">
+            <Headphones className={`w-4 h-4 ${hasDevice ? 'text-green-500' : 'text-gray-400'}`} />
+            <span className="ml-1 text-sm">
+              {hasDevice ? patient.deviceCount : 'Yok'}
+            </span>
+          </div>
+        );
+      }
+    },
+    {
+      key: 'registrationDate',
+      title: 'Kayıt Tarihi',
+      render: (patient: PatientSearchItem) => (
+        <span className="text-sm text-gray-600">
+          {new Date(patient.registrationDate).toLocaleDateString('tr-TR')}
+        </span>
+      )
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-4">
-              {viewMode !== 'list' && (
-                <Button
-                  variant="ghost"
-                  onClick={handleBackToList}
-                  icon={
-                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  }
-                  iconPosition="left"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Geri
-                </Button>
-              )}
-              
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {viewMode === 'form' 
-                    ? (selectedPatient ? 'Hasta Düzenle' : 'Yeni Hasta')
-                    : viewMode === 'details'
-                    ? 'Hasta Detayları'
-                    : 'Hastalar'
-                  }
-                </h1>
-                
-                {viewMode === 'list' && stats && (
-                  <p className="mt-1 text-sm text-gray-500">
-                    Toplam {stats.total} hasta • {stats.byStatus.active} aktif • {stats.highPriority} yüksek öncelik
-                  </p>
-                )}
-              </div>
-            </div>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Hastalar</h1>
+          <p className="text-gray-600">
+            Toplam {totalPatients} hastadan {filteredPatients.length} tanesi gösteriliyor
+          </p>
+        </div>
+        
+        <div className="flex items-center space-x-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="flex items-center space-x-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <span>Yenile</span>
+          </Button>
 
-            {viewMode === 'list' && (
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="primary"
-                  onClick={handleNewPatient}
-                  icon={
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  }
-                  iconPosition="left"
-                >
-                  Yeni Hasta
-                </Button>
-              </div>
-            )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSync}
+            disabled={isSyncing}
+            className="flex items-center space-x-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>Sync</span>
+          </Button>
 
-            {viewMode === 'details' && selectedPatient && (
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="outline"
-                  onClick={() => handleEditPatient(selectedPatient)}
-                  icon={
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  }
-                  iconPosition="left"
-                >
-                  Düzenle
-                </Button>
-              </div>
-            )}
-          </div>
+          <Button
+            variant={showFilters ? "primary" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center space-x-2"
+          >
+            <Filter className="w-4 h-4" />
+            <span>Filtreler</span>
+          </Button>
+
+          <Button
+            onClick={() => setShowNewPatientModal(true)}
+            className="flex items-center space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Yeni Hasta</span>
+          </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      {viewMode === 'list' && stats && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Toplam Hasta</dt>
-                      <dd className="text-lg font-medium text-gray-900">{stats.total}</dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Aktif Hasta</dt>
-                      <dd className="text-lg font-medium text-gray-900">{stats.byStatus.active}</dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Yüksek Öncelik</dt>
-                      <dd className="text-lg font-medium text-gray-900">{stats.highPriority}</dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Cihazlı Hasta</dt>
-                      <dd className="text-lg font-medium text-gray-900">{stats.withDevices}</dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* Search and Filters */}
+      <div className="space-y-4">
+        {/* Search Bar */}
+        <div className="flex items-center space-x-4">
+          <div className="flex-1">
+            <Input
+              placeholder="Hasta adı, telefon, TC kimlik no ile arama yapın..."
+              value={filters.search || ''}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full"
+              leftIcon={<Search className="w-4 h-4" />}
+            />
           </div>
         </div>
+
+        {/* Filters */}
+        {showFilters && (
+          <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <Select
+                placeholder="Durum"
+                value={filters.status?.[0] || ''}
+                onChange={(value) => handleFilterChange('status', value ? [value] : [])}
+                options={statusOptions}
+              />
+              
+              <Select
+                placeholder="Segment"
+                value={filters.segment?.[0] || ''}
+                onChange={(value) => handleFilterChange('segment', value ? [value] : [])}
+                options={segmentOptions}
+              />
+              
+              <Select
+                placeholder="Etiket"
+                value={filters.label?.[0] || ''}
+                onChange={(value) => handleFilterChange('label', value ? [value] : [])}
+                options={labelOptions}
+              />
+
+              <Select
+                  placeholder="Cihaz Durumu"
+                  value={filters.hasDevices === true ? 'true' : filters.hasDevices === false ? 'false' : ''}
+                  onChange={(e) => handleFilterChange('hasDevices', e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined)}
+                  options={[
+                    { value: '', label: 'Tümü' },
+                    { value: 'true', label: 'Cihazı Var' },
+                    { value: 'false', label: 'Cihazı Yok' }
+                  ]}
+                />
+
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Patient List */}
+        <div className="bg-white rounded-lg shadow">
+          <DataTable
+            data={filteredPatients}
+            columns={columns}
+            loading={isLoading}
+            pagination={{
+              current: filters.page || 1,
+              pageSize: filters.limit || 20,
+              total: totalPatients,
+              onChange: (page: number, pageSize: number) => {
+                const updatedFilters = { ...filters, page, limit: pageSize };
+                setFilters(updatedFilters);
+                searchPatients(updatedFilters);
+              }
+            }}
+            emptyText="Hasta bulunamadı"
+            actions={[
+              {
+                key: 'view',
+                label: 'Görüntüle',
+                onClick: handlePatientClick,
+                variant: 'primary'
+              }
+            ]}
+          />
+      </div>
+
+      {/* New Patient Modal */}
+      {showNewPatientModal && (
+        <Modal
+          isOpen={showNewPatientModal}
+          onClose={() => setShowNewPatientModal(false)}
+          title="Yeni Hasta Ekle"
+          size="lg"
+        >
+          <div className="p-6">
+            <div className="text-center text-gray-500">
+              PatientForm component will be implemented here
+            </div>
+          </div>
+        </Modal>
       )}
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        {viewMode === 'list' && (
-          <PatientList
-            onPatientSelect={handlePatientSelect}
-            filters={filters}
-            showActions={true}
-          />
-        )}
-
-        {viewMode === 'form' && (
-          <PatientForm
-            patient={selectedPatient}
-            onSave={handleFormSave}
-            onCancel={handleFormCancel}
-          />
-        )}
-
-        {viewMode === 'details' && selectedPatient && (
-          <PatientDetails
-            patient={selectedPatient}
-            onEdit={() => handleEditPatient(selectedPatient)}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Patient Details Component
-interface PatientDetailsProps {
-  patient: Patient;
-  onEdit: () => void;
-}
-
-function PatientDetails({ patient, onEdit }: PatientDetailsProps) {
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('tr-TR');
-  };
-
-  const formatPhoneNumber = (phone: string) => {
-    if (phone.length === 11 && phone.startsWith('0')) {
-      return `${phone.slice(0, 4)} ${phone.slice(4, 7)} ${phone.slice(7, 9)} ${phone.slice(9)}`;
-    }
-    return phone;
-  };
-
-  const getStatusColor = (status: Patient['status']) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'inactive': return 'bg-gray-100 text-gray-800';
-      case 'archived': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusLabel = (status: Patient['status']) => {
-    switch (status) {
-      case 'active': return 'Aktif';
-      case 'inactive': return 'Pasif';
-      case 'archived': return 'Arşiv';
-      default: return status;
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* Patient Header */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="h-16 w-16 rounded-full bg-gray-300 flex items-center justify-center">
-                <span className="text-xl font-medium text-gray-700">
-                  {(patient.firstName || patient.name || '').charAt(0)}{(patient.lastName || '').charAt(0)}
-                </span>
-              </div>
-              
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {patient.firstName && patient.lastName 
-                    ? `${patient.firstName} ${patient.lastName}` 
-                    : patient.name || 'İsimsiz Hasta'}
-                </h2>
-                
-                <div className="flex items-center space-x-4 mt-1">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(patient.status)}`}>
-                    {getStatusLabel(patient.status)}
-                  </span>
-                  
-                  {patient.priorityScore && patient.priorityScore >= 50 && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                      Yüksek Öncelik ({patient.priorityScore})
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            <Button
-              onClick={onEdit}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              variant='default'>
-              <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              Düzenle
-            </Button>
-          </div>
-        </div>
-      </div>
-      {/* Patient Information Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Basic Information */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Temel Bilgiler</h3>
-          </div>
-          <div className="px-6 py-4 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Telefon</dt>
-                <dd className="mt-1 text-sm text-gray-900">{formatPhoneNumber(patient.phone)}</dd>
-              </div>
-              
-              {patient.tcNumber && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">TC Kimlik No</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{patient.tcNumber}</dd>
-                </div>
-              )}
-              
-              {patient.birthDate && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Doğum Tarihi</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{formatDate(patient.birthDate)}</dd>
-                </div>
-              )}
-              
-              {patient.email && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">E-posta</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{patient.email}</dd>
-                </div>
-              )}
-            </div>
-            
-            {patient.address && (
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Adres</dt>
-                <dd className="mt-1 text-sm text-gray-900">{patient.address}</dd>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Classification */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Sınıflandırma</h3>
-          </div>
-          <div className="px-6 py-4 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Segment</dt>
-                <dd className="mt-1 text-sm text-gray-900 capitalize">{patient.segment}</dd>
-              </div>
-              
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Etiket</dt>
-                <dd className="mt-1 text-sm text-gray-900">{patient.label}</dd>
-              </div>
-              
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Kazanım Türü</dt>
-                <dd className="mt-1 text-sm text-gray-900 capitalize">{patient.acquisitionType}</dd>
-              </div>
-              
-              {patient.priorityScore && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Öncelik Skoru</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{patient.priorityScore}</dd>
-                </div>
-              )}
-            </div>
-            
-            {patient.tags && patient.tags.length > 0 && (
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Etiketler</dt>
-                <dd className="mt-1">
-                  <div className="flex flex-wrap gap-1">
-                    {patient.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </dd>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* SGK Information */}
-        {patient.sgkInfo.hasInsurance && (
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">SGK Bilgileri</h3>
-            </div>
-            <div className="px-6 py-4 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                {patient.sgkInfo.insuranceNumber && (
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Sigorta Numarası</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{patient.sgkInfo.insuranceNumber}</dd>
-                  </div>
-                )}
-                
-                {patient.sgkInfo.insuranceType && (
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Sigorta Türü</dt>
-                    <dd className="mt-1 text-sm text-gray-900 uppercase">{patient.sgkInfo.insuranceType}</dd>
-                  </div>
-                )}
-                
-                {patient.sgkInfo.coveragePercentage && (
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Kapsam Yüzdesi</dt>
-                    <dd className="mt-1 text-sm text-gray-900">%{patient.sgkInfo.coveragePercentage}</dd>
-                  </div>
-                )}
-                
-                {patient.sgkStatus && (
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">SGK Durumu</dt>
-                    <dd className="mt-1 text-sm text-gray-900 capitalize">{patient.sgkStatus}</dd>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Device Information */}
-        {patient.devices && patient.devices.length > 0 && (
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">Cihaz Bilgileri</h3>
-            </div>
-            <div className="px-6 py-4">
-              <div className="space-y-4">
-                {patient.devices.map((device) => (
-                  <div key={device.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-medium text-gray-900">
-                        {device.brand} {device.model}
-                      </h4>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        device.status === 'active' ? 'bg-green-100 text-green-800' :
-                        device.status === 'trial' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {device.status}
-                      </span>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                      <div>Taraf: {device.side}</div>
-                      <div>Tip: {device.type}</div>
-                      {device.serialNumber && <div>Seri No: {device.serialNumber}</div>}
-                      {device.purchaseDate && <div>Satın Alma: {formatDate(device.purchaseDate)}</div>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-      {/* Notes Section */}
-      {patient.notes && patient.notes.length > 0 && (
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Notlar</h3>
-          </div>
-          <div className="px-6 py-4">
-            <div className="space-y-4">
-              {patient.notes.slice(0, 5).map((note) => (
-                <div key={note.id} className="border-l-4 border-blue-400 pl-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-gray-900">{note.author}</span>
-                    <span className="text-xs text-gray-500">{formatDate(note.date)}</span>
-                  </div>
-                  <p className="text-sm text-gray-700">{note.text}</p>
-                  {note.type && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 mt-1">
-                      {note.type}
-                    </span>
-                  )}
-                </div>
-              ))}
-              
-              {patient.notes.length > 5 && (
-                <div className="text-center">
-                  <Button className="text-sm text-blue-600 hover:text-blue-500" variant='default'>
-                    {patient.notes.length - 5} not daha göster
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Outlet for nested routes */}
+      <Outlet />
     </div>
   );
 }

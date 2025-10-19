@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Modal, Button } from '@x-ear/ui-web';
+import { Modal, Button, Input, Textarea } from '@x-ear/ui-web';
 import { useState } from 'react';
 
 const meta: Meta<typeof Modal> = {
@@ -14,7 +14,7 @@ const meta: Meta<typeof Modal> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const ModalWrapper = ({ title, children, size }: any) => {
+const ModalWrapper = ({ title, children, size }: { title: string; children: React.ReactNode; size?: 'sm' | 'md' | 'lg' }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -58,16 +58,13 @@ export const Large: Story = {
       <p>This is a large modal with more space for content.</p>
       <div className="mt-4 space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Name</label>
-          <input className="w-full px-3 py-2 border rounded" placeholder="Enter name" />
+          <Input label="Name" placeholder="Enter name" />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <input className="w-full px-3 py-2 border rounded" placeholder="Enter email" />
+          <Input label="Email" placeholder="Enter email" />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Message</label>
-          <textarea className="w-full px-3 py-2 border rounded" rows={4} placeholder="Enter message" />
+          <Textarea label="Message" rows={4} placeholder="Enter message" />
         </div>
       </div>
     </ModalWrapper>
@@ -79,16 +76,13 @@ export const WithForm: Story = {
     <ModalWrapper title="Contact Form">
       <form className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Full Name</label>
-          <input className="w-full px-3 py-2 border rounded" placeholder="John Doe" />
+          <Input label="Full Name" placeholder="John Doe" />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Email Address</label>
-          <input type="email" className="w-full px-3 py-2 border rounded" placeholder="john@example.com" />
+          <Input label="Email Address" type="email" placeholder="john@example.com" />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Phone Number</label>
-          <input type="tel" className="w-full px-3 py-2 border rounded" placeholder="+1 (555) 123-4567" />
+          <Input label="Phone Number" type="tel" placeholder="+1 (555) 123-4567" />
         </div>
         <div className="flex gap-2 pt-4">
           <Button variant="primary" type="submit">Submit</Button>
