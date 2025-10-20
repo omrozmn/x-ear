@@ -107,7 +107,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
           <div className="flex-1">
             <div className="flex items-center space-x-3 mb-2">
               <h1 className="text-2xl font-bold text-gray-900">
-                {patient.firstName} {patient.lastName}
+                {patient.firstName || ''} {patient.lastName || ''}
               </h1>
               <Badge variant={statusInfo.variant}>
                 {statusInfo.label}
@@ -217,7 +217,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
               size="sm"
               icon={<MoreHorizontal className="w-4 h-4" />}
             >
-              
+              Diğer
             </Button>
             
             {/* Dropdown Menu */}

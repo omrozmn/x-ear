@@ -1,0 +1,66 @@
+import React from 'react';
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+
+const createClient = () => new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+vi.mock('../../services/sgk/sgk.service', () => ({
+  __esModule: true,
+  default: {
+    listDocuments: vi.fn(),
+    uploadDocument: vi.fn(),
+    deleteDocument: vi.fn(),
+  },
+}));
+import sgkService from '../../services/sgk/sgk.service';
+import { useSgkDocuments, useUploadSgkDocument, useDeleteSgkDocument } from './useSgkDocuments';
+
+describe('useSgkDocuments hooks', () => {
+  let qc: QueryClient;
+  beforeEach(() => {
+    qc = createClient();
+  });
+  afterEach(() => {
+    qc.clear();
+    vi.resetAllMocks();
+  });
+
+  it('fetches documents with useSgkDocuments', async () => {
+    (sgkService.listDocuments as any).mockResolvedValue({ data: [{ id: 'doc1' }] });
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
+    const { result } = renderHook(() => useSgkDocuments('patient-1'), { wrapper });
+
+    await waitFor(() => (result.current as any).isSuccess);
+    expect(sgkService.listDocuments).toHaveBeenCalledWith('patient-1');
+  });
+
+  it('uploads a document and invalidates', async () => {
+    (sgkService.uploadDocument as any).mockResolvedValue({});
+    const wrapper = ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
+
+    const { result } = renderHook(() => useUploadSgkDocument('patient-1'), { wrapper });
+
+    act(() => {
+      (result.current as any).mutate({ append: 'data', idempotencyKey: 'key-1' } as any);
+    });
+
+    await waitFor(() => (result.current as any).isSuccess);
+    expect(sgkService.uploadDocument).toHaveBeenCalled();
+  });
+
+  it('deletes a document and invalidates', async () => {
+    (sgkService.deleteDocument as any).mockResolvedValue({});
+    const wrapper = ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
+
+    const { result } = renderHook(() => useDeleteSgkDocument('patient-1'), { wrapper });
+
+    act(() => {
+      (result.current as any).mutate({ id: 'doc1', idempotencyKey: 'k1' });
+    });
+
+    await waitFor(() => (result.current as any).isSuccess);
+    expect(sgkService.deleteDocument).toHaveBeenCalledWith('doc1', { idempotencyKey: 'k1' });
+  });
+});

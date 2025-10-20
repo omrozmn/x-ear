@@ -1,4 +1,5 @@
 import React from 'react';
+import { Patient } from '../../types/patient';
 
 interface PatientGeneralTabProps {
   patient: Patient;
@@ -13,7 +14,7 @@ export const PatientGeneralTab: React.FC<PatientGeneralTabProps> = ({ patient, o
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-600">Ad Soyad</p>
-            <p className="text-lg font-semibold">{patient.firstName} {patient.lastName}</p>
+            <p className="text-lg font-semibold">{patient.firstName || ''} {patient.lastName || ''}</p>
           </div>
         </div>
       </div>

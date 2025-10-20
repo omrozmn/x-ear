@@ -85,8 +85,10 @@ export function PatientCard({
     return `₺${amount.toLocaleString('tr-TR')}`;
   };
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  const getInitials = (firstName?: string, lastName?: string) => {
+    const first = firstName?.charAt(0) || '';
+    const last = lastName?.charAt(0) || '';
+    return `${first}${last}`.toUpperCase() || 'N/A';
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -121,7 +123,7 @@ export function PatientCard({
             
             <div>
               <h3 className="text-sm font-medium text-gray-900">
-                {patient.firstName} {patient.lastName}
+                {patient.firstName || ''} {patient.lastName || ''}
               </h3>
               <p className="text-xs text-gray-500">
                 {formatDate(patient.registrationDate)}
@@ -224,7 +226,7 @@ export function PatientCard({
             
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
-                {patient.firstName} {patient.lastName}
+                {patient.firstName || ''} {patient.lastName || ''}
               </h3>
               
               <div className="flex items-center space-x-2 mt-1">

@@ -24,8 +24,10 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient, isLoading
     );
   }
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  const getInitials = (firstName?: string, lastName?: string) => {
+    const first = firstName?.charAt(0) || '';
+    const last = lastName?.charAt(0) || '';
+    return `${first}${last}`.toUpperCase() || 'N/A';
   };
 
   const formatDate = (dateString?: string) => {
@@ -57,8 +59,8 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient, isLoading
           <div className="flex-1">
             <div className="flex items-center space-x-3 mb-2">
               <h1 className="text-2xl font-bold text-gray-900">
-                {patient.firstName} {patient.lastName}
-              </h1>
+          {patient.firstName || ''} {patient.lastName || ''}
+        </h1>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(patient.status)}`}>
                 {patient.status === 'active' ? 'Aktif' : 'Pasif'}
               </span>

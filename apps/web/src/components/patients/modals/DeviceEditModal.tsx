@@ -1,0 +1,419 @@
+import React, { useState, useEffect } from 'react';
+import { Button, Input, Select } from '@x-ear/ui-web';
+import { X, Settings, RefreshCw } from 'lucide-react';
+import type { Device, InventoryItem } from '../../../api/generated/api.schemas';
+
+interface DeviceEditModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  device: Device | null;
+  inventoryItems: InventoryItem[];
+  onUpdate: (deviceId: string, updates: Partial<Device>) => void;
+  onReplace: (deviceId: string, newDeviceData: any) => void;
+  loading?: boolean;
+}
+
+const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
+  isOpen,
+  onClose,
+  device,
+  inventoryItems,
+  onUpdate,
+  onReplace,
+  loading = false
+}) => {
+  const [formData, setFormData] = useState<{
+    mode: 'edit' | 'replace';
+    replaceMode: 'inventory' | 'manual';
+    inventoryId: string;
+    brand: string;
+    model: string;
+    serialNumber: string;
+    deviceType: string;
+    price: number;
+    notes: string;
+  }>({
+    mode: 'edit',
+    replaceMode: 'inventory',
+    inventoryId: '',
+    brand: device?.brand || '',
+    model: device?.model || '',
+    serialNumber: device?.serialNumber || '',
+    deviceType: device?.deviceType || '',
+    price: device?.price || 0,
+    notes: device?.notes || '',
+  });
+
+  useEffect(() => {
+    if (device) {
+      setFormData(prev => ({
+        ...prev,
+        brand: device.brand || '',
+        model: device.model || '',
+        serialNumber: device.serialNumber || '',
+        deviceType: device.deviceType || '',
+        price: device.price || 0,
+        notes: device.notes || '',
+      }));
+    }
+  }, [device]);
+
+  if (!isOpen || !device) return null;
+
+  const handleUpdate = async () => {
+    if (!device?.id) return;
+    
+    try {
+      const updatedDevice: Partial<Device> = {
+        id: device.id,
+        brand: formData.brand,
+        model: formData.model,
+        serialNumber: formData.serialNumber,
+        deviceType: formData.deviceType,
+        price: formData.price,
+        notes: formData.notes,
+      };
+      
+      await onUpdate(updatedDevice);
+      onClose();
+    } catch (error) {
+      console.error('Error updating device:', error);
+    }
+  };
+
+  const handleReplace = async () => {
+    if (!device?.id) return;
+    
+    try {
+      if (formData.replaceMode === 'inventory' && formData.inventoryId) {
+        const selectedItem = inventoryItems.find(item => item.id === formData.inventoryId);
+        if (selectedItem) {
+          const replacementDevice: Partial<Device> = {
+            id: device.id,
+            inventoryId: selectedItem.id,
+            brand: selectedItem.brand,
+            model: selectedItem.model || '',
+            deviceType: selectedItem.category,
+            price: selectedItem.price,
+            serialNumber: '', // Will be assigned from inventory
+          };
+          await onReplace(replacementDevice);
+        }
+      } else {
+        // Manual replacement
+        const replacementDevice: Partial<Device> = {
+          id: device.id,
+          brand: formData.brand,
+          model: formData.model,
+          serialNumber: formData.serialNumber,
+          deviceType: formData.deviceType,
+          price: formData.price,
+          notes: formData.notes,
+        };
+        await onReplace(replacementDevice);
+      }
+      onClose();
+    } catch (error) {
+      console.error('Error replacing device:', error);
+    }
+  };
+
+  const availableInventoryItems = inventoryItems.filter(item => 
+    item.status === 'available' && item.deviceType === device.deviceType
+  );
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-medium text-gray-900">
+            Cihaz {formData.mode === 'edit' ? 'Düzenle' : 'Değiştir'}
+          </h3>
+          <Button
+            onClick={onClose}
+            className="p-1 text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* Mode Selection */}
+        <div className="flex space-x-4 mb-6">
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, mode: 'edit' }))}
+            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+              formData.mode === 'edit'
+                ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Düzenle
+          </button>
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, mode: 'replace' }))}
+            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+              formData.mode === 'replace'
+                ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Değiştir
+          </button>
+        </div>
+
+        {/* Current Device Info */}
+        <div className="bg-gray-50 p-4 rounded-lg mb-6">
+          <h4 className="font-medium text-gray-900 mb-2">Mevcut Cihaz</h4>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div><span className="font-medium">Marka:</span> {device.brand}</div>
+            <div><span className="font-medium">Model:</span> {device.model}</div>
+            <div><span className="font-medium">Seri No:</span> {device.serialNumber}</div>
+            <div><span className="font-medium">Kulak:</span> {device.ear === 'right' ? 'Sağ' : 'Sol'}</div>
+            <div><span className="font-medium">Durum:</span> {device.status}</div>
+            <div><span className="font-medium">Atanma Tarihi:</span> {new Date(device.assignedDate).toLocaleDateString('tr-TR')}</div>
+          </div>
+        </div>
+
+        {formData.mode === 'edit' ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Marka</label>
+                <Input 
+                  value={formData.brand}
+                  onChange={(e) => setFormData(prev => ({ ...prev, brand: e.target.value }))}
+                  required 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                <Input 
+                  value={formData.model}
+                  onChange={(e) => setFormData(prev => ({ ...prev, model: e.target.value }))}
+                  required 
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Seri No</label>
+                <Input 
+                  value={formData.serialNumber}
+                  onChange={(e) => setFormData(prev => ({ ...prev, serialNumber: e.target.value }))}
+                  required 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Cihaz Türü</label>
+                <select
+                  value={formData.deviceType}
+                  onChange={(e) => setFormData(prev => ({ ...prev, deviceType: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="hearing_aid">İşitme Cihazı</option>
+                  <option value="cochlear_implant">Koklear İmplant</option>
+                  <option value="bone_anchored">Kemik Ankrajlı</option>
+                  <option value="middle_ear">Orta Kulak İmplantı</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fiyat (₺)</label>
+              <input
+                type="number"
+                value={formData.price}
+                onChange={(e) => setFormData(prev => ({ ...prev, price: Number(e.target.value) }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                min="0"
+                step="0.01"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Notlar</label>
+              <textarea
+                value={formData.notes}
+                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Cihaz ile ilgili notlar..."
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6 pt-6 border-t">
+              <Button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              >
+                İptal
+              </Button>
+              <Button
+                type="button"
+                onClick={handleUpdate}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+                disabled={loading}
+              >
+                {loading ? 'Güncelleniyor...' : 'Güncelle'}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Replace Mode Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Değiştirme Yöntemi</label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, replaceMode: 'inventory' }))}
+                  className={`p-3 border rounded-lg text-center transition-colors ${
+                    formData.replaceMode === 'inventory'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="font-medium">Stoktan Seç</div>
+                  <div className="text-sm text-gray-600">Mevcut stoktan cihaz seç</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, replaceMode: 'manual' }))}
+                  className={`p-3 border rounded-lg text-center transition-colors ${
+                    formData.replaceMode === 'manual'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="font-medium">Manuel Giriş</div>
+                  <div className="text-sm text-gray-600">Cihaz bilgilerini manuel gir</div>
+                </button>
+              </div>
+            </div>
+
+            {formData.replaceMode === 'inventory' ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Stok Cihazı Seç</label>
+                <select
+                  value={formData.inventoryId}
+                  onChange={(e) => setFormData(prev => ({ ...prev, inventoryId: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Cihaz seçiniz...</option>
+                  {availableInventoryItems.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.brand} {item.model} - {item.serialNumber}
+                    </option>
+                  ))}
+                </select>
+                {availableInventoryItems.length === 0 && (
+                  <p className="text-sm text-amber-600 mt-1">
+                    Bu cihaz türü için uygun stok bulunamadı.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Marka</label>
+                    <Input 
+                      value={formData.brand}
+                      onChange={(e) => setFormData(prev => ({ ...prev, brand: e.target.value }))}
+                      placeholder="Marka" 
+                      required 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                    <Input 
+                      value={formData.model}
+                      onChange={(e) => setFormData(prev => ({ ...prev, model: e.target.value }))}
+                      placeholder="Model" 
+                      required 
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Seri No</label>
+                    <Input 
+                      value={formData.serialNumber}
+                      onChange={(e) => setFormData(prev => ({ ...prev, serialNumber: e.target.value }))}
+                      placeholder="Seri numarası" 
+                      required 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Cihaz Türü</label>
+                    <select
+                      value={formData.deviceType}
+                      onChange={(e) => setFormData(prev => ({ ...prev, deviceType: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    >
+                      <option value="hearing_aid">İşitme Cihazı</option>
+                      <option value="cochlear_implant">Koklear İmplant</option>
+                      <option value="bone_anchored">Kemik Ankrajlı</option>
+                      <option value="middle_ear">Orta Kulak İmplantı</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Fiyat (₺)</label>
+                  <input
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => setFormData(prev => ({ ...prev, price: Number(e.target.value) }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Değiştirme Notları</label>
+              <textarea
+                value={formData.notes}
+                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Değiştirme sebebi ve notlar..."
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6 pt-6 border-t">
+              <Button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              >
+                İptal
+              </Button>
+              <Button
+                type="button"
+                onClick={handleReplace}
+                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
+                disabled={loading || (formData.replaceMode === 'inventory' && !formData.inventoryId)}
+              >
+                {loading ? 'Değiştiriliyor...' : 'Cihazı Değiştir'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

@@ -99,7 +99,9 @@ export function PatientsPage() {
   };
 
   const handlePatientClick = (patient: Patient) => {
-    navigate({ to: `/patients/${patient.id}` });
+    if (patient?.id) {
+      navigate({ to: `/patients/${patient.id}` });
+    }
   };
 
   const handleRefresh = async () => {
@@ -123,8 +125,8 @@ export function PatientsPage() {
             </div>
           </div>
           <div>
-            <div className="font-medium text-gray-900">{patient.firstName} {patient.lastName}</div>
-            <div className="text-sm text-gray-500">{patient.phone}</div>
+            <div className="font-medium text-gray-900">{patient?.firstName || ''} {patient?.lastName || ''}</div>
+            <div className="text-sm text-gray-500">{patient?.phone || ''}</div>
           </div>
         </div>
       )
@@ -138,7 +140,7 @@ export function PatientsPage() {
           inactive: { color: 'gray', icon: Users, label: 'Pasif' },
           archived: { color: 'red', icon: Users, label: 'Arşiv' }
         };
-        const config = statusConfig[patient.status] || statusConfig.active;
+        const config = statusConfig[patient?.status] || statusConfig.active;
         const Icon = config.icon;
         
         return (
@@ -160,7 +162,7 @@ export function PatientsPage() {
           control: { color: 'purple', label: 'Kontrol' },
           renewal: { color: 'orange', label: 'Yenileme' }
         };
-        const config = segmentConfig[patient.segment] || segmentConfig.new;
+        const config = segmentConfig[patient?.segment] || segmentConfig.new;
         
         return (
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${config.color}-100 text-${config.color}-800`}>
@@ -182,7 +184,7 @@ export function PatientsPage() {
       key: 'priority',
       title: 'Öncelik',
       render: (patient: PatientSearchItem) => {
-        const score = patient.priority || 0;
+        const score = patient?.priority || 0;
         const color = score >= 80 ? 'red' : score >= 60 ? 'yellow' : 'green';
         
         return (
@@ -197,12 +199,12 @@ export function PatientsPage() {
       key: 'deviceCount',
       title: 'Cihaz',
       render: (patient: PatientSearchItem) => {
-        const hasDevice = patient.deviceCount > 0;
+        const hasDevice = (patient?.deviceCount || 0) > 0;
         return (
           <div className="flex items-center">
             <Headphones className={`w-4 h-4 ${hasDevice ? 'text-green-500' : 'text-gray-400'}`} />
             <span className="ml-1 text-sm">
-              {hasDevice ? patient.deviceCount : 'Yok'}
+              {hasDevice ? patient?.deviceCount : 'Yok'}
             </span>
           </div>
         );
@@ -213,7 +215,7 @@ export function PatientsPage() {
       title: 'Kayıt Tarihi',
       render: (patient: PatientSearchItem) => (
         <span className="text-sm text-gray-600">
-          {new Date(patient.registrationDate).toLocaleDateString('tr-TR')}
+          {patient?.registrationDate ? new Date(patient.registrationDate).toLocaleDateString('tr-TR') : '-'}
         </span>
       )
     }

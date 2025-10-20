@@ -56,7 +56,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Ad Soyad</label>
-            <p className="mt-1 text-sm text-gray-900">{patient.firstName} {patient.lastName}</p>
+            <p className="mt-1 text-sm text-gray-900">{patient.firstName || ''} {patient.lastName || ''}</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">TC Kimlik No</label>

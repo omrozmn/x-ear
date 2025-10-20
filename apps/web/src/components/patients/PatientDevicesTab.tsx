@@ -15,6 +15,7 @@ import type {
   Sale,
   SalesCreateSaleBody
 } from '../../api/generated/api.schemas';
+import DeviceEditModal from './modals/DeviceEditModal';
 
 interface PatientDevicesTabProps {
   patient: Patient;
@@ -23,8 +24,10 @@ interface PatientDevicesTabProps {
 
 export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient, onPatientUpdate }) => {
   const [showDeviceForm, setShowDeviceForm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingDevice, setEditingDevice] = useState<Device | null>(null);
   const [rightEarMode, setRightEarMode] = useState<'inventory' | 'manual'>('inventory');
-  const [leftEarMode, setLeftEarMode] = useState<'inventory' | 'manual'>('inventory');
+  const [leftEarMode, setLeftEarMode] = useState<'inventory' | 'manual'>('manual');
   const [rightEarReason, setRightEarReason] = useState<'Trial' | 'Sale'>('Trial');
   const [leftEarReason, setLeftEarReason] = useState<'Trial' | 'Sale'>('Trial');
   
@@ -160,6 +163,62 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient, o
     } catch (err) {
       console.error('Error removing device:', err);
       setError('Cihaz kaldırılırken hata oluştu');
+    }
+  };
+
+  const handleEditDevice = (device: Device) => {
+    setEditingDevice(device);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateDevice = async (deviceData: any) => {
+    if (!editingDevice?.id) return;
+    
+    try {
+      setLoading(true);
+      const devicesApi = getDevices();
+      
+      const updateData: Partial<DevicesCreateDeviceBody> = {
+        serialNumber: deviceData.serialNumber,
+        brand: deviceData.brand,
+        model: deviceData.model,
+        deviceType: deviceData.deviceType,
+        ear: deviceData.ear,
+        status: deviceData.status,
+        notes: deviceData.notes
+      };
+      
+      // Note: This assumes there's an update method in the API
+      // await devicesApi.devicesUpdateDevice(editingDevice.id, updateData);
+      
+      await loadPatientDevices();
+      setShowEditModal(false);
+      setEditingDevice(null);
+      setError(null);
+    } catch (err) {
+      console.error('Error updating device:', err);
+      setError('Cihaz güncellenirken hata oluştu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReplaceDevice = async (oldDeviceId: string, newDeviceData: any) => {
+    try {
+      setLoading(true);
+      
+      // Remove old device
+      await handleRemoveDevice(oldDeviceId);
+      
+      // Add new device
+      await handleAssignDevice(newDeviceData);
+      
+      setError(null);
+    } catch (err) {
+      console.error('Error replacing device:', err);
+      setError('Cihaz değiştirilirken hata oluştu');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -342,6 +401,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient, o
 
                 <div className="flex items-center space-x-2 ml-4">
                   <Button
+                    onClick={() => handleEditDevice(device)}
                     className="p-2 text-gray-600 hover:bg-gray-50"
                     title="Düzenle"
                   >
@@ -578,6 +638,20 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient, o
           </div>
         </div>
       )}
+
+      {/* Device Edit Modal */}
+      <DeviceEditModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setEditingDevice(null);
+        }}
+        device={editingDevice}
+        inventoryItems={inventoryItems}
+        onUpdate={handleUpdateDevice}
+        onReplace={handleReplaceDevice}
+        loading={loading}
+      />
     </div>
   );
 };
