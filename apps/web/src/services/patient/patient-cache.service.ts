@@ -7,6 +7,7 @@
 import { Patient } from '../../types/patient';
 import { PatientSearchResult, PatientSearchItem } from '../../types/patient/patient-search.types';
 import { indexedDBManager } from '../../utils/indexeddb';
+import { convertOrvalPatient } from './patient-mappers';
 
 export interface CacheStats {
   totalPatients: number;
@@ -75,6 +76,11 @@ export class PatientCacheService {
 
       // Fallback to cache
       const cached = await indexedDBManager.getCache(`${this.CACHE_PREFIX}${patientId}`);
+      if (!cached) return null;
+      // If the cached shape looks like the Orval API shape, convert it; otherwise assume domain Patient
+      if ((cached as any).firstName || (cached as any).tc_number) {
+        return convertOrvalPatient(cached as any);
+      }
       return cached as Patient | null;
     } catch (error) {
       console.error(`Failed to get cached patient ${patientId}:`, error);

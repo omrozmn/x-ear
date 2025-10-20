@@ -334,7 +334,7 @@ export function PatientDetail({ patientId: propPatientId }: PatientDetailProps) 
                 {patient.labels && patient.labels.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {patient.labels.map((label, index) => (
-                      <Badge key={index} variant="outline">
+                      <Badge key={index} variant="secondary">
                         {label}
                       </Badge>
                     ))}

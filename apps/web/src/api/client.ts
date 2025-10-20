@@ -44,7 +44,7 @@ export interface PatientsResponse {
     page: number;
     limit: number;
   };
-  meta?: any;
+  meta?: Record<string, unknown>;
   requestId: string;
   timestamp: string;
 }
@@ -63,7 +63,7 @@ export interface UpdatePatientRequest {
   birth_date?: string;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   status: number;
   data: T;
 }

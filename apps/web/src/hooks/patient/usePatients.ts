@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Patient, PatientFilters, PatientSearchResult, PatientStats } from '../../types/patient';
+import { convertOrvalPatient } from '../../services/patient/patient-mappers';
 import { PatientApiService } from '../../services/patient/patient-api.service';
 import { PatientStorageService } from '../../services/patient/patient-storage.service';
 
@@ -42,8 +43,10 @@ export function usePatients() {
       // Try to load from API first
       const result = await apiService.searchPatients(filters);
       if (result) {
-        setSearchResult(result);
-        setPatients(result.patients);
+        // Convert API (Orval) patient shapes to domain Patient
+        const domainPatients = result.patients.map(p => convertOrvalPatient(p as any));
+        setSearchResult({ ...result, patients: domainPatients } as unknown as PatientSearchResult);
+        setPatients(domainPatients);
       } else {
         // Fallback to local storage
         const localResult = await storageService.searchPatients(filters);
@@ -84,10 +87,11 @@ export function usePatients() {
     try {
       const result = await apiService.createPatient(patientData);
       if (result) {
+        const domain = convertOrvalPatient(result as any);
         // Update local state
-        setPatients(prev => [result, ...prev]);
+        setPatients(prev => [domain, ...prev]);
         await loadPatients(); // Refresh the list
-        return result;
+        return domain;
       }
       return null;
     } catch (err) {
@@ -106,9 +110,10 @@ export function usePatients() {
     try {
       const result = await apiService.updatePatient(id, updates);
       if (result) {
+        const domain = convertOrvalPatient(result as any);
         // Update local state
-        setPatients(prev => prev.map(p => p.id === id ? result : p));
-        return result;
+        setPatients(prev => prev.map(p => p.id === id ? domain : p));
+        return domain;
       }
       return null;
     } catch (err) {

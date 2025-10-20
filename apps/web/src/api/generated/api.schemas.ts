@@ -35,17 +35,7 @@ export const PatientStatus = {
 export type PatientSgkInfo = { [key: string]: unknown };
 
 /**
- * SGK information (snake_case alias)
- */
-export type PatientSgkInfo = { [key: string]: unknown };
-
-/**
  * Custom patient data
- */
-export type PatientCustomData = { [key: string]: unknown };
-
-/**
- * Custom patient data (snake_case alias)
  */
 export type PatientCustomData = { [key: string]: unknown };
 

@@ -45,7 +45,7 @@ export const InventoryModals: React.FC<InventoryModalsProps> = ({
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
         title="Product Details"
-        size="large"
+        size="lg"
       >
         {selectedItem && (
           <div className="space-y-6">
@@ -199,7 +199,7 @@ export const InventoryModals: React.FC<InventoryModalsProps> = ({
         isOpen={isBulkModalOpen}
         onClose={() => setIsBulkModalOpen(false)}
         title={`Bulk Operations (${selectedRowKeys.length} items selected)`}
-        size="medium"
+        size="md"
       >
         <div className="space-y-4">
           <div>
@@ -326,7 +326,7 @@ export const InventoryModals: React.FC<InventoryModalsProps> = ({
           </Button>
           <Button
             onClick={handleBulkOperation}
-            variant={bulkOperation === 'delete' ? 'danger' : 'default'}
+            variant={bulkOperation === 'delete' ? 'danger' : 'primary'}
           >
             {bulkOperation === 'delete' ? 'Delete Items' : 'Apply Changes'}
           </Button>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button } from '@/packages/ui-web';
+import { Button } from '@x-ear/ui-web';
 import DocumentUploadModal from '@/components/sgk/DocumentUploadModal';
 import { useSgkDocuments, useDeleteSgkDocument } from '@/hooks/sgk/useSgkDocuments';
 
@@ -39,7 +39,7 @@ export default function DocumentList({ patientId }: Props) {
                   <Button variant="ghost">Open</Button>
                 </a>
                 <Button
-                  intent="danger"
+                  variant="danger"
                   onClick={() => deleteMutation.mutate({ id: d.id, idempotencyKey: `${Date.now()}-${Math.random()}` })}
                 >
                   Delete

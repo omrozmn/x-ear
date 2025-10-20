@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button, Input } from '@/packages/ui-web';
+import { Modal, Button, Input } from '@x-ear/ui-web';
 
 type Props = {
   open: boolean;
@@ -21,7 +21,7 @@ export function AppointmentFormModal({ open, onClose, onSubmit, initialData }: P
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={initialData ? 'Edit Appointment' : 'New Appointment'}>
+    <Modal isOpen={open} onClose={onClose} title={initialData ? 'Edit Appointment' : 'New Appointment'}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Title</label>

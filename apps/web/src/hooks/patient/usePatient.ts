@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Patient } from '../../types/patient';
+import { convertOrvalPatient } from '../../services/patient/patient-mappers';
 import { PatientApiService } from '../../services/patient/patient-api.service';
 import { PatientStorageService } from '../../services/patient/patient-storage.service';
 
@@ -24,7 +25,9 @@ export function usePatient(patientId?: string) {
       // Try API first
       const result = await apiService.fetchPatient(id);
       if (result) {
-        setPatient(result as unknown as Patient);
+        // API service may return Orval-generated shape; convert to domain Patient
+        const domain = convertOrvalPatient(result as any);
+        setPatient(domain);
       } else {
         // Fallback to local storage
         const localPatient = await storageService.getPatientById(id);
@@ -55,8 +58,9 @@ export function usePatient(patientId?: string) {
     try {
       const result = await apiService.updatePatient(patient.id, updates);
       if (result) {
-        setPatient(result as unknown as Patient);
-        return result as unknown as Patient;
+        const domain = convertOrvalPatient(result as any);
+        setPatient(domain);
+        return domain;
       }
       return null;
     } catch (err) {

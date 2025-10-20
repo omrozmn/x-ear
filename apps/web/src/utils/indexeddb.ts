@@ -7,6 +7,7 @@ const DB_NAME = 'XEarPatientDB';
 const DB_VERSION = 1;
 const PATIENTS_STORE = 'patients';
 const CACHE_STORE = 'cache';
+const BLOBS_STORE = 'blobs';
 
 interface CacheEntry {
   key: string;
@@ -50,6 +51,11 @@ class IndexedDBManager {
         // Create cache store for general caching
         if (!db.objectStoreNames.contains(CACHE_STORE)) {
           db.createObjectStore(CACHE_STORE, { keyPath: 'key' });
+        }
+        // Create blobs store for binary attachments
+        if (!db.objectStoreNames.contains(BLOBS_STORE)) {
+          const blobs = db.createObjectStore(BLOBS_STORE, { keyPath: 'id' });
+          blobs.createIndex('createdAt', 'createdAt', { unique: false });
         }
       };
     });
@@ -200,6 +206,45 @@ class IndexedDBManager {
       const request = store.delete(key);
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
+    });
+  }
+
+  // Save a file blob and return a generated id reference
+  async saveFileBlob(blob: Blob, meta: { filename?: string; mime?: string } = {}): Promise<string> {
+    const db = await this.ensureDB();
+    const transaction = db.transaction([BLOBS_STORE], 'readwrite');
+    const store = transaction.objectStore(BLOBS_STORE);
+
+    const id = `blob_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const entry = {
+      id,
+      blob,
+      filename: meta.filename || 'file',
+      mime: meta.mime || ((blob as any)?.type || 'application/octet-stream'),
+      createdAt: Date.now(),
+    } as any;
+
+    return new Promise<string>((resolve, reject) => {
+      const req = store.add(entry);
+      req.onsuccess = () => resolve(id);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  // Retrieve a previously stored file blob by id
+  async getFileBlob(id: string): Promise<{ blob: Blob; filename: string; mime: string } | null> {
+    const db = await this.ensureDB();
+    const transaction = db.transaction([BLOBS_STORE], 'readonly');
+    const store = transaction.objectStore(BLOBS_STORE);
+
+    return new Promise((resolve, reject) => {
+      const req = store.get(id);
+      req.onsuccess = () => {
+        const result = req.result as any;
+        if (!result) return resolve(null);
+        resolve({ blob: result.blob, filename: result.filename, mime: result.mime });
+      };
+      req.onerror = () => reject(req.error);
     });
   }
 

@@ -19,6 +19,7 @@ import {
 } from '../generated/orval-api';
 import { indexedDBManager } from '../utils/indexeddb';
 import { AxiosResponse } from 'axios';
+import { convertOrvalPatient } from './patient/patient-mappers';
 
 export class PatientService {
   private patients: Patient[] = [];
@@ -109,7 +110,7 @@ export class PatientService {
 
       if (aggregated.length > 0) {
         // Convert OrvalPatient[] to Patient[] and cache
-        const patients = aggregated.map(p => this.convertOrvalPatient(p));
+        const patients = aggregated.map(p => convertOrvalPatient(p as any));
         this.patients = patients;
         
         // Cache in IndexedDB
@@ -216,7 +217,7 @@ export class PatientService {
         reports: patientData.reports || [],
         ereceiptHistory: patientData.ereceiptHistory || [],
         sgkInfo: patientData.sgkInfo || { hasInsurance: false },
-        priorityScore: this.calculatePriorityScore(patientData as Patient),
+  priorityScore: this.calculatePriorityScore(patientData as any as Patient),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };

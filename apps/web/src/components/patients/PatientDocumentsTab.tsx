@@ -31,6 +31,11 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
+  const [dragActive, setDragActive] = useState(false);
+  const [bulkUploadMode, setBulkUploadMode] = useState(false);
+  const [documentNotes, setDocumentNotes] = useState('');
   
   // Toast helpers
   const { success, error, info } = useToastHelpers();
@@ -99,23 +104,73 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
     const files = event.target.files;
     if (!files || files.length === 0) return;
     
+    await processFileUploads(Array.from(files));
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (bulkUploadMode) {
+      setSelectedFiles(prev => [...prev, ...files]);
+    } else {
+      processFileUploads(files);
+    }
+  };
+
+  const processFileUploads = async (files: File[]) => {
     try {
       setIsUploading(true);
       
-      for (const file of Array.from(files)) {
+      for (const file of files) {
+        const fileId = `${file.name}_${Date.now()}`;
+        setUploadProgress(prev => ({ ...prev, [fileId]: 0 }));
+        
         // Create FormData for file upload
         const formData = new FormData();
         formData.append('file', file);
         formData.append('patient_id', patientId);
         formData.append('document_type', selectedDocumentType === 'all' ? 'other' : selectedDocumentType);
+        formData.append('notes', documentNotes);
         
-        // Upload SGK document
+        // Simulate upload progress
+        const progressInterval = setInterval(() => {
+          setUploadProgress(prev => {
+            const currentProgress = prev[fileId] || 0;
+            if (currentProgress >= 90) {
+              clearInterval(progressInterval);
+              return prev;
+            }
+            return { ...prev, [fileId]: currentProgress + 10 };
+          });
+        }, 200);
+        
+        // Upload document based on type
         if (selectedDocumentType === 'sgk' || file.name.toLowerCase().includes('sgk')) {
           await sgkUploadSgkDocument(formData as any);
           
           // Trigger OCR processing for SGK documents
           await sgkProcessOcr({
-            document_id: `temp_${Date.now()}`, // This would come from upload response
+            document_id: `temp_${Date.now()}`,
             patient_id: patientId
           });
           
@@ -125,19 +180,43 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
             document_id: `temp_${Date.now()}`
           });
         }
+        
+        // Complete progress
+        clearInterval(progressInterval);
+        setUploadProgress(prev => ({ ...prev, [fileId]: 100 }));
+        
+        // Remove progress after delay
+        setTimeout(() => {
+          setUploadProgress(prev => {
+            const newProgress = { ...prev };
+            delete newProgress[fileId];
+            return newProgress;
+          });
+        }, 2000);
       }
       
       success(`${files.length} doküman başarıyla yüklendi.`);
       
-      // Reload documents
+      // Reload documents and reset form
       await loadDocuments();
       setIsUploadModalOpen(false);
+      setSelectedFiles([]);
+      setDocumentNotes('');
     } catch (err) {
       console.error('Error uploading files:', err);
       error('Doküman yüklenirken bir hata oluştu.');
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const removeSelectedFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const processBulkUpload = async () => {
+    if (selectedFiles.length === 0) return;
+    await processFileUploads(selectedFiles);
   };
 
   const handleViewDocument = (documentId: string) => {
@@ -218,59 +297,168 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
       {/* Upload Modal */}
       {isUploadModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Belge Yükle</h3>
-              <Button
-                onClick={() => setIsUploadModalOpen(false)}
-                variant="ghost"
-                size="sm"
-              >
-                <X className="w-4 h-4" />
-              </Button>
+              <h3 className="text-lg font-medium">
+                {bulkUploadMode ? 'Toplu Belge Yükleme' : 'Belge Yükle'}
+              </h3>
+              <div className="flex items-center space-x-2">
+                <Button
+                  onClick={() => setBulkUploadMode(!bulkUploadMode)}
+                  variant="outline"
+                  size="sm"
+                >
+                  {bulkUploadMode ? 'Tekli Mod' : 'Toplu Mod'}
+                </Button>
+                <Button
+                  onClick={() => setIsUploadModalOpen(false)}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
+
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Dosya Seç
-                </label>
+              {/* Drag and Drop Area */}
+              <div
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                  dragActive 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : 'border-gray-300 hover:border-gray-400'
+                }`}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              >
+                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-lg font-medium text-gray-900 mb-2">
+                  Dosyaları buraya sürükleyin veya seçin
+                </p>
+                <p className="text-sm text-gray-500 mb-4">
+                  PDF, JPG, PNG, DOC, DOCX formatları desteklenir
+                </p>
                 <input
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                   onChange={handleFileUpload}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  multiple={bulkUploadMode}
+                  className="hidden"
+                  id="file-upload"
                   disabled={isUploading}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Belge Türü
-                </label>
-                <select 
-                  value={selectedDocumentType}
-                  onChange={(e) => setSelectedDocumentType(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                <Button
+                  onClick={() => document.getElementById('file-upload')?.click()}
+                  disabled={isUploading}
+                  className="bg-blue-600 hover:bg-blue-700"
                 >
-                  <option value="other">Diğer</option>
-                  <option value="sgk">SGK Belgesi</option>
-                  <option value="medical">Tıbbi Rapor</option>
-                  <option value="invoice">Fatura</option>
-                </select>
+                  Dosya Seç
+                </Button>
               </div>
+
+              {/* Selected Files (Bulk Mode) */}
+              {bulkUploadMode && selectedFiles.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="font-medium text-gray-900">
+                    Seçilen Dosyalar ({selectedFiles.length})
+                  </h4>
+                  <div className="max-h-40 overflow-y-auto space-y-2">
+                    {selectedFiles.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <div className="flex items-center space-x-2">
+                          <FileText className="w-4 h-4 text-gray-500" />
+                          <span className="text-sm">{file.name}</span>
+                          <span className="text-xs text-gray-500">
+                            ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                          </span>
+                        </div>
+                        <Button
+                          onClick={() => removeSelectedFile(index)}
+                          variant="ghost"
+                          size="sm"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Upload Progress */}
+              {Object.keys(uploadProgress).length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="font-medium text-gray-900">Yükleme Durumu</h4>
+                  {Object.entries(uploadProgress).map(([fileId, progress]) => (
+                    <div key={fileId} className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>{fileId.split('_')[0]}</span>
+                        <span>{progress}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Document Type and Notes */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Belge Türü
+                  </label>
+                  <select 
+                    value={selectedDocumentType}
+                    onChange={(e) => setSelectedDocumentType(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="other">Diğer</option>
+                    <option value="sgk">SGK Belgesi</option>
+                    <option value="medical">Tıbbi Rapor</option>
+                    <option value="invoice">Fatura</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Notlar (Opsiyonel)
+                  </label>
+                  <Input
+                    value={documentNotes}
+                    onChange={(e) => setDocumentNotes(e.target.value)}
+                    placeholder="Belge hakkında notlar..."
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
               <div className="flex justify-end space-x-3">
                 <Button
-                  onClick={() => setIsUploadModalOpen(false)}
+                  onClick={() => {
+                    setIsUploadModalOpen(false);
+                    setSelectedFiles([]);
+                    setDocumentNotes('');
+                  }}
                   variant="outline"
                   disabled={isUploading}
                 >
                   İptal
                 </Button>
-                <Button 
-                  onClick={() => setIsUploadModalOpen(false)}
-                  disabled={isUploading}
-                >
-                  {isUploading ? 'Yükleniyor...' : 'Kapat'}
-                </Button>
+                {bulkUploadMode && selectedFiles.length > 0 && (
+                  <Button 
+                    onClick={processBulkUpload}
+                    disabled={isUploading}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {isUploading ? 'Yükleniyor...' : `${selectedFiles.length} Dosyayı Yükle`}
+                  </Button>
+                )}
               </div>
             </div>
           </div>

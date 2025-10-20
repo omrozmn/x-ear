@@ -22,10 +22,13 @@ function App() {
       queries: {
         staleTime: 1000 * 60 * 5, // 5 minutes
         gcTime: 1000 * 60 * 30, // 30 minutes (replaces cacheTime)
-        retry: (failureCount, error: any) => {
+        retry: (failureCount, error: unknown) => {
           // Don't retry on 4xx errors
-          if (error?.response?.status >= 400 && error?.response?.status < 500) {
-            return false;
+          if (error && typeof error === 'object' && 'response' in error) {
+            const httpError = error as { response?: { status?: number } };
+            if (httpError.response?.status && httpError.response.status >= 400 && httpError.response.status < 500) {
+              return false;
+            }
           }
           return failureCount < 3;
         },

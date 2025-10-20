@@ -1,0 +1,609 @@
+import React, { useState, useCallback, useMemo } from 'react';
+import { Users, AlertTriangle, CheckCircle, X, Eye, Merge, Phone, Mail, MapPin, Calendar, User, Settings, Filter, Search } from 'lucide-react';
+import { Button, Modal, useModal, Card, Badge, useToastHelpers, Checkbox, Input, Select } from '@x-ear/ui-web';
+import { Patient } from '../../types/patient';
+import { 
+  PatientMatcher, 
+  PatientMatch, 
+  MatchingConfig, 
+  DEFAULT_MATCHING_CONFIG,
+  getMatchColor,
+  getRiskColor
+} from '../../utils/patient-matching';
+
+interface PatientMatchingProps {
+  patients: Patient[];
+  onMergePatients: (primaryId: string, duplicateIds: string[]) => void;
+  onRefresh: () => void;
+}
+
+interface MergePreview {
+  primary: Patient;
+  duplicates: Patient[];
+  mergedData: Partial<Patient>;
+  conflicts: Array<{
+    field: string;
+    values: Array<{ patientId: string; value: any; patientName: string }>;
+  }>;
+}
+
+export const PatientMatching: React.FC<PatientMatchingProps> = ({
+  patients,
+  onMergePatients,
+  onRefresh
+}) => {
+  const [matches, setMatches] = useState([]);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [mergePreview, setMergePreview] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterConfidence, setFilterConfidence] = useState('all');
+  const [filterRisk, setFilterRisk] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [matchingConfig, setMatchingConfig] = useState(DEFAULT_MATCHING_CONFIG);
+  const [autoMergeEnabled, setAutoMergeEnabled] = useState(false);
+  
+  const detailModal = useModal();
+  const mergeModal = useModal();
+  const settingsModal = useModal();
+  const { success, error } = useToastHelpers();
+
+  // Patient matcher instance
+  const patientMatcher = useMemo(() => new PatientMatcher(matchingConfig), [matchingConfig]);
+
+  // Hasta eşleştirmelerini analiz et
+  const analyzeMatches = useCallback(async () => {
+    setIsAnalyzing(true);
+    
+    try {
+      const foundMatches = patientMatcher.findAllMatches(patients);
+      setMatches(foundMatches);
+      success(`${foundMatches.length} potansiyel eşleşme bulundu`);
+      
+    } catch (err) {
+      error('Eşleşme analizi sırasında hata oluştu');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [patients, patientMatcher, success, error]);
+
+  // Birleştirme önizlemesi oluştur
+  const createMergePreview = useCallback((match: PatientMatch) => {
+    const [primary, ...duplicates] = match.patients;
+    const conflicts: MergePreview['conflicts'] = [];
+    const mergedData: Partial<Patient> = { ...primary };
+    
+    // Çakışmaları tespit et
+    const fields = ['name', 'phone', 'email', 'birthDate', 'address'];
+    
+    fields.forEach(field => {
+      const values = match.patients
+        .map(p => ({ patientId: p.id, value: (p as any)[field], patientName: p.name }))
+        .filter(v => v.value);
+      
+      if (values.length > 1) {
+        const uniqueValues = [...new Set(values.map(v => v.value))];
+        if (uniqueValues.length > 1) {
+          conflicts.push({ field, values });
+        }
+      }
+    });
+    
+    return {
+      primary,
+      duplicates,
+      mergedData,
+      conflicts
+    };
+  }, []);
+
+  // Eşleşme detayını göster
+  const showMatchDetail = useCallback((match: PatientMatch) => {
+    setSelectedMatch(match);
+    detailModal.openModal();
+  }, [detailModal]);
+
+  // Birleştirme modalını aç
+  const showMergeModal = useCallback((match: PatientMatch) => {
+    const preview = createMergePreview(match);
+    setMergePreview(preview);
+    setSelectedMatch(match);
+    mergeModal.openModal();
+  }, [createMergePreview, mergeModal]);
+
+  // Hastaları birleştir
+  const handleMergePatients = useCallback(async () => {
+    if (!selectedMatch || !mergePreview) return;
+    
+    try {
+      const primaryId = mergePreview.primary.id;
+      const duplicateIds = mergePreview.duplicates.map(p => p.id);
+      
+      await onMergePatients(primaryId, duplicateIds);
+      
+      // Eşleşmeyi güncelle
+      setMatches(prev => prev.map(m => 
+        m.id === selectedMatch.id 
+          ? { ...m, status: 'merged' as const }
+          : m
+      ));
+      
+      success('Hastalar başarıyla birleştirildi');
+      mergeModal.closeModal();
+      onRefresh();
+      
+    } catch (err) {
+      error('Hasta birleştirme sırasında hata oluştu');
+    }
+  }, [selectedMatch, mergePreview, onMergePatients, success, error, mergeModal, onRefresh]);
+
+  // Eşleşmeyi yoksay
+  const ignoreMatch = useCallback((matchId: string) => {
+    setMatches(prev => prev.map(m => 
+      m.id === matchId 
+        ? { ...m, status: 'ignored' as const }
+        : m
+    ));
+  }, []);
+
+  // Filtrelenmiş eşleşmeler
+  const filteredMatches = useMemo(() => {
+    return matches.filter(match => {
+      // Status filtresi
+      if (filterStatus !== 'all' && match.status !== filterStatus) return false;
+      
+      // Confidence filtresi
+      if (filterConfidence !== 'all' && match.confidence !== filterConfidence) return false;
+      
+      // Risk filtresi
+      if (filterRisk !== 'all' && match.riskLevel !== filterRisk) return false;
+      
+      // Arama filtresi
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        const matchesSearch = match.patients.some(patient => 
+          patient.name?.toLowerCase().includes(searchLower) ||
+          patient.phone?.includes(searchTerm) ||
+          patient.email?.toLowerCase().includes(searchLower)
+        );
+        if (!matchesSearch) return false;
+      }
+      
+      return true;
+    });
+  }, [matches, filterStatus, filterConfidence, filterRisk, searchTerm]);
+
+  // Bekleyen eşleşmeler
+  const pendingMatches = useMemo(() => 
+    filteredMatches.filter(m => m.status === 'pending'), 
+    [filteredMatches]
+  );
+
+  // Güven seviyesi etiketi
+  const getConfidenceLabel = (confidence: string) => {
+    switch (confidence) {
+      case 'high': return 'Yüksek';
+      case 'medium': return 'Orta';
+      case 'low': return 'Düşük';
+      default: return 'Bilinmeyen';
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Başlık ve Kontroller */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">Hasta Eşleştirme</h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Potansiyel duplikat hastaları tespit edin ve birleştirin
+          </p>
+        </div>
+        
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              checked={autoMergeEnabled}
+              onChange={(checked) => setAutoMergeEnabled(checked)}
+            />
+            <span className="text-sm text-gray-700">Otomatik birleştirme</span>
+          </div>
+          
+          <Button
+            variant="outline"
+            onClick={() => settingsModal.openModal()}
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Ayarlar
+          </Button>
+          
+          <Button
+            onClick={analyzeMatches}
+            loading={isAnalyzing}
+            disabled={patients.length < 2}
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Analiz Et
+          </Button>
+        </div>
+      </div>
+
+      {/* Filtreler */}
+      {matches.length > 0 && (
+        <Card className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Arama
+              </label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Hasta ara..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Durum
+              </label>
+              <Select
+                value={filterStatus}
+                onChange={(value) => setFilterStatus(value as any)}
+                options={[
+                  { value: 'all', label: 'Tümü' },
+                  { value: 'pending', label: 'Beklemede' },
+                  { value: 'reviewed', label: 'İncelendi' },
+                  { value: 'merged', label: 'Birleştirildi' },
+                  { value: 'ignored', label: 'Yoksayıldı' }
+                ]}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Güven Seviyesi
+              </label>
+              <Select
+                value={filterConfidence}
+                onChange={(value) => setFilterConfidence(value as any)}
+                options={[
+                  { value: 'all', label: 'Tümü' },
+                  { value: 'high', label: 'Yüksek' },
+                  { value: 'medium', label: 'Orta' },
+                  { value: 'low', label: 'Düşük' }
+                ]}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Risk Seviyesi
+              </label>
+              <Select
+                value={filterRisk}
+                onChange={(value) => setFilterRisk(value as any)}
+                options={[
+                  { value: 'all', label: 'Tümü' },
+                  { value: 'critical', label: 'Kritik' },
+                  { value: 'high', label: 'Yüksek' },
+                  { value: 'medium', label: 'Orta' },
+                  { value: 'low', label: 'Düşük' }
+                ]}
+              />
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* İstatistikler */}
+      {matches.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="p-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Users className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Toplam Eşleşme</p>
+                <p className="text-xl font-semibold">{matches.length}</p>
+              </div>
+            </div>
+          </Card>
+          
+          <Card className="p-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Yüksek Güven</p>
+                <p className="text-xl font-semibold">
+                  {matches.filter(m => m.confidence === 'high').length}
+                </p>
+              </div>
+            </div>
+          </Card>
+          
+          <Card className="p-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Birleştirildi</p>
+                <p className="text-xl font-semibold">
+                  {matches.filter(m => m.status === 'merged').length}
+                </p>
+              </div>
+            </div>
+          </Card>
+          
+          <Card className="p-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <X className="w-5 h-5 text-yellow-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Beklemede</p>
+                <p className="text-xl font-semibold">{pendingMatches.length}</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Eşleşme Listesi */}
+      {filteredMatches.length > 0 ? (
+        <div className="space-y-4">
+          {filteredMatches.map(match => (
+            <Card key={match.id} className="p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <Badge className={getMatchColor(match.confidence)}>
+                      {getConfidenceLabel(match.confidence)} Güven
+                    </Badge>
+                    <Badge className={getRiskColor(match.riskLevel)}>
+                      {match.riskLevel} Risk
+                    </Badge>
+                    <span className="text-sm text-gray-600">
+                      %{Math.round(match.similarity * 100)} benzerlik
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                    {match.patients.map((patient, index) => (
+                      <div key={patient.id} className="border rounded-lg p-3">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <User className="w-4 h-4 text-gray-500" />
+                          <span className="font-medium">{patient.name}</span>
+                        </div>
+                        
+                        <div className="space-y-1 text-sm text-gray-600">
+                          {patient.phone && (
+                            <div className="flex items-center space-x-2">
+                              <Phone className="w-3 h-3" />
+                              <span>{patient.phone}</span>
+                            </div>
+                          )}
+                          
+                          {patient.email && (
+                            <div className="flex items-center space-x-2">
+                              <Mail className="w-3 h-3" />
+                              <span>{patient.email}</span>
+                            </div>
+                          )}
+                          
+                          {patient.birthDate && (
+                            <div className="flex items-center space-x-2">
+                              <Calendar className="w-3 h-3" />
+                              <span>{patient.birthDate}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="text-sm text-gray-600">
+                    <strong>Eşleşme Nedenleri:</strong> {match.matchReasons.join(', ')}
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2 ml-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => showMatchDetail(match)}
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => showMergeModal(match)}
+                    disabled={match.status !== 'pending'}
+                  >
+                    <Merge className="w-4 h-4" />
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => ignoreMatch(match.id)}
+                    disabled={match.status !== 'pending'}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : matches.length > 0 ? (
+        <Card className="p-8 text-center">
+          <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Filtre kriterlerine uygun eşleşme bulunamadı
+          </h3>
+          <p className="text-gray-600">
+            Farklı filtre seçeneklerini deneyin veya filtreleri temizleyin.
+          </p>
+        </Card>
+      ) : (
+        <Card className="p-8 text-center">
+          <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Henüz analiz yapılmadı
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Potansiyel duplikat hastaları bulmak için analiz başlatın.
+          </p>
+          <Button onClick={analyzeMatches} disabled={patients.length < 2}>
+            <Users className="w-4 h-4 mr-2" />
+            Analiz Et
+          </Button>
+        </Card>
+      )}
+
+      {/* Detay Modal */}
+      <Modal
+        isOpen={detailModal.isOpen}
+        onClose={detailModal.closeModal}
+        title="Eşleşme Detayları"
+        size="lg"
+      >
+        {selectedMatch && (
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <Badge className={getMatchColor(selectedMatch.confidence)}>
+                {getConfidenceLabel(selectedMatch.confidence)} Güven
+              </Badge>
+              <Badge className={getRiskColor(selectedMatch.riskLevel)}>
+                {selectedMatch.riskLevel} Risk
+              </Badge>
+              <span className="text-sm text-gray-600">
+                %{Math.round(selectedMatch.similarity * 100)} benzerlik
+              </span>
+            </div>
+            
+            <div>
+              <h4 className="font-medium mb-2">Eşleşme Nedenleri:</h4>
+              <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                {selectedMatch.matchReasons.map((reason, index) => (
+                  <li key={index}>{reason}</li>
+                ))}
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-medium mb-2">Hasta Bilgileri:</h4>
+              <div className="space-y-3">
+                {selectedMatch.patients.map((patient, index) => (
+                  <div key={patient.id} className="border rounded-lg p-3">
+                    <h5 className="font-medium mb-2">Hasta {index + 1}: {patient.name}</h5>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div><strong>Telefon:</strong> {patient.phone || 'Yok'}</div>
+                      <div><strong>E-posta:</strong> {patient.email || 'Yok'}</div>
+                      <div><strong>Doğum Tarihi:</strong> {patient.birthDate || 'Yok'}</div>
+                      <div><strong>Adres:</strong> {patient.address || 'Yok'}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Birleştirme Modal */}
+      <Modal
+        isOpen={mergeModal.isOpen}
+        onClose={mergeModal.closeModal}
+        title="Hastaları Birleştir"
+        size="lg"
+      >
+        {mergePreview && (
+          <div className="space-y-4">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                <span className="font-medium text-yellow-800">Dikkat</span>
+              </div>
+              <p className="text-yellow-700 mt-1">
+                Bu işlem geri alınamaz. Seçilen hastalar birleştirilecek ve duplikat kayıtlar silinecektir.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-medium mb-2">Ana Hasta (Korunacak):</h4>
+              <div className="border rounded-lg p-3 bg-green-50">
+                <div className="font-medium">{mergePreview.primary.name}</div>
+                <div className="text-sm text-gray-600">
+                  {mergePreview.primary.phone} • {mergePreview.primary.email}
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-medium mb-2">Silinecek Hastalar:</h4>
+              <div className="space-y-2">
+                {mergePreview.duplicates.map(patient => (
+                  <div key={patient.id} className="border rounded-lg p-3 bg-red-50">
+                    <div className="font-medium">{patient.name}</div>
+                    <div className="text-sm text-gray-600">
+                      {patient.phone} • {patient.email}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {mergePreview.conflicts.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-2 text-orange-600">Çakışan Alanlar:</h4>
+                <div className="space-y-2">
+                  {mergePreview.conflicts.map((conflict, index) => (
+                    <div key={index} className="border rounded-lg p-3 bg-orange-50">
+                      <div className="font-medium capitalize">{conflict.field}</div>
+                      <div className="space-y-1 mt-1">
+                        {conflict.values.map((value, valueIndex) => (
+                          <div key={valueIndex} className="text-sm">
+                            <strong>{value.patientName}:</strong> {value.value}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={mergeModal.closeModal}
+              >
+                İptal
+              </Button>
+              <Button
+                onClick={handleMergePatients}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Birleştir
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+};
+
+export default PatientMatching;

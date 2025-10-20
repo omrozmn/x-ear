@@ -7,7 +7,7 @@ module.exports = {
     'plugin:react-hooks/recommended',
     'plugin:boundaries/recommended',
   ],
-  ignorePatterns: ['dist', '.eslintrc.cjs'],
+  ignorePatterns: ['dist', '.eslintrc.cjs', 'src/api/generated/**/*', 'src/generated/**/*', 'src/api/orval-mutator.ts'],
   parser: '@typescript-eslint/parser',
   plugins: ['react-refresh', 'boundaries'],
   rules: {

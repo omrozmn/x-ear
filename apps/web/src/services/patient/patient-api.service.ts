@@ -12,6 +12,7 @@ import {
   PaginationInfo
 } from '../../generated/orval-api';
 import type { Patient } from '../../types/patient';
+import { convertOrvalPatient } from './patient-mappers';
 
 export class PatientApiService {
   /**
@@ -56,8 +57,8 @@ export class PatientApiService {
         }
       }
 
-      console.log(`✅ Fetched ${aggregated.length} patients from API`);
-      return aggregated;
+  console.log(`✅ Fetched ${aggregated.length} patients from API`);
+  return aggregated;
       
     } catch (error) {
       console.error('❌ Failed to fetch patients from API:', error);
@@ -75,8 +76,8 @@ export class PatientApiService {
       // return resp.data;
       
       // For now, fetch all and find the specific one
-      const allPatients = await this.fetchAllPatients();
-      return allPatients.find(p => p.id === id) || null;
+  const allPatients = await this.fetchAllPatients();
+  return allPatients.find(p => p.id === id) || null;
       
     } catch (error) {
       console.error(`❌ Failed to fetch patient ${id}:`, error);
@@ -94,12 +95,12 @@ export class PatientApiService {
       // return resp.data;
       
       // For now, simulate API response
-      const newPatient: OrvalPatient = {
-        ...patientData,
+      const newPatient: OrvalPatient = ({
+        ...(patientData as any),
         id: this.generateId(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      } as OrvalPatient;
+      } as any) as OrvalPatient;
       
       return newPatient;
       
@@ -124,11 +125,11 @@ export class PatientApiService {
         return null;
       }
       
-      const updatedPatient: OrvalPatient = {
-        ...existingPatient,
-        ...updates,
+      const updatedPatient: OrvalPatient = ({
+        ...(existingPatient as any),
+        ...(updates as any),
         updatedAt: new Date().toISOString()
-      } as OrvalPatient;
+      } as any) as OrvalPatient;
       
       return updatedPatient;
       
@@ -157,90 +158,9 @@ export class PatientApiService {
     }
   }
 
-  /**
-   * Convert Orval patient to internal Patient type
-   */
-  private convertOrvalPatient(orvalPatient: OrvalPatient): Patient {
-    // Convert Orval patient type to internal Patient type
-    // Note: Many fields in our internal Patient type don't exist in Orval Patient
-    // We'll map what we can and provide defaults for the rest
-    
-    const fullName = `${orvalPatient.firstName || ''} ${orvalPatient.lastName || ''}`.trim();
-    
-    return {
-      id: orvalPatient.id || '',
-      name: fullName,
-      firstName: orvalPatient.firstName,
-      lastName: orvalPatient.lastName,
-      phone: orvalPatient.phone,
-      tcNumber: orvalPatient.tcNumber || (orvalPatient as any).tc_number,
-      birthDate: orvalPatient.birthDate || (orvalPatient as any).birth_date,
-      email: orvalPatient.email,
-      address: (orvalPatient as any).addressFull || (orvalPatient as any).address_full,
-      
-      // Map status and classification with proper defaults
-      status: (orvalPatient.status === 'active' || orvalPatient.status === 'inactive') 
-        ? orvalPatient.status as Patient['status']
-        : 'active',
-      segment: 'new', // Default since Orval doesn't have our segment enum
-      label: 'yeni', // Default since Orval doesn't have our label enum  
-      acquisitionType: (orvalPatient as any).acquisitionType || 'diger',
-      
-      // Initialize arrays and optional fields
-      tags: orvalPatient.tags || [],
-      priorityScore: orvalPatient.priorityScore || (orvalPatient as any).priority_score,
-      
-      // Device information - initialize with defaults since Orval may not have these
-      deviceTrial: (orvalPatient as any).deviceTrial || false,
-      trialDevice: (orvalPatient as any).trialDevice,
-      trialDate: (orvalPatient as any).trialDate,
-      priceGiven: (orvalPatient as any).priceGiven,
-      purchased: (orvalPatient as any).purchased || false,
-      purchaseDate: (orvalPatient as any).purchaseDate,
-      deviceType: (orvalPatient as any).deviceType as Patient['deviceType'],
-      deviceModel: (orvalPatient as any).deviceModel,
-      overdueAmount: (orvalPatient as any).overdueAmount,
-      
-      // SGK information
-      sgkStatus: (orvalPatient as any).sgkStatus as Patient['sgkStatus'],
-      sgkSubmittedDate: (orvalPatient as any).sgkSubmittedDate,
-      sgkDeadline: (orvalPatient as any).sgkDeadline,
-      
-      // Reports
-      deviceReportRequired: (orvalPatient as any).deviceReportRequired,
-      batteryReportRequired: (orvalPatient as any).batteryReportRequired,
-      batteryReportDue: (orvalPatient as any).batteryReportDue,
-      
-      // Contact information
-      lastContactDate: (orvalPatient as any).lastContactDate,
-      lastAppointmentDate: (orvalPatient as any).lastAppointmentDate,
-      missedAppointments: (orvalPatient as any).missedAppointments,
-      lastPriorityTaskDate: (orvalPatient as any).lastPriorityTaskDate,
-      renewalContactMade: (orvalPatient as any).renewalContactMade,
-      assignedClinician: (orvalPatient as any).assignedClinician,
-      
-      // Related data - initialize empty arrays
-      devices: (orvalPatient as any).devices || [],
-      notes: (orvalPatient as any).notes || [],
-      communications: (orvalPatient as any).communications || [],
-      reports: (orvalPatient as any).reports || [],
-      ereceiptHistory: (orvalPatient as any).ereceiptHistory || [],
-      appointments: (orvalPatient as any).appointments || [],
-      installments: (orvalPatient as any).installments || [],
-      sales: (orvalPatient as any).sales || [],
-      
-      // SGK information - convert from generic object to our SGK structure
-      sgkInfo: {
-        hasInsurance: false,
-        ...((orvalPatient as any).sgkInfo || (orvalPatient as any).sgk_info || {})
-      },
-      sgkWorkflow: (orvalPatient as any).sgkWorkflow,
-      
-      // Metadata
-      createdAt: orvalPatient.createdAt || new Date().toISOString(),
-      updatedAt: orvalPatient.updatedAt || new Date().toISOString(),
-    } as Patient;
-  }
+  // The mapping from Orval patient to domain Patient is provided by
+  // 'convertOrvalPatient' in 'services/patient/patient-mappers.ts'.
+  // This class intentionally does not duplicate mapping logic.
 
   private generateId(): string {
     return `patient_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

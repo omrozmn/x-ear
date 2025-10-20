@@ -16,13 +16,13 @@ const apiClient = axios.create({
 
 // Idempotency manager for request deduplication
 class IdempotencyManager {
-  private cache = new Map<string, Promise<any>>();
+  private cache = new Map<string, Promise<unknown>>();
 
-  getCachedRequest(key: string): Promise<any> | null {
+  getCachedRequest(key: string): Promise<unknown> | null {
     return this.cache.get(key) || null;
   }
 
-  setCachedRequest(key: string, promise: Promise<any>): void {
+  setCachedRequest(key: string, promise: Promise<unknown>): void {
     this.cache.set(key, promise);
     
     // Clean up after 5 minutes
@@ -39,6 +39,8 @@ class IdempotencyManager {
   }
 }
 
+// Create instance but don't use it yet - will be used for future idempotency features
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const idempotencyManager = new IdempotencyManager();
 
 // Queue request in outbox for offline support

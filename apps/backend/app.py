@@ -328,6 +328,10 @@ app.register_blueprint(replacements_bp)  # replacements_bp already has url_prefi
 from routes.notifications import notifications_bp
 app.register_blueprint(notifications_bp, url_prefix='/api')
 
+# Communications blueprint
+from routes.communications import communications_bp
+app.register_blueprint(communications_bp, url_prefix='/api')
+
 # ===== PATIENT SUBRESOURCES ENDPOINTS =====
 from routes.patient_subresources import patient_subresources_bp
 app.register_blueprint(patient_subresources_bp, url_prefix='/api')

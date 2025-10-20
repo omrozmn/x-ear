@@ -313,6 +313,34 @@ export class IndexedDBOutbox {
       ? endpoint 
       : `${API_BASE_URL}${endpoint}`;
 
+    // If operation references a stored blob, retrieve it and send multipart/form-data
+    if (data && (data as any).blobId) {
+      const { indexedDBManager } = await import('@/utils/indexeddb');
+      const blobRef = await indexedDBManager.getFileBlob((data as any).blobId);
+      if (!blobRef) throw new Error('Blob not found for outbox operation');
+
+      const form = new FormData();
+      form.append('file', blobRef.blob, blobRef.filename || 'file');
+      // append metadata
+      if ((data as any).filename) form.append('filename', (data as any).filename);
+      if ((data as any).mime) form.append('mime', (data as any).mime);
+
+      const response = await fetch(resolvedEndpoint, {
+        method,
+        headers: {
+          // Let the browser set Content-Type with boundary for FormData
+          ...headers
+        },
+        body: form
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    }
+
     const response = await fetch(resolvedEndpoint, {
       method,
       headers: {

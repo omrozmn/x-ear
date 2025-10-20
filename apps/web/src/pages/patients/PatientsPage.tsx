@@ -1,11 +1,15 @@
 import React, { Suspense, useState } from 'react';
-import { PatientList } from '@/components/patients/list/PatientList';
+import { PatientList } from '@/components/patients/PatientList';
 import { PatientSearch, PatientSearchFilters } from '@/components/patients/PatientSearch';
 import { PatientFilters } from '@/components/patients/PatientFilters';
 import { PatientBulkActions } from '@/components/patients/PatientBulkActions';
-import { PatientStats } from '@/components/patients/list/PatientStats';
-import { PatientCSVUpload } from '@/components/patients/list/PatientCSVUpload';
-import { PatientSavedViews } from '@/components/patients/list/PatientSavedViews';
+import { PatientStats } from '@/components/patients/stats/PatientStats';
+import { PatientCSVUpload } from '@/components/patients/csv/PatientCSVUpload';
+import { PatientSavedViews } from '@/components/patients/views/PatientSavedViews';
+import { PatientBulkOperations } from '@/components/patients/PatientBulkOperations';
+import { PatientAdvancedSearch } from '@/components/patients/PatientAdvancedSearch';
+import { PatientMatching } from '@/components/patients/PatientMatching';
+import { Tabs } from '@x-ear/ui-web';
 
 export function PatientsPage() {
   const [patients, setPatients] = useState<any[]>([]);
@@ -108,46 +112,70 @@ export function PatientsPage() {
       {/* Stats */}
       <PatientStats stats={mockStats} />
 
-      {/* Filters & Search */}
-      <div className="p-6 space-y-4">
-        <PatientSavedViews 
-          savedViews={[]}
-          onSelectView={handleSelectView}
-          onSaveView={handleSaveView}
-          onUpdateView={handleUpdateView}
-          onDeleteView={handleDeleteView}
-          currentFilters={filters}
-        />
-        <PatientSearch 
-          value={searchValue}
-          onChange={setSearchValue}
-        />
-        <PatientFilters 
-          filters={filters}
-          onChange={setFilters}
-          onClearFilters={handleClearFilters}
-        />
-        <PatientBulkActions 
-          selectedPatients={selectedPatients}
-          totalPatients={patients.length}
-          onSelectAll={handleSelectAll}
-          onDeselectAll={handleDeselectAll}
-          onBulkAddTag={handleBulkAddTag}
-          onBulkRemoveTag={handleBulkRemoveTag}
-          onBulkSendSMS={handleBulkSendSMS}
-          onBulkSendEmail={handleBulkSendEmail}
-          onBulkExport={handleBulkExport}
-          onBulkStatusChange={handleBulkStatusChange}
-          onBulkDelete={handleBulkDelete}
-          onBulkScheduleAppointment={handleBulkScheduleAppointment}
-          onBulkAssignToSegment={handleBulkAssignToSegment}
-        />
-      </div>
+      {/* Phase 3 Features - Tabs */}
+      <Tabs defaultValue="list" className="flex-1 flex flex-col">
+        <Tabs.List className="px-6 pt-4">
+          <Tabs.Trigger value="list">Hasta Listesi</Tabs.Trigger>
+          <Tabs.Trigger value="bulk">Toplu İşlemler</Tabs.Trigger>
+          <Tabs.Trigger value="search">Gelişmiş Arama</Tabs.Trigger>
+          <Tabs.Trigger value="matching">Hasta Eşleştirme</Tabs.Trigger>
+        </Tabs.List>
 
-      {/* Patient List */}
-      <div className="flex-1 p-6">
-        <PatientList patients={patients || []} />
-      </div>
+        <Tabs.Content value="list" className="flex-1 flex flex-col">
+          {/* Filters & Search */}
+          <div className="p-6 space-y-4">
+            <PatientSavedViews 
+              savedViews={[]}
+              onSelectView={handleSelectView}
+              onSaveView={handleSaveView}
+              onUpdateView={handleUpdateView}
+              onDeleteView={handleDeleteView}
+              currentFilters={filters}
+            />
+            <PatientSearch 
+              value={searchValue}
+              onChange={setSearchValue}
+            />
+            <PatientFilters 
+              filters={filters}
+              onChange={setFilters}
+              onClearFilters={handleClearFilters}
+            />
+            <PatientBulkActions 
+              selectedPatients={selectedPatients}
+              totalPatients={patients.length}
+              onSelectAll={handleSelectAll}
+              onDeselectAll={handleDeselectAll}
+              onBulkAddTag={handleBulkAddTag}
+              onBulkRemoveTag={handleBulkRemoveTag}
+              onBulkSendSMS={handleBulkSendSMS}
+              onBulkSendEmail={handleBulkSendEmail}
+              onBulkExport={handleBulkExport}
+              onBulkStatusChange={handleBulkStatusChange}
+              onBulkDelete={handleBulkDelete}
+              onBulkScheduleAppointment={handleBulkScheduleAppointment}
+              onBulkAssignToSegment={handleBulkAssignToSegment}
+            />
+          </div>
+
+          {/* Patient List */}
+          <div className="flex-1 p-6">
+            <PatientList patients={patients || []} />
+          </div>
+        </Tabs.Content>
+
+        <Tabs.Content value="bulk" className="flex-1 p-6">
+          <PatientBulkOperations />
+        </Tabs.Content>
+
+        <Tabs.Content value="search" className="flex-1 p-6">
+          <PatientAdvancedSearch />
+        </Tabs.Content>
+
+        <Tabs.Content value="matching" className="flex-1 p-6">
+          <PatientMatching />
+        </Tabs.Content>
+      </Tabs>
     </div>
   );
 }

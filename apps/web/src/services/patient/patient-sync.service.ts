@@ -8,6 +8,7 @@ import { Patient } from '../../types/patient';
 import { indexedDBManager } from '../../utils/indexeddb';
 import { outbox, OutboxOperation } from '../../utils/outbox';
 import { patientsGetPatients } from '../../generated/orval-api';
+import { convertOrvalPatient } from './patient-mappers';
 
 export interface SyncResult {
   success: boolean;
@@ -217,16 +218,18 @@ export class PatientSyncService {
       const response = await patientsGetPatients({});
       
       if (response.data?.data) {
-        for (const remotePatient of response.data.data) {
+        for (const remotePatientRaw of response.data.data) {
           try {
-            const syncResult = await this.syncRemotePatient(remotePatient as Patient, options);
+            // Convert remote (orval) patient shape to internal domain Patient before syncing
+            const remotePatient = convertOrvalPatient(remotePatientRaw as any);
+            const syncResult = await this.syncRemotePatient(remotePatient, options);
             if (syncResult.conflict) {
               result.conflicts.push(syncResult.conflict);
             } else {
               result.synced++;
             }
           } catch (error) {
-            console.error(`Failed to sync patient ${remotePatient.id}:`, error);
+            console.error(`Failed to sync patient ${remotePatientRaw?.id}:`, error);
             result.failed++;
           }
         }

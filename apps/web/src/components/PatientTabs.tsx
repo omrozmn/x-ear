@@ -9,6 +9,7 @@ import {
   Settings,
   Clock
 } from 'lucide-react';
+import { Button } from '@x-ear/ui-web';
 
 export interface TabItem {
   id: string;
@@ -76,9 +77,10 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({
       <div className="px-6">
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
           {tabs.map((tab) => (
-            <button
+            <Button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
+              variant={activeTab === tab.id ? 'default' : 'ghost'}
               className={`
                 group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap
                 ${
@@ -108,7 +110,7 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({
                   {tab.count}
                 </span>
               )}
-            </button>
+            </Button>
           ))}
         </nav>
       </div>

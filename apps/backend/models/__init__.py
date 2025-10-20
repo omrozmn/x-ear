@@ -12,6 +12,7 @@ from .sales import Sale, PaymentPlan, PaymentInstallment, DeviceAssignment, Paym
 from .promissory_note import PromissoryNote
 from .system import Settings
 from .campaign import Campaign, SMSLog
+from .communication import EmailLog, CommunicationTemplate, CommunicationHistory
 from .app import App
 from .role import Role, role_permissions
 from .permission import Permission
@@ -32,6 +33,7 @@ __all__ = [
     'Sale', 'PaymentPlan', 'PaymentInstallment', 'DeviceAssignment', 'PaymentRecord',
     'PromissoryNote',
     'Settings', 'Campaign', 'SMSLog',
+    'EmailLog', 'CommunicationTemplate', 'CommunicationHistory',
     'Inventory', 'Supplier', 'ProductSupplier',
     'DeviceReplacement', 'ReturnInvoice',
     'Invoice', 'Proforma',

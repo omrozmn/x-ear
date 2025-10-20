@@ -18,6 +18,9 @@ export type InvoiceType =
   | 'replacement'  // değişim faturası
   | 'sgk';         // SGK faturası
 
+// Backwards-compatible aliases used in some legacy services
+export type InvoiceTypeLegacy = InvoiceType | 'standard' | 'credit_note' | 'debit_note';
+
 export type PaymentMethod = 
   | 'cash'         // nakit
   | 'credit_card'  // kredi kartı
@@ -53,6 +56,8 @@ export interface InvoiceItem {
   // Device specific fields
   serialNumber?: string;
   warrantyPeriod?: number;
+  // legacy/category used by some services
+  category?: string;
 }
 
 export interface InvoiceAddress {
@@ -76,7 +81,7 @@ export interface InvoiceTax {
 export interface Invoice {
   id: string;
   invoiceNumber: string;
-  type: InvoiceType;
+  type: InvoiceTypeLegacy;
   status: InvoiceStatus;
   
   // Patient/Customer information
@@ -84,24 +89,27 @@ export interface Invoice {
   patientName: string;
   patientPhone?: string;
   patientTcNumber?: string;
+  // Legacy customer fields (some services use customer* names)
+  customerId?: string;
+  customerName?: string;
+  customerTaxNumber?: string;
+  customerAddress?: any;
   
   // Address information
-  billingAddress: InvoiceAddress;
+  billingAddress?: InvoiceAddress;
   shippingAddress?: InvoiceAddress;
-  
-  // Invoice details
-  issueDate: string;
+  issueDate?: string;
   dueDate?: string;
   paymentDate?: string;
   paymentMethod?: PaymentMethod;
   
-  // Items and calculations
-  items: InvoiceItem[];
-  subtotal: number;
-  totalDiscount: number;
-  taxes: InvoiceTax[];
-  totalTax: number;
-  grandTotal: number;
+  subtotal?: number;
+  totalDiscount?: number;
+  taxes?: InvoiceTax[] | Array<{ type: string; rate: number; amount: number }>;
+  totalTax?: number;
+  // legacy name used in some services
+  totalAmount?: number;
+  grandTotal?: number;
   
   // Currency
   currency: string; // Default: 'TRY'
@@ -122,19 +130,13 @@ export interface Invoice {
   
   // SGK specific fields
   sgkSubmissionId?: string;
-  sgkApprovalNumber?: string;
-  sgkSubmissionDate?: string;
-  
-  // File attachments
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
   pdfUrl?: string;
   xmlUrl?: string;
   attachments?: InvoiceAttachment[];
-  
-  // Audit fields
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  updatedBy?: string;
 }
 
 export interface InvoiceAttachment {
@@ -197,6 +199,9 @@ export interface InvoiceFilters {
   paymentMethod?: PaymentMethod[];
   patientId?: string;
   patientName?: string;
+  // legacy
+  customerId?: string;
+  customerName?: string;
   invoiceNumber?: string;
   
   // Date filters
@@ -227,58 +232,73 @@ export interface InvoiceSearchResult {
   total: number;
   totalPages: number;
   page: number;
-  pageSize: number;
+  pageSize?: number;
+  limit?: number;
   hasMore: boolean;
   filters: InvoiceFilters;
 }
 
 export interface InvoiceStats {
   total: number;
-  byStatus: Record<InvoiceStatus, number>;
-  byType: Record<InvoiceType, number>;
-  byPaymentMethod: Record<PaymentMethod, number>;
-  
-  // Financial stats
-  totalAmount: number;
-  paidAmount: number;
-  pendingAmount: number;
-  overdueAmount: number;
-  
+  // provide both structured and legacy keyed stats to match service returns
+  byStatus?: Partial<Record<string, number>>;
+  byType?: Partial<Record<string, number>>;
+  byPaymentMethod?: Partial<Record<string, number>>;
+
+  // Financial stats (optional to allow legacy shapes)
+  totalAmount?: number;
+  paidAmount?: number;
+  pendingAmount?: number;
+  overdueAmount?: number;
+
   // Monthly stats
-  monthlyRevenue: number;
-  monthlyCount: number;
-  
+  monthlyRevenue?: number;
+  monthlyCount?: number;
+
   // SGK stats
-  sgkSubmitted: number;
-  sgkApproved: number;
-  sgkPending: number;
+  sgkSubmitted?: number;
+  sgkApproved?: number;
+  sgkPending?: number;
 }
 
 export interface CreateInvoiceData {
-  type: InvoiceType;
+  type: InvoiceTypeLegacy | InvoiceType;
+  // Legacy customer fields
+  customerId?: string;
+  customerName?: string;
+  customerTaxNumber?: string;
+  customerAddress?: any;
+
   patientId?: string;
-  patientName: string;
+  patientName?: string;
   patientPhone?: string;
   patientTcNumber?: string;
   deviceId?: string;
-  
-  billingAddress: InvoiceAddress;
+
+  invoiceNumber?: string;
+  billingAddress?: InvoiceAddress;
   shippingAddress?: InvoiceAddress;
-  
-  issueDate: string;
+
+  issueDate?: string;
   dueDate?: string;
   paymentMethod?: PaymentMethod;
-  
-  items: Omit<InvoiceItem, 'id' | 'taxAmount' | 'totalPrice'>[];
-  
+
+  items?: Omit<InvoiceItem, 'id' | 'taxAmount' | 'totalPrice'>[];
+
+  // Legacy calculation fields
+  subtotal?: number;
+  taxes?: Array<{ type: string; rate: number; amount: number }>;
+  totalAmount?: number;
+  status?: InvoiceStatus;
+
   notes?: string;
   internalNotes?: string;
   referenceNumber?: string;
   orderNumber?: string;
-  
+
   currency?: string;
   exchangeRate?: number;
-  
+
   // Template options
   templateId?: string;
   saveAsTemplate?: boolean;
@@ -323,6 +343,10 @@ export interface InvoiceFormData {
   notes?: string;
   internalNotes?: string;
   referenceNumber?: string;
+  draft?: number;
+  sent?: number;
+  paid?: number;
+  overdue?: number;
   orderNumber?: string;
   
   // Options

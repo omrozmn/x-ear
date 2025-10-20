@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppointmentFormModal } from '@/components/appointments/AppointmentFormModal';
 import { useAppointmentsList } from '@/hooks/appointments/useAppointments';
-import { Button } from '@/packages/ui-web';
+import { Button } from '@x-ear/ui-web';
 
 export function AppointmentsPage() {
   const { data, isLoading } = useAppointmentsList();
