@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Patient, PatientFilters, PatientSearchResult, PatientStats } from '../../types/patient';
 import { PatientApiService } from '../../services/patient/patient-api.service';

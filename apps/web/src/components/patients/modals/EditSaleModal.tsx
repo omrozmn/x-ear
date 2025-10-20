@@ -1,17 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
   Button, 
   Input, 
   Label, 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue,
   Textarea,
   Card,
   CardContent,
@@ -19,11 +10,11 @@ import {
   CardTitle,
   Badge,
   Alert,
-  AlertDescription,
   Spinner
 } from '@x-ear/ui-web';
-import { X, Edit, DollarSign, CreditCard, AlertCircle, CheckCircle, Lock } from 'lucide-react';
-import { Sale, PaymentMethod, SaleStatus } from '../../../types/patient';
+import { X, Edit, DollarSign, CreditCard, AlertCircle, CheckCircle } from 'lucide-react';
+import { Sale, Patient } from '../../../types/patient';
+import { PaymentMethod, SaleStatus } from '../../../types/patient/patient-base.types';
 
 interface EditSaleModalProps {
   isOpen: boolean;
@@ -43,9 +34,9 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
   loading = false
 }) => {
   const [saleType, setSaleType] = useState<'device' | 'service' | 'accessory'>('device');
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'credit' | 'installment' | 'check' | 'transfer'>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [installmentCount, setInstallmentCount] = useState(1);
-  const [saleStatus, setSaleStatus] = useState<'draft' | 'confirmed' | 'cancelled' | 'paid'>('confirmed');
+  const [saleStatus, setSaleStatus] = useState<SaleStatus>('draft');
   const [hasChanges, setHasChanges] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,8 +76,8 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
         saleDate: sale.saleDate ? sale.saleDate.split('T')[0] : ''
       });
 
-      setSaleStatus(sale.status as any || 'confirmed');
-      setPaymentMethod(sale.paymentMethod as any || 'cash');
+      setSaleStatus((sale.status as SaleStatus) || 'draft');
+      setPaymentMethod((sale.paymentMethod as PaymentMethod) || 'cash');
       
       // Determine sale type based on existing data (in real app, this would be stored)
       setSaleType('device'); // Default, would be determined from sale data
@@ -456,17 +447,17 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
               
               <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                 {[
-                  { value: 'cash', label: 'Nakit' },
-                  { value: 'credit', label: 'Kredi Kartı' },
-                  { value: 'installment', label: 'Taksit' },
-                  { value: 'check', label: 'Çek' },
-                  { value: 'transfer', label: 'Havale' }
+                  { value: 'cash' as PaymentMethod, label: 'Nakit' },
+                  { value: 'card' as PaymentMethod, label: 'Kredi Kartı' },
+                  { value: 'installment' as PaymentMethod, label: 'Taksit' },
+                  { value: 'bank_transfer' as PaymentMethod, label: 'Havale' },
+                  { value: 'sgk' as PaymentMethod, label: 'SGK' }
                 ].map((method) => (
                   <button
                     key={method.value}
                     type="button"
                     onClick={() => {
-                      setPaymentMethod(method.value as any);
+                      setPaymentMethod(method.value);
                       setHasChanges(true);
                     }}
                     className={`p-2 border rounded text-sm transition-colors ${
@@ -514,18 +505,18 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
             {error && (
               <Alert className="border-red-200 bg-red-50">
                 <AlertCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-800">
+                <div className="text-red-800">
                   {error}
-                </AlertDescription>
+                </div>
               </Alert>
             )}
             
             {success && (
               <Alert className="border-green-200 bg-green-50">
                 <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">
+                <div className="text-green-800">
                   {success}
-                </AlertDescription>
+                </div>
               </Alert>
             )}
             

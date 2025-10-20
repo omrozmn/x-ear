@@ -3,7 +3,7 @@
  * Provides safe conversion from the API (orval-generated) Patient shape
  * into the internal domain Patient type used throughout the app.
  */
-import type { Patient as OrvalPatient } from '../../generated/orval-api';
+import type { Patient as OrvalPatient } from "../../api/generated/api.schemas";
 import type { Patient as DomainPatient } from '../../types/patient/patient-base.types';
 
 export function convertOrvalPatient(orval: Partial<OrvalPatient> | null | undefined): DomainPatient {
@@ -12,7 +12,6 @@ export function convertOrvalPatient(orval: Partial<OrvalPatient> | null | undefi
 
   const firstName = orval?.firstName ?? orval?.first_name ?? '';
   const lastName = orval?.lastName ?? orval?.last_name ?? '';
-  const name = [firstName, lastName].filter(Boolean).join(' ') || firstName || lastName || 'Unnamed Patient';
 
   const phone = orval?.phone ?? '';
 
@@ -26,9 +25,8 @@ export function convertOrvalPatient(orval: Partial<OrvalPatient> | null | undefi
   // Many of the richer domain fields are not present in the API model; provide sensible defaults
   const domain: DomainPatient = {
     id,
-    name,
-    firstName: firstName || undefined,
-    lastName: lastName || undefined,
+    firstName: firstName,
+    lastName: lastName,
     phone,
     tcNumber: orval?.tcNumber ?? orval?.tc_number ?? undefined,
     birthDate: orval?.birthDate ?? orval?.birth_date ?? undefined,

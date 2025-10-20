@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Select } from '@x-ear/ui-web';
+import { Button, Input } from '@x-ear/ui-web';
 import { X, Settings, RefreshCw } from 'lucide-react';
 import type { Device, InventoryItem } from '../../../api/generated/api.schemas';
 
@@ -73,8 +73,8 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
         price: formData.price,
         notes: formData.notes,
       };
-      
-      await onUpdate(updatedDevice);
+
+      await onUpdate(device.id!, updatedDevice);
       onClose();
     } catch (error) {
       console.error('Error updating device:', error);
@@ -93,11 +93,11 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
             inventoryId: selectedItem.id,
             brand: selectedItem.brand,
             model: selectedItem.model || '',
-            deviceType: selectedItem.category,
+            deviceType: selectedItem.category || '',
             price: selectedItem.price,
-            serialNumber: '', // Will be assigned from inventory
+            serialNumber: selectedItem.availableSerials?.[0] || '', // Will be assigned from inventory
           };
-          await onReplace(replacementDevice);
+          await onReplace(device.id!, replacementDevice);
         }
       } else {
         // Manual replacement
@@ -110,7 +110,7 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
           price: formData.price,
           notes: formData.notes,
         };
-        await onReplace(replacementDevice);
+        await onReplace(device.id!, replacementDevice);
       }
       onClose();
     } catch (error) {
@@ -119,7 +119,7 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
   };
 
   const availableInventoryItems = inventoryItems.filter(item => 
-    item.status === 'available' && item.deviceType === device.deviceType
+    (item.availableInventory || 0) > 0 && item.category === device.deviceType
   );
 
   return (
@@ -172,9 +172,9 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
             <div><span className="font-medium">Marka:</span> {device.brand}</div>
             <div><span className="font-medium">Model:</span> {device.model}</div>
             <div><span className="font-medium">Seri No:</span> {device.serialNumber}</div>
-            <div><span className="font-medium">Kulak:</span> {device.ear === 'right' ? 'Sağ' : 'Sol'}</div>
+            <div><span className="font-medium">Kulak:</span> {device.ear === 'RIGHT' ? 'Sağ' : device.ear === 'LEFT' ? 'Sol' : 'Bilateral'}</div>
             <div><span className="font-medium">Durum:</span> {device.status}</div>
-            <div><span className="font-medium">Atanma Tarihi:</span> {new Date(device.assignedDate).toLocaleDateString('tr-TR')}</div>
+            <div><span className="font-medium">Oluşturma Tarihi:</span> {device.createdAt ? new Date(device.createdAt).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}</div>
           </div>
         </div>
 
@@ -310,7 +310,7 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                   <option value="">Cihaz seçiniz...</option>
                   {availableInventoryItems.map((item) => (
                     <option key={item.id} value={item.id}>
-                      {item.brand} {item.model} - {item.serialNumber}
+                      {item.brand} {item.model} - {item.name}
                     </option>
                   ))}
                 </select>
@@ -417,3 +417,6 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
     </div>
   );
 };
+
+export { DeviceEditModal };
+export default DeviceEditModal;

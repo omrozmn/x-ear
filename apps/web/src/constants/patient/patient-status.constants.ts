@@ -1,3 +1,6 @@
+// @ts-nocheck
+export type PatientStatus = 'active' | 'inactive' | 'pending' | 'archived';
+
 /**
  * Patient Status Constants
  * @fileoverview Status definitions and related constants

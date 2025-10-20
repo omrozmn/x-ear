@@ -124,7 +124,7 @@ paths:
         required: false
         schema:
           type: string
-          enum: [scheduled, completed, cancelled, rescheduled]
+          enum: [SCHEDULED, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW, RESCHEDULED]
         description: Filter by appointment status
       - name: branch_id
         in: query
@@ -547,7 +547,7 @@ paths:
         required: false
         schema:
           type: string
-          enum: [available, assigned, maintenance, retired]
+          enum: [IN_STOCK, ASSIGNED, TRIAL, DEFECTIVE, LOST, RETURNED]
         description: Filter by device status
       responses:
         '200':
@@ -799,7 +799,7 @@ paths:
         required: false
         schema:
           type: string
-          enum: [available, assigned, maintenance, retired]
+          enum: [IN_STOCK, ASSIGNED, TRIAL, DEFECTIVE, LOST, RETURNED]
         description: Filter by item status
       responses:
         '200':
@@ -1236,7 +1236,7 @@ paths:
         required: false
         schema:
           type: string
-          enum: [active, inactive]
+          enum: [ACTIVE, INACTIVE, LEAD, TRIAL, CUSTOMER]
         description: Filter by patient status
       responses:
         '200':
@@ -2145,7 +2145,7 @@ paths:
         required: false
         schema:
           type: string
-          enum: [active, inactive, pending]
+          enum: [ACTIVE, INACTIVE, PENDING]
         description: Filter by supplier status
       - name: category
         in: query
@@ -2600,8 +2600,11 @@ components:
         status:
           type: string
           enum:
-          - active
-          - inactive
+          - ACTIVE
+          - INACTIVE
+          - LEAD
+          - TRIAL
+          - CUSTOMER
           description: Patient status
         segment:
           type: string
@@ -2701,11 +2704,11 @@ components:
         status:
           type: string
           enum:
-          - scheduled
-          - confirmed
-          - completed
-          - cancelled
-          - no_show
+          - SCHEDULED
+          - CONFIRMED
+          - COMPLETED
+          - CANCELLED
+          - NO_SHOW
           description: Appointment status
         notes:
           type: string
@@ -2762,17 +2765,19 @@ components:
         ear:
           type: string
           enum:
-          - left
-          - right
-          - both
+          - LEFT
+          - RIGHT
+          - BILATERAL
           description: Which ear the device is for
         status:
           type: string
           enum:
-          - available
-          - assigned
-          - maintenance
-          - retired
+          - IN_STOCK
+          - ASSIGNED
+          - TRIAL
+          - DEFECTIVE
+          - LOST
+          - RETURNED
           description: Device status
         trialStartDate:
           type: string
@@ -2887,9 +2892,9 @@ components:
         status:
           type: string
           enum:
-          - pending
-          - completed
-          - cancelled
+          - PENDING
+          - COMPLETED
+          - CANCELLED
           description: Sale status
         notes:
           type: string
@@ -2967,11 +2972,11 @@ components:
           description: Unit price
         direction:
           type: string
-          enum: [left, right, both]
+          enum: [LEFT, RIGHT, BILATERAL]
           description: Hearing aid direction
         ear:
           type: string
-          enum: [left, right, both]
+          enum: [LEFT, RIGHT, BILATERAL]
           description: Legacy field for direction
         warranty:
           type: integer
@@ -3015,8 +3020,8 @@ components:
         status:
           type: string
           enum:
-          - active
-          - inactive
+          - ACTIVE
+          - INACTIVE
           description: Supplier status
         createdAt:
           type: string
@@ -3055,10 +3060,10 @@ components:
         status:
           type: string
           enum:
-          - draft
-          - active
-          - paused
-          - completed
+          - DRAFT
+          - ACTIVE
+          - PAUSED
+          - COMPLETED
           description: Campaign status
         targetAudience:
           type: string
@@ -3091,10 +3096,10 @@ components:
         type:
           type: string
           enum:
-          - info
-          - warning
-          - error
-          - success
+          - INFO
+          - WARNING
+          - ERROR
+          - SUCCESS
           description: Notification type
         isRead:
           type: boolean
@@ -3223,10 +3228,10 @@ components:
         status:
           type: string
           enum:
-          - pending
-          - completed
-          - cancelled
-          - overdue
+          - PENDING
+          - COMPLETED
+          - CANCELLED
+          - OVERDUE
           description: Payment status
         referenceNumber:
           type: string
@@ -3246,9 +3251,9 @@ components:
         ear:
           type: string
           enum:
-          - left
-          - right
-          - both
+          - LEFT
+          - RIGHT
+          - BILATERAL
           description: Which ear
         reason:
           type: string

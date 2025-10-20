@@ -9,8 +9,8 @@ interface PatientFormData {
   birthDate?: string;
   email?: string;
   address?: string;
-  status?: 'active' | 'inactive' | 'archived';
-  segment?: 'new' | 'trial' | 'purchased' | 'control' | 'renewal';
+  status?: 'active' | 'inactive';
+  segment?: 'new' | 'trial' | 'purchased' | 'control' | 'renewal' | 'existing' | 'vip';
   label?: 'yeni' | 'arama-bekliyor' | 'randevu-verildi' | 'deneme-yapildi' | 'kontrol-hastasi' | 'satis-tamamlandi';
   acquisitionType?: 'tabela' | 'sosyal-medya' | 'tanitim' | 'referans' | 'diger';
   tags?: string[];
@@ -37,7 +37,7 @@ export function PatientFormModal({
   initialData,
   title,
   className = ''
-}: PatientFormModalProps) {
+}: PatientFormModalProps): JSX.Element | null {
   const [formData, setFormData] = useState<PatientFormData>({
     firstName: '',
     lastName: '',
@@ -178,7 +178,7 @@ export function PatientFormModal({
     }
   }, [formData, validateForm, onSubmit, onClose]);
 
-  const handleFilterChange = (key: string, value: string | boolean | string[] | Date) => {
+  const updateFormField = (key: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       [key]: value

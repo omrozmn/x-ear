@@ -1,7 +1,8 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import { usePatients } from '../../hooks/patient/usePatients';
 import { usePatientMutations } from '../../hooks/patient/usePatientMutations';
 import { Patient } from '../../types/patient';
+import { PatientSearchItem } from '../../types/patient/patient-search.types';
 import { PatientCard } from '../../components/patients/PatientCard';
 import { PatientSearch } from '../../components/patients/PatientSearch';
 import { PatientFilters } from '../../components/patients/PatientFilters';
@@ -18,20 +19,13 @@ interface PatientListPageProps {
  */
 export function PatientListPage({ className = '' }: PatientListPageProps) {
   // Hooks
+  const patientsQuery = usePatients();
   const {
-    patients,
-    loading,
+    data: patientsData,
+    isLoading: loading,
     error,
-    searchTerm,
-    filters,
-    pagination,
-    isOnline,
-    setSearchTerm,
-    setFilters,
-    loadMore,
-    refresh,
-    clearError
-  } = usePatients();
+    refetch: refresh
+  } = patientsQuery;
 
   const {
     createPatient,
@@ -39,10 +33,58 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
     deletePatient,
     loading: mutationLoading,
     error: mutationError,
+    isOnline,
     clearError: clearMutationError
   } = usePatientMutations();
 
-  // Local state
+  // Extract data from query result
+  const patients = patientsData?.patients || [];
+  const totalCount = patientsData?.total || 0;
+  const hasMore = patientsData?.hasMore || false;
+
+  // Local state for search and filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState<any>({});
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Computed pagination
+  const pagination = {
+    page: currentPage,
+    pageSize: 20,
+    total: totalCount,
+    hasMore
+  };
+
+  // Handlers
+  const loadMore = useCallback(() => {
+    if (hasMore) {
+      setCurrentPage(prev => prev + 1);
+    }
+  }, [hasMore]);
+
+  const clearFilters = useCallback(() => {
+    setFilters({});
+    setSearchTerm('');
+  }, []);
+
+  // Helper function to convert Patient to PatientSearchItem
+  const convertToSearchItem = useCallback((patient: Patient): PatientSearchItem => ({
+    id: patient.id,
+    firstName: patient.firstName,
+    lastName: patient.lastName,
+    tcNumber: patient.tcNumber,
+    phone: patient.phone,
+    email: patient.email,
+    status: patient.status,
+    segment: patient.segment,
+    labels: patient.label ? [patient.label] : [],
+    registrationDate: patient.createdAt,
+    lastVisitDate: patient.updatedAt,
+    deviceCount: patient.devices?.length || 0,
+    hasInsurance: !!patient.sgkInfo,
+    outstandingBalance: 0, // This would need to be calculated
+    priority: patient.priorityScore || 0
+  }), []);
   const [selectedPatients, setSelectedPatients] = useState<Set<string>>(new Set());
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
@@ -65,14 +107,6 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
       return newSet;
     });
   }, []);
-
-  const handleSelectAll = useCallback((selected: boolean) => {
-    if (selected) {
-      setSelectedPatients(new Set(patients.map(p => p.id)));
-    } else {
-      setSelectedPatients(new Set());
-    }
-  }, [patients]);
 
   const handleCreatePatient = useCallback(async (patientData: any) => {
     const result = await createPatient(patientData, {
@@ -133,6 +167,12 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
     setSelectedPatients(new Set());
     refresh();
   }, [selectedPatients, deletePatient, refresh]);
+
+  const clearError = useCallback(() => {
+    // Clear query error by refetching
+    refresh();
+    clearMutationError();
+  }, [refresh, clearMutationError]);
 
   const handleRefresh = useCallback(() => {
     clearError();
@@ -212,10 +252,11 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
         className="flex-1"
       />
       
-      <PatientFilters
+            <PatientFilters
         filters={filters}
         onChange={setFilters}
-        patientCount={patients.length}
+        onClearFilters={clearFilters}
+        patientCount={totalCount}
       />
     </div>
   );
@@ -259,10 +300,9 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
         {patients.map((patient) => (
           <PatientCard
             key={patient.id}
-            patient={patient}
-            viewMode={viewMode}
+            patient={convertToSearchItem(patient)}
             selected={selectedPatients.has(patient.id)}
-            onSelect={(selected) => handleSelectPatient(patient.id, selected)}
+            onSelect={(patientId) => handleSelectPatient(patientId, !selectedPatients.has(patientId))}
             onEdit={() => setEditingPatient(patient)}
             onDelete={() => handleDeletePatient(patient.id)}
             className="hover:shadow-md transition-shadow"
@@ -296,7 +336,7 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <span className="text-red-600 mr-2">⚠️</span>
-            <span className="text-sm text-red-700">{currentError}</span>
+            <span className="text-sm text-red-700">{currentError instanceof Error ? currentError.message : currentError}</span>
           </div>
           <button
             onClick={() => {

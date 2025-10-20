@@ -58,3 +58,11 @@ export const Alert: React.FC<AlertProps> = ({
     </div>
   );
 };
+
+// AlertDescription component for compatibility
+export const AlertDescription: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
+  children, 
+  className = '' 
+}) => {
+  return <div className={`text-sm ${className}`}>{children}</div>;
+};

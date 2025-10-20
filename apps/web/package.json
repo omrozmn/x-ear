@@ -41,6 +41,7 @@
     "@tanstack/react-query-devtools": "^5.8.4",
     "@tanstack/react-router": "^1.58.3",
     "@tanstack/react-router-devtools": "^1.133.13",
+    "@types/react-window": "^1.8.8",
     "@x-ear/ui-web": "file:../../packages/ui-web",
     "axios": "^1.6.2",
     "class-variance-authority": "^0.7.0",
@@ -53,6 +54,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.48.2",
+    "react-hot-toast": "^2.6.0",
+    "react-window": "^2.2.1",
     "tailwind-merge": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.22.4",
@@ -80,9 +83,11 @@
     "jsdom": "^23.0.1",
     "orval": "^7.13.2",
     "postcss": "^8.4.31",
+    "prettier": "^3.6.2",
     "tailwindcss": "^3.3.5",
     "typescript": "^5.2.2",
     "vite": "^4.5.0",
+    "vite-plugin-pwa": "^1.1.0",
     "vitest": "^0.34.6"
   }
 }

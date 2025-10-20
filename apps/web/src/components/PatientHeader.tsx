@@ -1,6 +1,6 @@
 import React from 'react';
 import { User, Phone, Mail, MapPin, Calendar, Tag } from 'lucide-react';
-import { Patient } from '../api/generated/api.schemas';
+import { Patient } from '../types/patient';
 
 interface PatientHeaderProps {
   patient?: Patient;
@@ -96,12 +96,11 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient, isLoading
             </div>
             
             {/* Address */}
-            {(patient.addressCity || patient.addressDistrict || patient.addressFull) && (
+            {patient.addressFull && (
               <div className="flex items-center space-x-1 mt-2 text-sm text-gray-600">
                 <MapPin className="w-4 h-4" />
                 <span>
-                  {patient.addressFull || 
-                   `${patient.addressDistrict || ''} ${patient.addressCity || ''}`.trim()}
+                  {patient.addressFull || 'Adres bilgisi yok'}
                 </span>
               </div>
             )}

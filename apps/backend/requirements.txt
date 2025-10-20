@@ -1,0 +1,58 @@
+# Python Requirements for Backend Service
+gunicorn
+Flask
+scikit-learn
+PaddleOCR==2.7.3
+paddlepaddle==3.1.1
+Flask-Cors
+opencv-python-headless<4.8
+numpy<2
+spacy
+
+# Database support
+Flask-SQLAlchemy
+SQLAlchemy
+alembic
+Flask-Migrate
+psycopg[binary]
+
+# Authentication
+Flask-JWT-Extended
+
+# HTTP requests
+requests
+
+# Password hashing
+Werkzeug
+
+# Environment variables
+python-dotenv
+
+# Redis client for OTP and rate-limit
+redis>=4.6,<5.0
+
+# For OpenAPI generation script
+PyYAML>=6.0
+
+# Unit test support
+fakeredis>=2.0.0
+Faker>=22.0.0
+
+# HuggingFace / Turkish NER and tokenizer support
+transformers>=4.35.0
+torch>=2.2.0
+sentencepiece
+tokenizers
+huggingface-hub
+
+# Optional performance / utilities
+accelerate
+
+# Prometheus metrics for basic instrumentation
+prometheus_client>=0.15.0
+
+# Faster Levenshtein implementation for similarity calculations
+python-Levenshtein
+
+# PDF generation
+pdfkit

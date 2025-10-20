@@ -1,0 +1,510 @@
+src/components/patients/modals/AppointmentModal.tsx(3,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'Dialog'.
+src/components/patients/modals/AppointmentModal.tsx(4,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'DialogContent'.
+src/components/patients/modals/AppointmentModal.tsx(5,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'DialogHeader'.
+src/components/patients/modals/AppointmentModal.tsx(6,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'DialogTitle'.
+src/components/patients/modals/AppointmentModal.tsx(9,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'Label'.
+src/components/patients/modals/AppointmentModal.tsx(11,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'SelectContent'.
+src/components/patients/modals/AppointmentModal.tsx(12,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'SelectItem'.
+src/components/patients/modals/AppointmentModal.tsx(13,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'SelectTrigger'.
+src/components/patients/modals/AppointmentModal.tsx(14,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'SelectValue'.
+src/components/patients/modals/AppointmentModal.tsx(22,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'AlertDescription'.
+src/components/patients/modals/AppointmentModal.tsx(26,19): error TS2440: Import declaration conflicts with local declaration of 'Appointment'.
+src/components/patients/modals/CollectionModal.tsx(7,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'AlertDescription'.
+src/components/patients/modals/CollectionModal.tsx(456,67): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+src/components/patients/modals/DeviceEditModal.tsx(77,13): error TS2554: Expected 2 arguments, but got 1.
+src/components/patients/modals/DeviceEditModal.tsx(100,17): error TS2554: Expected 2 arguments, but got 1.
+src/components/patients/modals/DeviceEditModal.tsx(113,15): error TS2554: Expected 2 arguments, but got 1.
+src/components/patients/modals/DeviceEditModal.tsx(122,10): error TS2339: Property 'status' does not exist on type 'InventoryItem'.
+src/components/patients/modals/DeviceEditModal.tsx(122,41): error TS2339: Property 'deviceType' does not exist on type 'InventoryItem'.
+src/components/patients/modals/DeviceEditModal.tsx(177,87): error TS2339: Property 'assignedDate' does not exist on type 'Device'.
+src/components/patients/modals/DeviceEditModal.tsx(313,57): error TS2339: Property 'serialNumber' does not exist on type 'InventoryItem'.
+src/components/patients/modals/EditSaleModal.tsx(3,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'Dialog'.
+src/components/patients/modals/EditSaleModal.tsx(4,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'DialogContent'.
+src/components/patients/modals/EditSaleModal.tsx(5,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'DialogHeader'.
+src/components/patients/modals/EditSaleModal.tsx(6,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'DialogTitle'.
+src/components/patients/modals/EditSaleModal.tsx(9,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'Label'.
+src/components/patients/modals/EditSaleModal.tsx(11,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'SelectContent'.
+src/components/patients/modals/EditSaleModal.tsx(12,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'SelectItem'.
+src/components/patients/modals/EditSaleModal.tsx(13,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'SelectTrigger'.
+src/components/patients/modals/EditSaleModal.tsx(14,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'SelectValue'.
+src/components/patients/modals/EditSaleModal.tsx(22,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'AlertDescription'.
+src/components/patients/modals/EditSaleModal.tsx(26,16): error TS2305: Module '"../../../types/patient"' has no exported member 'PaymentMethod'.
+src/components/patients/modals/EditSaleModal.tsx(26,31): error TS2305: Module '"../../../types/patient"' has no exported member 'SaleStatus'.
+src/components/patients/modals/EditSaleModal.tsx(31,12): error TS2304: Cannot find name 'Patient'.
+src/components/patients/modals/PromissoryNoteModal.tsx(2,42): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'AlertDescription'.
+src/components/patients/modals/ReportModal.tsx(6,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'SelectContent'.
+src/components/patients/modals/ReportModal.tsx(7,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'SelectItem'.
+src/components/patients/modals/ReportModal.tsx(8,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'SelectTrigger'.
+src/components/patients/modals/ReportModal.tsx(9,3): error TS2305: Module '"@x-ear/ui-web"' has no exported member 'SelectValue'.
+src/components/patients/modals/SaleNoteModal.tsx(216,80): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/patients/modals/SaleNoteModal.tsx(219,124): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/patients/modals/SaleNoteModal.tsx(220,39): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/patients/PatientAdvancedSearch.tsx(595,57): error TS2345: Argument of type '(prev: { name: string; description: string; isDefault: boolean; tags: string[]; }) => { isDefault: ChangeEvent<HTMLInputElement>; name: string; description: string; tags: string[]; }' is not assignable to parameter of type 'SetStateAction<{ name: string; description: string; isDefault: boolean; tags: string[]; }>'.
+  Type '(prev: { name: string; description: string; isDefault: boolean; tags: string[]; }) => { isDefault: ChangeEvent<HTMLInputElement>; name: string; description: string; tags: string[]; }' is not assignable to type '(prevState: { name: string; description: string; isDefault: boolean; tags: string[]; }) => { name: string; description: string; isDefault: boolean; tags: string[]; }'.
+    Call signature return types '{ isDefault: ChangeEvent<HTMLInputElement>; name: string; description: string; tags: string[]; }' and '{ name: string; description: string; isDefault: boolean; tags: string[]; }' are incompatible.
+      The types of 'isDefault' are incompatible between these types.
+        Type 'ChangeEvent<HTMLInputElement>' is not assignable to type 'boolean'.
+src/components/patients/PatientDetailsPage.old.tsx(15,11): error TS2339: Property 'getPatient' does not exist on type 'UsePatientsReturn'.
+src/components/patients/PatientDetailsPage.old.tsx(53,38): error TS2345: Argument of type 'Patient' is not assignable to parameter of type 'Partial<Patient>'.
+  Types of property 'sgkInfo' are incompatible.
+    Type 'SGKInfo' is not assignable to type 'PatientSgkInfo'.
+      Index signature for type 'string' is missing in type 'SGKInfo'.
+src/components/patients/PatientDetailsPage.old.tsx(65,38): error TS2345: Argument of type '{ acquisitionType: string; label: "yeni" | "arama-bekliyor" | "randevu-verildi" | "deneme-yapildi" | "kontrol-hastasi" | "satis-tamamlandi"; id: string; name?: string; firstName: string; ... 42 more ...; updatedAt: string; }' is not assignable to parameter of type 'Partial<Patient>'.
+  Types of property 'sgkInfo' are incompatible.
+    Type 'SGKInfo' is not assignable to type 'PatientSgkInfo'.
+      Index signature for type 'string' is missing in type 'SGKInfo'.
+src/components/patients/PatientDetailsPage.old.tsx(86,38): error TS2345: Argument of type 'Patient' is not assignable to parameter of type 'Partial<Patient>'.
+  Types of property 'sgkInfo' are incompatible.
+    Type 'SGKInfo' is not assignable to type 'PatientSgkInfo'.
+      Index signature for type 'string' is missing in type 'SGKInfo'.
+src/components/patients/PatientDevicesTab.tsx(18,8): error TS1192: Module '"/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/patients/modals/DeviceEditModal"' has no default export.
+src/components/patients/PatientForm.tsx(94,67): error TS2322: Type '"archived"' is not assignable to type '"active" | "inactive"'.
+src/components/patients/PatientFormModal.tsx(72,9): error TS2322: Type '"new" | "trial" | "purchased" | "control" | "renewal" | "existing" | "vip"' is not assignable to type '"new" | "trial" | "purchased" | "control" | "renewal" | undefined'.
+  Type '"existing"' is not assignable to type '"new" | "trial" | "purchased" | "control" | "renewal" | undefined'.
+src/components/patients/PatientFormModal.tsx(169,37): error TS2345: Argument of type 'PatientFormData' is not assignable to parameter of type 'Partial<Patient>'.
+  Types of property 'status' are incompatible.
+    Type '"active" | "inactive" | "archived" | undefined' is not assignable to type '"active" | "inactive" | undefined'.
+      Type '"archived"' is not assignable to type '"active" | "inactive" | undefined'.
+src/components/patients/PatientList.old.tsx(25,5): error TS2339: Property 'loading' does not exist on type 'UsePatientsReturn'.
+src/components/patients/PatientList.old.tsx(30,5): error TS2339: Property 'addCommunication' does not exist on type 'UsePatientsReturn'.
+src/components/patients/PatientList.old.tsx(31,19): error TS2345: Argument of type 'PatientFilters | undefined' is not assignable to parameter of type 'UsePatientsOptions | undefined'.
+  Type 'PatientFilters' has no properties in common with type 'UsePatientsOptions'.
+src/components/patients/PatientList.old.tsx(50,24): error TS2345: Argument of type '{ search: string; status?: Patient["status"]; segment?: Patient["segment"]; label?: Patient["label"]; acquisitionType?: Patient["acquisitionType"]; tags?: string[]; hasDevices?: boolean; ... 4 more ...; limit?: number; }' is not assignable to parameter of type 'SimpleCacheFilters'.
+  Types of property 'status' are incompatible.
+    Type '"active" | "inactive" | undefined' is not assignable to type 'string[] | undefined'.
+      Type 'string' is not assignable to type 'string[]'.
+src/components/patients/PatientList.old.tsx(55,24): error TS2345: Argument of type 'PatientFilters' is not assignable to parameter of type 'SimpleCacheFilters'.
+  Types of property 'status' are incompatible.
+    Type '"active" | "inactive" | undefined' is not assignable to type 'string[] | undefined'.
+      Type 'string' is not assignable to type 'string[]'.
+src/components/patients/PatientList.old.tsx(87,16): error TS1345: An expression of type 'void' cannot be tested for truthiness.
+src/components/patients/PatientList.old.tsx(116,27): error TS2345: Argument of type 'Set<string | undefined>' is not assignable to parameter of type 'SetStateAction<Set<string>>'.
+  Type 'Set<string | undefined>' is not assignable to type 'Set<string>'.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/components/patients/PatientList.old.tsx(124,76): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/patients/PatientList.old.tsx(166,12): error TS2678: Type '"archived"' is not comparable to type '"active" | "inactive"'.
+src/components/patients/PatientList.old.tsx(322,49): error TS2345: Argument of type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient' is not assignable to parameter of type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient'.
+  Type 'Patient' is missing the following properties from type 'Patient': label, devices, notes
+src/components/patients/PatientList.old.tsx(332,61): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/patients/PatientList.old.tsx(333,53): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/patients/PatientList.old.tsx(335,47): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/patients/PatientList.old.tsx(368,128): error TS2345: Argument of type 'PatientStatus | undefined' is not assignable to parameter of type '"active" | "inactive"'.
+  Type 'undefined' is not assignable to type '"active" | "inactive"'.
+src/components/patients/PatientList.old.tsx(416,59): error TS2345: Argument of type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient' is not assignable to parameter of type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient'.
+  Type 'Patient' is missing the following properties from type 'Patient': label, devices, notes
+src/components/patients/PatientList.old.tsx(452,88): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/patients/PatientList.old.tsx(485,88): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/patients/PatientList.old.tsx(492,57): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/patients/PatientMatching.tsx(60,18): error TS2345: Argument of type 'PatientMatch[]' is not assignable to parameter of type 'SetStateAction<never[]>'.
+  Type 'PatientMatch[]' is not assignable to type 'never[]'.
+    Type 'PatientMatch' is not assignable to type 'never'.
+src/components/patients/PatientMatching.tsx(87,35): error TS2322: Type '{ patientId: string; value: any; patientName: string | undefined; }[]' is not assignable to type '{ patientId: string; value: any; patientName: string; }[]'.
+  Type '{ patientId: string; value: any; patientName: string | undefined; }' is not assignable to type '{ patientId: string; value: any; patientName: string; }'.
+    Types of property 'patientName' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/components/patients/PatientMatching.tsx(102,22): error TS2345: Argument of type 'PatientMatch' is not assignable to parameter of type 'SetStateAction<null>'.
+  Type 'PatientMatch' provides no match for the signature '(prevState: null): null'.
+src/components/patients/PatientMatching.tsx(109,21): error TS2345: Argument of type '{ primary: Patient; duplicates: Patient[]; mergedData: Partial<Patient>; conflicts: { field: string; values: Array<{ patientId: string; value: any; patientName: string; }>; }[]; }' is not assignable to parameter of type 'SetStateAction<null>'.
+  Type '{ primary: Patient; duplicates: Patient[]; mergedData: Partial<Patient>; conflicts: { field: string; values: { patientId: string; value: any; patientName: string; }[]; }[]; }' provides no match for the signature '(prevState: null): null'.
+src/components/patients/PatientMatching.tsx(110,22): error TS2345: Argument of type 'PatientMatch' is not assignable to parameter of type 'SetStateAction<null>'.
+  Type 'PatientMatch' provides no match for the signature '(prevState: null): null'.
+src/components/patients/PatientMatching.tsx(119,38): error TS2339: Property 'primary' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(120,41): error TS2339: Property 'duplicates' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(125,18): error TS2345: Argument of type '(prev: never[]) => any[]' is not assignable to parameter of type 'SetStateAction<never[]>'.
+  Type '(prev: never[]) => any[]' is not assignable to type '(prevState: never[]) => never[]'.
+    Type 'any[]' is not assignable to type 'never[]'.
+      Type 'any' is not assignable to type 'never'.
+src/components/patients/PatientMatching.tsx(126,11): error TS2339: Property 'id' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(126,32): error TS2339: Property 'id' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(127,15): error TS2698: Spread types may only be created from object types.
+src/components/patients/PatientMatching.tsx(142,16): error TS2345: Argument of type '(prev: never[]) => any[]' is not assignable to parameter of type 'SetStateAction<never[]>'.
+  Type '(prev: never[]) => any[]' is not assignable to type '(prevState: never[]) => never[]'.
+    Type 'any[]' is not assignable to type 'never[]'.
+      Type 'any' is not assignable to type 'never'.
+src/components/patients/PatientMatching.tsx(143,9): error TS2339: Property 'id' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(144,13): error TS2698: Spread types may only be created from object types.
+src/components/patients/PatientMatching.tsx(153,43): error TS2339: Property 'status' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(156,47): error TS2339: Property 'confidence' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(159,41): error TS2339: Property 'riskLevel' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(164,37): error TS2339: Property 'patients' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(179,35): error TS2339: Property 'status' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(208,58): error TS2345: Argument of type 'ChangeEvent<HTMLInputElement>' is not assignable to parameter of type 'SetStateAction<boolean>'.
+src/components/patients/PatientMatching.tsx(327,42): error TS2339: Property 'confidence' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(341,42): error TS2339: Property 'status' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(365,30): error TS2339: Property 'id' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(369,59): error TS2339: Property 'confidence' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(370,49): error TS2339: Property 'confidence' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(372,58): error TS2339: Property 'riskLevel' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(373,30): error TS2339: Property 'riskLevel' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(376,42): error TS2339: Property 'similarity' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(381,28): error TS2339: Property 'patients' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(415,64): error TS2339: Property 'matchReasons' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(432,37): error TS2339: Property 'status' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(440,54): error TS2339: Property 'id' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(441,37): error TS2339: Property 'status' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(486,61): error TS2339: Property 'confidence' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(487,51): error TS2339: Property 'confidence' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(489,60): error TS2339: Property 'riskLevel' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(490,32): error TS2339: Property 'riskLevel' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(493,44): error TS2339: Property 'similarity' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(500,32): error TS2339: Property 'matchReasons' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(509,32): error TS2339: Property 'patients' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(548,60): error TS2339: Property 'primary' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(550,33): error TS2339: Property 'primary' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(550,64): error TS2339: Property 'primary' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(558,31): error TS2339: Property 'duplicates' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(569,27): error TS2339: Property 'conflicts' does not exist on type 'never'.
+src/components/patients/PatientMatching.tsx(573,33): error TS2339: Property 'conflicts' does not exist on type 'never'.
+src/components/patients/PatientSalesTab.tsx(34,7): error TS2322: Type '"completed"' is not assignable to type '"paid" | "draft" | "confirmed" | "cancelled" | undefined'.
+src/components/patients/PatientSalesTab.tsx(47,7): error TS2322: Type '"pending"' is not assignable to type '"paid" | "draft" | "confirmed" | "cancelled" | undefined'.
+src/components/patients/PatientSalesTab.tsx(56,29): error TS2339: Property 'patientPayment' does not exist on type 'Sale'.
+src/components/patients/PatientSalesTab.tsx(351,9): error TS2322: Type 'Sale | null' is not assignable to type 'Sale'.
+  Type 'null' is not assignable to type 'Sale'.
+src/components/patients/PatientSalesTab.tsx(357,9): error TS2322: Type 'Sale | null' is not assignable to type 'Sale | undefined'.
+  Type 'null' is not assignable to type 'Sale | undefined'.
+src/components/patients/PatientSalesTab.tsx(363,9): error TS2322: Type 'Sale | null' is not assignable to type 'Sale'.
+  Type 'null' is not assignable to type 'Sale'.
+src/components/patients/PatientSGKTab.tsx(57,23): error TS2345: Argument of type 'AxiosResponse<void, any, {}>' is not assignable to parameter of type 'SetStateAction<SGKDocument[]>'.
+src/components/patients/PatientTabContent.tsx(55,11): error TS2339: Property 'updatePatient' does not exist on type 'UseQueryResult<{ patients: Patient[]; total: number; page: number; pageSize: number; hasMore: boolean; }, Error>'.
+src/components/patients/VirtualizedPatientList.tsx(245,26): error TS2304: Cannot find name 'List'.
+src/components/patients/VirtualizedPatientList.tsx(429,10): error TS2304: Cannot find name 'List'.
+src/components/patients/VirtualizedPatientList.tsx(439,11): error TS2304: Cannot find name 'List'.
+src/components/sgk/__tests__/DocumentList.spec.tsx(21,1): error TS2582: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/components/sgk/__tests__/DocumentList.spec.tsx(22,3): error TS2582: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/components/sgk/__tests__/DocumentList.spec.tsx(24,5): error TS2304: Cannot find name 'expect'.
+src/components/sgk/DocumentList.tsx(4,27): error TS2724: '"@/hooks/sgk/useSgkDocuments"' has no exported member named 'useDeleteSgkDocument'. Did you mean 'useSgkDocuments'?
+src/components/sgk/PatientSearch.tsx(38,45): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(predicate: (value: Patient, index: number, array: Patient[]) => value is Patient, thisArg?: any): Patient[]', gave the following error.
+    Argument of type '(patient: Patient) => boolean' is not assignable to parameter of type '(value: Patient, index: number, array: Patient[]) => value is Patient'.
+      Types of parameters 'patient' and 'value' are incompatible.
+        Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient' is not assignable to type 'Patient'.
+          Types of property 'id' are incompatible.
+            Type 'string | undefined' is not assignable to type 'string'.
+              Type 'undefined' is not assignable to type 'string'.
+  Overload 2 of 2, '(predicate: (value: Patient, index: number, array: Patient[]) => unknown, thisArg?: any): Patient[]', gave the following error.
+    Argument of type '(patient: Patient) => boolean' is not assignable to parameter of type '(value: Patient, index: number, array: Patient[]) => unknown'.
+      Types of parameters 'patient' and 'value' are incompatible.
+        Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient' is not assignable to type 'Patient'.
+          Types of property 'id' are incompatible.
+            Type 'string | undefined' is not assignable to type 'string'.
+              Type 'undefined' is not assignable to type 'string'.
+src/components/sgk/PatientSearch.tsx(101,50): error TS2345: Argument of type '(patient: Patient) => JSX.Element' is not assignable to parameter of type '(value: Patient, index: number, array: Patient[]) => Element'.
+  Types of parameters 'patient' and 'value' are incompatible.
+    Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient' is not assignable to type 'Patient'.
+      Types of property 'id' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+src/components/SGKDocumentList.tsx(241,16): error TS2322: Type '{ children: Element[]; value: "" | SGKDocumentType; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/components/SGKDocumentList.tsx(260,16): error TS2322: Type '{ children: Element[]; value: "" | SGKProcessingStatus; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/components/SGKDocumentList.tsx(277,16): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/components/SGKUpload.tsx(257,12): error TS2322: Type '{ children: Element[]; value: SGKDocumentType; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/components/SGKWorkflow.tsx(352,18): error TS2322: Type '{ children: Element[]; value: SGKWorkflowStatus; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/components/templates/InvoiceTemplateManager.tsx(332,16): error TS2322: Type '{ children: (Element | Element[])[]; value: string; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/components/templates/InvoiceTemplateManager.tsx(351,16): error TS2322: Type '{ children: Element[]; value: "name" | "createdAt" | "usageCount"; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/components/templates/InvoiceTemplateManager.tsx(367,16): error TS2322: Type '{ children: Element[]; value: "desc" | "asc"; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/components/templates/InvoiceTemplateManager.tsx(581,5): error TS2698: Spread types may only be created from object types.
+src/components/templates/InvoiceTemplateManager.tsx(632,18): error TS2322: Type '{ children: Element[]; value: any; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; disabled: boolean; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/components/templates/InvoiceTemplateManager.tsx(667,15): error TS2322: Type 'unknown' is not assignable to type 'Partial<InvoiceFormData> | undefined'.
+src/components/ui/Button.tsx(1,10): error TS2395: Individual declarations in merged declaration 'Button' must be all exported or all local.
+src/components/ui/Button.tsx(1,10): error TS2440: Import declaration conflicts with local declaration of 'Button'.
+src/components/ui/Button.tsx(8,14): error TS2395: Individual declarations in merged declaration 'Button' must be all exported or all local.
+src/components/ui/Button.tsx(17,39): error TS2322: Type '"default"' is not assignable to type '"primary" | "secondary" | "ghost" | undefined'.
+src/constants/patient/patient-status.constants.ts(8,3): error TS2724: '"../../types/patient"' has no exported member named 'PatientStatus'. Did you mean 'PatientStats'?
+src/constants/patient/patient-status.constants.ts(9,3): error TS2305: Module '"../../types/patient"' has no exported member 'PatientSegment'.
+src/constants/patient/patient-status.constants.ts(10,3): error TS2305: Module '"../../types/patient"' has no exported member 'PatientLabel'.
+src/generated/orval-api.ts(41,13): error TS2300: Duplicate identifier 'PatientSgkInfo'.
+src/generated/orval-api.ts(46,13): error TS2300: Duplicate identifier 'PatientSgkInfo'.
+src/generated/orval-api.ts(51,13): error TS2300: Duplicate identifier 'PatientCustomData'.
+src/generated/orval-api.ts(56,13): error TS2300: Duplicate identifier 'PatientCustomData'.
+src/generated/orval-types.ts(41,13): error TS2300: Duplicate identifier 'PatientSgkInfo'.
+src/generated/orval-types.ts(46,13): error TS2300: Duplicate identifier 'PatientSgkInfo'.
+src/generated/orval-types.ts(51,13): error TS2300: Duplicate identifier 'PatientCustomData'.
+src/generated/orval-types.ts(56,13): error TS2300: Duplicate identifier 'PatientCustomData'.
+src/hooks/patient/usePatient.old.ts(16,41): error TS2552: Cannot find name 'PatientSyncService'. Did you mean 'PatientApiService'?
+src/hooks/patient/usePatient.old.ts(58,48): error TS2345: Argument of type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-api").Patient' is not assignable to parameter of type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient'.
+  Type 'Patient' is missing the following properties from type 'Patient': label, devices, notes
+src/hooks/patient/usePatient.old.ts(59,13): error TS2739: Type 'Patient' is missing the following properties from type 'Patient': label, devices, notes
+src/hooks/patient/usePatient.ts(31,20): error TS2345: Argument of type 'Patient' is not assignable to parameter of type 'SetStateAction<Patient | null>'.
+  Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient/patient-base.types").Patient' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient'.
+    Types of property 'status' are incompatible.
+      Type 'PatientStatus' is not assignable to type '"active" | "inactive"'.
+        Type '"archived"' is not assignable to type '"active" | "inactive"'.
+src/hooks/patient/usePatient.ts(63,20): error TS2345: Argument of type 'Patient' is not assignable to parameter of type 'SetStateAction<Patient | null>'.
+  Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient/patient-base.types").Patient' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient'.
+    Types of property 'status' are incompatible.
+      Type 'PatientStatus' is not assignable to type '"active" | "inactive"'.
+        Type '"archived"' is not assignable to type '"active" | "inactive"'.
+src/hooks/patient/usePatientMutations.ts(59,48): error TS2339: Property 'createPatient' does not exist on type 'PatientSyncService'.
+src/hooks/patient/usePatientMutations.ts(87,48): error TS2339: Property 'updatePatient' does not exist on type 'PatientSyncService'.
+src/hooks/patient/usePatientMutations.ts(114,25): error TS2339: Property 'deletePatient' does not exist on type 'PatientSyncService'.
+src/hooks/patient/usePatientMutations.ts(152,52): error TS2339: Property 'createPatient' does not exist on type 'PatientSyncService'.
+src/hooks/patient/usePatientMutations.ts(197,52): error TS2339: Property 'updatePatient' does not exist on type 'PatientSyncService'.
+src/hooks/patient/usePatientMutations.ts(242,29): error TS2339: Property 'deletePatient' does not exist on type 'PatientSyncService'.
+src/hooks/patient/usePatientMutations.ts(275,30): error TS2339: Property 'getSyncStatus' does not exist on type 'PatientSyncService'.
+src/hooks/patient/usePatientMutations.ts(284,25): error TS2339: Property 'forceSync' does not exist on type 'PatientSyncService'.
+src/hooks/patient/usePatients.old.ts(57,15): error TS2304: Cannot find name 'syncService'.
+src/hooks/patient/usePatients.old.ts(75,42): error TS2304: Cannot find name 'syncService'.
+src/hooks/patient/usePatients.old.ts(223,18): error TS2304: Cannot find name 'syncService'.
+src/hooks/patient/usePatients.old.ts(224,7): error TS2304: Cannot find name 'syncService'.
+src/hooks/patient/usePatients.ts(62,49): error TS2345: Argument of type 'Partial<Patient>' is not assignable to parameter of type '{ status: "active" | "inactive"; firstName: string; lastName: string; phone: string; tcNumber: string; tags: string[]; priorityScore: number; email?: string | undefined; birthDate?: string | undefined; ... 9 more ...; customData?: Record<...> | undefined; }'.
+  Types of property 'status' are incompatible.
+    Type 'PatientStatus | undefined' is not assignable to type '"active" | "inactive"'.
+      Type 'undefined' is not assignable to type '"active" | "inactive"'.
+src/hooks/patients/usePatient.ts(16,38): error TS2339: Property 'find' does not exist on type 'PatientsGetPatients200'.
+src/hooks/patients/usePatients.ts(3,29): error TS2307: Cannot find module '../../services/patient/api.service' or its corresponding type declarations.
+src/hooks/patients/usePatients.ts(19,8): error TS2307: Cannot find module '../../utils/patient/patient-adapter' or its corresponding type declarations.
+src/hooks/useCommunicationOfflineSync.ts(277,26): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
+src/hooks/usePatients.ts(81,25): error TS2345: Argument of type 'Patient[]' is not assignable to parameter of type 'SetStateAction<Patient[]>'.
+  Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient[]' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient[]'.
+    Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient'.
+      Types of property 'tcNumber' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+src/hooks/usePatients.ts(88,21): error TS2345: Argument of type 'Patient[]' is not assignable to parameter of type 'SetStateAction<Patient[]>'.
+  Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient[]' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient[]'.
+    Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient'.
+      Types of property 'tcNumber' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+src/hooks/usePatients.ts(108,21): error TS2345: Argument of type 'Patient[]' is not assignable to parameter of type 'SetStateAction<Patient[]>'.
+  Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient[]' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient[]'.
+    Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient'.
+      Types of property 'tcNumber' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+src/hooks/usePatients.ts(125,23): error TS2345: Argument of type 'Patient[]' is not assignable to parameter of type 'SetStateAction<Patient[]>'.
+  Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient[]' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient[]'.
+    Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient'.
+      Types of property 'tcNumber' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+src/hooks/usePatients.ts(158,9): error TS2739: Type 'PatientSearchResult' is missing the following properties from type 'PatientSearchResult': totalCount, filteredCount
+src/hooks/usePatients.ts(158,61): error TS2345: Argument of type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient[]' is not assignable to parameter of type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient[]'.
+  Type 'Patient' is missing the following properties from type 'Patient': label, devices, notes
+src/hooks/usePatients.ts(188,67): error TS2345: Argument of type 'Omit<Patient, "id" | "createdAt" | "updatedAt">' is not assignable to parameter of type 'Partial<Patient>'.
+  Types of property 'segment' are incompatible.
+    Type 'string | undefined' is not assignable to type '"new" | "trial" | "purchased" | "control" | "renewal" | "existing" | "vip" | undefined'.
+      Type 'string' is not assignable to type '"new" | "trial" | "purchased" | "control" | "renewal" | "existing" | "vip" | undefined'.
+src/hooks/usePatients.ts(194,61): error TS2345: Argument of type 'Omit<import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient, "id" | "createdAt" | "updatedAt">' is not assignable to parameter of type 'Omit<import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient, "id" | "createdAt" | "updatedAt">'.
+  Type 'Omit<Patient, "id" | "createdAt" | "updatedAt">' is missing the following properties from type 'Omit<Patient, "id" | "createdAt" | "updatedAt">': label, devices, notes
+src/hooks/usePatients.ts(197,19): error TS2345: Argument of type '(prev: Patient[]) => (Patient | Patient)[]' is not assignable to parameter of type 'SetStateAction<Patient[]>'.
+  Type '(prev: Patient[]) => (Patient | Patient)[]' is not assignable to type '(prevState: Patient[]) => Patient[]'.
+    Type '(Patient | Patient)[]' is not assignable to type 'Patient[]'.
+      Type 'Patient | Patient' is not assignable to type 'Patient'.
+        Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient'.
+          Types of property 'tcNumber' are incompatible.
+            Type 'string | undefined' is not assignable to type 'string'.
+              Type 'undefined' is not assignable to type 'string'.
+src/hooks/usePatients.ts(209,7): error TS2322: Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient'.
+  Types of property 'tcNumber' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/hooks/usePatients.ts(227,69): error TS2345: Argument of type 'Partial<import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient>' is not assignable to parameter of type 'Partial<import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient>'.
+  Types of property 'segment' are incompatible.
+    Type 'string | undefined' is not assignable to type '"new" | "trial" | "purchased" | "control" | "renewal" | "existing" | "vip" | undefined'.
+      Type 'string' is not assignable to type '"new" | "trial" | "purchased" | "control" | "renewal" | "existing" | "vip" | undefined'.
+src/hooks/usePatients.ts(233,19): error TS2345: Argument of type '(prev: Patient[]) => (Patient | Patient)[]' is not assignable to parameter of type 'SetStateAction<Patient[]>'.
+  Type '(prev: Patient[]) => (Patient | Patient)[]' is not assignable to type '(prevState: Patient[]) => Patient[]'.
+    Type '(Patient | Patient)[]' is not assignable to type 'Patient[]'.
+      Type 'Patient | Patient' is not assignable to type 'Patient'.
+        Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient'.
+          Types of property 'tcNumber' are incompatible.
+            Type 'string | undefined' is not assignable to type 'string'.
+              Type 'undefined' is not assignable to type 'string'.
+src/hooks/usePatients.ts(245,7): error TS2322: Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient'.
+  Types of property 'tcNumber' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/hooks/usePatients.ts(290,19): error TS2345: Argument of type 'Patient[]' is not assignable to parameter of type 'SetStateAction<Patient[]>'.
+  Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient[]' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient[]'.
+    Type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient' is not assignable to type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient'.
+      Types of property 'tcNumber' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+src/hooks/usePatients.ts(348,65): error TS2345: Argument of type 'Partial<import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/generated/orval-types").Patient>' is not assignable to parameter of type 'Partial<import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/patient").Patient>'.
+  Types of property 'segment' are incompatible.
+    Type 'string | undefined' is not assignable to type '"new" | "trial" | "purchased" | "control" | "renewal" | "existing" | "vip" | undefined'.
+      Type 'string' is not assignable to type '"new" | "trial" | "purchased" | "control" | "renewal" | "existing" | "vip" | undefined'.
+src/pages/inventory/components/AdvancedFilters.tsx(286,68): error TS2322: Type 'ChangeEvent<HTMLSelectElement>' is not assignable to type 'string'.
+src/pages/inventory/components/AdvancedFilters.tsx(299,68): error TS2322: Type 'ChangeEvent<HTMLSelectElement>' is not assignable to type 'string'.
+src/pages/inventory/components/InventoryTable.tsx(427,16): error TS2304: Cannot find name 'onItemsPerPageChange'.
+src/pages/inventory/components/InventoryTable.tsx(430,36): error TS2304: Cannot find name 'onItemsPerPageChange'.
+src/pages/inventory/InventoryPage.tsx(165,20): error TS2367: This comparison appears to be unintentional because the types 'InventoryStatus | undefined' and '"on_trial"' have no overlap.
+src/pages/inventory/InventoryPage.tsx(217,9): error TS2451: Cannot redeclare block-scoped variable 'handlePrint'.
+src/pages/inventory/InventoryPage.tsx(511,9): error TS2451: Cannot redeclare block-scoped variable 'handlePrint'.
+src/pages/inventory/InventoryPage.tsx(517,12): error TS2678: Type '"active"' is not comparable to type 'InventoryStatus'.
+src/pages/inventory/InventoryPage.tsx(518,12): error TS2678: Type '"inactive"' is not comparable to type 'InventoryStatus'.
+src/pages/inventory/InventoryPage.tsx(519,12): error TS2678: Type '"discontinued"' is not comparable to type 'InventoryStatus'.
+src/pages/inventory/InventoryPage.tsx(520,12): error TS2678: Type '"on_trial"' is not comparable to type 'InventoryStatus'.
+src/pages/inventory/InventoryPage.tsx(527,12): error TS2678: Type '"active"' is not comparable to type 'InventoryStatus'.
+src/pages/inventory/InventoryPage.tsx(528,12): error TS2678: Type '"inactive"' is not comparable to type 'InventoryStatus'.
+src/pages/inventory/InventoryPage.tsx(529,12): error TS2678: Type '"discontinued"' is not comparable to type 'InventoryStatus'.
+src/pages/inventory/InventoryPage.tsx(530,12): error TS2678: Type '"on_trial"' is not comparable to type 'InventoryStatus'.
+src/pages/inventory/InventoryPage.tsx(662,11): error TS2322: Type '""' is not assignable to type 'InventoryCategory | undefined'.
+src/pages/inventory/InventoryPage.tsx(664,11): error TS2322: Type '""' is not assignable to type 'InventoryStatus | undefined'.
+src/pages/inventory/InventoryPage.tsx(674,11): error TS2322: Type '""' is not assignable to type '"all" | "low_stock" | "out_of_stock" | "in_stock" | "on_trial" | undefined'.
+src/pages/inventory/InventoryPage.tsx(676,11): error TS2322: Type '{ min: number; max: number; }' is not assignable to type 'string'.
+src/pages/inventory/InventoryPage.tsx(683,18): error TS2304: Cannot find name 'paginatedItems'.
+src/pages/inventory/InventoryPage.tsx(687,11): error TS2322: Type '{ items: any; onEdit: (item: InventoryItem) => void; onView: (item: InventoryItem) => void; onDelete: (item: InventoryItem) => void; sortConfig: any; onSort: any; }' is not assignable to type 'IntrinsicAttributes & InventoryTableProps'.
+  Property 'sortConfig' does not exist on type 'IntrinsicAttributes & InventoryTableProps'.
+src/pages/inventory/InventoryPage.tsx(687,23): error TS2304: Cannot find name 'sortConfig'.
+src/pages/inventory/InventoryPage.tsx(688,19): error TS2304: Cannot find name 'handleSort'.
+src/pages/inventory/InventoryPage.tsx(698,16): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/pages/inventory/InventoryPage.tsx(715,18): error TS2304: Cannot find name 'startIndex'.
+src/pages/inventory/InventoryPage.tsx(715,44): error TS2304: Cannot find name 'endIndex'.
+src/pages/inventory/InventoryPage.tsx(742,51): error TS2304: Cannot find name 'totalPages'.
+src/pages/inventory/InventoryPage.tsx(744,23): error TS2304: Cannot find name 'totalPages'.
+src/pages/inventory/InventoryPage.tsx(748,45): error TS2304: Cannot find name 'totalPages'.
+src/pages/inventory/InventoryPage.tsx(749,31): error TS2304: Cannot find name 'totalPages'.
+src/pages/inventory/InventoryPage.tsx(771,64): error TS2304: Cannot find name 'totalPages'.
+src/pages/inventory/InventoryPage.tsx(772,43): error TS2304: Cannot find name 'totalPages'.
+src/pages/inventory/InventoryPage.tsx(781,47): error TS2304: Cannot find name 'totalPages'.
+src/pages/inventory/InventoryPage.tsx(782,43): error TS2304: Cannot find name 'totalPages'.
+src/pages/inventory/InventoryPage.tsx(806,9): error TS2322: Type '(item: InventoryItem, newStock: number) => void' is not assignable to type '(product: InventoryItem) => void'.
+  Target signature provides too few arguments. Expected 2 or more, but got 1.
+src/pages/inventory/InventoryPage.tsx(813,9): error TS2322: Type '{ isOpen: boolean; onClose: () => void; onConfirm: () => Promise<void>; itemName: string; title: string; message: string; }' is not assignable to type 'IntrinsicAttributes & DeleteConfirmModalProps'.
+  Property 'itemName' does not exist on type 'IntrinsicAttributes & DeleteConfirmModalProps'.
+src/pages/inventory/InventoryPage.tsx(821,9): error TS2322: Type '{ isOpen: boolean; onClose: () => void; onSubmit: (items: InventoryFormData[]) => Promise<void>; }' is not assignable to type 'IntrinsicAttributes & BulkUploadProps'.
+  Property 'onSubmit' does not exist on type 'IntrinsicAttributes & BulkUploadProps'.
+src/pages/inventory/InventoryTable/InventoryTable.tsx(72,15): error TS2741: Property 'quantity' is missing in type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/inventory").InventoryItem' but required in type 'import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/services/apiClient").InventoryItem'.
+src/pages/inventory/InventoryTable/InventoryTable.tsx(74,15): error TS2322: Type '((item: import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/inventory").InventoryItem) => void) | undefined' is not assignable to type '((item: import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/services/apiClient").InventoryItem) => void) | undefined'.
+  Type '(item: import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/types/inventory").InventoryItem) => void' is not assignable to type '(item: import("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/services/apiClient").InventoryItem) => void'.
+    Types of parameters 'item' and 'item' are incompatible.
+      Type 'InventoryItem' is missing the following properties from type 'InventoryItem': brand, category, availableInventory, totalInventory, and 4 more.
+src/pages/InventoryPage.tsx(173,18): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/pages/InvoiceManagementPage.tsx(421,18): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/pages/InvoiceManagementPage.tsx(439,18): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/pages/InvoiceManagementPage.tsx(588,20): error TS18048: 'modalState.invoice.items' is possibly 'undefined'.
+src/pages/InvoiceManagementPage.tsx(673,17): error TS18048: 'invoice.grandTotal' is possibly 'undefined'.
+src/pages/InvoicesPage.tsx(57,43): error TS2339: Property 'first_name' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(58,42): error TS2339: Property 'last_name' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(59,42): error TS2339: Property 'tc_number' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(60,39): error TS2339: Property 'email' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(61,39): error TS2339: Property 'phone' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(63,42): error TS2339: Property 'address' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(64,40): error TS2339: Property 'city' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(65,46): error TS2339: Property 'postal_code' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(71,44): error TS2339: Property 'company_name' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(72,42): error TS2339: Property 'tax_number' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(73,42): error TS2339: Property 'tax_office' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(74,46): error TS2339: Property 'contact_person' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(75,38): error TS2339: Property 'email' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(76,38): error TS2339: Property 'phone' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(78,41): error TS2339: Property 'address' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(79,39): error TS2339: Property 'city' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(80,45): error TS2339: Property 'postal_code' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(86,43): error TS2339: Property 'company_name' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(87,39): error TS2339: Property 'country' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(88,40): error TS2339: Property 'currency' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(89,44): error TS2339: Property 'exchange_rate' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(91,40): error TS2339: Property 'address' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(110,35): error TS2339: Property 'device_brand' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(111,35): error TS2339: Property 'device_model' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(112,42): error TS2339: Property 'device_serial' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(113,34): error TS2339: Property 'device_side' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(114,44): error TS2339: Property 'warranty_period' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(118,40): error TS2339: Property 'has_sgk_coverage' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(120,36): error TS2339: Property 'sgk_number' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(121,38): error TS2339: Property 'sgk_institution' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(122,39): error TS2339: Property 'sgk_coverage_rate' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(139,33): error TS2339: Property 'invoice_date' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(140,31): error TS2339: Property 'due_date' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(141,37): error TS2339: Property 'payment_method' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(142,29): error TS2339: Property 'notes' does not exist on type '{}'.
+src/pages/InvoicesPage.tsx(259,18): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/pages/InvoicesPage.tsx(280,18): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/pages/InvoicesPage.tsx(439,27): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/pages/InvoicesPage.tsx(529,18): error TS18048: 'invoice.items' is possibly 'undefined'.
+src/pages/InvoicesPage.tsx(564,71): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/pages/InvoicesPage.tsx(566,16): error TS18048: 'invoice.totalDiscount' is possibly 'undefined'.
+src/pages/InvoicesPage.tsx(569,74): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/pages/InvoicesPage.tsx(574,71): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/pages/InvoicesPage.tsx(578,85): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/pages/PatientDetailsPage.tsx(21,11): error TS2339: Property 'data' does not exist on type 'UsePatientReturn'.
+src/pages/PatientDetailsPage.tsx(53,35): error TS2339: Property 'message' does not exist on type 'string'.
+src/pages/PatientDetailsPage.tsx(53,74): error TS2339: Property 'message' does not exist on type 'string'.
+src/pages/patients/PatientDetail.tsx(76,35): error TS2339: Property 'patients' does not exist on type 'void'.
+src/pages/patients/PatientDetailPage.tsx(26,5): error TS2339: Property 'isOnline' does not exist on type '{ patient: Patient | null; data: Patient | null; loading: boolean; isLoading: boolean; error: string | Error | null; loadPatient: (id: string) => Promise<void>; updatePatient: (updates: Partial<...>) => Promise<...>; deletePatient: () => Promise<...>; clearError: () => void; }'.
+src/pages/patients/PatientDetailPage.tsx(27,5): error TS2339: Property 'refresh' does not exist on type '{ patient: Patient | null; data: Patient | null; loading: boolean; isLoading: boolean; error: string | Error | null; loadPatient: (id: string) => Promise<void>; updatePatient: (updates: Partial<...>) => Promise<...>; deletePatient: () => Promise<...>; clearError: () => void; }'.
+src/pages/patients/PatientDetailPage.tsx(333,52): error TS2322: Type 'string | Error' is not assignable to type 'ReactNode'.
+  Type 'Error' is not assignable to type 'ReactNode'.
+src/pages/patients/PatientDetailPage.tsx(368,47): error TS2322: Type 'string | Error' is not assignable to type 'ReactNode'.
+  Type 'Error' is not assignable to type 'ReactNode'.
+src/pages/patients/PatientsPage.tsx(113,21): error TS2322: Type '{ stats: { total: number; active: number; inactive: number; newThisMonth: number; }; }' is not assignable to type 'IntrinsicAttributes & PatientStatsProps'.
+  Property 'stats' does not exist on type 'IntrinsicAttributes & PatientStatsProps'.
+src/pages/patients/PatientsPage.tsx(128,15): error TS2322: Type '{ savedViews: never[]; onSelectView: (viewId: string) => void; onSaveView: (name: string, filters: Record<string, any>) => void; onUpdateView: (viewId: string, name: string, filters: Record<...>) => void; onDeleteView: (viewId: string) => void; currentFilters: PatientSearchFilters; }' is not assignable to type 'IntrinsicAttributes & PatientSavedViewsProps'.
+  Property 'savedViews' does not exist on type 'IntrinsicAttributes & PatientSavedViewsProps'.
+src/pages/patients/PatientsPage.tsx(168,12): error TS2739: Type '{}' is missing the following properties from type 'PatientBulkOperationsProps': selectedPatients, onClearSelection, onRefresh
+src/pages/patients/PatientsPage.tsx(172,12): error TS2739: Type '{}' is missing the following properties from type 'PatientAdvancedSearchProps': patients, onFilteredResults, onClearFilters
+src/pages/patients/PatientsPage.tsx(176,12): error TS2739: Type '{}' is missing the following properties from type 'PatientMatchingProps': patients, onMergePatients, onRefresh
+src/pages/PatientsPage.tsx(26,5): error TS2339: Property 'patients' does not exist on type 'UseQueryResult<PatientSearchResult, Error>'.
+src/pages/PurchasesPage.tsx(134,22): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: ChangeEvent<HTMLSelectElement>) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & SelectProps & RefAttributes<HTMLSelectElement>'.
+src/services/communicationOfflineSync.ts(77,3): error TS2411: Property 'templates' of type '{ key: string; value: CommunicationTemplate; indexes: { 'by-type': string; 'by-category': string; 'by-sync-status': string; 'by-active': boolean; }; }' is not assignable to 'string' index type 'DBSchemaValue'.
+src/services/invoice.service.ts(50,35): error TS2322: Type '"standard"' is not assignable to type 'InvoiceType'.
+src/services/invoice.service.ts(50,59): error TS2322: Type '"credit_note"' is not assignable to type 'InvoiceType'.
+src/services/invoice.service.ts(50,74): error TS2322: Type '"debit_note"' is not assignable to type 'InvoiceType'.
+src/services/invoice.service.ts(61,27): error TS2345: Argument of type '{ id: string; invoiceNumber: string; customerId: string; customerName: string; customerTaxNumber: string; customerAddress: { street: string; city: string; postalCode: string; country: string; }; ... 11 more ...; notes: string; }' is not assignable to parameter of type 'Invoice'.
+  Type '{ id: string; invoiceNumber: string; customerId: string; customerName: string; customerTaxNumber: string; customerAddress: { street: string; city: string; postalCode: string; country: string; }; ... 11 more ...; notes: string; }' is missing the following properties from type 'Invoice': patientName, currency
+src/services/invoice.service.ts(120,18): error TS2345: Argument of type '{ id: string; description: string; quantity: number; unitPrice: number; taxRate: number; taxAmount: number; totalPrice: number; sgkCode: string; category: string; }' is not assignable to parameter of type 'InvoiceItem'.
+  Property 'name' is missing in type '{ id: string; description: string; quantity: number; unitPrice: number; taxRate: number; taxAmount: number; totalPrice: number; sgkCode: string; category: string; }' but required in type 'InvoiceItem'.
+src/services/invoice.service.ts(171,7): error TS2353: Object literal may only specify known properties, and 'templateId' does not exist in type 'Invoice'.
+src/services/invoice.service.ts(203,5): error TS2322: Type '{ updatedAt: string; id: string; status: InvoiceStatus; gibSentDate?: string; paymentDate?: string; ettn?: string; type: InvoiceTypeLegacy; customerId?: string; ... 39 more ...; xmlUrl?: string; }' is not assignable to type 'Invoice'.
+  Types of property 'items' are incompatible.
+    Type 'Omit<InvoiceItem, "taxAmount" | "id" | "totalPrice">[] | undefined' is not assignable to type 'InvoiceItem[] | undefined'.
+      Type 'Omit<InvoiceItem, "taxAmount" | "id" | "totalPrice">[]' is not assignable to type 'InvoiceItem[]'.
+        Type 'Omit<InvoiceItem, "taxAmount" | "id" | "totalPrice">' is missing the following properties from type 'InvoiceItem': id, taxAmount, totalPrice
+src/services/invoice.service.ts(214,5): error TS2322: Type '{ updatedAt: string; id: string; status: InvoiceStatus; gibSentDate?: string; paymentDate?: string; ettn?: string; type: InvoiceTypeLegacy; customerId?: string; ... 39 more ...; xmlUrl?: string; }' is not assignable to type 'Invoice'.
+  Types of property 'items' are incompatible.
+    Type 'Omit<InvoiceItem, "taxAmount" | "id" | "totalPrice">[] | undefined' is not assignable to type 'InvoiceItem[] | undefined'.
+      Type 'Omit<InvoiceItem, "taxAmount" | "id" | "totalPrice">[]' is not assignable to type 'InvoiceItem[]'.
+        Type 'Omit<InvoiceItem, "taxAmount" | "id" | "totalPrice">' is missing the following properties from type 'InvoiceItem': id, taxAmount, totalPrice
+src/services/invoice.service.ts(249,66): error TS2345: Argument of type 'InvoiceTypeLegacy' is not assignable to parameter of type 'InvoiceType'.
+  Type '"standard"' is not assignable to type 'InvoiceType'.
+src/services/invoice.service.ts(255,52): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | number | Date'.
+      Type 'undefined' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+      Type 'undefined' is not assignable to type 'string | number'.
+src/services/invoice.service.ts(258,52): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | number | Date'.
+      Type 'undefined' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+      Type 'undefined' is not assignable to type 'string | number'.
+src/services/invoice.service.ts(390,22): error TS2345: Argument of type '{ success: boolean; ettn?: string; error?: string; invoiceId: string; }' is not assignable to parameter of type 'never'.

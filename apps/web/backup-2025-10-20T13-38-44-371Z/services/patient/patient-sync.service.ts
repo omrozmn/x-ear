@@ -1,0 +1,323 @@
+/**
+ * Patient Sync Service
+ * @fileoverview Handles patient data synchronization between local storage and API
+ * @version 1.0.0
+ */
+
+import { Patient } from '../../types/patient';
+import { indexedDBManager } from '../../utils/indexeddb';
+import { outbox, OutboxOperation } from '../../utils/outbox';
+import { patientsGetPatients } from '../../generated/orval-api';
+
+export interface SyncResult {
+  success: boolean;
+  synced: number;
+  failed: number;
+  conflicts: SyncConflict[];
+  lastSyncTime: string;
+}
+
+export interface SyncConflict {
+  patientId: string;
+  localVersion: Patient;
+  remoteVersion: Patient;
+  conflictType: 'update' | 'delete' | 'create';
+  resolution?: 'local' | 'remote' | 'merge';
+}
+
+export interface SyncOptions {
+  force?: boolean;
+  conflictResolution?: 'local' | 'remote' | 'prompt';
+  batchSize?: number;
+  since?: string;
+}
+
+export class PatientSyncService {
+  private readonly SYNC_KEY = 'patient_last_sync';
+  private readonly BATCH_SIZE = 50;
+  private syncInProgress = false;
+
+  async syncPatients(options: SyncOptions = {}): Promise<SyncResult> {
+    if (this.syncInProgress) {
+      throw new Error('Sync already in progress');
+    }
+
+    this.syncInProgress = true;
+    
+    try {
+      const result = await this.performSync(options);
+      await this.updateLastSyncTime();
+      return result;
+    } finally {
+      this.syncInProgress = false;
+    }
+  }
+
+  async syncSinglePatient(patientId: string, options: SyncOptions = {}): Promise<boolean> {
+    try {
+      // Get local patient
+      const localPatient = await indexedDBManager.getPatient(patientId);
+      if (!localPatient) {
+        throw new Error(`Patient ${patientId} not found locally`);
+      }
+
+      // Check if there are pending changes in outbox
+      const pendingOperations = await outbox.getPendingOperations();
+      const patientOperations = pendingOperations.filter(op => 
+        op.endpoint.includes(`/patients/${patientId}`) || 
+        (op.data && typeof op.data === 'object' && 'id' in op.data && op.data.id === patientId)
+      );
+      
+      if (patientOperations.length > 0 && !options.force) {
+        // Push pending changes first
+        await this.pushPendingChanges([patientId]);
+      }
+
+      // Pull latest from server
+      await this.pullPatientFromServer(patientId);
+      
+      return true;
+    } catch (error) {
+      console.error(`Failed to sync patient ${patientId}:`, error);
+      return false;
+    }
+  }
+
+  async getLastSyncTime(): Promise<string | null> {
+    try {
+      const lastSync = await indexedDBManager.getCache(this.SYNC_KEY);
+      return typeof lastSync === 'string' ? lastSync : null;
+    } catch (error) {
+      console.error('Failed to get last sync time:', error);
+      return null;
+    }
+  }
+
+  async getPendingSyncCount(): Promise<number> {
+    try {
+      const pendingOperations = await outbox.getPendingOperations();
+      return pendingOperations.filter(op => op.endpoint.includes('/patients')).length;
+    } catch (error) {
+      console.error('Failed to get pending sync count:', error);
+      return 0;
+    }
+  }
+
+  async hasPendingChanges(patientId?: string): Promise<boolean> {
+    try {
+      const pendingOperations = await outbox.getPendingOperations();
+      
+      if (patientId) {
+        return pendingOperations.some(op => 
+          op.endpoint.includes(`/patients/${patientId}`) ||
+          (op.data && typeof op.data === 'object' && 'id' in op.data && op.data.id === patientId)
+        );
+      } else {
+        return pendingOperations.some(op => op.endpoint.includes('/patients'));
+      }
+    } catch (error) {
+      console.error('Failed to check pending changes:', error);
+      return false;
+    }
+  }
+
+  async resolveConflict(conflict: SyncConflict, resolution: 'local' | 'remote' | 'merge'): Promise<Patient> {
+    switch (resolution) {
+      case 'local':
+        // Keep local version, push to server
+        await this.pushPatientToServer(conflict.localVersion);
+        return conflict.localVersion;
+        
+      case 'remote':
+        // Keep remote version, update local
+        await indexedDBManager.updatePatient(conflict.remoteVersion);
+        return conflict.remoteVersion;
+        
+      case 'merge':
+        // Merge both versions (last-write-wins for most fields)
+        const merged = this.mergePatients(conflict.localVersion, conflict.remoteVersion);
+        await indexedDBManager.updatePatient(merged);
+        await this.pushPatientToServer(merged);
+        return merged;
+        
+      default:
+        throw new Error(`Invalid conflict resolution: ${resolution}`);
+    }
+  }
+
+  private async performSync(options: SyncOptions): Promise<SyncResult> {
+    const result: SyncResult = {
+      success: false,
+      synced: 0,
+      failed: 0,
+      conflicts: [],
+      lastSyncTime: new Date().toISOString()
+    };
+
+    try {
+      // Step 1: Push pending changes
+      const pushResult = await this.pushPendingChanges();
+      
+      // Step 2: Pull remote changes
+      const pullResult = await this.pullRemoteChanges(options);
+      
+      result.synced = (pushResult.synced || 0) + (pullResult.synced || 0);
+      result.failed = (pushResult.failed || 0) + (pullResult.failed || 0);
+      result.conflicts = [...(pushResult.conflicts || []), ...(pullResult.conflicts || [])];
+      result.success = result.failed === 0 && result.conflicts.length === 0;
+      
+      return result;
+    } catch (error) {
+      console.error('Sync failed:', error);
+      result.success = false;
+      return result;
+    }
+  }
+
+  private async pushPendingChanges(patientIds?: string[]): Promise<Partial<SyncResult>> {
+    const result = { synced: 0, failed: 0, conflicts: [] as SyncConflict[] };
+    
+    try {
+      const pendingOperations = await outbox.getPendingOperations();
+      const patientOperations = pendingOperations.filter(op => {
+        if (patientIds) {
+          return patientIds.some(id => 
+            op.endpoint.includes(`/patients/${id}`) ||
+            (op.data && typeof op.data === 'object' && 'id' in op.data && op.data.id === id)
+          );
+        }
+        return op.endpoint.includes('/patients');
+      });
+
+      for (const operation of patientOperations) {
+        try {
+          await this.processPendingOperation(operation);
+          result.synced++;
+        } catch (error) {
+          console.error(`Failed to process operation ${operation.id}:`, error);
+          result.failed++;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to push pending changes:', error);
+    }
+    
+    return result;
+  }
+
+  private async pullRemoteChanges(options: SyncOptions): Promise<Partial<SyncResult>> {
+    const result = { synced: 0, failed: 0, conflicts: [] as SyncConflict[] };
+    
+    try {
+      const batchSize = options.batchSize || this.BATCH_SIZE;
+      
+      // Simple implementation - get all patients
+      // In a real implementation, you'd use pagination and delta sync
+      const response = await patientsGetPatients({});
+      
+      if (response.data?.data) {
+        for (const remotePatientRaw of response.data.data) {
+          try {
+            // Convert remote (orval) patient shape to internal domain Patient before syncing
+            const remotePatient = remotePatientRaw as any as Patient; // Type assertion for API response
+            const syncResult = await this.syncRemotePatient(remotePatient, options);
+            if (syncResult.conflict) {
+              result.conflicts.push(syncResult.conflict);
+            } else {
+              result.synced++;
+            }
+          } catch (error) {
+            console.error(`Failed to sync patient ${remotePatientRaw?.id}:`, error);
+            result.failed++;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to pull remote changes:', error);
+    }
+    
+    return result;
+  }
+
+  private async syncRemotePatient(remotePatient: Patient, options: SyncOptions): Promise<{ conflict?: SyncConflict }> {
+    const localPatient = await indexedDBManager.getPatient(remotePatient.id);
+    
+    if (!localPatient) {
+      // New patient from server
+      await indexedDBManager.updatePatient(remotePatient);
+      return {};
+    }
+    
+    // Check for conflicts
+    const hasLocalChanges = await this.hasPendingChanges(remotePatient.id);
+    const isLocalNewer = new Date(localPatient.updatedAt) > new Date(remotePatient.updatedAt);
+    
+    if (hasLocalChanges || isLocalNewer) {
+      // Conflict detected
+      const conflict: SyncConflict = {
+        patientId: remotePatient.id,
+        localVersion: localPatient,
+        remoteVersion: remotePatient,
+        conflictType: 'update'
+      };
+      
+      if (options.conflictResolution && options.conflictResolution !== 'prompt') {
+        await this.resolveConflict(conflict, options.conflictResolution);
+        return {};
+      }
+      
+      return { conflict };
+    }
+    
+    // No conflict, update local
+    await indexedDBManager.updatePatient(remotePatient);
+    return {};
+  }
+
+  private async processPendingOperation(operation: OutboxOperation): Promise<void> {
+    // This would typically involve making API calls based on the operation
+    // For now, we'll just log it as the actual API integration would be complex
+    console.log('Processing pending operation:', operation.id, operation.method, operation.endpoint);
+  }
+
+  private async pushPatientToServer(patient: Patient): Promise<void> {
+    // Add operation to outbox for sync
+    await outbox.addOperation({
+      method: 'PUT',
+      endpoint: `/api/patients/${patient.id}`,
+      data: patient,
+      headers: {
+        'Idempotency-Key': `update-patient-${patient.id}-${Date.now()}`
+      }
+    });
+  }
+
+  private async pullPatientFromServer(patientId: string): Promise<void> {
+    // Implementation would fetch patient from API
+    // This is a placeholder for the actual API integration
+    console.log('Pulling patient from server:', patientId);
+  }
+
+  private mergePatients(local: Patient, remote: Patient): Patient {
+    // Simple last-write-wins merge strategy
+    // In a real implementation, you might want more sophisticated merging
+    const localTime = new Date(local.updatedAt).getTime();
+    const remoteTime = new Date(remote.updatedAt).getTime();
+    
+    if (localTime > remoteTime) {
+      return { ...remote, ...local, updatedAt: new Date().toISOString() };
+    } else {
+      return { ...local, ...remote, updatedAt: new Date().toISOString() };
+    }
+  }
+
+  private async updateLastSyncTime(): Promise<void> {
+    try {
+      await indexedDBManager.setCache(this.SYNC_KEY, new Date().toISOString());
+    } catch (error) {
+      console.error('Failed to update last sync time:', error);
+    }
+  }
+}
+
+export const patientSyncService = new PatientSyncService();

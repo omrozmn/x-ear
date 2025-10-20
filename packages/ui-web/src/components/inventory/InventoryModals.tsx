@@ -1,6 +1,6 @@
 import React from 'react';
-import { Modal, Button, Input, Select, Badge, Textarea } from '../ui';
-import { InventoryItem, InventoryFilters } from '../../types/inventory';
+import { Modal, Button, Input, Select, Badge } from '../ui';
+import { InventoryItem } from '../../types/inventory';
 
 interface InventoryModalsProps {
   // Product Details Modal

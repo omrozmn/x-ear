@@ -6,13 +6,13 @@
 
 import { AxiosResponse } from 'axios';
 import { 
-  patientsGetPatients, 
   PatientsGetPatients200,
   Patient as OrvalPatient,
   PaginationInfo
-} from '../../generated/orval-api';
+} from "../../api/generated/api.schemas";
+import { getPatients } from "../../api/generated/patients/patients";
 import type { Patient } from '../../types/patient';
-import { convertOrvalPatient } from './patient-mappers';
+
 
 export class PatientApiService {
   /**
@@ -32,7 +32,8 @@ export class PatientApiService {
         }
         
         // eslint-disable-next-line no-await-in-loop
-        const resp: AxiosResponse<PatientsGetPatients200> = await patientsGetPatients(params);
+        const api = getPatients();
+        const resp: AxiosResponse<PatientsGetPatients200> = await api.patientsGetPatients(params);
         const payload = resp?.data;
         
         if (!payload || !Array.isArray(payload.data)) {
@@ -155,6 +156,112 @@ export class PatientApiService {
     } catch (error) {
       console.error(`❌ Failed to delete patient ${id}:`, error);
       return false;
+    }
+  }
+
+  /**
+   * Create note for patient (not implemented)
+   */
+  async createNote(patientId: string, note: any): Promise<any> {
+    throw new Error('createNote API method not implemented yet');
+  }
+
+  /**
+   * Delete note for patient (not implemented)
+   */
+  async deleteNote(patientId: string, noteId: string): Promise<any> {
+    throw new Error('deleteNote API method not implemented yet');
+  }
+
+  /**
+   * Get patient timeline (not implemented)
+   */
+  async getTimeline(patientId: string): Promise<any> {
+    throw new Error('getTimeline API method not implemented yet');
+  }
+
+  /**
+   * Get patient sales (not implemented)
+   */
+  async getSales(patientId: string): Promise<any> {
+    throw new Error('getSales API method not implemented yet');
+  }
+
+  /**
+   * Bulk upload patients (not implemented)
+   */
+  async bulkUpload(formData: any): Promise<any> {
+    throw new Error('bulkUpload API method not implemented yet');
+  }
+
+  /**
+   * Search patients (not implemented)
+   */
+  async search(searchParams: any): Promise<any> {
+    throw new Error('search API method not implemented yet');
+  }
+
+  /**
+   * Export patients to CSV (not implemented)
+   */
+  async exportCsv(filters: any): Promise<any> {
+    throw new Error('exportCsv API method not implemented yet');
+  }
+
+  /**
+   * List patients with filters (not implemented)
+   */
+  async list(filters: any): Promise<any> {
+    throw new Error('list API method not implemented yet');
+  }
+
+  /**
+   * Get patients with pagination and filters
+   */
+  async getPatients(params?: any): Promise<any> {
+    try {
+      // For now, return all patients with basic filtering
+      const allPatients = await this.fetchAllPatients();
+      
+      let filtered = allPatients;
+      
+      // Apply search filter
+      if (params?.search) {
+        const searchLower = params.search.toLowerCase();
+        filtered = filtered.filter(p => 
+          p.firstName?.toLowerCase().includes(searchLower) ||
+          p.lastName?.toLowerCase().includes(searchLower) ||
+          p.tcNumber?.includes(params.search) ||
+          p.phone?.includes(params.search)
+        );
+      }
+      
+      // Apply status filter
+      if (params?.status) {
+        filtered = filtered.filter(p => p.status === params.status);
+      }
+      
+      // Apply pagination
+      const page = params?.page || 1;
+      const perPage = params?.per_page || 10;
+      const startIndex = (page - 1) * perPage;
+      const endIndex = startIndex + perPage;
+      const paginatedData = filtered.slice(startIndex, endIndex);
+      
+      return {
+        data: {
+          data: paginatedData,
+          meta: {
+            total: filtered.length,
+            page,
+            per_page: perPage,
+            total_pages: Math.ceil(filtered.length / perPage)
+          }
+        }
+      };
+    } catch (error) {
+      console.error('Failed to get patients:', error);
+      throw error;
     }
   }
 

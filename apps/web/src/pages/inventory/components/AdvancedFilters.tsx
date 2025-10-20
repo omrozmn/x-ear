@@ -283,7 +283,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               <h4 className="font-medium text-gray-900">Tedarikçi</h4>
               <Select
                 value={filters.supplier || ''}
-                onChange={(value) => onFiltersChange({ ...filters, supplier: value || undefined })}
+                onChange={(e) => onFiltersChange({ ...filters, supplier: e.target.value || undefined })}
                 options={[
                   { value: '', label: 'Tüm Tedarikçiler' },
                   ...suppliers.map(supplier => ({ value: supplier, label: supplier }))
@@ -296,7 +296,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               <h4 className="font-medium text-gray-900">Garanti Süresi</h4>
               <Select
                 value={filters.warrantyPeriod || ''}
-                onChange={(value) => onFiltersChange({ ...filters, warrantyPeriod: value || undefined })}
+                onChange={(e) => onFiltersChange({ ...filters, warrantyPeriod: e.target.value || undefined })}
                 options={warrantyOptions}
               />
             </div>

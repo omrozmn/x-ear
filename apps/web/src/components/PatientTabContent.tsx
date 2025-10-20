@@ -1,5 +1,5 @@
 import React from 'react';
-import { Patient } from '../api/generated/api.schemas';
+import { Patient } from '../types/patient';
 import { 
   User, 
   Phone, 
@@ -76,9 +76,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Cinsiyet</label>
-            <p className="mt-1 text-sm text-gray-900">
-              {patient.gender === 'M' ? 'Erkek' : patient.gender === 'F' ? 'Kadın' : 'Belirtilmemiş'}
-            </p>
+            <p className="mt-1 text-sm text-gray-900">Belirtilmemiş</p>
           </div>
         </div>
       </div>
@@ -90,14 +88,6 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
           Adres Bilgileri
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Şehir</label>
-            <p className="mt-1 text-sm text-gray-900">{patient.addressCity || 'Belirtilmemiş'}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">İlçe</label>
-            <p className="mt-1 text-sm text-gray-900">{patient.addressDistrict || 'Belirtilmemiş'}</p>
-          </div>
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700">Tam Adres</label>
             <p className="mt-1 text-sm text-gray-900">{patient.addressFull || 'Belirtilmemiş'}</p>

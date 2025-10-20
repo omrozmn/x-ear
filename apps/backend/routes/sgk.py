@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 import logging
-from models.base import db
+from models.base import db, gen_id
 from models.patient import Patient
 
 # SGKDocument is optional - some deployments may not have a dedicated model.
@@ -20,6 +20,7 @@ sgk_bp = Blueprint('sgk', __name__)
 import os
 import tempfile
 from werkzeug.utils import secure_filename
+import pdfkit
 
 # Simple upload limits
 MAX_UPLOAD_FILES = 50
@@ -473,6 +474,142 @@ def upload_and_process_files():
                         proc_result['matched_patient'] = None
                     # ----- END DB lookup block -----
 
+                    # ----- PDF Conversion and Saving -----
+                    pdf_path = None
+                    document_type = None
+                    try:
+                        # Determine document type from classification
+                        classification = proc_result.get('classification', {})
+                        doc_type = classification.get('type', 'other')
+                        if 'sgk' in doc_type.lower() or 'reçete' in ''.join([e.get('text', '') for e in proc_result.get('entities', [])]).lower():
+                            document_type = 'sgk_reçete'
+                        elif 'rapor' in doc_type.lower():
+                            document_type = 'sgk_rapor'
+                        elif 'odyometri' in ''.join([e.get('text', '') for e in proc_result.get('entities', [])]).lower():
+                            document_type = 'odyometri_sonucu'
+                        elif 'garanti' in ''.join([e.get('text', '') for e in proc_result.get('entities', [])]).lower():
+                            document_type = 'garanti_belgesi'
+                        elif 'kimlik' in ''.join([e.get('text', '') for e in proc_result.get('entities', [])]).lower():
+                            document_type = 'kimlik'
+                        else:
+                            document_type = 'diger'
+
+                        # Generate filename
+                        patient_name = 'Bilinmeyen_Hasta'
+                        if proc_result.get('matched_patient') and proc_result['matched_patient'].get('patient'):
+                            pat = proc_result['matched_patient']['patient']
+                            first_name = pat.get('firstName', '')
+                            last_name = pat.get('lastName', '')
+                            patient_name = f"{first_name}_{last_name}".replace(' ', '_')
+
+                        filename = f"{patient_name}_{document_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+
+                        # Convert image to PDF
+                        pdfkit_config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')  # Adjust path if needed
+                        pdf_options = {
+                            'page-size': 'A4',
+                            'orientation': 'Portrait',
+                            'margin-top': '0.75in',
+                            'margin-right': '0.75in',
+                            'margin-bottom': '0.75in',
+                            'margin-left': '0.75in',
+                            'encoding': 'UTF-8',
+                            'no-outline': None,
+                            'enable-local-file-access': None
+                        }
+                        
+                        # Create HTML from image
+                        html_content = f"""
+                        <html>
+                        <head>
+                            <title>{filename}</title>
+                            <style>
+                                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                                img {{ max-width: 100%; height: auto; }}
+                                .info {{ margin-bottom: 20px; }}
+                            </style>
+                        </head>
+                        <body>
+                            <div class="info">
+                                <h2>SGK Dokümanı</h2>
+                                <p><strong>Tür:</strong> {document_type}</p>
+                                <p><strong>Hasta:</strong> {patient_name.replace('_', ' ')}</p>
+                                <p><strong>Tarih:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+                            </div>
+                            <img src="file://{tmp.name}" alt="Doküman" />
+                        </body>
+                        </html>
+                        """
+                        
+                        # Save HTML to temp file
+                        html_tmp = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.html', prefix='sgk_html_')
+                        html_tmp.write(html_content)
+                        html_tmp.flush()
+                        html_tmp.close()
+                        
+                        # Convert to PDF
+                        pdf_tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf', prefix='sgk_pdf_')
+                        pdf_tmp.close()
+                        
+                        pdfkit.from_file(html_tmp.name, pdf_tmp.name, configuration=pdfkit_config, options=pdf_options)
+                        pdf_path = pdf_tmp.name
+                        
+                        # Cleanup HTML temp file
+                        try:
+                            os.unlink(html_tmp.name)
+                        except Exception:
+                            pass
+                        
+                        proc_result['pdf_generated'] = True
+                        proc_result['pdf_filename'] = filename
+                        proc_result['document_type'] = document_type
+                        
+                    except Exception as e:
+                        logger.warning(f"PDF generation failed: {e}")
+                        proc_result['pdf_generated'] = False
+                        proc_result['pdf_error'] = str(e)
+                    
+                    # Save to patient documents if patient matched
+                    if proc_result.get('matched_patient') and proc_result['matched_patient'].get('patient') and pdf_path:
+                        try:
+                            patient_id = proc_result['matched_patient']['patient']['id']
+                            patient = db.session.get(Patient, patient_id)
+                            if patient:
+                                # Add to patient's custom_data documents
+                                custom_data = patient.custom_data_json or {}
+                                documents = custom_data.get('documents', [])
+                                
+                                doc_entry = {
+                                    'id': gen_id('doc'),
+                                    'type': document_type,
+                                    'filename': filename,
+                                    'url': f'/uploads/sgk/{filename}',  # Assuming upload path
+                                    'uploadedAt': datetime.now().isoformat(),
+                                    'ocrResult': proc_result
+                                }
+                                documents.append(doc_entry)
+                                custom_data['documents'] = documents
+                                patient.custom_data_json = custom_data
+                                db.session.commit()
+                                
+                                proc_result['saved_to_patient'] = True
+                                proc_result['document_id'] = doc_entry['id']
+                        except Exception as e:
+                            logger.error(f"Failed to save document to patient: {e}")
+                            proc_result['saved_to_patient'] = False
+                            proc_result['save_error'] = str(e)
+                    
+                    # Cleanup PDF temp file after saving
+                    if pdf_path and os.path.exists(pdf_path):
+                        try:
+                            # Move to permanent location if needed, or keep temp for now
+                            # For now, just keep the path in result
+                            pass
+                        except Exception:
+                            pass
+                    
+                    # ----- END PDF Conversion and Saving -----
+
                     results.append({
                         "fileName": original_name,
                         "savedPath": tmp.name,
@@ -529,7 +666,7 @@ def seed_test_patients():
             svc = get_nlp_service()
             svc.initialize()
 
-        images_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'images'))
+        images_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'legacy', 'images'))
         if not os.path.isdir(images_dir):
             return jsonify({'success': False, 'error': f'Images directory not found: {images_dir}'}), 400
 

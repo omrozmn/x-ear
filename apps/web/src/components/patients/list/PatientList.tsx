@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Patient } from '@/api/generated/api.schemas';
+import type { Patient } from '@/types/patient';
 
 interface PatientListProps {
   patients: Patient[];

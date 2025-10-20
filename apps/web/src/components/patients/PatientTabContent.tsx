@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { Patient, PatientDevice, Sale, PaymentRecord } from '../../types/patient';
-import { usePatients } from '../../hooks/patient/usePatients';
+import { useUpdatePatient } from '../../hooks/patient/usePatients';
 import { PatientTab } from './PatientTabs';
 import { Button } from '@x-ear/ui-web';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
@@ -9,11 +9,13 @@ import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 interface PatientTabContentProps {
   patient: Patient;
   activeTab: PatientTab;
+  onPatientUpdate?: (p: Patient) => void;
 }
 
 export const PatientTabContent: React.FC<PatientTabContentProps> = ({
   patient,
   activeTab,
+  onPatientUpdate,
 }) => {
   const [isAddingDevice, setIsAddingDevice] = useState(false);
   const [editingDevice, setEditingDevice] = useState<PatientDevice | null>(null);
@@ -50,7 +52,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
   const [deviceError, setDeviceError] = useState<string | null>(null);
   
   // Patient service methods
-  const { addDevice, updateDevice, updatePatient } = usePatients();
+  const updatePatientMutation = useUpdatePatient();
   const renderTabContent = () => {
     switch (activeTab) {
       case 'general':
@@ -66,7 +68,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                   </svg>
                 </div>
-                <p className="text-lg font-semibold text-gray-900">{patient.firstName && patient.lastName ? `${patient.firstName} ${patient.lastName}` : patient.name || 'Belirtilmemiş'}</p>
+                <p className="text-lg font-semibold text-gray-900">{`${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'İsimsiz Hasta'}</p>
               </div>
 
               {/* TC Number Card */}
@@ -185,7 +187,11 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-1">Durum</label>
                     <select
                       value={newDevice.status}
-                      onChange={(e) => setNewDevice({...newDevice, status: e.target.value as any})}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const allowed: PatientDevice['status'][] = ['active','trial','returned','replaced'];
+                        setNewDevice(prev => ({...prev, status: allowed.includes(val as any) ? (val as PatientDevice['status']) : 'active'}));
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="active">Aktif</option>
@@ -199,7 +205,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={async () => {
+                      onClick={async () => {
                       // validation
                       setDeviceError(null);
                       if (!newDevice.brand.trim() || !newDevice.model.trim()) {
@@ -207,20 +213,21 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                         return;
                       }
                       try {
-                        // Use service to add device
-                        const added = await addDevice(patient.id, {
+                        // construct device and patch via updatePatient
+                        const deviceToAdd = {
+                          id: `device-${Date.now()}`,
                           brand: newDevice.brand,
                           model: newDevice.model,
                           serialNumber: newDevice.serialNumber,
                           status: newDevice.status,
-                          // Provide reasonable defaults required by PatientDevice type
-                          type: (patient.deviceType as any) || 'hearing_aid',
+                          type: (['hearing_aid','cochlear_implant','bone_anchored','middle_ear'] as PatientDevice['type'][]).includes(patient.deviceType as any) ? patient.deviceType as PatientDevice['type'] : 'hearing_aid',
                           side: 'both'
-                        });
-                        if (added) {
-                          // rely on patient:updated event to re-render via usePatient
+                        } as PatientDevice;
+                        const res = await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { devices: [...(patient.devices || []), deviceToAdd] } });
+                        if (res) {
                           setIsAddingDevice(false);
                           setNewDevice({ brand: '', model: '', serialNumber: '', status: 'active' });
+                          if (onPatientUpdate) onPatientUpdate(res);
                         } else {
                           setConfirmDialog({ open: true, title: 'Cihaz eklenemedi', description: 'Cihaz eklenemedi. Lütfen tekrar deneyin.', onConfirm: async () => {} });
                         }
@@ -255,9 +262,9 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
             )}
 
             {/* Existing Devices */}
-            {patient.devices && patient.devices.length > 0 ? (
+            {patient?.devices && patient.devices.length > 0 ? (
               <div className="space-y-4">
-                {patient.devices.map((device, index) => (
+                {patient?.devices?.map((device, index) => (
                   <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
                     <div className="flex justify-between items-start mb-2">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
@@ -293,7 +300,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                             onConfirm: async () => {
                               try {
                                 const remaining = (patient.devices || []).filter(d => d.id !== device.id);
-                                const res = await updatePatient(patient.id, { devices: remaining });
+                                const res = await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { devices: remaining } });
                                 if (!res) setConfirmDialog({ open: true, title: 'Cihaz silinemedi', description: 'Cihaz silinemedi.', onConfirm: async () => {} });
                               } catch (err) {
                                 console.error('Failed to delete device:', err);
@@ -364,7 +371,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                           onConfirm: async () => {
                             try {
                               const updatedSales: Sale[] = (patient.sales || []).map(s => s.id === sale.id ? { ...s, status: 'paid' as Sale['status'], updatedAt: new Date().toISOString() } : s);
-                              await updatePatient(patient.id, { sales: updatedSales });
+                              await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { sales: updatedSales } });
                             } catch (err) {
                               console.error('Failed to mark sale paid', err);
                               setConfirmDialog({ open: true, title: 'İşlem başarısız', description: 'Satış durumu güncellenemedi.', onConfirm: async () => {} });
@@ -409,7 +416,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                           onConfirm: async () => {
                             try {
                               const remaining = (patient.sales || []).filter(s => s.id !== sale.id);
-                              await updatePatient(patient.id, { sales: remaining });
+                              await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { sales: remaining } });
                             } catch (err) {
                               console.error('Failed to delete sale', err);
                               setConfirmDialog({ open: true, title: 'Satış silinemedi', description: 'Satış silinirken bir hata oluştu.', onConfirm: async () => {} });
@@ -527,7 +534,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                             onConfirm: async () => {
                               try {
                                 const remaining = (patient.reports || []).filter(r => r.id !== report.id);
-                                await updatePatient(patient.id, { reports: remaining });
+                                await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { reports: remaining } });
                               } catch (err) {
                                 console.error('Failed to delete report', err);
                                 setConfirmDialog({ open: true, title: 'Silme başarısız', description: 'Belge silinirken bir hata oluştu.', onConfirm: async () => {} });
@@ -599,7 +606,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                             onConfirm: async () => {
                               try {
                                 const remaining = (patient.notes || []).filter(note => note.id !== n.id);
-                                await updatePatient(patient.id, { notes: remaining });
+                                await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { notes: remaining } });
                               } catch (err) {
                                 console.error('Failed to delete note', err);
                                 setConfirmDialog({ open: true, title: 'Silme hatası', description: 'Not silinirken bir hata oluştu.', onConfirm: async () => {} });
@@ -617,7 +624,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
         );
           {/* Edit Device Modal */}
           {editingDevice && (() => {
-            const dev = editingDevice as PatientDevice;
+            const dev = editingDevice!;
             return (
               <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
                 <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -651,13 +658,9 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                       variant="primary"
                       onClick={async () => {
                         try {
-                          if (updateDevice) {
-                            await updateDevice(patient.id, dev.id, dev);
-                          } else {
-                            // fallback: patch via updatePatient
-                            const updated = (patient.devices || []).map(d => d.id === dev.id ? dev : d);
-                            await updatePatient(patient.id, { devices: updated as PatientDevice[] });
-                          }
+                          // Update devices by patching the whole devices array via updatePatient
+                          const updated = (patient.devices || []).map(d => d.id === dev.id ? dev : d);
+                          await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { devices: updated } });
                           setEditingDevice(null);
                         } catch (err) {
                           console.error('Failed to update device', err);
@@ -709,9 +712,9 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                           } as any;
                           if (isEditingAppointment) {
                             const updated = (patient.appointments || []).map((a: any) => a.id === appt.id ? { ...a, ...appt } : a);
-                            await updatePatient(patient.id, { appointments: updated });
+                            await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { appointments: updated } });
                           } else {
-                            await updatePatient(patient.id, { appointments: [...(patient.appointments || []), appt] });
+                            await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { appointments: [...(patient.appointments || []), appt] } });
                           }
                           setIsAppointmentModalOpen(false);
                           } catch (err) {
@@ -758,7 +761,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                           <Button variant="outline" size="sm" onClick={async () => {
                             try {
                               const updated = (patient.appointments || []).map((a: any) => a.id === appt.id ? { ...a, status: 'completed' } : a);
-                              await updatePatient(patient.id, { appointments: updated });
+                              await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { appointments: updated } });
                             } catch (err) {
                               console.error('Failed to mark appointment completed', err);
                               setConfirmDialog({ open: true, title: 'İşlem başarısız', description: 'Randevu durumu güncellenemedi.', onConfirm: async () => {} });
@@ -773,7 +776,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                             onConfirm: async () => {
                               try {
                                 const updated = (patient.appointments || []).map((a: any) => a.id === appt.id ? { ...a, status: 'cancelled' } : a);
-                                await updatePatient(patient.id, { appointments: updated });
+                                await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { appointments: updated } });
                               } catch (err) {
                                 console.error('Failed to cancel appointment', err);
                                 setConfirmDialog({ open: true, title: 'İşlem başarısız', description: 'Randevu iptal edilemedi.', onConfirm: async () => {} });
@@ -794,7 +797,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                           onConfirm: async () => {
                             try {
                               const remaining = (patient.appointments || []).filter((a: any) => a.id !== appt.id);
-                              await updatePatient(patient.id, { appointments: remaining });
+                              await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { appointments: remaining } });
                             } catch (err) {
                               console.error('Failed to delete appointment', err);
                               setConfirmDialog({ open: true, title: 'Randevu silinemedi', description: 'Randevu silinirken bir hata oluştu.', onConfirm: async () => {} });
@@ -864,7 +867,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                       payments: [],
                       createdAt: new Date().toISOString(),
                     };
-                    await updatePatient(patient.id, { sales: [...(patient.sales || []), newSale] });
+                    await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { sales: [...(patient.sales || []), newSale] } });
                     setShowCreateSaleModal(false);
                     setNewSaleTotal('');
                     setNewSaleDate(new Date().toISOString().slice(0,10));
@@ -899,7 +902,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
               <Button variant="primary" onClick={async () => {
                 try {
                   const updatedSales: Sale[] = (patient.sales || []).map(s => s.id === editingSaleNoteSaleId ? { ...s, notes: saleNoteText, updatedAt: new Date().toISOString() } : s);
-                  await updatePatient(patient.id, { sales: updatedSales });
+                  await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { sales: updatedSales } });
                   setEditingSaleNoteSaleId(null);
                   setSaleNoteText('');
                 } catch (err) {
@@ -938,7 +941,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
               <Button variant="primary" onClick={async () => {
                 try {
                   const newReport = { id: `rep_${Date.now()}`, type: reportForm.type, title: reportForm.title, createdAt: new Date().toISOString(), createdBy: 'System' } as any;
-                  await updatePatient(patient.id, { reports: [...(patient.reports || []), newReport] });
+                  await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { reports: [...(patient.reports || []), newReport] } });
                   setShowCreateReportModal(false);
                 } catch (err) {
                   console.error('Failed to add report', err);
@@ -992,7 +995,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
                       const status: Sale['status'] = paidSum >= (s.totalAmount || 0) ? 'paid' : (s.status || 'confirmed');
                       return { ...s, payments, status, updatedAt: new Date().toISOString() };
                     });
-                    await updatePatient(patient.id, { sales: updatedSales });
+                    await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { sales: updatedSales } });
                     setShowAddPaymentForSaleId(null);
                     setPaymentAmount('');
                     setPaymentMethod('cash');
@@ -1039,7 +1042,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
               <Button variant="primary" onClick={async () => {
                 try {
                   const updatedNotes = (patient.notes || []).map(n => n.id === editingNote.id ? { ...n, text: editingNote.text, date: new Date().toISOString() } : n);
-                  await updatePatient(patient.id, { notes: updatedNotes });
+                  await updatePatientMutation.mutateAsync({ patientId: patient.id, updates: { notes: updatedNotes } });
                   setEditingNote(null);
                 } catch (err) {
                   console.error('Failed to update note', err);

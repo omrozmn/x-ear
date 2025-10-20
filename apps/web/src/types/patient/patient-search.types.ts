@@ -32,6 +32,8 @@ export interface PatientFilters {
   balanceRange?: AmountRange;
   hasAppointments?: boolean;
   appointmentDateRange?: DateRange;
+  branchId?: string;
+  tags?: string[];
 }
 
 export interface AgeRange {

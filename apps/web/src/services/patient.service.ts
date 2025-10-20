@@ -1,5 +1,4 @@
 import { 
-  Patient, 
   PatientFilters, 
   PatientSearchResult, 
   PatientStats, 
@@ -7,19 +6,19 @@ import {
   PatientNote,
   PatientMatchCandidate,
   PatientMatchRequest,
-  Communication
+  Communication,
+  Patient
 } from '../types/patient';
+import { 
+  Patient as OrvalPatient,
+  PaginationInfo,
+  PatientsGetPatients200
+} from "../api/generated/api.schemas";
+import { getPatients } from "../api/generated/patients/patients";
 import { outbox } from '../utils/outbox';
 import { PATIENTS_DATA } from '../constants/storage-keys';
-import { 
-  patientsGetPatients, 
-  PatientsGetPatients200,
-  Patient as OrvalPatient,
-  PaginationInfo
-} from '../generated/orval-api';
 import { indexedDBManager } from '../utils/indexeddb';
 import { AxiosResponse } from 'axios';
-import { convertOrvalPatient } from './patient/patient-mappers';
 
 export class PatientService {
   private patients: Patient[] = [];
@@ -89,7 +88,8 @@ export class PatientService {
         }
         
         // eslint-disable-next-line no-await-in-loop
-        const resp: AxiosResponse<PatientsGetPatients200> = await patientsGetPatients(params).catch((e: any) => { throw e; });
+        const api = getPatients();
+        const resp: AxiosResponse<PatientsGetPatients200> = await api.patientsGetPatients(params).catch((e: any) => { throw e; });
         const payload = resp?.data;
         if (!payload || !Array.isArray(payload.data)) break;
 
@@ -110,7 +110,7 @@ export class PatientService {
 
       if (aggregated.length > 0) {
         // Convert OrvalPatient[] to Patient[] and cache
-        const patients = aggregated.map(p => convertOrvalPatient(p as any));
+        const patients = aggregated.map(p => this.convertOrvalPatient(p as any));
         this.patients = patients;
         
         // Cache in IndexedDB
@@ -206,6 +206,7 @@ export class PatientService {
         throw new Error('Invalid SGK status format');
       }
 
+      // Build patient object first, then calculate derived fields like priorityScore
       const patient: Patient = {
         id: this.generateId(),
         ...patientData,
@@ -217,10 +218,18 @@ export class PatientService {
         reports: patientData.reports || [],
         ereceiptHistory: patientData.ereceiptHistory || [],
         sgkInfo: patientData.sgkInfo || { hasInsurance: false },
-  priorityScore: this.calculatePriorityScore(patientData as any as Patient),
+        priorityScore: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
+
+      // Calculate priority score using the finalized patient object
+      try {
+        patient.priorityScore = this.calculatePriorityScore(patient);
+      } catch (err) {
+        // Fallback: ensure priorityScore is numeric
+        patient.priorityScore = 0;
+      }
 
       this.patients.push(patient);
       this.savePatients();
@@ -271,15 +280,17 @@ export class PatientService {
       }
 
       const oldPatient = { ...this.patients[index] };
+      // Build a temporary object to compute priority score without unsafe casts
+      const tempForScore: Patient = {
+        ...this.patients[index],
+        ...(updates as Partial<Patient>)
+      };
       const updatedPatient: Patient = {
         ...this.patients[index],
         ...updates,
         id, // Ensure ID doesn't change
         updatedAt: new Date().toISOString(),
-        priorityScore: this.calculatePriorityScore({
-          ...this.patients[index],
-          ...updates
-        } as Patient)
+        priorityScore: this.calculatePriorityScore(tempForScore)
       };
 
       this.patients[index] = updatedPatient;
@@ -378,7 +389,7 @@ export class PatientService {
       if (filters.search?.trim()) {
         const searchLower = filters.search.toLowerCase();
         filteredPatients = filteredPatients.filter(p =>
-          p.name.toLowerCase().includes(searchLower) ||
+          (p.name && p.name.toLowerCase().includes(searchLower)) ||
           p.phone.includes(filters.search!) ||
           (p.tcNumber && p.tcNumber.includes(filters.search!)) ||
           (p.email && p.email.toLowerCase().includes(searchLower))
@@ -481,8 +492,8 @@ export class PatientService {
 
       const stats: PatientStats = {
         total: this.patients.length,
-        byStatus: { active: 0, inactive: 0, archived: 0 },
-        bySegment: { new: 0, trial: 0, purchased: 0, control: 0, renewal: 0 },
+        byStatus: { active: 0, inactive: 0 },
+        bySegment: { new: 0, trial: 0, purchased: 0, control: 0, renewal: 0, existing: 0, vip: 0 },
         byLabel: {
           'yeni': 0,
           'arama-bekliyor': 0,
@@ -546,8 +557,8 @@ export class PatientService {
       // Return empty stats on error
       return {
         total: 0,
-        byStatus: { active: 0, inactive: 0, archived: 0 },
-        bySegment: { new: 0, trial: 0, purchased: 0, control: 0, renewal: 0 },
+        byStatus: { active: 0, inactive: 0 },
+        bySegment: { new: 0, trial: 0, purchased: 0, control: 0, renewal: 0, existing: 0, vip: 0 },
         byLabel: {
           'yeni': 0,
           'arama-bekliyor': 0,
@@ -944,35 +955,39 @@ export class PatientService {
     }
   }
 
-  private convertOrvalPatient(backendPatient: OrvalPatient): Patient {
+  private convertOrvalPatient(backendPatient: Patient): Patient {
+    // Handle both camelCase and snake_case field names from API
+    const firstName = backendPatient.firstName || (backendPatient as any).first_name || '';
+    const lastName = backendPatient.lastName || (backendPatient as any).last_name || '';
+    const tcNumber = backendPatient.tcNumber || (backendPatient as any).tc_number || '';
+    const birthDate = backendPatient.birthDate || (backendPatient as any).birth_date || '';
+    const acquisitionType = backendPatient.acquisitionType || (backendPatient as any).acquisition_type || 'diger';
+    const priorityScore = backendPatient.priorityScore || (backendPatient as any).priority_score || 0;
+    const sgkInfo = backendPatient.sgkInfo || (backendPatient as any).sgk_info;
+
     return {
       id: backendPatient.id || (backendPatient as any)._id || (backendPatient as any).patientId || '',
-      name: `${backendPatient.firstName || ''} ${backendPatient.lastName || ''}`.trim() || 'Unnamed Patient',
-      firstName: backendPatient.firstName || '',
-      lastName: backendPatient.lastName || '',
+      name: `${firstName} ${lastName}`.trim() || 'Unnamed Patient',
+      firstName,
+      lastName,
       phone: backendPatient.phone || '',
       email: backendPatient.email || '',
-      tcNumber: backendPatient.tcNumber || backendPatient.identityNumber || '',
-      birthDate: backendPatient.birthDate || '',
-      address: backendPatient.addressFull || 
-               `${backendPatient.addressCity || ''} ${backendPatient.addressDistrict || ''}`.trim() || 
-               undefined,
-      status: (backendPatient.status || 'active').toLowerCase() as 'active' | 'inactive' | 'archived',
-      segment: (backendPatient.segment || 'new') as 'new' | 'trial' | 'purchased' | 'control' | 'renewal',
+      tcNumber,
+      birthDate,
+      address: backendPatient.address || undefined,
+      status: (backendPatient.status || 'active').toLowerCase() as 'active' | 'inactive',
+      segment: (backendPatient.segment || 'new') as 'new' | 'trial' | 'purchased' | 'control' | 'renewal' | 'existing' | 'vip',
       label: 'yeni' as const,
-      acquisitionType: (backendPatient.acquisitionType || 'diger') as 'tabela' | 'sosyal-medya' | 'tanitim' | 'referans' | 'diger',
+      acquisitionType: acquisitionType as 'tabela' | 'sosyal-medya' | 'tanitim' | 'referans' | 'diger',
       tags: Array.isArray(backendPatient.tags) ? backendPatient.tags : [],
       devices: [],
       notes: [],
       communications: [],
       reports: [],
       ereceiptHistory: [],
-      sgkInfo: { 
-        hasInsurance: Boolean(backendPatient.sgkInfo), 
-        ...backendPatient.sgkInfo 
-      },
+      sgkInfo: sgkInfo ? { ...sgkInfo } : { hasInsurance: false },
       sgkStatus: 'pending' as const,
-      priorityScore: backendPatient.priorityScore || 0,
+      priorityScore,
       createdAt: backendPatient.createdAt || new Date().toISOString(),
       updatedAt: backendPatient.updatedAt || new Date().toISOString()
     };

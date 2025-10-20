@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Search, 
   Plus, 
@@ -365,7 +365,7 @@ export const InventoryPage: React.FC = () => {
   ];
 
   // Bulk operations handler
-  const handleBulkOperation = async () => {
+  const handleBulkOperation = () => {
     const selectedRecords = inventoryData.filter(item => selectedRowKeys.includes(item.id));
     
     if (selectedRecords.length === 0) {

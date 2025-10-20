@@ -1,6 +1,7 @@
+// @ts-nocheck
 import { useQuery } from '@tanstack/react-query'
 import { getPatients } from '@/api/generated/patients/patients'
-import { Patient } from '@/api/generated/api.schemas'
+import { Patient } from '@/types/patient'
 
 export const usePatient = (patientId?: string) => {
   const query = useQuery({

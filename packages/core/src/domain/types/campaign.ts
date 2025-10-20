@@ -1,4 +1,4 @@
-import { BaseEntity, Money, Status } from './common';
+import { BaseEntity, Money } from './common';
 
 export interface Campaign extends BaseEntity {
   name: string;

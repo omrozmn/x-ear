@@ -47,14 +47,7 @@ const ComponentsDemo: React.FC = () => {
     avatar: 'https://ui-avatars.com/api/?name=Dr+Örnek+Kullanıcı&background=3b82f6&color=fff',
   };
 
-  // Navigation items for sidebar
-  const navigationItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <TrendingUp className="w-5 h-5" />, path: '/dashboard' },
-    { id: 'patients', label: 'Hastalar', icon: <Users className="w-5 h-5" />, path: '/patients' },
-    { id: 'appointments', label: 'Randevular', icon: <Calendar className="w-5 h-5" />, path: '/appointments' },
-    { id: 'inventory', label: 'Envanter', icon: <Package className="w-5 h-5" />, path: '/inventory' },
-    { id: 'settings', label: 'Ayarlar', icon: <Settings className="w-5 h-5" />, path: '/settings' },
-  ];
+  // Navigation items for sidebar - removed unused variable
 
   // Table columns
   const columns: Column[] = [

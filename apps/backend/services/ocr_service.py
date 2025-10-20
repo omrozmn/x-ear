@@ -66,11 +66,12 @@ class TurkishMedicalOCR:
 
         # Try to load a local HuggingFace Turkish NER model for improved name extraction
         try:
-            from transformers import pipeline
-            # Model: savasy/bert-base-turkish-ner-cased is a lightweight Turkish NER model
-            self.hf_ner = pipeline('ner', model='savasy/bert-base-turkish-ner-cased', tokenizer='savasy/bert-base-turkish-ner-cased', grouped_entities=True)
-            self.hf_ner_available = True
-            logger.info('✅ HuggingFace Turkish NER loaded (savasy/bert-base-turkish-ner-cased)')
+            # Temporarily disabled due to Keras 3 compatibility issues
+            # from transformers import pipeline
+            # self.hf_ner = pipeline('ner', model='savasy/bert-base-turkish-ner-cased', tokenizer='savasy/bert-base-turkish-ner-cased', grouped_entities=True)
+            self.hf_ner = None
+            self.hf_ner_available = False
+            logger.info('ℹ️ HuggingFace NER temporarily disabled due to compatibility issues')
         except Exception as e:
             logger.warning(f'HuggingFace NER not available: {e}')
             self.hf_ner = None

@@ -104,4 +104,44 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
 
 Select.displayName = 'Select';
 
+// Additional Select components for compatibility
+export const SelectContent: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
+  children, 
+  className = '' 
+}) => {
+  return <div className={`select-content ${className}`}>{children}</div>;
+};
+
+export const SelectItem: React.FC<{ 
+  value: string; 
+  children: React.ReactNode; 
+  className?: string;
+  disabled?: boolean;
+}> = ({ value, children, className = '', disabled = false }) => {
+  return (
+    <option value={value} disabled={disabled} className={className}>
+      {children}
+    </option>
+  );
+};
+
+export const SelectTrigger: React.FC<{ 
+  children: React.ReactNode; 
+  className?: string;
+  onClick?: () => void;
+}> = ({ children, className = '', onClick }) => {
+  return (
+    <div className={`select-trigger ${className}`} onClick={onClick}>
+      {children}
+    </div>
+  );
+};
+
+export const SelectValue: React.FC<{ 
+  placeholder?: string; 
+  className?: string;
+}> = ({ placeholder, className = '' }) => {
+  return <span className={`select-value ${className}`}>{placeholder}</span>;
+};
+
 export default Select;

@@ -7,8 +7,7 @@
 import { Patient } from '../../types/patient';
 import { indexedDBManager } from '../../utils/indexeddb';
 import { outbox, OutboxOperation } from '../../utils/outbox';
-import { patientsGetPatients } from '../../generated/orval-api';
-import { convertOrvalPatient } from './patient-mappers';
+import { getPatients } from "../../api/generated/patients/patients";
 
 export interface SyncResult {
   success: boolean;
@@ -210,18 +209,18 @@ export class PatientSyncService {
     const result = { synced: 0, failed: 0, conflicts: [] as SyncConflict[] };
     
     try {
-      const lastSync = options.since || await this.getLastSyncTime();
       const batchSize = options.batchSize || this.BATCH_SIZE;
       
       // Simple implementation - get all patients
       // In a real implementation, you'd use pagination and delta sync
-      const response = await patientsGetPatients({});
+      const api = getPatients();
+      const response = await api.patientsGetPatients({});
       
       if (response.data?.data) {
         for (const remotePatientRaw of response.data.data) {
           try {
             // Convert remote (orval) patient shape to internal domain Patient before syncing
-            const remotePatient = convertOrvalPatient(remotePatientRaw as any);
+            const remotePatient = remotePatientRaw as any as Patient; // Type assertion for API response
             const syncResult = await this.syncRemotePatient(remotePatient, options);
             if (syncResult.conflict) {
               result.conflicts.push(syncResult.conflict);

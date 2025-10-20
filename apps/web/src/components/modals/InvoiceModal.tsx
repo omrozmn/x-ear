@@ -93,53 +93,83 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
 
     // Extract customer/company info based on invoice type
     let customerInfo: any = {};
+    let deviceInfo: any = {};
     if (invoiceType === 'individual' && sections.customer_info) {
+      const customerData = sections.customer_info as any;
       customerInfo = {
         type: 'individual',
-        firstName: sections.customer_info.first_name,
-        lastName: sections.customer_info.last_name,
-        tcNumber: sections.customer_info.tc_number,
-        email: sections.customer_info.email,
-        phone: sections.customer_info.phone,
+        firstName: customerData.first_name || '',
+        lastName: customerData.last_name || '',
+        tcNumber: customerData.tc_number || '',
+        email: customerData.email || '',
+        phone: customerData.phone || '',
         address: {
-          street: sections.customer_info.address,
-          city: sections.customer_info.city,
-          postalCode: sections.customer_info.postal_code
+          street: customerData.address || '',
+          city: customerData.city || '',
+          postalCode: customerData.postal_code || ''
         }
       };
     } else if (invoiceType === 'corporate' && sections.company_info) {
+      const companyData = sections.company_info as any;
       customerInfo = {
         type: 'corporate',
-        companyName: sections.company_info.company_name,
-        taxNumber: sections.company_info.tax_number,
-        taxOffice: sections.company_info.tax_office,
-        contactPerson: sections.company_info.contact_person,
-        email: sections.company_info.email,
-        phone: sections.company_info.phone,
+        companyName: companyData.company_name || '',
+        taxNumber: companyData.tax_number || '',
+        taxOffice: companyData.tax_office || '',
+        contactPerson: companyData.contact_person || '',
+        email: companyData.email || '',
+        phone: companyData.phone || '',
         address: {
-          street: sections.company_info.address,
-          city: sections.company_info.city,
-          postalCode: sections.company_info.postal_code
+          street: companyData.address || '',
+          city: companyData.city || '',
+          postalCode: companyData.postal_code || ''
         }
       };
     } else if (invoiceType === 'export' && sections.export_info) {
+      const exportData = sections.export_info as any;
       customerInfo = {
         type: 'export',
-        companyName: sections.export_info.company_name,
-        country: sections.export_info.country,
-        currency: sections.export_info.currency,
-        exchangeRate: sections.export_info.exchange_rate,
+        companyName: exportData.company_name || '',
+        country: exportData.country || '',
+        currency: exportData.currency || 'USD',
+        exchangeRate: exportData.exchange_rate || 1,
         address: {
-          street: sections.export_info.address
+          street: exportData.address || ''
         }
       };
     }
 
     // Extract invoice details
-    const invoiceDetails = sections.invoice_details || {};
+    const invoiceDetails = sections.invoice_details as any || {};
+
+    // Extract device information
+    if (sections.device_info) {
+      const deviceData = sections.device_info as any;
+      deviceInfo = {
+        brand: deviceData.device_brand || '',
+        model: deviceData.device_model || '',
+        serial: deviceData.device_serial || '',
+        side: deviceData.device_side || '',
+        warrantyPeriod: deviceData.warranty_period || 0
+      };
+    }
+
+    // Extract SGK information
+    let sgkInfo: any = {};
+    if (sections.sgk_info) {
+      const sgkData = sections.sgk_info as any;
+      sgkInfo = {
+        hasCoverage: sgkData.has_sgk_coverage || false,
+        approvalNumber: sgkData.approval_number || '',
+        reportDate: sgkData.report_date || '',
+        doctorName: sgkData.doctor_name || '',
+        hospitalName: sgkData.hospital_name || ''
+      };
+    }
 
     // Convert items
     const invoiceItems = (items as any[])?.map((item: any) => ({
+      name: item.description || '',
       description: item.description,
       quantity: item.quantity,
       unitPrice: item.unitPrice,
@@ -147,35 +177,17 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
       total: item.total
     })) || [];
 
-    // Extract device info if available
-    const deviceInfo = sections.device_info ? {
-      brand: sections.device_info.device_brand,
-      model: sections.device_info.device_model,
-      serialNumber: sections.device_info.device_serial,
-      side: sections.device_info.device_side,
-      warrantyPeriod: sections.device_info.warranty_period
-    } : undefined;
-
-    // Extract SGK info if available
-    const sgkInfo = sections.sgk_info?.has_sgk_coverage ? {
-      hasCoverage: true,
-      sgkNumber: sections.sgk_info.sgk_number,
-      institution: sections.sgk_info.sgk_institution,
-      coverageRate: sections.sgk_info.sgk_coverage_rate
-    } : undefined;
-
     return {
       type: invoiceType as any,
       status: 'draft',
-      invoiceDate: invoiceDetails.invoice_date || new Date().toISOString().split('T')[0],
+      issueDate: invoiceDetails.invoice_date || new Date().toISOString().split('T')[0],
       dueDate: invoiceDetails.due_date,
       paymentMethod: invoiceDetails.payment_method as any,
       notes: invoiceDetails.notes,
-      customer: customerInfo,
-      items: invoiceItems,
-      device: deviceInfo,
-      sgk: sgkInfo,
-      scenario: scenario
+      customerName: customerInfo.firstName ? `${customerInfo.firstName} ${customerInfo.lastName || ''}`.trim() : customerInfo.companyName,
+      customerTaxNumber: customerInfo.taxNumber,
+      customerAddress: customerInfo.address,
+      items: invoiceItems
     };
   };
 

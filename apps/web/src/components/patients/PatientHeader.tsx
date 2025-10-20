@@ -145,7 +145,9 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
 
               <div className="flex items-center space-x-2">
                 <MapPin className="w-4 h-4 text-gray-400" />
-                <span>{patient.address || 'Belirtilmemiş'}</span>
+                <span>
+                  {patient.addressFull || 'Belirtilmemiş'}
+                </span>
               </div>
 
               <div className="flex items-center space-x-2">

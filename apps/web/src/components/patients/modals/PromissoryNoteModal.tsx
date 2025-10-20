@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Textarea, Alert, AlertDescription, Spinner } from '@x-ear/ui-web';
-import { X, FileText, Calendar, DollarSign, User, Building, AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, FileText, User, Building, AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 import { Patient } from '../../../types/patient';
 import { Sale } from '../../../types/patient/patient-communication.types';
 
@@ -255,7 +255,7 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                   <div><span className="font-medium">Ad Soyad:</span> {patient.firstName} {patient.lastName}</div>
                   <div><span className="font-medium">TC No:</span> {patient.tcNumber}</div>
                   <div><span className="font-medium">Telefon:</span> {patient.phone}</div>
-                  <div><span className="font-medium">Adres:</span> {patient.address}</div>
+                  <div><span className="font-medium">Adres:</span> {patient.addressFull || patient.address || 'Adres bilgisi yok'}</div>
                 </div>
               </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, User, Plus, Edit, X, Check, CheckCircle, XCircle, AlertCircle, Trash2 } from 'lucide-react';
-import { Button, Badge, Input, Select, Textarea } from '@x-ear/ui-web';
+import { Calendar, Plus, Edit, X, Check, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Button, Badge, Input, Textarea } from '@x-ear/ui-web';
 import { Patient } from '../../types/patient';
 import { getAppointments } from '../../api/generated/appointments/appointments';
 import type { 
@@ -256,10 +256,10 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
                 </div>
 
                 <div className="flex items-center space-x-2 ml-4">
-                  {appointment.status === 'scheduled' && (
+                  {appointment.status === 'SCHEDULED' && (
                     <>
                       <Button
-                        onClick={() => appointment.id && handleConfirmAppointment(appointment.id, 'Randevu tamamlandı')}
+                        onClick={() => appointment.id && handleConfirmAppointment(appointment.id)}
                         className="p-2 text-green-600 hover:bg-green-50"
                         title="Tamamla"
                       >

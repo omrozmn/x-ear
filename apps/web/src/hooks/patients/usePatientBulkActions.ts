@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { Patient } from '@/api/generated/api.schemas'
+import { Patient } from '@/types/patient'
 import { PATIENT_BULK_ACTIONS_STATE } from '@/constants/storage-keys'
 
 export interface BulkActionState {

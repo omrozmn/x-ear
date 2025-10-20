@@ -1,0 +1,538 @@
+import { useState, useEffect, useCallback } from 'react';
+
+// Simplified types without idb dependency for now
+interface CommunicationMessage {
+  id: string;
+  type: 'sms' | 'email';
+  recipient: string;
+  recipientName?: string;
+  patientId?: string;
+  subject?: string;
+  content: string;
+  templateId?: string;
+  scheduledAt?: string;
+  sentAt?: string;
+  deliveredAt?: string;
+  status: 'draft' | 'scheduled' | 'sent' | 'delivered' | 'failed';
+  errorMessage?: string;
+  campaignId?: string;
+  messageType: 'manual' | 'appointment_reminder' | 'campaign' | 'automated';
+  createdAt: string;
+  updatedAt?: string;
+  syncStatus: 'synced' | 'pending' | 'failed';
+  lastSyncAttempt?: string;
+}
+
+interface CommunicationTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  templateType: 'sms' | 'email';
+  category?: string;
+  subject?: string;
+  bodyText: string;
+  bodyHtml?: string;
+  variables: string[];
+  isActive: boolean;
+  isSystem: boolean;
+  usageCount: number;
+  createdAt: string;
+  updatedAt: string;
+  syncStatus: 'synced' | 'pending' | 'failed';
+  lastSyncAttempt?: string;
+}
+
+interface SyncStatus {
+  isOnline: boolean;
+  isSyncing: boolean;
+  pendingCount: {
+    messages: number;
+    templates: number;
+    outbox: number;
+  };
+  lastSyncTime?: Date;
+  error?: string;
+}
+
+// Simple localStorage-based implementation for now
+class SimpleCommunicationSync {
+  private readonly STORAGE_KEYS = {
+    messages: 'communication_messages',
+    templates: 'communication_templates',
+    outbox: 'communication_outbox',
+    syncMetadata: 'communication_sync_metadata'
+  };
+
+  private syncInProgress = false;
+  private listeners: Set<() => void> = new Set();
+
+  // Event handling
+  addListener(callback: () => void): void {
+    this.listeners.add(callback);
+  }
+
+  removeListener(callback: () => void): void {
+    this.listeners.delete(callback);
+  }
+
+  private notifyListeners(): void {
+    this.listeners.forEach(callback => callback());
+  }
+
+  // Messages
+  async saveMessage(message: Omit<CommunicationMessage, 'syncStatus'>): Promise<void> {
+    const messages = this.getMessages();
+    const messageWithSync: CommunicationMessage = {
+      ...message,
+      syncStatus: 'pending',
+      updatedAt: new Date().toISOString()
+    };
+
+    messages.push(messageWithSync);
+    localStorage.setItem(this.STORAGE_KEYS.messages, JSON.stringify(messages));
+
+    // Add to outbox
+    this.addToOutbox('create', 'message', message.id, messageWithSync);
+    this.notifyListeners();
+
+    // Attempt sync if online
+    if (navigator.onLine) {
+      this.syncOutbox();
+    }
+  }
+
+  async updateMessage(id: string, updates: Partial<CommunicationMessage>): Promise<void> {
+    const messages = this.getMessages();
+    const index = messages.findIndex(m => m.id === id);
+    
+    if (index === -1) throw new Error('Message not found');
+
+    messages[index] = {
+      ...messages[index],
+      ...updates,
+      syncStatus: 'pending',
+      updatedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(this.STORAGE_KEYS.messages, JSON.stringify(messages));
+    this.addToOutbox('update', 'message', id, updates);
+    this.notifyListeners();
+
+    if (navigator.onLine) {
+      this.syncOutbox();
+    }
+  }
+
+  getMessages(filters?: {
+    type?: 'sms' | 'email';
+    status?: string;
+    patientId?: string;
+    limit?: number;
+    offset?: number;
+  }): CommunicationMessage[] {
+    const stored = localStorage.getItem(this.STORAGE_KEYS.messages);
+    let messages: CommunicationMessage[] = stored ? JSON.parse(stored) : [];
+
+    // Apply filters
+    if (filters?.type) {
+      messages = messages.filter(m => m.type === filters.type);
+    }
+    if (filters?.status) {
+      messages = messages.filter(m => m.status === filters.status);
+    }
+    if (filters?.patientId) {
+      messages = messages.filter(m => m.patientId === filters.patientId);
+    }
+
+    // Sort by created date (newest first)
+    messages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    // Apply pagination
+    if (filters?.offset || filters?.limit) {
+      const start = filters.offset || 0;
+      const end = filters.limit ? start + filters.limit : undefined;
+      messages = messages.slice(start, end);
+    }
+
+    return messages;
+  }
+
+  // Templates
+  async saveTemplate(template: Omit<CommunicationTemplate, 'syncStatus'>): Promise<void> {
+    const templates = this.getTemplates();
+    const templateWithSync: CommunicationTemplate = {
+      ...template,
+      syncStatus: 'pending'
+    };
+
+    templates.push(templateWithSync);
+    localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(templates));
+
+    this.addToOutbox('create', 'template', template.id, templateWithSync);
+    this.notifyListeners();
+
+    if (navigator.onLine) {
+      this.syncOutbox();
+    }
+  }
+
+  async updateTemplate(id: string, updates: Partial<CommunicationTemplate>): Promise<void> {
+    const templates = this.getTemplates();
+    const index = templates.findIndex(t => t.id === id);
+    
+    if (index === -1) throw new Error('Template not found');
+
+    templates[index] = {
+      ...templates[index],
+      ...updates,
+      syncStatus: 'pending',
+      updatedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(templates));
+    this.addToOutbox('update', 'template', id, updates);
+    this.notifyListeners();
+
+    if (navigator.onLine) {
+      this.syncOutbox();
+    }
+  }
+
+  async deleteTemplate(id: string): Promise<void> {
+    const templates = this.getTemplates();
+    const filtered = templates.filter(t => t.id !== id);
+    
+    localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(filtered));
+    this.addToOutbox('delete', 'template', id, null);
+    this.notifyListeners();
+
+    if (navigator.onLine) {
+      this.syncOutbox();
+    }
+  }
+
+  getTemplates(filters?: {
+    type?: 'sms' | 'email';
+    category?: string;
+    active?: boolean;
+  }): CommunicationTemplate[] {
+    const stored = localStorage.getItem(this.STORAGE_KEYS.templates);
+    let templates: CommunicationTemplate[] = stored ? JSON.parse(stored) : [];
+
+    // Apply filters
+    if (filters?.type) {
+      templates = templates.filter(t => t.templateType === filters.type);
+    }
+    if (filters?.category) {
+      templates = templates.filter(t => t.category === filters.category);
+    }
+    if (filters?.active !== undefined) {
+      templates = templates.filter(t => t.isActive === filters.active);
+    }
+
+    // Sort by name
+    templates.sort((a, b) => a.name.localeCompare(b.name));
+
+    return templates;
+  }
+
+  // Outbox management
+  private addToOutbox(action: string, entityType: string, entityId: string, data: any): void {
+    const stored = localStorage.getItem(this.STORAGE_KEYS.outbox);
+    const outbox = stored ? JSON.parse(stored) : [];
+
+    outbox.push({
+      id: `${entityType}_${action}_${entityId}_${Date.now()}`,
+      action,
+      entityType,
+      entityId,
+      data,
+      createdAt: new Date().toISOString(),
+      retryCount: 0
+    });
+
+    localStorage.setItem(this.STORAGE_KEYS.outbox, JSON.stringify(outbox));
+  }
+
+  async syncOutbox(): Promise<void> {
+    if (this.syncInProgress || !navigator.onLine) return;
+
+    this.syncInProgress = true;
+    this.notifyListeners();
+
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEYS.outbox);
+      const outbox = stored ? JSON.parse(stored) : [];
+      const remaining = [];
+
+      for (const item of outbox) {
+        try {
+          await this.syncOutboxItem(item);
+          // Successfully synced, don't add to remaining
+        } catch (error) {
+          console.error('Failed to sync outbox item:', item.id, error);
+          item.retryCount++;
+          item.lastRetryAt = new Date().toISOString();
+          item.error = error instanceof Error ? error.message : 'Unknown error';
+          remaining.push(item);
+        }
+      }
+
+      localStorage.setItem(this.STORAGE_KEYS.outbox, JSON.stringify(remaining));
+    } finally {
+      this.syncInProgress = false;
+      this.notifyListeners();
+    }
+  }
+
+  private async syncOutboxItem(item: any): Promise<void> {
+    const baseUrl = '/api/communications';
+    
+    const url = item.action === 'create' 
+      ? `${baseUrl}/${item.entityType}s`
+      : `${baseUrl}/${item.entityType}s/${item.entityId}`;
+    
+    const method = item.action === 'create' ? 'POST' : 
+                   item.action === 'update' ? 'PUT' : 'DELETE';
+
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotency-Key': `offline_${item.id}`
+      },
+      body: item.action !== 'delete' ? JSON.stringify(item.data) : undefined
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    // Update local sync status
+    if (item.action !== 'delete') {
+      if (item.entityType === 'message') {
+        const messages = this.getMessages();
+        const index = messages.findIndex(m => m.id === item.entityId);
+        if (index !== -1) {
+          messages[index].syncStatus = 'synced';
+          localStorage.setItem(this.STORAGE_KEYS.messages, JSON.stringify(messages));
+        }
+      } else if (item.entityType === 'template') {
+        const templates = this.getTemplates();
+        const index = templates.findIndex(t => t.id === item.entityId);
+        if (index !== -1) {
+          templates[index].syncStatus = 'synced';
+          localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(templates));
+        }
+      }
+    }
+  }
+
+  // Sync from server
+  async syncFromServer(): Promise<void> {
+    if (!navigator.onLine) return;
+
+    try {
+      await Promise.all([
+        this.syncMessagesFromServer(),
+        this.syncTemplatesFromServer()
+      ]);
+      this.notifyListeners();
+    } catch (error) {
+      console.error('Failed to sync from server:', error);
+    }
+  }
+
+  private async syncMessagesFromServer(): Promise<void> {
+    const response = await fetch('/api/communications/messages?limit=1000');
+    if (!response.ok) return;
+
+    const result = await response.json();
+    if (!result.success) return;
+
+    const serverMessages: CommunicationMessage[] = result.data.map((msg: any) => ({
+      ...msg,
+      syncStatus: 'synced' as const
+    }));
+
+    // Merge with local messages
+    const localMessages = this.getMessages();
+    const merged = [...serverMessages];
+
+    // Add local messages that aren't on server
+    localMessages.forEach(local => {
+      if (!serverMessages.find(server => server.id === local.id)) {
+        merged.push(local);
+      }
+    });
+
+    localStorage.setItem(this.STORAGE_KEYS.messages, JSON.stringify(merged));
+  }
+
+  private async syncTemplatesFromServer(): Promise<void> {
+    const response = await fetch('/api/communications/templates?limit=1000');
+    if (!response.ok) return;
+
+    const result = await response.json();
+    if (!result.success) return;
+
+    const serverTemplates: CommunicationTemplate[] = result.data.map((tmpl: any) => ({
+      ...tmpl,
+      syncStatus: 'synced' as const
+    }));
+
+    // Merge with local templates
+    const localTemplates = this.getTemplates();
+    const merged = [...serverTemplates];
+
+    // Add local templates that aren't on server
+    localTemplates.forEach(local => {
+      if (!serverTemplates.find(server => server.id === local.id)) {
+        merged.push(local);
+      }
+    });
+
+    localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(merged));
+  }
+
+  // Status methods
+  getPendingSyncCount(): { messages: number; templates: number; outbox: number } {
+    const messages = this.getMessages().filter(m => m.syncStatus === 'pending');
+    const templates = this.getTemplates().filter(t => t.syncStatus === 'pending');
+    const stored = localStorage.getItem(this.STORAGE_KEYS.outbox);
+    const outbox = stored ? JSON.parse(stored) : [];
+
+    return {
+      messages: messages.length,
+      templates: templates.length,
+      outbox: outbox.length
+    };
+  }
+
+  isOnline(): boolean {
+    return navigator.onLine;
+  }
+
+  isSyncInProgress(): boolean {
+    return this.syncInProgress;
+  }
+}
+
+// Singleton instance
+const communicationSync = new SimpleCommunicationSync();
+
+// React hook
+export const useCommunicationOfflineSync = () => {
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>({
+    isOnline: navigator.onLine,
+    isSyncing: false,
+    pendingCount: { messages: 0, templates: 0, outbox: 0 }
+  });
+
+  const updateSyncStatus = useCallback(() => {
+    setSyncStatus({
+      isOnline: communicationSync.isOnline(),
+      isSyncing: communicationSync.isSyncInProgress(),
+      pendingCount: communicationSync.getPendingSyncCount()
+    });
+  }, []);
+
+  useEffect(() => {
+    // Initial status
+    updateSyncStatus();
+
+    // Listen for online/offline events
+    const handleOnline = () => {
+      updateSyncStatus();
+      communicationSync.syncOutbox();
+      communicationSync.syncFromServer();
+    };
+
+    const handleOffline = () => {
+      updateSyncStatus();
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Listen for sync changes
+    communicationSync.addListener(updateSyncStatus);
+
+    // Periodic sync
+    const interval = setInterval(() => {
+      if (navigator.onLine) {
+        communicationSync.syncOutbox();
+        communicationSync.syncFromServer();
+      }
+    }, 30000);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      communicationSync.removeListener(updateSyncStatus);
+      clearInterval(interval);
+    };
+  }, [updateSyncStatus]);
+
+  // API methods
+  const saveMessage = useCallback(async (message: Omit<CommunicationMessage, 'syncStatus'>) => {
+    await communicationSync.saveMessage(message);
+    updateSyncStatus();
+  }, [updateSyncStatus]);
+
+  const updateMessage = useCallback(async (id: string, updates: Partial<CommunicationMessage>) => {
+    await communicationSync.updateMessage(id, updates);
+    updateSyncStatus();
+  }, [updateSyncStatus]);
+
+  const getMessages = useCallback((filters?: {
+    type?: 'sms' | 'email';
+    status?: string;
+    patientId?: string;
+    limit?: number;
+    offset?: number;
+  }) => {
+    return communicationSync.getMessages(filters);
+  }, []);
+
+  const saveTemplate = useCallback(async (template: Omit<CommunicationTemplate, 'syncStatus'>) => {
+    await communicationSync.saveTemplate(template);
+    updateSyncStatus();
+  }, [updateSyncStatus]);
+
+  const updateTemplate = useCallback(async (id: string, updates: Partial<CommunicationTemplate>) => {
+    await communicationSync.updateTemplate(id, updates);
+    updateSyncStatus();
+  }, [updateSyncStatus]);
+
+  const deleteTemplate = useCallback(async (id: string) => {
+    await communicationSync.deleteTemplate(id);
+    updateSyncStatus();
+  }, [updateSyncStatus]);
+
+  const getTemplates = useCallback((filters?: {
+    type?: 'sms' | 'email';
+    category?: string;
+    active?: boolean;
+  }) => {
+    return communicationSync.getTemplates(filters);
+  }, []);
+
+  const forcSync = useCallback(async () => {
+    await communicationSync.syncOutbox();
+    await communicationSync.syncFromServer();
+    updateSyncStatus();
+  }, [updateSyncStatus]);
+
+  return {
+    syncStatus,
+    saveMessage,
+    updateMessage,
+    getMessages,
+    saveTemplate,
+    updateTemplate,
+    deleteTemplate,
+    getTemplates,
+    forcSync
+  };
+};

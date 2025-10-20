@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { FileParserService, ParsedData, ParseOptions, FileParseError } from '../services/file-parser';
+import { FileParserService, ParsedData, ParseOptions } from '../services/file-parser';
 import { TypeConverter, ColumnTypeInfo, ConversionOptions } from '../utils/type-converter';
 
 export interface FileUploadState {

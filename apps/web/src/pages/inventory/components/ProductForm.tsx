@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Select, Textarea, Card, Badge } from '@x-ear/ui-web';
+import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import { InventoryFormData, InventoryCategory, InventoryType, EarDirection, InventoryItem } from '../../../types/inventory';
-import { BulkSerialUpload } from './BulkSerialUpload';
+
 import { FeatureTagInput } from './FeatureTagInput';
 import { SupplierAutocomplete } from './SupplierAutocomplete';
 

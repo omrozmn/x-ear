@@ -223,7 +223,7 @@ class CommunicationHistory(BaseModel, JSONMixin):
     priority = db.Column(db.String(20), default='normal')  # low, normal, high, urgent
     
     # Additional data
-    metadata = db.Column(db.Text)  # JSON for additional data
+    comm_metadata = db.Column(db.Text)  # JSON for additional data
     
     # User who initiated (for manual communications)
     initiated_by = db.Column(db.String(50))  # user_id
@@ -236,11 +236,11 @@ class CommunicationHistory(BaseModel, JSONMixin):
 
     @property
     def metadata_json(self):
-        return self.json_load(self.metadata) or {}
+        return self.json_load(self.comm_metadata) or {}
     
     @metadata_json.setter
     def metadata_json(self, value):
-        self.metadata = self.json_dump(value or {})
+        self.comm_metadata = self.json_dump(value or {})
 
     def to_dict(self):
         base_dict = self.to_dict_base()

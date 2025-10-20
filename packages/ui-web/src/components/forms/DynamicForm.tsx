@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronDown, AlertCircle, Check, X, Plus, Minus } from 'lucide-react';
+import { ChevronDown, AlertCircle, Check } from 'lucide-react';
 
 export interface FormField {
   name: string;

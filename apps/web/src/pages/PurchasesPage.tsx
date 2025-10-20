@@ -1,5 +1,5 @@
 import { Button, Input, Select } from '@x-ear/ui-web';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Purchase, PurchaseFilters, PurchaseStatus, PurchaseItem } from '../types/purchase';
 import { PurchaseList } from '../components/purchases/PurchaseList';
 
@@ -14,7 +14,7 @@ export function PurchasesPage() {
     setViewMode('details');
   };
 
-  const handleNewPurchase = () => {
+  const handleCreatePurchase = () => {
     setSelectedPurchase(null);
     setViewMode('form');
   };
@@ -134,16 +134,17 @@ export function PurchasesPage() {
                     <Select
                       value={filters.status || ''}
                       onChange={(e) => setFilters({ ...filters, status: e.target.value as PurchaseStatus || undefined })}
+                      options={[
+                        { value: '', label: 'Tümü' },
+                        { value: 'draft', label: 'Taslak' },
+                        { value: 'sent', label: 'Gönderildi' },
+                        { value: 'approved', label: 'Onaylandı' },
+                        { value: 'rejected', label: 'Reddedildi' },
+                        { value: 'paid', label: 'Ödendi' },
+                        { value: 'cancelled', label: 'İptal' }
+                      ]}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="">Tümü</option>
-                      <option value="draft">Taslak</option>
-                      <option value="sent">Gönderildi</option>
-                      <option value="approved">Onaylandı</option>
-                      <option value="rejected">Reddedildi</option>
-                      <option value="paid">Ödendi</option>
-                      <option value="cancelled">İptal</option>
-                    </Select>
+                    />
                   </div>
                   
                   <div>
@@ -424,3 +425,5 @@ function PurchaseDetails({ purchase, onEdit }: PurchaseDetailsProps) {
     </div>
   );
 }
+
+export default PurchasesPage;

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Search, Filter, SortAsc, SortDesc, X, Calendar, MapPin, Tag, User, Phone, Mail, FileText, Save, Star, Clock, Trash2, Edit3 } from 'lucide-react';
-import { Button, Input, Select, DatePicker, Checkbox, Badge, Card, Modal, useModal, Textarea, useToastHelpers } from '@x-ear/ui-web';
+import { Search, Filter, X, MapPin, User, FileText, Save, Star, Clock, Trash2 } from 'lucide-react';
+import { Button, Input, Checkbox, Badge, Card, Modal, useModal, Textarea, useToastHelpers } from '@x-ear/ui-web';
 import { Patient } from '../../types/patient';
 import { fuzzySearch, FuzzySearchOptions } from '../../utils/fuzzy-search';
 import { savedQueries, SavedQuery } from '../../utils/saved-queries';
@@ -66,8 +66,12 @@ const SEARCH_FIELDS: SearchField[] = [
     options: [
       { label: 'Tümü', value: '' },
       { label: 'VIP', value: 'vip' },
-      { label: 'Standart', value: 'standard' },
-      { label: 'Yeni', value: 'new' }
+      { label: 'Yeni', value: 'new' },
+      { label: 'Deneme', value: 'trial' },
+      { label: 'Satın Alınmış', value: 'purchased' },
+      { label: 'Kontrol', value: 'control' },
+      { label: 'Yenileme', value: 'renewal' },
+      { label: 'Mevcut', value: 'existing' }
     ]
   },
   {
@@ -78,8 +82,7 @@ const SEARCH_FIELDS: SearchField[] = [
     options: [
       { label: 'Tümü', value: '' },
       { label: 'Aktif', value: 'active' },
-      { label: 'Pasif', value: 'inactive' },
-      { label: 'Beklemede', value: 'pending' }
+      { label: 'Pasif', value: 'inactive' }
     ]
   }
 ];
@@ -169,7 +172,8 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
         // Exact search (existing logic)
         const query = filters.query.toLowerCase();
         results = results.filter(patient =>
-          patient.name?.toLowerCase().includes(query) ||
+          patient.firstName?.toLowerCase().includes(query) ||
+        patient.lastName?.toLowerCase().includes(query) ||
           patient.phone?.toLowerCase().includes(query) ||
           patient.email?.toLowerCase().includes(query) ||
           patient.address?.toLowerCase().includes(query)
@@ -247,12 +251,18 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
 
     // Sıralama
     results.sort((a, b) => {
-      let aValue: any = a[filters.sortBy as keyof Patient];
-      let bValue: any = b[filters.sortBy as keyof Patient];
+      let aValue: any;
+      let bValue: any;
 
-      if (filters.sortBy === 'age') {
+      if (filters.sortBy === 'name') {
+        aValue = `${a.firstName} ${a.lastName}`.toLowerCase();
+        bValue = `${b.firstName} ${b.lastName}`.toLowerCase();
+      } else if (filters.sortBy === 'age') {
         aValue = a.birthDate ? new Date().getFullYear() - new Date(a.birthDate).getFullYear() : 0;
         bValue = b.birthDate ? new Date().getFullYear() - new Date(b.birthDate).getFullYear() : 0;
+      } else {
+        aValue = a[filters.sortBy as keyof Patient];
+        bValue = b[filters.sortBy as keyof Patient];
       }
 
       if (typeof aValue === 'string') {
@@ -591,7 +601,7 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
             <div className="flex items-center space-x-2">
               <Checkbox
                 checked={saveQueryForm.isDefault}
-                onChange={(checked) => setSaveQueryForm(prev => ({ ...prev, isDefault: checked }))}
+                onChange={(e) => setSaveQueryForm(prev => ({ ...prev, isDefault: e.target.checked }))}
               />
               <span className="text-sm text-gray-700">Varsayılan sorgu olarak işaretle</span>
             </div>

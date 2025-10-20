@@ -3,7 +3,7 @@ import { AUTH_TOKEN } from '../constants/storage-keys';
 import { outbox, OutboxOperation } from '../utils/outbox';
 
 // API Configuration
-const API_BASE_URL = ''; // Use relative URLs with Vite proxy
+const API_BASE_URL = '/api'; // Use relative URLs with Vite proxy
 
 // Create axios instance with proper configuration
 const apiClient = axios.create({
@@ -41,14 +41,13 @@ class IdempotencyManager {
 
 // Create instance but don't use it yet - will be used for future idempotency features
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const idempotencyManager = new IdempotencyManager();
 
 // Queue request in outbox for offline support
 async function queueOfflineRequest(config: AxiosRequestConfig): Promise<void> {
   try {
     const operation: OutboxOperation = {
       method: (config.method?.toUpperCase() as OutboxOperation['method']) || 'GET',
-      endpoint: `${API_BASE_URL}${config.url}`,
+      endpoint: `${config.url}`,
       data: config.data,
       headers: config.headers as Record<string, string>,
       priority: 'normal'

@@ -1,4 +1,4 @@
-import { BaseEntity, ContactInfo, Status } from './common';
+import { BaseEntity, ContactInfo } from './common';
 
 export interface User extends BaseEntity {
   username: string;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Badge, Select, Textarea } from '@x-ear/ui-web';
-import { FileText, Plus, Search, Calendar, DollarSign, Settings, Trash2, Edit, X, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Button, Input, Badge } from '@x-ear/ui-web';
+import { FileText, Plus, Calendar, DollarSign, Settings, Trash2, Edit, X, XCircle } from 'lucide-react';
 import { Patient } from '../../types/patient';
 import { getDevices } from '../../api/generated/devices/devices';
 import { getInventory } from '../../api/generated/inventory/inventory';
@@ -76,7 +76,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient, o
       const params: InventoryGetInventoryItemsParams = {
         page: 1,
         per_page: 100,
-        status: 'available'
+        status: 'IN_STOCK'
       };
       
       const response = await inventoryApi.inventoryGetInventoryItems(params);
@@ -90,7 +90,6 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient, o
     if (!patient.id) return;
     
     try {
-      const salesApi = getSales();
       // Note: This would need to be filtered by patient ID in a real implementation
       // For now, we'll use mock data structure
       setSales([]);
@@ -224,7 +223,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient, o
 
   // Calculate quick stats from loaded data
   const quickStats = {
-    activeDevices: devices.filter(d => d.status === 'assigned').length,
+    activeDevices: devices.filter(d => d.status === 'ASSIGNED').length,
     trials: devices.filter(d => d.trialStartDate).length,
     totalValue: sales.reduce((sum, s) => sum + (s.totalAmount || 0), 0),
     ereceiptsCount: 0 // This would come from a separate API

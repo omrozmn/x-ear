@@ -5,13 +5,15 @@ import { PatientSearchItem } from '../../types/patient/patient-search.types';
 
 export interface PatientSearchFilters {
   query?: string;
-  status?: 'active' | 'inactive' | 'pending';
-  segment?: 'trial' | 'purchased' | 'lead' | 'follow_up';
-  acquisitionType?: 'referral' | 'online' | 'walk-in' | 'social-media' | 'advertisement';
+  status?: string | string[];
+  segment?: string | string[];
+  acquisitionType?: string | string[];
   dateFrom?: string;
   dateTo?: string;
   tags?: string[];
   branchId?: string;
+  labels?: string[];
+  hasDevice?: boolean;
 }
 
 interface PatientSearchProps {

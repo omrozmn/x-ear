@@ -46,12 +46,12 @@ export function useUploadSgkDocument(patientId: string) {
   });
 }
 
-export function useDeleteSgkDocument(patientId: string) {
-  const qc = useQueryClient();
+export function useUploadSgkDocuments() {
   return useMutation({
-    mutationFn: ({ id, idempotencyKey }: { id: string; idempotencyKey?: string }) =>
-      sgkService.deleteDocument(id, { idempotencyKey }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEY(patientId) }),
+    mutationFn: async (formData: FormData) => {
+      const idempotencyKey = generateIdempotencyKey();
+      return await sgkService.uploadDocument(formData, { idempotencyKey });
+    },
   });
 }
 

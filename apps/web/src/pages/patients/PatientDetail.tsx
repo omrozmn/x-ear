@@ -45,7 +45,7 @@ interface PatientDetailProps {
  * Displays comprehensive patient information with tabs for different sections
  */
 export function PatientDetail({ patientId: propPatientId }: PatientDetailProps) {
-  const { id: paramPatientId } = useParams<{ id: string }>();
+  const { id: paramPatientId } = useParams({ strict: false }) as { id?: string };
   const navigate = useNavigate();
   const patientId = propPatientId || paramPatientId;
   
@@ -72,8 +72,8 @@ export function PatientDetail({ patientId: propPatientId }: PatientDetailProps) 
       setError(null);
       
       // Search for the specific patient by ID
-      const result = await searchPatients({ search: patientId });
-      const foundPatient = result.patients.find(p => p.id === patientId);
+      const result = (await searchPatients({ search: patientId })) as unknown as { patients?: PatientSearchItem[] } | undefined;
+      const foundPatient = result?.patients?.find(p => p.id === patientId) ?? null;
       
       if (foundPatient) {
         setPatient(foundPatient);

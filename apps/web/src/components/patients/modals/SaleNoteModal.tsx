@@ -57,7 +57,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
     }
   };
 
-  const validateForm = () => {
+  const validateNote = () => {
     const newErrors: Record<string, string> = {};
 
     if (noteText.length > 1000) {
@@ -213,11 +213,11 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
                 <div className="space-y-1 text-sm">
                   <div><span className="font-medium">Satış ID:</span> {sale.id}</div>
                   <div><span className="font-medium">Tutar:</span> {formatCurrency(sale.totalAmount)}</div>
-                  <div><span className="font-medium">Tarih:</span> {formatDate(sale.saleDate)}</div>
+                  <div><span className="font-medium">Tarih:</span> {sale.saleDate ? formatDate(sale.saleDate) : 'Belirtilmemiş'}</div>
                   <div className="flex items-center">
                     <span className="font-medium mr-2">Durum:</span>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(sale.status)}`}>
-                      {getStatusLabel(sale.status)}
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(sale.status || '')}`}>
+                      {getStatusLabel(sale.status || '')}
                     </span>
                   </div>
                 </div>

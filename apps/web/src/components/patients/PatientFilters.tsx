@@ -1,11 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { Button, Select, Input } from '@x-ear/ui-web';
-import { PatientSearchFilters } from './PatientSearch';
-import { Filter, X, ChevronDown, ChevronUp, Users, Building, Tag, Calendar } from 'lucide-react';
+import { Button } from '@x-ear/ui-web';
+import { PatientFilters as PatientFiltersType } from '../../types/patient/patient-search.types';
+import { Filter, X, ChevronUp, Users, Building, Tag, Calendar } from 'lucide-react';
 
 interface PatientFiltersProps {
-  filters: PatientSearchFilters;
-  onChange: (filters: PatientSearchFilters) => void;
+  filters: PatientFiltersType;
+  onChange: (filters: PatientFiltersType) => void;
   onClearFilters: () => void;
   patientCount?: number;
   loading?: boolean;
@@ -34,7 +34,7 @@ export function PatientFilters({
 }: PatientFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(!showCompact);
 
-  const handleFilterChange = useCallback((key: keyof PatientSearchFilters, value: any) => {
+  const handleFilterChange = useCallback((key: keyof PatientFiltersType, value: any) => {
     onChange({
       ...filters,
       [key]: value
@@ -262,8 +262,10 @@ export function PatientFilters({
               <label className="block text-xs text-gray-600 mb-1">Başlangıç</label>
               <input
                 type="date"
-                value={filters.dateFrom || ''}
-                onChange={(e) => handleFilterChange('dateFrom', e.target.value || undefined)}
+                value={filters.registrationDateRange?.start || ''}
+                onChange={(e) => handleFilterChange('registrationDateRange', 
+                  e.target.value ? { ...filters.registrationDateRange, start: e.target.value } : undefined
+                )}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -271,8 +273,10 @@ export function PatientFilters({
               <label className="block text-xs text-gray-600 mb-1">Bitiş</label>
               <input
                 type="date"
-                value={filters.dateTo || ''}
-                onChange={(e) => handleFilterChange('dateTo', e.target.value || undefined)}
+                value={filters.registrationDateRange?.end || ''}
+                onChange={(e) => handleFilterChange('registrationDateRange', 
+                  e.target.value ? { ...filters.registrationDateRange, end: e.target.value } : undefined
+                )}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
