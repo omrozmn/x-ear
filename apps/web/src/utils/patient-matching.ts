@@ -153,8 +153,11 @@ export class PatientMatcher {
     }
 
     // İsim karşılaştırması
-    if (patient1.name && patient2.name) {
-      const nameScore = this.compareNames(patient1.name, patient2.name);
+    const patient1Name = patient1.firstName && patient1.lastName ? `${patient1.firstName} ${patient1.lastName}` : '';
+    const patient2Name = patient2.firstName && patient2.lastName ? `${patient2.firstName} ${patient2.lastName}` : '';
+    
+    if (patient1Name && patient2Name) {
+      const nameScore = this.compareNames(patient1Name, patient2Name);
       if (nameScore.isExact) {
         matchReasons.push('Aynı isim');
         hasExactMatch = true;
@@ -177,8 +180,11 @@ export class PatientMatcher {
     }
 
     // Adres karşılaştırması
-    if (patient1.address && patient2.address) {
-      const addressScore = this.compareAddresses(patient1.address, patient2.address);
+    const patient1Address = typeof patient1.address === 'string' ? patient1.address : patient1.address?.full || '';
+    const patient2Address = typeof patient2.address === 'string' ? patient2.address : patient2.address?.full || '';
+    
+    if (patient1Address && patient2Address) {
+      const addressScore = this.compareAddresses(patient1Address, patient2Address);
       if (addressScore.isFuzzy) {
         matchReasons.push(`Benzer adres (${Math.round(addressScore.similarity * 100)}% benzerlik)`);
         if (matchType === 'partial') matchType = 'fuzzy';

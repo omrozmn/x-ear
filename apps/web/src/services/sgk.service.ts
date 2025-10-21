@@ -341,35 +341,10 @@ export class SGKService {
     };
   }
 
-  // Workflow Management
-  async getWorkflow(documentId: string): Promise<SGKWorkflow | null> {
+  // Legacy Workflow Management (kept for backward compatibility)
+  async getWorkflowLegacy(documentId: string): Promise<SGKWorkflow | null> {
     await this.init();
     return this.workflows.find(w => w.documentId === documentId) || null;
-  }
-
-  async createWorkflow(documentId: string, patientId: string): Promise<SGKWorkflow> {
-    await this.init();
-
-    const workflow: SGKWorkflow = {
-      id: `workflow-${Date.now()}`,
-      documentId,
-      patientId,
-      currentStatus: 'draft',
-      statusHistory: [{
-        status: 'draft',
-        timestamp: new Date().toISOString(),
-        userId: 'current-user',
-        userName: 'Current User'
-      }],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      createdBy: 'current-user'
-    };
-
-    this.workflows.push(workflow);
-    await this.saveData();
-
-    return workflow;
   }
 
   async updateWorkflowStatus(workflowId: string, status: SGKWorkflowStatus, notes?: string): Promise<SGKWorkflow> {
@@ -742,6 +717,135 @@ export class SGKService {
 
     result.success = result.failed === 0;
     return result;
+  }
+
+  // E-reçete sorgulama
+  async queryEReceipt(receiptNumber: string, patientId?: string, tcNumber?: string) {
+    try {
+      const response = await fetch('/api/sgk/e-receipt/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          receiptNumber,
+          patientId,
+          tcNumber
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'E-reçete sorgulaması başarısız');
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error('E-receipt query error:', error);
+      throw error;
+    }
+  }
+
+  // Hasta hakları sorgulama
+  async queryPatientRights(patientId: string): Promise<any> {
+    try {
+      const response = await fetch('/api/sgk/patient-rights/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ patientId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Patient rights query error:', error);
+      throw error;
+    }
+  }
+
+  // SGK Workflow Management
+  async createWorkflow(patientId: string, documentId?: string, workflowType: string = 'approval'): Promise<any> {
+    try {
+      const response = await fetch('/api/sgk/workflow/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          patientId, 
+          documentId, 
+          workflowType 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('SGK workflow creation error:', error);
+      throw error;
+    }
+  }
+
+  async updateWorkflow(workflowId: string, stepId: string, status: string, notes?: string): Promise<any> {
+    try {
+      const response = await fetch(`/api/sgk/workflow/${workflowId}/update`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          stepId, 
+          status, 
+          notes 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('SGK workflow update error:', error);
+      throw error;
+    }
+  }
+
+  async getWorkflow(workflowId: string): Promise<any> {
+    try {
+      const response = await fetch(`/api/sgk/workflow/${workflowId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('SGK workflow get error:', error);
+      throw error;
+    }
   }
 }
 

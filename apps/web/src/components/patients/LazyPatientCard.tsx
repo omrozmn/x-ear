@@ -49,7 +49,7 @@ const LazyPatientCard: React.FC<LazyPatientCardProps> = memo(({
 
   // Set up intersection observer
   useEffect(() => {
-    if (cardRef.current) {
+    if (cardRef.current && patient.id) {
       const cleanup = observerRef(cardRef.current, patient.id);
       return cleanup;
     }
@@ -112,7 +112,7 @@ const LazyPatientCard: React.FC<LazyPatientCardProps> = memo(({
     if (onClick) {
       onClick(patient);
     } else if (onSelect) {
-      onSelect(patient.id);
+      onSelect(patient.id || '');
     }
   }, [onClick, onSelect, patient]);
 

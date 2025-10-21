@@ -78,8 +78,12 @@ export const PatientMatching: React.FC<PatientMatchingProps> = ({
     
     fields.forEach(field => {
       const values = match.patients
-        .map(p => ({ patientId: p.id, value: (p as any)[field], patientName: p.name || `${p.firstName || ''} ${p.lastName || ''}`.trim() || 'Unknown' }))
-        .filter(v => v.value);
+        .map(p => ({ 
+          patientId: p.id || '', 
+          value: (p as any)[field], 
+          patientName: `${p.firstName || ''} ${p.lastName || ''}`.trim() || 'Unknown' 
+        }))
+        .filter(v => v.value && v.patientId);
       
       if (values.length > 1) {
         const uniqueValues = [...new Set(values.map(v => v.value))];
@@ -117,7 +121,11 @@ export const PatientMatching: React.FC<PatientMatchingProps> = ({
     
     try {
       const primaryId = mergePreview.primary.id;
-      const duplicateIds = mergePreview.duplicates.map(p => p.id);
+      const duplicateIds = mergePreview.duplicates.map(p => p.id).filter(Boolean) as string[];
+      
+      if (!primaryId) {
+        throw new Error('Primary patient ID is required');
+      }
       
       await onMergePatients(primaryId, duplicateIds);
       
@@ -554,7 +562,7 @@ export const PatientMatching: React.FC<PatientMatchingProps> = ({
             <div>
               <h4 className="font-medium mb-2">Ana Hasta (Korunacak):</h4>
               <div className="border rounded-lg p-3 bg-green-50">
-                <div className="font-medium">{mergePreview.primary.name}</div>
+                <div className="font-medium">{`${mergePreview.primary.firstName || ''} ${mergePreview.primary.lastName || ''}`.trim() || 'Unknown'}</div>
                 <div className="text-sm text-gray-600">
                   {mergePreview.primary.phone} • {mergePreview.primary.email}
                 </div>

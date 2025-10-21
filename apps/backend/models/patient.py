@@ -34,7 +34,7 @@ class Patient(BaseModel, JSONMixin):
     address_full = db.Column(db.Text)
     
     # CRM fields
-    status = db.Column(sa.Enum(PatientStatus), default=PatientStatus.ACTIVE)
+    status = db.Column(sa.Enum(PatientStatus, native_enum=False), default=PatientStatus.ACTIVE)
     segment = db.Column(db.String(20), default='lead')  # Keep as string for now
     acquisition_type = db.Column(db.String(50), default='walk-in')
     conversion_step = db.Column(db.String(50))

@@ -1,11 +1,12 @@
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import React, { useState, useEffect } from 'react';
 import { Patient, PatientStatus, PatientSegment, PatientLabel, PatientAcquisitionType, PatientGender, PatientConversionStep } from '../../types/patient/patient-base.types';
+import { Patient as ExtendedPatient } from '../../types/patient';
 import { PatientSgkInfo } from '../../generated/orval-types';
 
 interface PatientFormProps {
-  patient?: Patient | null;
-  onSave?: (patient: Patient) => void;
+  patient?: ExtendedPatient | null;
+  onSave?: (patient: ExtendedPatient) => void;
   onCancel?: () => void;
   isModal?: boolean;
 }
@@ -21,14 +22,14 @@ export function PatientForm({ patient, onSave, onCancel, isModal = false }: Pati
     address: '',
     gender: '' as PatientGender | '',
     branch: '',
-    status: 'active' as PatientStatus,
-    segment: 'new' as PatientSegment,
+    status: 'ACTIVE' as PatientStatus,
+    segment: 'NEW' as PatientSegment,
     label: 'yeni' as PatientLabel,
     acquisitionType: 'tabela' as PatientAcquisitionType,
     conversionStep: 'lead' as PatientConversionStep,
     tags: [] as string[],
     deviceTrial: false,
-    notes: patient?.notes ? JSON.stringify(patient.notes) : '',
+    notes: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -43,17 +44,17 @@ export function PatientForm({ patient, onSave, onCancel, isModal = false }: Pati
         tcNumber: patient.tcNumber || '',
         birthDate: patient.birthDate || '',
         email: patient.email || '',
-        address: patient.address || '',
+        address: typeof patient.address === 'string' ? patient.address : patient.addressFull || '',
         gender: patient.gender || '',
         branch: patient.branch || '',
-        status: patient.status || 'active',
-        segment: patient.segment || 'new',
-        label: patient.label || 'yeni',
-        acquisitionType: patient.acquisitionType || 'tabela',
-        conversionStep: patient.conversionStep || 'lead',
+        status: (patient.status as PatientStatus) || 'ACTIVE',
+        segment: (patient.segment as PatientSegment) || 'NEW',
+        label: (patient.label as PatientLabel) || 'yeni',
+        acquisitionType: (patient.acquisitionType as PatientAcquisitionType) || 'tabela',
+        conversionStep: (patient.conversionStep as PatientConversionStep) || 'lead',
         tags: patient.tags || [],
-        deviceTrial: patient.deviceTrial || false,
-        notes: patient.notes ? patient.notes.map(note => note.text).join('\n') : '',
+        deviceTrial: false,
+        notes: '',
       });
     }
   }, [patient]);
@@ -110,10 +111,10 @@ export function PatientForm({ patient, onSave, onCancel, isModal = false }: Pati
 
     try {
       // Narrow form selections into typed fields to avoid unsafe 'as' casts
-  const allowedStatus: Patient['status'][] = ['ACTIVE','INACTIVE'];
-  const allowedSegment: Patient['segment'][] = ['NEW','TRIAL','PURCHASED','CONTROL','RENEWAL'];
-  const allowedLabel: Patient['label'][] = ['yeni','arama-bekliyor','randevu-verildi','deneme-yapildi','kontrol-hastasi','satis-tamamlandi'];
-  const allowedAcq: Patient['acquisitionType'][] = ['tabela','sosyal-medya','tanitim','referans','diger'];
+  const allowedStatus: ExtendedPatient['status'][] = ['ACTIVE','INACTIVE'];
+  const allowedSegment: ExtendedPatient['segment'][] = ['NEW','TRIAL','PURCHASED','CONTROL','RENEWAL'];
+  const allowedLabel: ExtendedPatient['label'][] = ['yeni','arama-bekliyor','randevu-verildi','deneme-yapildi','kontrol-hastasi','satis-tamamlandi'];
+  const allowedAcq: ExtendedPatient['acquisitionType'][] = ['tabela','sosyal-medya','tanitim','referans','diger'];
     // small type-guard helper to avoid inline casts
     const isIn = <T,>(arr: T[], v: unknown): v is T => arr.includes(v as T);
 
@@ -122,7 +123,7 @@ export function PatientForm({ patient, onSave, onCancel, isModal = false }: Pati
     const labelValue = isIn(allowedLabel, formData.label) ? formData.label : 'yeni';
     const acquisitionValue = isIn(allowedAcq, formData.acquisitionType) ? formData.acquisitionType : 'diger';
 
-      const patientData: Patient = {
+      const patientData: ExtendedPatient = {
         id: patient?.id || `patient_${Date.now()}`,
         ...formData,
         gender: formData.gender || undefined,
@@ -140,7 +141,6 @@ export function PatientForm({ patient, onSave, onCancel, isModal = false }: Pati
           isPrivate: false
         }] : [],
         devices: patient?.devices || [],
-        installments: patient?.installments || [],
         sales: patient?.sales || [],
         communications: patient?.communications || [],
         sgkInfo: patient?.sgkInfo || { 

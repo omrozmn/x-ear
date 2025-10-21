@@ -6,6 +6,9 @@ import {
   PaginatedResponse 
 } from '../types';
 
+// Import additional types for new methods
+import type { PatientDevice, PatientNote, PatientCommunication } from '../types';
+
 export class PatientService {
   /**
    * Validates Turkish Citizenship Number (TC Kimlik No)
@@ -104,8 +107,91 @@ export class PatientService {
    * Checks if patient data needs verification
    */
   static needsVerification(patient: Patient): boolean {
-    return !patient.contactInfo.phone || 
-           !patient.contactInfo.email || 
+    return !patient.contactInfo?.phone || 
+           !patient.contactInfo?.email || 
            !patient.tcNumber;
+  }
+
+  /**
+   * Calculates patient priority score based on various factors
+   */
+  static calculatePriorityScore(patient: Patient): number {
+    let score = 0;
+    
+    // Age factor (elderly patients get higher priority)
+    const age = this.calculateAge(patient.birthDate);
+    if (age >= 65) score += 20;
+    else if (age >= 50) score += 10;
+    
+    // Missing information penalty
+    if (this.needsVerification(patient)) score -= 15;
+    
+    // Device status factor
+    if (patient.devices && patient.devices.length > 0) {
+      const hasTrialDevice = patient.devices.some(d => d.status === 'trial');
+      if (hasTrialDevice) score += 25;
+    }
+    
+    // Recent communication factor
+    if (patient.communications && patient.communications.length > 0) {
+      const recentComm = patient.communications.find(c => {
+        const commDate = new Date(c.date);
+        const daysDiff = (Date.now() - commDate.getTime()) / (1000 * 60 * 60 * 24);
+        return daysDiff <= 7;
+      });
+      if (recentComm) score += 10;
+    }
+    
+    return Math.max(0, Math.min(100, score));
+  }
+
+  /**
+   * Adds a note to a patient
+   */
+  static addNote(patient: Patient, note: Omit<PatientNote, 'id'>): Patient {
+    const newNote: PatientNote = {
+      ...note,
+      id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    };
+
+    return {
+      ...patient,
+      notes: [...(patient.notes || []), newNote]
+    };
+  }
+
+  /**
+   * Updates a device for a patient
+   */
+  static updateDevice(patient: Patient, deviceId: string, updates: Partial<PatientDevice>): Patient {
+    const devices = patient.devices || [];
+    const deviceIndex = devices.findIndex(device => device.id === deviceId);
+    
+    if (deviceIndex === -1) {
+      throw new Error(`Device with ID ${deviceId} not found`);
+    }
+
+    const updatedDevices = [...devices];
+    updatedDevices[deviceIndex] = { ...updatedDevices[deviceIndex], ...updates };
+
+    return {
+      ...patient,
+      devices: updatedDevices
+    };
+  }
+
+  /**
+   * Adds a communication record to a patient
+   */
+  static addCommunication(patient: Patient, communication: Omit<PatientCommunication, 'id'>): Patient {
+    const newCommunication: PatientCommunication = {
+      ...communication,
+      id: `comm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    };
+
+    return {
+      ...patient,
+      communications: [...(patient.communications || []), newCommunication]
+    };
   }
 }

@@ -3,6 +3,8 @@ import { useNavigate } from '@tanstack/react-router';
 import { usePatients } from '../../hooks/patient/usePatients';
 import { usePatientMutations } from '../../hooks/patient/usePatientMutations';
 import { Patient } from '../../types/patient';
+import { PatientSegment, PatientLabel } from '../../types/patient/patient-base.types';
+import { PatientStatus } from '../../generated/orval-types';
 import { PatientSearchItem } from '../../types/patient/patient-search.types';
 import { PatientCard } from '../../components/patients/PatientCard';
 import { PatientSearch } from '../../components/patients/PatientSearch';
@@ -71,17 +73,17 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
 
   // Helper function to convert Patient to PatientSearchItem
   const convertToSearchItem = useCallback((patient: Patient): PatientSearchItem => ({
-    id: patient.id,
-    firstName: patient.firstName,
-    lastName: patient.lastName,
+    id: patient.id || '',
+    firstName: patient.firstName || '',
+    lastName: patient.lastName || '',
     tcNumber: patient.tcNumber,
     phone: patient.phone,
     email: patient.email,
-    status: patient.status,
-    segment: patient.segment,
-    labels: patient.label ? [patient.label] : [],
-    registrationDate: patient.createdAt,
-    lastVisitDate: patient.updatedAt,
+    status: (patient.status as PatientStatus) || PatientStatus.ACTIVE,
+    segment: patient.segment as PatientSegment || 'NEW',
+    labels: patient.label ? [patient.label as PatientLabel] : [],
+    registrationDate: patient.createdAt || '',
+    lastVisitDate: patient.updatedAt || '',
     deviceCount: patient.devices?.length || 0,
     hasInsurance: !!patient.sgkInfo,
     outstandingBalance: 0, // This would need to be calculated
@@ -386,7 +388,7 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
         <PatientFormModal
           isOpen={!!editingPatient}
           onClose={() => setEditingPatient(null)}
-          onSubmit={(data) => handleUpdatePatient(editingPatient.id, data)}
+          onSubmit={(data) => handleUpdatePatient(editingPatient.id || '', data)}
           initialData={editingPatient}
           title="Hasta Düzenle"
         />

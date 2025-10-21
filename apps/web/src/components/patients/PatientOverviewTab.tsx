@@ -189,30 +189,11 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
               <p className="text-sm font-medium text-gray-500 mb-1">Adres</p>
               <p className="text-sm text-gray-900">
                 {(() => {
-                  if (!patient.address) {
+                  if (!patient.addressFull) {
                     return 'Adres bilgisi bulunmuyor';
                   }
                   
-                  // If address is a string, return it directly
-                  if (typeof patient.address === 'string') {
-                    return patient.address;
-                  }
-                  
-                  // If address is an object, format it properly
-                  const addressObj = patient.address as Record<string, any>;
-                  const parts: string[] = [];
-                  
-                  if (addressObj.fullAddress) {
-                    parts.push(String(addressObj.fullAddress));
-                  }
-                  if (addressObj.district) {
-                    parts.push(String(addressObj.district));
-                  }
-                  if (addressObj.city) {
-                    parts.push(String(addressObj.city));
-                  }
-                  
-                  return parts.length > 0 ? parts.join(', ') : 'Adres bilgisi bulunmuyor';
+                  return patient.addressFull;
                 })()}
               </p>
             </div>
@@ -277,7 +258,7 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
       {/* Note Form Modal */}
       {showNoteForm && (
         <PatientNoteForm
-          patientId={patient.id}
+          patientId={patient.id || ''}
           isOpen={showNoteForm}
           onClose={() => setShowNoteForm(false)}
           onSave={handleNoteSave}

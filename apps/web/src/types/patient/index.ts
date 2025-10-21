@@ -19,6 +19,9 @@ export * from './patient-device.types';
 // Search & Filtering
 export * from './patient-search.types';
 
+// Adapter
+export * from './patient-adapter';
+
 // Re-export commonly used types for convenience
 export type {
   Patient,

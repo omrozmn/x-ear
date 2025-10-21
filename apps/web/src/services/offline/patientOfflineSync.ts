@@ -167,11 +167,12 @@ export class PatientOfflineSync {
     const searchTerm = query.toLowerCase();
 
     return allPatients
-      .filter(patient => 
-        patient.name?.toLowerCase().includes(searchTerm) ||
-        patient.phone?.includes(searchTerm) ||
-        patient.email?.toLowerCase().includes(searchTerm)
-      )
+      .filter(patient => {
+        const patientName = patient.firstName && patient.lastName ? `${patient.firstName} ${patient.lastName}` : '';
+        return patientName.toLowerCase().includes(searchTerm) ||
+               patient.phone?.includes(searchTerm) ||
+               patient.email?.toLowerCase().includes(searchTerm);
+      })
       .map(p => ({ ...p, syncStatus: undefined }));
   }
 
@@ -269,10 +270,12 @@ export class PatientOfflineSync {
       // Update local database with server data (only if we got some data)
       if (patients.length > 0) {
         for (const serverPatient of patients) {
+          if (!serverPatient.id) continue; // Skip patients without ID
+          
           const localPatient = await this.db!.get('patients', serverPatient.id);
           
           // Only update if server version is newer or local doesn't exist
-          if (!localPatient || new Date(serverPatient.updatedAt) > new Date(localPatient.updatedAt)) {
+          if (!localPatient || (serverPatient.updatedAt && localPatient.updatedAt && new Date(serverPatient.updatedAt) > new Date(localPatient.updatedAt))) {
             await this.db!.put('patients', {
               ...serverPatient,
               syncStatus: 'synced'

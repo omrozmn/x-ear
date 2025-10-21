@@ -2,7 +2,8 @@ openapi: 3.0.3
 info:
   title: X-Ear CRM API (auto-generated)
   version: 0.0.0-auto
-  description: X-Ear CRM API for managing patients, devices, appointments, sales, and more
+  description: X-Ear CRM API for managing patients, devices, appointments, sales,
+    and more
   contact:
     name: X-Ear Web App Support
     email: support@x-ear.com
@@ -125,14 +126,7 @@ paths:
         required: false
         schema:
           type: string
-          enum:
-          - SCHEDULED
-          - CONFIRMED
-          - IN_PROGRESS
-          - COMPLETED
-          - CANCELLED
-          - NO_SHOW
-          - RESCHEDULED
+          enum: [SCHEDULED, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW, RESCHEDULED]
         description: Filter by appointment status
       - name: branch_id
         in: query
@@ -177,9 +171,9 @@ paths:
                   type: string
                   description: Additional notes
               required:
-              - patient_id
-              - date
-              - time
+                - patient_id
+                - date
+                - time
       responses:
         '201':
           description: Appointment created successfully
@@ -242,9 +236,7 @@ paths:
         required: false
         schema:
           type: string
-          enum:
-          - sms
-          - email
+          enum: [sms, email]
         description: Filter by message type
       - name: status
         in: query
@@ -342,9 +334,7 @@ paths:
         required: false
         schema:
           type: string
-          enum:
-          - sms
-          - email
+          enum: [sms, email]
         description: Filter by template type
       - name: category
         in: query
@@ -519,6 +509,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
   /api/appointments/{appointment_id}:
     delete:
       summary: DELETE /api/appointments/{appointment_id}
@@ -887,13 +878,7 @@ paths:
         required: false
         schema:
           type: string
-          enum:
-          - IN_STOCK
-          - ASSIGNED
-          - TRIAL
-          - DEFECTIVE
-          - LOST
-          - RETURNED
+          enum: [IN_STOCK, ASSIGNED, TRIAL, DEFECTIVE, LOST, RETURNED]
         description: Filter by device status
       responses:
         '200':
@@ -964,7 +949,10 @@ paths:
   /api/devices/{device_id}/stock-update:
     post:
       summary: Update device stock levels (simplified).
-      description: "This endpoint is intentionally permissive for tests \u2014 real inventory logic\nshould live in a dedicated inventory table/service."
+      description: 'This endpoint is intentionally permissive for tests — real inventory
+        logic
+
+        should live in a dedicated inventory table/service.'
       operationId: devices_update_device_stock
       tags:
       - Devices
@@ -1005,7 +993,7 @@ paths:
             schema:
               type: object
               required:
-              - name
+                - name
               properties:
                 name:
                   type: string
@@ -1042,7 +1030,7 @@ paths:
             schema:
               type: object
               required:
-              - name
+                - name
               properties:
                 name:
                   type: string
@@ -1088,7 +1076,8 @@ paths:
   /api/health:
     get:
       summary: Health endpoint exposing overall status and DB read/write check results.
-      description: Returns 200 when read+write ok, 503 when write fails, and 500 when other errors occur.
+      description: Returns 200 when read+write ok, 503 when write fails, and 500 when
+        other errors occur.
       operationId: health_check
       tags:
       - Health
@@ -1141,13 +1130,7 @@ paths:
         required: false
         schema:
           type: string
-          enum:
-          - IN_STOCK
-          - ASSIGNED
-          - TRIAL
-          - DEFECTIVE
-          - LOST
-          - RETURNED
+          enum: [IN_STOCK, ASSIGNED, TRIAL, DEFECTIVE, LOST, RETURNED]
         description: Filter by item status
       responses:
         '200':
@@ -1387,7 +1370,7 @@ paths:
                   type: string
                   description: Category name to create
               required:
-              - category
+                - category
       responses:
         '201':
           description: Category created successfully
@@ -1513,8 +1496,10 @@ paths:
       description: Create new process
   /api/openapi.yaml:
     get:
-      summary: Serve the canonical OpenAPI contract for frontend/back-end sync and respond to CORS preflight.
-      description: 'Returns CORS headers so the static Swagger UI served from a different origin (e.g. localhost:8080)
+      summary: Serve the canonical OpenAPI contract for frontend/back-end sync and
+        respond to CORS preflight.
+      description: 'Returns CORS headers so the static Swagger UI served from a different
+        origin (e.g. localhost:8080)
 
         can fetch the YAML without browser CORS errors.'
       operationId: serve_openapi_yaml
@@ -1530,24 +1515,24 @@ paths:
       tags:
       - Patients
       x-storage-keys:
-      - key: PATIENTS_DATA
-        description: Cached patient list data
-        type: array
-      - key: PATIENT_SEARCH_FILTERS
-        description: User's search filter preferences
-        type: object
-      - key: PATIENT_PAGINATION_STATE
-        description: Current pagination state
-        type: object
-      - key: PATIENT_SORT_PREFERENCES
-        description: User's sorting preferences
-        type: object
-      - key: PATIENT_VIEW_MODE
-        description: List/grid view mode preference
-        type: string
-      - key: PATIENT_SELECTED_COLUMNS
-        description: User's column visibility preferences
-        type: array
+        - key: PATIENTS_DATA
+          description: Cached patient list data
+          type: array
+        - key: PATIENT_SEARCH_FILTERS
+          description: User's search filter preferences
+          type: object
+        - key: PATIENT_PAGINATION_STATE
+          description: Current pagination state
+          type: object
+        - key: PATIENT_SORT_PREFERENCES
+          description: User's sorting preferences
+          type: object
+        - key: PATIENT_VIEW_MODE
+          description: List/grid view mode preference
+          type: string
+        - key: PATIENT_SELECTED_COLUMNS
+          description: User's column visibility preferences
+          type: array
       parameters:
       - name: page
         in: query
@@ -1582,12 +1567,7 @@ paths:
         required: false
         schema:
           type: string
-          enum:
-          - ACTIVE
-          - INACTIVE
-          - LEAD
-          - TRIAL
-          - CUSTOMER
+          enum: [ACTIVE, INACTIVE, LEAD, TRIAL, CUSTOMER]
         description: Filter by patient status
       responses:
         '200':
@@ -1622,12 +1602,12 @@ paths:
       tags:
       - Patients
       x-storage-keys:
-      - key: PATIENT_FORM_VALIDATION_STATE
-        description: Form validation state and errors
-        type: object
-      - key: PATIENT_FORM_DRAFT
-        description: Draft form data for auto-save
-        type: object
+        - key: PATIENT_FORM_VALIDATION_STATE
+          description: Form validation state and errors
+          type: object
+        - key: PATIENT_FORM_DRAFT
+          description: Draft form data for auto-save
+          type: object
       requestBody:
         required: false
         content:
@@ -1649,12 +1629,12 @@ paths:
       tags:
       - Patients
       x-storage-keys:
-      - key: PATIENT_DETAILS_TAB
-        description: Active tab in patient details view
-        type: string
-      - key: PATIENT_BULK_ACTIONS_STATE
-        description: Bulk actions selection state
-        type: object
+        - key: PATIENT_DETAILS_TAB
+          description: Active tab in patient details view
+          type: string
+        - key: PATIENT_BULK_ACTIONS_STATE
+          description: Bulk actions selection state
+          type: object
       parameters:
       - name: patient_id
         in: path
@@ -1855,7 +1835,8 @@ paths:
   /api/patients/{patient_id}/timeline:
     get:
       summary: Get timeline events for a patient
-      description: Retrieves all timeline events for a specific patient, including events from both custom data and activity logs
+      description: Retrieves all timeline events for a specific patient, including
+        events from both custom data and activity logs
       operationId: timeline_get_patient_timeline
       tags:
       - Timeline
@@ -1913,7 +1894,8 @@ paths:
           description: Internal server error
     post:
       summary: Add a new timeline event for a patient
-      description: Creates a new timeline event for a specific patient and logs it to both custom data and activity logs
+      description: Creates a new timeline event for a specific patient and logs it
+        to both custom data and activity logs
       operationId: timeline_add_timeline_event
       tags:
       - Timeline
@@ -2042,7 +2024,8 @@ paths:
   /api/patients/{patient_id}/activities:
     post:
       summary: Log an activity for a patient (alias for timeline event)
-      description: Alternative endpoint for adding timeline events, provides the same functionality as POST /api/patients/{patient_id}/timeline
+      description: Alternative endpoint for adding timeline events, provides the same
+        functionality as POST /api/patients/{patient_id}/timeline
       operationId: timeline_log_patient_activity
       tags:
       - Timeline
@@ -2081,12 +2064,15 @@ paths:
           description: Internal server error
   /api/patients/bulk_upload:
     post:
-      summary: Accept a multipart/form-data CSV file containing patients and upsert them into the DB.
-      description: 'This endpoint is intentionally forgiving: it returns a summary of created/updated rows
+      summary: Accept a multipart/form-data CSV file containing patients and upsert
+        them into the DB.
+      description: 'This endpoint is intentionally forgiving: it returns a summary
+        of created/updated rows
 
         and reports per-row errors without aborting the entire batch.
 
-        Authentication is optional for uploads in many workflows; we still log the actor when present.'
+        Authentication is optional for uploads in many workflows; we still log the
+        actor when present.'
       operationId: patients_bulk_upload_patients
       tags:
       - Patients
@@ -2221,7 +2207,7 @@ paths:
       description: Retrieve financial information
   /api/reports/overview:
     get:
-      summary: "Genel rapor \xF6zeti"
+      summary: Genel rapor özeti
       operationId: reports_report_overview
       tags:
       - Reports
@@ -2490,10 +2476,7 @@ paths:
         required: false
         schema:
           type: string
-          enum:
-          - ACTIVE
-          - INACTIVE
-          - PENDING
+          enum: [ACTIVE, INACTIVE, PENDING]
         description: Filter by supplier status
       - name: category
         in: query
@@ -2863,9 +2846,11 @@ paths:
   /swagger.html:
     get:
       summary: Serve the static Swagger UI page from the repository `public/` folder.
-      description: 'This helps local development: visit http://<backend-host>:<port>/swagger.html so the
+      description: 'This helps local development: visit http://<backend-host>:<port>/swagger.html
+        so the
 
-        Swagger UI and `/api/openapi.yaml` are on the same origin and no CORS overrides are needed.'
+        Swagger UI and `/api/openapi.yaml` are on the same origin and no CORS overrides
+        are needed.'
       operationId: serve_swagger_ui
       tags:
       - Swagger.html
@@ -2883,15 +2868,27 @@ components:
         tcNumber:
           type: string
           description: Turkish citizenship number
+        tc_number:
+          type: string
+          description: Turkish citizenship number (snake_case alias)
         identityNumber:
           type: string
           description: Identity number
+        identity_number:
+          type: string
+          description: Identity number (snake_case alias)
         firstName:
           type: string
           description: Patient's first name
+        first_name:
+          type: string
+          description: Patient's first name (snake_case alias)
         lastName:
           type: string
           description: Patient's last name
+        last_name:
+          type: string
+          description: Patient's last name (snake_case alias)
         phone:
           type: string
           description: Patient's phone number
@@ -2903,6 +2900,10 @@ components:
           type: string
           format: date
           description: Patient's birth date
+        birth_date:
+          type: string
+          format: date
+          description: Patient's birth date (snake_case alias)
         gender:
           type: string
           enum:
@@ -2912,12 +2913,21 @@ components:
         addressCity:
           type: string
           description: Patient's city
+        address_city:
+          type: string
+          description: Patient's city (snake_case alias)
         addressDistrict:
           type: string
           description: Patient's district
+        address_district:
+          type: string
+          description: Patient's district (snake_case alias)
         addressFull:
           type: string
           description: Patient's full address
+        address_full:
+          type: string
+          description: Patient's full address (snake_case alias)
         status:
           type: string
           enum:
@@ -2933,12 +2943,21 @@ components:
         acquisitionType:
           type: string
           description: How patient was acquired
+        acquisition_type:
+          type: string
+          description: How patient was acquired (snake_case alias)
         conversionStep:
           type: string
           description: Patient conversion step
+        conversion_step:
+          type: string
+          description: Patient conversion step (snake_case alias)
         referredBy:
           type: string
           description: Who referred the patient
+        referred_by:
+          type: string
+          description: Who referred the patient (snake_case alias)
         priorityScore:
           type: integer
           description: Patient priority score
@@ -2973,12 +2992,21 @@ components:
         patientId:
           type: string
           description: Patient ID
+        patient_id:
+          type: string
+          description: Patient ID (snake_case alias)
         clinicianId:
           type: string
           description: Clinician ID
+        clinician_id:
+          type: string
+          description: Clinician ID (snake_case alias)
         branchId:
           type: string
           description: Branch ID
+        branch_id:
+          type: string
+          description: Branch ID (snake_case alias)
         date:
           type: string
           format: date-time
@@ -2992,6 +3020,9 @@ components:
         appointmentType:
           type: string
           description: Type of appointment
+        appointment_type:
+          type: string
+          description: Type of appointment (snake_case alias)
         status:
           type: string
           enum:
@@ -3023,12 +3054,21 @@ components:
         patientId:
           type: string
           description: Patient ID
+        patient_id:
+          type: string
+          description: Patient ID (snake_case alias)
         inventoryId:
           type: string
           description: Inventory ID
+        inventory_id:
+          type: string
+          description: Inventory ID (snake_case alias)
         serialNumber:
           type: string
           description: Device serial number
+        serial_number:
+          type: string
+          description: Device serial number (snake_case alias)
         brand:
           type: string
           description: Device brand
@@ -3038,6 +3078,9 @@ components:
         deviceType:
           type: string
           description: Type of device
+        device_type:
+          type: string
+          description: Type of device (snake_case alias)
         category:
           type: string
           description: Device category
@@ -3062,25 +3105,48 @@ components:
           type: string
           format: date
           description: Trial start date
+        trial_start_date:
+          type: string
+          format: date
+          description: Trial start date (snake_case alias)
         trialEndDate:
           type: string
           format: date
           description: Trial end date
+        trial_end_date:
+          type: string
+          format: date
+          description: Trial end date (snake_case alias)
         trialExtendedUntil:
           type: string
           format: date
           description: Trial extended until date
+        trial_extended_until:
+          type: string
+          format: date
+          description: Trial extended until date (snake_case alias)
         warrantyStartDate:
           type: string
           format: date
           description: Warranty start date
+        warranty_start_date:
+          type: string
+          format: date
+          description: Warranty start date (snake_case alias)
         warrantyEndDate:
           type: string
           format: date
           description: Warranty end date
+        warranty_end_date:
+          type: string
+          format: date
+          description: Warranty end date (snake_case alias)
         warrantyTerms:
           type: string
           description: Warranty terms
+        warranty_terms:
+          type: string
+          description: Warranty terms (snake_case alias)
         price:
           type: number
           format: decimal
@@ -3228,17 +3294,11 @@ components:
           description: Unit price
         direction:
           type: string
-          enum:
-          - LEFT
-          - RIGHT
-          - BILATERAL
+          enum: [LEFT, RIGHT, BILATERAL]
           description: Hearing aid direction
         ear:
           type: string
-          enum:
-          - LEFT
-          - RIGHT
-          - BILATERAL
+          enum: [LEFT, RIGHT, BILATERAL]
           description: Legacy field for direction
         warranty:
           type: integer
@@ -3294,6 +3354,7 @@ components:
       required:
       - name
       - contactPerson
+
     Campaign:
       type: object
       properties:
@@ -3375,6 +3436,7 @@ components:
       - userId
       - title
       - message
+
     ErrorResponse:
       type: object
       properties:
@@ -3438,12 +3500,21 @@ components:
         patientId:
           type: string
           description: Patient ID
+        patient_id:
+          type: string
+          description: Patient ID (snake_case alias)
         saleId:
           type: string
           description: Sale ID
+        sale_id:
+          type: string
+          description: Sale ID (snake_case alias)
         promissoryNoteId:
           type: string
           description: Promissory note ID
+        promissory_note_id:
+          type: string
+          description: Promissory note ID (snake_case alias)
         amount:
           type: number
           format: decimal
@@ -3452,16 +3523,30 @@ components:
           type: string
           format: date-time
           description: Payment date
+        payment_date:
+          type: string
+          format: date-time
+          description: Payment date (snake_case alias)
         dueDate:
           type: string
           format: date
           description: Due date
+        due_date:
+          type: string
+          format: date
+          description: Due date (snake_case alias)
         paymentMethod:
           type: string
           description: Payment method
+        payment_method:
+          type: string
+          description: Payment method (snake_case alias)
         paymentType:
           type: string
           description: Payment type
+        payment_type:
+          type: string
+          description: Payment type (snake_case alias)
         status:
           type: string
           enum:
@@ -3473,12 +3558,18 @@ components:
         referenceNumber:
           type: string
           description: Reference number
+        reference_number:
+          type: string
+          description: Reference number (snake_case alias)
         notes:
           type: string
           description: Payment notes
         deviceId:
           type: string
           description: Device ID
+        device_id:
+          type: string
+          description: Device ID (snake_case alias)
         ear:
           type: string
           enum:
@@ -3492,117 +3583,231 @@ components:
         fromInventory:
           type: boolean
           description: From inventory flag
+        from_inventory:
+          type: boolean
+          description: From inventory flag (snake_case alias)
         listPrice:
           type: number
           format: decimal
           description: List price
+        list_price:
+          type: number
+          format: decimal
+          description: List price (snake_case alias)
         salePrice:
           type: number
           format: decimal
           description: Sale price
+        sale_price:
+          type: number
+          format: decimal
+          description: Sale price (snake_case alias)
         sgkScheme:
           type: string
           description: SGK scheme
+        sgk_scheme:
+          type: string
+          description: SGK scheme (snake_case alias)
         sgkSupport:
           type: number
           format: decimal
           description: SGK support amount
+        sgk_support:
+          type: number
+          format: decimal
+          description: SGK support amount (snake_case alias)
         discountType:
           type: string
           description: Discount type
+        discount_type:
+          type: string
+          description: Discount type (snake_case alias)
         discountValue:
           type: number
           format: decimal
           description: Discount value
+        discount_value:
+          type: number
+          format: decimal
+          description: Discount value (snake_case alias)
         netPayable:
           type: number
           format: decimal
           description: Net payable amount
+        net_payable:
+          type: number
+          format: decimal
+          description: Net payable amount (snake_case alias)
         productId:
           type: string
           description: Product ID
+        product_id:
+          type: string
+          description: Product ID (snake_case alias)
         saleDate:
           type: string
           format: date-time
           description: Sale date
+        sale_date:
+          type: string
+          format: date-time
+          description: Sale date (snake_case alias)
         listPriceTotal:
           type: number
           format: decimal
           description: List price total
+        list_price_total:
+          type: number
+          format: decimal
+          description: List price total (snake_case alias)
         totalAmount:
           type: number
           format: decimal
           description: Total amount
+        total_amount:
+          type: number
+          format: decimal
+          description: Total amount (snake_case alias)
         discountAmount:
           type: number
           format: decimal
           description: Discount amount
+        discount_amount:
+          type: number
+          format: decimal
+          description: Discount amount (snake_case alias)
         finalAmount:
           type: number
           format: decimal
           description: Final amount
+        final_amount:
+          type: number
+          format: decimal
+          description: Final amount (snake_case alias)
         paidAmount:
           type: number
           format: decimal
           description: Paid amount
+        paid_amount:
+          type: number
+          format: decimal
+          description: Paid amount (snake_case alias)
         rightEarAssignmentId:
           type: string
           description: Right ear assignment ID
+        right_ear_assignment_id:
+          type: string
+          description: Right ear assignment ID (snake_case alias)
         leftEarAssignmentId:
           type: string
           description: Left ear assignment ID
+        left_ear_assignment_id:
+          type: string
+          description: Left ear assignment ID (snake_case alias)
         sgkCoverage:
           type: number
           format: decimal
           description: SGK coverage
+        sgk_coverage:
+          type: number
+          format: decimal
+          description: SGK coverage (snake_case alias)
         patientPayment:
           type: number
           format: decimal
           description: Patient payment
+        patient_payment:
+          type: number
+          format: decimal
+          description: Patient payment (snake_case alias)
         planName:
           type: string
           description: Payment plan name
+        plan_name:
+          type: string
+          description: Payment plan name (snake_case alias)
         installmentCount:
           type: integer
           description: Number of installments
+        installment_count:
+          type: integer
+          description: Number of installments (snake_case alias)
         installmentAmount:
           type: number
           format: decimal
           description: Installment amount
+        installment_amount:
+          type: number
+          format: decimal
+          description: Installment amount (snake_case alias)
         installmentNumber:
           type: integer
           description: Current installment number
+        installment_number:
+          type: integer
+          description: Current installment number (snake_case alias)
         remainingBalance:
           type: number
           format: decimal
           description: Remaining balance
+        remaining_balance:
+          type: number
+          format: decimal
+          description: Remaining balance (snake_case alias)
         interestRate:
           type: number
           format: decimal
           description: Interest rate
+        interest_rate:
+          type: number
+          format: decimal
+          description: Interest rate (snake_case alias)
         totalInterest:
           type: number
           format: decimal
           description: Total interest
+        total_interest:
+          type: number
+          format: decimal
+          description: Total interest (snake_case alias)
         processingFee:
           type: number
           format: decimal
           description: Processing fee amount
+        processing_fee:
+          type: number
+          format: decimal
+          description: Processing fee amount (snake_case alias)
         startDate:
           type: string
           format: date-time
           description: Start date
+        start_date:
+          type: string
+          format: date-time
+          description: Start date (snake_case alias)
         paymentPlanId:
           type: string
           description: Payment plan ID
+        payment_plan_id:
+          type: string
+          description: Payment plan ID (snake_case alias)
         paidDate:
           type: string
           format: date-time
           description: Paid date
+        paid_date:
+          type: string
+          format: date-time
+          description: Paid date (snake_case alias)
         lateFee:
           type: number
           format: decimal
           description: Late fee amount
+        late_fee:
+          type: number
+          format: decimal
+          description: Late fee amount (snake_case alias)
         createdAt:
           type: string
           format: date-time
@@ -3632,47 +3837,85 @@ components:
         passwordHash:
           type: string
           description: Password hash
+        password_hash:
+          type: string
+          description: Password hash (snake_case alias)
         firstName:
           type: string
           description: User first name
+        first_name:
+          type: string
+          description: User first name (snake_case alias)
         lastName:
           type: string
           description: User last name
+        last_name:
+          type: string
+          description: User last name (snake_case alias)
         role:
           type: string
           description: User role
         isActive:
           type: boolean
           description: User active status
+        is_active:
+          type: boolean
+          description: User active status (snake_case alias)
         lastLogin:
           type: string
           format: date-time
           description: Last login date
+        last_login:
+          type: string
+          format: date-time
+          description: Last login date (snake_case alias)
         passwordResetToken:
           type: string
           description: Password reset token
+        password_reset_token:
+          type: string
+          description: Password reset token (snake_case alias)
         passwordResetExpires:
           type: string
           format: date-time
           description: Password reset expiry
+        password_reset_expires:
+          type: string
+          format: date-time
+          description: Password reset expiry (snake_case alias)
         userId:
           type: string
           description: User ID for audit
+        user_id:
+          type: string
+          description: User ID for audit (snake_case alias)
         action:
           type: string
           description: User action
         entityType:
           type: string
           description: Entity type
+        entity_type:
+          type: string
+          description: Entity type (snake_case alias)
         entityId:
           type: string
           description: Entity ID
+        entity_id:
+          type: string
+          description: Entity ID (snake_case alias)
         ipAddress:
           type: string
           description: IP address
+        ip_address:
+          type: string
+          description: IP address (snake_case alias)
         userAgent:
           type: string
           description: User agent
+        user_agent:
+          type: string
+          description: User agent (snake_case alias)
         details:
           type: object
           description: Additional details
@@ -3699,10 +3942,12 @@ components:
           description: Template description
         templateType:
           type: string
-          enum:
-          - sms
-          - email
+          enum: [sms, email]
           description: Type of communication template
+        template_type:
+          type: string
+          enum: [sms, email]
+          description: Type of communication template (snake_case alias)
         category:
           type: string
           description: Template category (appointment_reminder, payment_due, welcome, etc.)
@@ -3712,9 +3957,15 @@ components:
         bodyText:
           type: string
           description: Plain text content
+        body_text:
+          type: string
+          description: Plain text content (snake_case alias)
         bodyHtml:
           type: string
           description: HTML content (for email templates)
+        body_html:
+          type: string
+          description: HTML content (snake_case alias)
         variables:
           type: array
           items:
@@ -3731,31 +3982,47 @@ components:
           description: Unique message identifier
         messageType:
           type: string
-          enum:
-          - sms
-          - email
+          enum: [sms, email]
           description: Type of message (sms or email)
         patientId:
           type: string
           description: Patient ID
+        patient_id:
+          type: string
+          description: Patient ID (snake_case alias)
         campaignId:
           type: string
           description: Campaign ID (if part of a campaign)
+        campaign_id:
+          type: string
+          description: Campaign ID (snake_case alias)
         templateId:
           type: string
           description: Template ID used for this message
+        template_id:
+          type: string
+          description: Template ID (snake_case alias)
         status:
           type: string
           description: Message status (sent, delivered, failed, etc.)
         phoneNumber:
           type: string
           description: Phone number (for SMS messages)
+        phone_number:
+          type: string
+          description: Phone number (snake_case alias)
         toEmail:
           type: string
           description: Recipient email address (for email messages)
+        to_email:
+          type: string
+          description: Recipient email address (snake_case alias)
         fromEmail:
           type: string
           description: Sender email address (for email messages)
+        from_email:
+          type: string
+          description: Sender email address (snake_case alias)
         subject:
           type: string
           description: Email subject (for email messages)
@@ -3765,20 +4032,37 @@ components:
         bodyText:
           type: string
           description: Plain text content (for email)
+        body_text:
+          type: string
+          description: Plain text content (snake_case alias)
         bodyHtml:
           type: string
           description: HTML content (for email)
+        body_html:
+          type: string
+          description: HTML content (snake_case alias)
         sentAt:
           type: string
           format: date-time
           description: When the message was sent
+        sent_at:
+          type: string
+          format: date-time
+          description: When the message was sent (snake_case alias)
         deliveredAt:
           type: string
           format: date-time
           description: When the message was delivered
+        delivered_at:
+          type: string
+          format: date-time
+          description: When the message was delivered (snake_case alias)
         errorMessage:
           type: string
           description: Error message if sending failed
+        error_message:
+          type: string
+          description: Error message (snake_case alias)
         cost:
           type: number
           format: float
@@ -3787,20 +4071,41 @@ components:
           type: string
           format: date-time
           description: Creation timestamp
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp (snake_case alias)
         updatedAt:
           type: string
           format: date-time
           description: Last update timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp (snake_case alias)
+        is_active:
+          type: boolean
+          description: Whether template is active (snake_case alias)
         isSystem:
           type: boolean
           description: Whether template is a system template
+        is_system:
+          type: boolean
+          description: Whether template is a system template (snake_case alias)
         usageCount:
           type: integer
           description: Number of times template has been used
+        usage_count:
+          type: integer
+          description: Number of times template has been used (snake_case alias)
         lastUsedAt:
           type: string
           format: date-time
           description: Last time template was used
+        last_used_at:
+          type: string
+          format: date-time
+          description: Last time template was used (snake_case alias)
       required:
       - name
       - templateType
@@ -3816,9 +4121,7 @@ components:
           description: Template description
         templateType:
           type: string
-          enum:
-          - sms
-          - email
+          enum: [sms, email]
           description: Type of communication template
         category:
           type: string

@@ -4,29 +4,11 @@ export default {
       target: './openapi.yaml'
     },
     output: {
-      mode: 'single',
-      target: './apps/web/src/generated/orval-api.ts',
+      mode: 'split',
+      target: './apps/web/src/api/generated',
       client: 'axios',
-      prettier: false,
-      clean: false,
-      override: {
-        mutator: {
-          path: './apps/web/src/api/orval-mutator.ts',
-          name: 'customInstance'
-        }
-      }
-    }
-  },
-  'x-ear-types': {
-    input: {
-      target: './openapi.yaml'
-    },
-    output: {
-      mode: 'single',
-      target: './apps/web/src/generated/orval-types.ts',
-      client: 'axios',
-      prettier: false,
-      clean: false,
+      prettier: true,
+      clean: true,
       mock: false
     }
   }

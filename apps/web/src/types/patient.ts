@@ -5,46 +5,41 @@ export type { PatientStatus, PatientGender } from '../generated/orval-types';
 // Import Orval Patient for extension
 import type { Patient as OrvalPatient } from '../generated/orval-types';
 
-// Use Orval Patient as the main Patient type for API compatibility
-export type Patient = OrvalPatient;
+// Extend Orval Patient with additional fields needed by the application
+export interface Patient extends OrvalPatient {
+  // Additional fields that components expect
+  devices?: PatientDevice[];
+  notes?: PatientNote[];
+  communications?: PatientCommunication[];
+  appointments?: Appointment[];
+  sales?: Sale[];
+  
+  // Additional computed fields
+  lastContactDate?: string;
+  
+  // Address field that some components expect (OrvalPatient has addressFull, but some components expect address)
+  address?: string | {
+    street?: string;
+    city?: string;
+    district?: string;
+    postalCode?: string;
+    country?: string;
+    full?: string;
+  };
+  
+  // Additional fields for forms that are not in OrvalPatient
+  branch?: string;
+  label?: string;
+  
+  // SGK workflow for timeline
+  sgkWorkflow?: SGKWorkflow;
+  
+  // Additional fields for timeline
+  ereceiptHistory?: EReceiptRecord[];
+  reports?: PatientReport[];
+}
 
 // Keep legacy types that are still needed for compatibility
-export interface PatientDevice {
-  id: string;
-  brand: string;
-  model: string;
-  serialNumber?: string;
-  side: 'left' | 'right' | 'both';
-  ear?: 'left' | 'right' | 'both' | 'bilateral'; // Alternative to side for legacy compatibility
-  type: 'hearing_aid' | 'cochlear_implant' | 'bone_anchored';
-  status: 'active' | 'trial' | 'returned' | 'replaced' | 'assigned' | 'defective';
-  purchaseDate?: string;
-  assignedDate?: string;
-  warrantyExpiry?: string;
-  lastServiceDate?: string;
-  batteryType?: string;
-
-  // Pricing information
-  price?: number;
-  listPrice?: number;
-  salePrice?: number;
-  sgkReduction?: number;
-  patientPayment?: number;
-
-  // Payment and SGK
-  sgkScheme?: boolean;
-  paymentMethod?: 'cash' | 'card' | 'transfer' | 'installment';
-
-  // Trial information
-  trialEndDate?: string;
-
-  // Assignment details
-  assignedBy?: string;
-  reason?: 'new' | 'replacement' | 'upgrade' | 'trial' | 'warranty';
-  notes?: string;
-
-  settings?: Record<string, unknown>;
-}
 
 // Keep legacy types that are still needed for compatibility
 export interface PatientDevice {
@@ -152,8 +147,22 @@ export interface PatientNote {
   author: string;
   type?: 'general' | 'clinical' | 'financial' | 'sgk';
   isPrivate?: boolean;
+  createdAt?: string;
 }
 
+export interface PatientCommunication {
+  id: string;
+  type: 'sms' | 'email' | 'call' | 'whatsapp';
+  direction: 'inbound' | 'outbound';
+  content: string;
+  date: string;
+  timestamp?: string; // Add timestamp for compatibility
+  status: 'sent' | 'delivered' | 'read' | 'failed';
+  author?: string;
+  metadata?: Record<string, unknown>;
+}
+
+// Legacy Communication interface for backward compatibility
 export interface Communication {
   id: string;
   type: 'sms' | 'email' | 'call' | 'whatsapp';

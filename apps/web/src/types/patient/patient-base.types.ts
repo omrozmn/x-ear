@@ -4,8 +4,8 @@
  * @version 1.0.0
  */
 
-// Re-export Orval Patient as the main Patient type
-export type { Patient } from '../../generated/orval-types';
+// Import Orval Patient type
+import type { Patient as OrvalPatient } from '../../generated/orval-types';
 
 // Re-export Orval Patient types
 export type { PatientStatus, PatientGender } from '../../generated/orval-types';
@@ -60,7 +60,7 @@ export type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled';
 
 // Payment Types
 export type PaymentMethod = 'cash' | 'card' | 'bank_transfer' | 'sgk' | 'installment';
-export type PaymentStatus = 'pending' | 'paid' | 'overdue';
+export type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'completed' | 'failed';
 
 // Sale Types
 export type SaleStatus = 'draft' | 'confirmed' | 'cancelled' | 'paid';
@@ -93,4 +93,23 @@ export interface PatientNote {
   author: string;
   type?: NoteType;
   isPrivate?: boolean;
+}
+
+export interface PatientCommunication {
+  id: string;
+  type: CommunicationType;
+  direction: CommunicationDirection;
+  content: string;
+  status: CommunicationStatus;
+  date: string;
+  author?: string;
+  metadata?: Record<string, unknown>;
+}
+
+// Extended Patient type with additional fields needed by the application
+export interface Patient extends OrvalPatient {
+  // Additional fields that are not in the Orval generated type
+  devices?: PatientDevice[];
+  notes?: PatientNote[];
+  communications?: PatientCommunication[];
 }

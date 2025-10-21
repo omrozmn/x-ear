@@ -64,7 +64,7 @@ interface PatientRowProps {
 // Patient row component for virtualization
 const PatientRow = ({ index, style, data }: PatientRowProps) => {
   const patient = data.patients[index];
-  const isSelected = data.selectedPatients.includes(patient.id);
+  const isSelected = data.selectedPatients.includes(patient.id || '');
 
   if (!patient) {
     return (
@@ -120,7 +120,7 @@ const PatientRow = ({ index, style, data }: PatientRowProps) => {
       <div className="flex-shrink-0 mr-3">
         <Checkbox
           checked={isSelected}
-          onChange={() => data.onPatientSelect?.(patient.id)}
+          onChange={() => data.onPatientSelect?.(patient.id || '')}
         />
       </div>
 
@@ -254,7 +254,7 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
 
   // Select all functionality
   const isAllSelected = useMemo(() => {
-    return patients.length > 0 && patients.every(p => selectedPatients.includes(p.id));
+    return patients.length > 0 && patients.every(p => selectedPatients.includes(p.id || ''));
   }, [patients, selectedPatients]);
 
   const isPartiallySelected = useMemo(() => {
@@ -264,12 +264,12 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
   const handleSelectAll = useCallback(() => {
     if (isAllSelected) {
       // Deselect all
-      patients.forEach(p => onPatientSelect?.(p.id));
+      patients.forEach(p => onPatientSelect?.(p.id || ''));
     } else {
       // Select all visible
       patients.forEach(p => {
-        if (!selectedPatients.includes(p.id)) {
-          onPatientSelect?.(p.id);
+        if (!selectedPatients.includes(p.id || '')) {
+          onPatientSelect?.(p.id || '');
         }
       });
     }

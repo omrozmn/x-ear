@@ -6,6 +6,7 @@ import {
   PatientStats,
   PatientDevice,
   PatientNote,
+  PatientCommunication,
   Communication,
   PatientMatchCandidate,
   PatientMatchRequest
@@ -36,7 +37,7 @@ export interface UsePatients {
   addNote: (patientId: string, text: string, type?: PatientNote['type']) => Promise<PatientNote | null>;
   
   // Communication
-  addCommunication: (patientId: string, communication: Omit<Communication, 'id'>) => Promise<Communication | null>;
+  addCommunication: (patientId: string, communication: Omit<PatientCommunication, 'id'>) => Promise<PatientCommunication | null>;
   // Export
   exportPatient: (id: string) => Promise<string | null>;
   
@@ -209,42 +210,85 @@ export function usePatients(initialFilters?: PatientFilters): UsePatients {
   const addDevice = useCallback(async (patientId: string, device: Omit<PatientDevice, 'id'>): Promise<PatientDevice | null> => {
     try {
       setError(null);
-      return await patientService.addDevice(patientId, device);
+      const patient = patients.find(p => p.id === patientId);
+      if (!patient) {
+        throw new Error('Patient not found');
+      }
+      const updatedPatient = patientService.addDevice(patient, device);
+      // Update the patient in the list
+      setPatients(prev => prev.map(p => p.id === patientId ? updatedPatient : p));
+      // Return the newly added device
+      const newDevice = updatedPatient.devices?.find(d => !patient.devices?.some(pd => pd.id === d.id));
+      return newDevice || null;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add device');
       return null;
     }
-  }, []);
+  }, [patients]);
 
   const updateDevice = useCallback(async (patientId: string, deviceId: string, updates: Partial<PatientDevice>): Promise<PatientDevice | null> => {
     try {
       setError(null);
-      return await patientService.updateDevice(patientId, deviceId, updates);
+      const patient = patients.find(p => p.id === patientId);
+      if (!patient) {
+        throw new Error('Patient not found');
+      }
+      const updatedPatient = patientService.updateDevice(patient, deviceId, updates);
+      // Update the patient in the list
+      setPatients(prev => prev.map(p => p.id === patientId ? updatedPatient : p));
+      // Return the updated device
+      const updatedDevice = updatedPatient.devices?.find(d => d.id === deviceId);
+      return updatedDevice || null;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update device');
       return null;
     }
-  }, []);
+  }, [patients]);
 
   const addNote = useCallback(async (patientId: string, text: string, type?: PatientNote['type']): Promise<PatientNote | null> => {
     try {
       setError(null);
-      return await patientService.addNote(patientId, text, type);
+      const patient = patients.find(p => p.id === patientId);
+      if (!patient) {
+        throw new Error('Patient not found');
+      }
+      const noteData: Omit<PatientNote, 'id'> = {
+        text,
+        type: type || 'general',
+        date: new Date().toISOString(),
+        author: 'Current User', // This should come from auth context
+        isPrivate: false
+      };
+      const updatedPatient = patientService.addNote(patient, noteData);
+      // Update the patient in the list
+      setPatients(prev => prev.map(p => p.id === patientId ? updatedPatient : p));
+      // Return the newly added note
+      const newNote = updatedPatient.notes?.find(n => !patient.notes?.some(pn => pn.id === n.id));
+      return newNote || null;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add note');
       return null;
     }
-  }, []);
+  }, [patients]);
 
-  const addCommunication = useCallback(async (patientId: string, communication: Omit<Communication, 'id'>): Promise<Communication | null> => {
+  const addCommunication = useCallback(async (patientId: string, communication: Omit<PatientCommunication, 'id'>): Promise<PatientCommunication | null> => {
     try {
       setError(null);
-      return await patientService.addCommunication(patientId, communication);
+      const patient = patients.find(p => p.id === patientId);
+      if (!patient) {
+        throw new Error('Patient not found');
+      }
+      const updatedPatient = patientService.addCommunication(patient, communication as any);
+      // Update the patient in the list
+      setPatients(prev => prev.map(p => p.id === patientId ? updatedPatient : p));
+      // Return the newly added communication
+      const newCommunication = updatedPatient.communications?.find(c => !patient.communications?.some(pc => pc.id === c.id));
+      return newCommunication || null;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add communication');
       return null;
     }
-  }, []);
+  }, [patients]);
 
   const exportPatient = useCallback(async (id: string): Promise<string | null> => {
     try {

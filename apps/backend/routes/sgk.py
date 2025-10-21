@@ -787,3 +787,319 @@ def seed_test_patients():
     except Exception as e:
         logger.exception('Seeding test patients failed')
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@sgk_bp.route('/sgk/e-receipt/query', methods=['POST'])
+def query_e_receipt():
+    """E-reçete sorgulama endpoint'i"""
+    try:
+        data = request.get_json() or {}
+        receipt_number = data.get('receiptNumber')
+        patient_id = data.get('patientId')
+        tc_number = data.get('tcNumber')
+        
+        if not receipt_number:
+            return jsonify({
+                "success": False, 
+                "error": "E-reçete numarası gerekli",
+                "timestamp": datetime.now().isoformat()
+            }), 400
+        
+        if not tc_number:
+            return jsonify({
+                "success": False, 
+                "error": "TC numarası gerekli",
+                "timestamp": datetime.now().isoformat()
+            }), 400
+        
+        # TODO: Gerçek SGK API entegrasyonu
+        # Şimdilik mock data döndürüyoruz
+        mock_response = {
+            "id": f"receipt_{receipt_number}_{datetime.now().timestamp()}",
+            "receiptNumber": receipt_number,
+            "status": "active",
+            "prescriptions": [
+                {
+                    "id": "pres_001",
+                    "medicationName": "İşitme Cihazı",
+                    "dosage": "Bilateral",
+                    "quantity": 2,
+                    "sgkCoverage": 85.0
+                }
+            ],
+            "validUntil": "2024-12-31",
+            "queryDate": datetime.now().isoformat()
+        }
+        
+        logger.info(f"E-receipt query successful for receipt: {receipt_number}, patient: {patient_id}")
+        
+        return jsonify({
+            "success": True,
+            "data": mock_response,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"E-receipt query error: {str(e)}")
+        return jsonify({
+            "success": False, 
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+
+@sgk_bp.route('/sgk/patient-rights/query', methods=['POST'])
+def query_patient_rights():
+    """SGK hasta hakları sorgulama endpoint'i"""
+    try:
+        data = request.get_json() or {}
+        tc_number = data.get('tcNumber')
+        patient_id = data.get('patientId')
+        
+        if not tc_number:
+            return jsonify({
+                "success": False, 
+                "error": "TC numarası gerekli",
+                "timestamp": datetime.now().isoformat()
+            }), 400
+        
+        # Hasta kaydını kontrol et
+        patient = None
+        if patient_id:
+            patient = db.session.get(Patient, patient_id)
+        
+        # TODO: Gerçek SGK API entegrasyonu
+        # Şimdilik mock data döndürüyoruz
+        mock_response = {
+            "hasInsurance": True,
+            "insuranceNumber": f"SGK{tc_number[-6:]}",
+            "insuranceType": "sgk",
+            "coveragePercentage": 0.85,
+            "approvalNumber": f"SGK-2024-{tc_number[-6:]}",
+            "approvalDate": "2024-01-05",
+            "expiryDate": "2026-01-05",
+            "patientRights": {
+                "hearingAidCoverage": True,
+                "maxCoverageAmount": 47000.0,
+                "remainingCoverage": 47000.0,
+                "lastUsageDate": None
+            },
+            "queryDate": datetime.now().isoformat()
+        }
+        
+        # Hasta kaydını güncelle
+        if patient:
+            try:
+                patient.sgk_info = patient.sgk_info or {}
+                patient.sgk_info.update({
+                    "hasInsurance": mock_response["hasInsurance"],
+                    "insuranceNumber": mock_response["insuranceNumber"],
+                    "insuranceType": mock_response["insuranceType"],
+                    "coveragePercentage": mock_response["coveragePercentage"],
+                    "approvalNumber": mock_response["approvalNumber"],
+                    "approvalDate": mock_response["approvalDate"],
+                    "expiryDate": mock_response["expiryDate"],
+                    "lastQueryDate": mock_response["queryDate"]
+                })
+                db.session.commit()
+                logger.info(f"Patient SGK info updated for patient: {patient_id}")
+            except Exception as update_error:
+                logger.error(f"Error updating patient SGK info: {str(update_error)}")
+                db.session.rollback()
+        
+        logger.info(f"Patient rights query successful for TC: {tc_number}, patient: {patient_id}")
+        
+        return jsonify({
+            "success": True,
+            "data": mock_response,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Patient rights query error: {str(e)}")
+        return jsonify({
+            "success": False, 
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+
+@sgk_bp.route('/sgk/workflow/create', methods=['POST'])
+def create_sgk_workflow():
+    """SGK workflow oluşturma endpoint'i"""
+    try:
+        data = request.get_json() or {}
+        patient_id = data.get('patientId')
+        document_id = data.get('documentId')
+        workflow_type = data.get('workflowType', 'approval')
+        
+        if not patient_id:
+            return jsonify({
+                "success": False, 
+                "error": "Hasta ID gerekli",
+                "timestamp": datetime.now().isoformat()
+            }), 400
+        
+        # Hasta kaydını kontrol et
+        patient = db.session.get(Patient, patient_id)
+        if not patient:
+            return jsonify({
+                "success": False, 
+                "error": "Hasta bulunamadı",
+                "timestamp": datetime.now().isoformat()
+            }), 404
+        
+        # Workflow oluştur
+        workflow_data = {
+            "id": f"workflow_{patient_id}_{datetime.now().timestamp()}",
+            "patientId": patient_id,
+            "documentId": document_id,
+            "workflowType": workflow_type,
+            "status": "pending",
+            "steps": [
+                {
+                    "id": "document_review",
+                    "name": "Belge İnceleme",
+                    "status": "pending",
+                    "assignedTo": "sgk_officer",
+                    "createdAt": datetime.now().isoformat()
+                },
+                {
+                    "id": "medical_review", 
+                    "name": "Tıbbi Değerlendirme",
+                    "status": "waiting",
+                    "assignedTo": "medical_officer",
+                    "createdAt": datetime.now().isoformat()
+                },
+                {
+                    "id": "approval_decision",
+                    "name": "Onay Kararı",
+                    "status": "waiting", 
+                    "assignedTo": "approval_officer",
+                    "createdAt": datetime.now().isoformat()
+                }
+            ],
+            "createdAt": datetime.now().isoformat(),
+            "updatedAt": datetime.now().isoformat()
+        }
+        
+        logger.info(f"SGK workflow created for patient: {patient_id}")
+        
+        return jsonify({
+            "success": True,
+            "data": workflow_data,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"SGK workflow creation error: {str(e)}")
+        return jsonify({
+            "success": False, 
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+
+@sgk_bp.route('/sgk/workflow/<workflow_id>/update', methods=['PUT'])
+def update_sgk_workflow(workflow_id):
+    """SGK workflow güncelleme endpoint'i"""
+    try:
+        data = request.get_json() or {}
+        step_id = data.get('stepId')
+        new_status = data.get('status')
+        notes = data.get('notes', '')
+        
+        if not step_id or not new_status:
+            return jsonify({
+                "success": False, 
+                "error": "Step ID ve status gerekli",
+                "timestamp": datetime.now().isoformat()
+            }), 400
+        
+        # Mock workflow update - gerçek implementasyonda database'den çekilecek
+        updated_workflow = {
+            "id": workflow_id,
+            "status": new_status,
+            "updatedAt": datetime.now().isoformat(),
+            "steps": [
+                {
+                    "id": step_id,
+                    "status": new_status,
+                    "notes": notes,
+                    "updatedAt": datetime.now().isoformat()
+                }
+            ]
+        }
+        
+        logger.info(f"SGK workflow updated: {workflow_id}, step: {step_id}, status: {new_status}")
+        
+        return jsonify({
+            "success": True,
+            "data": updated_workflow,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"SGK workflow update error: {str(e)}")
+        return jsonify({
+            "success": False, 
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+
+@sgk_bp.route('/sgk/workflow/<workflow_id>', methods=['GET'])
+def get_sgk_workflow(workflow_id):
+    """SGK workflow detayları endpoint'i"""
+    try:
+        # Mock workflow data - gerçek implementasyonda database'den çekilecek
+        workflow_data = {
+            "id": workflow_id,
+            "patientId": "patient_123",
+            "documentId": "doc_456",
+            "workflowType": "approval",
+            "status": "in_progress",
+            "currentStep": "medical_review",
+            "steps": [
+                {
+                    "id": "document_review",
+                    "name": "Belge İnceleme",
+                    "status": "completed",
+                    "assignedTo": "sgk_officer",
+                    "completedAt": "2024-01-10T10:00:00Z",
+                    "notes": "Belgeler incelendi, eksik yok"
+                },
+                {
+                    "id": "medical_review",
+                    "name": "Tıbbi Değerlendirme", 
+                    "status": "in_progress",
+                    "assignedTo": "medical_officer",
+                    "startedAt": "2024-01-10T14:00:00Z"
+                },
+                {
+                    "id": "approval_decision",
+                    "name": "Onay Kararı",
+                    "status": "waiting",
+                    "assignedTo": "approval_officer"
+                }
+            ],
+            "estimatedCompletionDate": "2024-01-15T00:00:00Z",
+            "createdAt": "2024-01-10T09:00:00Z",
+            "updatedAt": datetime.now().isoformat()
+        }
+        
+        return jsonify({
+            "success": True,
+            "data": workflow_data,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"SGK workflow get error: {str(e)}")
+        return jsonify({
+            "success": False, 
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+# ... existing code ...

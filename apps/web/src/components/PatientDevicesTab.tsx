@@ -470,13 +470,13 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
           device={selectedDevice}
           open={showMaintenanceModal}
           onClose={handleMaintenanceModalClose}
-          onSave={handleMaintenanceSave}
+          onSubmit={handleMaintenanceSave}
         />
       )}
 
       {showInventoryModal && (
         <InventoryManagementModal
-          open={showInventoryModal}
+          isOpen={showInventoryModal}
           onClose={handleInventoryModalClose}
         />
       )}

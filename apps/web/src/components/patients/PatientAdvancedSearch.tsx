@@ -171,13 +171,14 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
       } else {
         // Exact search (existing logic)
         const query = filters.query.toLowerCase();
-        results = results.filter(patient =>
-          patient.firstName?.toLowerCase().includes(query) ||
-        patient.lastName?.toLowerCase().includes(query) ||
-          patient.phone?.toLowerCase().includes(query) ||
-          patient.email?.toLowerCase().includes(query) ||
-          patient.address?.toLowerCase().includes(query)
-        );
+        results = results.filter(patient => {
+          const address = typeof patient.address === 'string' ? patient.address : patient.addressFull;
+          return patient.firstName?.toLowerCase().includes(query) ||
+            patient.lastName?.toLowerCase().includes(query) ||
+            patient.phone?.toLowerCase().includes(query) ||
+            patient.email?.toLowerCase().includes(query) ||
+            address?.toLowerCase().includes(query);
+        });
       }
     }
 
@@ -206,9 +207,10 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
     // Konum
     if (filters.location.trim()) {
       const location = filters.location.toLowerCase();
-      results = results.filter(patient =>
-        patient.address?.toLowerCase().includes(location)
-      );
+      results = results.filter(patient => {
+        const address = typeof patient.address === 'string' ? patient.address : patient.addressFull;
+        return address?.toLowerCase().includes(location);
+      });
     }
 
     // Etiketler

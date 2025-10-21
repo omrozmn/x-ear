@@ -12,8 +12,10 @@ interface InvoiceFormProps {
 }
 
 interface InvoiceFormData {
-  patientId: string;
+  patientId?: string;
   patientName: string;
+  patientPhone?: string;
+  patientTcNumber?: string;
   invoiceNumber: string;
   type: InvoiceType;
   issueDate: string;
@@ -116,7 +118,7 @@ export default function InvoiceForm({ invoice, onSubmit, onCancel, isLoading = f
       billingAddress: {
         ...prev.billingAddress,
         name: `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'İsimsiz Hasta',
-        address: patient.address || '',
+        address: patient.addressFull || '',
         city: '',
         postalCode: ''
       }

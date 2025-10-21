@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle, Input } from '@x-ear/ui-web';
-import { Plus, DollarSign, Edit, FileText, Search, Filter, Download, Printer, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, DollarSign, Edit, FileText, Search, Filter, Download, Printer, ChevronUp, ChevronDown, Shield, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { Patient } from '../../types/patient/patient-base.types';
 import { Sale } from '../../types/patient';
 import SaleModal from './modals/SaleModal';
@@ -9,6 +9,8 @@ import PromissoryNoteModal from './modals/PromissoryNoteModal';
 import EditSaleModal from './modals/EditSaleModal';
 import ReturnExchangeModal from './modals/ReturnExchangeModal';
 import ProformaModal from './modals/ProformaModal';
+import { sgkService } from '../../services/sgk.service';
+import { useToastHelpers } from '@x-ear/ui-web';
 
 interface PatientSalesTabProps {
   patient: Patient;
@@ -34,6 +36,86 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedSales, setSelectedSales] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // SGK Integration States
+  const [sgkPatientInfo, setSgkPatientInfo] = useState<any>(null);
+  const [sgkLoading, setSgkLoading] = useState(false);
+  const [sgkCoverageCalculation, setSgkCoverageCalculation] = useState<any>(null);
+
+  const { success: showSuccessToast, error: showErrorToast } = useToastHelpers();
+
+  // Load SGK patient info on component mount
+  useEffect(() => {
+    if (patient.id) {
+      loadSGKPatientInfo();
+    }
+  }, [patient.id]);
+
+  const loadSGKPatientInfo = async () => {
+    if (!patient.id) return;
+    
+    setSgkLoading(true);
+    try {
+      const sgkInfo = await sgkService.getPatientSGKInfo(patient.id);
+      setSgkPatientInfo(sgkInfo);
+      
+      // Calculate SGK coverage for potential sales
+      if (sgkInfo?.hasInsurance) {
+        calculateSGKCoverage(sgkInfo);
+      }
+    } catch (error) {
+      console.error('Error loading SGK patient info:', error);
+      showErrorToast('SGK bilgileri yüklenirken hata oluştu');
+    } finally {
+      setSgkLoading(false);
+    }
+  };
+
+  const calculateSGKCoverage = (sgkInfo: any) => {
+    // Calculate SGK coverage based on patient's entitlements
+    const deviceCoverage = sgkInfo.deviceEntitlement?.hasEntitlement 
+      ? {
+          maxCoverage: 15000, // Example max SGK coverage for hearing aids
+          coveragePercentage: sgkInfo.coveragePercentage || 80,
+          remainingEntitlement: sgkInfo.deviceEntitlement.remainingQuantity || 0
+        }
+      : null;
+
+    const batteryCoverage = sgkInfo.batteryEntitlement?.hasEntitlement
+      ? {
+          maxCoverage: 500, // Example max SGK coverage for batteries
+          coveragePercentage: 100,
+          remainingEntitlement: sgkInfo.batteryEntitlement.remainingQuantity || 0
+        }
+      : null;
+
+    setSgkCoverageCalculation({
+      deviceCoverage,
+      batteryCoverage,
+      totalCoveragePercentage: sgkInfo.coveragePercentage || 0
+    });
+  };
+
+  const handleQueryPatientRights = async () => {
+    if (!patient.id) return;
+    
+    setSgkLoading(true);
+    try {
+      const rightsData = await sgkService.queryPatientRights(patient.id);
+      setSgkPatientInfo(rightsData);
+      showSuccessToast('Hasta hakları başarıyla sorgulandı');
+      
+      // Recalculate coverage with updated info
+      if (rightsData?.hasInsurance) {
+        calculateSGKCoverage(rightsData);
+      }
+    } catch (error) {
+      console.error('Error querying patient rights:', error);
+      showErrorToast('Hasta hakları sorgulanırken hata oluştu');
+    } finally {
+      setSgkLoading(false);
+    }
+  };
 
   // Export and Print functions
   const handleExportSales = (salesData: Sale[]) => {
@@ -143,14 +225,43 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
   // Sales summary calculations
   const salesSummary = useMemo(() => {
     const totalSales = mockSales.reduce((sum: number, sale: Sale) => sum + (sale.totalAmount || 0), 0);
+    const totalSGKCoverage = mockSales.reduce((sum: number, sale: Sale) => sum + (sale.sgkCoverage || 0), 0);
     const totalPaid = mockSales.reduce((sum: number, sale: Sale) => {
       const payments = sale.payments?.reduce((paymentSum, payment) => paymentSum + payment.amount, 0) || 0;
       return sum + payments;
     }, 0);
     const totalPending = totalSales - totalPaid;
 
-    return { totalSales, totalPaid, totalPending };
+    return { 
+      totalSales, 
+      totalPaid, 
+      totalPending, 
+      totalSGKCoverage,
+      patientPayment: totalSales - totalSGKCoverage
+    };
   }, [mockSales]);
+
+  // Calculate SGK coverage for a specific sale amount
+  const calculateSaleWithSGK = (saleAmount: number, productType: 'device' | 'battery' | 'other' = 'device') => {
+    if (!sgkCoverageCalculation) return { sgkCoverage: 0, patientPayment: saleAmount };
+
+    let sgkCoverage = 0;
+    
+    if (productType === 'device' && sgkCoverageCalculation.deviceCoverage) {
+      const maxCoverage = sgkCoverageCalculation.deviceCoverage.maxCoverage;
+      const coveragePercentage = sgkCoverageCalculation.deviceCoverage.coveragePercentage / 100;
+      sgkCoverage = Math.min(saleAmount * coveragePercentage, maxCoverage);
+    } else if (productType === 'battery' && sgkCoverageCalculation.batteryCoverage) {
+      const maxCoverage = sgkCoverageCalculation.batteryCoverage.maxCoverage;
+      const coveragePercentage = sgkCoverageCalculation.batteryCoverage.coveragePercentage / 100;
+      sgkCoverage = Math.min(saleAmount * coveragePercentage, maxCoverage);
+    }
+
+    return {
+      sgkCoverage: Math.round(sgkCoverage),
+      patientPayment: Math.round(saleAmount - sgkCoverage)
+    };
+  };
 
   // Filter and sort sales based on all criteria
   const filteredSales = useMemo(() => {
@@ -294,8 +405,106 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
 
   return (
     <div className="space-y-6">
+      {/* SGK Patient Info Card */}
+      {sgkPatientInfo && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center text-blue-800">
+                <Shield className="w-5 h-5 mr-2" />
+                SGK Bilgileri
+              </CardTitle>
+              <Button 
+                onClick={handleQueryPatientRights}
+                disabled={sgkLoading}
+                size="sm"
+                variant="outline"
+                className="border-blue-300 text-blue-700 hover:bg-blue-100"
+              >
+                {sgkLoading ? <Clock className="w-4 h-4 mr-2 animate-spin" /> : <Search className="w-4 h-4 mr-2" />}
+                Hakları Sorgula
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm font-medium text-blue-700">Sigorta Durumu</p>
+                <div className="flex items-center mt-1">
+                  {sgkPatientInfo.hasInsurance ? (
+                    <>
+                      <CheckCircle className="w-4 h-4 text-green-600 mr-1" />
+                      <span className="text-green-700 font-medium">Aktif</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="w-4 h-4 text-red-600 mr-1" />
+                      <span className="text-red-700 font-medium">Pasif</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              {sgkPatientInfo.deviceEntitlement && (
+                <div>
+                  <p className="text-sm font-medium text-blue-700">Cihaz Hakkı</p>
+                  <p className="text-sm text-gray-600">
+                    Kalan: {sgkPatientInfo.deviceEntitlement.remainingQuantity} / {sgkPatientInfo.deviceEntitlement.maxQuantity}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Geçerlilik: {new Date(sgkPatientInfo.deviceEntitlement.validUntil).toLocaleDateString('tr-TR')}
+                  </p>
+                </div>
+              )}
+              
+              {sgkPatientInfo.batteryEntitlement && (
+                <div>
+                  <p className="text-sm font-medium text-blue-700">Pil Hakkı</p>
+                  <p className="text-sm text-gray-600">
+                    Kalan: {sgkPatientInfo.batteryEntitlement.remainingQuantity} / {sgkPatientInfo.batteryEntitlement.maxQuantity}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Geçerlilik: {new Date(sgkPatientInfo.batteryEntitlement.validUntil).toLocaleDateString('tr-TR')}
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            {sgkCoverageCalculation && (
+              <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
+                <h4 className="text-sm font-medium text-blue-800 mb-2">SGK Kapsam Hesaplaması</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  {sgkCoverageCalculation.deviceCoverage && (
+                    <div>
+                      <p className="font-medium text-gray-700">Cihaz Kapsamı</p>
+                      <p className="text-gray-600">
+                        Maksimum: ₺{sgkCoverageCalculation.deviceCoverage.maxCoverage.toLocaleString()}
+                      </p>
+                      <p className="text-gray-600">
+                        Kapsam Oranı: %{sgkCoverageCalculation.deviceCoverage.coveragePercentage}
+                      </p>
+                    </div>
+                  )}
+                  {sgkCoverageCalculation.batteryCoverage && (
+                    <div>
+                      <p className="font-medium text-gray-700">Pil Kapsamı</p>
+                      <p className="text-gray-600">
+                        Maksimum: ₺{sgkCoverageCalculation.batteryCoverage.maxCoverage.toLocaleString()}
+                      </p>
+                      <p className="text-gray-600">
+                        Kapsam Oranı: %{sgkCoverageCalculation.batteryCoverage.coveragePercentage}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Sales Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -314,11 +523,25 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Ödenen Tutar</p>
-                <p className="text-2xl font-bold text-blue-600">₺{salesSummary.totalPaid.toLocaleString()}</p>
+                <p className="text-sm font-medium text-gray-600">SGK Kapsamı</p>
+                <p className="text-2xl font-bold text-blue-600">₺{salesSummary.totalSGKCoverage.toLocaleString()}</p>
               </div>
               <div className="p-2 bg-blue-100 rounded-full">
-                <DollarSign className="w-6 h-6 text-blue-600" />
+                <Shield className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Hasta Ödemesi</p>
+                <p className="text-2xl font-bold text-orange-600">₺{salesSummary.patientPayment.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-orange-100 rounded-full">
+                <DollarSign className="w-6 h-6 text-orange-600" />
               </div>
             </div>
           </CardContent>
@@ -329,10 +552,10 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Kalan Tutar</p>
-                <p className="text-2xl font-bold text-orange-600">₺{salesSummary.totalPending.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-red-600">₺{salesSummary.totalPending.toLocaleString()}</p>
               </div>
-              <div className="p-2 bg-orange-100 rounded-full">
-                <DollarSign className="w-6 h-6 text-orange-600" />
+              <div className="p-2 bg-red-100 rounded-full">
+                <DollarSign className="w-6 h-6 text-red-600" />
               </div>
             </div>
           </CardContent>

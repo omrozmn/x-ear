@@ -131,7 +131,7 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({
       id: 'sales',
       label: 'Satışlar',
       icon: <CreditCard className="w-4 h-4" />,
-      count: patient.installments?.length || 0,
+      count: 0, // TODO: Get sales count from patient data
     },
     {
       id: 'sgk',

@@ -152,7 +152,7 @@ export const SimpleVirtualizedPatientList: React.FC<VirtualizedPatientListProps>
 
   // Select all functionality
   const isAllSelected = useMemo(() => {
-    return patients.length > 0 && patients.every(p => selectedPatients.includes(p.id));
+    return patients.length > 0 && patients.every(p => selectedPatients.includes(p.id || ''));
   }, [patients, selectedPatients]);
 
   const isPartiallySelected = useMemo(() => {
@@ -161,11 +161,11 @@ export const SimpleVirtualizedPatientList: React.FC<VirtualizedPatientListProps>
 
   const handleSelectAll = useCallback(() => {
     if (isAllSelected) {
-      patients.forEach(p => onPatientSelect?.(p.id));
+      patients.forEach(p => onPatientSelect?.(p.id || ''));
     } else {
       patients.forEach(p => {
-        if (!selectedPatients.includes(p.id)) {
-          onPatientSelect?.(p.id);
+        if (!selectedPatients.includes(p.id || '')) {
+          onPatientSelect?.(p.id || '');
         }
       });
     }
@@ -179,12 +179,12 @@ export const SimpleVirtualizedPatientList: React.FC<VirtualizedPatientListProps>
 
   // Render patient row
   const renderPatientRow = (patient: Patient, index: number) => {
-    const isSelected = selectedPatients.includes(patient.id);
+    const isSelected = selectedPatients.includes(patient.id || '');
     const top = index * ITEM_HEIGHT;
 
     return (
       <div 
-        key={patient.id}
+        key={patient.id || `patient-${index}`}
         style={{ 
           position: 'absolute',
           top: `${top}px`,
@@ -200,7 +200,7 @@ export const SimpleVirtualizedPatientList: React.FC<VirtualizedPatientListProps>
         <div className="flex-shrink-0 mr-3">
           <Checkbox
             checked={isSelected}
-            onChange={() => onPatientSelect?.(patient.id)}
+            onChange={() => onPatientSelect?.(patient.id || '')}
           />
         </div>
 

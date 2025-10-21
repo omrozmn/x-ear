@@ -65,7 +65,8 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
   onCopyInfo,
   onGenerateReport,
 }) => {
-  const formatStatus = (status: string) => {
+  const formatStatus = (status?: string) => {
+    if (!status) return { label: 'Belirtilmemiş', variant: 'secondary' as const };
     const statusMap: Record<string, { label: string; variant: 'success' | 'warning' | 'danger' | 'secondary' }> = {
       active: { label: 'Aktif', variant: 'success' },
       inactive: { label: 'Pasif', variant: 'secondary' },

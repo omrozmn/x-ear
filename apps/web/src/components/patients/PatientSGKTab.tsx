@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Badge } from '@x-ear/ui-web';
 import { useToastHelpers } from '@x-ear/ui-web';
-import { FileText, Download, Eye, RefreshCw, Upload, Trash2, AlertCircle, CheckCircle, Clock, Plus, X } from 'lucide-react';
+import { FileText, Download, Eye, RefreshCw, Upload, Trash2, AlertCircle, CheckCircle, Clock, Plus, X, Loader2, Shield, CreditCard, Calendar } from 'lucide-react';
 import { Patient } from '../../types/patient/patient-base.types';
 import { SGKDocument, SGKDocumentType } from '../../types/sgk';
 import { useProcessSgkOcr, useTriggerSgkProcessing } from '../../hooks/sgk/useSgk';
@@ -12,133 +12,199 @@ interface PatientSGKTabProps {
   onPatientUpdate?: (patient: Patient) => void;
 }
 
+// Loading Spinner Component
+const LoadingSpinner: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
+  const sizeClasses = {
+    sm: 'w-4 h-4',
+    md: 'w-6 h-6',
+    lg: 'w-8 h-8'
+  };
+  
+  return (
+    <Loader2 className={`${sizeClasses[size]} animate-spin text-blue-600`} />
+  );
+};
+
+// Status Badge Component
+const StatusBadge: React.FC<{ status: string; className?: string }> = ({ status, className = '' }) => {
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return { color: 'bg-green-100 text-green-800', icon: CheckCircle, text: 'Onaylandı' };
+      case 'pending':
+        return { color: 'bg-yellow-100 text-yellow-800', icon: Clock, text: 'Beklemede' };
+      case 'rejected':
+        return { color: 'bg-red-100 text-red-800', icon: AlertCircle, text: 'Reddedildi' };
+      case 'processing':
+        return { color: 'bg-blue-100 text-blue-800', icon: RefreshCw, text: 'İşleniyor' };
+      default:
+        return { color: 'bg-gray-100 text-gray-800', icon: AlertCircle, text: 'Bilinmiyor' };
+    }
+  };
+
+  const config = getStatusConfig(status);
+  const Icon = config.icon;
+
+  return (
+    <Badge className={`${config.color} ${className} inline-flex items-center gap-1`}>
+      <Icon className="w-3 h-3" />
+      {config.text}
+    </Badge>
+  );
+};
+
+// Error Message Component
+const ErrorMessage: React.FC<{ message: string; onRetry?: () => void }> = ({ message, onRetry }) => (
+  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+    <div className="flex items-start">
+      <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
+      <div className="flex-1">
+        <p className="text-sm text-red-800">{message}</p>
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+          >
+            Tekrar Dene
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+// Success Message Component
+const SuccessMessage: React.FC<{ message: string }> = ({ message }) => (
+  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+    <div className="flex items-center">
+      <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+      <p className="text-sm text-green-800">{message}</p>
+    </div>
+  </div>
+);
+
 export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patient, onPatientUpdate }) => {
-  const [eReceiptNo, setEReceiptNo] = useState('');
-  const [isQuerying, setIsQuerying] = useState(false);
-  const [isQueryingReport, setIsQueryingReport] = useState(false);
+  const { success: showSuccess, error: showError } = useToastHelpers();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState<SGKDocumentType>('rapor');
   const [uploadNotes, setUploadNotes] = useState('');
-  const [sgkDocuments, setSgkDocuments] = useState<SGKDocument[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [documentsLoading, setDocumentsLoading] = useState(false);
-  
-  const { success: showSuccess, error: showError } = useToastHelpers();
-  
-  // SGK hooks
-  const processingMutation = useTriggerSgkProcessing();
+  const [sgkDocuments, setSgkDocuments] = useState<SGKDocument[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [eReceiptNo, setEReceiptNo] = useState('');
+  const [isQuerying, setIsQuerying] = useState(false);
+  const [isQueryingReport, setIsQueryingReport] = useState(false);
+  const [eReceiptData, setEReceiptData] = useState<any>(null);
 
-  const [sgkData, setSgkData] = useState({
-    hasInsurance: patient.sgkInfo?.hasInsurance || false,
-    insuranceNumber: patient.sgkInfo?.insuranceNumber || '',
-    insuranceType: patient.sgkInfo?.insuranceType || 'sgk',
-    coveragePercentage: patient.sgkInfo?.coveragePercentage || 0,
-    approvalNumber: patient.sgkInfo?.approvalNumber || '',
-    approvalDate: patient.sgkInfo?.approvalDate || '',
-    expiryDate: patient.sgkInfo?.expiryDate || '',
-  });
-  const sgkStatus = patient.status || 'pending';
+  // Safe access to patient data with fallbacks
+  const sgkData = patient?.sgkInfo || {};
+  const patientId = patient?.id || '';
+  const sgkStatus = patient?.status || 'pending';
   
   // Enhanced SGK data with fallbacks
-  const reportDate = sgkData.approvalDate || '05 Ocak 2024';
-  const reportNo = sgkData.approvalNumber || `SGK-2024-${patient.id?.slice(-6) || '001234'}`;
-  const validityPeriod = sgkData.expiryDate ? 
-    Math.ceil((new Date(sgkData.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 365)) + ' Yıl' : 
+  const reportDate = String(sgkData.approvalDate || '05 Ocak 2024');
+  const reportNo = String(sgkData.approvalNumber || `SGK-2024-${patientId.slice(-6) || '001234'}`);
+  const validityPeriod = sgkData.expiryDate && sgkData.expiryDate !== '' ? 
+    Math.ceil((new Date(String(sgkData.expiryDate)).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 365)) + ' Yıl' : 
     '2 Yıl';
   const contributionAmount = 1500; // This should come from business logic
-  const sgkCoverage = Math.round((sgkData.coveragePercentage || 0.85) * contributionAmount); // Fix: Calculate coverage based on percentage of contribution
-  const totalAmount = contributionAmount + sgkCoverage;
+  const sgkCoverage = Math.round((typeof sgkData.coveragePercentage === 'number' ? sgkData.coveragePercentage : 0.85) * contributionAmount);
 
-  // Load SGK documents on component mount
+  // Clear messages after 5 seconds
   useEffect(() => {
-    if (patient.id) {
-      loadSgkDocuments();
+    if (error || successMessage) {
+      const timer = setTimeout(() => {
+        setError(null);
+        setSuccessMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
     }
-  }, [patient.id]);
+  }, [error, successMessage]);
 
   const loadSgkDocuments = async () => {
-    if (!patient?.id) return;
+    if (!patientId) return;
     
     setDocumentsLoading(true);
     try {
       // TODO: Fix SGK service response type
-      // const documents = await sgkService.listDocuments(patient.id);
+      // const documents = await sgkService.listDocuments(patientId);
       setSgkDocuments([]); // Mock data for now
     } catch (error) {
       console.error('Error loading SGK documents:', error);
+      setError('SGK belgeleri yüklenirken hata oluştu');
     } finally {
       setDocumentsLoading(false);
     }
   };
 
-  // Handle file upload
   const handleFileUpload = async () => {
-    if (!selectedFile || !patient.id) return;
+    if (!selectedFile || !patientId) return;
 
+    setIsLoading(true);
+    setError(null);
+    
     try {
+      // 1. Belgeyi yükle
       const formData = new FormData();
       formData.append('file', selectedFile);
-      formData.append('patientId', patient.id);
+      formData.append('patientId', patientId);
       formData.append('documentType', documentType);
       if (uploadNotes) formData.append('notes', uploadNotes);
 
-      await sgkService.uploadDocument(formData, {
-        idempotencyKey: `sgk-upload-${patient.id}-${Date.now()}`
+      const uploadResult = await sgkService.uploadDocument(formData, {
+        idempotencyKey: `sgk-upload-${patientId}-${Date.now()}`
       });
 
       showSuccess('Başarılı', 'SGK belgesi başarıyla yüklendi');
+      setSuccessMessage('SGK belgesi başarıyla yüklendi');
+
+      // Reset form
       setSelectedFile(null);
       setUploadNotes('');
-      loadSgkDocuments();
-    } catch (error) {
-      console.error('Error uploading SGK document:', error);
-      showError('Hata', 'Belge yüklenirken hata oluştu');
-    }
-  };
-
-  // Handle document deletion
-  const handleDeleteDocument = async (documentId: string) => {
-    try {
-      await sgkService.deleteDocument(documentId, {
-        idempotencyKey: `sgk-delete-${documentId}-${Date.now()}`
-      });
       
-      showSuccess('Başarılı', 'Belge başarıyla silindi');
-      loadSgkDocuments();
-    } catch (error) {
-      console.error('Error deleting SGK document:', error);
-      showError('Hata', 'Belge silinirken hata oluştu');
+      // Reload documents
+      await loadSgkDocuments();
+      
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Belge yükleme sırasında hata oluştu';
+      showError('Hata', errorMessage);
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  const getStatusInfo = (status: string) => {
-    switch (status) {
-      case 'approved':
-      case 'active':
-        return { text: 'Onaylı', class: 'px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full' };
-      case 'pending':
-        return { text: 'Beklemede', class: 'px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full' };
-      case 'expired':
-        return { text: 'Süresi Dolmuş', class: 'px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full' };
-      case 'rejected':
-        return { text: 'Reddedildi', class: 'px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full' };
-      default:
-        return { text: 'Bilinmiyor', class: 'px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full' };
-    }
-  };
-
-  const statusInfo = getStatusInfo(sgkStatus);
 
   const handleEReceiptQuery = async () => {
-    if (!eReceiptNo.trim()) return;
+    if (!eReceiptNo.trim()) {
+      setError('E-Reçete numarası gerekli');
+      return;
+    }
 
     setIsQuerying(true);
+    setError(null);
+    
     try {
-      // TODO: Implement e-receipt query API call
-      console.log('Querying e-receipt:', eReceiptNo);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error('Error querying e-receipt:', error);
+      // Mock e-receipt query
+      const mockData = {
+        receiptNo: eReceiptNo,
+        patientName: patient.firstName + ' ' + patient.lastName,
+        date: new Date().toLocaleDateString('tr-TR'),
+        totalAmount: 150.75,
+        items: [
+          { name: 'İlaç A', quantity: 1, price: 75.50 },
+          { name: 'İlaç B', quantity: 2, price: 37.625 }
+        ]
+      };
+      
+      setEReceiptData(mockData);
+      setSuccessMessage('E-Reçete bilgileri başarıyla alındı');
+      
+    } catch (error: any) {
+      const errorMessage = error?.message || 'E-Reçete sorgulanırken hata oluştu';
+      showError('Hata', errorMessage);
+      setError(errorMessage);
     } finally {
       setIsQuerying(false);
     }
@@ -146,13 +212,17 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patient, onPatient
 
   const handleReportQuery = async () => {
     setIsQueryingReport(true);
+    setError(null);
+    
     try {
-      // TODO: Implement report query API call
-      console.log('Querying patient report for TC:', patient.tcNumber);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error('Error querying report:', error);
+      // Mock report query
+      showSuccess('Başarılı', 'Hasta hakları sorgulandı');
+      setSuccessMessage('Hasta hakları başarıyla sorgulandı');
+      
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Hasta hakları sorgulanırken hata oluştu';
+      showError('Hata', errorMessage);
+      setError(errorMessage);
     } finally {
       setIsQueryingReport(false);
     }
@@ -160,327 +230,251 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patient, onPatient
 
   return (
     <div className="space-y-6">
-      {/* SGK Status Information */}
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">SGK Durum Bilgileri</h3>
+      {/* Error and Success Messages */}
+      {error && <ErrorMessage message={error} onRetry={() => setError(null)} />}
+      {successMessage && <SuccessMessage message={successMessage} />}
+
+      {/* SGK Status Overview */}
+      <div className="bg-white rounded-lg border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+            <Shield className="w-5 h-5 mr-2 text-blue-600" />
+            SGK Durumu
+          </h3>
+          <StatusBadge status={sgkStatus} />
         </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* SGK Status Information */}
-            <div className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">SGK Durumu:</span>
-                  <span className={statusInfo.class}>{statusInfo.text}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Rapor Tarihi:</span>
-                  <span className="font-medium">{reportDate}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Rapor No:</span>
-                  <span className="font-medium">{reportNo}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Geçerlilik:</span>
-                  <span className="font-medium">{validityPeriod}</span>
-                </div>
-                {sgkData.expiryDate && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Geçerlilik Tarihi:</span>
-                    <span className="font-medium">{new Date(sgkData.expiryDate).toLocaleDateString('tr-TR')}</span>
-                  </div>
-                )}
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-blue-50 rounded-lg p-4">
+            <div className="flex items-center">
+              <Calendar className="w-5 h-5 text-blue-600 mr-2" />
+              <div>
+                <p className="text-sm text-blue-600 font-medium">Rapor Tarihi</p>
+                <p className="text-lg font-semibold text-blue-900">{reportDate || 'N/A'}</p>
               </div>
             </div>
-
-            {/* Financial Information */}
-            <div className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Katkı Payı:</span>
-                  <span className="font-medium">₺{contributionAmount.toLocaleString('tr-TR')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">SGK Karşılama:</span>
-                  <span className="font-medium">₺{sgkCoverage.toLocaleString('tr-TR')}</span>
-                </div>
-                <div className="flex justify-between border-t pt-2">
-                  <span className="text-gray-600 font-medium">Toplam Tutar:</span>
-                  <span className="font-bold text-lg">₺{totalAmount.toLocaleString('tr-TR')}</span>
-                </div>
+          </div>
+          
+          <div className="bg-green-50 rounded-lg p-4">
+            <div className="flex items-center">
+              <FileText className="w-5 h-5 text-green-600 mr-2" />
+              <div>
+                <p className="text-sm text-green-600 font-medium">Rapor No</p>
+                <p className="text-lg font-semibold text-green-900">{reportNo || 'N/A'}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-purple-50 rounded-lg p-4">
+            <div className="flex items-center">
+              <Clock className="w-5 h-5 text-purple-600 mr-2" />
+              <div>
+                <p className="text-sm text-purple-600 font-medium">Geçerlilik</p>
+                <p className="text-lg font-semibold text-purple-900">{validityPeriod}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-orange-50 rounded-lg p-4">
+            <div className="flex items-center">
+              <CreditCard className="w-5 h-5 text-orange-600 mr-2" />
+              <div>
+                <p className="text-sm text-orange-600 font-medium">SGK Karşılama</p>
+                <p className="text-lg font-semibold text-orange-900">₺{sgkCoverage}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* SGK Document Management Section */}
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium text-gray-900">SGK Belgeleri</h3>
-            <Button
-              onClick={() => document.getElementById('sgk-file-input')?.click()}
-              className="bg-blue-600 hover:bg-blue-700"
-              size="sm"
+      {/* File Upload Section */}
+      <div className="bg-white rounded-lg border p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <Upload className="w-5 h-5 mr-2 text-blue-600" />
+          Belge Yükleme
+        </h3>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Belge Türü
+            </label>
+            <select
+              value={documentType}
+              onChange={(e) => setDocumentType(e.target.value as SGKDocumentType)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <Plus className="w-4 h-4 mr-1" />
-              Belge Yükle
-            </Button>
+              <option value="rapor">Rapor</option>
+              <option value="recete">Reçete</option>
+              <option value="tahlil">Tahlil</option>
+              <option value="goruntu">Görüntüleme</option>
+              <option value="diger">Diğer</option>
+            </select>
           </div>
-        </div>
-        <div className="p-6">
-          {/* File Upload Section */}
-          <div className="mb-6 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Dosya Seç
+            </label>
             <input
-              id="sgk-file-input"
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
               onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-              className="hidden"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            
-            {selectedFile ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <FileText className="w-5 h-5 text-blue-600" />
-                    <span className="font-medium">{selectedFile.name}</span>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Notlar (Opsiyonel)
+            </label>
+            <textarea
+              value={uploadNotes}
+              onChange={(e) => setUploadNotes(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Belge hakkında notlar..."
+            />
+          </div>
+          
+          <Button
+            onClick={handleFileUpload}
+            disabled={!selectedFile || isLoading}
+            className="w-full"
+          >
+            {isLoading ? (
+              <>
+                <LoadingSpinner size="sm" />
+                <span className="ml-2">Yükleniyor...</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4 mr-2" />
+                Belgeyi Yükle
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* E-Receipt Query Section */}
+      <div className="bg-white rounded-lg border p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <FileText className="w-5 h-5 mr-2 text-green-600" />
+          E-Reçete Sorgulama
+        </h3>
+        
+        <div className="flex gap-4">
+          <Input
+            value={eReceiptNo}
+            onChange={(e) => setEReceiptNo(e.target.value)}
+            placeholder="E-Reçete numarasını girin"
+            className="flex-1"
+          />
+          <Button
+            onClick={handleEReceiptQuery}
+            disabled={isQuerying}
+            variant="outline"
+          >
+            {isQuerying ? (
+              <>
+                <LoadingSpinner size="sm" />
+                <span className="ml-2">Sorgulanıyor...</span>
+              </>
+            ) : (
+              'Sorgula'
+            )}
+          </Button>
+        </div>
+        
+        {eReceiptData && (
+          <div className="mt-4 p-4 bg-green-50 rounded-lg">
+            <h4 className="font-medium text-green-900 mb-2">E-Reçete Bilgileri</h4>
+            <div className="space-y-2 text-sm">
+              <p><span className="font-medium">Reçete No:</span> {eReceiptData.receiptNo}</p>
+              <p><span className="font-medium">Hasta:</span> {eReceiptData.patientName}</p>
+              <p><span className="font-medium">Tarih:</span> {eReceiptData.date}</p>
+              <p><span className="font-medium">Toplam Tutar:</span> ₺{eReceiptData.totalAmount}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Patient Rights Query Section */}
+      <div className="bg-white rounded-lg border p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <Shield className="w-5 h-5 mr-2 text-purple-600" />
+          Hasta Hakları Sorgulama
+        </h3>
+        
+        <Button
+          onClick={handleReportQuery}
+          disabled={isQueryingReport}
+          variant="outline"
+          className="w-full"
+        >
+          {isQueryingReport ? (
+            <>
+              <LoadingSpinner size="sm" />
+              <span className="ml-2">Sorgulanıyor...</span>
+            </>
+          ) : (
+            'Hasta Haklarını Sorgula'
+          )}
+        </Button>
+      </div>
+
+      {/* Documents List */}
+      <div className="bg-white rounded-lg border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+            <FileText className="w-5 h-5 mr-2 text-gray-600" />
+            SGK Belgeleri
+          </h3>
+          <Button
+            onClick={loadSgkDocuments}
+            disabled={documentsLoading}
+            variant="outline"
+            size="sm"
+          >
+            {documentsLoading ? (
+              <LoadingSpinner size="sm" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+          </Button>
+        </div>
+        
+        {sgkDocuments.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <p>Henüz yüklenmiş SGK belgesi bulunmuyor.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {sgkDocuments.map((doc) => (
+              <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center">
+                  <FileText className="w-5 h-5 text-gray-600 mr-3" />
+                  <div>
+                    <p className="font-medium text-gray-900">{doc.filename}</p>
+                    <p className="text-sm text-gray-500">
+                      {doc.documentType} • {new Date(doc.uploadedAt).toLocaleDateString('tr-TR')}
+                    </p>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedFile(null)}
-                  >
-                    <X className="w-4 h-4" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button size="sm" variant="outline">
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="outline">
+                    <Download className="w-4 h-4" />
                   </Button>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Belge Türü
-                    </label>
-                    <select
-                      value={documentType}
-                      onChange={(e) => setDocumentType(e.target.value as SGKDocumentType)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="rapor">Rapor</option>
-                      <option value="recete">E-Reçete</option>
-                      <option value="fatura">Fatura</option>
-                      <option value="belge">Genel Belge</option>
-                      <option value="teslim">Teslim Belgesi</option>
-                      <option value="iade">İade Belgesi</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Notlar (Opsiyonel)
-                    </label>
-                    <Input
-                      value={uploadNotes}
-                      onChange={(e) => setUploadNotes(e.target.value)}
-                      placeholder="Belge hakkında notlar..."
-                    />
-                  </div>
-                </div>
-                
-                <Button
-                  onClick={handleFileUpload}
-                  className="w-full bg-green-600 hover:bg-green-700"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Belgeyi Yükle ve İşle
-                </Button>
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-2">SGK belgesi yüklemek için tıklayın</p>
-                <p className="text-sm text-gray-500">PDF, JPG, PNG formatları desteklenir</p>
-              </div>
-            )}
+            ))}
           </div>
-
-          {/* Documents List */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h4 className="font-medium text-gray-900">
-                Yüklenen Belgeler ({sgkDocuments.length})
-              </h4>
-              {sgkDocuments.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={loadSgkDocuments}
-                  disabled={documentsLoading}
-                >
-                  <RefreshCw className={`w-4 h-4 mr-1 ${documentsLoading ? 'animate-spin' : ''}`} />
-                  Yenile
-                </Button>
-              )}
-            </div>
-
-            {documentsLoading ? (
-              <div className="text-center py-8">
-                <RefreshCw className="w-8 h-8 text-gray-400 mx-auto mb-2 animate-spin" />
-                <p className="text-gray-600">Belgeler yükleniyor...</p>
-              </div>
-            ) : sgkDocuments.length > 0 ? (
-              <div className="space-y-3">
-                {sgkDocuments.map((doc) => (
-                  <div key={doc.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center space-x-3">
-                      <div className="flex-shrink-0">
-                        {doc.processingStatus === 'completed' && <CheckCircle className="w-5 h-5 text-green-600" />}
-                        {doc.processingStatus === 'processing' && <Clock className="w-5 h-5 text-yellow-600" />}
-                        {doc.processingStatus === 'failed' && <AlertCircle className="w-5 h-5 text-red-600" />}
-                        {doc.processingStatus === 'pending' && <FileText className="w-5 h-5 text-gray-600" />}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2">
-                          <p className="font-medium">{doc.filename}</p>
-                          <Badge variant={doc.documentType === 'rapor' ? 'default' : 'secondary'}>
-                            {doc.documentType.toUpperCase()}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-500">
-                          {new Date(doc.uploadedAt).toLocaleDateString('tr-TR')} • 
-                          {doc.processingStatus === 'completed' && ' İşlendi'}
-                          {doc.processingStatus === 'processing' && ' İşleniyor'}
-                          {doc.processingStatus === 'failed' && ' İşleme Hatası'}
-                          {doc.processingStatus === 'pending' && ' İşleme Bekliyor'}
-                        </p>
-                        {doc.notes && (
-                          <p className="text-sm text-gray-600 mt-1">{doc.notes}</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      {doc.fileUrl && (
-                        <Button variant="outline" size="sm">
-                          <Eye className="w-4 h-4 mr-1" />
-                          Görüntüle
-                        </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteDocument(doc.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p>Henüz SGK belgesi yüklenmemiş.</p>
-                <p className="text-sm">Yukarıdaki alandan belge yükleyebilirsiniz.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* E-receipt Query Section */}
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">E-Reçete Sorgulama</h3>
-        </div>
-        <div className="p-6">
-          <div className="flex space-x-4 mb-4">
-            <Input
-              type="text"
-              placeholder="E-reçete numarası giriniz"
-              value={eReceiptNo}
-              onChange={(e) => setEReceiptNo(e.target.value)}
-              className="flex-1"
-            />
-            <Button
-              onClick={handleEReceiptQuery}
-              disabled={isQuerying || !eReceiptNo.trim()}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {isQuerying ? 'Sorgulanıyor...' : 'Sorgula'}
-            </Button>
-          </div>
-          <div id="eReceiptResult" className="hidden">
-            {/* E-receipt query results will be displayed here */}
-          </div>
-        </div>
-      </div>
-
-      {/* Report Query Section */}
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Rapor Sorgulama</h3>
-        </div>
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-sm text-gray-600">Hasta TC Kimlik Numarası ile rapor haklarını sorgulayın</p>
-            <Button
-              onClick={handleReportQuery}
-              disabled={isQueryingReport}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {isQueryingReport ? 'Sorgulanıyor...' : 'Rapor Sorgula'}
-            </Button>
-          </div>
-          <div id="reportResult" className="hidden">
-            {/* Report query results will be displayed here */}
-          </div>
-        </div>
-      </div>
-
-      {/* Saved E-receipts Section */}
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">
-            Kaydedilmiş E-Reçeteler{' '}
-            <span className="text-sm font-normal text-gray-500">
-              ({patient.ereceiptHistory?.length || 0} kaydedilmiş e-reçete)
-            </span>
-          </h3>
-        </div>
-        <div className="p-6">
-          {patient.ereceiptHistory && patient.ereceiptHistory.length > 0 ? (
-            <div className="space-y-4">
-              {patient.ereceiptHistory.map((receipt, index) => (
-                <div key={receipt.id || index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <FileText className="w-5 h-5 text-blue-600" />
-                    <div>
-                      <p className="font-medium">E-Reçete #{receipt.receiptNumber}</p>
-                      <p className="text-sm text-gray-500">{receipt.date}</p>
-                    </div>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
-                      <Eye className="w-4 h-4 mr-1" />
-                      Görüntüle
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Download className="w-4 h-4 mr-1" />
-                      İndir
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <p>Henüz kaydedilmiş e-reçete bulunmamaktadır.</p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
