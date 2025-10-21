@@ -7,14 +7,14 @@ export const PATIENT_CONSTANTS = {
   
   // Pagination
   PAGINATION: {
-    DEFAULT_PAGE_SIZE: 50,
-    MAX_PAGE_SIZE: 100,
+    DEFAULT_PAGE_SIZE: 25, // Reduced from 50 to 25 to reduce resource usage
+    MAX_PAGE_SIZE: 50, // Reduced from 100 to 50
   },
   
-  // Cache settings
+  // Cache settings - Optimized for better performance
   CACHE: {
-    STALE_TIME: 5 * 60 * 1000, // 5 minutes
-    GC_TIME: 10 * 60 * 1000, // 10 minutes
+    STALE_TIME: 10 * 60 * 1000, // Increased to 10 minutes to match App.tsx
+    GC_TIME: 60 * 60 * 1000, // Increased to 60 minutes for longer retention
   },
   
   // Validation

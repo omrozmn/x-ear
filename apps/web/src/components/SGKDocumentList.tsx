@@ -9,6 +9,16 @@ import {
   SGKDocumentType
 } from '../types/sgk';
 import sgkService from '../services/sgk/sgk.service';
+import { 
+  Download, 
+  Trash2, 
+  CheckSquare, 
+  Square, 
+  MoreHorizontal,
+  Eye,
+  Edit
+} from 'lucide-react';
+import DocumentViewer from './DocumentViewer';
 
 type SGKProcessingStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
@@ -42,7 +52,17 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
   const [selectedProcessingStatus, setSelectedProcessingStatus] = useState<SGKProcessingStatus | ''>('');
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'type' | 'status'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  
+  // Batch operations state
+  const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
+  const [showBatchActions, setShowBatchActions] = useState(false);
+  const [batchLoading, setBatchLoading] = useState(false);
+  
+  // Document viewer state
+  const [viewerDocument, setViewerDocument] = useState<SGKDocument | null>(null);
+  const [showViewer, setShowViewer] = useState(false);
 
+  // Load documents function
   const filters = useMemo(() => ({
     ...externalFilters,
     patientId,
@@ -52,18 +72,17 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
     processingStatus: selectedProcessingStatus || undefined
   }), [externalFilters, patientId, searchTerm, selectedType, selectedStatus, selectedProcessingStatus]);
 
-  useEffect(() => {
-    loadDocuments();
-  }, [filters]);
-
   const loadDocuments = async () => {
+    if (!patientId) return;
+    
+    setLoading(true);
+    setError(null);
+    
     try {
-      setLoading(true);
-      setError(null);
-      const result: SGKSearchResult = await sgkService.listDocuments(patientId || '', filters);
+      const result: SGKSearchResult = await sgkService.listDocuments(patientId, filters);
       setDocuments(result.documents);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load documents');
+      setError(err instanceof Error ? err.message : 'Belgeler yüklenirken hata oluştu');
     } finally {
       setLoading(false);
     }
@@ -157,7 +176,128 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
     });
   };
 
-  const handleSort = (field: typeof sortBy) => {
+  // Batch operations handlers
+  const handleSelectAll = () => {
+    if (selectedDocuments.size === sortedDocuments.length) {
+      setSelectedDocuments(new Set());
+    } else {
+      setSelectedDocuments(new Set(sortedDocuments.map(doc => doc.id)));
+    }
+  };
+
+  const handleSelectDocument = (documentId: string) => {
+    const newSelected = new Set(selectedDocuments);
+    if (newSelected.has(documentId)) {
+      newSelected.delete(documentId);
+    } else {
+      newSelected.add(documentId);
+    }
+    setSelectedDocuments(newSelected);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedDocuments.size === 0) return;
+    
+    const confirmMessage = `${selectedDocuments.size} belgeyi silmek istediğinizden emin misiniz?`;
+    if (!window.confirm(confirmMessage)) return;
+
+    setBatchLoading(true);
+    try {
+      const deletePromises = Array.from(selectedDocuments).map(id => 
+        sgkService.deleteDocument(id)
+      );
+      await Promise.all(deletePromises);
+      
+      await loadDocuments();
+      setSelectedDocuments(new Set());
+      setShowBatchActions(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Toplu silme işlemi başarısız');
+    } finally {
+      setBatchLoading(false);
+    }
+  };
+
+  const handleBulkDownload = async () => {
+    if (selectedDocuments.size === 0) return;
+    
+    setBatchLoading(true);
+    try {
+      const selectedDocs = sortedDocuments.filter(doc => selectedDocuments.has(doc.id));
+      
+      // Create a zip file or download individually
+      for (const doc of selectedDocs) {
+        if (doc.fileUrl) {
+          const link = document.createElement('a');
+          link.href = doc.fileUrl;
+          link.download = doc.filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          // Add small delay between downloads
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+      
+      setSelectedDocuments(new Set());
+      setShowBatchActions(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Toplu indirme işlemi başarısız');
+    } finally {
+      setBatchLoading(false);
+    }
+  };
+
+  const handleBulkStatusUpdate = async (status: SGKWorkflowStatus) => {
+    if (selectedDocuments.size === 0) return;
+    
+    setBatchLoading(true);
+    try {
+      const updatePromises = Array.from(selectedDocuments).map(id => 
+        sgkService.updateDocumentStatus(id, status)
+      );
+      await Promise.all(updatePromises);
+      
+      await loadDocuments();
+      setSelectedDocuments(new Set());
+      setShowBatchActions(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Toplu durum güncelleme başarısız');
+    } finally {
+      setBatchLoading(false);
+    }
+  };
+
+  // Document viewer handlers
+  const handleViewDocument = (document: SGKDocument) => {
+    setViewerDocument(document);
+    setShowViewer(true);
+  };
+
+  const handleDownloadDocument = (document: SGKDocument) => {
+    if (document.fileUrl) {
+      const link = document.createElement('a');
+      link.href = document.fileUrl;
+      link.download = document.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  // Update showBatchActions when selection changes
+  useEffect(() => {
+    setShowBatchActions(selectedDocuments.size > 0);
+  }, [selectedDocuments]);
+
+  // Load documents on mount and filter changes
+  useEffect(() => {
+    loadDocuments();
+  }, [patientId, filters]);
+
+  // Handle sorting
+  const handleSort = (field: 'date' | 'name' | 'type' | 'status') => {
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -166,17 +306,16 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
     }
   };
 
+  // Handle delete
   const handleDelete = async (documentId: string) => {
-    if (!window.confirm('Bu belgeyi silmek istediğinizden emin misiniz?')) {
-      return;
-    }
-
+    if (!window.confirm('Bu belgeyi silmek istediğinizden emin misiniz?')) return;
+    
     try {
       await sgkService.deleteDocument(documentId);
       await loadDocuments();
       onDocumentDelete?.(documentId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete document');
+      setError(err instanceof Error ? err.message : 'Belge silinirken hata oluştu');
     }
   };
 
@@ -201,12 +340,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800">Hata</h3>
             <p className="mt-1 text-sm text-red-700">{error}</p>
-            <Button
-              onClick={() => setError(null)}
-              className="mt-2 text-sm text-red-600 hover:text-red-500"
-              variant='default'>
-              Tekrar dene
-            </Button>
+
           </div>
         </div>
       </div>
@@ -220,28 +354,20 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
         <div className="bg-white p-4 rounded-lg shadow-sm border">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Arama
-              </label>
               <Input
-                type="text"
+                placeholder="Belge ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Belge adı veya içerik..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full"
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Belge Türü
-              </label>
               <Select
                 value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value as SGKDocumentType | '')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onValueChange={setSelectedType}
+                placeholder="Belge türü"
               >
-                <option value="">Tümü</option>
+                <option value="">Tüm türler</option>
                 <option value="recete">E-Reçete</option>
                 <option value="rapor">Rapor</option>
                 <option value="belge">Belge</option>
@@ -250,48 +376,80 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
                 <option value="iade">İade Belgesi</option>
               </Select>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                İşlem Durumu
-              </label>
               <Select
                 value={selectedProcessingStatus}
-                onChange={(e) => setSelectedProcessingStatus(e.target.value as SGKProcessingStatus | '')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onValueChange={setSelectedProcessingStatus}
+                placeholder="İşlem durumu"
               >
-                <option value="">Tümü</option>
+                <option value="">Tüm durumlar</option>
                 <option value="pending">Bekliyor</option>
                 <option value="processing">İşleniyor</option>
                 <option value="completed">Tamamlandı</option>
                 <option value="failed">Başarısız</option>
               </Select>
             </div>
+          </div>
+        </div>
+      )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sıralama
-              </label>
-              <Select
-                value={`${sortBy}-${sortOrder}`}
-                onChange={(e) => {
-                  const [field, order] = e.target.value.split('-');
-                  setSortBy(field as typeof sortBy);
-                  setSortOrder(order as 'asc' | 'desc');
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      {/* Batch Actions Bar */}
+      {showBatchActions && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <span className="text-sm font-medium text-blue-900">
+                {selectedDocuments.size} belge seçildi
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedDocuments(new Set())}
+                disabled={batchLoading}
               >
-                <option value="date-desc">Tarih (Yeni → Eski)</option>
-                <option value="date-asc">Tarih (Eski → Yeni)</option>
-                <option value="name-asc">Ad (A → Z)</option>
-                <option value="name-desc">Ad (Z → A)</option>
-                <option value="type-asc">Tür (A → Z)</option>
-                <option value="status-asc">Durum (A → Z)</option>
+                Seçimi Temizle
+              </Button>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkDownload}
+                disabled={batchLoading}
+                className="flex items-center space-x-1"
+              >
+                <Download className="w-4 h-4" />
+                <span>İndir</span>
+              </Button>
+              
+              <Select
+                value=""
+                onValueChange={handleBulkStatusUpdate}
+                placeholder="Durum Güncelle"
+                disabled={batchLoading}
+              >
+                <option value="pending">Bekliyor</option>
+                <option value="processing">İşleniyor</option>
+                <option value="completed">Tamamlandı</option>
+                <option value="failed">Başarısız</option>
               </Select>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkDelete}
+                disabled={batchLoading}
+                className="flex items-center space-x-1 text-red-600 hover:text-red-700"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Sil</span>
+              </Button>
             </div>
           </div>
         </div>
       )}
+
       {/* Document List */}
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         {sortedDocuments.length === 0 ? (
@@ -309,6 +467,18 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-6 py-3 text-left">
+                    <button
+                      onClick={handleSelectAll}
+                      className="flex items-center justify-center w-5 h-5 text-gray-500 hover:text-gray-700"
+                    >
+                      {selectedDocuments.size === sortedDocuments.length ? (
+                        <CheckSquare className="w-4 h-4" />
+                      ) : (
+                        <Square className="w-4 h-4" />
+                      )}
+                    </button>
+                  </th>
                   <th 
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('name')}
@@ -367,9 +537,20 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
                 {sortedDocuments.map((document) => (
                   <tr 
                     key={document.id} 
-                    className="hover:bg-gray-50 cursor-pointer"
-                    onClick={() => onDocumentSelect?.(document)}
+                    className={`hover:bg-gray-50 ${selectedDocuments.has(document.id) ? 'bg-blue-50' : ''}`}
                   >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button
+                        onClick={() => handleSelectDocument(document.id)}
+                        className="flex items-center justify-center w-5 h-5 text-gray-500 hover:text-gray-700"
+                      >
+                        {selectedDocuments.has(document.id) ? (
+                          <CheckSquare className="w-4 h-4 text-blue-600" />
+                        ) : (
+                          <Square className="w-4 h-4" />
+                        )}
+                      </button>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-8 w-8">
@@ -410,25 +591,42 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
                     {showActions && (
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewDocument(document);
+                            }}
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          
                           {onDocumentEdit && (
                             <Button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onDocumentEdit(document);
                               }}
-                              className="text-blue-600 hover:text-blue-900"
-                              variant='default'>
-                              Düzenle
+                              variant="ghost"
+                              size="sm"
+                              className="text-gray-600 hover:text-gray-900"
+                            >
+                              <Edit className="w-4 h-4" />
                             </Button>
                           )}
+                          
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDelete(document.id);
                             }}
+                            variant="ghost"
+                            size="sm"
                             className="text-red-600 hover:text-red-900"
-                            variant='default'>
-                            Sil
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </td>
@@ -444,8 +642,24 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
       {!compact && sortedDocuments.length > 0 && (
         <div className="text-sm text-gray-500 text-center">
           Toplam {sortedDocuments.length} belge gösteriliyor
+          {selectedDocuments.size > 0 && (
+            <span className="ml-2 text-blue-600">
+              • {selectedDocuments.size} seçili
+            </span>
+          )}
         </div>
       )}
+
+      {/* Document Viewer Modal */}
+      <DocumentViewer
+        document={viewerDocument}
+        isOpen={showViewer}
+        onClose={() => {
+          setShowViewer(false);
+          setViewerDocument(null);
+        }}
+        onDownload={handleDownloadDocument}
+      />
     </div>
   );
 };

@@ -62,7 +62,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient, isLoading
           {patient.firstName || ''} {patient.lastName || ''}
         </h1>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(patient.status)}`}>
-                {patient.status === 'active' ? 'Aktif' : 'Pasif'}
+                {patient.status === 'ACTIVE' ? 'Aktif' : 'Pasif'}
               </span>
             </div>
             
@@ -96,11 +96,24 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient, isLoading
             </div>
             
             {/* Address */}
-            {patient.addressFull && (
+            {(patient.address || patient.addressFull) && (
               <div className="flex items-center space-x-1 mt-2 text-sm text-gray-600">
                 <MapPin className="w-4 h-4" />
                 <span>
-                  {patient.addressFull || 'Adres bilgisi yok'}
+                  {(() => {
+                    // Handle address as object or string
+                    const address = patient.address || patient.addressFull;
+                    if (typeof address === 'string') {
+                      return address;
+                    } else if (typeof address === 'object' && address !== null) {
+                      // Handle address object with city, district, fullAddress
+                      const addressObj = address as any;
+                      return addressObj.fullAddress || 
+                             `${addressObj.district || ''} ${addressObj.city || ''}`.trim() ||
+                             'Adres bilgisi yok';
+                    }
+                    return 'Adres bilgisi yok';
+                  })()}
                 </span>
               </div>
             )}

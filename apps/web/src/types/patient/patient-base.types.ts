@@ -4,9 +4,14 @@
  * @version 1.0.0
  */
 
-// Core Patient Status Types
-export type PatientStatus = 'active' | 'inactive' | 'archived';
-export type PatientSegment = 'new' | 'trial' | 'purchased' | 'control' | 'renewal' | 'existing' | 'vip';
+// Re-export Orval Patient as the main Patient type
+export type { Patient } from '../../generated/orval-types';
+
+// Re-export Orval Patient types
+export type { PatientStatus, PatientGender } from '../../generated/orval-types';
+
+// Keep only essential types that are still needed
+export type PatientSegment = 'NEW' | 'TRIAL' | 'PURCHASED' | 'CONTROL' | 'RENEWAL' | 'EXISTING' | 'VIP';
 export type PatientLabel = 
   | 'yeni' 
   | 'arama-bekliyor' 
@@ -20,76 +25,15 @@ export type PatientAcquisitionType =
   | 'tanitim' 
   | 'referans' 
   | 'diger';
-
-// Core Patient Interface
-export interface Patient {
-  // Identity
-  id: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  tcNumber?: string;
-  birthDate?: string;
-  email?: string;
-  address?: string;
-  
-  // Status and Classification
-  status: PatientStatus;
-  segment: PatientSegment;
-  label: PatientLabel;
-  acquisitionType: PatientAcquisitionType;
-  
-  // Tags and Priority
-  tags: string[];
-  priorityScore?: number;
-  
-  // Device Information (basic)
-  deviceTrial?: boolean;
-  trialDevice?: string;
-  trialDate?: string;
-  priceGiven?: boolean;
-  purchased?: boolean;
-  purchaseDate?: string;
-  deviceType?: DeviceType;
-  deviceModel?: string;
-  
-  // Financial Information (basic)
-  overdueAmount?: number;
-  
-  // SGK Status (basic)
-  sgkStatus?: SGKStatus;
-  sgkSubmittedDate?: string;
-  sgkDeadline?: string;
-  deviceReportRequired?: boolean;
-  batteryReportRequired?: boolean;
-  batteryReportDue?: string;
-  
-  // Communication History (basic)
-  lastContactDate?: string;
-  lastAppointmentDate?: string;
-  missedAppointments?: number;
-  lastPriorityTaskDate?: string;
-  renewalContactMade?: boolean;
-  
-  // Clinical Information (basic)
-  assignedClinician?: string;
-  
-  // Metadata
-  createdAt: string;
-  updatedAt: string;
-  
-  // Related Data (references to other types)
-  devices: PatientDevice[];
-  notes: PatientNote[];
-  communications?: Communication[];
-  reports?: PatientReport[];
-  ereceiptHistory?: EReceiptRecord[];
-  appointments?: Appointment[];
-  installments?: Installment[];
-  sales?: Sale[];
-  sgkInfo: SGKInfo;
-  sgkWorkflow?: SGKWorkflow;
-}
+export type PatientConversionStep = 
+  | 'lead' 
+  | 'contacted' 
+  | 'appointment-scheduled' 
+  | 'visited' 
+  | 'trial-started' 
+  | 'trial-completed' 
+  | 'purchased' 
+  | 'delivered';
 
 // Device Types
 export type DeviceType = 'hearing_aid' | 'cochlear_implant' | 'bone_anchored';
@@ -150,18 +94,3 @@ export interface PatientNote {
   type?: NoteType;
   isPrivate?: boolean;
 }
-
-// Re-export commonly used interfaces
-export type { 
-  Communication,
-  PatientReport,
-  Appointment,
-  Installment,
-  Sale
-} from './patient-communication.types';
-
-export type {
-  EReceiptRecord,
-  SGKInfo,
-  SGKWorkflow
-} from './patient-sgk.types';

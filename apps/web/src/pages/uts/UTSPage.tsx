@@ -11,7 +11,7 @@ export const UTSPage: React.FC = () => {
   const [csv, setCsv] = useState<string>('');
   const [openModal, setOpenModal] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
-  const jobStatus = usePollUtsJob(jobId || '', { interval: 3000, onComplete: (data) => console.log('job completed', data) });
+  const jobStatus = usePollUtsJob(jobId || '', { interval: 10000, onComplete: (data) => console.log('job completed', data) }); // Changed from 3000 (3s) to 10000 (10s)
 
   const handleStart = () => {
     // Simple scaffold: parse CSV externally; here we send raw CSV as payload for server to parse

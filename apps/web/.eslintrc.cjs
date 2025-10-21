@@ -61,6 +61,30 @@ module.exports = {
           }
         ]
       }
+    ],
+    // Prevent manual fetch('/api') calls
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'JSXElement[openingElement.name.name="button"]:not([openingElement.attributes.0.name.name="data-allow-raw"])',
+        message: 'Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional.',
+      },
+      {
+        selector: 'JSXElement[openingElement.name.name="input"]:not([openingElement.attributes.0.name.name="data-allow-raw"])',
+        message: 'Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional.',
+      },
+      {
+        selector: 'JSXElement[openingElement.name.name="select"]:not([openingElement.attributes.0.name.name="data-allow-raw"])',
+        message: 'Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional.',
+      },
+      {
+        selector: 'JSXElement[openingElement.name.name="textarea"]:not([openingElement.attributes.0.name.name="data-allow-raw"])',
+        message: 'Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional.',
+      },
+      {
+        selector: 'CallExpression[callee.name="fetch"][arguments.0.type="Literal"]',
+        message: 'Manual fetch(\'/api/...\') calls are forbidden. Use generated Orval API client instead.',
+      }
     ]
   },
   settings: {

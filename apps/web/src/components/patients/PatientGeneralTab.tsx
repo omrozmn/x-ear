@@ -66,7 +66,22 @@ export const PatientGeneralTab: React.FC<PatientGeneralTabProps> = ({ patient, o
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-600">Adres</p>
-            <p className="text-lg font-semibold">{patient.address || '-'}</p>
+            <p className="text-lg font-semibold">
+              {(() => {
+                // Handle address as object or string
+                const address = patient.address;
+                if (typeof address === 'string') {
+                  return address || '-';
+                } else if (typeof address === 'object' && address !== null) {
+                  // Handle address object with city, district, fullAddress
+                  const addressObj = address as any;
+                  return addressObj.fullAddress || 
+                         `${addressObj.district || ''} ${addressObj.city || ''}`.trim() ||
+                         '-';
+                }
+                return '-';
+              })()}
+            </p>
           </div>
         </div>
       </div>

@@ -513,7 +513,16 @@ export const PatientMatching: React.FC<PatientMatchingProps> = ({
                       <div><strong>Telefon:</strong> {patient.phone || 'Yok'}</div>
                       <div><strong>E-posta:</strong> {patient.email || 'Yok'}</div>
                       <div><strong>Doğum Tarihi:</strong> {patient.birthDate || 'Yok'}</div>
-                      <div><strong>Adres:</strong> {patient.address || 'Yok'}</div>
+                      <div><strong>Adres:</strong> {(() => {
+                        const address = patient.address;
+                        if (typeof address === 'object' && address !== null) {
+                          const addressObj = address as any;
+                          return addressObj.fullAddress || 
+                                 `${addressObj.district || ''} ${addressObj.city || ''}`.trim() ||
+                                 'Yok';
+                        }
+                        return patient.addressFull || address || 'Yok';
+                      })()}</div>
                     </div>
                   </div>
                 ))}

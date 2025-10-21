@@ -71,7 +71,7 @@ export interface UseAppointmentsReturn {
 }
 
 export function useAppointments(options: UseAppointmentsOptions = {}): UseAppointmentsReturn {
-  const { filters, autoRefresh = false, refreshInterval = 30000 } = options;
+  const { filters, autoRefresh = false, refreshInterval = 120000 } = options; // 2 minutes instead of 30 seconds
   
   // State
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -360,7 +360,7 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
 export function useAppointmentsByPatient(patientId: string) {
   return useAppointments({ 
     filters: { patientId },
-    autoRefresh: true 
+    autoRefresh: false // Disable auto-refresh for patient-specific appointments
   });
 }
 
@@ -369,7 +369,7 @@ export function useTodaysAppointments() {
   return useAppointments({ 
     filters: { startDate: today, endDate: today },
     autoRefresh: true,
-    refreshInterval: 60000 // Refresh every minute for today's appointments
+    refreshInterval: 300000 // Refresh every 5 minutes instead of 1 minute
   });
 }
 
@@ -384,7 +384,7 @@ export function useUpcomingAppointments(days: number = 7) {
       endDate: endDate.toISOString().split('T')[0],
       status: 'scheduled'
     },
-    autoRefresh: true 
+    autoRefresh: false // Disable auto-refresh for upcoming appointments
   });
 }
 

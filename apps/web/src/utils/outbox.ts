@@ -65,7 +65,7 @@ export class IndexedDBOutbox {
       if (this.isOnline && !this.syncInProgress) {
         this.syncPendingOperations();
       }
-    }, 30000); // Every 30 seconds
+    }, 120000); // Changed from 30000 (30s) to 120000 (2 minutes) to reduce excessive requests
   }
 
   /**
@@ -325,13 +325,37 @@ export class IndexedDBOutbox {
       if ((data as any).filename) form.append('filename', (data as any).filename);
       if ((data as any).mime) form.append('mime', (data as any).mime);
 
+      try {
+        const response = await fetch(resolvedEndpoint, {
+          method,
+          headers: {
+            // Let the browser set Content-Type with boundary for FormData
+            ...headers
+          },
+          body: form
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+      } catch (error) {
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+          throw new Error('Network error: Failed to fetch. Please check your connection and ensure the server is running.');
+        }
+        throw error;
+      }
+    }
+
+    try {
       const response = await fetch(resolvedEndpoint, {
         method,
         headers: {
-          // Let the browser set Content-Type with boundary for FormData
+          'Content-Type': 'application/json',
           ...headers
         },
-        body: form
+        body: data ? JSON.stringify(data) : undefined
       });
 
       if (!response.ok) {
@@ -339,22 +363,12 @@ export class IndexedDBOutbox {
       }
 
       return await response.json();
+    } catch (error) {
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        throw new Error('Network error: Failed to fetch. Please check your connection and ensure the server is running.');
+      }
+      throw error;
     }
-
-    const response = await fetch(resolvedEndpoint, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...headers
-      },
-      body: data ? JSON.stringify(data) : undefined
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    return await response.json();
   }
 
   /**

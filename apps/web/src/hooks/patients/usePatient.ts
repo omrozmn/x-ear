@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useQuery } from '@tanstack/react-query'
-import { getPatients } from '@/api/generated/patients/patients'
+import { patientApiService } from '@/services/patient/patient-api.service'
 import { Patient } from '@/types/patient'
 
 export const usePatient = (patientId?: string) => {
@@ -11,10 +11,8 @@ export const usePatient = (patientId?: string) => {
         throw new Error('Patient ID is required')
       }
       
-      // Since we don't have a specific getPatient endpoint, 
-      // we'll fetch all patients and filter by ID
-      const response = await getPatients().patientsGetPatients()
-      const patient = response.data?.find((p: Patient) => p.id === patientId)
+      // Use our cached patient API service instead of direct API calls
+      const patient = await patientApiService.fetchPatient(patientId)
       
       if (!patient) {
         throw new Error('Patient not found')

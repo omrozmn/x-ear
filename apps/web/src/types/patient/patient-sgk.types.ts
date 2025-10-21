@@ -19,6 +19,12 @@ export interface SGKInfo {
   validUntil?: Date;
   coverageDetails?: string;
   lastUpdated: Date;
+  hasInsurance?: boolean;
+  insuranceNumber?: string;
+  coveragePercentage?: number;
+  approvalNumber?: string;
+  approvalDate?: string;
+  expiryDate?: string;
 }
 
 // Commented out unused type to fix linter error

@@ -263,7 +263,18 @@ const LazyPatientCard: React.FC<LazyPatientCardProps> = memo(({
               <div className="flex items-center text-xs text-gray-500">
                 <MapPin className="w-3 h-3 mr-1" />
                 <span className="truncate">
-                  {patient.addressFull || patient.address || 'Adres bilgisi yok'}
+                  <span className="truncate">
+                    {(() => {
+                      const address = patient.address;
+                      if (typeof address === 'object' && address !== null) {
+                        const addressObj = address as any;
+                        return addressObj.fullAddress || 
+                               `${addressObj.district || ''} ${addressObj.city || ''}`.trim() ||
+                               'Adres bilgisi yok';
+                      }
+                      return patient.addressFull || address || 'Adres bilgisi yok';
+                    })()}
+                  </span>
                 </span>
               </div>
             )}

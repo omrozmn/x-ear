@@ -28,6 +28,8 @@ export function PatientsPage() {
   const [filters, setFilters] = useState<PatientSearchFilters>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [statusFilter, setStatusFilter] = useState('');
+  const [segmentFilter, setSegmentFilter] = useState('');
 
   // Hooks
   const {
@@ -39,8 +41,8 @@ export function PatientsPage() {
   // Mock stats for now
   const stats = {
     total: patients?.length || 0,
-    active: patients?.filter(p => p.status === 'active').length || 0,
-    inactive: patients?.filter(p => p.status === 'inactive').length || 0,
+    active: patients?.filter(p => p.status === 'ACTIVE').length || 0,
+    inactive: patients?.filter(p => p.status === 'INACTIVE').length || 0,
     withDevices: 0
   };
 
@@ -77,18 +79,35 @@ export function PatientsPage() {
   const handleClearFilters = () => {
     setFilters({});
     setSearchValue('');
+    setStatusFilter('');
+    setSegmentFilter('');
   };
 
-  // Filtered patients based on search
+  // Filtered patients based on search and filters
   const filteredPatients = patients.filter(patient => {
-    if (!searchValue) return true;
-    const searchLower = searchValue.toLowerCase();
-    return (
-      patient.firstName?.toLowerCase().includes(searchLower) ||
-      patient.lastName?.toLowerCase().includes(searchLower) ||
-      patient.tcNumber?.includes(searchValue) ||
-      patient.phone?.includes(searchValue)
-    );
+    // Search filter
+    if (searchValue) {
+      const searchLower = searchValue.toLowerCase();
+      const matchesSearch = (
+        patient.firstName?.toLowerCase().includes(searchLower) ||
+        patient.lastName?.toLowerCase().includes(searchLower) ||
+        patient.tcNumber?.includes(searchValue) ||
+        patient.phone?.includes(searchValue)
+      );
+      if (!matchesSearch) return false;
+    }
+
+    // Status filter
+    if (statusFilter && patient.status !== statusFilter) {
+      return false;
+    }
+
+    // Segment filter
+    if (segmentFilter && patient.segment !== segmentFilter) {
+      return false;
+    }
+
+    return true;
   });
 
   // Pagination calculations
@@ -208,9 +227,48 @@ export function PatientsPage() {
           {/* Filters Panel */}
           {showFilters && (
             <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
-              {/* PatientFilters component temporarily removed due to type incompatibility */}
-              <div className="text-gray-500 text-sm">
-                Filters will be available after type compatibility is resolved.
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Durum</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Tümü</option>
+                    <option value="ACTIVE">Aktif</option>
+                    <option value="INACTIVE">Pasif</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Segment</label>
+                  <select
+                    value={segmentFilter}
+                    onChange={(e) => setSegmentFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Tümü</option>
+                    <option value="NEW">Yeni</option>
+                    <option value="TRIAL">Deneme</option>
+                    <option value="PURCHASED">Satın Alınmış</option>
+                    <option value="CONTROL">Kontrol</option>
+                    <option value="RENEWAL">Yenileme</option>
+                    <option value="EXISTING">Mevcut</option>
+                    <option value="VIP">VIP</option>
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setStatusFilter('');
+                      setSegmentFilter('');
+                    }}
+                    className="w-full"
+                  >
+                    Filtreleri Temizle
+                  </Button>
+                </div>
               </div>
             </div>
           )}
@@ -285,11 +343,11 @@ export function PatientsPage() {
                           </td>
                           <td className="px-4 py-3">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              patient.status === 'active' 
+                              patient.status === 'ACTIVE' 
                                 ? 'bg-green-100 text-green-800' 
                                 : 'bg-gray-100 text-gray-800'
                             }`}>
-                              {patient.status === 'active' ? 'Aktif' : 'Pasif'}
+                              {patient.status === 'ACTIVE' ? 'Aktif' : 'Pasif'}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-gray-600">

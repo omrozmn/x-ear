@@ -144,7 +144,16 @@ export const PatientBulkOperations: React.FC<PatientBulkOperationsProps> = ({
         'E-posta': patient.email || '',
         'TC No': patient.tcNumber || '',
         'Doğum Tarihi': patient.birthDate || '',
-        'Adres': patient.address || '',
+        'Adres': (() => {
+          const address = patient.address;
+          if (typeof address === 'object' && address !== null) {
+            const addressObj = address as any;
+            return addressObj.fullAddress || 
+                   `${addressObj.district || ''} ${addressObj.city || ''}`.trim() ||
+                   '';
+          }
+          return patient.addressFull || address || '';
+        })(),
         'Durum': patient.status || 'active'
       }));
       

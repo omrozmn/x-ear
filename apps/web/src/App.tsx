@@ -7,6 +7,9 @@ import { GlobalErrorProvider } from './components/GlobalErrorHandler';
 import { ToastProvider } from '@x-ear/ui-web';
 import { routeTree } from './routeTree.gen';
 
+// Import orval-mutator to configure axios globally
+import './api/orval-mutator';
+
 // Create a new router instance
 const router = createRouter({ routeTree });
 
@@ -21,8 +24,10 @@ function App() {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 1000 * 60 * 5, // 5 minutes
-        gcTime: 1000 * 60 * 30, // 30 minutes (replaces cacheTime)
+        staleTime: 1000 * 60 * 10, // Increased to 10 minutes for better caching
+        gcTime: 1000 * 60 * 60, // Increased to 60 minutes for longer cache retention
+        refetchOnWindowFocus: false, // Prevent unnecessary refetches on window focus
+        refetchOnReconnect: true, // Refetch when coming back online
         retry: (failureCount, error: unknown) => {
           // Don't retry on 4xx errors
           if (error && typeof error === 'object' && 'response' in error) {
@@ -31,7 +36,21 @@ function App() {
               return false;
             }
           }
-          return failureCount < 3;
+          // Reduce retry count to prevent resource exhaustion
+          return failureCount < 2;
+        },
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff with max 30s
+      },
+      mutations: {
+        retry: (failureCount, error: unknown) => {
+          // Don't retry mutations on 4xx errors
+          if (error && typeof error === 'object' && 'response' in error) {
+            const httpError = error as { response?: { status?: number } };
+            if (httpError.response?.status && httpError.response.status >= 400 && httpError.response.status < 500) {
+              return false;
+            }
+          }
+          return failureCount < 1; // Only retry once for mutations
         },
       },
     },

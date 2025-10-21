@@ -1,6 +1,7 @@
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import React, { useState, useEffect } from 'react';
-import { Patient, PatientStatus, PatientSegment, PatientLabel, PatientAcquisitionType } from '../../types/patient/patient-base.types';
+import { Patient, PatientStatus, PatientSegment, PatientLabel, PatientAcquisitionType, PatientGender, PatientConversionStep } from '../../types/patient/patient-base.types';
+import { PatientSgkInfo } from '../../generated/orval-types';
 
 interface PatientFormProps {
   patient?: Patient | null;
@@ -18,10 +19,13 @@ export function PatientForm({ patient, onSave, onCancel, isModal = false }: Pati
     birthDate: '',
     email: '',
     address: '',
+    gender: '' as PatientGender | '',
+    branch: '',
     status: 'active' as PatientStatus,
     segment: 'new' as PatientSegment,
     label: 'yeni' as PatientLabel,
     acquisitionType: 'tabela' as PatientAcquisitionType,
+    conversionStep: 'lead' as PatientConversionStep,
     tags: [] as string[],
     deviceTrial: false,
     notes: patient?.notes ? JSON.stringify(patient.notes) : '',
@@ -40,10 +44,13 @@ export function PatientForm({ patient, onSave, onCancel, isModal = false }: Pati
         birthDate: patient.birthDate || '',
         email: patient.email || '',
         address: patient.address || '',
+        gender: patient.gender || '',
+        branch: patient.branch || '',
         status: patient.status || 'active',
         segment: patient.segment || 'new',
         label: patient.label || 'yeni',
         acquisitionType: patient.acquisitionType || 'tabela',
+        conversionStep: patient.conversionStep || 'lead',
         tags: patient.tags || [],
         deviceTrial: patient.deviceTrial || false,
         notes: patient.notes ? patient.notes.map(note => note.text).join('\n') : '',
@@ -68,8 +75,20 @@ export function PatientForm({ patient, onSave, onCancel, isModal = false }: Pati
       newErrors.phone = 'Geçerli telefon numarası girin';
     }
 
-    if (formData.tcNumber && !/^\d{11}$/.test(formData.tcNumber)) {
-      newErrors.tcNumber = 'TC Kimlik No 11 haneli olmalı';
+    // TC Number validation with checksum (Turkish ID validation)
+    if (formData.tcNumber) {
+      if (!/^\d{11}$/.test(formData.tcNumber)) {
+        newErrors.tcNumber = 'TC Kimlik No 11 haneli olmalı';
+      } else if (formData.tcNumber[0] === '0') {
+        newErrors.tcNumber = 'TC Kimlik No 0 ile başlayamaz';
+      } else {
+        // Turkish ID checksum validation
+        const digits = formData.tcNumber.split('').map(Number);
+        const sum = digits.slice(0, 10).reduce((a, b) => a + b, 0);
+        if ((sum % 10) !== digits[10]) {
+          newErrors.tcNumber = 'Geçersiz TC Kimlik No';
+        }
+      }
     }
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -91,25 +110,27 @@ export function PatientForm({ patient, onSave, onCancel, isModal = false }: Pati
 
     try {
       // Narrow form selections into typed fields to avoid unsafe 'as' casts
-  const allowedStatus: Patient['status'][] = ['active','inactive'];
-  const allowedSegment: Patient['segment'][] = ['new','trial','purchased','control','renewal'];
+  const allowedStatus: Patient['status'][] = ['ACTIVE','INACTIVE'];
+  const allowedSegment: Patient['segment'][] = ['NEW','TRIAL','PURCHASED','CONTROL','RENEWAL'];
   const allowedLabel: Patient['label'][] = ['yeni','arama-bekliyor','randevu-verildi','deneme-yapildi','kontrol-hastasi','satis-tamamlandi'];
   const allowedAcq: Patient['acquisitionType'][] = ['tabela','sosyal-medya','tanitim','referans','diger'];
     // small type-guard helper to avoid inline casts
     const isIn = <T,>(arr: T[], v: unknown): v is T => arr.includes(v as T);
 
-    const statusValue = isIn(allowedStatus, formData.status) ? formData.status : 'active';
-    const segmentValue = isIn(allowedSegment, formData.segment) ? formData.segment : 'new';
+    const statusValue = isIn(allowedStatus, formData.status) ? formData.status : 'ACTIVE';
+    const segmentValue = isIn(allowedSegment, formData.segment) ? formData.segment : 'NEW';
     const labelValue = isIn(allowedLabel, formData.label) ? formData.label : 'yeni';
     const acquisitionValue = isIn(allowedAcq, formData.acquisitionType) ? formData.acquisitionType : 'diger';
 
       const patientData: Patient = {
         id: patient?.id || `patient_${Date.now()}`,
         ...formData,
+        gender: formData.gender || undefined,
         status: statusValue,
         segment: segmentValue,
         label: labelValue,
         acquisitionType: acquisitionValue,
+        tags: patient?.tags || [],
         notes: formData.notes ? [{ 
           id: Date.now().toString(),
           text: formData.notes, 
@@ -122,7 +143,16 @@ export function PatientForm({ patient, onSave, onCancel, isModal = false }: Pati
         installments: patient?.installments || [],
         sales: patient?.sales || [],
         communications: patient?.communications || [],
-        sgkInfo: patient?.sgkInfo || { hasInsurance: false },
+        sgkInfo: patient?.sgkInfo || { 
+          id: '',
+          patientId: patient?.id || '',
+          sgkNumber: '',
+          insuranceType: 'sgk',
+          isActive: false,
+          validUntil: undefined,
+          coverageDetails: '',
+          lastUpdated: new Date()
+        },
         createdAt: patient?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -210,12 +240,35 @@ export function PatientForm({ patient, onSave, onCancel, isModal = false }: Pati
 
         <div>
           <Select
+            label="Cinsiyet"
+            value={formData.gender}
+            onChange={(e) => setFormData({ ...formData, gender: e.target.value as PatientGender })}
+            options={[
+              { value: "", label: "Seçiniz" },
+              { value: "M", label: "Erkek" },
+              { value: "F", label: "Kadın" }
+            ]}
+            fullWidth
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Şube</label>
+          <Input
+            value={formData.branch}
+            onChange={(e) => handleInputChange('branch', e.target.value)}
+            placeholder="Şube adı"
+          />
+        </div>
+
+        <div>
+          <Select
             label="Durum"
             value={formData.status}
             onChange={(e) => setFormData({ ...formData, status: e.target.value as PatientStatus })}
             options={[
-              { value: "active", label: "Aktif" },
-              { value: "inactive", label: "Pasif" }
+              { value: "ACTIVE", label: "Aktif" },
+              { value: "INACTIVE", label: "Pasif" }
             ]}
             fullWidth
           />
@@ -227,11 +280,30 @@ export function PatientForm({ patient, onSave, onCancel, isModal = false }: Pati
             value={formData.segment}
             onChange={(e) => setFormData({ ...formData, segment: e.target.value as PatientSegment })}
             options={[
-              { value: "new", label: "Yeni" },
-              { value: "trial", label: "Deneme" },
-              { value: "purchased", label: "Satın Alınmış" },
-              { value: "control", label: "Kontrol" },
-              { value: "renewal", label: "Yenileme" }
+              { value: "NEW", label: "Yeni" },
+              { value: "TRIAL", label: "Deneme" },
+              { value: "PURCHASED", label: "Satın Alınmış" },
+              { value: "CONTROL", label: "Kontrol" },
+              { value: "RENEWAL", label: "Yenileme" }
+            ]}
+            fullWidth
+          />
+        </div>
+
+        <div>
+          <Select
+            label="Dönüşüm Aşaması"
+            value={formData.conversionStep}
+            onChange={(e) => setFormData({ ...formData, conversionStep: e.target.value as PatientConversionStep })}
+            options={[
+              { value: "lead", label: "Potansiyel" },
+              { value: "contacted", label: "İletişim Kuruldu" },
+              { value: "appointment-scheduled", label: "Randevu Planlandı" },
+              { value: "visited", label: "Ziyaret Edildi" },
+              { value: "trial-started", label: "Deneme Başladı" },
+              { value: "trial-completed", label: "Deneme Tamamlandı" },
+              { value: "purchased", label: "Satın Alındı" },
+              { value: "delivered", label: "Teslim Edildi" }
             ]}
             fullWidth
           />

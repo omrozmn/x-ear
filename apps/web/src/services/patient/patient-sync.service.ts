@@ -7,7 +7,7 @@
 import { Patient } from '../../types/patient';
 import { indexedDBManager } from '../../utils/indexeddb';
 import { outbox, OutboxOperation } from '../../utils/outbox';
-import { getPatients } from "../../api/generated/patients/patients";
+import { PatientApiService } from './patient-api.service';
 
 export interface SyncResult {
   success: boolean;
@@ -206,30 +206,33 @@ export class PatientSyncService {
   }
 
   private async pullRemoteChanges(options: SyncOptions): Promise<Partial<SyncResult>> {
-    const result = { synced: 0, failed: 0, conflicts: [] as SyncConflict[] };
+    const result: Partial<SyncResult> = {
+      synced: 0,
+      failed: 0,
+      conflicts: []
+    };
     
     try {
       const batchSize = options.batchSize || this.BATCH_SIZE;
       
-      // Simple implementation - get all patients
-      // In a real implementation, you'd use pagination and delta sync
-      const api = getPatients();
-      const response = await api.patientsGetPatients({});
+      // Use PatientApiService for cached and optimized API calls
+      const apiService = new PatientApiService();
+      const patients = await apiService.fetchAllPatients();
       
-      if (response.data?.data) {
-        for (const remotePatientRaw of response.data.data) {
+      if (patients && patients.length > 0) {
+        for (const remotePatientRaw of patients) {
           try {
             // Convert remote (orval) patient shape to internal domain Patient before syncing
             const remotePatient = remotePatientRaw as any as Patient; // Type assertion for API response
             const syncResult = await this.syncRemotePatient(remotePatient, options);
             if (syncResult.conflict) {
-              result.conflicts.push(syncResult.conflict);
+              result.conflicts!.push(syncResult.conflict);
             } else {
-              result.synced++;
+              result.synced!++;
             }
           } catch (error) {
-            console.error(`Failed to sync patient ${remotePatientRaw?.id}:`, error);
-            result.failed++;
+            console.error('Failed to sync patient:', error);
+            result.failed!++;
           }
         }
       }

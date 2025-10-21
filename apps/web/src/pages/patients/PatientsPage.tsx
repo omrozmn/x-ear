@@ -11,18 +11,27 @@ import { PatientBulkOperations } from '@/components/patients/PatientBulkOperatio
 import { PatientAdvancedSearch } from '@/components/patients/PatientAdvancedSearch';
 import { PatientMatching } from '@/components/patients/PatientMatching';
 import { Tabs } from '@x-ear/ui-web';
+import { usePatients } from '../../hooks/patient/usePatients';
 
 export function PatientsPage() {
-  const [patients, setPatients] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [searchValue, setSearchValue] = useState('');
   const [filters, setFilters] = useState<PatientSearchFilters>({});
   const [selectedPatients, setSelectedPatients] = useState<Patient[]>([]);
 
+  // Use the patients hook to fetch data
+  const { data: patientsData, isLoading, error } = usePatients({
+    page: 1,
+    per_page: 50, // Show more patients per page
+    search: searchValue || undefined,
+    status: filters.status || undefined
+  });
+
+  const patients = patientsData?.patients || [];
+  const totalPatients = patientsData?.total || 0;
+
   // Mock stats data until we have real stats
   const mockStats = {
-    total: patients?.length || 0,
+    total: totalPatients,
     active: patients?.filter(p => p.status === 'active')?.length || 0,
     inactive: patients?.filter(p => p.status === 'inactive')?.length || 0,
     newThisMonth: 0
@@ -144,7 +153,7 @@ export function PatientsPage() {
             />
             <PatientBulkActions 
               selectedPatients={selectedPatients}
-              totalPatients={(patients?.length || 0)}
+              totalPatients={totalPatients}
               onSelectAll={handleSelectAll}
               onDeselectAll={handleDeselectAll}
               onBulkAddTag={handleBulkAddTag}
@@ -161,7 +170,10 @@ export function PatientsPage() {
 
           {/* Patient List */}
           <div className="flex-1 p-6">
-            <PatientList patients={patients || []} />
+            <PatientList 
+              patients={patients || []} 
+              loading={isLoading}
+            />
           </div>
         </Tabs.Content>
 

@@ -178,10 +178,12 @@ export function PatientFilters({
               <button
                 key={option.value}
                 onClick={() => handleFilterChange('status', 
-                  filters.status === option.value ? undefined : option.value
+                  filters.status?.includes(option.value as any) 
+                    ? filters.status.filter(s => s !== option.value)
+                    : [...(filters.status || []), option.value as any]
                 )}
                 className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                  filters.status === option.value
+                  filters.status?.includes(option.value as any)
                     ? 'bg-blue-100 border-blue-300 text-blue-800'
                     : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
                 }`}
@@ -206,10 +208,12 @@ export function PatientFilters({
               <button
                 key={option.value}
                 onClick={() => handleFilterChange('segment', 
-                  filters.segment === option.value ? undefined : option.value
+                  filters.segment?.includes(option.value as any)
+                    ? filters.segment.filter(s => s !== option.value)
+                    : [...(filters.segment || []), option.value as any]
                 )}
                 className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                  filters.segment === option.value
+                  filters.segment?.includes(option.value as any)
                     ? 'bg-green-100 border-green-300 text-green-800'
                     : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
                 }`}
@@ -223,33 +227,7 @@ export function PatientFilters({
           </div>
         </div>
 
-        {/* Acquisition Type Filter */}
-        <div>
-          <div className="flex items-center space-x-2 mb-3">
-            <Building className="h-4 w-4 text-gray-500" />
-            <label className="text-sm font-medium text-gray-700">Kazanım Türü</label>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {acquisitionOptions.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => handleFilterChange('acquisitionType', 
-                  filters.acquisitionType === option.value ? undefined : option.value
-                )}
-                className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                  filters.acquisitionType === option.value
-                    ? 'bg-purple-100 border-purple-300 text-purple-800'
-                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                {option.label}
-                {option.count !== undefined && option.count > 0 && (
-                  <span className="ml-1 text-xs opacity-75">({option.count})</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
+
 
         {/* Date Range Filter */}
         <div>

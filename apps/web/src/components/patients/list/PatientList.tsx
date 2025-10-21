@@ -52,11 +52,11 @@ export function PatientList({ patients }: PatientListProps) {
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                  patient.status === 'active' 
+                  patient.status === 'ACTIVE' 
                     ? 'bg-green-100 text-green-800' 
                     : 'bg-red-100 text-red-800'
                 }`}>
-                  {patient.status === 'active' ? 'Aktif' : 'Pasif'}
+                  {patient.status === 'ACTIVE' ? 'Aktif' : 'Pasif'}
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

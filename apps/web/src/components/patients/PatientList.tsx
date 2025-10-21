@@ -119,9 +119,9 @@ export function PatientList({
 
   const getStatusBadge = (status?: string) => {
     switch (status) {
-      case 'active':
+      case 'ACTIVE':
         return <Badge variant="success" size="sm">Aktif</Badge>;
-      case 'inactive':
+      case 'INACTIVE':
         return <Badge variant="warning" size="sm">Pasif</Badge>;
       default:
         return <Badge variant="secondary" size="sm">Bilinmiyor</Badge>;
@@ -145,6 +145,38 @@ export function PatientList({
       return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(7, 9)} ${cleaned.slice(9)}`;
     }
     return phone;
+  };
+
+  const getSegmentBadge = (segment?: string) => {
+    if (!segment) return <Badge variant="secondary" size="sm">-</Badge>;
+    
+    switch (segment.toUpperCase()) {
+      case 'PREMIUM':
+        return <Badge variant="success" size="sm">Premium</Badge>;
+      case 'STANDARD':
+        return <Badge variant="default" size="sm">Standard</Badge>;
+      case 'BASIC':
+        return <Badge variant="secondary" size="sm">Basic</Badge>;
+      default:
+        return <Badge variant="secondary" size="sm">{segment}</Badge>;
+    }
+  };
+
+  const getAcquisitionStatusBadge = (acquisitionType?: string) => {
+    if (!acquisitionType) return <Badge variant="secondary" size="sm">-</Badge>;
+    
+    switch (acquisitionType.toLowerCase()) {
+      case 'organic':
+        return <Badge variant="success" size="sm">Organik</Badge>;
+      case 'referral':
+        return <Badge variant="default" size="sm">Referans</Badge>;
+      case 'marketing':
+        return <Badge variant="warning" size="sm">Pazarlama</Badge>;
+      case 'social':
+        return <Badge variant="primary" size="sm">Sosyal</Badge>;
+      default:
+        return <Badge variant="secondary" size="sm">{acquisitionType}</Badge>;
+    }
   };
 
   if (loading) {
@@ -301,6 +333,12 @@ export function PatientList({
                   />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                  Segment
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                  Kazanım Durumu
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                   <SortableHeader
                     field="status"
                     label="Durum"
@@ -367,6 +405,12 @@ export function PatientList({
                     {formatPhone(patient.phone)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
+                    {getSegmentBadge(patient.segment)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {getAcquisitionStatusBadge(patient.acquisitionType)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     {getStatusBadge(patient.status)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -380,12 +424,12 @@ export function PatientList({
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onPatientClick?.(patient);
+                            onEdit?.(patient);
                           }}
                           className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600"
-                          title="Görüntüle"
+                          title="Düzenle"
                         >
-                          <Eye className="h-4 w-4" />
+                          <Edit className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -398,18 +442,6 @@ export function PatientList({
                           title="İletişim"
                         >
                           <MessageSquare className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEdit?.(patient);
-                          }}
-                          className="h-8 w-8 p-0 hover:bg-yellow-50 hover:text-yellow-600"
-                          title="Düzenle"
-                        >
-                          <Edit className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"

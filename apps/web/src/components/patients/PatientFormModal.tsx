@@ -9,8 +9,8 @@ interface PatientFormData {
   birthDate?: string;
   email?: string;
   address?: string;
-  status?: 'active' | 'inactive';
-  segment?: 'new' | 'trial' | 'purchased' | 'control' | 'renewal' | 'existing' | 'vip';
+  status?: 'ACTIVE' | 'INACTIVE';
+  segment?: 'NEW' | 'TRIAL' | 'PURCHASED' | 'CONTROL' | 'RENEWAL' | 'EXISTING' | 'VIP';
   label?: 'yeni' | 'arama-bekliyor' | 'randevu-verildi' | 'deneme-yapildi' | 'kontrol-hastasi' | 'satis-tamamlandi';
   acquisitionType?: 'tabela' | 'sosyal-medya' | 'tanitim' | 'referans' | 'diger';
   tags?: string[];
@@ -46,8 +46,8 @@ export function PatientFormModal({
     birthDate: '',
     email: '',
     address: '',
-    status: 'active',
-    segment: 'new',
+    status: 'ACTIVE',
+    segment: 'NEW',
     label: 'yeni',
     acquisitionType: 'tabela',
     tags: []
@@ -68,8 +68,8 @@ export function PatientFormModal({
         birthDate: initialData.birthDate || '',
         email: initialData.email || '',
         address: initialData.address || '',
-        status: initialData.status || 'active',
-        segment: initialData.segment || 'new',
+        status: initialData.status || 'ACTIVE',
+        segment: initialData.segment || 'NEW',
         label: initialData.label || 'yeni',
         acquisitionType: initialData.acquisitionType || 'tabela',
         tags: initialData.tags || []
@@ -85,8 +85,8 @@ export function PatientFormModal({
         birthDate: '',
         email: '',
         address: '',
-        status: 'active',
-        segment: 'new',
+        status: 'ACTIVE',
+        segment: 'NEW',
         label: 'yeni',
         acquisitionType: 'tabela',
         tags: []
@@ -349,9 +349,8 @@ export function PatientFormModal({
                   onChange={(e) => handleInputChange('status', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="active">Aktif</option>
-                  <option value="inactive">Pasif</option>
-                  <option value="archived">Arşivlenmiş</option>
+                  <option value="ACTIVE">Aktif</option>
+                  <option value="INACTIVE">Pasif</option>
                 </select>
               </div>
 
@@ -364,11 +363,13 @@ export function PatientFormModal({
                   onChange={(e) => handleInputChange('segment', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="new">Yeni</option>
-                  <option value="trial">Deneme</option>
-                  <option value="purchased">Satın Almış</option>
-                  <option value="control">Kontrol</option>
-                  <option value="renewal">Yenileme</option>
+                  <option value="NEW">Yeni</option>
+                  <option value="TRIAL">Deneme</option>
+                  <option value="PURCHASED">Satın Almış</option>
+                  <option value="CONTROL">Kontrol</option>
+                  <option value="RENEWAL">Yenileme</option>
+                  <option value="EXISTING">Mevcut</option>
+                  <option value="VIP">VIP</option>
                 </select>
               </div>
             </div>

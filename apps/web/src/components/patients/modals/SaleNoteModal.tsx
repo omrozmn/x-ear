@@ -45,6 +45,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
     }
   }, [isOpen, sale]);
 
+  // Early return after all hooks to prevent hooks order change
   if (!isOpen || !sale) return null;
 
   const handleNoteChange = (value: string) => {

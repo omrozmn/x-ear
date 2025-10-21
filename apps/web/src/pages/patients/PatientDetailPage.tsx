@@ -248,7 +248,22 @@ export function PatientDetailPage({ className = '' }: PatientDetailPageProps) {
             {patient.address && (
               <div>
                 <span className="text-sm font-medium text-gray-500">Adres:</span>
-                <p className="text-sm text-gray-900 mt-1">{patient.addressFull || patient.address || 'Adres bilgisi yok'}</p>
+                <p className="text-sm text-gray-900 mt-1">
+                  {(() => {
+                    // Handle address as object or string
+                    const address = patient.address || patient.addressFull;
+                    if (typeof address === 'string') {
+                      return address || 'Adres bilgisi yok';
+                    } else if (typeof address === 'object' && address !== null) {
+                      // Handle address object with city, district, fullAddress
+                      const addressObj = address as any;
+                      return addressObj.fullAddress || 
+                             `${addressObj.district || ''} ${addressObj.city || ''}`.trim() ||
+                             'Adres bilgisi yok';
+                    }
+                    return 'Adres bilgisi yok';
+                  })()}
+                </p>
               </div>
             )}
           </div>

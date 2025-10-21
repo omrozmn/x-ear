@@ -255,7 +255,16 @@ export const PromissoryNoteModal: React.FC<PromissoryNoteModalProps> = ({
                   <div><span className="font-medium">Ad Soyad:</span> {patient.firstName} {patient.lastName}</div>
                   <div><span className="font-medium">TC No:</span> {patient.tcNumber}</div>
                   <div><span className="font-medium">Telefon:</span> {patient.phone}</div>
-                  <div><span className="font-medium">Adres:</span> {patient.addressFull || patient.address || 'Adres bilgisi yok'}</div>
+                  <div><span className="font-medium">Adres:</span> {(() => {
+                    const address = patient.address;
+                    if (typeof address === 'object' && address !== null) {
+                      const addressObj = address as any;
+                      return addressObj.fullAddress || 
+                             `${addressObj.district || ''} ${addressObj.city || ''}`.trim() ||
+                             'Adres bilgisi yok';
+                    }
+                    return patient.addressFull || address || 'Adres bilgisi yok';
+                  })()}</div>
                 </div>
               </div>
 

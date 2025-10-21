@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SGK Upload Test</title>
+</head>
+<body>
+    <h1>SGK Document Upload Test</h1>
+    <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" />
+    <button onclick="testUpload()">Test Upload</button>
+    <div id="result"></div>
+
+    <script>
+        async function testUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            const resultDiv = document.getElementById('result');
+            
+            if (!file) {
+                resultDiv.innerHTML = '<p style="color: red;">Please select a file</p>';
+                return;
+            }
+
+            try {
+                // Convert file to base64
+                const base64 = await fileToBase64(file);
+                
+                // Create JSON payload (matching what backend expects)
+                const payload = {
+                    patientId: 'pat_test123',
+                    filename: file.name,
+                    documentType: 'belge',
+                    fileData: base64,
+                    mimeType: file.type,
+                    fileSize: file.size
+                };
+
+                resultDiv.innerHTML = '<p>Uploading...</p>';
+                
+                // Test the API endpoint
+                const response = await fetch('http://localhost:5003/api/sgk/documents', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Idempotency-Key': 'test-upload-' + Date.now()
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<p style="color: green;">✅ Upload successful!</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p style="color: red;">❌ Upload failed: ${response.status}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    // Remove the data URL prefix and return just the base64
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+    </script>
+</body>
+</html>

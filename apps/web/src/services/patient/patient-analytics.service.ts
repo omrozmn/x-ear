@@ -59,7 +59,7 @@ export class PatientAnalyticsService {
   
   calculatePatientStats(patients: Patient[]): PatientStats {
     const totalPatients = patients.length;
-    const activePatients = patients.filter(p => p.status === 'active').length;
+    const activePatients = patients.filter(p => p.status === 'ACTIVE').length;
     
     // Calculate new patients this month
     const thisMonth = new Date();
@@ -234,7 +234,7 @@ export class PatientAnalyticsService {
       const dateKey = currentDate.toISOString().split('T')[0];
       const dayPatients = patientsByDate[dateKey] || [];
       const newPatients = dayPatients.length;
-      const activePatients = dayPatients.filter(p => p.status === 'active').length;
+      const activePatients = dayPatients.filter(p => p.status === 'ACTIVE').length;
       
       cumulativeCount += newPatients;
       
@@ -324,9 +324,9 @@ export class PatientAnalyticsService {
       statusCount[status] = (statusCount[status] || 0) + 1;
     });
     
-    const allowedStatuses: PatientStatus[] = ['active', 'inactive', 'archived'];
+    const allowedStatuses: PatientStatus[] = ['ACTIVE', 'INACTIVE'];
     return Object.entries(statusCount).map(([status, count]) => {
-      const s = allowedStatuses.includes(status as any) ? status as PatientStatus : 'inactive';
+      const s = allowedStatuses.includes(status as any) ? status as PatientStatus : 'INACTIVE';
       return {
         status: s,
         count,
@@ -344,9 +344,9 @@ export class PatientAnalyticsService {
       segmentCount[segment] = (segmentCount[segment] || 0) + 1;
     });
     
-    const allowedSegments: PatientSegment[] = ['new', 'existing', 'vip'];
+    const allowedSegments: PatientSegment[] = ['NEW', 'EXISTING', 'VIP'];
     return Object.entries(segmentCount).map(([segment, count]) => {
-      const s = allowedSegments.includes(segment as any) ? segment as PatientSegment : 'new';
+      const s = allowedSegments.includes(segment as any) ? segment as PatientSegment : 'NEW';
       return {
         segment: s,
         count,

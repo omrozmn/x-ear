@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Patient } from '../../types/patient';
 import { convertOrvalPatient } from '../../services/patient/patient-mappers';
 import { PatientApiService } from '../../services/patient/patient-api.service';
@@ -15,8 +15,9 @@ export function usePatient(patientId?: string) {
   // Use Error | string | null so callers that expect Error.message don't break
   const [error, setError] = useState<Error | string | null>(null);
 
-  const apiService = new PatientApiService();
-  const storageService = new PatientStorageService();
+  // Memoize services to prevent recreation on every render
+  const apiService = useMemo(() => new PatientApiService(), []);
+  const storageService = useMemo(() => new PatientStorageService(), []);
 
   // Load patient by ID
   const loadPatient = useCallback(async (id: string) => {
@@ -104,6 +105,8 @@ export function usePatient(patientId?: string) {
   useEffect(() => {
     if (patientId) {
       loadPatient(patientId);
+    } else {
+      setPatient(null);
     }
   }, [patientId, loadPatient]);
 

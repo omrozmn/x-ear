@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { Modal, Button, Input } from '@x-ear/ui-web';
 import { useUploadSgkDocuments } from '../../hooks/sgk/useSgkDocuments';
+import { Upload, X, FileImage, AlertCircle } from 'lucide-react';
 
 interface BulkUploadModalProps {
   isOpen: boolean;
@@ -17,21 +18,86 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 }) => {
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadMutation = useUploadSgkDocuments();
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    const imageFiles = selectedFiles.filter(file =>
-      file.type.startsWith('image/') &&
-      ['image/jpeg', 'image/jpg', 'image/png', 'image/tiff', 'image/bmp'].includes(file.type)
+  const validateFile = (file: File): boolean => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/tiff', 'image/bmp'];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+
+    if (!allowedTypes.includes(file.type)) {
+      setError(`Desteklenmeyen dosya türü: ${file.name}`);
+      return false;
+    }
+
+    if (file.size > maxSize) {
+      setError(`Dosya çok büyük: ${file.name} (Max: 10MB)`);
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleFileSelect = useCallback((selectedFiles: File[]) => {
+    setError(null);
+    const validFiles: File[] = [];
+    
+    for (const file of selectedFiles) {
+      if (validateFile(file)) {
+        validFiles.push(file);
+      } else {
+        return; // Stop processing if any file is invalid
+      }
+    }
+
+    // Remove duplicates based on name and size
+    const uniqueFiles = validFiles.filter(newFile => 
+      !files.some(existingFile => 
+        existingFile.name === newFile.name && existingFile.size === newFile.size
+      )
     );
-    setFiles(imageFiles);
+
+    setFiles(prev => [...prev, ...uniqueFiles]);
+  }, [files]);
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    handleFileSelect(selectedFiles);
+  }, [handleFileSelect]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    handleFileSelect(droppedFiles);
+  }, [handleFileSelect]);
+
+  const removeFile = useCallback((index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+    setError(null);
   }, []);
 
   const handleUpload = async () => {
     if (files.length === 0) return;
 
     setIsUploading(true);
+    setError(null);
     onUploadStart();
 
     try {
@@ -44,54 +110,113 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
       onUploadComplete([]);
     } catch (error) {
       console.error('Upload failed:', error);
+      setError('Yükleme sırasında bir hata oluştu. Lütfen tekrar deneyin.');
       onUploadComplete([]);
     } finally {
       setIsUploading(false);
-      setFiles([]);
-      onClose();
     }
   };
 
   const handleClose = () => {
     if (!isUploading) {
       setFiles([]);
+      setError(null);
+      setIsDragOver(false);
       onClose();
     }
   };
 
+  const openFileDialog = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="SGK Dokümanlarını Yükle">
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Görsel Dosyaları Seçin
-          </label>
-          <Input
+    <Modal isOpen={isOpen} onClose={handleClose} title="SGK Dokümanlarını Yükle" size="lg">
+      <div className="space-y-6">
+        {/* Drag and Drop Area */}
+        <div
+          className={`
+            border-2 border-dashed rounded-lg p-8 text-center transition-colors
+            ${isDragOver 
+              ? 'border-blue-400 bg-blue-50' 
+              : 'border-gray-300 hover:border-gray-400'
+            }
+            ${isUploading ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}
+          `}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={openFileDialog}
+        >
+          <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <p className="text-lg font-medium text-gray-900 mb-2">
+            Dosyaları buraya sürükleyin veya seçmek için tıklayın
+          </p>
+          <p className="text-sm text-gray-500">
+            JPEG, PNG, TIFF, BMP formatlarında, maksimum 10MB boyutunda dosyalar
+          </p>
+          
+          <input
+            ref={fileInputRef}
             type="file"
             multiple
             accept="image/*"
-            onChange={handleFileSelect}
+            onChange={handleInputChange}
             disabled={isUploading}
+            className="hidden"
           />
-          <p className="text-sm text-gray-500 mt-1">
-            JPEG, PNG, TIFF, BMP formatlarındaki dosyaları seçebilirsiniz.
-          </p>
         </div>
 
-        {files.length > 0 && (
-          <div>
-            <h4 className="text-sm font-medium mb-2">Seçilen Dosyalar ({files.length})</h4>
-            <ul className="text-sm text-gray-600 max-h-32 overflow-y-auto">
-              {files.map((file, index) => (
-                <li key={index} className="truncate">
-                  {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                </li>
-              ))}
-            </ul>
+        {/* Error Message */}
+        {error && (
+          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
+            <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+            <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-2 pt-4">
+        {/* Selected Files */}
+        {files.length > 0 && (
+          <div>
+            <h4 className="text-sm font-medium mb-3">
+              Seçilen Dosyalar ({files.length})
+            </h4>
+            <div className="max-h-48 overflow-y-auto space-y-2">
+              {files.map((file, index) => (
+                <div
+                  key={`${file.name}-${index}`}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <FileImage className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {file.name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+                  {!isUploading && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFile(index)}
+                      className="text-gray-400 hover:text-red-500 p-1"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-end gap-3 pt-4 border-t">
           <Button
             type="button"
             variant="ghost"
@@ -103,8 +228,16 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           <Button
             onClick={handleUpload}
             disabled={files.length === 0 || isUploading}
+            className="min-w-[120px]"
           >
-            {isUploading ? 'Yükleniyor...' : `Yükle (${files.length} dosya)`}
+            {isUploading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Yükleniyor...
+              </div>
+            ) : (
+              `Yükle (${files.length} dosya)`
+            )}
           </Button>
         </div>
       </div>

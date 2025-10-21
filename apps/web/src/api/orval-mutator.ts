@@ -3,16 +3,106 @@ import { AUTH_TOKEN } from '../constants/storage-keys';
 import { outbox, OutboxOperation } from '../utils/outbox';
 
 // API Configuration
-const API_BASE_URL = '/api'; // Use relative URLs with Vite proxy
+const API_BASE_URL = ''; // Use relative URLs to go through Vite proxy
+
+// Connection pooling and retry configuration
+const CONNECTION_CONFIG = {
+  timeout: 15000,
+  maxRedirects: 3,
+  maxContentLength: 50 * 1024 * 1024, // 50MB
+  // Connection pooling settings
+  maxSockets: 10, // Limit concurrent connections
+  maxFreeSockets: 5,
+  keepAlive: true,
+  keepAliveMsecs: 30000,
+};
+
+// Retry configuration with exponential backoff
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  baseDelay: 1000, // 1 second
+  maxDelay: 10000, // 10 seconds
+  backoffFactor: 2,
+  retryableErrors: [
+    'ERR_INSUFFICIENT_RESOURCES',
+    'ECONNRESET',
+    'ENOTFOUND',
+    'ETIMEDOUT',
+    'ECONNREFUSED'
+  ],
+  retryableStatusCodes: [429, 503, 502, 504]
+};
 
 // Create axios instance with proper configuration
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: CONNECTION_CONFIG.timeout,
   headers: {
     'Content-Type': 'application/json',
   },
+  maxRedirects: CONNECTION_CONFIG.maxRedirects,
+  maxContentLength: CONNECTION_CONFIG.maxContentLength,
 });
+
+// Exponential backoff utility
+function calculateBackoffDelay(attempt: number): number {
+  const delay = RETRY_CONFIG.baseDelay * Math.pow(RETRY_CONFIG.backoffFactor, attempt - 1);
+  return Math.min(delay, RETRY_CONFIG.maxDelay);
+}
+
+// Sleep utility for delays
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Check if error is retryable
+function isRetryableError(error: any): boolean {
+  // Check error codes
+  if (error.code && RETRY_CONFIG.retryableErrors.includes(error.code)) {
+    return true;
+  }
+  
+  // Check HTTP status codes
+  if (error.response?.status && RETRY_CONFIG.retryableStatusCodes.includes(error.response.status)) {
+    return true;
+  }
+  
+  return false;
+}
+
+// Retry wrapper with exponential backoff
+async function retryRequest<T>(
+  requestFn: () => Promise<T>,
+  config: AxiosRequestConfig,
+  attempt: number = 1
+): Promise<T> {
+  try {
+    return await requestFn();
+  } catch (error: any) {
+    // Don't retry if we've exceeded max attempts
+    if (attempt >= RETRY_CONFIG.maxRetries) {
+      throw error;
+    }
+    
+    // Don't retry if error is not retryable
+    if (!isRetryableError(error)) {
+      throw error;
+    }
+    
+    // Calculate delay and wait
+    const delay = calculateBackoffDelay(attempt);
+    console.warn(`Request failed (attempt ${attempt}/${RETRY_CONFIG.maxRetries}), retrying in ${delay}ms:`, {
+      url: config.url,
+      method: config.method,
+      error: error.code || error.message
+    });
+    
+    await sleep(delay);
+    
+    // Retry the request
+    return retryRequest(requestFn, config, attempt + 1);
+  }
+}
 
 // Idempotency manager for request deduplication
 class IdempotencyManager {
@@ -62,6 +152,24 @@ async function queueOfflineRequest(config: AxiosRequestConfig): Promise<void> {
   }
 }
 
+// Enhanced error handling for resource constraints
+function handleResourceError(error: any, config: AxiosRequestConfig): Error {
+  const resourceError = new Error('Resource limit exceeded. Please try again in a moment.');
+  resourceError.name = 'ResourceError';
+  
+  // Add retry suggestion
+  (resourceError as any).retryAfter = 5000; // Suggest retry after 5 seconds
+  (resourceError as any).originalError = error;
+  
+  console.warn('Resource constraint detected:', {
+    url: config.url,
+    method: config.method,
+    error: error.code || error.message
+  });
+  
+  return resourceError;
+}
+
 // Request interceptor for authentication and idempotency
 apiClient.interceptors.request.use(
   (config) => {
@@ -97,6 +205,80 @@ apiClient.interceptors.response.use(
   async (error) => {
     const config = error.config;
     
+    // Handle resource constraint errors (ERR_INSUFFICIENT_RESOURCES, connection limits, etc.)
+    if (error.code === 'ERR_INSUFFICIENT_RESOURCES' || 
+        error.code === 'ECONNRESET' || 
+        error.code === 'ENOTFOUND' ||
+        (error.response?.status === 429) || // Too Many Requests
+        (error.response?.status === 503)) { // Service Unavailable
+      return Promise.reject(handleResourceError(error, config));
+    }
+    
+    // Handle network errors (offline scenarios)
+    if (!error.response && error.code === 'ERR_NETWORK') {
+      console.warn('Network error detected, queuing request for offline processing');
+      await queueOfflineRequest(config);
+      
+      // Return a rejected promise with offline error
+      const offlineError = new Error('Request queued for offline processing');
+      offlineError.name = 'OfflineError';
+      return Promise.reject(offlineError);
+    }
+
+    // Handle other errors normally
+    return Promise.reject(error);
+  }
+);
+
+// Configure global axios defaults to ensure all Orval generated clients use our configuration
+axios.defaults.baseURL = API_BASE_URL;
+axios.defaults.timeout = CONNECTION_CONFIG.timeout;
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+axios.defaults.maxRedirects = CONNECTION_CONFIG.maxRedirects;
+
+// Apply our interceptors to the global axios instance
+axios.interceptors.request.use(
+  (config) => {
+    // Add auth token if available
+    const token = localStorage.getItem(AUTH_TOKEN);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Add idempotency key for non-GET requests
+    if (config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
+      const idempotencyKey = config.headers['Idempotency-Key'] || 
+        `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      config.headers['Idempotency-Key'] = idempotencyKey;
+    }
+
+    // Add request ID for tracing
+    const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    config.headers['X-Request-ID'] = requestId;
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+axios.interceptors.response.use(
+  (response: AxiosResponse) => {
+    return response;
+  },
+  async (error) => {
+    const config = error.config;
+    
+    // Handle resource constraint errors
+    if (error.code === 'ERR_INSUFFICIENT_RESOURCES' || 
+        error.code === 'ECONNRESET' || 
+        error.code === 'ENOTFOUND' ||
+        (error.response?.status === 429) || 
+        (error.response?.status === 503)) {
+      return Promise.reject(handleResourceError(error, config));
+    }
+    
     // Handle network errors (offline scenarios)
     if (!error.response && error.code === 'ERR_NETWORK') {
       console.warn('Network error detected, queuing request for offline processing');
@@ -115,4 +297,11 @@ apiClient.interceptors.response.use(
 
 // Export the configured axios instance as customInstance
 export const customInstance = apiClient;
-export default customInstance;
+
+// Export retry utility for manual use if needed
+export { retryRequest, calculateBackoffDelay, isRetryableError };
+
+// Orval mutator function
+export default (config: any) => {
+  return apiClient(config);
+};

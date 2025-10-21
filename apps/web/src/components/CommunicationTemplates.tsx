@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { getCommunications } from '../api/generated/communications/communications';
+import type { CommunicationTemplate } from '../api/generated/api.schemas';
 import { 
   Plus, 
   Search, 
@@ -15,24 +17,6 @@ import {
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
-
-// Types
-interface CommunicationTemplate {
-  id: string;
-  name: string;
-  description?: string;
-  templateType: 'sms' | 'email';
-  category?: string;
-  subject?: string;
-  bodyText: string;
-  bodyHtml?: string;
-  variables: string[];
-  isActive: boolean;
-  isSystem: boolean;
-  usageCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
 
 interface TemplateFormData {
   name: string;
@@ -101,9 +85,9 @@ const CommunicationTemplates: React.FC = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(template =>
-        template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        template.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         template.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        template.bodyText.toLowerCase().includes(searchTerm.toLowerCase())
+        template.bodyText?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -127,14 +111,19 @@ const CommunicationTemplates: React.FC = () => {
   const loadTemplates = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/communications/templates');
-      const result = await response.json();
+      const communications = getCommunications();
+      const response = await communications.communicationsListTemplates();
       
-      if (result.success) {
-        setTemplates(result.data);
+      if (response.data.success && response.data.data) {
+        // Filter out templates with undefined id
+        const validTemplates = response.data.data.filter(template => template.id !== undefined) as CommunicationTemplate[];
+        setTemplates(validTemplates);
+      } else {
+        setTemplates([]);
       }
     } catch (error) {
       console.error('Error loading templates:', error);
+      setTemplates([]);
     } finally {
       setLoading(false);
     }
@@ -159,15 +148,15 @@ const CommunicationTemplates: React.FC = () => {
   const handleEditTemplate = (template: CommunicationTemplate) => {
     setSelectedTemplate(template);
     setFormData({
-      name: template.name,
+      name: template.name || '',
       description: template.description || '',
-      templateType: template.templateType,
+      templateType: template.templateType || 'sms',
       category: template.category || '',
       subject: template.subject || '',
-      bodyText: template.bodyText,
+      bodyText: template.bodyText || '',
       bodyHtml: template.bodyHtml || '',
-      variables: template.variables,
-      isActive: template.isActive
+      variables: template.variables || [],
+      isActive: template.isActive ?? true
     });
     setFormErrors({});
     setShowEditModal(true);
@@ -180,14 +169,14 @@ const CommunicationTemplates: React.FC = () => {
 
   const handleDuplicateTemplate = async (template: CommunicationTemplate) => {
     setFormData({
-      name: `${template.name} (Copy)`,
+      name: `${template.name || 'Şablon'} - Kopya`,
       description: template.description || '',
-      templateType: template.templateType,
+      templateType: template.templateType || 'sms',
       category: template.category || '',
       subject: template.subject || '',
-      bodyText: template.bodyText,
+      bodyText: template.bodyText || '',
       bodyHtml: template.bodyHtml || '',
-      variables: template.variables,
+      variables: template.variables || [],
       isActive: true
     });
     setFormErrors({});
@@ -214,37 +203,42 @@ const CommunicationTemplates: React.FC = () => {
   };
 
   const handleSaveTemplate = async () => {
-    if (!validateForm()) return;
+    setSaving(true);
+    setFormErrors({});
 
     try {
-      setSaving(true);
+      const communications = getCommunications();
       
-      const url = selectedTemplate 
-        ? `/api/communications/templates/${selectedTemplate.id}`
-        : '/api/communications/templates';
-      
-      const method = selectedTemplate ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        await loadTemplates();
-        setShowCreateModal(false);
-        setShowEditModal(false);
-        setSelectedTemplate(null);
+      if (selectedTemplate?.id) {
+        // Update existing template
+        const response = await communications.communicationsUpdateTemplate(
+          selectedTemplate.id,
+          formData
+        );
+        
+        if (response.data.success) {
+          await loadTemplates();
+          setShowEditModal(false);
+          setSelectedTemplate(null);
+        } else {
+          setFormErrors({ general: 'Güncelleme başarısız' });
+        }
       } else {
-        setFormErrors({ general: result.error });
+        // Create new template
+        const response = await communications.communicationsCreateTemplate(formData);
+        
+        if (response.data.success) {
+          await loadTemplates();
+          setShowCreateModal(false);
+        } else {
+          setFormErrors({ general: 'Oluşturma başarısız' });
+        }
       }
-    } catch (error) {
-      setFormErrors({ general: 'Error saving template' });
+    } catch (error: any) {
+      console.error('Template save error:', error);
+      setFormErrors({ 
+        general: error.response?.data?.error || 'Bir hata oluştu' 
+      });
     } finally {
       setSaving(false);
     }
@@ -254,13 +248,10 @@ const CommunicationTemplates: React.FC = () => {
     if (!confirm(`Are you sure you want to delete "${template.name}"?`)) return;
 
     try {
-      const response = await fetch(`/api/communications/templates/${template.id}`, {
-        method: 'DELETE'
-      });
-
-      const result = await response.json();
+      const communications = getCommunications();
+      const response = await communications.communicationsDeleteTemplate(template.id!);
       
-      if (result.success) {
+      if (response.data.success) {
         await loadTemplates();
       }
     } catch (error) {
@@ -389,10 +380,10 @@ const CommunicationTemplates: React.FC = () => {
               {/* Header */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className={getTypeColor(template.templateType)}>
-                    {getTypeIcon(template.templateType)}
+                  <span className={getTypeColor(template.templateType || 'sms')}>
+                    {getTypeIcon(template.templateType || 'sms')}
                   </span>
-                  <h3 className="font-semibold text-gray-900 truncate">{template.name}</h3>
+                  <h3 className="font-semibold text-gray-900 truncate">{template.name || ''}</h3>
                 </div>
                 <div className="flex items-center gap-1">
                   {template.isSystem && (
@@ -435,16 +426,16 @@ const CommunicationTemplates: React.FC = () => {
               </div>
 
               {/* Variables */}
-              {template.variables.length > 0 && (
+              {template.variables && template.variables.length > 0 && (
                 <div className="mb-3">
                   <p className="text-xs text-gray-500 mb-1">Değişkenler:</p>
                   <div className="flex flex-wrap gap-1">
-                    {template.variables.slice(0, 3).map((variable, index) => (
+                    {template.variables?.slice(0, 3).map((variable, index) => (
                       <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
                         {variable}
                       </span>
                     ))}
-                    {template.variables.length > 3 && (
+                    {template.variables && template.variables.length > 3 && (
                       <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
                         +{template.variables.length - 3}
                       </span>
@@ -455,7 +446,7 @@ const CommunicationTemplates: React.FC = () => {
 
               {/* Stats */}
               <div className="text-xs text-gray-500 mb-4">
-                Kullanım: {template.usageCount} kez
+                Kullanım: {template.usageCount || 0} kez
               </div>
 
               {/* Actions */}
@@ -481,7 +472,7 @@ const CommunicationTemplates: React.FC = () => {
                     onClick={() => handleEditTemplate(template)}
                     className="p-1 text-blue-600 hover:text-blue-800"
                     title="Düzenle"
-                    disabled={template.isSystem}
+                    disabled={template.isSystem || false}
                   >
                     <Edit3 className="w-4 h-4" />
                   </button>
@@ -489,7 +480,7 @@ const CommunicationTemplates: React.FC = () => {
                     onClick={() => handleDeleteTemplate(template)}
                     className="p-1 text-red-600 hover:text-red-800"
                     title="Sil"
-                    disabled={template.isSystem}
+                    disabled={template.isSystem || false}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -748,20 +739,20 @@ const CommunicationTemplates: React.FC = () => {
                 {/* Template Info */}
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={getTypeColor(selectedTemplate.templateType)}>
-                      {getTypeIcon(selectedTemplate.templateType)}
+                    <span className={getTypeColor(selectedTemplate.templateType || 'sms')}>
+                      {getTypeIcon(selectedTemplate.templateType || 'sms')}
                     </span>
-                    <h4 className="font-semibold">{selectedTemplate.name}</h4>
+                    <h4 className="font-semibold">{selectedTemplate.name || ''}</h4>
                   </div>
                   {selectedTemplate.description && (
                     <p className="text-gray-600 text-sm mb-2">{selectedTemplate.description}</p>
                   )}
                   <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span>Tip: {selectedTemplate.templateType.toUpperCase()}</span>
+                    <span>Tip: {(selectedTemplate.templateType || 'sms').toUpperCase()}</span>
                     {selectedTemplate.category && (
                       <span>Kategori: {getCategoryLabel(selectedTemplate.category)}</span>
                     )}
-                    <span>Kullanım: {selectedTemplate.usageCount} kez</span>
+                    <span>Kullanım: {selectedTemplate.usageCount || 0} kez</span>
                   </div>
                 </div>
 
@@ -788,13 +779,13 @@ const CommunicationTemplates: React.FC = () => {
                 </div>
 
                 {/* Variables */}
-                {selectedTemplate.variables.length > 0 && (
+                {selectedTemplate.variables && selectedTemplate.variables.length > 0 && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Değişkenler
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {selectedTemplate.variables.map((variable, index) => (
+                      {selectedTemplate.variables?.map((variable, index) => (
                         <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded">
                           {variable}
                         </span>
@@ -812,7 +803,7 @@ const CommunicationTemplates: React.FC = () => {
                     handleEditTemplate(selectedTemplate);
                   }}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                  disabled={selectedTemplate.isSystem}
+                  disabled={selectedTemplate.isSystem || false}
                 >
                   <Edit3 className="w-4 h-4" />
                   Düzenle

@@ -8,7 +8,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [
     react(),
-    TanStackRouterVite(),
+    TanStackRouterVite() as any,
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {

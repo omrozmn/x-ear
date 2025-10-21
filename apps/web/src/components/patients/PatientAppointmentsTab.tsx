@@ -9,7 +9,8 @@ import type {
   AppointmentsCreateAppointmentBody,
   AppointmentsCancelAppointmentBody,
   AppointmentsCompleteAppointmentBody,
-  AppointmentsRescheduleAppointmentBody
+  AppointmentsRescheduleAppointmentBody,
+  AppointmentsListAppointments200
 } from '../../api/generated/api.schemas';
 
 interface PatientAppointmentsTabProps {
@@ -44,10 +45,10 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
       const params: AppointmentsGetAppointmentsParams = {
         patient_id: patient.id,
         page: 1,
-        per_page: 100
+        per_page: 20 // Reduced from 100 to 20 to minimize data transfer
       };
       
-      const response = await appointmentApi.appointmentsGetAppointments(params);
+      const response = await appointmentApi.appointmentsGetAppointments(params) as { data?: AppointmentsListAppointments200 };
       setAppointments(response.data?.data || []);
     } catch (err) {
       console.error('Error loading appointments:', err);
@@ -310,11 +311,11 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
               const appointmentData: AppointmentsCreateAppointmentBody = {
-                patientId: patient.id || '',
+                patient_id: patient.id || '',
                 date: formData.get('date') as string,
                 time: formData.get('time') as string,
                 duration: parseInt(formData.get('duration') as string) || 30,
-                appointmentType: formData.get('type') as string,
+                type: formData.get('type') as string,
                 notes: formData.get('notes') as string
               };
               handleNewAppointment(appointmentData);

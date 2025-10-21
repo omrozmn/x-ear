@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { usePatients } from '../../hooks/patient/usePatients';
 import { usePatientMutations } from '../../hooks/patient/usePatientMutations';
 import { Patient } from '../../types/patient';
@@ -19,6 +20,7 @@ interface PatientListPageProps {
  */
 export function PatientListPage({ className = '' }: PatientListPageProps) {
   // Hooks
+  const navigate = useNavigate();
   const patientsQuery = usePatients();
   const {
     data: patientsData,
@@ -153,6 +155,13 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
       }
     });
   }, [deletePatient, refresh]);
+
+  const handlePatientClick = useCallback((patient: PatientSearchItem) => {
+    navigate({ 
+      to: '/patients/$patientId', 
+      params: { patientId: patient.id } 
+    });
+  }, [navigate]);
 
   const handleBulkDelete = useCallback(async () => {
     if (!confirm(`${selectedPatients.size} hastayı silmek istediğinizden emin misiniz?`)) {
@@ -303,6 +312,7 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
             patient={convertToSearchItem(patient)}
             selected={selectedPatients.has(patient.id)}
             onSelect={(patientId) => handleSelectPatient(patientId, !selectedPatients.has(patientId))}
+            onClick={handlePatientClick}
             onEdit={() => setEditingPatient(patient)}
             onDelete={() => handleDeletePatient(patient.id)}
             className="hover:shadow-md transition-shadow"

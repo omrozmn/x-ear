@@ -12,11 +12,10 @@ import type {
 } from 'axios';
 
 import type {
-  Appointment,
   AppointmentsCancelAppointmentBody,
   AppointmentsCompleteAppointmentBody,
+  AppointmentsCreateAppointment201,
   AppointmentsCreateAppointmentBody,
-  AppointmentsGetAppointments200,
   AppointmentsGetAppointmentsParams,
   AppointmentsListAppointments200,
   AppointmentsRescheduleAppointmentBody,
@@ -28,10 +27,9 @@ import type {
 
   export const getAppointments = () => {
 /**
- * Retrieve a list of appointments with optional filtering and pagination
  * @summary Get list of appointments
  */
-const appointmentsGetAppointments = <TData = AxiosResponse<AppointmentsGetAppointments200>>(
+const appointmentsGetAppointments = <TData = AxiosResponse<void>>(
     params?: AppointmentsGetAppointmentsParams, options?: AxiosRequestConfig
  ): Promise<TData> => {
     return axios.get(
@@ -41,11 +39,10 @@ const appointmentsGetAppointments = <TData = AxiosResponse<AppointmentsGetAppoin
     );
   }
 /**
- * Create a new appointment for a patient with specified date, time, and details
- * @summary POST /api/appointments
+ * @summary Create a new appointment
  */
-const appointmentsCreateAppointment = <TData = AxiosResponse<Appointment>>(
-    appointmentsCreateAppointmentBody?: AppointmentsCreateAppointmentBody, options?: AxiosRequestConfig
+const appointmentsCreateAppointment = <TData = AxiosResponse<AppointmentsCreateAppointment201>>(
+    appointmentsCreateAppointmentBody: AppointmentsCreateAppointmentBody, options?: AxiosRequestConfig
  ): Promise<TData> => {
     return axios.post(
       `/api/appointments`,
@@ -125,8 +122,8 @@ const appointmentsListAppointments = <TData = AxiosResponse<AppointmentsListAppo
     );
   }
 return {appointmentsGetAppointments,appointmentsCreateAppointment,appointmentsDeleteAppointment,appointmentsCancelAppointment,appointmentsCompleteAppointment,appointmentsRescheduleAppointment,appointmentsGetAvailability,appointmentsListAppointments}};
-export type AppointmentsGetAppointmentsResult = AxiosResponse<AppointmentsGetAppointments200>
-export type AppointmentsCreateAppointmentResult = AxiosResponse<Appointment>
+export type AppointmentsGetAppointmentsResult = AxiosResponse<void>
+export type AppointmentsCreateAppointmentResult = AxiosResponse<AppointmentsCreateAppointment201>
 export type AppointmentsDeleteAppointmentResult = AxiosResponse<SuccessResponse>
 export type AppointmentsCancelAppointmentResult = AxiosResponse<void>
 export type AppointmentsCompleteAppointmentResult = AxiosResponse<void>

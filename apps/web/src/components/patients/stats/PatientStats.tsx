@@ -49,7 +49,7 @@ export const PatientStats: React.FC<PatientStatsProps> = ({
   showTrends = true,
   showExtendedStats = false,
   autoRefresh = false,
-  refreshInterval = 30000, // 30 seconds
+  refreshInterval = 300000, // 5 minutes instead of 30 seconds
   onRefresh
 }) => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())

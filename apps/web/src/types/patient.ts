@@ -1,91 +1,86 @@
-export interface Patient {
-  id: string;
-  name?: string; // Computed from firstName + lastName
-  firstName: string;
-  lastName: string;
-  phone: string;
-  tcNumber?: string;
-  birthDate?: string;
-  email?: string;
-  address?: string;
-  
-  // Status and classification
-  status: 'active' | 'inactive';
-  segment: 'new' | 'trial' | 'purchased' | 'control' | 'renewal' | 'existing' | 'vip';
-  label: 'yeni' | 'arama-bekliyor' | 'randevu-verildi' | 'deneme-yapildi' | 'kontrol-hastasi' | 'satis-tamamlandi';
-  acquisitionType: 'tabela' | 'sosyal-medya' | 'tanitim' | 'referans' | 'diger';
-  
-  // Tags and priority
-  tags: string[];
-  priorityScore?: number;
-  
-  // Device information
-  devices: PatientDevice[];
-  deviceTrial?: boolean;
-  trialDevice?: string;
-  trialDate?: string;
-  priceGiven?: boolean;
-  purchased?: boolean;
-  purchaseDate?: string;
-  deviceType?: 'hearing_aid' | 'cochlear_implant' | 'bone_anchored';
-  deviceModel?: string;
-  
-  // Financial information
-  installments?: Installment[];
-  // First-class sales (legacy model uses Sale objects, keep installments for backward compat)
-  sales?: Sale[];
-  overdueAmount?: number;
-  
-  // SGK information
-  sgkInfo: SGKInfo;
-  sgkStatus?: 'pending' | 'approved' | 'rejected' | 'paid';
-  sgkSubmittedDate?: string;
-  sgkDeadline?: string;
-  sgkWorkflow?: SGKWorkflow;
-  deviceReportRequired?: boolean;
-  batteryReportRequired?: boolean;
-  batteryReportDue?: string;
-  
-  // Appointments and communication
-  lastContactDate?: string;
-  lastAppointmentDate?: string;
-  missedAppointments?: number;
-  lastPriorityTaskDate?: string;
-  renewalContactMade?: boolean;
-  appointments?: Appointment[];
-  
-  // Clinical information
-  assignedClinician?: string;
-  notes: PatientNote[];
-  communications?: Communication[];
-  reports?: PatientReport[];
-  ereceiptHistory?: EReceiptRecord[];
-  
-  // Metadata
-  createdAt: string;
-  updatedAt: string;
+// Re-export Orval Patient types
+export type { Patient as OrvalPatient } from '../generated/orval-types';
+export type { PatientStatus, PatientGender } from '../generated/orval-types';
 
-  // Additional optional properties for form handling
-  addressFull?: string;
-  conversionStep?: string;
-  referredBy?: string | null;
-  customData?: Record<string, any>;
-}
+// Import Orval Patient for extension
+import type { Patient as OrvalPatient } from '../generated/orval-types';
 
+// Use Orval Patient as the main Patient type for API compatibility
+export type Patient = OrvalPatient;
+
+// Keep legacy types that are still needed for compatibility
 export interface PatientDevice {
   id: string;
   brand: string;
   model: string;
   serialNumber?: string;
   side: 'left' | 'right' | 'both';
+  ear?: 'left' | 'right' | 'both' | 'bilateral'; // Alternative to side for legacy compatibility
   type: 'hearing_aid' | 'cochlear_implant' | 'bone_anchored';
-  status: 'active' | 'trial' | 'returned' | 'replaced';
+  status: 'active' | 'trial' | 'returned' | 'replaced' | 'assigned' | 'defective';
   purchaseDate?: string;
+  assignedDate?: string;
   warrantyExpiry?: string;
   lastServiceDate?: string;
   batteryType?: string;
+
+  // Pricing information
   price?: number;
+  listPrice?: number;
+  salePrice?: number;
+  sgkReduction?: number;
+  patientPayment?: number;
+
+  // Payment and SGK
   sgkScheme?: boolean;
+  paymentMethod?: 'cash' | 'card' | 'transfer' | 'installment';
+
+  // Trial information
+  trialEndDate?: string;
+
+  // Assignment details
+  assignedBy?: string;
+  reason?: 'new' | 'replacement' | 'upgrade' | 'trial' | 'warranty';
+  notes?: string;
+
+  settings?: Record<string, unknown>;
+}
+
+// Keep legacy types that are still needed for compatibility
+export interface PatientDevice {
+  id: string;
+  brand: string;
+  model: string;
+  serialNumber?: string;
+  side: 'left' | 'right' | 'both';
+  ear?: 'left' | 'right' | 'both' | 'bilateral'; // Alternative to side for legacy compatibility
+  type: 'hearing_aid' | 'cochlear_implant' | 'bone_anchored';
+  status: 'active' | 'trial' | 'returned' | 'replaced' | 'assigned' | 'defective';
+  purchaseDate?: string;
+  assignedDate?: string;
+  warrantyExpiry?: string;
+  lastServiceDate?: string;
+  batteryType?: string;
+
+  // Pricing information
+  price?: number;
+  listPrice?: number;
+  salePrice?: number;
+  sgkReduction?: number;
+  patientPayment?: number;
+
+  // Payment and SGK
+  sgkScheme?: boolean;
+  paymentMethod?: 'cash' | 'card' | 'transfer' | 'installment';
+
+  // Trial information
+  trialEndDate?: string;
+
+  // Assignment details
+  assignedBy?: string;
+  reason?: 'new' | 'replacement' | 'upgrade' | 'trial' | 'warranty';
+  notes?: string;
+
   settings?: Record<string, unknown>;
 }
 
@@ -213,13 +208,9 @@ export interface EReceiptMaterial {
 export interface PatientFilters {
   search?: string;
   status?: Patient['status'];
-  segment?: Patient['segment'];
-  label?: Patient['label'];
-  acquisitionType?: Patient['acquisitionType'];
+  segment?: string;
+  acquisitionType?: string;
   tags?: string[];
-  hasDevices?: boolean;
-  sgkStatus?: Patient['sgkStatus'];
-  priorityScore?: { min?: number; max?: number };
   dateRange?: { start: string; end: string };
   page?: number;
   limit?: number;
@@ -236,13 +227,8 @@ export interface PatientSearchResult {
 // Patient statistics
 export interface PatientStats {
   total: number;
-  byStatus: Record<Patient['status'], number>;
-  bySegment: Record<Patient['segment'], number>;
-  byLabel: Record<Patient['label'], number>;
-  highPriority: number;
-  withDevices: number;
-  sgkPending: number;
-  overduePayments: number;
+  byStatus: Record<string, number>;
+  bySegment: Record<string, number>;
 }
 
 // Patient matching for OCR/document processing

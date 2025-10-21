@@ -130,11 +130,11 @@ export const useAuthStore = create<AuthStore>()(
             if (success && token && userData) {
               // Transform user data to match expected format
               const transformedUser = {
-                id: userData.id,
-                email: userData.email,
-                name: userData.fullName || userData.username,
-                role: userData.role
-              };
+                    id: userData.id,
+                    email: userData.email,
+                    name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.username,
+                    role: userData.role
+                  };
               
               // Store tokens (now includes refresh token from backend)
               set({
@@ -236,23 +236,42 @@ export const useAuthStore = create<AuthStore>()(
                   window.__AUTH_TOKEN__ = storedToken;
                 }
                 
-                // Set auth state with stored tokens
-                set({
-                  token: storedToken,
-                  refreshToken: storedRefreshToken,
-                  isAuthenticated: true,
-                  // We'll get user info from a /me endpoint or similar
-                  user: { id: 'temp', email: 'seed-admin', name: 'Admin User' }, // Temporary user
-                });
+                // Get current user info from API
+                const { usersGetCurrentUser } = await import('../api/generated/users/users').then(module => module.getUsers());
+                const userResponse = await usersGetCurrentUser();
                 
-                return;
+                if (userResponse.status === 200 && userResponse.data) {
+                  const userData = userResponse.data;
+                  const transformedUser = {
+                    id: userData.id || '',
+                    email: userData.email || '',
+                    name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.username || '',
+                    role: userData.role || 'user'
+                  };
+                  
+                  // Set auth state with stored tokens and real user data
+                  set({
+                    user: transformedUser,
+                    token: storedToken,
+                    refreshToken: storedRefreshToken,
+                    isAuthenticated: true,
+                    error: null,
+                  });
+                  
+                  console.log('Auth state restored successfully with user:', transformedUser);
+                  return;
+                }
               } catch (error) {
-                console.warn('Failed to restore auth state:', error);
+                console.warn('Failed to restore auth state, will try auto-login:', error);
+                // Clear invalid token
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem('auth_token_timestamp');
               }
             }
           }
           
-          // No valid stored token, try auto-login
+          // No valid stored token or restoration failed, try auto-login
           try {
             setLoading(true);
             await login(DEV_CONFIG.DEFAULT_CREDENTIALS);

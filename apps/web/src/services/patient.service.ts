@@ -74,7 +74,7 @@ export class PatientService {
     // Try to page through backend API and aggregate patients into IndexedDB cache.
     // If anything fails, fall back to localStorage.
     try {
-      const aggregated: OrvalPatient[] = [];
+      const aggregated: Patient[] = [];
       let cursor: string | undefined;
       const perPage = 100;
 
@@ -109,13 +109,12 @@ export class PatientService {
       }
 
       if (aggregated.length > 0) {
-        // Convert OrvalPatient[] to Patient[] and cache
-        const patients = aggregated.map(p => this.convertOrvalPatient(p as any));
-        this.patients = patients;
+        // Use Patient directly
+        this.patients = aggregated;
         
         // Cache in IndexedDB
-        await indexedDBManager.savePatients(patients);
-        console.log(`🔄 Refreshed ${patients.length} patients from API and cached in IndexedDB`);
+        await indexedDBManager.savePatients(aggregated as any);
+        console.log(`🔄 Refreshed ${aggregated.length} patients from API and cached in IndexedDB`);
       }
     } catch (error) {
       console.warn('API refresh failed, trying localStorage fallback:', error);
@@ -165,29 +164,20 @@ export class PatientService {
     }
   }
 
-  private normalizePatientData(): void {
-    this.patients = this.patients.map(patient => ({
-      ...patient,
-      name: patient.name || `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Unnamed Patient',
-      tags: Array.isArray(patient.tags) ? patient.tags : [],
-      devices: Array.isArray(patient.devices) ? patient.devices : [],
-      notes: Array.isArray(patient.notes) ? patient.notes : [],
-      communications: Array.isArray(patient.communications) ? patient.communications : [],
-      reports: Array.isArray(patient.reports) ? patient.reports : [],
-      ereceiptHistory: Array.isArray(patient.ereceiptHistory) ? patient.ereceiptHistory : [],
-      sgkInfo: patient.sgkInfo || { hasInsurance: false },
-      priorityScore: patient.priorityScore || this.calculatePriorityScore(patient)
-    }));
-  }
-
   // CRUD Operations
   async createPatient(patientData: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>): Promise<Patient> {
     try {
       await this.init();
 
       // Validate required fields
-      if (!patientData.name?.trim()) {
-        throw new Error('Patient name is required');
+      if (!patientData.tcNumber?.trim()) {
+        throw new Error('TC number is required');
+      }
+      if (!patientData.firstName?.trim()) {
+        throw new Error('First name is required');
+      }
+      if (!patientData.lastName?.trim()) {
+        throw new Error('Last name is required');
       }
       if (!patientData.phone?.trim()) {
         throw new Error('Patient phone is required');
@@ -201,35 +191,13 @@ export class PatientService {
         }
       }
 
-      // Validate SGK status if provided
-      if (patientData.sgkStatus && !['pending', 'approved', 'rejected', 'paid'].includes(patientData.sgkStatus)) {
-        throw new Error('Invalid SGK status format');
-      }
-
-      // Build patient object first, then calculate derived fields like priorityScore
+      // Build patient object
       const patient: Patient = {
         id: this.generateId(),
         ...patientData,
-        name: patientData.name || `${patientData.firstName || ''} ${patientData.lastName || ''}`.trim() || 'Unnamed Patient',
-        tags: patientData.tags || [],
-        devices: patientData.devices || [],
-        notes: patientData.notes || [],
-        communications: patientData.communications || [],
-        reports: patientData.reports || [],
-        ereceiptHistory: patientData.ereceiptHistory || [],
-        sgkInfo: patientData.sgkInfo || { hasInsurance: false },
-        priorityScore: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-
-      // Calculate priority score using the finalized patient object
-      try {
-        patient.priorityScore = this.calculatePriorityScore(patient);
-      } catch (err) {
-        // Fallback: ensure priorityScore is numeric
-        patient.priorityScore = 0;
-      }
 
       this.patients.push(patient);
       this.savePatients();
@@ -280,17 +248,11 @@ export class PatientService {
       }
 
       const oldPatient = { ...this.patients[index] };
-      // Build a temporary object to compute priority score without unsafe casts
-      const tempForScore: Patient = {
-        ...this.patients[index],
-        ...(updates as Partial<Patient>)
-      };
       const updatedPatient: Patient = {
         ...this.patients[index],
         ...updates,
         id, // Ensure ID doesn't change
-        updatedAt: new Date().toISOString(),
-        priorityScore: this.calculatePriorityScore(tempForScore)
+        updatedAt: new Date().toISOString()
       };
 
       this.patients[index] = updatedPatient;
@@ -389,10 +351,11 @@ export class PatientService {
       if (filters.search?.trim()) {
         const searchLower = filters.search.toLowerCase();
         filteredPatients = filteredPatients.filter(p =>
-          (p.name && p.name.toLowerCase().includes(searchLower)) ||
+          (p.firstName && p.firstName.toLowerCase().includes(searchLower)) ||
+          (p.lastName && p.lastName.toLowerCase().includes(searchLower)) ||
           p.phone.includes(filters.search!) ||
           (p.tcNumber && p.tcNumber.includes(filters.search!)) ||
-          (p.email && p.email.toLowerCase().includes(searchLower))
+          (p.email && p.email && p.email.toLowerCase().includes(searchLower))
         );
       }
 
@@ -404,36 +367,14 @@ export class PatientService {
         filteredPatients = filteredPatients.filter(p => p.segment === filters.segment);
       }
 
-      if (filters.label) {
-        filteredPatients = filteredPatients.filter(p => p.label === filters.label);
-      }
-
       if (filters.acquisitionType) {
         filteredPatients = filteredPatients.filter(p => p.acquisitionType === filters.acquisitionType);
       }
 
       if (filters.tags && filters.tags.length > 0) {
         filteredPatients = filteredPatients.filter(p =>
-          filters.tags!.some(tag => p.tags.includes(tag))
+          p.tags && filters.tags!.some(tag => p.tags!.includes(tag))
         );
-      }
-
-      if (filters.hasDevices !== undefined) {
-        filteredPatients = filteredPatients.filter(p =>
-          filters.hasDevices ? p.devices.length > 0 : p.devices.length === 0
-        );
-      }
-
-      if (filters.sgkStatus) {
-        filteredPatients = filteredPatients.filter(p => p.sgkStatus === filters.sgkStatus);
-      }
-
-      if (filters.priorityScore) {
-        filteredPatients = filteredPatients.filter(p => {
-          const score = p.priorityScore || 0;
-          return (!filters.priorityScore!.min || score >= filters.priorityScore!.min) &&
-                 (!filters.priorityScore!.max || score <= filters.priorityScore!.max);
-        });
       }
 
       if (filters.dateRange) {
@@ -441,7 +382,7 @@ export class PatientService {
           const start = new Date(filters.dateRange.start);
           const end = new Date(filters.dateRange.end);
           filteredPatients = filteredPatients.filter(p => {
-            const created = new Date(p.createdAt);
+            const created = p.createdAt ? new Date(p.createdAt) : new Date(0);
             return created >= start && created <= end;
           });
         } catch (error) {
@@ -449,14 +390,11 @@ export class PatientService {
         }
       }
 
-      // Sort by priority score (high to low) and then by name
+      // Sort by creation date (newest first)
       filteredPatients.sort((a, b) => {
-        const scoreDiff = (b.priorityScore || 0) - (a.priorityScore || 0);
-        if (scoreDiff !== 0) return scoreDiff;
-        // Add null check for name property
-        const nameA = a.name || '';
-        const nameB = b.name || '';
-        return nameA.localeCompare(nameB, 'tr');
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA;
       });
 
       // Apply pagination
@@ -492,59 +430,20 @@ export class PatientService {
 
       const stats: PatientStats = {
         total: this.patients.length,
-        byStatus: { active: 0, inactive: 0 },
-        bySegment: { new: 0, trial: 0, purchased: 0, control: 0, renewal: 0, existing: 0, vip: 0 },
-        byLabel: {
-          'yeni': 0,
-          'arama-bekliyor': 0,
-          'randevu-verildi': 0,
-          'deneme-yapildi': 0,
-          'kontrol-hastasi': 0,
-          'satis-tamamlandi': 0
-        },
-        highPriority: 0,
-        withDevices: 0,
-        sgkPending: 0,
-        overduePayments: 0
+        byStatus: {},
+        bySegment: {}
       };
 
       this.patients.forEach(patient => {
         try {
           // Status counts
-          if (patient.status in stats.byStatus) {
-            stats.byStatus[patient.status]++;
+          if (patient.status) {
+            stats.byStatus[patient.status] = (stats.byStatus[patient.status] || 0) + 1;
           }
 
           // Segment counts
-          if (patient.segment in stats.bySegment) {
-            stats.bySegment[patient.segment]++;
-          }
-
-          // Label counts
-          if (patient.label in stats.byLabel) {
-            stats.byLabel[patient.label]++;
-          }
-
-          // High priority (score >= 80)
-          if ((patient.priorityScore || 0) >= 80) {
-            stats.highPriority++;
-          }
-
-          // With devices
-          if (patient.devices && patient.devices.length > 0) {
-            stats.withDevices++;
-          }
-
-          // SGK pending
-          if (patient.sgkStatus === 'pending') {
-            stats.sgkPending++;
-          }
-
-          // Overdue payments (simplified check)
-          if (patient.installments && patient.installments.some(i => 
-            i.status === 'overdue' || (i.dueDate && new Date(i.dueDate) < new Date() && i.status === 'pending')
-          )) {
-            stats.overduePayments++;
+          if (patient.segment) {
+            stats.bySegment[patient.segment] = (stats.bySegment[patient.segment] || 0) + 1;
           }
         } catch (error) {
           console.warn('Error processing patient stats for patient:', patient.id, error);
@@ -557,209 +456,9 @@ export class PatientService {
       // Return empty stats on error
       return {
         total: 0,
-        byStatus: { active: 0, inactive: 0 },
-        bySegment: { new: 0, trial: 0, purchased: 0, control: 0, renewal: 0, existing: 0, vip: 0 },
-        byLabel: {
-          'yeni': 0,
-          'arama-bekliyor': 0,
-          'randevu-verildi': 0,
-          'deneme-yapildi': 0,
-          'kontrol-hastasi': 0,
-          'satis-tamamlandi': 0
-        },
-        highPriority: 0,
-        withDevices: 0,
-        sgkPending: 0,
-        overduePayments: 0
+        byStatus: {},
+        bySegment: {}
       };
-    }
-  }
-
-  // Priority system
-  calculatePriorityScore(patient: Patient): number {
-    let score = 0;
-
-    // Device trial without purchase (high priority)
-    if (patient.deviceTrial && patient.priceGiven && !patient.purchased) {
-      score += 100;
-    }
-
-    // Days since last contact
-    if (patient.lastContactDate) {
-      const daysSinceContact = Math.floor(
-        (Date.now() - new Date(patient.lastContactDate).getTime()) / (1000 * 60 * 60 * 24)
-      );
-      if (daysSinceContact > 30) score += Math.min(daysSinceContact, 50);
-    }
-
-    // Missed appointments
-    if (patient.missedAppointments && patient.missedAppointments > 0) {
-      score += patient.missedAppointments * 20;
-    }
-
-    // Overdue payments
-    if (patient.overdueAmount && patient.overdueAmount > 0) {
-      score += Math.min(patient.overdueAmount / 1000 * 10, 50);
-    }
-
-    // SGK status
-    if (patient.sgkStatus === 'rejected') {
-      score += 75;
-    } else if (patient.sgkStatus === 'pending') {
-      score += 25;
-    }
-
-    // Battery report due
-    if (patient.batteryReportDue) {
-      const dueDate = new Date(patient.batteryReportDue);
-      const daysUntilDue = Math.floor((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-      if (daysUntilDue <= 30 && daysUntilDue >= 0) {
-        score += 30 - daysUntilDue;
-      } else if (daysUntilDue < 0) {
-        score += Math.abs(daysUntilDue) * 2;
-      }
-    }
-
-    return Math.round(score);
-  }
-
-  async getHighPriorityPatients(): Promise<Patient[]> {
-    try {
-      await this.init();
-      return this.patients
-        .filter(p => (p.priorityScore || 0) >= 80)
-        .sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0));
-    } catch (error) {
-      console.error('Failed to get high priority patients:', error);
-      return [];
-    }
-  }
-
-  async addDevice(patientId: string, device: Omit<PatientDevice, 'id'>): Promise<PatientDevice | null> {
-    try {
-      if (!patientId?.trim()) {
-        throw new Error('Patient ID is required');
-      }
-      
-      if (!device.type?.trim()) {
-        throw new Error('Device type is required');
-      }
-
-      const patient = await this.getPatient(patientId);
-      if (!patient) {
-        throw new Error('Patient not found');
-      }
-
-      const newDevice: PatientDevice = {
-        id: this.generateId(),
-        ...device
-      };
-
-      const updatedPatient = await this.updatePatient(patientId, {
-        devices: [...patient.devices, newDevice]
-      });
-
-      return updatedPatient ? newDevice : null;
-    } catch (error) {
-      console.error('Failed to add device:', error);
-      throw error instanceof Error ? error : new Error('Failed to add device');
-    }
-  }
-
-  async updateDevice(patientId: string, deviceId: string, updates: Partial<PatientDevice>): Promise<PatientDevice | null> {
-    try {
-      if (!patientId?.trim() || !deviceId?.trim()) {
-        throw new Error('Patient ID and Device ID are required');
-      }
-
-      const patient = await this.getPatient(patientId);
-      if (!patient) {
-        throw new Error('Patient not found');
-      }
-
-      const deviceIndex = patient.devices.findIndex(d => d.id === deviceId);
-      if (deviceIndex === -1) {
-        throw new Error('Device not found');
-      }
-
-      const updatedDevice = { ...patient.devices[deviceIndex], ...updates };
-      const updatedDevices = [...patient.devices];
-      updatedDevices[deviceIndex] = updatedDevice;
-
-      const updatedPatient = await this.updatePatient(patientId, {
-        devices: updatedDevices
-      });
-
-      return updatedPatient ? updatedDevice : null;
-    } catch (error) {
-      console.error('Failed to update device:', error);
-      throw error instanceof Error ? error : new Error('Failed to update device');
-    }
-  }
-
-  async addNote(patientId: string, noteText: string, type: PatientNote['type'] = 'general'): Promise<PatientNote | null> {
-    try {
-      if (!patientId?.trim()) {
-        throw new Error('Patient ID is required');
-      }
-      
-      if (!noteText?.trim()) {
-        throw new Error('Note text is required');
-      }
-
-      const patient = await this.getPatient(patientId);
-      if (!patient) {
-        throw new Error('Patient not found');
-      }
-
-      const newNote: PatientNote = {
-        id: this.generateId(),
-        author: 'System', // TODO: Get from current user context
-        date: new Date().toISOString(),
-        text: noteText.trim(),
-        type
-      };
-
-      const updatedPatient = await this.updatePatient(patientId, {
-        notes: [...patient.notes, newNote]
-      });
-
-      return updatedPatient ? newNote : null;
-    } catch (error) {
-      console.error('Failed to add note:', error);
-      throw error instanceof Error ? error : new Error('Failed to add note');
-    }
-  }
-
-  async addCommunication(patientId: string, communication: Omit<Communication, 'id'>): Promise<Communication | null> {
-    try {
-      if (!patientId?.trim()) {
-        throw new Error('Patient ID is required');
-      }
-
-      if (!communication.type || !communication.content?.trim()) {
-        throw new Error('Communication type and content are required');
-      }
-
-      const patient = await this.getPatient(patientId);
-      if (!patient) {
-        throw new Error('Patient not found');
-      }
-
-      const newCommunication: Communication = {
-        id: this.generateId(),
-        ...communication,
-        timestamp: new Date().toISOString()
-      };
-
-      const updatedPatient = await this.updatePatient(patientId, {
-        communications: [...(patient.communications || []), newCommunication]
-      });
-
-      return updatedPatient ? newCommunication : null;
-    } catch (error) {
-      console.error('Failed to add communication:', error);
-      throw error instanceof Error ? error : new Error('Failed to add communication');
     }
   }
 
@@ -793,8 +492,9 @@ export class PatientService {
     }
 
     // Name similarity
-    if (request.name && patient.name) {
-      const nameSimilarity = this.calculateStringSimilarity(request.name, patient.name);
+    if (request.name && (patient.firstName || patient.lastName)) {
+      const patientName = `${patient.firstName || ''} ${patient.lastName || ''}`.trim();
+      const nameSimilarity = this.calculateStringSimilarity(request.name, patientName);
       if (nameSimilarity > 0.6) {
         score += nameSimilarity * 0.4;
         matchedFields.push('name');
@@ -953,44 +653,6 @@ export class PatientService {
     } catch (error) {
       throw new Error(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-  }
-
-  private convertOrvalPatient(backendPatient: Patient): Patient {
-    // Handle both camelCase and snake_case field names from API
-    const firstName = backendPatient.firstName || (backendPatient as any).first_name || '';
-    const lastName = backendPatient.lastName || (backendPatient as any).last_name || '';
-    const tcNumber = backendPatient.tcNumber || (backendPatient as any).tc_number || '';
-    const birthDate = backendPatient.birthDate || (backendPatient as any).birth_date || '';
-    const acquisitionType = backendPatient.acquisitionType || (backendPatient as any).acquisition_type || 'diger';
-    const priorityScore = backendPatient.priorityScore || (backendPatient as any).priority_score || 0;
-    const sgkInfo = backendPatient.sgkInfo || (backendPatient as any).sgk_info;
-
-    return {
-      id: backendPatient.id || (backendPatient as any)._id || (backendPatient as any).patientId || '',
-      name: `${firstName} ${lastName}`.trim() || 'Unnamed Patient',
-      firstName,
-      lastName,
-      phone: backendPatient.phone || '',
-      email: backendPatient.email || '',
-      tcNumber,
-      birthDate,
-      address: backendPatient.address || undefined,
-      status: (backendPatient.status || 'active').toLowerCase() as 'active' | 'inactive',
-      segment: (backendPatient.segment || 'new') as 'new' | 'trial' | 'purchased' | 'control' | 'renewal' | 'existing' | 'vip',
-      label: 'yeni' as const,
-      acquisitionType: acquisitionType as 'tabela' | 'sosyal-medya' | 'tanitim' | 'referans' | 'diger',
-      tags: Array.isArray(backendPatient.tags) ? backendPatient.tags : [],
-      devices: [],
-      notes: [],
-      communications: [],
-      reports: [],
-      ereceiptHistory: [],
-      sgkInfo: sgkInfo ? { ...sgkInfo } : { hasInsurance: false },
-      sgkStatus: 'pending' as const,
-      priorityScore,
-      createdAt: backendPatient.createdAt || new Date().toISOString(),
-      updatedAt: backendPatient.updatedAt || new Date().toISOString()
-    };
   }
 }
 

@@ -255,11 +255,11 @@ export const SimpleVirtualizedPatientList: React.FC<VirtualizedPatientListProps>
             size="sm"
             onClick={(e) => {
               e.stopPropagation();
-              onPatientClick?.(patient);
+              onEdit?.(patient);
             }}
-            title="Görüntüle"
+            title="Düzenle"
           >
-            <Eye className="w-4 h-4" />
+            <Edit className="w-4 h-4" />
           </Button>
           
           <Button

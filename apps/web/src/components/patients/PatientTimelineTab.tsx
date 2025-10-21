@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import * as React from 'react';
+const { useState, useMemo } = React;
 import { Button, Input, Badge } from '@x-ear/ui-web';
 import { Card, CardContent, CardHeader, CardTitle } from '@x-ear/ui-web';
 import { useToastHelpers } from '@x-ear/ui-web';

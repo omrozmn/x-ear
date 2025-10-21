@@ -51,12 +51,12 @@ export interface UsePatientsReturn {
   validatePatient: (patient: Partial<Patient>) => { isValid: boolean; errors: string[] };
 }
 
-export const usePatients = (options: UsePatientsOptions = {}): UsePatientsReturn => {
-  const {
-    enableRealTimeSync = true,
-    cacheEnabled = true,
-    autoRefresh = false,
-    refreshInterval = 30000 // 30 seconds
+export function usePatients(options: UsePatientsOptions = {}) {
+  const { 
+    cacheEnabled = true, 
+    autoRefresh = false, 
+    refreshInterval = 300000, // 5 minutes instead of 30 seconds
+    enableRealTimeSync = false 
   } = options;
 
   // State
@@ -85,7 +85,7 @@ export const usePatients = (options: UsePatientsOptions = {}): UsePatientsReturn
         }
 
         // Load fresh data from service
-        const patientsResult = await patientService.getPatients();
+        const patientsResult = await patientService.getPatients({ limit: 10000 }); // Get all patients
         setPatients(patientsResult.patients);
 
       } catch (err) {
@@ -105,7 +105,7 @@ export const usePatients = (options: UsePatientsOptions = {}): UsePatientsReturn
 
     const interval = setInterval(async () => {
       try {
-        const updatedPatientsResult = await patientService.getPatients();
+        const updatedPatientsResult = await patientService.getPatients({ limit: 10000 }); // Get all patients
         setPatients(updatedPatientsResult.patients);
       } catch (err) {
         console.error('Auto refresh failed:', err);
@@ -287,7 +287,7 @@ export const usePatients = (options: UsePatientsOptions = {}): UsePatientsReturn
       setIsLoading(true);
       setError(null);
 
-      const freshPatientsResult = await patientService.getPatients();
+      const freshPatientsResult = await patientService.getPatients({ limit: 10000 }); // Get all patients
       setPatients(freshPatientsResult.patients);
 
       // Re-apply current filters if any

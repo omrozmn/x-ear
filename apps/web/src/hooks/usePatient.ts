@@ -60,7 +60,7 @@ export const usePatient = (
     enableRealTimeSync = true,
     cacheEnabled = true,
     autoRefresh = false,
-    refreshInterval = 30000 // 30 seconds
+    refreshInterval = 300000 // 5 minutes instead of 30 seconds
   } = options;
 
   // State

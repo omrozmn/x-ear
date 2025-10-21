@@ -53,7 +53,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient, o
       const devicesApi = getDevices();
       const params: DevicesGetDevicesParams = {
         page: 1,
-        per_page: 100
+        per_page: 20 // Reduced from 100 to 20 to minimize data transfer
       };
       
       const response = await devicesApi.devicesGetDevices(params);
@@ -75,7 +75,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient, o
       const inventoryApi = getInventory();
       const params: InventoryGetInventoryItemsParams = {
         page: 1,
-        per_page: 100,
+        per_page: 20, // Reduced from 100 to 20 to minimize data transfer
         status: 'IN_STOCK'
       };
       

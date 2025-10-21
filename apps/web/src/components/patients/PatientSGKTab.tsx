@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Input, Badge } from '@x-ear/ui-web';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { FileText, Download, Eye, RefreshCw, Upload, Trash2, AlertCircle, CheckCircle, Clock, Plus, X } from 'lucide-react';
-import { Patient } from '../../types/patient';
+import { Patient } from '../../types/patient/patient-base.types';
 import { SGKDocument, SGKDocumentType } from '../../types/sgk';
 import { useProcessSgkOcr, useTriggerSgkProcessing } from '../../hooks/sgk/useSgk';
 import sgkService from '../../services/sgk/sgk.service';
@@ -27,7 +27,15 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patient, onPatient
   // SGK hooks
   const processingMutation = useTriggerSgkProcessing();
 
-  const sgkData = patient.sgkInfo || {};
+  const [sgkData, setSgkData] = useState({
+    hasInsurance: patient.sgkInfo?.hasInsurance || false,
+    insuranceNumber: patient.sgkInfo?.insuranceNumber || '',
+    insuranceType: patient.sgkInfo?.insuranceType || 'sgk',
+    coveragePercentage: patient.sgkInfo?.coveragePercentage || 0,
+    approvalNumber: patient.sgkInfo?.approvalNumber || '',
+    approvalDate: patient.sgkInfo?.approvalDate || '',
+    expiryDate: patient.sgkInfo?.expiryDate || '',
+  });
   const sgkStatus = patient.status || 'pending';
   
   // Enhanced SGK data with fallbacks

@@ -435,14 +435,14 @@ export function PatientSearch({
                               {patient.firstName} {patient.lastName}
                             </span>
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                              patient.status === 'active' 
+                              patient.status === 'ACTIVE' 
                                 ? 'bg-green-100 text-green-800'
-                                : patient.status === 'inactive'
+                                : patient.status === 'INACTIVE'
                                 ? 'bg-yellow-100 text-yellow-800'
                                 : 'bg-gray-100 text-gray-800'
                             }`}>
-                              {patient.status === 'active' ? 'Aktif' : 
-                               patient.status === 'inactive' ? 'Pasif' : 'Arşiv'}
+                              {patient.status === 'ACTIVE' ? 'Aktif' : 
+                               patient.status === 'INACTIVE' ? 'Pasif' : 'Arşiv'}
                             </span>
                           </div>
                           

@@ -98,7 +98,10 @@ export type PatientTab =
   | 'documents' 
   | 'timeline' 
   | 'notes' 
-  | 'appointments';
+  | 'appointments'
+  | 'overview'
+  | 'hearing-tests'
+  | 'settings';
 
 interface PatientTabsProps {
   patient: Patient;

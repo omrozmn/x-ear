@@ -4,7 +4,7 @@
  */
 
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
-import { Patient } from '../../types/patient';
+import type { Patient } from '../../types/patient';
 import { outbox } from '../../utils/outbox';
 
 interface PatientDB extends DBSchema {
@@ -224,28 +224,97 @@ export class PatientOfflineSync {
 
   private async fetchLatestPatients(): Promise<void> {
     try {
-      const response = await fetch('/api/patients?per_page=1000');
-      if (!response.ok) throw new Error('Failed to fetch patients');
+      // Check if there are active API calls to prevent conflicts
+      if (this.hasActiveApiCalls()) {
+        console.log('Patient sync: Skipping background sync due to active API calls');
+        return;
+      }
 
-      const data = await response.json();
-      const serverPatients = data.data || [];
+      let patients: Patient[] = [];
+      let cursor: string | null = null;
+      let hasMore = true;
+      let requestCount = 0;
+      const maxRequests = 5; // Further reduced to prevent resource exhaustion
 
-      // Update local database with server data
-      for (const serverPatient of serverPatients) {
-        const localPatient = await this.db!.get('patients', serverPatient.id);
+      while (hasMore && requestCount < maxRequests) {
+        // Use even smaller page size for background sync
+        const url = cursor ? `/api/patients?per_page=10&cursor=${cursor}` : '/api/patients?per_page=10';
         
-        // Only update if server version is newer or local doesn't exist
-        if (!localPatient || new Date(serverPatient.updatedAt) > new Date(localPatient.updatedAt)) {
-          await this.db!.put('patients', {
-            ...serverPatient,
-            syncStatus: 'synced'
-          });
+        // Add longer delay between requests to prevent resource exhaustion
+        if (requestCount > 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Increased to 1000ms delay
         }
+        
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            console.warn(`Background sync request failed: ${response.status}`);
+            break; // Stop on error instead of throwing
+          }
+
+          const data = await response.json();
+          patients.push(...(data.data || []));
+          cursor = data.meta?.nextCursor;
+          hasMore = !!cursor;
+          requestCount++;
+
+          // Log progress for debugging
+          console.log(`Background sync: fetched ${data.data?.length || 0} patients (batch ${requestCount})`);
+        } catch (fetchError) {
+          console.warn('Background sync fetch error:', fetchError);
+          break; // Stop on network error
+        }
+      }
+
+      // Update local database with server data (only if we got some data)
+      if (patients.length > 0) {
+        for (const serverPatient of patients) {
+          const localPatient = await this.db!.get('patients', serverPatient.id);
+          
+          // Only update if server version is newer or local doesn't exist
+          if (!localPatient || new Date(serverPatient.updatedAt) > new Date(localPatient.updatedAt)) {
+            await this.db!.put('patients', {
+              ...serverPatient,
+              syncStatus: 'synced'
+            });
+          }
+        }
+        console.log(`Background sync: updated ${patients.length} patients in local DB`);
+      }
+
+      // If we hit the request limit, schedule another sync for much later
+      if (hasMore && requestCount >= maxRequests) {
+        console.log('Patient sync: Partial sync completed, scheduling continuation in 2 minutes');
+        setTimeout(() => this.syncWithServer(), 120000); // Continue in 2 minutes instead of 30 seconds
       }
     } catch (error) {
       console.warn('Failed to fetch latest patients:', error);
       // Don't throw - offline mode should still work
     }
+  }
+
+  // Check if there are active API calls that might conflict with background sync
+  private hasActiveApiCalls(): boolean {
+    // Check for active React Query requests
+    const queryClient = (window as any).__REACT_QUERY_CLIENT__;
+    if (queryClient) {
+      const queries = queryClient.getQueryCache().getAll();
+      const activePatientQueries = queries.filter((query: any) => 
+        query.queryKey?.[0] === 'patients' && query.state.fetchStatus === 'fetching'
+      );
+      if (activePatientQueries.length > 0) {
+        return true;
+      }
+    }
+
+    // Check for ongoing fetch requests (basic heuristic)
+    const performanceEntries = performance.getEntriesByType('navigation');
+    const recentRequests = performanceEntries.filter((entry: any) => 
+      entry.name?.includes('/api/patients') && 
+      (Date.now() - entry.startTime) < 5000 // Within last 5 seconds
+    );
+    
+    return recentRequests.length > 0;
   }
 
   private async updateSyncMetadata(): Promise<void> {

@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { useState, useEffect, useCallback } from 'react';
+import { getCommunications } from '../api/generated/communications/communications';
 
 // Simplified types without idb dependency for now
 interface CommunicationMessage {
@@ -287,26 +288,23 @@ class SimpleCommunicationSync {
   }
 
   private async syncOutboxItem(item: any): Promise<void> {
-    const baseUrl = '/api/communications';
-    
-    const url = item.action === 'create' 
-      ? `${baseUrl}/${item.entityType}s`
-      : `${baseUrl}/${item.entityType}s/${item.entityId}`;
-    
-    const method = item.action === 'create' ? 'POST' : 
-                   item.action === 'update' ? 'PUT' : 'DELETE';
-
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Idempotency-Key': `offline_${item.id}`
-      },
-      body: item.action !== 'delete' ? JSON.stringify(item.data) : undefined
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    try {
+      const communications = getCommunications();
+      
+      if (item.entityType === 'template') {
+        if (item.action === 'create') {
+          await communications.communicationsCreateTemplate(item.data);
+        } else if (item.action === 'update') {
+          await communications.communicationsUpdateTemplate(item.entityId, item.data);
+        } else if (item.action === 'delete') {
+          await communications.communicationsDeleteTemplate(item.entityId);
+        }
+      }
+      // Note: Messages endpoint doesn't have create/update/delete operations in the current API
+      // This would need to be implemented when those endpoints are added
+      
+    } catch (error) {
+      throw new Error(`Failed to sync ${item.action} ${item.entityType}: ${error}`);
     }
 
     // Update local sync status
@@ -345,55 +343,61 @@ class SimpleCommunicationSync {
   }
 
   private async syncMessagesFromServer(): Promise<void> {
-    const response = await fetch('/api/communications/messages?limit=1000');
-    if (!response.ok) return;
+    try {
+      const communications = getCommunications();
+      const response = await communications.communicationsListMessages({ per_page: 1000 });
+      
+      if (!response.data.success) return;
 
-    const result = await response.json();
-    if (!result.success) return;
+      const serverMessages: CommunicationMessage[] = response.data.data?.map((msg: any) => ({
+        ...msg,
+        syncStatus: 'synced' as const
+      })) || [];
 
-    const serverMessages: CommunicationMessage[] = result.data.map((msg: any) => ({
-      ...msg,
-      syncStatus: 'synced' as const
-    }));
+      // Merge with local messages
+      const localMessages = this.getMessages();
+      const merged = [...serverMessages];
 
-    // Merge with local messages
-    const localMessages = this.getMessages();
-    const merged = [...serverMessages];
+      // Add local messages that aren't on server
+      localMessages.forEach(local => {
+        if (!serverMessages.find(server => server.id === local.id)) {
+          merged.push(local);
+        }
+      });
 
-    // Add local messages that aren't on server
-    localMessages.forEach(local => {
-      if (!serverMessages.find(server => server.id === local.id)) {
-        merged.push(local);
-      }
-    });
-
-    localStorage.setItem(this.STORAGE_KEYS.messages, JSON.stringify(merged));
+      localStorage.setItem(this.STORAGE_KEYS.messages, JSON.stringify(merged));
+    } catch (error) {
+      console.error('Failed to sync messages from server:', error);
+    }
   }
 
   private async syncTemplatesFromServer(): Promise<void> {
-    const response = await fetch('/api/communications/templates?limit=1000');
-    if (!response.ok) return;
+    try {
+      const communications = getCommunications();
+      const response = await communications.communicationsListTemplates();
+      
+      if (!response.data.success) return;
 
-    const result = await response.json();
-    if (!result.success) return;
+      const serverTemplates: CommunicationTemplate[] = response.data.data?.map((tmpl: any) => ({
+        ...tmpl,
+        syncStatus: 'synced' as const
+      })) || [];
 
-    const serverTemplates: CommunicationTemplate[] = result.data.map((tmpl: any) => ({
-      ...tmpl,
-      syncStatus: 'synced' as const
-    }));
+      // Merge with local templates
+      const localTemplates = this.getTemplates();
+      const merged = [...serverTemplates];
 
-    // Merge with local templates
-    const localTemplates = this.getTemplates();
-    const merged = [...serverTemplates];
+      // Add local templates that aren't on server
+      localTemplates.forEach(local => {
+        if (!serverTemplates.find(server => server.id === local.id)) {
+          merged.push(local);
+        }
+      });
 
-    // Add local templates that aren't on server
-    localTemplates.forEach(local => {
-      if (!serverTemplates.find(server => server.id === local.id)) {
-        merged.push(local);
-      }
-    });
-
-    localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(merged));
+      localStorage.setItem(this.STORAGE_KEYS.templates, JSON.stringify(merged));
+    } catch (error) {
+      console.error('Failed to sync templates from server:', error);
+    }
   }
 
   // Status methods
@@ -459,13 +463,13 @@ export const useCommunicationOfflineSync = () => {
     // Listen for sync changes
     communicationSync.addListener(updateSyncStatus);
 
-    // Periodic sync
+    // Periodic sync - reduced from 30s to 5 minutes to prevent excessive requests
     const interval = setInterval(() => {
       if (navigator.onLine) {
         communicationSync.syncOutbox();
         communicationSync.syncFromServer();
       }
-    }, 30000);
+    }, 300000); // Changed from 30000 (30s) to 300000 (5 minutes)
 
     return () => {
       window.removeEventListener('online', handleOnline);

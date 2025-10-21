@@ -792,6 +792,192 @@ export interface User {
   updatedAt?: string;
 }
 
+/**
+ * Type of communication template
+ */
+export type CommunicationTemplateTemplateType = typeof CommunicationTemplateTemplateType[keyof typeof CommunicationTemplateTemplateType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CommunicationTemplateTemplateType = {
+  sms: 'sms',
+  email: 'email',
+} as const;
+
+export interface CommunicationTemplate {
+  /** Unique template identifier */
+  id?: string;
+  /** Template name */
+  name?: string;
+  /** Template description */
+  description?: string;
+  /** Type of communication template */
+  templateType?: CommunicationTemplateTemplateType;
+  /** Type of communication template (snake_case alias) */
+  template_type?: CommunicationTemplateTemplateType;
+  /** Template category (appointment_reminder, payment_due, welcome, etc.) */
+  category?: string;
+  /** Email subject (for email templates) */
+  subject?: string;
+  /** Plain text content */
+  bodyText?: string;
+  /** Plain text content (snake_case alias) */
+  body_text?: string;
+  /** HTML content (for email templates) */
+  bodyHtml?: string;
+  /** HTML content (snake_case alias) */
+  body_html?: string;
+  /** Available template variables */
+  variables?: string[];
+  /** Whether template is active */
+  isActive?: boolean;
+}
+
+/**
+ * Type of message (sms or email)
+ */
+export type CommunicationMessageMessageType = typeof CommunicationMessageMessageType[keyof typeof CommunicationMessageMessageType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CommunicationMessageMessageType = {
+  sms: 'sms',
+  email: 'email',
+} as const;
+
+export interface CommunicationMessage {
+  /** Unique message identifier */
+  id?: string;
+  /** Type of message (sms or email) */
+  messageType?: CommunicationMessageMessageType;
+  /** Patient ID */
+  patientId?: string;
+  /** Patient ID (snake_case alias) */
+  patient_id?: string;
+  /** Campaign ID (if part of a campaign) */
+  campaignId?: string;
+  /** Campaign ID (snake_case alias) */
+  campaign_id?: string;
+  /** Template ID used for this message */
+  templateId?: string;
+  /** Template ID (snake_case alias) */
+  template_id?: string;
+  /** Message status (sent, delivered, failed, etc.) */
+  status?: string;
+  /** Phone number (for SMS messages) */
+  phoneNumber?: string;
+  /** Phone number (snake_case alias) */
+  phone_number?: string;
+  /** Recipient email address (for email messages) */
+  toEmail?: string;
+  /** Recipient email address (snake_case alias) */
+  to_email?: string;
+  /** Sender email address (for email messages) */
+  fromEmail?: string;
+  /** Sender email address (snake_case alias) */
+  from_email?: string;
+  /** Email subject (for email messages) */
+  subject?: string;
+  /** Message content (for SMS) */
+  message?: string;
+  /** Plain text content (for email) */
+  bodyText: string;
+  /** Plain text content (snake_case alias) */
+  body_text?: string;
+  /** HTML content (for email) */
+  bodyHtml?: string;
+  /** HTML content (snake_case alias) */
+  body_html?: string;
+  /** When the message was sent */
+  sentAt?: string;
+  /** When the message was sent (snake_case alias) */
+  sent_at?: string;
+  /** When the message was delivered */
+  deliveredAt?: string;
+  /** When the message was delivered (snake_case alias) */
+  delivered_at?: string;
+  /** Error message if sending failed */
+  errorMessage?: string;
+  /** Error message (snake_case alias) */
+  error_message?: string;
+  /** Cost of sending the message */
+  cost?: number;
+  /** Creation timestamp */
+  createdAt?: string;
+  /** Creation timestamp (snake_case alias) */
+  created_at?: string;
+  /** Last update timestamp */
+  updatedAt?: string;
+  /** Last update timestamp (snake_case alias) */
+  updated_at?: string;
+  /** Whether template is active (snake_case alias) */
+  is_active?: boolean;
+  /** Whether template is a system template */
+  isSystem?: boolean;
+  /** Whether template is a system template (snake_case alias) */
+  is_system?: boolean;
+  /** Number of times template has been used */
+  usageCount?: number;
+  /** Number of times template has been used (snake_case alias) */
+  usage_count?: number;
+  /** Last time template was used */
+  lastUsedAt?: string;
+  /** Last time template was used (snake_case alias) */
+  last_used_at?: string;
+}
+
+/**
+ * Type of communication template
+ */
+export type CommunicationTemplateCreateTemplateType = typeof CommunicationTemplateCreateTemplateType[keyof typeof CommunicationTemplateCreateTemplateType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CommunicationTemplateCreateTemplateType = {
+  sms: 'sms',
+  email: 'email',
+} as const;
+
+export interface CommunicationTemplateCreate {
+  /** Template name */
+  name: string;
+  /** Template description */
+  description?: string;
+  /** Type of communication template */
+  templateType: CommunicationTemplateCreateTemplateType;
+  /** Template category */
+  category?: string;
+  /** Email subject (for email templates) */
+  subject?: string;
+  /** Plain text content */
+  bodyText: string;
+  /** HTML content (for email templates) */
+  bodyHtml?: string;
+  /** Available template variables */
+  variables?: string[];
+  /** Whether template is active */
+  isActive?: boolean;
+}
+
+export interface CommunicationTemplateUpdate {
+  /** Template name */
+  name?: string;
+  /** Template description */
+  description?: string;
+  /** Template category */
+  category?: string;
+  /** Email subject (for email templates) */
+  subject?: string;
+  /** Plain text content */
+  bodyText?: string;
+  /** HTML content (for email templates) */
+  bodyHtml?: string;
+  /** Available template variables */
+  variables?: string[];
+  /** Whether template is active */
+  isActive?: boolean;
+}
+
 export type AppointmentsGetAppointmentsParams = {
 /**
  * Page number for pagination
@@ -839,12 +1025,158 @@ export const AppointmentsGetAppointmentsStatus = {
   RESCHEDULED: 'RESCHEDULED',
 } as const;
 
-export type AppointmentsGetAppointments200 = {
-  data?: Appointment[];
-  pagination?: PaginationInfo;
+export type AppointmentsCreateAppointmentBody = {
+  /** Patient ID */
+  patient_id: string;
+  /** Appointment date */
+  date: string;
+  /** Appointment time */
+  time: string;
+  /** Duration in minutes */
+  duration?: number;
+  /** Appointment type */
+  type?: string;
+  /** Additional notes */
+  notes?: string;
 };
 
-export type AppointmentsCreateAppointmentBody = { [key: string]: unknown };
+export type AppointmentsCreateAppointment201 = {
+  success?: boolean;
+  data?: Appointment;
+  requestId?: string;
+  timestamp?: string;
+};
+
+export type CommunicationsListMessagesParams = {
+/**
+ * Page number for pagination
+ */
+page?: number;
+/**
+ * Number of items per page (max 100)
+ * @maximum 100
+ */
+per_page?: number;
+/**
+ * Filter by message type
+ */
+type?: CommunicationsListMessagesType;
+/**
+ * Filter by message status
+ */
+status?: string;
+/**
+ * Filter by patient ID
+ */
+patient_id?: string;
+/**
+ * Filter by campaign ID
+ */
+campaign_id?: string;
+/**
+ * Filter messages from this date
+ */
+date_from?: string;
+/**
+ * Filter messages to this date
+ */
+date_to?: string;
+/**
+ * Search in message content, phone number, or email
+ */
+search?: string;
+};
+
+export type CommunicationsListMessagesType = typeof CommunicationsListMessagesType[keyof typeof CommunicationsListMessagesType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CommunicationsListMessagesType = {
+  sms: 'sms',
+  email: 'email',
+} as const;
+
+export type CommunicationsListMessages200Meta = {
+  total?: number;
+  page?: number;
+  perPage?: number;
+  totalPages?: number;
+};
+
+export type CommunicationsListMessages200 = {
+  success?: boolean;
+  data?: CommunicationMessage[];
+  meta?: CommunicationsListMessages200Meta;
+  timestamp?: string;
+};
+
+export type CommunicationsListTemplatesParams = {
+/**
+ * Filter by template type
+ */
+type?: CommunicationsListTemplatesType;
+/**
+ * Filter by template category
+ */
+category?: string;
+/**
+ * Filter by active status
+ */
+active?: boolean;
+/**
+ * Search in template name and description
+ */
+search?: string;
+};
+
+export type CommunicationsListTemplatesType = typeof CommunicationsListTemplatesType[keyof typeof CommunicationsListTemplatesType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CommunicationsListTemplatesType = {
+  sms: 'sms',
+  email: 'email',
+} as const;
+
+export type CommunicationsListTemplates200Meta = { [key: string]: unknown };
+
+export type CommunicationsListTemplates200 = {
+  success?: boolean;
+  data?: CommunicationTemplate[];
+  meta?: CommunicationsListTemplates200Meta;
+  requestId?: string;
+  timestamp?: string;
+};
+
+export type CommunicationsCreateTemplate201 = {
+  success?: boolean;
+  data?: CommunicationTemplate;
+  requestId?: string;
+  timestamp?: string;
+};
+
+export type CommunicationsGetTemplate200 = {
+  success?: boolean;
+  data?: CommunicationTemplate;
+  requestId?: string;
+  timestamp?: string;
+};
+
+export type CommunicationsUpdateTemplate200 = {
+  success?: boolean;
+  data?: CommunicationTemplate;
+  requestId?: string;
+  timestamp?: string;
+};
+
+export type CommunicationsDeleteTemplate200Data = { [key: string]: unknown };
+
+export type CommunicationsDeleteTemplate200 = {
+  success?: boolean;
+  data?: CommunicationsDeleteTemplate200Data;
+  requestId?: string;
+  timestamp?: string;
+};
 
 export type AppointmentsCancelAppointmentBody = { [key: string]: unknown };
 
