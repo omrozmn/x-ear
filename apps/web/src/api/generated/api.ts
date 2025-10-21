@@ -5,7 +5,7 @@
  * X-Ear CRM API for managing patients, devices, appointments, sales, and more
  * OpenAPI spec version: 0.0.0-auto
  */
-import { customInstance as axios } from '../orval-mutator';
+import axios from 'axios';
 import type {
   AxiosRequestConfig,
   AxiosResponse
@@ -44,17 +44,7 @@ export const PatientStatus = {
 export type PatientSgkInfo = { [key: string]: unknown };
 
 /**
- * SGK information (snake_case alias)
- */
-export type PatientSgkInfo = { [key: string]: unknown };
-
-/**
  * Custom patient data
- */
-export type PatientCustomData = { [key: string]: unknown };
-
-/**
- * Custom patient data (snake_case alias)
  */
 export type PatientCustomData = { [key: string]: unknown };
 
@@ -63,72 +53,44 @@ export interface Patient {
   id?: string;
   /** Turkish citizenship number */
   tcNumber: string;
-  /** Turkish citizenship number (snake_case alias) */
-  tc_number?: string;
   /** Identity number */
   identityNumber?: string;
-  /** Identity number (snake_case alias) */
-  identity_number?: string;
   /** Patient's first name */
   firstName: string;
-  /** Patient's first name (snake_case alias) */
-  first_name?: string;
   /** Patient's last name */
   lastName: string;
-  /** Patient's last name (snake_case alias) */
-  last_name?: string;
   /** Patient's phone number */
   phone: string;
   /** Patient's email address */
   email?: string;
   /** Patient's birth date */
   birthDate?: string;
-  /** Patient's birth date (snake_case alias) */
-  birth_date?: string;
   /** Patient's gender */
   gender?: PatientGender;
   /** Patient's city */
   addressCity?: string;
-  /** Patient's city (snake_case alias) */
-  address_city?: string;
   /** Patient's district */
   addressDistrict?: string;
-  /** Patient's district (snake_case alias) */
-  address_district?: string;
   /** Patient's full address */
   addressFull?: string;
-  /** Patient's full address (snake_case alias) */
-  address_full?: string;
   /** Patient status */
   status?: PatientStatus;
   /** Patient segment */
   segment?: string;
   /** How patient was acquired */
   acquisitionType?: string;
-  /** How patient was acquired (snake_case alias) */
-  acquisition_type?: string;
   /** Patient conversion step */
   conversionStep?: string;
-  /** Patient conversion step (snake_case alias) */
-  conversion_step?: string;
   /** Who referred the patient */
   referredBy?: string;
-  /** Who referred the patient (snake_case alias) */
-  referred_by?: string;
   /** Patient priority score */
   priorityScore?: number;
-  /** Patient priority score (snake_case alias) */
-  priority_score?: number;
   /** Patient tags */
   tags?: string[];
   /** SGK information */
   sgkInfo?: PatientSgkInfo;
-  /** SGK information (snake_case alias) */
-  sgk_info?: PatientSgkInfo;
   /** Custom patient data */
   customData?: PatientCustomData;
-  /** Custom patient data (snake_case alias) */
-  custom_data?: PatientCustomData;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -153,16 +115,10 @@ export interface Appointment {
   id?: string;
   /** Patient ID */
   patientId: string;
-  /** Patient ID (snake_case alias) */
-  patient_id?: string;
   /** Clinician ID */
   clinicianId?: string;
-  /** Clinician ID (snake_case alias) */
-  clinician_id?: string;
   /** Branch ID */
   branchId?: string;
-  /** Branch ID (snake_case alias) */
-  branch_id?: string;
   /** Appointment date */
   date: string;
   /** Appointment time */
@@ -171,8 +127,6 @@ export interface Appointment {
   duration?: number;
   /** Type of appointment */
   appointmentType?: string;
-  /** Type of appointment (snake_case alias) */
-  appointment_type?: string;
   /** Appointment status */
   status?: AppointmentStatus;
   /** Appointment notes */
@@ -215,24 +169,16 @@ export interface Device {
   id?: string;
   /** Patient ID */
   patientId?: string;
-  /** Patient ID (snake_case alias) */
-  patient_id?: string;
   /** Inventory ID */
   inventoryId?: string;
-  /** Inventory ID (snake_case alias) */
-  inventory_id?: string;
   /** Device serial number */
   serialNumber: string;
-  /** Device serial number (snake_case alias) */
-  serial_number?: string;
   /** Device brand */
   brand: string;
   /** Device model */
   model: string;
   /** Type of device */
   deviceType?: string;
-  /** Type of device (snake_case alias) */
-  device_type?: string;
   /** Device category */
   category?: string;
   /** Which ear the device is for */
@@ -241,28 +187,16 @@ export interface Device {
   status?: DeviceStatus;
   /** Trial start date */
   trialStartDate?: string;
-  /** Trial start date (snake_case alias) */
-  trial_start_date?: string;
   /** Trial end date */
   trialEndDate?: string;
-  /** Trial end date (snake_case alias) */
-  trial_end_date?: string;
   /** Trial extended until date */
   trialExtendedUntil?: string;
-  /** Trial extended until date (snake_case alias) */
-  trial_extended_until?: string;
   /** Warranty start date */
   warrantyStartDate?: string;
-  /** Warranty start date (snake_case alias) */
-  warranty_start_date?: string;
   /** Warranty end date */
   warrantyEndDate?: string;
-  /** Warranty end date (snake_case alias) */
-  warranty_end_date?: string;
   /** Warranty terms */
   warrantyTerms?: string;
-  /** Warranty terms (snake_case alias) */
-  warranty_terms?: string;
   /** Device price */
   price?: number;
   /** Purchase date */
@@ -564,174 +498,94 @@ export interface PaymentRecord {
   id?: string;
   /** Patient ID */
   patientId: string;
-  /** Patient ID (snake_case alias) */
-  patient_id?: string;
   /** Sale ID */
   saleId?: string;
-  /** Sale ID (snake_case alias) */
-  sale_id?: string;
   /** Promissory note ID */
   promissoryNoteId?: string;
-  /** Promissory note ID (snake_case alias) */
-  promissory_note_id?: string;
   /** Payment amount */
   amount: number;
   /** Payment date */
   paymentDate: string;
-  /** Payment date (snake_case alias) */
-  payment_date?: string;
   /** Due date */
   dueDate?: string;
-  /** Due date (snake_case alias) */
-  due_date?: string;
   /** Payment method */
   paymentMethod?: string;
-  /** Payment method (snake_case alias) */
-  payment_method?: string;
   /** Payment type */
   paymentType?: string;
-  /** Payment type (snake_case alias) */
-  payment_type?: string;
   /** Payment status */
   status?: PaymentRecordStatus;
   /** Reference number */
   referenceNumber?: string;
-  /** Reference number (snake_case alias) */
-  reference_number?: string;
   /** Payment notes */
   notes?: string;
   /** Device ID */
   deviceId?: string;
-  /** Device ID (snake_case alias) */
-  device_id?: string;
   /** Which ear */
   ear?: PaymentRecordEar;
   /** Payment reason */
   reason?: string;
   /** From inventory flag */
   fromInventory?: boolean;
-  /** From inventory flag (snake_case alias) */
-  from_inventory?: boolean;
   /** List price */
   listPrice?: number;
-  /** List price (snake_case alias) */
-  list_price?: number;
   /** Sale price */
   salePrice?: number;
-  /** Sale price (snake_case alias) */
-  sale_price?: number;
   /** SGK scheme */
   sgkScheme?: string;
-  /** SGK scheme (snake_case alias) */
-  sgk_scheme?: string;
   /** SGK support amount */
   sgkSupport?: number;
-  /** SGK support amount (snake_case alias) */
-  sgk_support?: number;
   /** Discount type */
   discountType?: string;
-  /** Discount type (snake_case alias) */
-  discount_type?: string;
   /** Discount value */
   discountValue?: number;
-  /** Discount value (snake_case alias) */
-  discount_value?: number;
   /** Net payable amount */
   netPayable?: number;
-  /** Net payable amount (snake_case alias) */
-  net_payable?: number;
   /** Product ID */
   productId?: string;
-  /** Product ID (snake_case alias) */
-  product_id?: string;
   /** Sale date */
   saleDate?: string;
-  /** Sale date (snake_case alias) */
-  sale_date?: string;
   /** List price total */
   listPriceTotal?: number;
-  /** List price total (snake_case alias) */
-  list_price_total?: number;
   /** Total amount */
   totalAmount?: number;
-  /** Total amount (snake_case alias) */
-  total_amount?: number;
   /** Discount amount */
   discountAmount?: number;
-  /** Discount amount (snake_case alias) */
-  discount_amount?: number;
   /** Final amount */
   finalAmount?: number;
-  /** Final amount (snake_case alias) */
-  final_amount?: number;
   /** Paid amount */
   paidAmount?: number;
-  /** Paid amount (snake_case alias) */
-  paid_amount?: number;
   /** Right ear assignment ID */
   rightEarAssignmentId?: string;
-  /** Right ear assignment ID (snake_case alias) */
-  right_ear_assignment_id?: string;
   /** Left ear assignment ID */
   leftEarAssignmentId?: string;
-  /** Left ear assignment ID (snake_case alias) */
-  left_ear_assignment_id?: string;
   /** SGK coverage */
   sgkCoverage?: number;
-  /** SGK coverage (snake_case alias) */
-  sgk_coverage?: number;
   /** Patient payment */
   patientPayment?: number;
-  /** Patient payment (snake_case alias) */
-  patient_payment?: number;
   /** Payment plan name */
   planName?: string;
-  /** Payment plan name (snake_case alias) */
-  plan_name?: string;
   /** Number of installments */
   installmentCount?: number;
-  /** Number of installments (snake_case alias) */
-  installment_count?: number;
   /** Installment amount */
   installmentAmount?: number;
-  /** Installment amount (snake_case alias) */
-  installment_amount?: number;
   /** Current installment number */
   installmentNumber?: number;
-  /** Current installment number (snake_case alias) */
-  installment_number?: number;
   /** Remaining balance */
   remainingBalance?: number;
-  /** Remaining balance (snake_case alias) */
-  remaining_balance?: number;
   /** Interest rate */
   interestRate?: number;
-  /** Interest rate (snake_case alias) */
-  interest_rate?: number;
   /** Total interest */
   totalInterest?: number;
-  /** Total interest (snake_case alias) */
-  total_interest?: number;
   /** Processing fee amount */
   processingFee?: number;
-  /** Processing fee amount (snake_case alias) */
-  processing_fee?: number;
   /** Start date */
   startDate?: string;
-  /** Start date (snake_case alias) */
-  start_date?: string;
   /** Payment plan ID */
   paymentPlanId?: string;
-  /** Payment plan ID (snake_case alias) */
-  payment_plan_id?: string;
   /** Paid date */
   paidDate?: string;
-  /** Paid date (snake_case alias) */
-  paid_date?: string;
   /** Late fee amount */
   lateFee?: number;
-  /** Late fee amount (snake_case alias) */
-  late_fee?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -752,56 +606,32 @@ export interface User {
   phone?: string;
   /** Password hash */
   passwordHash?: string;
-  /** Password hash (snake_case alias) */
-  password_hash?: string;
   /** User first name */
   firstName?: string;
-  /** User first name (snake_case alias) */
-  first_name?: string;
   /** User last name */
   lastName?: string;
-  /** User last name (snake_case alias) */
-  last_name?: string;
   /** User role */
   role?: string;
   /** User active status */
   isActive?: boolean;
-  /** User active status (snake_case alias) */
-  is_active?: boolean;
   /** Last login date */
   lastLogin?: string;
-  /** Last login date (snake_case alias) */
-  last_login?: string;
   /** Password reset token */
   passwordResetToken?: string;
-  /** Password reset token (snake_case alias) */
-  password_reset_token?: string;
   /** Password reset expiry */
   passwordResetExpires?: string;
-  /** Password reset expiry (snake_case alias) */
-  password_reset_expires?: string;
   /** User ID for audit */
   userId?: string;
-  /** User ID for audit (snake_case alias) */
-  user_id?: string;
   /** User action */
   action?: string;
   /** Entity type */
   entityType?: string;
-  /** Entity type (snake_case alias) */
-  entity_type?: string;
   /** Entity ID */
   entityId?: string;
-  /** Entity ID (snake_case alias) */
-  entity_id?: string;
   /** IP address */
   ipAddress?: string;
-  /** IP address (snake_case alias) */
-  ip_address?: string;
   /** User agent */
   userAgent?: string;
-  /** User agent (snake_case alias) */
-  user_agent?: string;
   /** Additional details */
   details?: UserDetails;
   createdAt?: string;
@@ -810,18 +640,6 @@ export interface User {
 
 /**
  * Type of communication template
- */
-export type CommunicationTemplateTemplateType = typeof CommunicationTemplateTemplateType[keyof typeof CommunicationTemplateTemplateType];
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const CommunicationTemplateTemplateType = {
-  sms: 'sms',
-  email: 'email',
-} as const;
-
-/**
- * Type of communication template (snake_case alias)
  */
 export type CommunicationTemplateTemplateType = typeof CommunicationTemplateTemplateType[keyof typeof CommunicationTemplateTemplateType];
 
@@ -841,20 +659,14 @@ export interface CommunicationTemplate {
   description?: string;
   /** Type of communication template */
   templateType?: CommunicationTemplateTemplateType;
-  /** Type of communication template (snake_case alias) */
-  template_type?: CommunicationTemplateTemplateType;
   /** Template category (appointment_reminder, payment_due, welcome, etc.) */
   category?: string;
   /** Email subject (for email templates) */
   subject?: string;
   /** Plain text content */
   bodyText?: string;
-  /** Plain text content (snake_case alias) */
-  body_text?: string;
   /** HTML content (for email templates) */
   bodyHtml?: string;
-  /** HTML content (snake_case alias) */
-  body_html?: string;
   /** Available template variables */
   variables?: string[];
   /** Whether template is active */
@@ -880,78 +692,44 @@ export interface CommunicationMessage {
   messageType?: CommunicationMessageMessageType;
   /** Patient ID */
   patientId?: string;
-  /** Patient ID (snake_case alias) */
-  patient_id?: string;
   /** Campaign ID (if part of a campaign) */
   campaignId?: string;
-  /** Campaign ID (snake_case alias) */
-  campaign_id?: string;
   /** Template ID used for this message */
   templateId?: string;
-  /** Template ID (snake_case alias) */
-  template_id?: string;
   /** Message status (sent, delivered, failed, etc.) */
   status?: string;
   /** Phone number (for SMS messages) */
   phoneNumber?: string;
-  /** Phone number (snake_case alias) */
-  phone_number?: string;
   /** Recipient email address (for email messages) */
   toEmail?: string;
-  /** Recipient email address (snake_case alias) */
-  to_email?: string;
   /** Sender email address (for email messages) */
   fromEmail?: string;
-  /** Sender email address (snake_case alias) */
-  from_email?: string;
   /** Email subject (for email messages) */
   subject?: string;
   /** Message content (for SMS) */
   message?: string;
   /** Plain text content (for email) */
   bodyText: string;
-  /** Plain text content (snake_case alias) */
-  body_text?: string;
   /** HTML content (for email) */
   bodyHtml?: string;
-  /** HTML content (snake_case alias) */
-  body_html?: string;
   /** When the message was sent */
   sentAt?: string;
-  /** When the message was sent (snake_case alias) */
-  sent_at?: string;
   /** When the message was delivered */
   deliveredAt?: string;
-  /** When the message was delivered (snake_case alias) */
-  delivered_at?: string;
   /** Error message if sending failed */
   errorMessage?: string;
-  /** Error message (snake_case alias) */
-  error_message?: string;
   /** Cost of sending the message */
   cost?: number;
   /** Creation timestamp */
   createdAt?: string;
-  /** Creation timestamp (snake_case alias) */
-  created_at?: string;
   /** Last update timestamp */
   updatedAt?: string;
-  /** Last update timestamp (snake_case alias) */
-  updated_at?: string;
-  /** Whether template is active (snake_case alias) */
-  is_active?: boolean;
   /** Whether template is a system template */
   isSystem?: boolean;
-  /** Whether template is a system template (snake_case alias) */
-  is_system?: boolean;
   /** Number of times template has been used */
   usageCount?: number;
-  /** Number of times template has been used (snake_case alias) */
-  usage_count?: number;
   /** Last time template was used */
   lastUsedAt?: string;
-  /** Last time template was used (snake_case alias) */
-  last_used_at?: string;
 }
 
 /**
