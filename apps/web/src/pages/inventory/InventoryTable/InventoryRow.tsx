@@ -1,6 +1,7 @@
 import React from 'react';
 import { InventoryItem } from '../../../types/inventory';
 import Button from '../../../components/ui/Button';
+import { Checkbox } from '@x-ear/ui-web';
 
 type Props = {
   item: InventoryItem;
@@ -23,11 +24,9 @@ const InventoryRow: React.FC<Props> = ({
     <tr className="border-b hover:bg-gray-50">
       {showCheckbox && (
         <td className="px-4 py-3">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={isSelected}
             onChange={(e) => onSelect?.(e.target.checked)}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
         </td>
       )}

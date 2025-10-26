@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { PatientApiService } from '../../services/patient/patient-api.service';
 
 export interface PatientSale {
@@ -27,6 +27,13 @@ export interface PatientSale {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+  // Legacy form fields
+  vatAmount?: number;
+  vatRate?: number;
+  discountType?: 'percentage' | 'fixed';
+  discountValue?: number;
+  productBarcode?: string;
+  productSerialNumber?: string;
   devices?: Array<{
     id: string;
     name: string;
@@ -78,7 +85,8 @@ export function usePatientSales(patientId?: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | string | null>(null);
 
-  const apiService = new PatientApiService();
+  // Memoize apiService to prevent unnecessary re-renders and API calls
+  const apiService = useMemo(() => new PatientApiService(), []);
 
   // Fetch sales for a patient
   const fetchSales = useCallback(async (id: string) => {

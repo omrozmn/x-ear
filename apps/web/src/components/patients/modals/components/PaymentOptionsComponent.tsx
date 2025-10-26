@@ -5,9 +5,9 @@ import {
   CardHeader, 
   CardTitle,
   Input,
-  Button
+  RadioGroup
 } from '@x-ear/ui-web';
-import { CreditCard, DollarSign } from 'lucide-react';
+import { CreditCard } from 'lucide-react';
 
 interface PaymentOptionsComponentProps {
   paymentMethod: string;
@@ -42,11 +42,11 @@ export const PaymentOptionsComponent: React.FC<PaymentOptionsComponentProps> = (
   };
 
   const paymentMethods = [
-    { value: 'cash', label: 'Nakit', icon: DollarSign },
-    { value: 'credit', label: 'Kredi Kartı', icon: CreditCard },
-    { value: 'installment', label: 'Taksitli', icon: CreditCard },
-    { value: 'check', label: 'Çek', icon: DollarSign },
-    { value: 'transfer', label: 'Havale/EFT', icon: DollarSign }
+    { value: 'cash', label: 'Nakit' },
+    { value: 'credit', label: 'Kredi Kartı' },
+    { value: 'installment', label: 'Taksitli' },
+    { value: 'check', label: 'Çek' },
+    { value: 'transfer', label: 'Havale/EFT' }
   ];
 
   return (
@@ -64,27 +64,13 @@ export const PaymentOptionsComponent: React.FC<PaymentOptionsComponentProps> = (
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Ödeme Yöntemi
               </label>
-              <div className="space-y-2">
-                {paymentMethods.map((method) => {
-                  const IconComponent = method.icon;
-                  return (
-                    <label key={method.value} className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value={method.value}
-                        checked={paymentMethod === method.value}
-                        onChange={(e) => onPaymentMethodChange(e.target.value)}
-                        className="text-blue-600 focus:ring-blue-500"
-                      />
-                      <div className="flex items-center space-x-2">
-                        <IconComponent className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-700">{method.label}</span>
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
+              <RadioGroup
+                name="paymentMethod"
+                options={paymentMethods}
+                value={paymentMethod}
+                onChange={onPaymentMethodChange}
+                direction="vertical"
+              />
             </div>
 
             <div>

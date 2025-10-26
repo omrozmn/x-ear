@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertCircle, X, RefreshCw, AlertTriangle, Info, CheckCircle } from 'lucide-react';
+import { Button } from '@x-ear/ui-web';
 
 interface ErrorMessageProps {
   title?: string;
@@ -84,14 +85,13 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
 
           {onRetry && (
             <div className="mt-4">
-              <button
+              <Button
                 type="button"
                 onClick={onRetry}
-                className={`inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white ${config.buttonColor} focus:outline-none focus:ring-2 focus:ring-offset-2`}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 {retryText}
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -99,14 +99,15 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
         {dismissible && onDismiss && (
           <div className="ml-auto pl-3">
             <div className="-mx-1.5 -my-1.5">
-              <button
+              <Button
                 type="button"
                 onClick={onDismiss}
-                className={`inline-flex rounded-md p-1.5 ${config.iconColor} hover:bg-opacity-20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent`}
+                variant="ghost"
+                size="sm"
               >
                 <span className="sr-only">Kapat</span>
                 <X className="h-5 w-5" />
-              </button>
+              </Button>
             </div>
           </div>
         )}

@@ -59,6 +59,7 @@ class DeviceAssignment(BaseModel):
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
     device_id = db.Column(db.String(50), db.ForeignKey('devices.id'), nullable=False)
     sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'), nullable=True)  # Link to sale
+    inventory_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=True)  # Link to inventory item
     
     # Assignment details
     ear = db.Column(db.String(1))  # L, R, B for Left, Right, Both/Bilateral
@@ -88,6 +89,7 @@ class DeviceAssignment(BaseModel):
             'patientId': self.patient_id,
             'deviceId': self.device_id,
             'saleId': self.sale_id,
+            'inventoryId': self.inventory_id,
             'ear': self.ear,
             'reason': self.reason,
             'fromInventory': self.from_inventory,

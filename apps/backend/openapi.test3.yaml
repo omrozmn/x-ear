@@ -875,6 +875,272 @@ paths:
       responses:
         '200':
           description: Success
+  /api/inventory/search:
+    get:
+      summary: Advanced product search with filters
+      operationId: inventory_advanced_search
+      tags:
+      - Inventory
+      parameters:
+      - name: q
+        in: query
+        description: Search query for product name, brand, model, barcode
+        schema:
+          type: string
+      - name: category
+        in: query
+        description: Filter by product category
+        schema:
+          type: string
+      - name: brand
+        in: query
+        description: Filter by brand
+        schema:
+          type: string
+      - name: minPrice
+        in: query
+        description: Minimum price filter
+        schema:
+          type: number
+      - name: maxPrice
+        in: query
+        description: Maximum price filter
+        schema:
+          type: number
+      - name: inStock
+        in: query
+        description: Filter by stock availability
+        schema:
+          type: boolean
+      - name: lowStock
+        in: query
+        description: Filter items with low stock
+        schema:
+          type: boolean
+      - name: features
+        in: query
+        description: Filter by product features (comma-separated)
+        schema:
+          type: string
+      - name: supplier
+        in: query
+        description: Filter by supplier
+        schema:
+          type: string
+      - name: warrantyPeriod
+        in: query
+        description: Filter by warranty period (months)
+        schema:
+          type: integer
+      - name: sortBy
+        in: query
+        description: Sort field
+        schema:
+          type: string
+          enum: [name, price, stock, brand, category, createdAt]
+      - name: sortOrder
+        in: query
+        description: Sort order
+        schema:
+          type: string
+          enum: [asc, desc]
+      - name: page
+        in: query
+        description: Page number for pagination
+        schema:
+          type: integer
+          minimum: 1
+      - name: limit
+        in: query
+        description: Items per page
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+      responses:
+        '200':
+          description: Advanced search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+                            brand:
+                              type: string
+                            model:
+                              type: string
+                            category:
+                              type: string
+                            price:
+                              type: number
+                            stock:
+                              type: integer
+                            features:
+                              type: array
+                              items:
+                                type: string
+                            supplier:
+                              type: string
+                            warrantyPeriod:
+                              type: integer
+                            barcode:
+                              type: string
+                            status:
+                              type: string
+                            createdAt:
+                              type: string
+                            updatedAt:
+                              type: string
+                      pagination:
+                        type: object
+                        properties:
+                          page:
+                            type: integer
+                          limit:
+                            type: integer
+                          total:
+                            type: integer
+                          totalPages:
+                            type: integer
+                      filters:
+                        type: object
+                        properties:
+                          categories:
+                            type: array
+                            items:
+                              type: string
+                          brands:
+                            type: array
+                            items:
+                              type: string
+                          suppliers:
+                            type: array
+                            items:
+                              type: string
+                          priceRange:
+                            type: object
+                            properties:
+                              min:
+                                type: number
+                              max:
+                                type: number
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+        '400':
+          description: Invalid search parameters
+  /api/inventory/categories:
+    get:
+      summary: Get all available product categories
+      operationId: inventory_get_categories
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Product categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        count:
+                          type: integer
+                        description:
+                          type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+  /api/inventory/brands:
+    get:
+      summary: Get all available product brands
+      operationId: inventory_get_brands
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Product brands retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        count:
+                          type: integer
+                        categories:
+                          type: array
+                          items:
+                            type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+  /api/inventory/features:
+    get:
+      summary: Get all available product features
+      operationId: inventory_get_features
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Product features retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        count:
+                          type: integer
+                        category:
+                          type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
   /api/invoices:
     post:
       summary: Create a new invoice
@@ -919,6 +1185,34 @@ paths:
       responses:
         '204':
           description: Success
+  /api/invoices/{invoice_id}/pdf:
+    get:
+      summary: Generate PDF for invoice
+      operationId: invoices_generate_invoice_pdf
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                  message:
+                    type: string
+        '404':
+          description: Invoice not found
   /api/invoices/{invoice_id}/send-to-gib:
     post:
       summary: Mark invoice as sent to GİB
@@ -940,6 +1234,260 @@ paths:
       responses:
         '201':
           description: Success
+  /api/invoices/batch-generate:
+    post:
+      summary: Generate multiple invoices in batch
+      operationId: invoices_batch_generate
+      tags:
+      - Invoices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                saleIds:
+                  type: array
+                  items:
+                    type: string
+                invoiceType:
+                  type: string
+                  enum: [sale, proforma, return]
+                customerInfo:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    taxId:
+                      type: string
+                    address:
+                      type: string
+                    phone:
+                      type: string
+                    email:
+                      type: string
+                settings:
+                  type: object
+                  properties:
+                    includeVat:
+                      type: boolean
+                    vatRate:
+                      type: number
+                    discountRate:
+                      type: number
+                    notes:
+                      type: string
+              required:
+                - saleIds
+                - invoiceType
+      responses:
+        '201':
+          description: Batch invoices created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoices:
+                        type: array
+                        items:
+                          type: object
+                      batchId:
+                        type: string
+                      totalCount:
+                        type: integer
+                      successCount:
+                        type: integer
+                      failedCount:
+                        type: integer
+                      errors:
+                        type: array
+                        items:
+                          type: object
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+        '400':
+          description: Invalid request data
+        '500':
+          description: Server error
+  /api/invoices/templates:
+    get:
+      summary: Get available invoice templates
+      operationId: invoices_get_templates
+      tags:
+      - Invoices
+      responses:
+        '200':
+          description: Invoice templates retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        fields:
+                          type: array
+                          items:
+                            type: object
+                        isDefault:
+                          type: boolean
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+    post:
+      summary: Create custom invoice template
+      operationId: invoices_create_template
+      tags:
+      - Invoices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                fields:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      type:
+                        type: string
+                      required:
+                        type: boolean
+                      defaultValue:
+                        type: string
+                layout:
+                  type: object
+                  properties:
+                    header:
+                      type: object
+                    body:
+                      type: object
+                    footer:
+                      type: object
+              required:
+                - name
+                - fields
+      responses:
+        '201':
+          description: Template created successfully
+        '400':
+          description: Invalid template data
+  /api/invoices/print-queue:
+    get:
+      summary: Get invoice print queue status
+      operationId: invoices_get_print_queue
+      tags:
+      - Invoices
+      parameters:
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum: [pending, processing, completed, failed]
+      responses:
+        '200':
+          description: Print queue status retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      queue:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            invoiceId:
+                              type: string
+                            status:
+                              type: string
+                            priority:
+                              type: integer
+                            createdAt:
+                              type: string
+                            processedAt:
+                              type: string
+                      totalCount:
+                        type: integer
+                      pendingCount:
+                        type: integer
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+    post:
+      summary: Add invoices to print queue
+      operationId: invoices_add_to_print_queue
+      tags:
+      - Invoices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                invoiceIds:
+                  type: array
+                  items:
+                    type: string
+                priority:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                printOptions:
+                  type: object
+                  properties:
+                    copies:
+                      type: integer
+                    duplex:
+                      type: boolean
+                    colorMode:
+                      type: string
+                      enum: [color, grayscale]
+              required:
+                - invoiceIds
+      responses:
+        '201':
+          description: Invoices added to print queue
+        '400':
+          description: Invalid request data
   /api/login:
     post:
       summary: POST /api/login
@@ -2282,9 +2830,37 @@ paths:
       responses:
         '200':
           description: Success
+  /api/sales/{sale_id}/invoice/pdf:
+    get:
+      summary: Generate PDF for sale invoice
+      operationId: sales_generate_sale_invoice_pdf
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                  message:
+                    type: string
+        '404':
+          description: Invoice not found for this sale
   /api/sales/{sale_id}/payment-plan:
     post:
-      summary: POST /api/sales/{sale_id}/payment-plan
+      summary: Create payment plan for a sale
       operationId: sales_create_sale_payment_plan
       tags:
       - Sales
@@ -2295,14 +2871,388 @@ paths:
         schema:
           type: string
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               type: object
+              properties:
+                planType:
+                  type: string
+                  enum: [standard, custom, installment]
+                installmentCount:
+                  type: integer
+                  minimum: 1
+                  maximum: 36
+                downPayment:
+                  type: number
+                  minimum: 0
+                monthlyAmount:
+                  type: number
+                  minimum: 0
+                startDate:
+                  type: string
+                  format: date
+                interestRate:
+                  type: number
+                  minimum: 0
+                notes:
+                  type: string
+              required: [planType]
       responses:
         '201':
-          description: Success
+          description: Payment plan created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      saleId:
+                        type: string
+                      planType:
+                        type: string
+                      installmentCount:
+                        type: integer
+                      downPayment:
+                        type: number
+                      monthlyAmount:
+                        type: number
+                      totalAmount:
+                        type: number
+                      startDate:
+                        type: string
+                      endDate:
+                        type: string
+                      interestRate:
+                        type: number
+                      status:
+                        type: string
+                      createdAt:
+                        type: string
+                      installments:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            installmentNumber:
+                              type: integer
+                            amount:
+                              type: number
+                            dueDate:
+                              type: string
+                            status:
+                              type: string
+                            paidDate:
+                              type: string
+                            paidAmount:
+                              type: number
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+        '400':
+          description: Invalid payment plan data
+        '404':
+          description: Sale not found
+    get:
+      summary: Get payment plan for a sale
+      operationId: sales_get_sale_payment_plan
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Payment plan retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      saleId:
+                        type: string
+                      planType:
+                        type: string
+                      installmentCount:
+                        type: integer
+                      downPayment:
+                        type: number
+                      monthlyAmount:
+                        type: number
+                      totalAmount:
+                        type: number
+                      startDate:
+                        type: string
+                      endDate:
+                        type: string
+                      interestRate:
+                        type: number
+                      status:
+                        type: string
+                      createdAt:
+                        type: string
+                      installments:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            installmentNumber:
+                              type: integer
+                            amount:
+                              type: number
+                            dueDate:
+                              type: string
+                            status:
+                              type: string
+                            paidDate:
+                              type: string
+                            paidAmount:
+                              type: number
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+        '404':
+          description: Payment plan not found
+  /api/sales/{sale_id}/payments:
+    get:
+      summary: Get all payments for a sale
+      operationId: sales_get_sale_payments
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Payments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        saleId:
+                          type: string
+                        amount:
+                          type: number
+                        paymentMethod:
+                          type: string
+                        paymentDate:
+                          type: string
+                        installmentId:
+                          type: string
+                        notes:
+                          type: string
+                        status:
+                          type: string
+                        createdAt:
+                          type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+    post:
+      summary: Record a payment for a sale
+      operationId: sales_create_sale_payment
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  minimum: 0
+                paymentMethod:
+                  type: string
+                  enum: [cash, card, bank_transfer, check, promissory_note]
+                paymentDate:
+                  type: string
+                  format: date
+                installmentId:
+                  type: string
+                notes:
+                  type: string
+                checkNumber:
+                  type: string
+                bankName:
+                  type: string
+                accountNumber:
+                  type: string
+              required: [amount, paymentMethod, paymentDate]
+      responses:
+        '201':
+          description: Payment recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      saleId:
+                        type: string
+                      amount:
+                        type: number
+                      paymentMethod:
+                        type: string
+                      paymentDate:
+                        type: string
+                      installmentId:
+                        type: string
+                      notes:
+                        type: string
+                      status:
+                        type: string
+                      createdAt:
+                        type: string
+                      remainingBalance:
+                        type: number
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+        '400':
+          description: Invalid payment data
+        '404':
+          description: Sale not found
+  /api/sales/{sale_id}/installments/{installment_id}/pay:
+    post:
+      summary: Pay a specific installment
+      operationId: sales_pay_installment
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: installment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  minimum: 0
+                paymentMethod:
+                  type: string
+                  enum: [cash, card, bank_transfer, check, promissory_note]
+                paymentDate:
+                  type: string
+                  format: date
+                notes:
+                  type: string
+              required: [amount, paymentMethod, paymentDate]
+      responses:
+        '200':
+          description: Installment payment recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      installment:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          installmentNumber:
+                            type: integer
+                          amount:
+                            type: number
+                          dueDate:
+                            type: string
+                          status:
+                            type: string
+                          paidDate:
+                            type: string
+                          paidAmount:
+                            type: number
+                      payment:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          amount:
+                            type: number
+                          paymentMethod:
+                            type: string
+                          paymentDate:
+                            type: string
+                          notes:
+                            type: string
+                      remainingBalance:
+                        type: number
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+        '400':
+          description: Invalid payment data
+        '404':
+          description: Sale or installment not found
   /api/sales/{sale_id}/promissory-notes:
     get:
       summary: Get all promissory notes for a specific sale

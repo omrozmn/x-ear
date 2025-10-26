@@ -1,6 +1,7 @@
 import React from 'react';
 import { InventoryItem } from '../../../types/inventory';
 import InventoryRow from './InventoryRow';
+import { Checkbox } from '@x-ear/ui-web';
 
 type Props = {
   items: InventoryItem[];
@@ -46,14 +47,10 @@ const InventoryTable: React.FC<Props> = ({
           <tr className="text-left border-b">
             {onSelectionChange && (
               <th className="px-4 py-3">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={allSelected}
-                  ref={input => {
-                    if (input) input.indeterminate = someSelected;
-                  }}
+                  indeterminate={someSelected}
                   onChange={(e) => handleSelectAll(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
               </th>
             )}

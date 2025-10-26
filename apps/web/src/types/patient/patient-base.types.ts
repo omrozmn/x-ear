@@ -8,7 +8,7 @@
 import type { Patient as OrvalPatient } from '../../generated/orval-types';
 
 // Re-export Orval Patient types
-export type { PatientStatus, PatientGender } from '../../generated/orval-types';
+export type { PatientStatus, PatientGender, SaleStatus } from '../../generated/orval-types';
 
 // Keep only essential types that are still needed
 export type PatientSegment = 'NEW' | 'TRIAL' | 'PURCHASED' | 'CONTROL' | 'RENEWAL' | 'EXISTING' | 'VIP';
@@ -63,7 +63,8 @@ export type PaymentMethod = 'cash' | 'card' | 'bank_transfer' | 'sgk' | 'install
 export type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'completed' | 'failed';
 
 // Sale Types
-export type SaleStatus = 'draft' | 'confirmed' | 'cancelled' | 'paid';
+// Sale Types - Use Orval generated SaleStatus
+// export type SaleStatus = 'draft' | 'confirmed' | 'cancelled' | 'paid'; // Removed - using Orval type
 
 // EReceipt Types
 export type EReceiptStatus = 'draft' | 'sent' | 'approved' | 'rejected';
@@ -108,7 +109,8 @@ export interface PatientCommunication {
 
 // Extended Patient type with additional fields needed by the application
 export interface Patient extends OrvalPatient {
-  // Additional fields that are not in the Orval generated type
+  // Computed properties
+  age?: number; // Computed from birthDate
   devices?: PatientDevice[];
   notes?: PatientNote[];
   communications?: PatientCommunication[];

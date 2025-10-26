@@ -14,7 +14,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     // Uygulama başlangıcında auth durumunu kontrol et
     initializeAuth();
-  }, []); // Empty dependency array to run only once on mount
+  }, [initializeAuth]); // Add initializeAuth to dependencies
 
   if (isLoading) {
     console.log('AuthProvider: Showing loading screen');

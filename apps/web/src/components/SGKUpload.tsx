@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useRef, useCallback } from 'react';
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import { 
@@ -255,14 +254,12 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
           <Select
             value={formData.documentType}
             onChange={(e) => setFormData(prev => ({ ...prev, documentType: e.target.value as SGKDocumentType }))}
+            options={allowedTypes.map(type => ({
+              value: type,
+              label: getDocumentTypeLabel(type)
+            }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {allowedTypes.map(type => (
-              <option key={type} value={type}>
-                {getDocumentTypeLabel(type)}
-              </option>
-            ))}
-          </Select>
+          />
         </div>
 
         {/* File Upload */}
@@ -290,6 +287,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
               onChange={handleFileInputChange}
               accept="image/*,.pdf"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              data-allow-raw
             />
             
             {selectedFile ? (
@@ -421,12 +419,13 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
         {/* Auto Process Option */}
         {!compact && (
           <div className="flex items-center">
-            <Input
+            <input
               type="checkbox"
               id="autoProcess"
               checked={formData.autoProcess || false}
               onChange={(e) => setFormData(prev => ({ ...prev, autoProcess: e.target.checked }))}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              data-allow-raw
             />
             <label htmlFor="autoProcess" className="ml-2 block text-sm text-gray-900">
               Otomatik OCR işlemi yap (görüntü dosyaları için)

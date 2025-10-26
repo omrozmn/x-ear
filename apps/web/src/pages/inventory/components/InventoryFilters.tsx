@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@x-ear/ui-web';
+import { Button, Input, Select } from '@x-ear/ui-web';
 import { InventoryFilters as IInventoryFilters } from '../../../types/inventory';
 
 interface InventoryFiltersProps {
@@ -7,6 +7,38 @@ interface InventoryFiltersProps {
   onFiltersChange: (filters: IInventoryFilters) => void;
   onClearFilters: () => void;
 }
+
+const categoryOptions = [
+  { value: '', label: 'Tümü' },
+  { value: 'hearing_aid', label: 'İşitme Cihazı' },
+  { value: 'battery', label: 'Pil' },
+  { value: 'accessory', label: 'Aksesuar' },
+  { value: 'ear_mold', label: 'Kulak Kalıbı' },
+  { value: 'cleaning_supplies', label: 'Temizlik Malzemeleri' },
+  { value: 'amplifiers', label: 'Amplifikatör' }
+];
+
+const brandOptions = [
+  { value: '', label: 'Tümü' },
+  { value: 'Phonak', label: 'Phonak' },
+  { value: 'Oticon', label: 'Oticon' },
+  { value: 'Widex', label: 'Widex' },
+  { value: 'Signia', label: 'Signia' },
+  { value: 'ReSound', label: 'ReSound' },
+  { value: 'Starkey', label: 'Starkey' },
+  { value: 'Unitron', label: 'Unitron' },
+  { value: 'Bernafon', label: 'Bernafon' }
+];
+
+const statusOptions = [
+  { value: '', label: 'Tümü' },
+  { value: 'available', label: 'Mevcut' },
+  { value: 'assigned', label: 'Atanmış' },
+  { value: 'maintenance', label: 'Bakımda' },
+  { value: 'retired', label: 'Emekli' },
+  { value: 'low_stock', label: 'Düşük Stok' },
+  { value: 'out_of_stock', label: 'Stok Dışı' }
+];
 
 const InventoryFilters: React.FC<InventoryFiltersProps> = ({
   filters,
@@ -26,7 +58,7 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
         {/* Search Input */}
         <div className="flex-1 min-w-[300px]">
           <div className="relative">
-            <input
+            <Input
               type="text"
               placeholder="Ürün ara..."
               value={filters.search || ''}
@@ -50,57 +82,34 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
         {/* Category Filter */}
         <div className="flex items-center space-x-2">
           <label className="text-sm font-medium text-gray-700">Kategori:</label>
-          <select
+          <Select
             value={filters.category || ''}
             onChange={(e) => handleFilterChange('category', e.target.value || undefined)}
+            options={categoryOptions}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Tümü</option>
-            <option value="hearing_aid">İşitme Cihazı</option>
-            <option value="battery">Pil</option>
-            <option value="accessory">Aksesuar</option>
-            <option value="ear_mold">Kulak Kalıbı</option>
-            <option value="cleaning_supplies">Temizlik Malzemeleri</option>
-            <option value="amplifiers">Amplifikatör</option>
-          </select>
+          />
         </div>
 
         {/* Brand Filter */}
         <div className="flex items-center space-x-2">
           <label className="text-sm font-medium text-gray-700">Marka:</label>
-          <select
+          <Select
             value={filters.brand || ''}
             onChange={(e) => handleFilterChange('brand', e.target.value || undefined)}
+            options={brandOptions}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Tümü</option>
-            <option value="Phonak">Phonak</option>
-            <option value="Oticon">Oticon</option>
-            <option value="Widex">Widex</option>
-            <option value="Signia">Signia</option>
-            <option value="ReSound">ReSound</option>
-            <option value="Starkey">Starkey</option>
-            <option value="Unitron">Unitron</option>
-            <option value="Bernafon">Bernafon</option>
-          </select>
+          />
         </div>
 
         {/* Status Filter */}
         <div className="flex items-center space-x-2">
           <label className="text-sm font-medium text-gray-700">Durum:</label>
-          <select
+          <Select
             value={filters.status || ''}
             onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
+            options={statusOptions}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Tümü</option>
-            <option value="available">Mevcut</option>
-            <option value="assigned">Atanmış</option>
-            <option value="maintenance">Bakımda</option>
-            <option value="retired">Emekli</option>
-            <option value="low_stock">Düşük Stok</option>
-            <option value="out_of_stock">Stok Dışı</option>
-          </select>
+          />
         </div>
 
         {/* Clear Filters Button */}

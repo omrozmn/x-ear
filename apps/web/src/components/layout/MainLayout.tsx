@@ -115,7 +115,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       submenu: [
         { label: 'SGK Raporları', href: '/sgk' },
         { label: 'Hasta Eşleştirme', href: '/sgk/matching' },
-        { label: 'Belge Yükleme', href: '/sgk/upload' }
+        { label: 'Belge Yükleme', href: '/sgk/upload' },
+        { label: 'Belge İndirme', href: '/sgk/downloads' }
       ]
     },
     { 

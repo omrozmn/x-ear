@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { PatientApiService } from '../../services/patient/patient-api.service';
 
 export interface TimelineEvent {
@@ -14,8 +13,8 @@ export interface TimelineEvent {
   source?: 'activity_log' | 'custom_data';
   entityType?: string;
   entityId?: string;
-  details?: Record<string, any>;
-  metadata?: Record<string, any>;
+  details?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   icon?: string;
   color?: string;
   category?: string;
@@ -33,7 +32,8 @@ export function usePatientTimeline(patientId?: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | string | null>(null);
 
-  const apiService = new PatientApiService();
+  // Memoize apiService to prevent unnecessary re-renders and API calls
+  const apiService = useMemo(() => new PatientApiService(), []);
 
   // Fetch timeline for a patient
   const fetchTimeline = useCallback(async (id: string) => {

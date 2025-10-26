@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { InventoryItem } from '../../../types/inventory';
-import Button from '../../../components/ui/Button';
+import { Button, Checkbox, Select } from '@x-ear/ui-web';
 import { 
   ChevronUp, 
   ChevronDown, 
@@ -116,6 +116,13 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
   const allSelected = selectedItems.length === paginatedItems.length && paginatedItems.length > 0;
   const someSelected = selectedItems.length > 0 && selectedItems.length < paginatedItems.length;
 
+  const itemsPerPageOptions = [
+    { value: '10', label: '10 / sayfa' },
+    { value: '20', label: '20 / sayfa' },
+    { value: '50', label: '50 / sayfa' },
+    { value: '100', label: '100 / sayfa' }
+  ];
+
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-hidden">
       <div className="overflow-x-auto">
@@ -123,12 +130,8 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={allSelected}
-                  ref={(input) => {
-                    if (input) input.indeterminate = someSelected;
-                  }}
                   onChange={(e) => onSelectAll(e.target.checked)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
@@ -241,8 +244,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
                   className={`hover:bg-gray-50 ${isSelected ? 'bg-blue-50' : ''}`}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={isSelected}
                       onChange={() => onSelectItem(item.id)}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -426,16 +428,12 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
               </p>
               
               {onItemsPerPageChange && (
-                <select
-                  value={itemsPerPage}
+                <Select
+                  value={itemsPerPage.toString()}
                   onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
+                  options={itemsPerPageOptions}
                   className="px-2 py-1 border border-gray-300 rounded-md bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value={10}>10 / sayfa</option>
-                  <option value={20}>20 / sayfa</option>
-                  <option value={50}>50 / sayfa</option>
-                  <option value={100}>100 / sayfa</option>
-                </select>
+                />
               )}
             </div>
             

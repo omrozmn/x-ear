@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
+import { Button, Input, Select, Textarea, Checkbox, Radio } from '@x-ear/ui-web';
 import { InventoryFormData, InventoryCategory, InventoryType, EarDirection, InventoryItem } from '../../../types/inventory';
 
 import { FeatureTagInput } from './FeatureTagInput';
@@ -235,14 +235,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
             {mode === 'create' ? 'Yeni Ürün Ekle' : 'Ürün Düzenle'}
           </h2>
-          <button
+          <Button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            variant="ghost"
+            size="sm"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Form Body */}
@@ -325,17 +326,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 </label>
                 <div className="flex gap-4">
                   {EAR_DIRECTIONS.map(direction => (
-                    <label key={direction.value} className="flex items-center">
-                      <input
-                        type="radio"
-                        name="ear"
-                        value={direction.value}
-                        checked={formData.ear === direction.value}
-                        onChange={(e) => handleInputChange('ear', e.target.value as EarDirection)}
-                        className="mr-2"
-                      />
-                      {direction.label}
-                    </label>
+                    <Radio
+                      key={direction.value}
+                      name="ear"
+                      value={direction.value}
+                      checked={formData.ear === direction.value}
+                      onChange={(e) => handleInputChange('ear', e.target.value as EarDirection)}
+                      label={direction.label}
+                    />
                   ))}
                 </div>
               </div>
@@ -557,8 +555,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             </div>
 
             <div className="flex items-center">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="isMinistryTracked"
                 checked={formData.isMinistryTracked}
                 onChange={(e) => handleInputChange('isMinistryTracked', e.target.checked)}

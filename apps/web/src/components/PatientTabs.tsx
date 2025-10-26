@@ -7,7 +7,8 @@ import {
   FileText, 
   Activity,
   Settings,
-  Clock
+  Clock,
+  Shield
 } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
 
@@ -59,6 +60,11 @@ const defaultTabs: TabItem[] = [
     id: 'tests',
     label: 'İşitme Testleri',
     icon: <Activity className="w-4 h-4" />,
+  },
+  {
+    id: 'sgk',
+    label: 'SGK',
+    icon: <Shield className="w-4 h-4" />,
   },
   {
     id: 'settings',

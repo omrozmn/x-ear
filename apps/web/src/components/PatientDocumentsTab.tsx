@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { usePatientDocuments } from '../hooks/patient/usePatientDocuments';
+import { usePatientDocuments, PatientDocument } from '../hooks/patient/usePatientDocuments';
 import { PatientDocumentCard } from './patient/PatientDocumentCard';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
-import { ErrorBoundary } from './common/ErrorBoundary';
 import { DocumentUploadForm } from './forms/DocumentUploadForm';
-import { File, AlertCircle, Clock, FileText, Smartphone, Plus, Search, Filter } from 'lucide-react';
-import { Button } from './ui/Button';
+import { File, AlertCircle, Clock, FileText, Smartphone, Plus } from 'lucide-react';
+import { Button, Input, Select } from '@x-ear/ui-web';
 
 interface PatientDocumentsTabProps {
   patientId: string;
@@ -25,67 +24,6 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({
     start: '',
     end: ''
   });
-
-  if (documentsLoading) {
-    return (
-      <div className="p-6" role="status" aria-label="Belgeler yükleniyor">
-        <LoadingSkeleton lines={4} className="mb-4" />
-        <div className="grid gap-4">
-          <div className="h-32 bg-gray-100 rounded animate-pulse"></div>
-          <div className="h-32 bg-gray-100 rounded animate-pulse"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (documentsError) {
-    return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4" role="alert">
-          <div className="flex">
-            <AlertCircle className="w-5 h-5 text-red-400" aria-hidden="true" />
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Belgeler yüklenirken hata oluştu</h3>
-              <p className="mt-1 text-sm text-red-700">
-                {typeof documentsError === 'string' ? documentsError : documentsError.message}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const handleDocumentClick = (document: any) => {
-    // TODO: Implement document preview modal
-    console.log('Document clicked:', document);
-  };
-
-  const handleUploadDocument = () => {
-    setShowUploadForm(true);
-  };
-
-  const handleUploadFormClose = () => {
-    setShowUploadForm(false);
-  };
-
-  const handleDocumentUpload = async (formData: FormData) => {
-    setIsUploading(true);
-    try {
-      // TODO: Implement document upload API call
-      console.log('Document upload:', formData);
-      setShowUploadForm(false);
-    } catch (error) {
-      console.error('Document upload failed:', error);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleDownloadClick = (document: any) => {
-    // TODO: Implement document download
-    console.log('Download document:', document);
-  };
 
   // Filter and search documents
   const filteredDocuments = useMemo(() => {
@@ -143,6 +81,63 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  if (documentsLoading) {
+    return (
+      <div className="p-6" role="status" aria-label="Belgeler yükleniyor">
+        <LoadingSkeleton lines={4} className="mb-4" />
+        <div className="grid gap-4">
+          <div className="h-32 bg-gray-100 rounded animate-pulse"></div>
+          <div className="h-32 bg-gray-100 rounded animate-pulse"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (documentsError) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4" role="alert">
+          <div className="flex">
+            <AlertCircle className="w-5 h-5 text-red-400" aria-hidden="true" />
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">Belgeler yüklenirken hata oluştu</h3>
+              <p className="mt-1 text-sm text-red-700">
+                {typeof documentsError === 'string' ? documentsError : documentsError.message}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleDocumentClick = (document: PatientDocument) => {
+    // TODO: Implement document preview modal
+    console.log('Document clicked:', document);
+  };
+
+  const handleUploadFormClose = () => {
+    setShowUploadForm(false);
+  };
+
+  const handleDocumentUpload = async (formData: FormData) => {
+    setIsUploading(true);
+    try {
+      // TODO: Implement document upload API call
+      console.log('Document upload:', formData);
+      setShowUploadForm(false);
+    } catch (error) {
+      console.error('Document upload failed:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDownloadClick = (document: PatientDocument) => {
+    // TODO: Implement document download
+    console.log('Download document:', document);
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -170,12 +165,11 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({
               Belge Ara
             </label>
             <div className="mt-1">
-              <input
+              <Input
                 type="text"
                 id="search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 placeholder="Belge adını yazın..."
               />
             </div>
@@ -185,17 +179,16 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({
               Belge Tipi
             </label>
             <div className="mt-1">
-              <select
+              <Select
                 id="documentType"
                 value={documentTypeFilter}
                 onChange={(e) => setDocumentTypeFilter(e.target.value)}
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <option value="all">Tümü</option>
-                <option value="report">Raporlar</option>
-                <option value="test_result">Test Sonuçları</option>
-                {/* Add more document types as needed */}
-              </select>
+                options={[
+                  { value: 'all', label: 'Tümü' },
+                  { value: 'report', label: 'Raporlar' },
+                  { value: 'test_result', label: 'Test Sonuçları' }
+                ]}
+              />
             </div>
           </div>
           <div>
@@ -203,19 +196,17 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({
               Tarih Aralığı
             </label>
             <div className="grid grid-cols-2 gap-2 mt-1">
-              <input
+              <Input
                 type="date"
                 id="startDate"
                 value={dateRange.start}
                 onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
-              <input
+              <Input
                 type="date"
                 id="endDate"
                 value={dateRange.end}
                 onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>
           </div>

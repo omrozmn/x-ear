@@ -150,8 +150,8 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
                   {(() => {
                     const address = patient.address;
                     if (typeof address === 'object' && address !== null) {
-                      const addressObj = address as any;
-                      return addressObj.fullAddress || 
+                      const addressObj = address as Record<string, unknown>;
+                      return (addressObj.fullAddress as string) || 
                              `${addressObj.district || ''} ${addressObj.city || ''}`.trim() ||
                              'Belirtilmemiş';
                     }

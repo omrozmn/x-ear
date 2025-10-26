@@ -44,6 +44,13 @@ export { Card, CardHeader, CardTitle, CardContent, CardFooter } from './Card';
 export { Alert, AlertDescription } from './Alert';
 export { Tooltip } from './Tooltip';
 export { Dropdown } from './Dropdown';
+export { Box } from './Box';
+export { Text } from './Text';
+export { FormControl } from './FormControl';
+export { FormLabel } from './FormLabel';
+export { HStack, VStack } from './Stack';
+export { SimpleGrid } from './Grid';
+export { AlertIcon } from './AlertIcon';
 
 // Dialog Components (using Modal as base)
 export { Modal as Dialog } from './Modal';
@@ -61,3 +68,4 @@ export { default as Layout } from '../layout/Layout';
 
 // Form Components
 export { DynamicForm } from '../forms/DynamicForm';
+export type { FormField as DynamicFormField, FormSection as DynamicFormSection } from '../forms/DynamicForm';

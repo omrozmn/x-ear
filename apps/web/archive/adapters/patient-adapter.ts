@@ -1,12 +1,10 @@
-// @ts-nocheck
 /**
  * Patient adapter utilities for converting between Orval and Legacy patient types
  * Note: This file has complex type mismatches between Orval and Legacy types
- * Using @ts-nocheck to suppress errors while maintaining functionality
  */
 
-import { Patient as OrvalPatient } from "../../api/generated/api.schemas";
-import { Patient as LegacyPatient } from '../types/patient';
+import { Patient as OrvalPatient } from "../../src/api/generated/api.schemas";
+import { Patient as LegacyPatient } from '../../src/types/patient';
 
 /**
  * Convert Orval patient to legacy patient format
@@ -20,10 +18,10 @@ export function convertOrvalToLegacyPatient(orvalPatient: OrvalPatient): LegacyP
     phone: orvalPatient.phone || '',
     email: orvalPatient.email || '',
     birthDate: orvalPatient.birthDate || '',
-    gender: (orvalPatient as any).gender || '',
-    addressCity: (orvalPatient as any).addressCity || '',
-    addressDistrict: (orvalPatient as any).addressDistrict || '',
-    addressFull: (orvalPatient as any).addressFull || '',
+    gender: (orvalPatient as unknown as { gender?: string }).gender || '',
+    addressCity: (orvalPatient as unknown as { addressCity?: string }).addressCity || '',
+    addressDistrict: (orvalPatient as unknown as { addressDistrict?: string }).addressDistrict || '',
+    addressFull: (orvalPatient as unknown as { addressFull?: string }).addressFull || '',
     status: orvalPatient.status === 'active' ? 'active' : 'inactive',
     segment: (orvalPatient.segment ?? 'existing') as LegacyPatient['segment'],
     acquisitionType: orvalPatient.acquisitionType || 'diger',
@@ -31,7 +29,7 @@ export function convertOrvalToLegacyPatient(orvalPatient: OrvalPatient): LegacyP
     referredBy: orvalPatient.referredBy || '',
     priorityScore: orvalPatient.priorityScore || 0,
     tags: orvalPatient.tags || [],
-    sgkInfo: (orvalPatient.sgkInfo as any) || '',
+    sgkInfo: (orvalPatient as unknown as { sgkInfo?: string }).sgkInfo || '',
     customData: orvalPatient.customData || {},
     createdAt: orvalPatient.createdAt || new Date().toISOString(),
     updatedAt: orvalPatient.updatedAt || new Date().toISOString(),
@@ -83,10 +81,10 @@ type PatientFormData = Partial<LegacyPatient> & {
   addressFull?: string;
   conversionStep?: string;
   referredBy?: string | null;
-  customData?: Record<string, any>;
+  customData?: Record<string, unknown>;
 };
 
-export function createPatientRequestFromFormData(formData: PatientFormData): any {
+export function createPatientRequestFromFormData(formData: PatientFormData): Record<string, unknown> {
   return {
     name: formData.name,
     phone: formData.phone,

@@ -15,11 +15,332 @@ from services.pricing import (
 )
 from models.inventory import Inventory
 from models.enums import DeviceStatus, DeviceSide, DeviceCategory
+from uuid import uuid4
+import json
+from io import BytesIO
+import tempfile
+import os
 
 invoices_bp = Blueprint('invoices', __name__)
 proformas_bp = Blueprint('proformas', __name__)
 
-# ============= INVOICE ENDPOINTS =============
+def now_utc():
+    """Return current UTC timestamp"""
+    return datetime.now()
+
+# ============= ENHANCED INVOICE ENDPOINTS =============
+
+@invoices_bp.route('/invoices/batch-generate', methods=['POST'])
+def batch_generate_invoices():
+    """Generate multiple invoices at once"""
+    try:
+        data = request.get_json()
+        
+        if not data.get('saleIds') or not isinstance(data['saleIds'], list):
+            return jsonify({
+                'success': False,
+                'error': 'saleIds array is required'
+            }), 400
+        
+        sale_ids = data['saleIds']
+        invoice_type = data.get('invoiceType', 'standard')
+        customer_info = data.get('customerInfo', {})
+        settings = data.get('settings', {})
+        
+        generated_invoices = []
+        errors = []
+        
+        for sale_id in sale_ids:
+            try:
+                # Get sale
+                sale = db.session.get(Sale, sale_id)
+                if not sale:
+                    errors.append(f"Sale {sale_id} not found")
+                    continue
+                
+                # Check if invoice already exists
+                existing_invoice = Invoice.query.filter_by(sale_id=sale_id).first()
+                if existing_invoice:
+                    errors.append(f"Invoice already exists for sale {sale_id}")
+                    continue
+                
+                # Generate invoice number
+                year_month = datetime.utcnow().strftime('%Y%m')
+                latest = Invoice.query.filter(
+                    Invoice.invoice_number.like(f'INV{year_month}%')
+                ).order_by(desc(Invoice.created_at)).first()
+                
+                if latest:
+                    last_num = int(latest.invoice_number[-4:])
+                    new_num = last_num + 1
+                else:
+                    new_num = 1
+                
+                invoice_number = f"INV{year_month}{new_num:04d}"
+                
+                # Create invoice
+                invoice = Invoice(
+                    invoice_number=invoice_number,
+                    patient_id=sale.patient_id,
+                    sale_id=sale_id,
+                    device_price=sale.total_amount,
+                    sgk_coverage=sale.sgk_coverage or 0,
+                    patient_payment=sale.patient_payment or sale.total_amount,
+                    invoice_type=invoice_type,
+                    status='draft',
+                    created_at=now_utc(),
+                    updated_at=now_utc()
+                )
+                
+                # Add custom customer info if provided
+                if customer_info:
+                    invoice.customer_name = customer_info.get('name', sale.patient.name if sale.patient else '')
+                    invoice.customer_address = customer_info.get('address', '')
+                    invoice.customer_tax_number = customer_info.get('taxNumber', '')
+                
+                db.session.add(invoice)
+                db.session.flush()  # Get the ID
+                
+                generated_invoices.append({
+                    'id': invoice.id,
+                    'invoiceNumber': invoice.invoice_number,
+                    'saleId': sale_id,
+                    'amount': invoice.device_price,
+                    'status': invoice.status
+                })
+                
+            except Exception as e:
+                errors.append(f"Error generating invoice for sale {sale_id}: {str(e)}")
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'generatedInvoices': generated_invoices,
+                'errors': errors,
+                'summary': {
+                    'total': len(sale_ids),
+                    'successful': len(generated_invoices),
+                    'failed': len(errors)
+                }
+            },
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 500
+
+
+@invoices_bp.route('/invoices/templates', methods=['GET'])
+def get_invoice_templates():
+    """Get available invoice templates"""
+    try:
+        # For now, return predefined templates
+        # In a real implementation, these would be stored in database
+        templates = [
+            {
+                'id': 'standard',
+                'name': 'Standard Invoice',
+                'description': 'Default invoice template with company branding',
+                'fields': ['invoiceNumber', 'date', 'customerInfo', 'items', 'totals', 'paymentTerms'],
+                'isDefault': True
+            },
+            {
+                'id': 'detailed',
+                'name': 'Detailed Invoice',
+                'description': 'Comprehensive invoice with item descriptions and specifications',
+                'fields': ['invoiceNumber', 'date', 'customerInfo', 'items', 'itemDetails', 'totals', 'paymentTerms', 'notes'],
+                'isDefault': False
+            },
+            {
+                'id': 'sgk',
+                'name': 'SGK Invoice',
+                'description': 'Invoice template for SGK submissions',
+                'fields': ['invoiceNumber', 'date', 'customerInfo', 'sgkInfo', 'items', 'totals', 'sgkCoverage'],
+                'isDefault': False
+            },
+            {
+                'id': 'proforma',
+                'name': 'Proforma Invoice',
+                'description': 'Proforma invoice template for quotations',
+                'fields': ['proformaNumber', 'date', 'customerInfo', 'items', 'totals', 'validityPeriod'],
+                'isDefault': False
+            }
+        ]
+        
+        return jsonify({
+            'success': True,
+            'data': templates,
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 500
+
+
+@invoices_bp.route('/invoices/templates', methods=['POST'])
+def create_invoice_template():
+    """Create a custom invoice template"""
+    try:
+        data = request.get_json()
+        
+        if not data.get('name') or not data.get('fields'):
+            return jsonify({
+                'success': False,
+                'error': 'Template name and fields are required'
+            }), 400
+        
+        # In a real implementation, this would be saved to database
+        # For now, return a mock response
+        template = {
+            'id': str(uuid4()),
+            'name': data['name'],
+            'description': data.get('description', ''),
+            'fields': data['fields'],
+            'isDefault': data.get('isDefault', False),
+            'isCustom': True,
+            'createdAt': now_utc().isoformat()
+        }
+        
+        return jsonify({
+            'success': True,
+            'data': template,
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 201
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 500
+
+
+@invoices_bp.route('/invoices/print-queue', methods=['GET'])
+def get_print_queue():
+    """Get invoices in print queue"""
+    try:
+        # In a real implementation, this would query a print queue table
+        # For now, return invoices with 'queued_for_print' status
+        queued_invoices = Invoice.query.filter_by(status='queued_for_print').all()
+        
+        queue_items = []
+        for invoice in queued_invoices:
+            queue_items.append({
+                'id': invoice.id,
+                'invoiceNumber': invoice.invoice_number,
+                'patientName': invoice.patient.name if invoice.patient else 'Unknown',
+                'amount': invoice.device_price,
+                'queuedAt': invoice.updated_at.isoformat() if invoice.updated_at else invoice.created_at.isoformat(),
+                'priority': 'normal',
+                'copies': 1
+            })
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'items': queue_items,
+                'total': len(queue_items),
+                'status': 'ready' if queue_items else 'empty'
+            },
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 500
+
+
+@invoices_bp.route('/invoices/print-queue', methods=['POST'])
+def add_to_print_queue():
+    """Add invoices to print queue"""
+    try:
+        data = request.get_json()
+        
+        if not data.get('invoiceIds') or not isinstance(data['invoiceIds'], list):
+            return jsonify({
+                'success': False,
+                'error': 'invoiceIds array is required'
+            }), 400
+        
+        invoice_ids = data['invoiceIds']
+        priority = data.get('priority', 'normal')
+        copies = data.get('copies', 1)
+        
+        updated_invoices = []
+        errors = []
+        
+        for invoice_id in invoice_ids:
+            try:
+                invoice = db.session.get(Invoice, invoice_id)
+                if not invoice:
+                    errors.append(f"Invoice {invoice_id} not found")
+                    continue
+                
+                # Update status to queued for print
+                invoice.status = 'queued_for_print'
+                invoice.updated_at = now_utc()
+                
+                updated_invoices.append({
+                    'id': invoice.id,
+                    'invoiceNumber': invoice.invoice_number,
+                    'status': invoice.status,
+                    'priority': priority,
+                    'copies': copies
+                })
+                
+            except Exception as e:
+                errors.append(f"Error queuing invoice {invoice_id}: {str(e)}")
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'queuedInvoices': updated_invoices,
+                'errors': errors,
+                'summary': {
+                    'total': len(invoice_ids),
+                    'successful': len(updated_invoices),
+                    'failed': len(errors)
+                }
+            },
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 500
+
+
+# ============= ORIGINAL INVOICE ENDPOINTS =============
 
 @invoices_bp.route('/invoices', methods=['GET'])
 def get_invoices():

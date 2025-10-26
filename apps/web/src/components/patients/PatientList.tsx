@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Button, Spinner, Badge, Checkbox, Modal } from '@x-ear/ui-web';
+import { Button, Loading, Badge, Checkbox, Modal } from '@x-ear/ui-web';
 import { 
   User, 
   Phone, 
@@ -182,7 +182,7 @@ export function PatientList({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Spinner size="lg" />
+        <Loading size="lg" />
         <span className="ml-2 text-gray-600">Hastalar yükleniyor...</span>
       </div>
     );

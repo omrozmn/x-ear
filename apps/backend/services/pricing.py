@@ -21,13 +21,17 @@ def calculate_device_pricing(device_assignments, accessories, services, sgk_sche
         sale_price_total = 0.0  # İndirim sonrası toplam (Sale Price)
 
         for assignment in device_assignments:
-            device_id = assignment.get('device_id')
-            device = db.session.get(Device, device_id) if device_id else None
+            inventory_id = assignment.get('inventoryId')
+            inventory_item = None
+            if inventory_id:
+                from models.inventory import Inventory
+                inventory_item = db.session.get(Inventory, inventory_id)
+            
             list_price = None
             if assignment.get('base_price') is not None:
                 list_price = float(assignment.get('base_price') or 0)
-            elif device and getattr(device, 'price', None) is not None:
-                list_price = float(device.price)
+            elif inventory_item and getattr(inventory_item, 'price', None) is not None:
+                list_price = float(inventory_item.price)
             else:
                 list_price = 0.0
 
@@ -98,13 +102,17 @@ def calculate_device_pricing(device_assignments, accessories, services, sgk_sche
             
             if sgk_conf:
                 # Bu assignment için list price al
-                device_id = assignment.get('device_id')
-                device = db.session.get(Device, device_id) if device_id else None
+                inventory_id = assignment.get('inventoryId')
+                inventory_item = None
+                if inventory_id:
+                    from models.inventory import Inventory
+                    inventory_item = db.session.get(Inventory, inventory_id)
+                    
                 assignment_list_price = None
                 if assignment.get('base_price') is not None:
                     assignment_list_price = float(assignment.get('base_price') or 0)
-                elif device and getattr(device, 'price', None) is not None:
-                    assignment_list_price = float(device.price)
+                elif inventory_item and getattr(inventory_item, 'price', None) is not None:
+                    assignment_list_price = float(inventory_item.price)
                 else:
                     assignment_list_price = 0.0
                 

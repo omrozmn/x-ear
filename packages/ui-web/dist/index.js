@@ -21,8 +21,11 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var src_exports = {};
 __export(src_exports, {
   Alert: () => Alert,
+  AlertDescription: () => AlertDescription,
+  AlertIcon: () => AlertIcon,
   Autocomplete: () => Autocomplete,
   Badge: () => Badge,
+  Box: () => Box,
   Button: () => Button,
   Card: () => Card,
   CardContent: () => CardContent,
@@ -33,26 +36,49 @@ __export(src_exports, {
   ComponentsDemo: () => ComponentsDemo_default,
   DataTable: () => DataTable,
   DatePicker: () => DatePicker,
+  DeviceSelector: () => DeviceSelector,
+  Dialog: () => Modal,
+  DialogContent: () => Modal,
+  DialogHeader: () => Modal,
+  DialogTitle: () => Modal,
   Dropdown: () => Dropdown,
   DynamicForm: () => DynamicForm,
   FileUpload: () => FileUpload,
+  FormControl: () => FormControl,
+  FormField: () => FormField,
+  FormLabel: () => FormLabel,
+  HStack: () => HStack,
   Input: () => Input,
   InventoryPage: () => InventoryPage_default,
+  Label: () => Label,
   Layout: () => Layout_default,
   Loading: () => Loading,
   Modal: () => Modal,
   MultiSelect: () => MultiSelect,
   Pagination: () => Pagination,
+  PdfPreviewModal: () => PdfPreviewModal_default,
+  PriceInput: () => PriceInput,
   Radio: () => Radio,
   RadioGroup: () => RadioGroup,
   Select: () => Select,
+  SelectContent: () => SelectContent,
+  SelectItem: () => SelectItem,
+  SelectTrigger: () => SelectTrigger,
+  SelectValue: () => SelectValue,
+  SgkMultiUpload: () => SgkMultiUpload_default,
+  SimpleGrid: () => SimpleGrid,
   SimplePagination: () => SimplePagination,
   Spinner: () => Spinner,
   StatsCard: () => StatsCard,
   Tabs: () => Tabs,
+  TabsContent: () => TabsContent,
+  TabsList: () => TabsList,
+  TabsTrigger: () => TabsTrigger,
+  Text: () => Text,
   Textarea: () => Textarea,
   ToastProvider: () => ToastProvider,
   Tooltip: () => Tooltip,
+  VStack: () => VStack,
   createInventoryStats: () => createInventoryStats,
   createPatientStats: () => createPatientStats,
   useModal: () => useModal,
@@ -932,7 +958,7 @@ var DataTable = ({
     );
     rowSelection.onChange(newSelectedKeys, newSelectedRows);
   };
-  const sizeClasses5 = {
+  const sizeClasses6 = {
     small: "text-sm",
     medium: "text-base",
     large: "text-lg"
@@ -1123,7 +1149,7 @@ var DataTable = ({
         )) })
       ] })
     ] }) }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("table", { className: `min-w-full divide-y divide-gray-200 dark:divide-gray-700 ${sizeClasses5[size]}`, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overflow-x-auto", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("table", { className: `min-w-full divide-y divide-gray-200 dark:divide-gray-700 ${sizeClasses6[size]}`, children: [
       /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("thead", { className: "bg-gray-50 dark:bg-gray-700", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("tr", { children: [
         rowSelection && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("th", { className: `${cellPadding[size]} text-left`, children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
           "input",
@@ -1225,6 +1251,7 @@ var import_jsx_runtime7 = require("react/jsx-runtime");
 var variantClasses = {
   primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
   secondary: "bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500",
+  default: "bg-gray-100 text-gray-800 hover:bg-gray-200 focus:ring-gray-300",
   outline: "border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-blue-500",
   ghost: "text-gray-700 hover:bg-gray-100 focus:ring-gray-500",
   danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
@@ -1391,6 +1418,21 @@ var Select = (0, import_react7.forwardRef)(({
   ] });
 });
 Select.displayName = "Select";
+var SelectContent = ({
+  children,
+  className = ""
+}) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: `select-content ${className}`, children });
+};
+var SelectItem = ({ value, children, className = "", disabled = false }) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("option", { value, disabled, className, children });
+};
+var SelectTrigger = ({ children, className = "", onClick }) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: `select-trigger ${className}`, onClick, children });
+};
+var SelectValue = ({ placeholder, className = "" }) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("span", { className: `select-value ${className}`, children: placeholder });
+};
 
 // src/components/ui/Textarea.tsx
 var import_react8 = require("react");
@@ -3054,9 +3096,144 @@ var FileUpload = ({
   ] });
 };
 
+// src/components/ui/PdfPreviewModal.tsx
+var import_jsx_runtime21 = require("react/jsx-runtime");
+var PdfPreviewModal = ({ isOpen, onClose, title = "Preview", pdfUrl }) => {
+  if (!isOpen)
+    return null;
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "bg-white rounded-md shadow-lg w-[90%] max-w-4xl h-[90%] flex flex-col overflow-hidden", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex items-center justify-between p-4 border-b", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("h3", { className: "font-semibold", children: title }),
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "space-x-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { className: "px-3 py-1 text-sm", onClick: onClose, children: "Close" }),
+        pdfUrl && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("a", { href: pdfUrl, target: "_blank", rel: "noreferrer", className: "px-3 py-1 text-sm bg-blue-600 text-white rounded", children: "Open" })
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "flex-1 bg-gray-100", children: pdfUrl ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("iframe", { src: pdfUrl, className: "w-full h-full", title: "pdf-preview" }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "p-6 text-center text-gray-600", children: "No PDF available" }) })
+  ] }) });
+};
+var PdfPreviewModal_default = PdfPreviewModal;
+
+// src/components/ui/SgkMultiUpload.tsx
+var import_react17 = require("react");
+var import_jsx_runtime22 = require("react/jsx-runtime");
+var SgkMultiUpload = () => {
+  const [files, setFiles] = (0, import_react17.useState)([]);
+  const [results, setResults] = (0, import_react17.useState)([]);
+  const [uploading, setUploading] = (0, import_react17.useState)(false);
+  const [previewUrl, setPreviewUrl] = (0, import_react17.useState)();
+  const [isPreviewOpen, setIsPreviewOpen] = (0, import_react17.useState)(false);
+  const inputRef = (0, import_react17.useRef)(null);
+  const onFiles = (fList) => {
+    if (!fList)
+      return;
+    const arr = Array.from(fList);
+    const allowed = arr.filter((f) => /image\/(png|jpeg|jpg|tiff|bmp)/i.test(f.type) || /\.(png|jpe?g|tiff?|bmp)$/i.test(f.name));
+    setFiles((prev) => [...prev, ...allowed].slice(0, 50));
+  };
+  const removeFile = (idx) => setFiles((prev) => prev.filter((_, i) => i !== idx));
+  const upload = async () => {
+    if (!files.length)
+      return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      files.forEach((f) => fd.append("files", f, f.name));
+      const res = await fetch("/api/sgk/upload", { method: "POST", body: fd });
+      const json = await res.json();
+      setResults(json.files || []);
+    } catch (e) {
+      console.error("Upload failed", e);
+      alert("Upload failed, check console");
+    } finally {
+      setUploading(false);
+    }
+  };
+  const openPreview = (pdfPath) => {
+    if (!pdfPath)
+      return;
+    const url = pdfPath.startsWith("http") ? pdfPath : `${window.location.origin}/uploads/sgk/${encodeURIComponent(pdfPath)}`;
+    setPreviewUrl(url);
+    setIsPreviewOpen(true);
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "space-y-4", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "border-2 border-dashed p-4 rounded", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+        "input",
+        {
+          ref: inputRef,
+          type: "file",
+          accept: "image/*",
+          multiple: true,
+          onChange: (e) => onFiles(e.target.files)
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-2 text-sm text-gray-600", children: "Supported: png, jpg, jpeg, tiff, bmp. Max 50 files." })
+    ] }),
+    files.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "space-y-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("h4", { className: "font-medium", children: [
+          "Files to upload (",
+          files.length,
+          ")"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "space-x-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { className: "px-3 py-1 bg-gray-200 rounded", onClick: () => {
+            setFiles([]);
+            inputRef.current && (inputRef.current.value = "");
+          }, children: "Clear" }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { className: "px-3 py-1 bg-blue-600 text-white rounded", onClick: upload, disabled: uploading, children: uploading ? "Uploading..." : "Upload" })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3", children: files.map((f, i) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "border rounded p-2 bg-white", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "text-sm font-medium truncate", children: f.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "text-xs text-gray-500", children: [
+          (f.size / 1024).toFixed(0),
+          " KB"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "mt-2 flex space-x-2", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { className: "text-xs px-2 py-1 border rounded", onClick: () => removeFile(i), children: "Remove" }) })
+      ] }, i)) })
+    ] }),
+    results.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-4 space-y-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h4", { className: "font-medium", children: "Results" }),
+      results.map((r, idx) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "p-3 border rounded bg-white", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "flex items-center justify-between", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "font-semibold", children: r.fileName }),
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "text-sm text-gray-500", children: [
+              "Status: ",
+              r.status
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "space-x-2", children: r.result && r.result.pdf_filename && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { className: "px-2 py-1 bg-indigo-600 text-white rounded text-sm", onClick: () => openPreview(r.result.pdf_filename), children: "Preview PDF" }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "mt-2 text-sm text-gray-700", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("strong", { children: "Patient:" }),
+            " ",
+            r.result?.patient_info?.name || "Unknown"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("strong", { children: "TC partial:" }),
+            " ",
+            r.result?.tc_partial || "-"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("strong", { children: "Matched patient:" }),
+            " ",
+            r.result?.matched_patient ? r.result.matched_patient.patient.fullName : "No"
+          ] })
+        ] })
+      ] }, idx))
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(PdfPreviewModal_default, { isOpen: isPreviewOpen, onClose: () => setIsPreviewOpen(false), pdfUrl: previewUrl, title: "SGK PDF Preview" })
+  ] });
+};
+var SgkMultiUpload_default = SgkMultiUpload;
+
 // src/components/ui/Pagination.tsx
 var import_clsx7 = require("clsx");
-var import_jsx_runtime21 = require("react/jsx-runtime");
+var import_jsx_runtime23 = require("react/jsx-runtime");
 var defaultItemsPerPageOptions = [10, 25, 50, 100];
 var Pagination = ({
   currentPage,
@@ -3106,7 +3283,7 @@ var Pagination = ({
   const visiblePages = getVisiblePages();
   const isFirstPage = currentPage === 1;
   const isLastPage = currentPage === totalPages;
-  const sizeClasses5 = {
+  const sizeClasses6 = {
     sm: {
       button: "px-2 py-1 text-xs",
       select: "text-xs px-2 py-1",
@@ -3123,7 +3300,7 @@ var Pagination = ({
       text: "text-base"
     }
   };
-  const currentSizeClasses = sizeClasses5[size];
+  const currentSizeClasses = sizeClasses6[size];
   const baseButtonClasses = (0, import_clsx7.clsx)(
     "border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
     "transition-colors duration-200 font-medium",
@@ -3143,10 +3320,10 @@ var Pagination = ({
   };
   const startItem = totalItems ? Math.min((currentPage - 1) * itemsPerPage + 1, totalItems) : 0;
   const endItem = totalItems ? Math.min(currentPage * itemsPerPage, totalItems) : 0;
-  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: (0, import_clsx7.clsx)("flex flex-col sm:flex-row items-center justify-between gap-4", className), children: [
-    showItemsPerPage && onItemsPerPageChange && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex items-center gap-2", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: (0, import_clsx7.clsx)("text-gray-700", currentSizeClasses.text), children: itemsPerPageText }),
-      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: (0, import_clsx7.clsx)("flex flex-col sm:flex-row items-center justify-between gap-4", className), children: [
+    showItemsPerPage && onItemsPerPageChange && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: (0, import_clsx7.clsx)("text-gray-700", currentSizeClasses.text), children: itemsPerPageText }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
         "select",
         {
           value: itemsPerPage,
@@ -3157,12 +3334,12 @@ var Pagination = ({
             currentSizeClasses.select,
             disabled && "opacity-50 cursor-not-allowed"
           ),
-          children: itemsPerPageOptions.map((option) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("option", { value: option, children: option }, option))
+          children: itemsPerPageOptions.map((option) => /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("option", { value: option, children: option }, option))
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex items-center gap-1", children: [
-      showFirstLast && totalPages > maxVisiblePages && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-1", children: [
+      showFirstLast && totalPages > maxVisiblePages && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
         "button",
         {
           onClick: () => handlePageChange(1),
@@ -3177,7 +3354,7 @@ var Pagination = ({
           children: firstText
         }
       ),
-      showPrevNext && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+      showPrevNext && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
         "button",
         {
           onClick: () => handlePageChange(currentPage - 1),
@@ -3190,14 +3367,14 @@ var Pagination = ({
           ),
           "aria-label": previousText,
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "ml-1 hidden sm:inline", children: previousText })
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "ml-1 hidden sm:inline", children: previousText })
           ]
         }
       ),
-      showPageNumbers && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
-        visiblePages[0] > 1 && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+      showPageNumbers && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, { children: [
+        visiblePages[0] > 1 && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
             "button",
             {
               onClick: () => handlePageChange(1),
@@ -3206,9 +3383,9 @@ var Pagination = ({
               children: "1"
             }
           ),
-          visiblePages[0] > 2 && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: (0, import_clsx7.clsx)("px-2", currentSizeClasses.text, "text-gray-500"), children: "..." })
+          visiblePages[0] > 2 && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: (0, import_clsx7.clsx)("px-2", currentSizeClasses.text, "text-gray-500"), children: "..." })
         ] }),
-        visiblePages.map((page) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+        visiblePages.map((page) => /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
           "button",
           {
             onClick: () => handlePageChange(page),
@@ -3223,9 +3400,9 @@ var Pagination = ({
           },
           page
         )),
-        visiblePages[visiblePages.length - 1] < totalPages && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
-          visiblePages[visiblePages.length - 1] < totalPages - 1 && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: (0, import_clsx7.clsx)("px-2", currentSizeClasses.text, "text-gray-500"), children: "..." }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+        visiblePages[visiblePages.length - 1] < totalPages && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, { children: [
+          visiblePages[visiblePages.length - 1] < totalPages - 1 && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: (0, import_clsx7.clsx)("px-2", currentSizeClasses.text, "text-gray-500"), children: "..." }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
             "button",
             {
               onClick: () => handlePageChange(totalPages),
@@ -3236,7 +3413,7 @@ var Pagination = ({
           )
         ] })
       ] }),
-      showPrevNext && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+      showPrevNext && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
         "button",
         {
           onClick: () => handlePageChange(currentPage + 1),
@@ -3249,12 +3426,12 @@ var Pagination = ({
           ),
           "aria-label": nextText,
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "mr-1 hidden sm:inline", children: nextText }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M9 5l7 7-7 7" }) })
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "mr-1 hidden sm:inline", children: nextText }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M9 5l7 7-7 7" }) })
           ]
         }
       ),
-      showFirstLast && totalPages > maxVisiblePages && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+      showFirstLast && totalPages > maxVisiblePages && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
         "button",
         {
           onClick: () => handlePageChange(totalPages),
@@ -3270,7 +3447,7 @@ var Pagination = ({
         }
       )
     ] }),
-    showTotalItems && totalItems && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: (0, import_clsx7.clsx)("text-gray-700", currentSizeClasses.text), children: [
+    showTotalItems && totalItems && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: (0, import_clsx7.clsx)("text-gray-700", currentSizeClasses.text), children: [
       startItem,
       "-",
       endItem,
@@ -3290,7 +3467,7 @@ var SimplePagination = ({
   disabled = false,
   className
 }) => {
-  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
     Pagination,
     {
       currentPage,
@@ -3307,7 +3484,7 @@ var SimplePagination = ({
 };
 
 // src/components/ui/Card.tsx
-var import_jsx_runtime22 = require("react/jsx-runtime");
+var import_jsx_runtime24 = require("react/jsx-runtime");
 var cardVariants = {
   default: "bg-white border border-gray-200 rounded-lg shadow-sm",
   outlined: "bg-white border-2 border-gray-300 rounded-lg",
@@ -3332,7 +3509,7 @@ var Card = ({
     paddingVariants[padding],
     className
   ].filter(Boolean).join(" ");
-  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: classes, ...props, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: classes, ...props, children });
 };
 var CardHeader = ({
   className = "",
@@ -3340,7 +3517,7 @@ var CardHeader = ({
   ...props
 }) => {
   const classes = ["flex flex-col space-y-1.5 pb-4", className].filter(Boolean).join(" ");
-  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: classes, ...props, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: classes, ...props, children });
 };
 var CardTitle = ({
   className = "",
@@ -3348,7 +3525,7 @@ var CardTitle = ({
   ...props
 }) => {
   const classes = ["text-lg font-semibold leading-none tracking-tight", className].filter(Boolean).join(" ");
-  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h3", { className: classes, ...props, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: classes, ...props, children });
 };
 var CardContent = ({
   className = "",
@@ -3356,7 +3533,7 @@ var CardContent = ({
   ...props
 }) => {
   const classes = ["pt-0", className].filter(Boolean).join(" ");
-  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: classes, ...props, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: classes, ...props, children });
 };
 var CardFooter = ({
   className = "",
@@ -3364,12 +3541,12 @@ var CardFooter = ({
   ...props
 }) => {
   const classes = ["flex items-center pt-4", className].filter(Boolean).join(" ");
-  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: classes, ...props, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: classes, ...props, children });
 };
 
 // src/components/ui/Alert.tsx
 var import_lucide_react14 = require("lucide-react");
-var import_jsx_runtime23 = require("react/jsx-runtime");
+var import_jsx_runtime25 = require("react/jsx-runtime");
 var alertVariants = {
   info: "bg-blue-50 border-blue-200 text-blue-800",
   success: "bg-green-50 border-green-200 text-green-800",
@@ -3396,27 +3573,33 @@ var Alert = ({
     alertVariants[variant],
     className
   ].filter(Boolean).join(" ");
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: classes, ...props, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Icon, { className: "w-5 h-5 mt-0.5 flex-shrink-0" }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex-1", children: [
-      title && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h4", { className: "font-medium mb-1", children: title }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "text-sm", children })
+  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: classes, ...props, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Icon, { className: "w-5 h-5 mt-0.5 flex-shrink-0" }),
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex-1", children: [
+      title && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h4", { className: "font-medium mb-1", children: title }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "text-sm", children })
     ] }),
-    onClose && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+    onClose && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
       "button",
       {
         onClick: onClose,
         className: "flex-shrink-0 ml-auto text-current opacity-70 hover:opacity-100",
         "aria-label": "Close alert",
-        children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.XCircle, { className: "w-4 h-4" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react14.XCircle, { className: "w-4 h-4" })
       }
     )
   ] });
 };
+var AlertDescription = ({
+  children,
+  className = ""
+}) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: `text-sm ${className}`, children });
+};
 
 // src/components/ui/Tooltip.tsx
-var import_react17 = require("react");
-var import_jsx_runtime24 = require("react/jsx-runtime");
+var import_react18 = require("react");
+var import_jsx_runtime26 = require("react/jsx-runtime");
 var positionClasses = {
   top: "bottom-full left-1/2 transform -translate-x-1/2 mb-2",
   bottom: "top-full left-1/2 transform -translate-x-1/2 mt-2",
@@ -3429,8 +3612,8 @@ var Tooltip = ({
   children,
   className = ""
 }) => {
-  const [isVisible, setIsVisible] = (0, import_react17.useState)(false);
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+  const [isVisible, setIsVisible] = (0, import_react18.useState)(false);
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
     "div",
     {
       className: `relative inline-block ${className}`,
@@ -3438,13 +3621,13 @@ var Tooltip = ({
       onMouseLeave: () => setIsVisible(false),
       children: [
         children,
-        isVisible && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+        isVisible && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
           "div",
           {
             className: `absolute z-50 px-2 py-1 text-sm text-white bg-gray-900 rounded shadow-lg whitespace-nowrap ${positionClasses[position]}`,
             children: [
               content,
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
                 "div",
                 {
                   className: `absolute w-2 h-2 bg-gray-900 transform rotate-45 ${position === "top" ? "top-full left-1/2 -translate-x-1/2 -mt-1" : position === "bottom" ? "bottom-full left-1/2 -translate-x-1/2 -mb-1" : position === "left" ? "left-full top-1/2 -translate-y-1/2 -ml-1" : "right-full top-1/2 -translate-y-1/2 -mr-1"}`
@@ -3459,8 +3642,8 @@ var Tooltip = ({
 };
 
 // src/components/ui/Dropdown.tsx
-var import_react18 = require("react");
-var import_jsx_runtime25 = require("react/jsx-runtime");
+var import_react19 = require("react");
+var import_jsx_runtime27 = require("react/jsx-runtime");
 var positionClasses2 = {
   "bottom-left": "top-full left-0 mt-1",
   "bottom-right": "top-full right-0 mt-1",
@@ -3474,9 +3657,9 @@ var Dropdown = ({
   className = "",
   onSelect
 }) => {
-  const [isOpen, setIsOpen] = (0, import_react18.useState)(false);
-  const dropdownRef = (0, import_react18.useRef)(null);
-  (0, import_react18.useEffect)(() => {
+  const [isOpen, setIsOpen] = (0, import_react19.useState)(false);
+  const dropdownRef = (0, import_react19.useRef)(null);
+  (0, import_react19.useEffect)(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
@@ -3492,13 +3675,13 @@ var Dropdown = ({
       setIsOpen(false);
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { ref: dropdownRef, className: `relative inline-block ${className}`, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { onClick: () => setIsOpen(!isOpen), className: "cursor-pointer", children: trigger }),
-    isOpen && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { ref: dropdownRef, className: `relative inline-block ${className}`, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { onClick: () => setIsOpen(!isOpen), className: "cursor-pointer", children: trigger }),
+    isOpen && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
       "div",
       {
         className: `absolute z-50 min-w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 ${positionClasses2[position]}`,
-        children: items.map((item, index) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+        children: items.map((item, index) => /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
           "button",
           {
             onClick: () => handleItemClick(item),
@@ -3513,10 +3696,232 @@ var Dropdown = ({
   ] });
 };
 
+// src/components/ui/Box.tsx
+var import_jsx_runtime28 = require("react/jsx-runtime");
+var Box = ({
+  children,
+  className = "",
+  ...props
+}) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className, ...props, children });
+};
+
+// src/components/ui/Text.tsx
+var import_jsx_runtime29 = require("react/jsx-runtime");
+var sizeClasses5 = {
+  xs: "text-xs",
+  sm: "text-sm",
+  md: "text-base",
+  lg: "text-lg",
+  xl: "text-xl"
+};
+var weightClasses = {
+  normal: "font-normal",
+  medium: "font-medium",
+  semibold: "font-semibold",
+  bold: "font-bold"
+};
+var colorClasses3 = {
+  gray: "text-gray-700 dark:text-gray-300",
+  red: "text-red-600 dark:text-red-400",
+  blue: "text-blue-600 dark:text-blue-400",
+  green: "text-green-600 dark:text-green-400",
+  yellow: "text-yellow-600 dark:text-yellow-400"
+};
+var Text = ({
+  children,
+  as: Component = "p",
+  size = "md",
+  weight = "normal",
+  color = "gray",
+  className = "",
+  ...props
+}) => {
+  const classes = [
+    sizeClasses5[size],
+    weightClasses[weight],
+    colorClasses3[color],
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(Component, { className: classes, ...props, children });
+};
+
+// src/components/ui/FormControl.tsx
+var import_jsx_runtime30 = require("react/jsx-runtime");
+var FormControl = ({
+  children,
+  isRequired = false,
+  isInvalid = false,
+  isDisabled = false,
+  className = "",
+  ...props
+}) => {
+  const classes = [
+    "form-control",
+    isRequired && "required",
+    isInvalid && "invalid",
+    isDisabled && "disabled",
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: classes, ...props, children });
+};
+
+// src/components/ui/FormLabel.tsx
+var import_jsx_runtime31 = require("react/jsx-runtime");
+var FormLabel = ({
+  children,
+  isRequired = false,
+  className = "",
+  ...props
+}) => {
+  const classes = [
+    "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1",
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("label", { className: classes, ...props, children: [
+    children,
+    isRequired && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "text-red-500 ml-1", children: "*" })
+  ] });
+};
+
+// src/components/ui/Stack.tsx
+var import_jsx_runtime32 = require("react/jsx-runtime");
+var alignClasses = {
+  start: "items-start",
+  center: "items-center",
+  end: "items-end",
+  stretch: "items-stretch"
+};
+var justifyClasses = {
+  start: "justify-start",
+  center: "justify-center",
+  end: "justify-end",
+  between: "justify-between",
+  around: "justify-around",
+  evenly: "justify-evenly"
+};
+var HStack = ({
+  children,
+  spacing = 4,
+  align = "center",
+  justify = "start",
+  className = "",
+  ...props
+}) => {
+  const spacingClass = typeof spacing === "number" ? `gap-${spacing}` : `gap-[${spacing}]`;
+  const classes = [
+    "flex flex-row",
+    spacingClass,
+    alignClasses[align],
+    justifyClasses[justify],
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: classes, ...props, children });
+};
+var VStack = ({
+  children,
+  spacing = 4,
+  align = "stretch",
+  justify = "start",
+  className = "",
+  ...props
+}) => {
+  const spacingClass = typeof spacing === "number" ? `gap-${spacing}` : `gap-[${spacing}]`;
+  const classes = [
+    "flex flex-col",
+    spacingClass,
+    alignClasses[align],
+    justifyClasses[justify],
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: classes, ...props, children });
+};
+
+// src/components/ui/Grid.tsx
+var import_jsx_runtime33 = require("react/jsx-runtime");
+var SimpleGrid = ({
+  children,
+  columns = 1,
+  spacing = 4,
+  minChildWidth,
+  className = "",
+  ...props
+}) => {
+  let gridClasses = "grid";
+  if (minChildWidth) {
+    gridClasses += ` grid-cols-[repeat(auto-fit,minmax(${minChildWidth},1fr))]`;
+  } else if (typeof columns === "number") {
+    gridClasses += ` grid-cols-${columns}`;
+  } else {
+    const { base = 1, sm, md, lg, xl } = columns;
+    gridClasses += ` grid-cols-${base}`;
+    if (sm)
+      gridClasses += ` sm:grid-cols-${sm}`;
+    if (md)
+      gridClasses += ` md:grid-cols-${md}`;
+    if (lg)
+      gridClasses += ` lg:grid-cols-${lg}`;
+    if (xl)
+      gridClasses += ` xl:grid-cols-${xl}`;
+  }
+  const spacingClass = typeof spacing === "number" ? `gap-${spacing}` : `gap-[${spacing}]`;
+  const classes = [
+    gridClasses,
+    spacingClass,
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: classes, ...props, children });
+};
+
+// src/components/ui/AlertIcon.tsx
+var import_jsx_runtime34 = require("react/jsx-runtime");
+var iconMap2 = {
+  info: "\u{1F6C8}",
+  warning: "\u26A0\uFE0F",
+  success: "\u2713",
+  error: "\u2715"
+};
+var colorMap = {
+  info: "text-blue-500",
+  warning: "text-yellow-500",
+  success: "text-green-500",
+  error: "text-red-500"
+};
+var AlertIcon = ({
+  status = "info",
+  className = "",
+  ...props
+}) => {
+  const classes = [
+    "inline-flex items-center justify-center w-5 h-5 mr-2",
+    colorMap[status],
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: classes, ...props, children: iconMap2[status] });
+};
+
+// src/components/ui/Label.tsx
+var import_jsx_runtime35 = require("react/jsx-runtime");
+var Label = ({
+  children,
+  required = false,
+  className = "",
+  ...props
+}) => {
+  const classes = [
+    "block text-sm font-medium text-gray-700 mb-1",
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("label", { className: classes, ...props, children: [
+    children,
+    required && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { className: "text-red-500 ml-1", children: "*" })
+  ] });
+};
+
 // src/components/forms/DynamicForm.tsx
-var import_react19 = require("react");
+var import_react20 = require("react");
 var import_lucide_react15 = require("lucide-react");
-var import_jsx_runtime26 = require("react/jsx-runtime");
+var import_jsx_runtime36 = require("react/jsx-runtime");
 var DynamicForm = ({
   fields = [],
   sections = [],
@@ -3536,11 +3941,11 @@ var DynamicForm = ({
   validateOnChange = false,
   validateOnBlur = true
 }) => {
-  const [formData, setFormData] = (0, import_react19.useState)(initialData);
-  const [errors, setErrors] = (0, import_react19.useState)({});
-  const [touched, setTouched] = (0, import_react19.useState)({});
-  const [collapsedSections, setCollapsedSections] = (0, import_react19.useState)({});
-  (0, import_react19.useEffect)(() => {
+  const [formData, setFormData] = (0, import_react20.useState)(initialData);
+  const [errors, setErrors] = (0, import_react20.useState)({});
+  const [touched, setTouched] = (0, import_react20.useState)({});
+  const [collapsedSections, setCollapsedSections] = (0, import_react20.useState)({});
+  (0, import_react20.useEffect)(() => {
     const initialCollapsed = {};
     sections.forEach((section) => {
       if (section.collapsible && section.defaultCollapsed) {
@@ -3549,16 +3954,16 @@ var DynamicForm = ({
     });
     setCollapsedSections(initialCollapsed);
   }, [sections]);
-  (0, import_react19.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     setFormData(initialData);
   }, [initialData]);
-  const getAllFields = (0, import_react19.useCallback)(() => {
+  const getAllFields = (0, import_react20.useCallback)(() => {
     if (sections.length > 0) {
       return sections.flatMap((section) => section.fields);
     }
     return fields;
   }, [fields, sections]);
-  const validateField = (0, import_react19.useCallback)((field, value) => {
+  const validateField = (0, import_react20.useCallback)((field, value) => {
     if (field.required && (value === void 0 || value === null || value === "")) {
       return `${field.label} alan\u0131 zorunludur`;
     }
@@ -3591,7 +3996,7 @@ var DynamicForm = ({
     }
     return null;
   }, []);
-  const validateForm = (0, import_react19.useCallback)(() => {
+  const validateForm = (0, import_react20.useCallback)(() => {
     const newErrors = {};
     const allFields = getAllFields();
     allFields.forEach((field) => {
@@ -3665,7 +4070,7 @@ var DynamicForm = ({
     const renderInput = () => {
       switch (field.type) {
         case "textarea":
-          return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
             "textarea",
             {
               id: field.name,
@@ -3681,8 +4086,8 @@ var DynamicForm = ({
             }
           );
         case "select":
-          return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "relative", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+          return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "relative", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(
               "select",
               {
                 id: field.name,
@@ -3694,16 +4099,16 @@ var DynamicForm = ({
                 required: field.required,
                 className: `${baseInputClasses} pr-10 appearance-none`,
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: field.placeholder || "Se\xE7iniz..." }),
-                  field.options?.map((option) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: option.value, children: option.label }, option.value))
+                  /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("option", { value: "", children: field.placeholder || "Se\xE7iniz..." }),
+                  field.options?.map((option) => /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("option", { value: option.value, children: option.label }, option.value))
                 ]
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_lucide_react15.ChevronDown, { className: "absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" })
+            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(import_lucide_react15.ChevronDown, { className: "absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" })
           ] });
         case "multiselect":
-          return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "space-y-2", children: field.options?.map((option) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "flex items-center", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { className: "space-y-2", children: field.options?.map((option) => /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("label", { className: "flex items-center", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
               "input",
               {
                 type: "checkbox",
@@ -3717,11 +4122,11 @@ var DynamicForm = ({
                 className: "rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-sm text-gray-700 dark:text-gray-300", children: option.label })
+            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("span", { className: "text-sm text-gray-700 dark:text-gray-300", children: option.label })
           ] }, option.value)) });
         case "radio":
-          return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "space-y-2", children: field.options?.map((option) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "flex items-center", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { className: "space-y-2", children: field.options?.map((option) => /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("label", { className: "flex items-center", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
               "input",
               {
                 type: "radio",
@@ -3734,11 +4139,11 @@ var DynamicForm = ({
                 className: "border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-sm text-gray-700 dark:text-gray-300", children: option.label })
+            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("span", { className: "text-sm text-gray-700 dark:text-gray-300", children: option.label })
           ] }, option.value)) });
         case "checkbox":
-          return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "flex items-center", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("label", { className: "flex items-center", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
               "input",
               {
                 type: "checkbox",
@@ -3749,10 +4154,10 @@ var DynamicForm = ({
                 className: "rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-sm text-gray-700 dark:text-gray-300", children: field.label })
+            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("span", { className: "text-sm text-gray-700 dark:text-gray-300", children: field.label })
           ] });
         case "file":
-          return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
             "input",
             {
               type: "file",
@@ -3768,7 +4173,7 @@ var DynamicForm = ({
             }
           );
         case "number":
-          return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
             "input",
             {
               type: "number",
@@ -3787,7 +4192,7 @@ var DynamicForm = ({
             }
           );
         default:
-          return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
             "input",
             {
               type: field.type,
@@ -3807,15 +4212,15 @@ var DynamicForm = ({
           );
       }
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "space-y-1", children: [
-      field.type !== "checkbox" && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { htmlFor: field.name, className: "block text-sm font-medium text-gray-700 dark:text-gray-300", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "space-y-1", children: [
+      field.type !== "checkbox" && /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("label", { htmlFor: field.name, className: "block text-sm font-medium text-gray-700 dark:text-gray-300", children: [
         field.label,
-        field.required && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-red-500 ml-1", children: "*" })
+        field.required && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("span", { className: "text-red-500 ml-1", children: "*" })
       ] }),
       renderInput(),
-      field.description && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-gray-500 dark:text-gray-400", children: field.description }),
-      showError && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center text-sm text-red-600 dark:text-red-400", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_lucide_react15.AlertCircle, { className: "w-4 h-4 mr-1" }),
+      field.description && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "text-sm text-gray-500 dark:text-gray-400", children: field.description }),
+      showError && /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "flex items-center text-sm text-red-600 dark:text-red-400", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(import_lucide_react15.AlertCircle, { className: "w-4 h-4 mr-1" }),
         error
       ] })
     ] }, field.name);
@@ -3823,8 +4228,8 @@ var DynamicForm = ({
   const renderActions = () => {
     if (!showActions)
       return null;
-    return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700", children: [
-      onReset && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700", children: [
+      onReset && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
         "button",
         {
           type: "button",
@@ -3834,7 +4239,7 @@ var DynamicForm = ({
           children: resetText
         }
       ),
-      onCancel && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+      onCancel && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
         "button",
         {
           type: "button",
@@ -3844,17 +4249,17 @@ var DynamicForm = ({
           children: cancelText
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
         "button",
         {
           type: "submit",
           disabled: loading || disabled,
           className: "inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed",
-          children: loading ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" }),
+          children: loading ? /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(import_jsx_runtime36.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { className: "animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" }),
             "Kaydediliyor..."
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_lucide_react15.Check, { className: "w-4 h-4 mr-2" }),
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(import_jsx_runtime36.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(import_lucide_react15.Check, { className: "w-4 h-4 mr-2" }),
             submitText
           ] })
         }
@@ -3863,18 +4268,18 @@ var DynamicForm = ({
   };
   const renderSection = (section) => {
     const isCollapsed = collapsedSections[section.title];
-    return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "border border-gray-200 dark:border-gray-700 rounded-lg", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "border border-gray-200 dark:border-gray-700 rounded-lg", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
         "div",
         {
           className: `px-4 py-3 bg-gray-50 dark:bg-gray-700 ${section.collapsible ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" : ""}`,
           onClick: section.collapsible ? () => toggleSection(section.title) : void 0,
-          children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center justify-between", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { className: "text-lg font-medium text-gray-900 dark:text-gray-100", children: section.title }),
-              section.description && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-gray-600 dark:text-gray-400 mt-1", children: section.description })
+          children: /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { className: "flex items-center justify-between", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("h3", { className: "text-lg font-medium text-gray-900 dark:text-gray-100", children: section.title }),
+              section.description && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("p", { className: "text-sm text-gray-600 dark:text-gray-400 mt-1", children: section.description })
             ] }),
-            section.collapsible && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            section.collapsible && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)(
               import_lucide_react15.ChevronDown,
               {
                 className: `w-5 h-5 text-gray-400 transition-transform ${isCollapsed ? "-rotate-90" : ""}`
@@ -3883,20 +4288,146 @@ var DynamicForm = ({
           ] })
         }
       ),
-      (!section.collapsible || !isCollapsed) && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "p-4 space-y-4", children: section.fields.map(renderField) })
+      (!section.collapsible || !isCollapsed) && /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { className: "p-4 space-y-4", children: section.fields.map(renderField) })
     ] }, section.title);
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("form", { onSubmit: handleSubmit, className: `space-y-6 ${className}`, children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)("form", { onSubmit: handleSubmit, className: `space-y-6 ${className}`, children: [
     actionPosition === "top" && renderActions(),
-    sections.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "space-y-6", children: sections.map(renderSection) }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "space-y-4", children: fields.map(renderField) }),
+    sections.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { className: "space-y-6", children: sections.map(renderSection) }) : /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("div", { className: "space-y-4", children: fields.map(renderField) }),
     (actionPosition === "bottom" || actionPosition === "both") && renderActions()
   ] });
 };
 
+// src/components/forms/FormField.tsx
+var import_jsx_runtime37 = require("react/jsx-runtime");
+var FormField = ({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+  required = false,
+  disabled = false,
+  error,
+  icon: Icon,
+  className = "",
+  step,
+  min,
+  max
+}) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: `space-y-1 ${className}`, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(Label, { className: "text-xs font-medium text-gray-600 block", children: [
+      label,
+      required && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("span", { className: "text-red-500 ml-1", children: "*" })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)("div", { className: "relative", children: [
+      Icon && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none", children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(Icon, { className: "w-3 h-3 text-gray-400" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+        Input,
+        {
+          type,
+          value,
+          onChange: (e) => onChange(e.target.value),
+          placeholder,
+          required,
+          disabled,
+          className: Icon ? "pl-6" : "",
+          step,
+          min,
+          max
+        }
+      )
+    ] }),
+    error && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "text-red-600 text-xs mt-1", children: error })
+  ] });
+};
+
+// src/components/forms/PriceInput.tsx
+var import_jsx_runtime38 = require("react/jsx-runtime");
+var PriceInput = ({
+  label,
+  value,
+  onChange,
+  currency = "TRY",
+  placeholder,
+  required = false,
+  disabled = false,
+  error,
+  className = ""
+}) => {
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("tr-TR", {
+      style: "currency",
+      currency
+    }).format(amount);
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+      Input,
+      {
+        label,
+        type: "number",
+        value,
+        onChange,
+        placeholder,
+        required,
+        disabled,
+        error,
+        step: "0.01",
+        min: "0",
+        rightIcon: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "text-sm text-gray-500", children: currency })
+      }
+    ),
+    typeof value === "number" && value > 0 && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "text-xs text-gray-500 mt-1", children: formatCurrency(value) })
+  ] });
+};
+
+// src/components/forms/DeviceSelector.tsx
+var import_jsx_runtime39 = require("react/jsx-runtime");
+var DeviceSelector = ({
+  label,
+  devices,
+  value,
+  onChange,
+  placeholder = "Cihaz se\xE7in...",
+  required = false,
+  disabled = false,
+  error,
+  className = "",
+  showStock = true,
+  showPrice = true
+}) => {
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("tr-TR", {
+      style: "currency",
+      currency: "TRY"
+    }).format(amount);
+  };
+  const options = devices.map((device) => ({
+    value: device.id,
+    label: `${device.brand} ${device.model} - ${formatCurrency(device.price)} ${showStock ? `(Stok: ${device.stock})` : ""}`,
+    disabled: device.stock === 0
+  }));
+  return /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className, children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
+    Select,
+    {
+      label,
+      options,
+      value,
+      onChange: (e) => onChange(e.target.value),
+      placeholder,
+      required,
+      disabled,
+      error,
+      fullWidth: true
+    }
+  ) });
+};
+
 // src/pages/ComponentsDemo.tsx
-var import_react20 = require("react");
+var import_react21 = require("react");
 var import_lucide_react16 = require("lucide-react");
-var import_jsx_runtime27 = require("react/jsx-runtime");
+var import_jsx_runtime40 = require("react/jsx-runtime");
 var samplePatients = [
   { id: 1, name: "Ahmet Y\u0131lmaz", phone: "0532 123 4567", email: "ahmet@example.com", status: "Aktif", lastVisit: "2024-01-15" },
   { id: 2, name: "Fatma Kaya", phone: "0533 234 5678", email: "fatma@example.com", status: "Beklemede", lastVisit: "2024-01-10" },
@@ -3905,10 +4436,10 @@ var samplePatients = [
   { id: 5, name: "Ali \xD6zkan", phone: "0536 567 8901", email: "ali@example.com", status: "Aktif", lastVisit: "2024-01-14" }
 ];
 var ComponentsDemo = () => {
-  const [sidebarOpen, setSidebarOpen] = (0, import_react20.useState)(false);
-  const [selectedPatients, setSelectedPatients] = (0, import_react20.useState)([]);
-  const [currentPage, setCurrentPage] = (0, import_react20.useState)(1);
-  const [pageSize, setPageSize] = (0, import_react20.useState)(10);
+  const [sidebarOpen, setSidebarOpen] = (0, import_react21.useState)(false);
+  const [selectedPatients, setSelectedPatients] = (0, import_react21.useState)([]);
+  const [currentPage, setCurrentPage] = (0, import_react21.useState)(1);
+  const [pageSize, setPageSize] = (0, import_react21.useState)(10);
   const { isOpen: isModalOpen, openModal, closeModal } = useModal();
   const { isOpen: isFormModalOpen, openModal: openFormModal, closeModal: closeFormModal } = useModal();
   const user = {
@@ -3916,23 +4447,16 @@ var ComponentsDemo = () => {
     email: "ornek@xear.com",
     avatar: "https://ui-avatars.com/api/?name=Dr+\xD6rnek+Kullan\u0131c\u0131&background=3b82f6&color=fff"
   };
-  const navigationItems = [
-    { id: "dashboard", label: "Dashboard", icon: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react16.TrendingUp, { className: "w-5 h-5" }), path: "/dashboard" },
-    { id: "patients", label: "Hastalar", icon: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react16.Users, { className: "w-5 h-5" }), path: "/patients" },
-    { id: "appointments", label: "Randevular", icon: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react16.Calendar, { className: "w-5 h-5" }), path: "/appointments" },
-    { id: "inventory", label: "Envanter", icon: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react16.Package, { className: "w-5 h-5" }), path: "/inventory" },
-    { id: "settings", label: "Ayarlar", icon: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react16.Settings, { className: "w-5 h-5" }), path: "/settings" }
-  ];
   const columns = [
     {
       key: "name",
       title: "Hasta Ad\u0131",
       sortable: true,
-      render: (value, record) => /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-blue-600 font-medium text-sm", children: value.split(" ").map((n) => n[0]).join("") }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "font-medium text-gray-900 dark:text-gray-100", children: value }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "text-sm text-gray-500", children: record.email })
+      render: (value, record) => /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex items-center", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "text-blue-600 font-medium text-sm", children: value.split(" ").map((n) => n[0]).join("") }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "font-medium text-gray-900 dark:text-gray-100", children: value }),
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "text-sm text-gray-500", children: record.email })
         ] })
       ] })
     },
@@ -3945,7 +4469,7 @@ var ComponentsDemo = () => {
       key: "status",
       title: "Durum",
       sortable: true,
-      render: (value) => /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: `inline-flex px-2 py-1 text-xs font-semibold rounded-full ${value === "Aktif" ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" : value === "Beklemede" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400" : "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"}`, children: value })
+      render: (value) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: `inline-flex px-2 py-1 text-xs font-semibold rounded-full ${value === "Aktif" ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" : value === "Beklemede" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400" : "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"}`, children: value })
     },
     {
       key: "lastVisit",
@@ -3958,21 +4482,21 @@ var ComponentsDemo = () => {
     {
       key: "view",
       label: "G\xF6r\xFCnt\xFCle",
-      icon: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react16.Eye, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react16.Eye, { className: "w-4 h-4" }),
       onClick: (record) => console.log("Viewing:", record),
       variant: "secondary"
     },
     {
       key: "edit",
       label: "D\xFCzenle",
-      icon: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react16.Edit, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react16.Edit, { className: "w-4 h-4" }),
       onClick: (record) => console.log("Editing:", record),
       variant: "primary"
     },
     {
       key: "delete",
       label: "Sil",
-      icon: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react16.Trash2, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react16.Trash2, { className: "w-4 h-4" }),
       onClick: (record) => console.log("Deleting:", record),
       variant: "danger"
     }
@@ -3981,14 +4505,14 @@ var ComponentsDemo = () => {
     {
       key: "activate",
       label: "Aktifle\u015Ftir",
-      icon: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react16.Plus, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react16.Plus, { className: "w-4 h-4" }),
       onClick: (records) => console.log("Activating:", records),
       variant: "primary"
     },
     {
       key: "delete",
       label: "Toplu Sil",
-      icon: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react16.Trash2, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react16.Trash2, { className: "w-4 h-4" }),
       onClick: (records) => console.log("Bulk deleting:", records),
       variant: "danger"
     }
@@ -4075,19 +4599,19 @@ var ComponentsDemo = () => {
   patientStats[1].value = samplePatients.filter((p) => p.status === "Aktif").length.toString();
   patientStats[2].value = samplePatients.filter((p) => p.status === "Beklemede").length.toString();
   patientStats[3].value = "2";
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
     Layout_default,
     {
       user,
       currentPath: "/demo",
-      children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "p-6 space-y-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h1", { className: "text-3xl font-bold text-gray-900 dark:text-gray-100", children: "UI Bile\u015Fenleri Demo" }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-gray-600 dark:text-gray-400 mt-2", children: "X-Ear uygulamas\u0131 i\xE7in olu\u015Fturulan modern React bile\u015Fenlerinin demo sayfas\u0131" })
+      children: /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "p-6 space-y-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h1", { className: "text-3xl font-bold text-gray-900 dark:text-gray-100", children: "UI Bile\u015Fenleri Demo" }),
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-gray-600 dark:text-gray-400 mt-2", children: "X-Ear uygulamas\u0131 i\xE7in olu\u015Fturulan modern React bile\u015Fenlerinin demo sayfas\u0131" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "\u0130statistik Kartlar\u0131" }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6", children: patientStats.map((stat, index) => /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("section", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "\u0130statistik Kartlar\u0131" }),
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6", children: patientStats.map((stat, index) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
             StatsCard,
             {
               ...stat,
@@ -4097,7 +4621,7 @@ var ComponentsDemo = () => {
             },
             index
           )) }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6", children: inventoryStats.map((stat, index) => /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6", children: inventoryStats.map((stat, index) => /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
             StatsCard,
             {
               ...stat,
@@ -4106,10 +4630,10 @@ var ComponentsDemo = () => {
             index
           )) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "Modal Bile\u015Fenleri" }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex space-x-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("section", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "Modal Bile\u015Fenleri" }),
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex space-x-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
               "button",
               {
                 onClick: openModal,
@@ -4117,7 +4641,7 @@ var ComponentsDemo = () => {
                 children: "Basit Modal A\xE7"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
               "button",
               {
                 onClick: openFormModal,
@@ -4126,7 +4650,7 @@ var ComponentsDemo = () => {
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
             Modal,
             {
               isOpen: isModalOpen,
@@ -4137,10 +4661,10 @@ var ComponentsDemo = () => {
               },
               title: "\xD6rnek Modal",
               size: "md",
-              children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "p-4", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-gray-600 dark:text-gray-400", children: "Bu bir \xF6rnek modal i\xE7eri\u011Fidir. Modal bile\u015Feni farkl\u0131 boyutlarda, \xF6zelle\u015Ftirilebilir footer'lar ile kullan\u0131labilir." }) })
+              children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "p-4", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "text-gray-600 dark:text-gray-400", children: "Bu bir \xF6rnek modal i\xE7eri\u011Fidir. Modal bile\u015Feni farkl\u0131 boyutlarda, \xF6zelle\u015Ftirilebilir footer'lar ile kullan\u0131labilir." }) })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
             Modal,
             {
               isOpen: isFormModalOpen,
@@ -4148,7 +4672,7 @@ var ComponentsDemo = () => {
               title: "Hasta Bilgileri",
               size: "lg",
               showFooter: false,
-              children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "p-4", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+              children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "p-4", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
                 DynamicForm,
                 {
                   sections: formSections,
@@ -4161,9 +4685,9 @@ var ComponentsDemo = () => {
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "Veri Tablosu" }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("section", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "Veri Tablosu" }),
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
             DataTable,
             {
               data: samplePatients,
@@ -4196,9 +4720,9 @@ var ComponentsDemo = () => {
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "Dinamik Form" }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("section", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "Dinamik Form" }),
+          /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
             DynamicForm,
             {
               fields: formFields,
@@ -4217,9 +4741,9 @@ var ComponentsDemo = () => {
 var ComponentsDemo_default = ComponentsDemo;
 
 // src/pages/InventoryPage.tsx
-var import_react21 = require("react");
+var import_react22 = require("react");
 var import_lucide_react17 = require("lucide-react");
-var import_jsx_runtime28 = require("react/jsx-runtime");
+var import_jsx_runtime41 = require("react/jsx-runtime");
 var sampleInventoryData = [
   {
     id: "1",
@@ -4262,23 +4786,23 @@ var categories = ["All", "Electronics", "Accessories", "Components", "Tools"];
 var brands = ["All", "TechBrand", "AudioMax", "ComponentCorp", "ToolMaster"];
 var statusOptions = ["All", "Active", "Inactive", "Discontinued"];
 var InventoryPage = () => {
-  const [inventoryData, setInventoryData] = (0, import_react21.useState)(sampleInventoryData);
-  const [loading, setLoading] = (0, import_react21.useState)(false);
-  const [filters, setFilters] = (0, import_react21.useState)({
+  const [inventoryData, setInventoryData] = (0, import_react22.useState)(sampleInventoryData);
+  const [loading, setLoading] = (0, import_react22.useState)(false);
+  const [filters, setFilters] = (0, import_react22.useState)({
     search: "",
     category: "All",
     brand: "All",
     status: "All",
     lowStock: false
   });
-  const [isAddModalOpen, setIsAddModalOpen] = (0, import_react21.useState)(false);
-  const [isEditModalOpen, setIsEditModalOpen] = (0, import_react21.useState)(false);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = (0, import_react21.useState)(false);
-  const [isBulkModalOpen, setIsBulkModalOpen] = (0, import_react21.useState)(false);
-  const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = (0, import_react21.useState)(false);
-  const [selectedItem, setSelectedItem] = (0, import_react21.useState)(null);
-  const [bulkOperation, setBulkOperation] = (0, import_react21.useState)("category");
-  const [bulkFormData, setBulkFormData] = (0, import_react21.useState)({
+  const [isAddModalOpen, setIsAddModalOpen] = (0, import_react22.useState)(false);
+  const [isEditModalOpen, setIsEditModalOpen] = (0, import_react22.useState)(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = (0, import_react22.useState)(false);
+  const [isBulkModalOpen, setIsBulkModalOpen] = (0, import_react22.useState)(false);
+  const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = (0, import_react22.useState)(false);
+  const [selectedItem, setSelectedItem] = (0, import_react22.useState)(null);
+  const [bulkOperation, setBulkOperation] = (0, import_react22.useState)("category");
+  const [bulkFormData, setBulkFormData] = (0, import_react22.useState)({
     category: "",
     priceType: "percentage",
     // percentage, fixed, increase, decrease
@@ -4288,13 +4812,13 @@ var InventoryPage = () => {
     stockValue: "",
     supplier: ""
   });
-  const [selectedRowKeys, setSelectedRowKeys] = (0, import_react21.useState)([]);
-  const [pagination, setPagination] = (0, import_react21.useState)({
+  const [selectedRowKeys, setSelectedRowKeys] = (0, import_react22.useState)([]);
+  const [pagination, setPagination] = (0, import_react22.useState)({
     current: 1,
     pageSize: 20,
     total: 0
   });
-  const [formData, setFormData] = (0, import_react21.useState)({
+  const [formData, setFormData] = (0, import_react22.useState)({
     productName: "",
     brand: "",
     model: "",
@@ -4307,7 +4831,7 @@ var InventoryPage = () => {
     warrantyPeriod: "",
     status: "active"
   });
-  const filteredData = (0, import_react21.useMemo)(() => {
+  const filteredData = (0, import_react22.useMemo)(() => {
     let filtered = inventoryData;
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
@@ -4329,7 +4853,7 @@ var InventoryPage = () => {
     }
     return filtered;
   }, [inventoryData, filters]);
-  const stats = (0, import_react21.useMemo)(() => {
+  const stats = (0, import_react22.useMemo)(() => {
     const totalProducts = inventoryData.length;
     const lowStockCount = inventoryData.filter((item) => item.stock <= item.minStock).length;
     const totalValue = inventoryData.reduce((sum, item) => sum + item.totalValue, 0);
@@ -4341,7 +4865,7 @@ var InventoryPage = () => {
       activeTrials
     };
   }, [inventoryData]);
-  (0, import_react21.useEffect)(() => {
+  (0, import_react22.useEffect)(() => {
     setPagination((prev) => ({
       ...prev,
       total: filteredData.length
@@ -4352,9 +4876,9 @@ var InventoryPage = () => {
       key: "productName",
       title: "Product Name",
       sortable: true,
-      render: (value, record) => /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex flex-col", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "font-medium text-gray-900 dark:text-white", children: value }),
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "text-sm text-gray-500 dark:text-gray-400", children: [
+      render: (value, record) => /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "flex flex-col", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("span", { className: "font-medium text-gray-900 dark:text-white", children: value }),
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("span", { className: "text-sm text-gray-500 dark:text-gray-400", children: [
           record.brand,
           " - ",
           record.model
@@ -4365,15 +4889,15 @@ var InventoryPage = () => {
       key: "category",
       title: "Category",
       sortable: true,
-      render: (value) => /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(Badge, { variant: "secondary", children: value })
+      render: (value) => /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(Badge, { variant: "secondary", children: value })
     },
     {
       key: "stock",
       title: "Stock",
       sortable: true,
-      render: (value, record) => /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-center space-x-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: `font-medium ${value <= record.minStock ? "text-red-600" : "text-gray-900 dark:text-white"}`, children: value }),
-        value <= record.minStock && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.AlertTriangle, { className: "w-4 h-4 text-red-500" })
+      render: (value, record) => /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "flex items-center space-x-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("span", { className: `font-medium ${value <= record.minStock ? "text-red-600" : "text-gray-900 dark:text-white"}`, children: value }),
+        value <= record.minStock && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.AlertTriangle, { className: "w-4 h-4 text-red-500" })
       ] })
     },
     {
@@ -4402,7 +4926,7 @@ var InventoryPage = () => {
     {
       key: "status",
       title: "Status",
-      render: (value) => /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      render: (value) => /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         Badge,
         {
           variant: value === "active" ? "success" : value === "inactive" ? "warning" : "danger",
@@ -4415,7 +4939,7 @@ var InventoryPage = () => {
     {
       key: "view",
       label: "View Details",
-      icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.Eye, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.Eye, { className: "w-4 h-4" }),
       onClick: (record) => {
         setSelectedItem(record);
         setIsDetailsModalOpen(true);
@@ -4424,7 +4948,7 @@ var InventoryPage = () => {
     {
       key: "edit",
       label: "Edit",
-      icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.Edit, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.Edit, { className: "w-4 h-4" }),
       onClick: (record) => {
         setSelectedItem(record);
         setFormData(record);
@@ -4434,7 +4958,7 @@ var InventoryPage = () => {
     {
       key: "delete",
       label: "Delete",
-      icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.Trash2, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.Trash2, { className: "w-4 h-4" }),
       variant: "danger",
       onClick: (record) => {
         if (window.confirm(`Are you sure you want to delete ${record.productName}?`)) {
@@ -4447,7 +4971,7 @@ var InventoryPage = () => {
     {
       key: "bulk-operations",
       label: "Bulk Operations",
-      icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.MoreHorizontal, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.MoreHorizontal, { className: "w-4 h-4" }),
       onClick: (selectedRecords) => {
         setIsBulkModalOpen(true);
       }
@@ -4455,7 +4979,7 @@ var InventoryPage = () => {
     {
       key: "delete",
       label: "Delete Selected",
-      icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.Trash2, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.Trash2, { className: "w-4 h-4" }),
       variant: "danger",
       onClick: (selectedRecords) => {
         if (window.confirm(`Are you sure you want to delete ${selectedRecords.length} items?`)) {
@@ -4468,13 +4992,13 @@ var InventoryPage = () => {
     {
       key: "export",
       label: "Export Selected",
-      icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.Download, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.Download, { className: "w-4 h-4" }),
       onClick: (selectedRecords) => {
         exportToCSV(selectedRecords);
       }
     }
   ];
-  const handleBulkOperation = async () => {
+  const handleBulkOperation = () => {
     const selectedRecords = inventoryData.filter((item) => selectedRowKeys.includes(item.id));
     if (selectedRecords.length === 0) {
       alert("Please select items to perform bulk operations");
@@ -4801,99 +5325,99 @@ var InventoryPage = () => {
   const handleRowSelection = (selectedRowKeys2, selectedRows) => {
     setSelectedRowKeys(selectedRowKeys2);
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "p-6 space-y-6", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h1", { className: "text-2xl font-bold text-gray-900 dark:text-white", children: "Inventory Management" }),
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-gray-600 dark:text-gray-400", children: "Manage your product inventory" })
+  return /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "p-6 space-y-6", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("h1", { className: "text-2xl font-bold text-gray-900 dark:text-white", children: "Inventory Management" }),
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("p", { className: "text-gray-600 dark:text-gray-400", children: "Manage your product inventory" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-center space-x-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "flex items-center space-x-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
           Button,
           {
             variant: "outline",
             onClick: printInventory,
-            icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.Download, { className: "w-4 h-4" }),
+            icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.Download, { className: "w-4 h-4" }),
             children: "Print"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
           Button,
           {
             variant: "outline",
             onClick: () => exportToCSV(filteredData),
-            icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.Download, { className: "w-4 h-4" }),
+            icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.Download, { className: "w-4 h-4" }),
             children: "Export CSV"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
           Button,
           {
             variant: "outline",
             onClick: () => setIsBulkUploadModalOpen(true),
-            icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.Upload, { className: "w-4 h-4" }),
+            icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.Upload, { className: "w-4 h-4" }),
             children: "Bulk Upload"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
           Button,
           {
             onClick: () => setIsAddModalOpen(true),
-            icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.Plus, { className: "w-4 h-4" }),
+            icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.Plus, { className: "w-4 h-4" }),
             children: "Add Product"
           }
         )
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         StatsCard,
         {
           title: "Total Products",
           value: stats.totalProducts.toString(),
           color: "blue",
-          icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.Package, { className: "w-6 h-6" })
+          icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.Package, { className: "w-6 h-6" })
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         StatsCard,
         {
           title: "Low Stock",
           value: stats.lowStockCount.toString(),
           color: "red",
-          icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.AlertTriangle, { className: "w-6 h-6" })
+          icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.AlertTriangle, { className: "w-6 h-6" })
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         StatsCard,
         {
           title: "Total Value",
           value: `\u20BA${stats.totalValue.toFixed(2)}`,
           color: "green",
-          icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.DollarSign, { className: "w-6 h-6" })
+          icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.DollarSign, { className: "w-6 h-6" })
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         StatsCard,
         {
           title: "Active Items",
           value: stats.activeTrials.toString(),
           color: "purple",
-          icon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.TrendingUp, { className: "w-6 h-6" })
+          icon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.TrendingUp, { className: "w-6 h-6" })
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(Card, { className: "p-4", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "lg:col-span-2", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(Card, { className: "p-4", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "lg:col-span-2", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         Input,
         {
           placeholder: "Search products, brands, models...",
           value: filters.search,
           onChange: (e) => handleFilterChange("search", e.target.value),
-          leftIcon: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.Search, { className: "w-4 h-4" })
+          leftIcon: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.Search, { className: "w-4 h-4" })
         }
       ) }),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         Select,
         {
           value: filters.category,
@@ -4902,7 +5426,7 @@ var InventoryPage = () => {
           placeholder: "Category"
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         Select,
         {
           value: filters.brand,
@@ -4911,7 +5435,7 @@ var InventoryPage = () => {
           placeholder: "Brand"
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         Select,
         {
           value: filters.status,
@@ -4920,7 +5444,7 @@ var InventoryPage = () => {
           placeholder: "Status"
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "flex items-center", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "flex items-center", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         Checkbox,
         {
           checked: filters.lowStock,
@@ -4929,7 +5453,7 @@ var InventoryPage = () => {
         }
       ) })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(Card, { children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
       DataTable,
       {
         data: filteredData.slice(
@@ -4955,7 +5479,7 @@ var InventoryPage = () => {
         striped: true
       }
     ) }),
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
       Modal,
       {
         isOpen: isAddModalOpen,
@@ -4963,9 +5487,9 @@ var InventoryPage = () => {
         onSave: handleAddItem,
         title: "Add New Product",
         size: "lg",
-        children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "space-y-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Product Name *",
@@ -4974,7 +5498,7 @@ var InventoryPage = () => {
                 placeholder: "Enter product name"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Brand *",
@@ -4983,7 +5507,7 @@ var InventoryPage = () => {
                 placeholder: "Enter brand"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Model",
@@ -4992,7 +5516,7 @@ var InventoryPage = () => {
                 placeholder: "Enter model"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Select,
               {
                 label: "Category *",
@@ -5002,7 +5526,7 @@ var InventoryPage = () => {
                 placeholder: "Select category"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Stock Quantity",
@@ -5012,7 +5536,7 @@ var InventoryPage = () => {
                 placeholder: "0"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Minimum Stock",
@@ -5022,7 +5546,7 @@ var InventoryPage = () => {
                 placeholder: "0"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Unit Price",
@@ -5033,7 +5557,7 @@ var InventoryPage = () => {
                 placeholder: "0.00"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Barcode",
@@ -5042,7 +5566,7 @@ var InventoryPage = () => {
                 placeholder: "Enter barcode"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Supplier",
@@ -5051,7 +5575,7 @@ var InventoryPage = () => {
                 placeholder: "Enter supplier"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Warranty Period",
@@ -5061,7 +5585,7 @@ var InventoryPage = () => {
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
             Select,
             {
               label: "Status",
@@ -5077,7 +5601,7 @@ var InventoryPage = () => {
         ] })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
       Modal,
       {
         isOpen: isEditModalOpen,
@@ -5088,9 +5612,9 @@ var InventoryPage = () => {
         onSave: handleEditItem,
         title: "Edit Product",
         size: "lg",
-        children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "space-y-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Product Name *",
@@ -5099,7 +5623,7 @@ var InventoryPage = () => {
                 placeholder: "Enter product name"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Brand *",
@@ -5108,7 +5632,7 @@ var InventoryPage = () => {
                 placeholder: "Enter brand"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Model",
@@ -5117,7 +5641,7 @@ var InventoryPage = () => {
                 placeholder: "Enter model"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Select,
               {
                 label: "Category *",
@@ -5127,7 +5651,7 @@ var InventoryPage = () => {
                 placeholder: "Select category"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Stock Quantity",
@@ -5137,7 +5661,7 @@ var InventoryPage = () => {
                 placeholder: "0"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Minimum Stock",
@@ -5147,7 +5671,7 @@ var InventoryPage = () => {
                 placeholder: "0"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Unit Price",
@@ -5158,7 +5682,7 @@ var InventoryPage = () => {
                 placeholder: "0.00"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Barcode",
@@ -5167,7 +5691,7 @@ var InventoryPage = () => {
                 placeholder: "Enter barcode"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Supplier",
@@ -5176,7 +5700,7 @@ var InventoryPage = () => {
                 placeholder: "Enter supplier"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
               Input,
               {
                 label: "Warranty Period",
@@ -5186,7 +5710,7 @@ var InventoryPage = () => {
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
             Select,
             {
               label: "Status",
@@ -5202,19 +5726,19 @@ var InventoryPage = () => {
         ] })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
       Modal,
       {
         isOpen: isBulkUploadModalOpen,
         onClose: () => setIsBulkUploadModalOpen(false),
         title: "Bulk Upload Products",
         size: "md",
-        children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "space-y-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "text-center", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react17.Upload, { className: "w-12 h-12 mx-auto text-gray-400 mb-4" }),
-            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-gray-600 dark:text-gray-400", children: "Upload a CSV file with your product data" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "text-center", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(import_lucide_react17.Upload, { className: "w-12 h-12 mx-auto text-gray-400 mb-4" }),
+            /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("p", { className: "text-gray-600 dark:text-gray-400", children: "Upload a CSV file with your product data" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
             "input",
             {
               type: "file",
@@ -5225,7 +5749,7 @@ var InventoryPage = () => {
               }
             }
           ) }),
-          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "text-sm text-gray-500 dark:text-gray-400", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { children: "CSV format: Product Name, Brand, Model, Category, Stock, Min Stock, Unit Price, Barcode, Supplier, Warranty Period" }) })
+          /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "text-sm text-gray-500 dark:text-gray-400", children: /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("p", { children: "CSV format: Product Name, Brand, Model, Category, Stock, Min Stock, Unit Price, Barcode, Supplier, Warranty Period" }) })
         ] })
       }
     )
@@ -5235,8 +5759,11 @@ var InventoryPage_default = InventoryPage;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Alert,
+  AlertDescription,
+  AlertIcon,
   Autocomplete,
   Badge,
+  Box,
   Button,
   Card,
   CardContent,
@@ -5247,26 +5774,49 @@ var InventoryPage_default = InventoryPage;
   ComponentsDemo,
   DataTable,
   DatePicker,
+  DeviceSelector,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   Dropdown,
   DynamicForm,
   FileUpload,
+  FormControl,
+  FormField,
+  FormLabel,
+  HStack,
   Input,
   InventoryPage,
+  Label,
   Layout,
   Loading,
   Modal,
   MultiSelect,
   Pagination,
+  PdfPreviewModal,
+  PriceInput,
   Radio,
   RadioGroup,
   Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SgkMultiUpload,
+  SimpleGrid,
   SimplePagination,
   Spinner,
   StatsCard,
   Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Text,
   Textarea,
   ToastProvider,
   Tooltip,
+  VStack,
   createInventoryStats,
   createPatientStats,
   useModal,

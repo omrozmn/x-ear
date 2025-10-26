@@ -67,7 +67,7 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
     alert('SMS gönderme özelliği ayarlar menüsünden SMS paketi kontrolü yapılacak şekilde geliştirilecek.');
   };
 
-  const handleNoteSave = async (noteData: any) => {
+  const handleNoteSave = async (noteData: Record<string, unknown>) => {
     setIsSubmitting(true);
     try {
       // TODO: Implement note saving logic

@@ -11,6 +11,7 @@ export const InventoryPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<InventoryFilters>({});
   const [showFilters, setShowFilters] = useState(false);
+  const [enableFuzzySearch, setEnableFuzzySearch] = useState(true);
 
   useEffect(() => {
     // Initial load to check if service is working
@@ -137,13 +138,27 @@ export const InventoryPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Arama
                 </label>
-                <Input
-                  type="text"
-                  value={filters.search || ''}
-                  onChange={(e) => handleFilterChange({ search: e.target.value })}
-                  placeholder="Ürün adı, marka, model..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <div className="space-y-2">
+                  <Input
+                    type="text"
+                    value={filters.search || ''}
+                    onChange={(e) => handleFilterChange({ search: e.target.value })}
+                    placeholder="Ürün adı, marka, model..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="fuzzy-search"
+                      checked={enableFuzzySearch}
+                      onChange={(e) => setEnableFuzzySearch(e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="fuzzy-search" className="ml-2 text-sm text-gray-600">
+                      Akıllı Arama (Fuzzy Search)
+                    </label>
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -244,7 +259,7 @@ export const InventoryPage: React.FC = () => {
         {/* Inventory List */}
         <div className="bg-white rounded-lg shadow">
           <InventoryList
-            filters={filters}
+            filters={{...filters, enableFuzzySearch, maxResults: 100}}
             onItemSelect={(item) => console.log('Selected item:', item)}
             onItemEdit={(item) => console.log('Edit item:', item)}
             onItemDelete={(item) => console.log('Delete item:', item)}

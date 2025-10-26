@@ -57,7 +57,7 @@ export const PatientHearingTestsTab: React.FC<PatientHearingTestsTabProps> = ({
             <Calendar className="w-8 h-8 text-green-600 mr-3" />
             <div>
               <p className="text-2xl font-bold text-gray-900">
-                {hearingTests?.filter((test: any) => test.status === 'completed').length || 0}
+                {hearingTests?.filter((test: Record<string, unknown>) => test.status === 'completed').length || 0}
               </p>
               <p className="text-sm text-gray-500">Tamamlanan</p>
             </div>
@@ -69,7 +69,7 @@ export const PatientHearingTestsTab: React.FC<PatientHearingTestsTabProps> = ({
             <User className="w-8 h-8 text-purple-600 mr-3" />
             <div>
               <p className="text-2xl font-bold text-gray-900">
-                {new Set(hearingTests?.map((test: any) => test.conducted_by)).size || 0}
+                {new Set(hearingTests?.map((test: Record<string, unknown>) => test.conducted_by)).size || 0}
               </p>
               <p className="text-sm text-gray-500">Doktor</p>
             </div>
@@ -85,21 +85,21 @@ export const PatientHearingTestsTab: React.FC<PatientHearingTestsTabProps> = ({
         <div className="p-6">
           {recentTests.length > 0 ? (
             <div className="space-y-4">
-              {recentTests.map((test: any) => (
-                <div key={test.id} className="flex items-center justify-between p-4 border rounded-lg">
+              {recentTests.map((test: Record<string, unknown>) => (
+                <div key={test.id as string} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                       <Activity className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
                       <h4 className="font-medium text-gray-900">
-                        {test.test_type} Testi
+                        {test.test_type as string} Testi
                       </h4>
                       <p className="text-sm text-gray-500">
-                        {new Date(test.test_date).toLocaleDateString('tr-TR')}
+                        {new Date(test.test_date as string).toLocaleDateString('tr-TR')}
                       </p>
                       <p className="text-sm text-gray-500">
-                        Dr. {test.conducted_by}
+                        Dr. {test.conducted_by as string}
                       </p>
                     </div>
                   </div>
@@ -107,11 +107,11 @@ export const PatientHearingTestsTab: React.FC<PatientHearingTestsTabProps> = ({
                     <Badge variant={test.status === 'completed' ? 'default' : 'secondary'}>
                       {test.status === 'completed' ? 'Tamamlandı' : 'Bekliyor'}
                     </Badge>
-                    {test.results && (
+                    {test.results ? (
                       <Button variant="secondary" size="sm">
                         Sonuçları Görüntüle
                       </Button>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               ))}

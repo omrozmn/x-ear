@@ -50,6 +50,11 @@ import type {
   InventoryGetInventoryItems200,
   InventoryGetInventoryItemsParams,
   InventoryItem,
+  InvoicesCreateInvoice201,
+  InvoicesCreateInvoiceBody,
+  InvoicesDeleteInvoice200,
+  InvoicesGetInvoice200,
+  InvoicesSendToGib200,
   Notification,
   NotificationsMarkNotificationReadBody,
   OcrCalculateSimilarityBody,
@@ -65,14 +70,21 @@ import type {
   PatientsBulkUploadPatientsBody,
   PatientsCreatePatientBody,
   PatientsGetPatients200,
+  PatientsGetPatientDevices200,
   PatientsGetPatientsParams,
   PaymentRecord,
+  PaymentsCollectPromissoryNoteBody,
+  PaymentsCreatePromissoryNotesBody,
+  PaymentsUpdatePromissoryNoteBody,
   RegistrationRegisterPhoneBody,
   RegistrationVerifyRegistrationOtpBody,
   Sale,
   SalesAssignDevicesExtendedBody,
   SalesCreateSaleBody,
+  SalesCreateSaleInvoice201,
+  SalesCreateSaleInvoiceBody,
   SalesCreateSalePaymentPlanBody,
+  SalesGetSaleInvoice200,
   SalesPricingPreviewBody,
   SalesUpdateSaleBody,
   SgkProcessOcrBody,
@@ -706,6 +718,72 @@ should live in a dedicated inventory table/service.
   };
 
   /**
+   * Create a new invoice for a patient
+   * @summary Create a new invoice
+   */
+  const invoicesCreateInvoice = <
+    TData = AxiosResponse<InvoicesCreateInvoice201>,
+  >(
+    invoicesCreateInvoiceBody: InvoicesCreateInvoiceBody,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.post(`/api/invoices`, invoicesCreateInvoiceBody, options);
+  };
+
+  /**
+   * Retrieve an invoice by its ID
+   * @summary Get invoice by ID
+   */
+  const invoicesGetInvoice = <TData = AxiosResponse<InvoicesGetInvoice200>>(
+    invoiceId: string,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.get(`/api/invoices/${invoiceId}`, options);
+  };
+
+  /**
+   * Delete an invoice by its ID
+   * @summary Delete invoice by ID
+   */
+  const invoicesDeleteInvoice = <
+    TData = AxiosResponse<InvoicesDeleteInvoice200>,
+  >(
+    invoiceId: string,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.delete(`/api/invoices/${invoiceId}`, options);
+  };
+
+  /**
+   * Generate and download a PDF for the specified invoice
+   * @summary Generate invoice PDF
+   */
+  const invoicesGenerateInvoicePdf = <TData = AxiosResponse<Blob>>(
+    invoiceId: string,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.get(`/api/invoices/${invoiceId}/pdf`, {
+      responseType: "blob",
+      ...options,
+    });
+  };
+
+  /**
+   * Send the invoice to GİB (Turkish Revenue Administration)
+   * @summary Send invoice to GİB
+   */
+  const invoicesSendToGib = <TData = AxiosResponse<InvoicesSendToGib200>>(
+    invoiceId: string,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.post(
+      `/api/invoices/${invoiceId}/send-to-gib`,
+      undefined,
+      options,
+    );
+  };
+
+  /**
    * Retrieve notifications information
    * @summary GET /api/notifications
    */
@@ -812,6 +890,17 @@ can fetch the YAML without browser CORS errors.
     options?: AxiosRequestConfig,
   ): Promise<TData> => {
     return axios.delete(`/api/patients/${patientId}`, options);
+  };
+
+  /**
+   * Get devices for a patient
+   * @summary GET /api/patients/{patient_id}/devices
+   */
+  const patientsGetPatientDevices = <TData = AxiosResponse<void>>(
+    patientId: string,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.get(`/api/patients/${patientId}/devices`, options);
   };
 
   /**
@@ -926,6 +1015,16 @@ can fetch the YAML without browser CORS errors.
     options?: AxiosRequestConfig,
   ): Promise<TData> => {
     return axios.delete(`/api/patients/${patientId}/notes/${noteId}`, options);
+  };
+
+  /**
+   * @summary Get all promissory notes for a patient
+   */
+  const paymentsGetPatientPromissoryNotes = <TData = AxiosResponse<void>>(
+    patientId: string,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.get(`/api/patients/${patientId}/promissory-notes`, options);
   };
 
   /**
@@ -1090,6 +1189,50 @@ Authentication is optional for uploads in many workflows; we still log the actor
   };
 
   /**
+   * @summary Create multiple promissory notes
+   */
+  const paymentsCreatePromissoryNotes = <TData = AxiosResponse<void>>(
+    paymentsCreatePromissoryNotesBody?: PaymentsCreatePromissoryNotesBody,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.post(
+      `/api/promissory-notes`,
+      paymentsCreatePromissoryNotesBody,
+      options,
+    );
+  };
+
+  /**
+   * @summary Update a promissory note
+   */
+  const paymentsUpdatePromissoryNote = <TData = AxiosResponse<void>>(
+    noteId: string,
+    paymentsUpdatePromissoryNoteBody?: PaymentsUpdatePromissoryNoteBody,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.patch(
+      `/api/promissory-notes/${noteId}`,
+      paymentsUpdatePromissoryNoteBody,
+      options,
+    );
+  };
+
+  /**
+   * @summary Collect payment for a promissory note (full or partial)
+   */
+  const paymentsCollectPromissoryNote = <TData = AxiosResponse<void>>(
+    noteId: string,
+    paymentsCollectPromissoryNoteBody?: PaymentsCollectPromissoryNoteBody,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.post(
+      `/api/promissory-notes/${noteId}/collect`,
+      paymentsCollectPromissoryNoteBody,
+      options,
+    );
+  };
+
+  /**
    * Create new register-phone
    * @summary POST /api/register-phone
    */
@@ -1233,6 +1376,59 @@ Authentication is optional for uploads in many workflows; we still log the actor
       salesCreateSalePaymentPlanBody,
       options,
     );
+  };
+
+  /**
+   * @summary Get all promissory notes for a specific sale
+   */
+  const paymentsGetSalePromissoryNotes = <TData = AxiosResponse<void>>(
+    saleId: string,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.get(`/api/sales/${saleId}/promissory-notes`, options);
+  };
+
+  /**
+   * Create an invoice for the specified sale
+   * @summary Create invoice for sale
+   */
+  const salesCreateSaleInvoice = <
+    TData = AxiosResponse<SalesCreateSaleInvoice201>,
+  >(
+    saleId: string,
+    salesCreateSaleInvoiceBody: SalesCreateSaleInvoiceBody,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.post(
+      `/api/sales/${saleId}/invoice`,
+      salesCreateSaleInvoiceBody,
+      options,
+    );
+  };
+
+  /**
+   * Retrieve the invoice for the specified sale
+   * @summary Get invoice for sale
+   */
+  const salesGetSaleInvoice = <TData = AxiosResponse<SalesGetSaleInvoice200>>(
+    saleId: string,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.get(`/api/sales/${saleId}/invoice`, options);
+  };
+
+  /**
+   * Generate and download a PDF for the specified sale invoice
+   * @summary Generate sale invoice PDF
+   */
+  const salesGenerateSaleInvoicePdf = <TData = AxiosResponse<Blob>>(
+    saleId: string,
+    options?: AxiosRequestConfig,
+  ): Promise<TData> => {
+    return axios.get(`/api/sales/${saleId}/invoice/pdf`, {
+      responseType: "blob",
+      ...options,
+    });
   };
 
   /**
@@ -1552,6 +1748,11 @@ Swagger UI and `/api/openapi.yaml` are on the same origin and no CORS overrides 
     inventoryGetInventoryStats,
     inventoryGetCategories,
     inventoryCreateCategory,
+    invoicesCreateInvoice,
+    invoicesGetInvoice,
+    invoicesDeleteInvoice,
+    invoicesGenerateInvoicePdf,
+    invoicesSendToGib,
     notificationsListNotifications,
     notificationsDeleteNotification,
     notificationsMarkNotificationRead,
@@ -1561,6 +1762,7 @@ Swagger UI and `/api/openapi.yaml` are on the same origin and no CORS overrides 
     patientsGetPatients,
     patientsCreatePatient,
     patientsDeletePatient,
+    patientsGetPatientDevices,
     salesAssignDevicesExtended,
     patientSubresourcesCreatePatientEreceipt,
     patientSubresourcesDeletePatientEreceipt,
@@ -1568,6 +1770,7 @@ Swagger UI and `/api/openapi.yaml` are on the same origin and no CORS overrides 
     patientSubresourcesDeletePatientHearingTest,
     patientSubresourcesCreatePatientNote,
     patientSubresourcesDeletePatientNote,
+    paymentsGetPatientPromissoryNotes,
     salesGetPatientSales,
     sgkGetPatientSgkDocuments,
     timelineGetPatientTimeline,
@@ -1580,6 +1783,9 @@ Swagger UI and `/api/openapi.yaml` are on the same origin and no CORS overrides 
     salesPricingPreview,
     suppliersDeleteProductSupplier,
     suppliersAddProductSupplier,
+    paymentsCreatePromissoryNotes,
+    paymentsUpdatePromissoryNote,
+    paymentsCollectPromissoryNote,
     registrationRegisterPhone,
     reportsReportAppointments,
     reportsReportCampaigns,
@@ -1593,6 +1799,10 @@ Swagger UI and `/api/openapi.yaml` are on the same origin and no CORS overrides 
     salesUpdateSale,
     salesDeleteSale,
     salesCreateSalePaymentPlan,
+    paymentsGetSalePromissoryNotes,
+    salesCreateSaleInvoice,
+    salesGetSaleInvoice,
+    salesGenerateSaleInvoicePdf,
     updateSettings,
     sgkUploadSgkDocument,
     sgkDeleteSgkDocument,
@@ -1681,6 +1891,13 @@ export type InventoryGetCategoriesResult =
   AxiosResponse<InventoryGetCategories200>;
 export type InventoryCreateCategoryResult =
   AxiosResponse<InventoryCreateCategory201>;
+export type InvoicesCreateInvoiceResult =
+  AxiosResponse<InvoicesCreateInvoice201>;
+export type InvoicesGetInvoiceResult = AxiosResponse<InvoicesGetInvoice200>;
+export type InvoicesDeleteInvoiceResult =
+  AxiosResponse<InvoicesDeleteInvoice200>;
+export type InvoicesGenerateInvoicePdfResult = AxiosResponse<Blob>;
+export type InvoicesSendToGibResult = AxiosResponse<InvoicesSendToGib200>;
 export type NotificationsListNotificationsResult = AxiosResponse<
   Notification[]
 >;
@@ -1693,6 +1910,7 @@ export type ServeOpenapiYamlResult = AxiosResponse<void>;
 export type PatientsGetPatientsResult = AxiosResponse<PatientsGetPatients200>;
 export type PatientsCreatePatientResult = AxiosResponse<Patient>;
 export type PatientsDeletePatientResult = AxiosResponse<SuccessResponse>;
+export type PatientsGetPatientDevicesResult = AxiosResponse<PatientsGetPatientDevices200>;
 export type SalesAssignDevicesExtendedResult = AxiosResponse<void>;
 export type PatientSubresourcesCreatePatientEreceiptResult =
   AxiosResponse<void>;
@@ -1704,6 +1922,7 @@ export type PatientSubresourcesDeletePatientHearingTestResult =
   AxiosResponse<void>;
 export type PatientSubresourcesCreatePatientNoteResult = AxiosResponse<void>;
 export type PatientSubresourcesDeletePatientNoteResult = AxiosResponse<void>;
+export type PaymentsGetPatientPromissoryNotesResult = AxiosResponse<void>;
 export type SalesGetPatientSalesResult = AxiosResponse<void>;
 export type SgkGetPatientSgkDocumentsResult = AxiosResponse<void>;
 export type TimelineGetPatientTimelineResult =
@@ -1719,6 +1938,9 @@ export type PatientsSearchPatientsResult = AxiosResponse<void>;
 export type SalesPricingPreviewResult = AxiosResponse<void>;
 export type SuppliersDeleteProductSupplierResult = AxiosResponse<void>;
 export type SuppliersAddProductSupplierResult = AxiosResponse<void>;
+export type PaymentsCreatePromissoryNotesResult = AxiosResponse<void>;
+export type PaymentsUpdatePromissoryNoteResult = AxiosResponse<void>;
+export type PaymentsCollectPromissoryNoteResult = AxiosResponse<void>;
 export type RegistrationRegisterPhoneResult = AxiosResponse<void>;
 export type ReportsReportAppointmentsResult = AxiosResponse<void>;
 export type ReportsReportCampaignsResult = AxiosResponse<void>;
@@ -1732,6 +1954,11 @@ export type SalesGetSaleResult = AxiosResponse<Sale>;
 export type SalesUpdateSaleResult = AxiosResponse<Sale>;
 export type SalesDeleteSaleResult = AxiosResponse<void>;
 export type SalesCreateSalePaymentPlanResult = AxiosResponse<PaymentRecord>;
+export type PaymentsGetSalePromissoryNotesResult = AxiosResponse<void>;
+export type SalesCreateSaleInvoiceResult =
+  AxiosResponse<SalesCreateSaleInvoice201>;
+export type SalesGetSaleInvoiceResult = AxiosResponse<SalesGetSaleInvoice200>;
+export type SalesGenerateSaleInvoicePdfResult = AxiosResponse<Blob>;
 export type UpdateSettingsResult = AxiosResponse<void>;
 export type SgkUploadSgkDocumentResult = AxiosResponse<void>;
 export type SgkDeleteSgkDocumentResult = AxiosResponse<void>;

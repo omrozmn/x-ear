@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Modal, Button } from '@x-ear/ui-web';
+import { Modal } from '../ui/Modal';
+import { Button, Select } from '@x-ear/ui-web';
 
 interface DocumentTypeSelectorProps {
   isOpen: boolean;
@@ -32,24 +33,21 @@ const DocumentTypeSelector: React.FC<DocumentTypeSelectorProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Doküman Türü Seç">
+    <Modal open={isOpen} onClose={onClose} title="Doküman Türü Seç">
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">
             Doküman Türü
           </label>
-          <select
+          <Select
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Tür seçin</option>
-            {DOCUMENT_TYPES.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: '', label: 'Tür seçin' },
+              ...DOCUMENT_TYPES
+            ]}
+            className="w-full"
+          />
         </div>
 
         <div className="text-sm text-gray-600">

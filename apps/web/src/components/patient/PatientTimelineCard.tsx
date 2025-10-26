@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import { TimelineEvent } from '../../hooks/patient/usePatientTimeline';
 import {
@@ -155,7 +154,7 @@ export const PatientTimelineCard: React.FC<PatientTimelineCardProps> = ({
             <div className="text-xs text-gray-500 mb-2">
               {Object.entries(event.details).slice(0, 2).map(([key, value]) => (
                 <div key={key} className="inline-block mr-3">
-                  <span className="font-medium">{key}:</span> {String(value)}
+                  <span className="font-medium">{key}:</span> {value ? String(value) : 'N/A'}
                 </div>
               ))}
             </div>

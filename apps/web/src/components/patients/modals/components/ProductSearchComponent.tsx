@@ -7,10 +7,10 @@ import {
   CardTitle,
   Badge
 } from '@x-ear/ui-web';
-import { Search, Package } from 'lucide-react';
+import { Search, Package, Star } from 'lucide-react';
+import { searchProducts, FuzzySearchResult, SearchableItem } from '../../../../utils/fuzzy-search';
 
-interface Product {
-  id: string;
+interface Product extends SearchableItem {
   name: string;
   brand: string;
   model: string;
@@ -23,6 +23,7 @@ interface Product {
   barcode?: string;
   sgkSupported: boolean;
   sgkCode?: string;
+  description?: string;
 }
 
 interface ProductSearchComponentProps {
@@ -33,6 +34,8 @@ interface ProductSearchComponentProps {
   onProductSelect: (product: Product) => void;
   isSearching: boolean;
   showResults: boolean;
+  enableFuzzySearch?: boolean;
+  maxResults?: number;
 }
 
 export const ProductSearchComponent: React.FC<ProductSearchComponentProps> = ({
@@ -42,13 +45,48 @@ export const ProductSearchComponent: React.FC<ProductSearchComponentProps> = ({
   selectedProduct,
   onProductSelect,
   isSearching,
-  showResults
+  showResults,
+  enableFuzzySearch = true,
+  maxResults = 10
 }) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
       currency: 'TRY'
     }).format(amount);
+  };
+
+  // Enhanced search results with fuzzy matching
+  const enhancedResults = React.useMemo(() => {
+    if (!enableFuzzySearch || !searchTerm.trim()) {
+      return searchResults.map(product => ({
+        item: product,
+        score: 1,
+        matches: [],
+        relevance: 'high' as const
+      }));
+    }
+
+    return searchProducts(searchTerm, searchResults, {
+      maxResults,
+      threshold: 0.2
+    });
+  }, [searchResults, searchTerm, enableFuzzySearch, maxResults]);
+
+  const getRelevanceColor = (relevance: 'high' | 'medium' | 'low') => {
+    switch (relevance) {
+      case 'high': return 'text-green-600';
+      case 'medium': return 'text-yellow-600';
+      case 'low': return 'text-gray-600';
+      default: return 'text-gray-600';
+    }
+  };
+
+  const getRelevanceIcon = (relevance: 'high' | 'medium' | 'low') => {
+    const stars = relevance === 'high' ? 3 : relevance === 'medium' ? 2 : 1;
+    return Array.from({ length: stars }, (_, i) => (
+      <Star key={i} className="w-3 h-3 fill-current" />
+    ));
   };
 
   return (
@@ -81,45 +119,56 @@ export const ProductSearchComponent: React.FC<ProductSearchComponentProps> = ({
           </div>
 
           {/* Search Results Dropdown */}
-          {showResults && searchResults.length > 0 && (
+          {showResults && enhancedResults.length > 0 && (
             <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-              {searchResults.map((product) => (
-                <div
-                  key={product.id}
-                  onClick={() => onProductSelect(product)}
-                  className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">{product.name}</div>
-                      <div className="text-sm text-gray-600">
-                        {product.brand} - {product.model}
-                      </div>
-                      <div className="flex items-center space-x-4 mt-1">
-                        <Badge variant={product.stock > 0 ? 'success' : 'danger'} size="sm">
-                          Stok: {product.stock}
-                        </Badge>
-                        {product.sgkSupported && (
-                          <Badge variant="primary" size="sm">
-                            SGK
-                          </Badge>
-                        )}
-                        <span className="text-xs text-gray-500">{product.category}</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-green-600">
-                        {formatCurrency(product.salePrice)}
-                      </div>
-                      {product.listPrice > product.salePrice && (
-                        <div className="text-xs text-gray-500 line-through">
-                          {formatCurrency(product.listPrice)}
+              {enhancedResults.map((result) => {
+                const product = result.item;
+                return (
+                  <div
+                    key={product.id}
+                    onClick={() => onProductSelect(product)}
+                    className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <div className="font-medium text-gray-900">{product.name}</div>
+                          {enableFuzzySearch && (
+                            <div className={`flex items-center space-x-1 ${getRelevanceColor(result.relevance)}`}>
+                              {getRelevanceIcon(result.relevance)}
+                              <span className="text-xs">({Math.round(result.score * 100)}%)</span>
+                            </div>
+                          )}
                         </div>
-                      )}
+                        <div className="text-sm text-gray-600">
+                          {product.brand} - {product.model}
+                        </div>
+                        <div className="flex items-center space-x-4 mt-1">
+                          <Badge variant={product.stock > 0 ? 'success' : 'danger'} size="sm">
+                            Stok: {product.stock}
+                          </Badge>
+                          {product.sgkSupported && (
+                            <Badge variant="primary" size="sm">
+                              SGK
+                            </Badge>
+                          )}
+                          <span className="text-xs text-gray-500">{product.category}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-green-600">
+                          {formatCurrency(product.salePrice)}
+                        </div>
+                        {product.listPrice > product.salePrice && (
+                          <div className="text-xs text-gray-500 line-through">
+                            {formatCurrency(product.listPrice)}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

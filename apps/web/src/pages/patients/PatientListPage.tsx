@@ -10,6 +10,7 @@ import { PatientCard } from '../../components/patients/PatientCard';
 import { PatientSearch } from '../../components/patients/PatientSearch';
 import { PatientFilters } from '../../components/patients/PatientFilters';
 import { PatientFormModal } from '../../components/patients/PatientFormModal';
+import { Button } from '@x-ear/ui-web';
 
 interface PatientListPageProps {
   className?: string;
@@ -207,28 +208,28 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
         </div>
         
         <div className="flex items-center gap-2">
-          <button
+          <Button
             onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-            className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100"
+            variant="ghost"
+            size="sm"
             title={`${viewMode === 'grid' ? 'Liste' : 'Kart'} görünümüne geç`}
           >
             {viewMode === 'grid' ? '☰' : '⊞'}
-          </button>
+          </Button>
           
-          <button
+          <Button
             onClick={handleRefresh}
             disabled={isLoading}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            variant="outline"
           >
             {isLoading ? 'Yenileniyor...' : 'Yenile'}
-          </button>
+          </Button>
           
-          <button
+          <Button
             onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
           >
             Yeni Hasta
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -237,18 +238,20 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
           <span className="text-sm text-blue-700">
             {selectedPatients.size} hasta seçildi
           </span>
-          <button
+          <Button
             onClick={handleBulkDelete}
-            className="px-3 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded"
+            variant="ghost"
+            className="text-red-600 hover:text-red-700 hover:bg-red-50"
           >
             Seçilenleri Sil
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setSelectedPatients(new Set())}
-            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded"
+            variant="ghost"
+            className="text-gray-600 hover:text-gray-700 hover:bg-gray-100"
           >
             Seçimi Temizle
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -290,12 +293,11 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
             }
           </p>
           {!searchTerm && Object.keys(filters).length === 0 && (
-            <button
+            <Button
               onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
             >
               Yeni Hasta Ekle
-            </button>
+            </Button>
           )}
         </div>
       );
@@ -329,13 +331,13 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
 
     return (
       <div className="text-center mt-8">
-        <button
+        <Button
           onClick={loadMore}
           disabled={isLoading}
-          className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+          variant="outline"
         >
           {isLoading ? 'Yükleniyor...' : 'Daha Fazla Göster'}
-        </button>
+        </Button>
       </div>
     );
   };
@@ -350,15 +352,16 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
             <span className="text-red-600 mr-2">⚠️</span>
             <span className="text-sm text-red-700">{currentError instanceof Error ? currentError.message : currentError}</span>
           </div>
-          <button
+          <Button
             onClick={() => {
               clearError();
               clearMutationError();
             }}
-            className="text-red-600 hover:text-red-700"
+            variant="ghost"
+            size="sm"
           >
             ✕
-          </button>
+          </Button>
         </div>
       </div>
     );

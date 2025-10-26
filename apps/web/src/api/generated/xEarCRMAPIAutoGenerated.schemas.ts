@@ -303,6 +303,16 @@ export interface InventoryItem {
   features?: string[];
   /** Unit price */
   price: number;
+  /** VAT/KDV rate percentage */
+  kdv?: number;
+  /** VAT rate percentage (alias for kdv) */
+  vatRate?: number;
+  /** Price including VAT/KDV */
+  vatIncludedPrice?: number;
+  /** Current stock level (alias for availableInventory) */
+  stock?: number;
+  /** Product serial number */
+  serialNumber?: string;
   /** Hearing aid direction */
   direction?: InventoryItemDirection;
   /** Legacy field for direction */
@@ -1181,6 +1191,78 @@ export type InventoryCreateCategory201 = {
   timestamp?: string;
 };
 
+export type InvoicesCreateInvoiceBodyItemsItem = {
+  description?: string;
+  quantity?: number;
+  unit_price?: number;
+  total?: number;
+};
+
+export type InvoicesCreateInvoiceBody = {
+  patient_id: string;
+  items: InvoicesCreateInvoiceBodyItemsItem[];
+  total_amount: number;
+  tax_amount?: number;
+  discount_amount?: number;
+};
+
+export type InvoicesCreateInvoice201Data = {
+  invoice_id?: string;
+  invoice_number?: string;
+};
+
+export type InvoicesCreateInvoice201 = {
+  success?: boolean;
+  data?: InvoicesCreateInvoice201Data;
+  requestId?: string;
+  timestamp?: string;
+};
+
+export type InvoicesGetInvoice200DataItemsItem = { [key: string]: unknown };
+
+export type InvoicesGetInvoice200Data = {
+  invoice_id?: string;
+  invoice_number?: string;
+  patient_id?: string;
+  items?: InvoicesGetInvoice200DataItemsItem[];
+  total_amount?: number;
+  tax_amount?: number;
+  discount_amount?: number;
+  created_at?: string;
+};
+
+export type InvoicesGetInvoice200 = {
+  success?: boolean;
+  data?: InvoicesGetInvoice200Data;
+  requestId?: string;
+  timestamp?: string;
+};
+
+export type InvoicesDeleteInvoice200Data = {
+  message?: string;
+};
+
+export type InvoicesDeleteInvoice200 = {
+  success?: boolean;
+  data?: InvoicesDeleteInvoice200Data;
+  requestId?: string;
+  timestamp?: string;
+};
+
+export type InvoicesSendToGib200DataGibResponse = { [key: string]: unknown };
+
+export type InvoicesSendToGib200Data = {
+  message?: string;
+  gib_response?: InvoicesSendToGib200DataGibResponse;
+};
+
+export type InvoicesSendToGib200 = {
+  success?: boolean;
+  data?: InvoicesSendToGib200Data;
+  requestId?: string;
+  timestamp?: string;
+};
+
 export type NotificationsMarkNotificationReadBody = { [key: string]: unknown };
 
 export type SgkProcessOcrBody = { [key: string]: unknown };
@@ -1332,6 +1414,12 @@ export type SalesPricingPreviewBody = { [key: string]: unknown };
 
 export type SuppliersAddProductSupplierBody = { [key: string]: unknown };
 
+export type PaymentsCreatePromissoryNotesBody = { [key: string]: unknown };
+
+export type PaymentsUpdatePromissoryNoteBody = { [key: string]: unknown };
+
+export type PaymentsCollectPromissoryNoteBody = { [key: string]: unknown };
+
 export type RegistrationRegisterPhoneBody = { [key: string]: unknown };
 
 export type SalesCreateSaleBody = { [key: string]: unknown };
@@ -1339,6 +1427,51 @@ export type SalesCreateSaleBody = { [key: string]: unknown };
 export type SalesUpdateSaleBody = { [key: string]: unknown };
 
 export type SalesCreateSalePaymentPlanBody = { [key: string]: unknown };
+
+export type SalesCreateSaleInvoiceBodyInvoiceType =
+  (typeof SalesCreateSaleInvoiceBodyInvoiceType)[keyof typeof SalesCreateSaleInvoiceBodyInvoiceType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const SalesCreateSaleInvoiceBodyInvoiceType = {
+  standard: "standard",
+  proforma: "proforma",
+} as const;
+
+export type SalesCreateSaleInvoiceBody = {
+  invoice_type?: SalesCreateSaleInvoiceBodyInvoiceType;
+  additional_notes?: string;
+};
+
+export type SalesCreateSaleInvoice201Data = {
+  invoice_id?: string;
+  invoice_number?: string;
+};
+
+export type SalesCreateSaleInvoice201 = {
+  success?: boolean;
+  data?: SalesCreateSaleInvoice201Data;
+  requestId?: string;
+  timestamp?: string;
+};
+
+export type SalesGetSaleInvoice200DataItemsItem = { [key: string]: unknown };
+
+export type SalesGetSaleInvoice200Data = {
+  invoice_id?: string;
+  invoice_number?: string;
+  sale_id?: string;
+  items?: SalesGetSaleInvoice200DataItemsItem[];
+  total_amount?: number;
+  tax_amount?: number;
+  created_at?: string;
+};
+
+export type SalesGetSaleInvoice200 = {
+  success?: boolean;
+  data?: SalesGetSaleInvoice200Data;
+  requestId?: string;
+  timestamp?: string;
+};
 
 export type UpdateSettingsBody = { [key: string]: unknown };
 
@@ -1401,3 +1534,16 @@ export type OcrInitializeNlpEndpointBody = { [key: string]: unknown };
 export type OcrProcessDocumentBody = { [key: string]: unknown };
 
 export type OcrCalculateSimilarityBody = { [key: string]: unknown };
+
+export type PatientsGetPatientDevices200Meta = {
+  patientId?: string;
+  patientName?: string;
+  deviceCount?: number;
+};
+
+export type PatientsGetPatientDevices200 = {
+  success?: boolean;
+  data?: Device[];
+  meta?: PatientsGetPatientDevices200Meta;
+  timestamp?: string;
+};

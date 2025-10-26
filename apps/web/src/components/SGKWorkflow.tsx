@@ -1,5 +1,4 @@
-// @ts-nocheck
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Select, Textarea } from '@x-ear/ui-web';
 import { 
   SGKWorkflow as SGKWorkflowType, 
@@ -30,13 +29,7 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<SGKWorkflowStatus>('draft');
   const [statusNotes, setStatusNotes] = useState('');
 
-  useEffect(() => {
-    if (!initialWorkflow) {
-      loadWorkflow();
-    }
-  }, [document.id, initialWorkflow]);
-
-  const loadWorkflow = async () => {
+  const loadWorkflow = useCallback(async () => {
     try {
       setLoading(true);
       const workflowData = await sgkService.getWorkflow(document.id);
@@ -46,7 +39,13 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [document.id]);
+
+  useEffect(() => {
+    if (!initialWorkflow) {
+      loadWorkflow();
+    }
+  }, [document.id, initialWorkflow, loadWorkflow]);
 
   const getStatusColor = (status: SGKWorkflowStatus): string => {
     switch (status) {
@@ -350,14 +349,12 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
                 <Select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value as SGKWorkflowStatus)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {getAvailableStatuses(workflow.currentStatus).map(status => (
-                    <option key={status} value={status}>
-                      {getStatusLabel(status)}
-                    </option>
-                  ))}
-                </Select>
+                  options={getAvailableStatuses(workflow.currentStatus).map(status => ({
+                    value: status,
+                    label: getStatusLabel(status)
+                  }))}
+                  className="w-full"
+                />
               </div>
 
               <div className="mb-4">

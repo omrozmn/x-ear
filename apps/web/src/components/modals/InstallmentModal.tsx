@@ -47,13 +47,29 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Implement API call to fetch installments
-      const response = await fetch(`/api/sales/${sale.id}/installments`);
-      if (!response.ok) throw new Error('Taksitler yüklenemedi');
-      const data = await response.json();
-      setInstallments(data.data || []);
+      // For now, use sale.paymentRecords as fallback since API method doesn't exist
+      // TODO: Implement proper installments API when available
+      let installmentsArray: Installment[] = [];
+
+      if (sale?.paymentRecords && Array.isArray(sale.paymentRecords)) {
+        // Convert payment records to installments format
+        installmentsArray = sale.paymentRecords.map((record: any, index: number) => ({
+          id: record.id || `installment-${index + 1}`,
+          installmentNumber: index + 1,
+          amount: record.amount || 0,
+          paidAmount: record.status === 'paid' ? record.amount : 0,
+          dueDate: record.dueDate || record.paymentDate || new Date().toISOString(),
+          status: record.status || 'pending',
+          paymentDate: record.paymentDate,
+          paymentMethod: record.paymentMethod
+        }));
+      } else {
+        installmentsArray = [];
+      }
+
+      setInstallments(installmentsArray);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Bir hata oluştu');
+      setError(err instanceof Error ? err.message : 'Taksitler yüklenemedi');
     } finally {
       setIsLoading(false);
     }

@@ -2,6 +2,7 @@ import { Button, Input, Select } from '@x-ear/ui-web';
 import React, { useState, useMemo } from 'react';
 import { Appointment, AppointmentFilters, AppointmentStatus, AppointmentType } from '../../types/appointment';
 import { useAppointments } from '../../hooks/useAppointments';
+import { useAppointmentListKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 
 interface AppointmentListProps {
   patientId?: string;
@@ -30,6 +31,8 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
     endDate: '',
     search: ''
   });
+
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const {
     appointments,
@@ -121,6 +124,16 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
       return dateA.getTime() - dateB.getTime();
     });
   }, [appointments]);
+
+  // Keyboard navigation
+  useAppointmentListKeyboardNavigation({
+    appointments: sortedAppointments,
+    selectedIndex,
+    onSelectionChange: setSelectedIndex,
+    onAppointmentSelect: (appointment) => onAppointmentClick?.(appointment),
+    onAppointmentEdit: (appointment) => onEditAppointment?.(appointment),
+    onAppointmentDelete: (appointment) => onDeleteAppointment?.(appointment),
+  });
 
   if (loading) {
     return (
@@ -275,10 +288,14 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {sortedAppointments.map((appointment) => (
+                {sortedAppointments.map((appointment, index) => (
                   <tr
                     key={appointment.id}
-                    className={`hover:bg-gray-50 ${onAppointmentClick ? 'cursor-pointer' : ''}`}
+                    className={`
+                      hover:bg-gray-50 
+                      ${onAppointmentClick ? 'cursor-pointer' : ''} 
+                      ${selectedIndex === index ? 'bg-blue-50 border-blue-200' : ''}
+                    `}
                     onClick={() => onAppointmentClick?.(appointment)}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">

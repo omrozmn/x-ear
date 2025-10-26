@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Upload, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { Button } from '@x-ear/ui-web';
 
 interface PatientCSVUploadProps {
   onUpload: (file: File) => Promise<void>;
@@ -103,12 +104,13 @@ export const PatientCSVUpload: React.FC<PatientCSVUploadProps> = ({
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">CSV Dosyası Yükle</h3>
         {onClose && (
-          <button
+          <Button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            variant="ghost"
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         )}
       </div>
 
@@ -131,18 +133,19 @@ export const PatientCSVUpload: React.FC<PatientCSVUploadProps> = ({
           <p className="text-sm text-gray-500 mb-4">
             veya dosya seçmek için tıklayın
           </p>
-          <button
+          <Button
             onClick={() => fileInputRef.current?.click()}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
           >
             Dosya Seç
-          </button>
+          </Button>
           <input
             ref={fileInputRef}
             type="file"
             accept=".csv"
             onChange={handleFileInputChange}
             className="hidden"
+            data-allow-raw
           />
         </div>
       ) : (
@@ -157,13 +160,14 @@ export const PatientCSVUpload: React.FC<PatientCSVUploadProps> = ({
                 </p>
               </div>
             </div>
-            <button
+            <Button
               onClick={handleRemoveFile}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              variant="ghost"
+              className="text-gray-400 hover:text-gray-600 transition-colors p-1"
               disabled={uploadStatus.status === 'uploading'}
             >
               <X className="h-5 w-5" />
-            </button>
+            </Button>
           </div>
 
           {uploadStatus.status !== 'idle' && (
@@ -192,20 +196,21 @@ export const PatientCSVUpload: React.FC<PatientCSVUploadProps> = ({
           )}
 
           <div className="flex gap-3">
-            <button
+            <Button
               onClick={handleUpload}
               disabled={uploadStatus.status === 'uploading'}
               className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {uploadStatus.status === 'uploading' ? 'Yükleniyor...' : 'Yükle'}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleRemoveFile}
+              variant="secondary"
               disabled={uploadStatus.status === 'uploading'}
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               İptal
-            </button>
+            </Button>
           </div>
         </div>
       )}

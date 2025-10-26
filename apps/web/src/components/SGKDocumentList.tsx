@@ -1,5 +1,4 @@
-// @ts-nocheck
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button, Input, Select } from '@x-ear/ui-web';
 import { 
   SGKDocument, 
@@ -14,11 +13,10 @@ import {
   Trash2, 
   CheckSquare, 
   Square, 
-  MoreHorizontal,
   Eye,
   Edit
 } from 'lucide-react';
-import DocumentViewer from './DocumentViewer';
+import DocumentViewer from './sgk/DocumentViewer';
 
 type SGKProcessingStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
@@ -28,7 +26,7 @@ interface SGKDocumentListProps {
   onDocumentSelect?: (document: SGKDocument) => void;
   onDocumentEdit?: (document: SGKDocument) => void;
   onDocumentDelete?: (documentId: string) => void;
-  onWorkflowUpdate?: (documentId: string, status: SGKWorkflowStatus) => void;
+  onWorkflowUpdate?: (documentId: string, status: string) => void;
   showActions?: boolean;
   compact?: boolean;
 }
@@ -39,7 +37,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
   onDocumentSelect,
   onDocumentEdit,
   onDocumentDelete,
-  onWorkflowUpdate: _onWorkflowUpdate,
+  onWorkflowUpdate,
   showActions = true,
   compact = false
 }) => {
@@ -48,7 +46,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<SGKDocumentType | ''>('');
-  const [selectedStatus, _setSelectedStatus] = useState<SGKWorkflowStatus | ''>('');
+  const [selectedStatus, setSelectedStatus] = useState<SGKWorkflowStatus | ''>('');
   const [selectedProcessingStatus, setSelectedProcessingStatus] = useState<SGKProcessingStatus | ''>('');
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'type' | 'status'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -79,8 +77,9 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
     setError(null);
     
     try {
-      const result: SGKSearchResult = await sgkService.listDocuments(patientId, filters);
-      setDocuments(result.documents);
+      const response = await sgkService.listDocuments(patientId, filters);
+      const documents = Array.isArray(response.data) ? response.data : [];
+      setDocuments(documents);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Belgeler yüklenirken hata oluştu');
     } finally {
@@ -92,8 +91,8 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
     const sorted = [...documents];
     
     sorted.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: unknown;
+      let bValue: unknown;
 
       switch (sortBy) {
         case 'name':
@@ -118,8 +117,11 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
       if (aValue === undefined || aValue === null) aValue = '';
       if (bValue === undefined || bValue === null) bValue = '';
 
-      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+      const aStr = String(aValue);
+      const bStr = String(bValue);
+
+      if (aStr < bStr) return sortOrder === 'asc' ? -1 : 1;
+      if (aStr > bStr) return sortOrder === 'asc' ? 1 : -1;
       return 0;
     });
 
@@ -228,12 +230,12 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
       // Create a zip file or download individually
       for (const doc of selectedDocs) {
         if (doc.fileUrl) {
-          const link = document.createElement('a');
+          const link = window.document.createElement('a');
           link.href = doc.fileUrl;
           link.download = doc.filename;
-          document.body.appendChild(link);
+          window.document.body.appendChild(link);
           link.click();
-          document.body.removeChild(link);
+          window.document.body.removeChild(link);
           
           // Add small delay between downloads
           await new Promise(resolve => setTimeout(resolve, 500));
@@ -277,12 +279,12 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
 
   const handleDownloadDocument = (document: SGKDocument) => {
     if (document.fileUrl) {
-      const link = document.createElement('a');
+      const link = window.document.createElement('a');
       link.href = document.fileUrl;
       link.download = document.filename;
-      document.body.appendChild(link);
+      window.document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      window.document.body.removeChild(link);
     }
   };
 
@@ -294,7 +296,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
   // Load documents on mount and filter changes
   useEffect(() => {
     loadDocuments();
-  }, [patientId, filters]);
+  }, [patientId, filters, loadDocuments]);
 
   // Handle sorting
   const handleSort = (field: 'date' | 'name' | 'type' | 'status') => {
@@ -364,30 +366,34 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
             <div>
               <Select
                 value={selectedType}
-                onValueChange={setSelectedType}
+                onChange={(e) => setSelectedType(e.target.value as SGKDocumentType | '')}
+                options={[
+                  { value: '', label: 'Tüm türler' },
+                  { value: 'recete', label: 'E-Reçete' },
+                  { value: 'rapor', label: 'Rapor' },
+                  { value: 'belge', label: 'Belge' },
+                  { value: 'fatura', label: 'Fatura' },
+                  { value: 'teslim', label: 'Teslim Belgesi' },
+                  { value: 'iade', label: 'İade Belgesi' }
+                ]}
                 placeholder="Belge türü"
-              >
-                <option value="">Tüm türler</option>
-                <option value="recete">E-Reçete</option>
-                <option value="rapor">Rapor</option>
-                <option value="belge">Belge</option>
-                <option value="fatura">Fatura</option>
-                <option value="teslim">Teslim Belgesi</option>
-                <option value="iade">İade Belgesi</option>
-              </Select>
+                className="w-full"
+              />
             </div>
             <div>
               <Select
                 value={selectedProcessingStatus}
-                onValueChange={setSelectedProcessingStatus}
+                onChange={(e) => setSelectedProcessingStatus(e.target.value as SGKProcessingStatus | '')}
+                options={[
+                  { value: '', label: 'Tüm durumlar' },
+                  { value: 'pending', label: 'Bekliyor' },
+                  { value: 'processing', label: 'İşleniyor' },
+                  { value: 'completed', label: 'Tamamlandı' },
+                  { value: 'failed', label: 'Başarısız' }
+                ]}
                 placeholder="İşlem durumu"
-              >
-                <option value="">Tüm durumlar</option>
-                <option value="pending">Bekliyor</option>
-                <option value="processing">İşleniyor</option>
-                <option value="completed">Tamamlandı</option>
-                <option value="failed">Başarısız</option>
-              </Select>
+                className="w-full"
+              />
             </div>
           </div>
         </div>
@@ -425,15 +431,17 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
               
               <Select
                 value=""
-                onValueChange={handleBulkStatusUpdate}
+                onChange={(e) => handleBulkStatusUpdate(e.target.value as SGKWorkflowStatus)}
+                options={[
+                  { value: 'pending', label: 'Bekliyor' },
+                  { value: 'processing', label: 'İşleniyor' },
+                  { value: 'completed', label: 'Tamamlandı' },
+                  { value: 'failed', label: 'Başarısız' }
+                ]}
                 placeholder="Durum Güncelle"
                 disabled={batchLoading}
-              >
-                <option value="pending">Bekliyor</option>
-                <option value="processing">İşleniyor</option>
-                <option value="completed">Tamamlandı</option>
-                <option value="failed">Başarısız</option>
-              </Select>
+                className="w-48"
+              />
               
               <Button
                 variant="outline"
@@ -468,16 +476,19 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left">
-                    <button
+                    <Button
                       onClick={handleSelectAll}
-                      className="flex items-center justify-center w-5 h-5 text-gray-500 hover:text-gray-700"
+                      variant="ghost"
+                      size="sm"
+                      className="w-5 h-5 p-0"
+                      data-allow-raw="true"
                     >
                       {selectedDocuments.size === sortedDocuments.length ? (
                         <CheckSquare className="w-4 h-4" />
                       ) : (
                         <Square className="w-4 h-4" />
                       )}
-                    </button>
+                    </Button>
                   </th>
                   <th 
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
@@ -540,16 +551,19 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
                     className={`hover:bg-gray-50 ${selectedDocuments.has(document.id) ? 'bg-blue-50' : ''}`}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <button
+                      <Button
                         onClick={() => handleSelectDocument(document.id)}
-                        className="flex items-center justify-center w-5 h-5 text-gray-500 hover:text-gray-700"
+                        variant="ghost"
+                        size="sm"
+                        className="w-5 h-5 p-0 text-gray-500 hover:text-gray-700"
+                        data-allow-raw="true"
                       >
                         {selectedDocuments.has(document.id) ? (
                           <CheckSquare className="w-4 h-4 text-blue-600" />
                         ) : (
                           <Square className="w-4 h-4" />
                         )}
-                      </button>
+                      </Button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">

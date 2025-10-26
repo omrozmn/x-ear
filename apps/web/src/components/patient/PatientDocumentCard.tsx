@@ -13,6 +13,7 @@ import {
   FileAudio,
   Archive
 } from 'lucide-react';
+import { Button } from '@x-ear/ui-web';
 
 interface PatientDocumentCardProps {
   document: PatientDocument;
@@ -145,13 +146,14 @@ export const PatientDocumentCard: React.FC<PatientDocumentCardProps> = ({
         </div>
 
         <div className="flex items-center space-x-2">
-          <button
+          <Button
             onClick={() => onDownloadClick?.(document)}
+            variant="ghost"
             className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
             aria-label={`${document.title} dosyasını indir`}
           >
             <Download className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
 

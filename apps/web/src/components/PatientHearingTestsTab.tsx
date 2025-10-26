@@ -1,7 +1,6 @@
 import React from 'react';
 import { usePatientHearingTests } from '../hooks/patient/usePatientHearingTests';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
-import { ErrorBoundary } from './common/ErrorBoundary';
 import { Activity, AlertCircle } from 'lucide-react';
 
 interface PatientHearingTestsTabProps {
@@ -42,11 +41,6 @@ export const PatientHearingTestsTab: React.FC<PatientHearingTestsTabProps> = ({
       </div>
     );
   }
-
-  const handleTestClick = (test: any) => {
-    // TODO: Implement test detail modal or navigation
-    console.log('Test clicked:', test);
-  };
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Belirtilmemiş';

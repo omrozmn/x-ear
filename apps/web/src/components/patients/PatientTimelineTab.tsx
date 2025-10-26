@@ -31,7 +31,7 @@ interface TimelineEvent {
   icon: string;
   priority?: 'low' | 'medium' | 'high';
   category?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface PatientTimelineTabProps {
@@ -139,7 +139,7 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
       patient.communications.forEach((comm, index) => {
         events.push({
           id: `comm-${index}`,
-          type: comm.type as any,
+          type: comm.type as TimelineEvent['type'],
           title: `${comm.type.toUpperCase()} ${comm.direction === 'outbound' ? 'Gönderildi' : 'Alındı'}`,
           description: comm.content?.substring(0, 50) + (comm.content?.length > 50 ? '...' : ''),
           date: comm.timestamp || comm.date || '',

@@ -68,18 +68,19 @@ export interface PaymentRecord {
 }
 
 export interface Sale {
-  id: string;
+  id?: string;
+  patientId: string; // Required in Orval type
   productId?: string;
-  patientId?: string;
   saleDate?: string; // ISO
+  totalAmount: number; // Required in both
   listPriceTotal?: number;
   discountAmount?: number;
   sgkCoverage?: number;
-  totalAmount: number;
+  patientPayment?: number; // From Orval type
   paymentMethod?: string;
   status?: SaleStatus;
   notes?: string;
-  payments?: PaymentRecord[];
+  payments?: PaymentRecord[]; // Additional field for local use
   createdAt?: string;
   updatedAt?: string;
 }

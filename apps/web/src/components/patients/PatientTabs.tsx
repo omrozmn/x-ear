@@ -120,49 +120,56 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({
       label: 'Genel Bilgiler',
       icon: <User className="w-4 h-4" />,
       count: null,
+      disabled: false,
     },
     {
       id: 'devices',
       label: 'Cihazlar',
       icon: <Headphones className="w-4 h-4" />,
       count: patient.devices?.length || 0,
+      disabled: false,
     },
     {
       id: 'sales',
       label: 'Satışlar',
       icon: <CreditCard className="w-4 h-4" />,
       count: 0, // TODO: Get sales count from patient data
+      disabled: false,
     },
     {
       id: 'sgk',
       label: 'SGK İşlemleri',
       icon: <Shield className="w-4 h-4" />,
       count: null,
-      disabled: !patient.sgkInfo?.hasInsurance,
+      disabled: false,
     },
     {
       id: 'documents',
       label: 'Belgeler',
       icon: <FileText className="w-4 h-4" />,
       count: patient.reports?.length || 0,
+      disabled: false,
     },
     {
       id: 'timeline',
       label: 'Zaman Çizelgesi',
       icon: <Clock className="w-4 h-4" />,
       count: null,
+      disabled: false,
     },
     {
       id: 'notes',
       label: 'Notlar',
       icon: <StickyNote className="w-4 h-4" />,
       count: patient.notes?.length || 0,
+      disabled: false,
     },
     {
       id: 'appointments',
       label: 'Randevular',
       icon: <Calendar className="w-4 h-4" />,
       count: 0, // Geçici olarak 0, Patient tipinde henüz appointments alanı yok
+      disabled: false,
     },
   ];
 

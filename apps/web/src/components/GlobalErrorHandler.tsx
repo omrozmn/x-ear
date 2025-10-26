@@ -41,6 +41,10 @@ export const GlobalErrorProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const generateId = () => `error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+  const clearError = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  }, []);
+
   const addNotification = useCallback((
     message: string,
     options: ErrorOptions = {}
@@ -65,7 +69,7 @@ export const GlobalErrorProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
 
     return id;
-  }, []);
+  }, [clearError]);
 
   const showError = useCallback((error: unknown, options: ErrorOptions = {}) => {
     let message = getErrorMessage(error);
@@ -108,10 +112,6 @@ export const GlobalErrorProvider: React.FC<{ children: React.ReactNode }> = ({ c
       type: 'info'
     });
   }, [addNotification]);
-
-  const clearError = useCallback((id: string) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
-  }, []);
 
   const clearAllErrors = useCallback(() => {
     setNotifications([]);

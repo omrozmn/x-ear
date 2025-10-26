@@ -10,14 +10,9 @@ export type AppointmentStatus =
 
 export type AppointmentType = 
   | 'consultation' 
-  | 'follow_up' 
-  | 'trial' 
-  | 'delivery' 
-  | 'control_visit' 
-  | 'battery_renewal' 
-  | 'repair' 
-  | 'fitting' 
-  | 'assessment';
+  | 'hearing-test' 
+  | 'device-trial' 
+  | 'follow-up';
 
 export interface Appointment {
   id: string;

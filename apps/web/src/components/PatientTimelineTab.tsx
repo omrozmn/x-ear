@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { usePatientTimeline } from '../hooks/patient/usePatientTimeline';
+import { usePatientTimeline, TimelineEvent } from '../hooks/patient/usePatientTimeline';
 import { PatientTimelineCard } from './patient/PatientTimelineCard';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
-import { ErrorBoundary } from './common/ErrorBoundary';
-import { Activity, AlertCircle, Calendar, User, DollarSign, Search, Filter } from 'lucide-react';
+import { Input, Select } from '@x-ear/ui-web';
+import { Activity, AlertCircle, Calendar, User, DollarSign, Search } from 'lucide-react';
 
 interface PatientTimelineTabProps {
   patientId: string;
@@ -31,7 +31,7 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({
       filtered = filtered.filter(event =>
         event.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         event.eventType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.details?.toLowerCase().includes(searchTerm.toLowerCase())
+        (event.details && JSON.stringify(event.details).toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -85,7 +85,7 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({
     );
   }
 
-  const handleEventClick = (event: any) => {
+  const handleEventClick = (event: TimelineEvent) => {
     // TODO: Implement event detail modal or navigation
     console.log('Event clicked:', event);
   };
@@ -168,38 +168,39 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" aria-hidden="true" />
-          <input
+          <Input
             type="text"
             placeholder="Olay ara..."
-            className="block w-full pl-10 pr-4 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="block w-full pl-10 pr-4 py-2 text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="flex gap-2">
-          <select
+          <Select
             value={eventTypeFilter}
             onChange={(e) => setEventTypeFilter(e.target.value)}
-            className="px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="all">Tüm Olay Türleri</option>
-            <option value="appointment">Randevu</option>
-            <option value="sale">Satış</option>
-            <option value="device_assignment">Cihaz Atama</option>
-            <option value="note">Not</option>
-            <option value="document">Doküman</option>
-          </select>
-          <input
+            options={[
+              { value: 'all', label: 'Tüm Olay Türleri' },
+              { value: 'appointment', label: 'Randevu' },
+              { value: 'sale', label: 'Satış' },
+              { value: 'device_assignment', label: 'Cihaz Atama' },
+              { value: 'note', label: 'Not' },
+              { value: 'document', label: 'Doküman' }
+            ]}
+            className="px-3 py-2 text-sm"
+          />
+          <Input
             type="date"
             placeholder="Başlangıç tarihi"
-            className="px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="px-3 py-2 text-sm"
             value={dateRange.start}
             onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
           />
-          <input
+          <Input
             type="date"
             placeholder="Bitiş tarihi"
-            className="px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="px-3 py-2 text-sm"
             value={dateRange.end}
             onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
           />

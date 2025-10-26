@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { Button, Badge, Checkbox, Spinner, Input } from '@x-ear/ui-web';
+import { Button, Badge, Checkbox, Loading, Input, Select } from '@x-ear/ui-web';
 import { 
   User, 
   Phone, 
@@ -305,7 +305,7 @@ export const SimpleVirtualizedPatientList: React.FC<VirtualizedPatientListProps>
   if (loading && patients.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Spinner size="lg" />
+        <Loading size="lg" />
         <span className="ml-2 text-gray-600">Hastalar yükleniyor...</span>
       </div>
     );
@@ -358,65 +358,70 @@ export const SimpleVirtualizedPatientList: React.FC<VirtualizedPatientListProps>
         {/* Filters */}
         {showFilters && (
           <div className="mt-3 grid grid-cols-2 md:grid-cols-5 gap-3">
-            <select
+            <Select
               value={filters?.status || 'all'}
               onChange={(e) => handleFilterChange('status', e.target.value)}
+              options={[
+                { value: 'all', label: 'Tüm Durumlar' },
+                { value: 'active', label: 'Aktif' },
+                { value: 'inactive', label: 'Pasif' },
+                { value: 'archived', label: 'Arşivlenmiş' }
+              ]}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-            >
-              <option value="all">Tüm Durumlar</option>
-              <option value="active">Aktif</option>
-              <option value="inactive">Pasif</option>
-              <option value="archived">Arşivlenmiş</option>
-            </select>
+            />
 
-            <select
+            <Select
               value={filters?.segment || 'all'}
               onChange={(e) => handleFilterChange('segment', e.target.value)}
+              options={[
+                { value: 'all', label: 'Tüm Segmentler' },
+                { value: 'new', label: 'Yeni' },
+                { value: 'trial', label: 'Deneme' },
+                { value: 'purchased', label: 'Satın Almış' },
+                { value: 'control', label: 'Kontrol' },
+                { value: 'renewal', label: 'Yenileme' }
+              ]}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-            >
-              <option value="all">Tüm Segmentler</option>
-              <option value="new">Yeni</option>
-              <option value="trial">Deneme</option>
-              <option value="purchased">Satın Almış</option>
-              <option value="control">Kontrol</option>
-              <option value="renewal">Yenileme</option>
-            </select>
+            />
 
-            <select
+            <Select
               value={filters?.label || 'all'}
               onChange={(e) => handleFilterChange('label', e.target.value)}
+              options={[
+                { value: 'all', label: 'Tüm Etiketler' },
+                { value: 'yeni', label: 'Yeni' },
+                { value: 'arama-bekliyor', label: 'Arama Bekliyor' },
+                { value: 'randevu-verildi', label: 'Randevu Verildi' },
+                { value: 'deneme-yapildi', label: 'Deneme Yapıldı' },
+                { value: 'kontrol-hastasi', label: 'Kontrol Hastası' },
+                { value: 'satis-tamamlandi', label: 'Satış Tamamlandı' }
+              ]}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-            >
-              <option value="all">Tüm Etiketler</option>
-              <option value="yeni">Yeni</option>
-              <option value="arama-bekliyor">Arama Bekliyor</option>
-              <option value="randevu-verildi">Randevu Verildi</option>
-              <option value="deneme-yapildi">Deneme Yapıldı</option>
-              <option value="kontrol-hastasi">Kontrol Hastası</option>
-              <option value="satis-tamamlandi">Satış Tamamlandı</option>
-            </select>
+            />
 
-            <select
+            <Select
               value={filters?.hasDevices ? 'true' : filters?.hasDevices === false ? 'false' : 'all'}
               onChange={(e) => handleFilterChange('hasDevices', e.target.value)}
+              options={[
+                { value: 'all', label: 'Tüm Hastalar' },
+                { value: 'true', label: 'Cihazı Var' },
+                { value: 'false', label: 'Cihazı Yok' }
+              ]}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-            >
-              <option value="all">Tüm Hastalar</option>
-              <option value="true">Cihazı Var</option>
-              <option value="false">Cihazı Yok</option>
-            </select>
+            />
 
-            <select
+            <Select
               value={filters?.sgkStatus || 'all'}
               onChange={(e) => handleFilterChange('sgkStatus', e.target.value)}
+              options={[
+                { value: 'all', label: 'Tüm SGK Durumları' },
+                { value: 'pending', label: 'Beklemede' },
+                { value: 'approved', label: 'Onaylandı' },
+                { value: 'rejected', label: 'Reddedildi' },
+                { value: 'paid', label: 'Ödendi' }
+              ]}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-            >
-              <option value="all">Tüm SGK Durumları</option>
-              <option value="pending">Beklemede</option>
-              <option value="approved">Onaylandı</option>
-              <option value="rejected">Reddedildi</option>
-              <option value="paid">Ödendi</option>
-            </select>
+            />
           </div>
         )}
       </div>
@@ -450,7 +455,7 @@ export const SimpleVirtualizedPatientList: React.FC<VirtualizedPatientListProps>
       {/* Loading indicator at bottom */}
       {loading && patients.length > 0 && (
         <div className="flex items-center justify-center py-4 border-t border-gray-200">
-          <Spinner size="sm" />
+          <Loading size="sm" />
           <span className="ml-2 text-sm text-gray-600">Daha fazla hasta yükleniyor...</span>
         </div>
       )}

@@ -1,5 +1,6 @@
 import React, { Component, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { Button } from '@x-ear/ui-web';
 
 interface Props {
   children: ReactNode;
@@ -77,20 +78,22 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
 
             <div className="flex gap-3 justify-center">
-              <button
+              <Button
                 onClick={this.handleRetry}
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                variant="primary"
+                className="inline-flex items-center"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Tekrar Dene
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={this.handleGoHome}
-                className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                variant="secondary"
+                className="inline-flex items-center"
               >
                 <Home className="w-4 h-4 mr-2" />
                 Ana Sayfa
-              </button>
+              </Button>
             </div>
           </div>
         </div>

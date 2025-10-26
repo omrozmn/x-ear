@@ -5,6 +5,7 @@ import { usePatient } from '../../hooks/patient/usePatient';
 import { usePatientMutations } from '../../hooks/patient/usePatientMutations';
 import { Patient } from '../../types/patient';
 import { PatientFormModal } from '../../components/patients/PatientFormModal';
+import { Button } from '@x-ear/ui-web';
 
 interface PatientDetailPageProps {
   className?: string;
@@ -130,13 +131,14 @@ export function PatientDetailPage({ className = '' }: PatientDetailPageProps) {
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button
+            <Button
               onClick={() => navigate({ to: '/patients' })}
-              className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+              variant="ghost"
+              size="sm"
               title="Hasta listesine dön"
             >
               ←
-            </button>
+            </Button>
             
             <div>
               <div className="flex items-center gap-3">
@@ -159,27 +161,26 @@ export function PatientDetailPage({ className = '' }: PatientDetailPageProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={handleRefresh}
               disabled={isLoading}
-              className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              variant="outline"
             >
               {isLoading ? 'Yenileniyor...' : 'Yenile'}
-            </button>
+            </Button>
             
-            <button
+            <Button
               onClick={() => setShowEditModal(true)}
-              className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
             >
               Düzenle
-            </button>
+            </Button>
             
-            <button
+            <Button
               onClick={handleDeletePatient}
-              className="px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
+              variant="destructive"
             >
               Sil
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -191,9 +192,10 @@ export function PatientDetailPage({ className = '' }: PatientDetailPageProps) {
       <div className="px-6">
         <nav className="flex space-x-8">
           {tabs.map((tab) => (
-            <button
+            <Button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              variant="ghost"
               className={`
                 flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors
                 ${activeTab === tab.id
@@ -209,7 +211,7 @@ export function PatientDetailPage({ className = '' }: PatientDetailPageProps) {
                   {tab.count}
                 </span>
               )}
-            </button>
+            </Button>
           ))}
         </nav>
       </div>
@@ -348,12 +350,13 @@ export function PatientDetailPage({ className = '' }: PatientDetailPageProps) {
             <span className="text-red-600 mr-2">⚠️</span>
             <span className="text-sm text-red-700">{currentError}</span>
           </div>
-          <button
+          <Button
             onClick={clearMutationError}
-            className="text-red-600 hover:text-red-700"
+            variant="ghost"
+            size="sm"
           >
             ✕
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -382,12 +385,11 @@ export function PatientDetailPage({ className = '' }: PatientDetailPageProps) {
             <div className="text-red-600 text-4xl mb-4">⚠️</div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">Hasta bulunamadı</h3>
             <p className="text-gray-500 mb-4">{error}</p>
-            <button
+            <Button
               onClick={() => navigate({ to: '/patients' })}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
             >
               Hasta Listesine Dön
-            </button>
+            </Button>
           </div>
         </div>
       </div>

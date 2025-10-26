@@ -3,22 +3,12 @@
  * High-performance patient list with virtual scrolling and lazy loading
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { Button, Badge, Checkbox, Spinner, Input } from '@x-ear/ui-web';
-import { 
-  User, 
-  Phone, 
-  Mail, 
-  MessageSquare,
-  Eye,
-  Edit,
-  Trash2,
-  Search,
-  Filter,
-  ChevronDown,
-  ChevronUp
-} from 'lucide-react';
-import { Patient } from '../../types/patient';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { List } from 'react-window';
+import { debounce } from 'lodash';
+import { Search, Filter, X, ChevronDown, ChevronUp, User, Phone, Calendar, MapPin, Trash2, Mail, Eye, MessageSquare, Edit } from 'lucide-react';
+import { Patient } from '../../types/patient/patient-base.types';
+import { Button, Badge, Checkbox, Loading, Input } from '@x-ear/ui-web';
 import { PatientCommunicationIntegration } from './PatientCommunicationIntegration';
 
 interface VirtualizedPatientListProps {
@@ -69,7 +59,7 @@ const PatientRow = ({ index, style, data }: PatientRowProps) => {
   if (!patient) {
     return (
       <div style={style} className="flex items-center justify-center p-4">
-        <Spinner size="sm" />
+        <Loading size="sm" />
       </div>
     );
   }
@@ -141,7 +131,7 @@ const PatientRow = ({ index, style, data }: PatientRowProps) => {
             {`${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'İsimsiz Hasta'}
           </h3>
           {getStatusBadge(patient.status)}
-          {getLabelBadge(patient.label)}
+          {getLabelBadge((patient as any).label || (patient as any).labels?.[0])}
         </div>
         
         <div className="flex items-center space-x-4 text-xs text-gray-500">
@@ -284,7 +274,7 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
   if (loading && patients.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Spinner size="lg" />
+        <Loading size="lg" />
         <span className="ml-2 text-gray-600">Hastalar yükleniyor...</span>
       </div>
     );
@@ -433,7 +423,7 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
       {/* Loading indicator at bottom */}
       {loading && patients.length > 0 && (
         <div className="flex items-center justify-center py-4 border-t border-gray-200">
-          <Spinner size="sm" />
+          <Loading size="sm" />
           <span className="ml-2 text-sm text-gray-600">Daha fazla hasta yükleniyor...</span>
         </div>
       )}

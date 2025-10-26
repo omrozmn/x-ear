@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { Modal, Button, Input } from '@x-ear/ui-web';
+import { Modal, Button, Input, FileUpload } from '@x-ear/ui-web';
 import { useUploadSgkDocuments } from '../../hooks/sgk/useSgkDocuments';
 import { Upload, X, FileImage, AlertCircle } from 'lucide-react';
 
@@ -61,6 +61,11 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
     setFiles(prev => [...prev, ...uniqueFiles]);
   }, [files]);
+
+  const handleFileUploadChange = useCallback((uploadedFiles: any[]) => {
+    const fileObjects = uploadedFiles.map(f => f.file || f);
+    handleFileSelect(fileObjects);
+  }, [handleFileSelect]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
@@ -148,22 +153,13 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           onDrop={handleDrop}
           onClick={openFileDialog}
         >
-          <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-lg font-medium text-gray-900 mb-2">
-            Dosyaları buraya sürükleyin veya seçmek için tıklayın
-          </p>
-          <p className="text-sm text-gray-500">
-            JPEG, PNG, TIFF, BMP formatlarında, maksimum 10MB boyutunda dosyalar
-          </p>
-          
-          <input
-            ref={fileInputRef}
-            type="file"
+          <FileUpload
             multiple
             accept="image/*"
-            onChange={handleInputChange}
+            onChange={handleFileUploadChange}
             disabled={isUploading}
-            className="hidden"
+            className="w-full"
+            description="JPEG, PNG, TIFF, BMP formatlarında, maksimum 10MB boyutunda dosyalar"
           />
         </div>
 

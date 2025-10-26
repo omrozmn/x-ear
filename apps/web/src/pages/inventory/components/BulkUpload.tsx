@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Card, Button, Badge } from '@x-ear/ui-web';
+import { Card, Button, Badge, Input } from '@x-ear/ui-web';
 import { Upload, Download, FileText, AlertCircle, CheckCircle, X } from 'lucide-react';
 import { InventoryItem } from '../../../types/inventory';
 
@@ -441,6 +441,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
                 accept=".csv,.xlsx,.xls"
                 onChange={handleFileSelect}
                 className="hidden"
+                data-allow-raw="true"
               />
               <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
               <p className="text-gray-600 dark:text-gray-400 mb-4">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Grid, List, Download, Trash2, Eye, Filter, RotateCcw, ZoomIn, ZoomOut, X, ChevronLeft, ChevronRight, Clock, CheckCircle, AlertCircle, FileText, MoreVertical, SortAsc, SortDesc, CheckSquare, Square, RefreshCw, Calendar, HardDrive, User } from 'lucide-react';
-import { Button } from '@x-ear/ui-web';
+import { Button, Input, Select, Checkbox } from '@x-ear/ui-web';
 import DocumentViewer from './DocumentViewer';
 import DocumentPreview from './DocumentPreview';
 import { SGKDocument, SGKDocumentType } from '../../types/sgk';
@@ -44,7 +44,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
 
   // Filter and sort documents
   const filteredDocuments = useMemo(() => {
-    let filtered = documents.filter(doc => {
+    const filtered = documents.filter(doc => {
       // Search filter
       const matchesSearch = doc.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            (doc.ocrText && doc.ocrText.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -283,68 +283,66 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
         <div className="bg-gray-50 p-4 rounded-lg space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Belge ara..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <Input
+              placeholder="Belge ara..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              leftIcon={<Search className="w-4 h-4" />}
+            />
 
             {/* Document type filter */}
-            <select
+            <Select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value as SGKDocumentType | 'all')}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">Tüm Türler</option>
-              <option value="recete">Reçete</option>
-              <option value="rapor">Rapor</option>
-              <option value="belge">Belge</option>
-              <option value="fatura">Fatura</option>
-              <option value="teslim">Teslim</option>
-              <option value="iade">İade</option>
-            </select>
+              options={[
+                { value: 'all', label: 'Tüm Türler' },
+                { value: 'recete', label: 'Reçete' },
+                { value: 'rapor', label: 'Rapor' },
+                { value: 'belge', label: 'Belge' },
+                { value: 'fatura', label: 'Fatura' },
+                { value: 'teslim', label: 'Teslim' },
+                { value: 'iade', label: 'İade' }
+              ]}
+            />
 
             {/* Status filter */}
-            <select
+            <Select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value as 'all' | 'pending' | 'processing' | 'completed' | 'failed')}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">Tüm Durumlar</option>
-              <option value="pending">Bekliyor</option>
-              <option value="processing">İşleniyor</option>
-              <option value="completed">Tamamlandı</option>
-              <option value="failed">Hata</option>
-            </select>
+              options={[
+                { value: 'all', label: 'Tüm Durumlar' },
+                { value: 'pending', label: 'Bekliyor' },
+                { value: 'processing', label: 'İşleniyor' },
+                { value: 'completed', label: 'Tamamlandı' },
+                { value: 'failed', label: 'Hata' }
+              ]}
+            />
 
             {/* Sort by */}
-            <select
+            <Select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortBy)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="date">Tarihe Göre</option>
-              <option value="name">İsme Göre</option>
-              <option value="size">Boyuta Göre</option>
-              <option value="type">Türe Göre</option>
-            </select>
+              options={[
+                { value: 'date', label: 'Tarihe Göre' },
+                { value: 'name', label: 'İsme Göre' },
+                { value: 'size', label: 'Boyuta Göre' },
+                { value: 'type', label: 'Türe Göre' }
+              ]}
+            />
           </div>
           
           {/* Advanced Filters Toggle */}
           <div className="flex justify-between items-center">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className="px-3 py-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2"
+              className="flex items-center gap-2"
             >
               <Filter className="h-4 w-4" />
               Gelişmiş Filtreler
               {showAdvancedFilters ? ' (Gizle)' : ' (Göster)'}
-            </button>
+            </Button>
           </div>
           
           {/* Advanced Filters */}
@@ -357,18 +355,16 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Tarih Aralığı</label>
                   <div className="flex gap-2">
-                    <input
+                    <Input
                       type="date"
                       value={dateRange.start}
                       onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Başlangıç"
                     />
-                    <input
+                    <Input
                       type="date"
                       value={dateRange.end}
                       onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Bitiş"
                     />
                   </div>
@@ -379,23 +375,29 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                   <label className="text-sm font-medium text-gray-700">
                     Dosya Boyutu (MB): {fileSizeRange.min} - {fileSizeRange.max}
                   </label>
-                  <div className="flex gap-2 items-center">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={fileSizeRange.min}
-                      onChange={(e) => setFileSizeRange(prev => ({ ...prev, min: parseInt(e.target.value) }))}
-                      className="flex-1"
-                    />
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={fileSizeRange.max}
-                      onChange={(e) => setFileSizeRange(prev => ({ ...prev, max: parseInt(e.target.value) }))}
-                      className="flex-1"
-                    />
+                  <div className="space-y-2">
+                    <div>
+                      <label className="text-xs text-gray-500">Min: {fileSizeRange.min} MB</label>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={fileSizeRange.min}
+                        onChange={(e) => setFileSizeRange(prev => ({ ...prev, min: parseInt(e.target.value) }))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500">Max: {fileSizeRange.max} MB</label>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={fileSizeRange.max}
+                        onChange={(e) => setFileSizeRange(prev => ({ ...prev, max: parseInt(e.target.value) }))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                    </div>
                   </div>
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>0 MB</span>
@@ -406,7 +408,9 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
               
               {/* Clear Filters */}
               <div className="flex justify-end">
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     setDateRange({ start: '', end: '' });
                     setFileSizeRange({ min: 0, max: 100 });
@@ -414,10 +418,9 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                     setSelectedType('all');
                     setSelectedStatus('all');
                   }}
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   Filtreleri Temizle
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -427,15 +430,11 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
       {/* Select all checkbox */}
       {filteredDocuments.length > 0 && (
         <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={selectedDocuments.size === filteredDocuments.length}
             onChange={handleSelectAll}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            label={`Tümünü seç (${filteredDocuments.length} belge)`}
           />
-          <label className="text-sm text-gray-600">
-            Tümünü seç ({filteredDocuments.length} belge)
-          </label>
         </div>
       )}
 
@@ -469,11 +468,10 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                 }`}
               >
                 {/* Selection checkbox */}
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={selectedDocuments.has(document.id)}
                   onChange={() => handleSelectDocument(document.id)}
-                  className="absolute top-2 left-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="absolute top-2 left-2"
                 />
 
                 {/* Document thumbnail/icon */}
@@ -546,11 +544,9 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={selectedDocuments.size === filteredDocuments.length}
                       onChange={handleSelectAll}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -586,11 +582,9 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                       }`}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={selectedDocuments.has(document.id)}
                           onChange={() => handleSelectDocument(document.id)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

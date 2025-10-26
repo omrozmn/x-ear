@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { InventoryItem, InventoryCategory, InventoryType, EarDirection } from '../../../types/inventory';
-import Button from '../../../components/ui/Button';
+import { Button, Input, Select, Textarea, Checkbox } from '@x-ear/ui-web';
 
 interface InventoryFormProps {
   item?: InventoryItem | null;
@@ -118,7 +118,15 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
   ];
 
   const brandOptions = [
-    'Phonak', 'Oticon', 'Widex', 'Signia', 'ReSound', 'Starkey', 'Unitron', 'Bernafon'
+    { value: '', label: 'Marka seçin' },
+    { value: 'Phonak', label: 'Phonak' },
+    { value: 'Oticon', label: 'Oticon' },
+    { value: 'Widex', label: 'Widex' },
+    { value: 'Signia', label: 'Signia' },
+    { value: 'ReSound', label: 'ReSound' },
+    { value: 'Starkey', label: 'Starkey' },
+    { value: 'Unitron', label: 'Unitron' },
+    { value: 'Bernafon', label: 'Bernafon' }
   ];
 
   return (
@@ -131,7 +139,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Ürün Adı *
             </label>
-            <input
+            <Input
               type="text"
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
@@ -147,18 +155,14 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Marka *
             </label>
-            <select
+            <Select
               value={formData.brand}
               onChange={(e) => handleChange('brand', e.target.value)}
+              options={brandOptions}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.brand ? 'border-red-500' : 'border-gray-300'
               }`}
-            >
-              <option value="">Marka seçin</option>
-              {brandOptions.map(brand => (
-                <option key={brand} value={brand}>{brand}</option>
-              ))}
-            </select>
+            />
             {errors.brand && <p className="text-red-500 text-sm mt-1">{errors.brand}</p>}
           </div>
 
@@ -166,7 +170,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Model
             </label>
-            <input
+            <Input
               type="text"
               value={formData.model}
               onChange={(e) => handleChange('model', e.target.value)}
@@ -179,17 +183,14 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Kategori *
             </label>
-            <select
+            <Select
               value={formData.category}
               onChange={(e) => handleChange('category', e.target.value)}
+              options={categoryOptions}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.category ? 'border-red-500' : 'border-gray-300'
               }`}
-            >
-              {categoryOptions.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
+            />
             {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
           </div>
 
@@ -197,30 +198,24 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Tip
             </label>
-            <select
+            <Select
               value={formData.type}
               onChange={(e) => handleChange('type', e.target.value)}
+              options={typeOptions}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {typeOptions.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Kulak
             </label>
-            <select
+            <Select
               value={formData.ear}
               onChange={(e) => handleChange('ear', e.target.value)}
+              options={earOptions}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {earOptions.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
+            />
           </div>
         </div>
       </div>
@@ -233,7 +228,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Mevcut Stok *
             </label>
-            <input
+            <Input
               type="number"
               min="0"
               value={formData.availableInventory}
@@ -249,7 +244,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Toplam Stok
             </label>
-            <input
+            <Input
               type="number"
               min="0"
               value={formData.totalInventory}
@@ -262,7 +257,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Minimum Stok Seviyesi *
             </label>
-            <input
+            <Input
               type="number"
               min="0"
               value={formData.reorderLevel}
@@ -284,7 +279,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Satış Fiyatı (₺) *
             </label>
-            <input
+            <Input
               type="number"
               min="0"
               step="0.01"
@@ -301,7 +296,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Maliyet (₺)
             </label>
-            <input
+            <Input
               type="number"
               min="0"
               step="0.01"
@@ -315,7 +310,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Toptan Fiyat (₺)
             </label>
-            <input
+            <Input
               type="number"
               min="0"
               step="0.01"
@@ -329,7 +324,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Perakende Fiyat (₺)
             </label>
-            <input
+            <Input
               type="number"
               min="0"
               step="0.01"
@@ -349,7 +344,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Barkod
             </label>
-            <input
+            <Input
               type="text"
               value={formData.barcode}
               onChange={(e) => handleChange('barcode', e.target.value)}
@@ -362,7 +357,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Tedarikçi
             </label>
-            <input
+            <Input
               type="text"
               value={formData.supplier}
               onChange={(e) => handleChange('supplier', e.target.value)}
@@ -375,7 +370,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               SGK Kodu
             </label>
-            <input
+            <Input
               type="text"
               value={formData.sgkCode}
               onChange={(e) => handleChange('sgkCode', e.target.value)}
@@ -388,7 +383,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Garanti (Ay)
             </label>
-            <input
+            <Input
               type="number"
               min="0"
               value={formData.warranty}
@@ -401,7 +396,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Konum
             </label>
-            <input
+            <Input
               type="text"
               value={formData.location}
               onChange={(e) => handleChange('location', e.target.value)}
@@ -411,12 +406,9 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
           </div>
 
           <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="isMinistryTracked"
+            <Checkbox
               checked={formData.isMinistryTracked}
               onChange={(e) => handleChange('isMinistryTracked', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
             <label htmlFor="isMinistryTracked" className="ml-2 block text-sm text-gray-900">
               Bakanlık takipli
@@ -428,7 +420,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Özellikler
           </label>
-          <input
+          <Input
             type="text"
             value={formData.features}
             onChange={(e) => handleChange('features', e.target.value)}
@@ -441,7 +433,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Açıklama
           </label>
-          <textarea
+          <Textarea
             value={formData.description}
             onChange={(e) => handleChange('description', e.target.value)}
             rows={3}
@@ -454,7 +446,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Notlar
           </label>
-          <textarea
+          <Textarea
             value={formData.notes}
             onChange={(e) => handleChange('notes', e.target.value)}
             rows={2}

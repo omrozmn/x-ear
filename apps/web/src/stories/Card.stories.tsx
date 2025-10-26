@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@x-ear/ui-web';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter, Button } from '@x-ear/ui-web';
 import React from 'react';
 
 const meta: Meta<typeof Card> = {
@@ -66,7 +66,7 @@ export const WithHeaderAndFooter: Story = {
         <p>This card demonstrates the use of header, content, and footer sections.</p>
       </CardContent>
       <CardFooter>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded">Action</button>
+        <Button>Action</Button>
       </CardFooter>
     </Card>
   ),

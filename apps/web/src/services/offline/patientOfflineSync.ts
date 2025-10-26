@@ -231,7 +231,7 @@ export class PatientOfflineSync {
         return;
       }
 
-      let patients: Patient[] = [];
+      const patients: Patient[] = [];
       let cursor: string | null = null;
       let hasMore = true;
       let requestCount = 0;

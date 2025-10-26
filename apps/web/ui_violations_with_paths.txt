@@ -1,0 +1,468 @@
+  124:25  error  React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+  173:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                                              no-restricted-syntax
+  188:15  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                                                           no-restricted-syntax
+  206:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                                              no-restricted-syntax
+  213:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                                              no-restricted-syntax
+--
+  158:43  error  Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  201:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  215:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  231:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  248:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  255:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+--
+  144:52  error  Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  200:9   error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+   88:36  error  Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  171:11  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  180:11  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  192:11  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  199:11  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+--
+  297:6   warning  React Hook useEffect has a missing dependency: 'loadDocuments'. Either include it or remove the dependency array                  react-hooks/exhaustive-deps
+  471:21  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  543:23  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+   91:6   warning  React Hook useEffect has a missing dependency: 'formData.title'. Either include it or remove the dependency array                 react-hooks/exhaustive-deps
+  244:13  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  329:13  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  356:13  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/common/ErrorBoundary.tsx
+   80:15  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+   87:15  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+   13:3   error  'Filter' is defined but never used                                                                                                @typescript-eslint/no-unused-vars
+  279:11  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  350:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+  166:9   error  'getStatusText' is assigned a value but never used                                                                                      @typescript-eslint/no-unused-vars
+  211:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  232:15  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  260:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  291:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  293:99  error  Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  312:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  336:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  355:13  error  Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional  no-restricted-syntax
+  371:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+--
+  217:6    warning  React Hook useEffect has a missing dependency: 'calculateRemainingAmount'. Either include it or remove the dependency array             react-hooks/exhaustive-deps
+  358:13   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  432:17   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  437:91   error    Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  457:11   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  459:88   error    Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  486:19   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  499:19   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  512:15   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  538:17   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  550:17   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  573:17   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  582:17   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  584:100  error    Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  594:17   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  634:17   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  643:17   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  668:17   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  678:17   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  691:17   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  707:13   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  709:97   error    Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  727:19   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  751:19   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  773:15   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  793:15   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  817:17   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  822:94   error    Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  851:15   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  874:15   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  890:13   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  914:13   error    Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional  no-restricted-syntax
+--
+  155:9   error  'getDocumentTypeText' is assigned a value but never used                                                                                @typescript-eslint/no-unused-vars
+  199:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  259:11  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  282:11  error  Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional  no-restricted-syntax
+  296:11  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+--
+  178:9   error  'getCategoryText' is assigned a value but never used                                                                                    @typescript-eslint/no-unused-vars
+  209:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  233:11  error  Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional  no-restricted-syntax
+  265:19  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  270:98  error  Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  290:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  292:92  error  Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  306:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  331:17  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  342:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+--
+/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/forms/PatientSaleForm.tsx
+  214:11  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  235:13  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  248:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  262:21  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  276:23  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  289:23  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  303:23  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  316:23  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  333:25  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  350:25  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  367:25  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  384:25  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  426:19  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  460:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  473:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  489:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  513:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  535:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  553:13  error  Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional  no-restricted-syntax
+--
+  146:9   error  Unexpected lexical declaration in case block                                                                                      no-case-declarations
+  392:17  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+  105:9   error  'getPaymentMethodText' is assigned a value but never used                                                                               @typescript-eslint/no-unused-vars
+  162:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  180:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  201:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  216:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  234:13  error  Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional  no-restricted-syntax
+--
+  137:9   error    'totalPaid' is assigned a value but never used                                                                                    @typescript-eslint/no-unused-vars
+  269:31  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  283:31  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+   56:29  error    Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  219:31  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  233:31  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+  205:68  error  Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  325:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  384:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  413:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  438:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  454:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  484:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  508:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  531:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  550:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  571:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  590:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  619:17  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  644:13  error  Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional  no-restricted-syntax
+  656:11  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  663:11  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+--
+    1:1   error  Do not use "@ts-nocheck" because it alters compilation errors                                                                     @typescript-eslint/ban-ts-comment
+  148:11  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/patient/SalesFilters.tsx
+   48:11  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+   56:9   error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+   75:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+   91:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  108:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  120:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  135:11  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+  365:9   error  'toggleTag' is assigned a value but never used                                                                                 @typescript-eslint/no-unused-vars
+  484:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+--
+   35:6   warning  React Hook useEffect has a missing dependency: 'loadAppointments'. Either include it or remove the dependency array               react-hooks/exhaustive-deps
+  173:13  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+  292:76  error    Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  389:15  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  398:11  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  423:19  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  472:17  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  511:21  error    Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional  no-restricted-syntax
+  521:23  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  538:27  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  550:21  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  564:15  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  571:15  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+--
+  256:19  error  Unexpected any. Specify a different type                                                                                       @typescript-eslint/no-explicit-any
+  423:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+--
+   17:3   error  'Heart' is defined but never used                                                                                                 @typescript-eslint/no-unused-vars
+  154:23  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  167:25  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  181:25  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  270:21  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  283:23  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  297:23  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+  110:5   error  'getTemplates' is assigned a value but never used                                                                                 @typescript-eslint/no-unused-vars
+  313:11  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  326:11  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  350:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  362:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  383:19  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+  204:74  error    Unexpected any. Specify a different type                                                                                                        @typescript-eslint/no-explicit-any
+  489:21  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                   no-restricted-syntax
+  495:21  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                no-restricted-syntax
+  508:23  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                no-restricted-syntax
+  530:21  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                no-restricted-syntax
+  545:23  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                no-restricted-syntax
+  558:21  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                   no-restricted-syntax
+  564:21  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                no-restricted-syntax
+  577:23  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                no-restricted-syntax
+  599:21  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                no-restricted-syntax
+  614:23  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                no-restricted-syntax
+--
+  164:50  error    Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  338:17  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  412:19  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  486:9   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+   64:9   error  'acquisitionOptions' is assigned a value but never used                                                                           @typescript-eslint/no-unused-vars
+  178:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+  186:60  error  Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  208:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+  216:61  error  Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  241:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  252:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  272:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  308:19  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  321:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+--
+   14:58  error  'isModal' is assigned a value but never used                                                                                   @typescript-eslint/no-unused-vars
+  334:9   error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+--
+  182:48  error  Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  210:13  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  228:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  244:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  263:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  280:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  299:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  316:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  333:15  error  Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional  no-restricted-syntax
+  348:17  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  362:17  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  383:17  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  401:17  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  420:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  441:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  449:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+--
+  21:23  error  'useDeletePatient' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+  58:5   error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+    7:28   error  'useTriggerSgkProcessing' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+   64:11   error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+--
+  222:21   error  Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  302:13   error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  319:13   error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  331:13   error  Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional  no-restricted-syntax
+--
+   373:9   error    'handleDeleteSale' is assigned a value but never used                                                                                                                             @typescript-eslint/no-unused-vars
+   626:13  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                                                  no-restricted-syntax
+   638:13  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                                                  no-restricted-syntax
+   650:13  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                                                  no-restricted-syntax
+   694:21  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                                                  no-restricted-syntax
+   758:21  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                                     no-restricted-syntax
+   831:23  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                                     no-restricted-syntax
+--
+  148:83  error    Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  259:11  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  271:11  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  310:15  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  327:15  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  345:15  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  364:15  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  377:15  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  390:15  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+   13:3   error  'Eye' is defined but never used                                                                                                   @typescript-eslint/no-unused-vars
+  361:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  372:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  385:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  399:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  409:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+  245:9   error  'listData' is assigned a value but never used                                                                                     @typescript-eslint/no-unused-vars
+  337:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  348:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  361:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  375:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  385:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/patients/csv/PatientCSVUpload.tsx
+  138:11  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  149:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  187:11  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  203:13  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  209:13  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/patients/list/PatientCSVUpload.tsx
+  106:11  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  134:11  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  140:11  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  160:13  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  195:13  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  202:13  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/patients/list/PatientList.tsx
+  63:17  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  66:17  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+   19:34  error  Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+   71:9   error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+   84:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+   93:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  100:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  122:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  130:19  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  137:19  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  148:19  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  170:19  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  178:21  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+  153:52  error  Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  266:17  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  330:19  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+  139:6    warning  React Hook useEffect has a missing dependency: 'sale.totalAmount'. Either include it or remove the dependency array               react-hooks/exhaustive-deps
+  446:11   error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  457:11   error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  523:27   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  563:21   error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  570:21   error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  603:21   error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  606:71   error    Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  628:23   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  683:19   error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  870:39   error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  877:39   error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  890:37   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+   12:48  error  Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  142:11  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  154:11  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  213:17  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  229:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  241:15  error  Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional  no-restricted-syntax
+  274:17  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  286:17  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional        no-restricted-syntax
+  304:17  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  358:21  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional        no-restricted-syntax
+  374:19  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional           no-restricted-syntax
+  388:15  error  Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional  no-restricted-syntax
+--
+  355:9    error    'formatDate' is assigned a value but never used                                                                                                     @typescript-eslint/no-unused-vars
+  420:21   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                    no-restricted-syntax
+  489:19   error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional                    no-restricted-syntax
+  493:49   error    Unexpected any. Specify a different type                                                                                                            @typescript-eslint/no-explicit-any
+  597:23   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                    no-restricted-syntax
+  633:21   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                    no-restricted-syntax
+  698:21   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                    no-restricted-syntax
+  734:19   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                    no-restricted-syntax
+  947:19   error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional                    no-restricted-syntax
+  968:19   error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                    no-restricted-syntax
+--
+  262:53  error  Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  378:21  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  397:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  443:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+--
+  179:52  error  Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  277:19  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  345:17  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+  251:19  error  Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  344:21  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  358:21  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  381:17  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  471:21  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  489:25  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+  226:40  error  Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  386:21  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  405:23  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  423:27  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  439:27  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+   61:9   error  'validateNote' is assigned a value but never used                                                                                 @typescript-eslint/no-unused-vars
+  265:21  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+   8:3   error  'Button' is defined but never used                                                                                             @typescript-eslint/no-unused-vars
+  72:23  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+--
+  10:31  error  'TrendingUp' is defined but never used                                                                                         @typescript-eslint/no-unused-vars
+  94:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+--
+    8:12  error  Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  100:13  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  129:21  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  146:23  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  165:19  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  173:19  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  182:21  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  204:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  213:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  222:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+  302:6   warning  React Hook useEffect has a missing dependency: 'loadPaymentData'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+  419:15  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  421:52  error    Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  462:23  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+  109:13  error  'response' is assigned a value but never used                                                                                  @typescript-eslint/no-unused-vars
+  159:11  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+--
+   47:9    error  'filtered' is never reassigned. Use 'const' instead                                                                               prefer-const
+  288:15   error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  298:13   error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  313:13   error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  326:13   error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  340:13   error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  360:21   error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  367:21   error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  383:21   error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  391:21   error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  409:17   error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  430:11   error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  472:17   error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  549:21   error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  589:25   error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+--
+  101:23  error  Unexpected any. Specify a different type                                                                                       @typescript-eslint/no-explicit-any
+  269:19  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+--
+/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/sgk/DocumentTypeSelector.tsx
+  41:11  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+--
+  33:69  error  Unexpected any. Specify a different type                                                                                       @typescript-eslint/no-explicit-any
+  55:9   error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+--
+/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/uts/UTSRegisterModal.tsx
+  39:13  error  Use Textarea component from @x-ear/ui-web instead of raw <textarea> elements. Add data-allow-raw="true" if raw textarea is intentional  no-restricted-syntax
+--
+   10:10  error  '_loading' is assigned a value but never used                                                                                  @typescript-eslint/no-unused-vars
+  150:21  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+--
+   62:9  error  'formatCurrency' is assigned a value but never used                                                                               @typescript-eslint/no-unused-vars
+  213:9  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+   79:9   error  'handleClearFilters' is assigned a value but never used                                                                           @typescript-eslint/no-unused-vars
+  233:19  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  245:19  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  295:25  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  326:29  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+--
+  129:64  error  Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  274:19  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+--
+   36:29  error  Unexpected any. Specify a different type                                                                                       @typescript-eslint/no-explicit-any
+  204:19  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+--
+  308:15  error  Unexpected lexical declaration in case block                                                                                   no-case-declarations
+  438:15  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax

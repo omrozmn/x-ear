@@ -63,7 +63,7 @@ const CommunicationTemplates: React.FC = () => {
             </label>
             <Select
               value={filterType}
-              onChange={(value) => setFilterType(value as any)}
+              onChange={(e) => setFilterType(e.target.value as 'all' | 'sms' | 'email')}
               options={[
                 { value: 'all', label: 'Tümü' },
                 { value: 'sms', label: 'SMS' },
@@ -79,7 +79,7 @@ const CommunicationTemplates: React.FC = () => {
             </label>
             <Select
               value={filterCategory}
-              onChange={(value) => setFilterCategory(value as any)}
+              onChange={(e) => setFilterCategory(e.target.value as 'all' | 'appointment' | 'reminder' | 'marketing' | 'notification' | 'custom')}
               options={[
                 { value: 'all', label: 'Tümü' },
                 { value: 'appointment', label: 'Randevu' },

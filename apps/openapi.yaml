@@ -1,0 +1,4442 @@
+openapi: 3.0.3
+info:
+  title: X-Ear CRM API (auto-generated)
+  version: 0.0.0-auto
+  description: X-Ear CRM API for managing patients, devices, appointments, sales, and more
+  contact:
+    name: X-Ear Web App Support
+    email: support@x-ear.com
+    url: https://x-ear.com/support
+servers:
+- url: http://localhost:5003
+tags:
+- name: Appointments
+  description: Appointment management operations
+- name: Automation
+  description: Automation and workflow operations
+- name: Campaigns
+  description: Marketing campaign operations
+- name: Communications
+  description: Communication templates and messaging operations
+- name: Config
+  description: Configuration management
+- name: Dashboard
+  description: Dashboard and analytics operations
+- name: Devices
+  description: Device management operations
+- name: Health
+  description: Health check operations
+- name: Inventory
+  description: Inventory management operations
+- name: Invoices
+  description: Invoice management operations
+- name: Notifications
+  description: Notification operations
+- name: Ocr
+  description: OCR and document processing operations
+- name: Patients
+  description: Patient management operations
+- name: Timeline
+  description: Patient timeline operations
+- name: Products
+  description: Product management operations
+- name: Promissory-notes
+  description: Promissory note management operations
+- name: Reports
+  description: Reporting operations
+- name: Sales
+  description: Sales management operations
+- name: Settings
+  description: Application settings operations
+- name: Sgk
+  description: SGK (Social Security) operations
+- name: Sms
+  description: SMS operations
+- name: Suppliers
+  description: Supplier management operations
+- name: Entities
+  description: Entity extraction operations
+- name: Extract_patient
+  description: Patient extraction from documents
+- name: Init-db
+  description: Database initialization operations
+- name: Initialize
+  description: Service initialization operations
+- name: Process
+  description: Document processing operations
+- name: Similarity
+  description: Document similarity operations
+- name: Swagger.html
+  description: Swagger UI operations
+- name: Register-phone
+  description: Phone registration operations
+- name: Verify-registration-otp
+  description: Registration OTP verification operations
+- name: Users
+  description: User management operations
+- name: Pricing-preview
+  description: Pricing preview operations
+- name: Product-suppliers
+  description: Product supplier relationship operations
+- name: Openapi.yaml
+  description: OpenAPI specification serving operations
+paths:
+  /api/appointments:
+    get:
+      summary: Get list of appointments
+      operationId: appointments_get_appointments
+      tags:
+      - Appointments
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 200
+        description: Number of items per page (max 200)
+      - name: patient_id
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by patient ID
+      - name: date_from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+        description: Filter appointments from this date
+      - name: date_to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+        description: Filter appointments to this date
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - SCHEDULED
+          - CONFIRMED
+          - IN_PROGRESS
+          - COMPLETED
+          - CANCELLED
+          - NO_SHOW
+          - RESCHEDULED
+        description: Filter by appointment status
+      - name: branch_id
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by branch ID
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new appointment
+      operationId: appointments_create_appointment
+      tags:
+      - Appointments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patient_id:
+                  type: string
+                  description: Patient ID
+                date:
+                  type: string
+                  format: date
+                  description: Appointment date
+                time:
+                  type: string
+                  format: time
+                  description: Appointment time
+                duration:
+                  type: integer
+                  description: Duration in minutes
+                  default: 30
+                type:
+                  type: string
+                  description: Appointment type
+                notes:
+                  type: string
+                  description: Additional notes
+              required:
+              - patient_id
+              - date
+              - time
+      responses:
+        '201':
+          description: Appointment created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Appointment'
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/communications/messages:
+    get:
+      summary: Get list of communication messages (SMS and Email)
+      operationId: communications_list_messages
+      tags:
+      - Communications
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          maximum: 100
+        description: Number of items per page (max 100)
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - sms
+          - email
+        description: Filter by message type
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by message status
+      - name: patient_id
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by patient ID
+      - name: campaign_id
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by campaign ID
+      - name: date_from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+        description: Filter messages from this date
+      - name: date_to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+        description: Filter messages to this date
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Search in message content, phone number, or email
+      responses:
+        '200':
+          description: List of communication messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CommunicationMessage'
+                  meta:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      page:
+                        type: integer
+                      perPage:
+                        type: integer
+                      totalPages:
+                        type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/communications/templates:
+    get:
+      summary: Get list of communication templates
+      operationId: communications_list_templates
+      tags:
+      - Communications
+      parameters:
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - sms
+          - email
+        description: Filter by template type
+      - name: category
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by template category
+      - name: active
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: Filter by active status
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Search in template name and description
+      responses:
+        '200':
+          description: List of communication templates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CommunicationTemplate'
+                  meta:
+                    type: object
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+    post:
+      summary: Create a new communication template
+      operationId: communications_create_template
+      tags:
+      - Communications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunicationTemplateCreate'
+      responses:
+        '201':
+          description: Template created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/CommunicationTemplate'
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+  /api/communications/templates/{template_id}:
+    get:
+      summary: Get a specific communication template
+      operationId: communications_get_template
+      tags:
+      - Communications
+      parameters:
+      - name: template_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Template ID
+      responses:
+        '200':
+          description: Communication template details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/CommunicationTemplate'
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+    put:
+      summary: Update a communication template
+      operationId: communications_update_template
+      tags:
+      - Communications
+      parameters:
+      - name: template_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Template ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunicationTemplateUpdate'
+      responses:
+        '200':
+          description: Template updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/CommunicationTemplate'
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+    delete:
+      summary: Delete a communication template
+      operationId: communications_delete_template
+      tags:
+      - Communications
+      parameters:
+      - name: template_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Template ID
+      responses:
+        '200':
+          description: Template deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/appointments/{appointment_id}:
+    delete:
+      summary: DELETE /api/appointments/{appointment_id}
+      operationId: appointments_delete_appointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+      description: Delete an existing appointment by its unique identifier
+  /api/appointments/{appointment_id}/cancel:
+    post:
+      summary: POST /api/appointments/{appointment_id}/cancel
+      operationId: appointments_cancel_appointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Cancel an appointment and optionally provide cancellation reason
+  /api/appointments/{appointment_id}/complete:
+    post:
+      summary: POST /api/appointments/{appointment_id}/complete
+      operationId: appointments_complete_appointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Mark an appointment as completed and add completion notes
+  /api/appointments/{appointment_id}/reschedule:
+    post:
+      summary: POST /api/appointments/{appointment_id}/reschedule
+      operationId: appointments_reschedule_appointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Reschedule an existing appointment to a new date and time
+  /api/appointments/availability:
+    get:
+      summary: GET /api/appointments/availability
+      operationId: appointments_get_availability
+      tags:
+      - Appointments
+      responses:
+        '200':
+          description: Success
+      description: Get available appointment slots for scheduling
+  /api/appointments/list:
+    get:
+      summary: GET /api/appointments/list
+      operationId: appointments_list_appointments
+      tags:
+      - Appointments
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Appointment'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+      description: Retrieve a list of appointments with optional filtering
+  /api/automation/backup:
+    post:
+      summary: Trigger system backup
+      operationId: automation_trigger_backup
+      tags:
+      - Automation
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Trigger automated system backup process
+  /api/automation/logs:
+    get:
+      summary: Get automation logs
+      operationId: automation_get_automation_logs
+      tags:
+      - Automation
+      responses:
+        '200':
+          description: Success
+      description: Retrieve logs from automated processes and tasks
+  /api/automation/sgk/process:
+    post:
+      summary: Trigger SGK document processing
+      operationId: automation_trigger_sgk_processing
+      tags:
+      - Automation
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Trigger automated SGK document processing workflow
+  /api/automation/status:
+    get:
+      summary: Get automation system status
+      operationId: automation_get_automation_status
+      tags:
+      - Automation
+      responses:
+        '200':
+          description: Success
+      description: Retrieve status information
+  /api/campaigns:
+    post:
+      summary: POST /api/campaigns
+      operationId: campaigns_create_campaign
+      tags:
+      - Campaigns
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+      description: Create a new marketing campaign with target audience and content
+  /api/dashboard:
+    get:
+      summary: Get dashboard data
+      operationId: dashboard_get_dashboard_data
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalPatients:
+                    type: integer
+                    description: Total number of patients
+                  totalDevices:
+                    type: integer
+                    description: Total number of devices
+                  totalAppointments:
+                    type: integer
+                    description: Total number of appointments
+                  totalSales:
+                    type: number
+                    format: float
+                    description: Total sales amount
+                  recentAppointments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Appointment'
+                    description: Recent appointments
+                  recentSales:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Sale'
+                    description: Recent sales
+                  monthlyStats:
+                    type: object
+                    properties:
+                      patients:
+                        type: integer
+                      appointments:
+                        type: integer
+                      sales:
+                        type: number
+                        format: float
+                    description: Monthly statistics
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve dashboard overview data including statistics and recent activities
+  /api/campaigns/{campaign_id}/send:
+    post:
+      summary: POST /api/campaigns/{campaign_id}/send
+      operationId: campaigns_send_campaign
+      tags:
+      - Campaigns
+      parameters:
+      - name: campaign_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new send
+  /api/config/turnstile:
+    get:
+      summary: GET /api/config/turnstile
+      operationId: registration_get_turnstile_config
+      tags:
+      - Config
+      responses:
+        '200':
+          description: Success
+      description: Retrieve turnstile information
+  /api/dashboard/charts/patient-trends:
+    get:
+      summary: GET /api/dashboard/charts/patient-trends
+      operationId: dashboard_patient_trends
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+      description: Retrieve patient-trends information
+  /api/dashboard/charts/revenue-trends:
+    get:
+      summary: GET /api/dashboard/charts/revenue-trends
+      operationId: dashboard_revenue_trends
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+      description: Retrieve revenue-trends information
+  /api/dashboard/kpis:
+    get:
+      summary: GET /api/dashboard/kpis
+      operationId: dashboard_get_kpis
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+      description: Retrieve kpis information
+  /api/dashboard/recent-activity:
+    get:
+      summary: GET /api/dashboard/recent-activity
+      operationId: dashboard_recent_activity
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+      description: Retrieve recent-activity information
+  /api/devices:
+    get:
+      summary: Get list of devices
+      operationId: devices_get_devices
+      tags:
+      - Devices
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 200
+        description: Number of items per page (max 200)
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Search term for filtering devices
+      - name: brand
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by device brand
+      - name: category
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by device category
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - IN_STOCK
+          - ASSIGNED
+          - TRIAL
+          - DEFECTIVE
+          - LOST
+          - RETURNED
+        description: Filter by device status
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve a list of devices with optional filtering and pagination
+    post:
+      summary: Create a new device
+      operationId: devices_create_device
+      tags:
+      - Devices
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+      description: Register a new hearing aid device in the system
+  /api/devices/{device_id}:
+    delete:
+      summary: Delete a device
+      operationId: devices_delete_device
+      tags:
+      - Devices
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+      description: Remove a device from the system
+  /api/devices/{device_id}/stock-update:
+    post:
+      summary: Update device stock levels (simplified).
+      description: "This endpoint is intentionally permissive for tests \u2014 real inventory logic\nshould live in a dedicated inventory table/service."
+      operationId: devices_update_device_stock
+      tags:
+      - Devices
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/devices/brands:
+    get:
+      summary: Get available device brands
+      operationId: devices_get_device_brands
+      tags:
+      - Devices
+      responses:
+        '200':
+          description: Success
+      description: Retrieve brands information
+    post:
+      summary: Create a new device brand
+      operationId: devices_create_device_brand
+      tags:
+      - Devices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  description: Brand name
+      responses:
+        '201':
+          description: Brand created successfully
+        '400':
+          description: Invalid request data
+        '409':
+          description: Brand already exists
+        '500':
+          description: Internal server error
+      description: Create a new device brand
+  /api/devices/categories:
+    get:
+      summary: Get available device categories
+      operationId: devices_get_device_categories
+      tags:
+      - Devices
+      responses:
+        '200':
+          description: Success
+      description: Retrieve categories information
+    post:
+      summary: Create a new device category
+      operationId: devices_create_device_category
+      tags:
+      - Devices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  description: Category name
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                  message:
+                    type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+        '400':
+          description: Bad request
+        '409':
+          description: Category already exists
+        '500':
+          description: Internal server error
+      description: Create a new device category
+  /api/devices/low-stock:
+    get:
+      summary: Get devices with low stock levels
+      operationId: devices_get_low_stock_devices
+      tags:
+      - Devices
+      responses:
+        '200':
+          description: Success
+      description: Retrieve low-stock information
+  /api/health:
+    get:
+      summary: Health endpoint exposing overall status and DB read/write check results.
+      description: Returns 200 when read+write ok, 503 when write fails, and 500 when other errors occur.
+      operationId: health_check
+      tags:
+      - Health
+      responses:
+        '200':
+          description: Success
+  /api/inventory:
+    get:
+      summary: Get list of inventory items
+      operationId: inventory_get_inventory_items
+      tags:
+      - Inventory
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 200
+        description: Number of items per page (max 200)
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Search term for filtering items
+      - name: category
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by item category
+      - name: lowStock
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: Filter items with low stock
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - IN_STOCK
+          - ASSIGNED
+          - TRIAL
+          - DEFECTIVE
+          - LOST
+          - RETURNED
+        description: Filter by item status
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InventoryItem'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve a list of inventory items with optional filtering and pagination
+    post:
+      summary: Create a new inventory item
+      operationId: inventory_create_inventory_item
+      tags:
+      - Inventory
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+      description: Add a new item to inventory with quantity and details
+  /api/inventory/{item_id}:
+    get:
+      summary: Get a single inventory item by ID
+      operationId: inventory_get_inventory_item
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/InventoryItem'
+        '404':
+          description: Inventory item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve a single inventory item by its ID
+    delete:
+      summary: Delete an inventory item
+      operationId: inventory_delete_inventory_item
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+      description: Remove an item from inventory
+  /api/inventory/{item_id}/activity:
+    get:
+      summary: Get activity log for an inventory item
+      operationId: inventory_get_inventory_activities
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+      description: Retrieve activity information
+  /api/inventory/{item_id}/assign:
+    post:
+      summary: Assign inventory item to a patient (reduces stock)
+      operationId: inventory_assign_to_patient
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new assign
+  /api/inventory/{item_id}/serials:
+    post:
+      summary: Add serial numbers to an inventory item
+      operationId: inventory_add_serial_numbers
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new serials
+  /api/inventory/low-stock:
+    get:
+      summary: Get all items with low stock levels
+      operationId: inventory_get_low_stock_items
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Success
+      description: Retrieve low-stock information
+  /api/inventory/stats:
+    get:
+      summary: Get inventory statistics
+      operationId: inventory_get_inventory_stats
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Success
+      description: Get inventory statistics including low stock alerts
+  /api/inventory/categories:
+    get:
+      summary: Get all inventory categories
+      operationId: inventory_get_categories
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      categories:
+                        type: array
+                        items:
+                          type: string
+                  meta:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Get list of all available inventory categories
+    post:
+      summary: Create new inventory category
+      operationId: inventory_create_category
+      tags:
+      - Inventory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  type: string
+                  description: Category name to create
+              required:
+              - category
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      category:
+                        type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Category already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Create a new inventory category
+  /api/invoices:
+    post:
+      summary: Create a new invoice
+      operationId: invoices_create_invoice
+      tags:
+      - Invoices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patient_id:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      description:
+                        type: string
+                      quantity:
+                        type: integer
+                      unit_price:
+                        type: number
+                      total:
+                        type: number
+                total_amount:
+                  type: number
+                tax_amount:
+                  type: number
+                discount_amount:
+                  type: number
+              required:
+              - patient_id
+              - items
+              - total_amount
+      responses:
+        '201':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoice_id:
+                        type: string
+                      invoice_number:
+                        type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Create a new invoice for a patient
+  /api/invoices/{invoice_id}:
+    get:
+      summary: Get invoice by ID
+      operationId: invoices_get_invoice
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoice_id:
+                        type: string
+                      invoice_number:
+                        type: string
+                      patient_id:
+                        type: string
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      total_amount:
+                        type: number
+                      tax_amount:
+                        type: number
+                      discount_amount:
+                        type: number
+                      created_at:
+                        type: string
+                        format: date-time
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve an invoice by its ID
+    delete:
+      summary: Delete invoice by ID
+      operationId: invoices_delete_invoice
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Delete an invoice by its ID
+  /api/invoices/{invoice_id}/pdf:
+    get:
+      summary: Generate invoice PDF
+      operationId: invoices_generate_invoice_pdf
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice PDF generated successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Generate and download a PDF for the specified invoice
+  /api/invoices/{invoice_id}/send-to-gib:
+    post:
+      summary: Send invoice to GİB
+      operationId: invoices_send_to_gib
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice sent to GİB successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      gib_response:
+                        type: object
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Send the invoice to GİB (Turkish Revenue Administration)
+  /api/notifications:
+    get:
+      summary: GET /api/notifications
+      operationId: notifications_list_notifications
+      tags:
+      - Notifications
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+      description: Retrieve notifications information
+  /api/notifications/{notification_id}:
+    delete:
+      summary: DELETE /api/notifications/{notification_id}
+      operationId: notifications_delete_notification
+      tags:
+      - Notifications
+      parameters:
+      - name: notification_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+      description: Delete a specific notification
+  /api/notifications/{notification_id}/read:
+    put:
+      summary: PUT /api/notifications/{notification_id}/read
+      operationId: notifications_mark_notification_read
+      tags:
+      - Notifications
+      parameters:
+      - name: notification_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+      description: Update read information
+  /api/notifications/stats:
+    get:
+      summary: GET /api/notifications/stats
+      operationId: notifications_notification_stats
+      tags:
+      - Notifications
+      responses:
+        '200':
+          description: Success
+      description: Retrieve stats information
+  /api/ocr/process:
+    post:
+      summary: POST /api/ocr/process
+      operationId: sgk_process_ocr
+      tags:
+      - Ocr
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new process
+  /api/openapi.yaml:
+    get:
+      summary: Serve the canonical OpenAPI contract for frontend/back-end sync and respond to CORS preflight.
+      description: 'Returns CORS headers so the static Swagger UI served from a different origin (e.g. localhost:8080)
+
+        can fetch the YAML without browser CORS errors.'
+      operationId: serve_openapi_yaml
+      tags:
+      - Openapi.yaml
+      responses:
+        '200':
+          description: Success
+  /api/patients:
+    get:
+      summary: Get list of patients
+      operationId: patients_get_patients
+      tags:
+      - Patients
+      x-storage-keys:
+      - key: PATIENTS_DATA
+        description: Cached patient list data
+        type: array
+      - key: PATIENT_SEARCH_FILTERS
+        description: User's search filter preferences
+        type: object
+      - key: PATIENT_PAGINATION_STATE
+        description: Current pagination state
+        type: object
+      - key: PATIENT_SORT_PREFERENCES
+        description: User's sorting preferences
+        type: object
+      - key: PATIENT_VIEW_MODE
+        description: List/grid view mode preference
+        type: string
+      - key: PATIENT_SELECTED_COLUMNS
+        description: User's column visibility preferences
+        type: array
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 200
+        description: Number of items per page (max 200)
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Cursor for cursor-based pagination (for large datasets)
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Search term for filtering patients
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - LEAD
+          - TRIAL
+          - CUSTOMER
+        description: Filter by patient status
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Patient'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve a list of patients with optional filtering and pagination
+    post:
+      summary: POST /api/patients
+      operationId: patients_create_patient
+      tags:
+      - Patients
+      x-storage-keys:
+      - key: PATIENT_FORM_VALIDATION_STATE
+        description: Form validation state and errors
+        type: object
+      - key: PATIENT_FORM_DRAFT
+        description: Draft form data for auto-save
+        type: object
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+      description: Register a new patient with personal and medical information
+  /api/patients/{patient_id}:
+    delete:
+      summary: DELETE /api/patients/{patient_id}
+      operationId: patients_delete_patient
+      tags:
+      - Patients
+      x-storage-keys:
+      - key: PATIENT_DETAILS_TAB
+        description: Active tab in patient details view
+        type: string
+      - key: PATIENT_BULK_ACTIONS_STATE
+        description: Bulk actions selection state
+        type: object
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+      description: Remove a patient record from the system
+  /api/patients/{patient_id}/assign-devices-extended:
+    post:
+      summary: POST /api/patients/{patient_id}/assign-devices-extended
+      operationId: sales_assign_devices_extended
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new assign-devices-extended
+  /api/patients/{patient_id}/devices:
+    get:
+      summary: Get all devices assigned to a specific patient
+      operationId: patients_get_patient_devices
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+                  meta:
+                    type: object
+                    properties:
+                      patientId:
+                        type: string
+                      patientName:
+                        type: string
+                      deviceCount:
+                        type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+      description: Get all devices assigned to a specific patient
+  /api/patients/{patient_id}/ereceipts:
+    post:
+      summary: POST /api/patients/{patient_id}/ereceipts
+      operationId: patient_subresources_create_patient_ereceipt
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new ereceipts
+  /api/patients/{patient_id}/ereceipts/{ereceipt_id}:
+    delete:
+      summary: DELETE /api/patients/{patient_id}/ereceipts/{ereceipt_id}
+      operationId: patient_subresources_delete_patient_ereceipt
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: ereceipt_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+      description: Delete {ereceipt_id}
+  /api/patients/{patient_id}/hearing-tests:
+    post:
+      summary: POST /api/patients/{patient_id}/hearing-tests
+      operationId: patient_subresources_add_patient_hearing_test
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new hearing-tests
+  /api/patients/{patient_id}/hearing-tests/{test_id}:
+    delete:
+      summary: DELETE /api/patients/{patient_id}/hearing-tests/{test_id}
+      operationId: patient_subresources_delete_patient_hearing_test
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: test_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+      description: Delete {test_id}
+  /api/patients/{patient_id}/notes:
+    post:
+      summary: POST /api/patients/{patient_id}/notes
+      operationId: patient_subresources_create_patient_note
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new notes
+  /api/patients/{patient_id}/notes/{note_id}:
+    delete:
+      summary: DELETE /api/patients/{patient_id}/notes/{note_id}
+      operationId: patient_subresources_delete_patient_note
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+      description: Delete {note_id}
+  /api/patients/{patient_id}/promissory-notes:
+    get:
+      summary: Get all promissory notes for a patient
+      operationId: payments_get_patient_promissory_notes
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/sales:
+    get:
+      summary: GET /api/patients/{patient_id}/sales
+      operationId: sales_get_patient_sales
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+      description: Retrieve sales information
+  /api/patients/{patient_id}/sgk-documents:
+    get:
+      summary: GET /api/patients/{patient_id}/sgk-documents
+      operationId: sgk_get_patient_sgk_documents
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+      description: Retrieve sgk-documents information
+  /api/patients/{patient_id}/timeline:
+    get:
+      summary: Get timeline events for a patient
+      description: Retrieves all timeline events for a specific patient, including events from both custom data and activity logs
+      operationId: timeline_get_patient_timeline
+      tags:
+      - Timeline
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Timeline events retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        patientId:
+                          type: string
+                        type:
+                          type: string
+                        title:
+                          type: string
+                        description:
+                          type: string
+                        timestamp:
+                          type: string
+                          format: date-time
+                        user:
+                          type: string
+                        source:
+                          type: string
+                  meta:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      patient_id:
+                        type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Patient not found
+        '500':
+          description: Internal server error
+    post:
+      summary: Add a new timeline event for a patient
+      description: Creates a new timeline event for a specific patient and logs it to both custom data and activity logs
+      operationId: timeline_add_timeline_event
+      tags:
+      - Timeline
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - type
+              - title
+              properties:
+                type:
+                  type: string
+                  description: Event type (e.g., 'appointment', 'sale', 'note', 'device_assigned')
+                title:
+                  type: string
+                  description: Event title
+                description:
+                  type: string
+                  description: Event description
+                details:
+                  type: object
+                  description: Additional event details
+                timestamp:
+                  type: string
+                  format: date-time
+                  description: Event timestamp (defaults to current time)
+                date:
+                  type: string
+                  description: Event date in DD.MM.YYYY format
+                time:
+                  type: string
+                  description: Event time in HH:MM format
+                user:
+                  type: string
+                  description: User who created the event (defaults to 'system')
+                icon:
+                  type: string
+                  description: FontAwesome icon class (defaults to 'fa-circle')
+                color:
+                  type: string
+                  description: Event color (defaults to 'blue')
+                category:
+                  type: string
+                  description: Event category (defaults to 'general')
+      responses:
+        '201':
+          description: Timeline event created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      patientId:
+                        type: string
+                      type:
+                        type: string
+                      title:
+                        type: string
+                      description:
+                        type: string
+                      timestamp:
+                        type: string
+                        format: date-time
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request - missing required fields
+        '404':
+          description: Patient not found
+        '500':
+          description: Internal server error
+  /api/patients/{patient_id}/timeline/{event_id}:
+    delete:
+      summary: Delete a timeline event
+      description: Removes a specific timeline event from a patient's timeline
+      operationId: timeline_delete_timeline_event
+      tags:
+      - Timeline
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Timeline event deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Patient or timeline event not found
+        '500':
+          description: Internal server error
+  /api/patients/{patient_id}/activities:
+    post:
+      summary: Log an activity for a patient (alias for timeline event)
+      description: Alternative endpoint for adding timeline events, provides the same functionality as POST /api/patients/{patient_id}/timeline
+      operationId: timeline_log_patient_activity
+      tags:
+      - Timeline
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - type
+              - title
+              properties:
+                type:
+                  type: string
+                title:
+                  type: string
+                description:
+                  type: string
+                details:
+                  type: object
+      responses:
+        '201':
+          description: Activity logged successfully
+        '400':
+          description: Bad request
+        '404':
+          description: Patient not found
+        '500':
+          description: Internal server error
+  /api/patients/bulk_upload:
+    post:
+      summary: Accept a multipart/form-data CSV file containing patients and upsert them into the DB.
+      description: 'This endpoint is intentionally forgiving: it returns a summary of created/updated rows
+
+        and reports per-row errors without aborting the entire batch.
+
+        Authentication is optional for uploads in many workflows; we still log the actor when present.'
+      operationId: patients_bulk_upload_patients
+      tags:
+      - Patients
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/export:
+    get:
+      summary: Export patients as CSV. Only admin users are allowed to perform exports.
+      description: 'Supports optional query params: status, segment, q (search term).'
+      operationId: patients_export_patients_csv
+      tags:
+      - Patients
+      responses:
+        '200':
+          description: Success
+  /api/patients/search:
+    get:
+      summary: GET /api/patients/search
+      operationId: patients_search_patients
+      tags:
+      - Patients
+      responses:
+        '200':
+          description: Success
+      description: Retrieve search information
+  /api/pricing-preview:
+    post:
+      summary: POST /api/pricing-preview
+      operationId: sales_pricing_preview
+      tags:
+      - Pricing-preview
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new pricing-preview
+  /api/product-suppliers/{ps_id}:
+    delete:
+      summary: Delete a product-supplier relationship
+      operationId: suppliers_delete_product_supplier
+      tags:
+      - Product-suppliers
+      parameters:
+      - name: ps_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+      description: Delete {ps_id}
+  /api/products/{product_id}/suppliers:
+    post:
+      summary: Add a supplier to a product
+      operationId: suppliers_add_product_supplier
+      tags:
+      - Products
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new suppliers
+  /api/promissory-notes:
+    post:
+      summary: Create multiple promissory notes
+      operationId: payments_create_promissory_notes
+      tags:
+      - Promissory-notes
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/promissory-notes/{note_id}:
+    patch:
+      summary: Update a promissory note
+      operationId: payments_update_promissory_note
+      tags:
+      - Promissory-notes
+      parameters:
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/promissory-notes/{note_id}/collect:
+    post:
+      summary: Collect payment for a promissory note (full or partial)
+      operationId: payments_collect_promissory_note
+      tags:
+      - Promissory-notes
+      parameters:
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/register-phone:
+    post:
+      summary: POST /api/register-phone
+      operationId: registration_register_phone
+      tags:
+      - Register-phone
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new register-phone
+  /api/reports/appointments:
+    get:
+      summary: GET /api/reports/appointments
+      operationId: reports_report_appointments
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+      description: Retrieve appointments information
+  /api/reports/campaigns:
+    get:
+      summary: Kampanya raporu
+      operationId: reports_report_campaigns
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+      description: Retrieve campaigns information
+  /api/reports/financial:
+    get:
+      summary: Mali rapor
+      operationId: reports_report_financial
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+      description: Retrieve financial information
+  /api/reports/overview:
+    get:
+      summary: "Genel rapor \xF6zeti"
+      operationId: reports_report_overview
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+      description: Retrieve overview information
+  /api/reports/patients:
+    get:
+      summary: Hasta analizi raporu
+      operationId: reports_report_patients
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+      description: Retrieve patients information
+  /api/reports/revenue:
+    get:
+      summary: GET /api/reports/revenue
+      operationId: reports_report_revenue
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+      description: Retrieve revenue information
+  /api/sales:
+    get:
+      summary: GET /api/sales
+      operationId: sales_list_sales
+      tags:
+      - Sales
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sale'
+      description: Retrieve a list of all sales
+    post:
+      summary: POST /api/sales
+      operationId: sales_create_sale
+      tags:
+      - Sales
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Create a new sale
+  /api/sales/{sale_id}:
+    get:
+      summary: GET /api/sales/{sale_id}
+      operationId: sales_get_sale
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Get sale details by ID
+    put:
+      summary: PUT /api/sales/{sale_id}
+      operationId: sales_update_sale
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Update sale information
+    delete:
+      summary: DELETE /api/sales/{sale_id}
+      operationId: sales_delete_sale
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Delete a sale
+  /api/sales/{sale_id}/payment-plan:
+    post:
+      summary: POST /api/sales/{sale_id}/payment-plan
+      operationId: sales_create_sale_payment_plan
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentRecord'
+      description: Create new payment-plan
+  /api/sales/{sale_id}/promissory-notes:
+    get:
+      summary: Get all promissory notes for a specific sale
+      operationId: payments_get_sale_promissory_notes
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/sales/{sale_id}/invoice:
+    post:
+      summary: Create invoice for sale
+      operationId: sales_create_sale_invoice
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                invoice_type:
+                  type: string
+                  enum: [standard, proforma]
+                additional_notes:
+                  type: string
+      responses:
+        '201':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoice_id:
+                        type: string
+                      invoice_number:
+                        type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Sale not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Create an invoice for the specified sale
+    get:
+      summary: Get invoice for sale
+      operationId: sales_get_sale_invoice
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoice_id:
+                        type: string
+                      invoice_number:
+                        type: string
+                      sale_id:
+                        type: string
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      total_amount:
+                        type: number
+                      tax_amount:
+                        type: number
+                      created_at:
+                        type: string
+                        format: date-time
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Sale or invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve the invoice for the specified sale
+  /api/sales/{sale_id}/invoice/pdf:
+    get:
+      summary: Generate sale invoice PDF
+      operationId: sales_generate_sale_invoice_pdf
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Sale invoice PDF generated successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Sale or invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Generate and download a PDF for the specified sale invoice
+  /api/settings:
+    put:
+      summary: Update system settings
+      operationId: update_settings
+      tags:
+      - Settings
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+      description: Update settings information
+  /api/sgk/documents:
+    post:
+      summary: POST /api/sgk/documents
+      operationId: sgk_upload_sgk_document
+      tags:
+      - Sgk
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new documents
+  /api/sgk/documents/{document_id}:
+    delete:
+      summary: DELETE /api/sgk/documents/{document_id}
+      operationId: sgk_delete_sgk_document
+      tags:
+      - Sgk
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+      description: Delete {document_id}
+  /api/sms/monitoring:
+    get:
+      summary: GET /api/sms/monitoring
+      operationId: sms_monitoring
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+      description: Retrieve monitoring information
+  /api/suppliers:
+    get:
+      summary: Get list of suppliers
+      operationId: suppliers_get_suppliers
+      tags:
+      - Suppliers
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+        description: Number of items per page
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Search term for filtering suppliers
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - PENDING
+        description: Filter by supplier status
+      - name: category
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by supplier category
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Supplier'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve a list of suppliers with optional filtering and pagination
+    post:
+      summary: Create a new supplier
+      operationId: suppliers_create_supplier
+      tags:
+      - Suppliers
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+      description: Register a new supplier with contact and business information
+  /api/suppliers/{supplier_id}:
+    delete:
+      summary: Delete a supplier (soft delete by setting is_active=False)
+      operationId: suppliers_delete_supplier
+      tags:
+      - Suppliers
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+      description: Remove a supplier from the system
+  /api/suppliers/{supplier_id}/products:
+    get:
+      summary: Get all products for a specific supplier
+      operationId: suppliers_get_supplier_products
+      tags:
+      - Suppliers
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+      description: Get list of products available from a specific supplier
+  /api/suppliers/stats:
+    get:
+      summary: Get supplier statistics
+      operationId: suppliers_get_supplier_stats
+      tags:
+      - Suppliers
+      responses:
+        '200':
+          description: Success
+      description: Get supplier statistics including order history
+  /api/verify-registration-otp:
+    post:
+      summary: POST /api/verify-registration-otp
+      operationId: registration_verify_registration_otp
+      tags:
+      - Verify-registration-otp
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new verify-registration-otp
+  /api/users:
+    get:
+      summary: GET /api/users
+      operationId: users_list_users
+      tags:
+      - Users
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+      description: Retrieve a list of all users
+    post:
+      summary: POST /api/users
+      operationId: users_create_user
+      tags:
+      - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Create a new user
+  /api/users/{user_id}:
+    get:
+      summary: GET /api/users/{user_id}
+      operationId: users_get_user
+      tags:
+      - Users
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Get user details by ID
+    put:
+      summary: PUT /api/users/{user_id}
+      operationId: users_update_user
+      tags:
+      - Users
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Update user information
+    delete:
+      summary: DELETE /api/users/{user_id}
+      operationId: users_delete_user
+      tags:
+      - Users
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Delete a user
+  /api/users/me:
+    get:
+      summary: GET /api/users/me
+      operationId: users_get_current_user
+      tags:
+      - Users
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Get current authenticated user information
+  /entities:
+    post:
+      summary: Extract entities from image using OCR
+      operationId: ocr_extract_entities
+      tags:
+      - Entities
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create new entities
+  /extract_patient:
+    post:
+      summary: Extract patient name from image using OCR
+      operationId: ocr_extract_patient_name
+      tags:
+      - Extract_patient
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Extract patient name from document image using OCR
+  /health:
+    get:
+      summary: Health check endpoint (moved from app.py)
+      operationId: ocr_health_check
+      tags:
+      - Health
+      responses:
+        '200':
+          description: Success
+      description: Health check for OCR service availability
+  /init-db:
+    post:
+      summary: Initialize database and create tables
+      operationId: ocr_init_database
+      tags:
+      - Init-db
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Initialize OCR service database and create required tables
+  /initialize:
+    post:
+      summary: Initialize NLP/OCR service
+      operationId: ocr_initialize_nlp_endpoint
+      tags:
+      - Initialize
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Initialize NLP/OCR processing service
+  /process:
+    post:
+      summary: Process document with OCR
+      operationId: ocr_process_document
+      tags:
+      - Process
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Process document using OCR to extract text and data
+  /similarity:
+    post:
+      summary: Calculate similarity between two images using OCR text
+      operationId: ocr_calculate_similarity
+      tags:
+      - Similarity
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Calculate similarity between documents using OCR text analysis
+  /swagger.html:
+    get:
+      summary: Serve the static Swagger UI page from the repository `public/` folder.
+      description: 'This helps local development: visit http://<backend-host>:<port>/swagger.html so the
+
+        Swagger UI and `/api/openapi.yaml` are on the same origin and no CORS overrides are needed.'
+      operationId: serve_swagger_ui
+      tags:
+      - Swagger.html
+      responses:
+        '200':
+          description: Success
+components:
+  schemas:
+    Patient:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique patient identifier
+        tcNumber:
+          type: string
+          description: Turkish citizenship number
+        identityNumber:
+          type: string
+          description: Identity number
+        firstName:
+          type: string
+          description: Patient's first name
+        lastName:
+          type: string
+          description: Patient's last name
+        phone:
+          type: string
+          description: Patient's phone number
+        email:
+          type: string
+          format: email
+          description: Patient's email address
+        birthDate:
+          type: string
+          format: date
+          description: Patient's birth date
+        gender:
+          type: string
+          enum:
+          - M
+          - F
+          description: Patient's gender
+        addressCity:
+          type: string
+          description: Patient's city
+        addressDistrict:
+          type: string
+          description: Patient's district
+        addressFull:
+          type: string
+          description: Patient's full address
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - LEAD
+          - TRIAL
+          - CUSTOMER
+          description: Patient status
+        segment:
+          type: string
+          description: Patient segment
+        acquisitionType:
+          type: string
+          description: How patient was acquired
+        conversionStep:
+          type: string
+          description: Patient conversion step
+        referredBy:
+          type: string
+          description: Who referred the patient
+        priorityScore:
+          type: integer
+          description: Patient priority score
+        tags:
+          type: array
+          items:
+            type: string
+          description: Patient tags
+        sgkInfo:
+          type: object
+          description: SGK information
+        customData:
+          type: object
+          description: Custom patient data
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - tcNumber
+      - firstName
+      - lastName
+      - phone
+    Appointment:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique appointment identifier
+        patientId:
+          type: string
+          description: Patient ID
+        clinicianId:
+          type: string
+          description: Clinician ID
+        branchId:
+          type: string
+          description: Branch ID
+        date:
+          type: string
+          format: date-time
+          description: Appointment date
+        time:
+          type: string
+          description: Appointment time
+        duration:
+          type: integer
+          description: Duration in minutes
+        appointmentType:
+          type: string
+          description: Type of appointment
+        status:
+          type: string
+          enum:
+          - SCHEDULED
+          - CONFIRMED
+          - COMPLETED
+          - CANCELLED
+          - NO_SHOW
+          description: Appointment status
+        notes:
+          type: string
+          description: Appointment notes
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - patientId
+      - date
+      - time
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique device identifier
+        patientId:
+          type: string
+          description: Patient ID
+        inventoryId:
+          type: string
+          description: Inventory ID
+        serialNumber:
+          type: string
+          description: Device serial number
+        brand:
+          type: string
+          description: Device brand
+        model:
+          type: string
+          description: Device model
+        deviceType:
+          type: string
+          description: Type of device
+        category:
+          type: string
+          description: Device category
+        ear:
+          type: string
+          enum:
+          - LEFT
+          - RIGHT
+          - BILATERAL
+          description: Which ear the device is for
+        status:
+          type: string
+          enum:
+          - IN_STOCK
+          - ASSIGNED
+          - TRIAL
+          - DEFECTIVE
+          - LOST
+          - RETURNED
+          description: Device status
+        trialStartDate:
+          type: string
+          format: date
+          description: Trial start date
+        trialEndDate:
+          type: string
+          format: date
+          description: Trial end date
+        trialExtendedUntil:
+          type: string
+          format: date
+          description: Trial extended until date
+        warrantyStartDate:
+          type: string
+          format: date
+          description: Warranty start date
+        warrantyEndDate:
+          type: string
+          format: date
+          description: Warranty end date
+        warrantyTerms:
+          type: string
+          description: Warranty terms
+        price:
+          type: number
+          format: decimal
+          description: Device price
+        purchaseDate:
+          type: string
+          format: date
+          description: Purchase date
+        warrantyExpiry:
+          type: string
+          format: date
+          description: Warranty expiry date
+        notes:
+          type: string
+          description: Device notes
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - serialNumber
+      - model
+      - brand
+    Sale:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique sale identifier
+        patientId:
+          type: string
+          description: Patient ID
+        productId:
+          type: string
+          description: Product ID
+        saleDate:
+          type: string
+          format: date-time
+          description: Sale date
+        totalAmount:
+          type: number
+          format: decimal
+          description: Total sale amount
+        listPriceTotal:
+          type: number
+          format: decimal
+          description: List price total
+        discountAmount:
+          type: number
+          format: decimal
+          description: Discount amount
+        sgkCoverage:
+          type: number
+          format: decimal
+          description: SGK coverage amount
+        patientPayment:
+          type: number
+          format: decimal
+          description: Patient payment amount
+        paymentMethod:
+          type: string
+          description: Payment method
+        status:
+          type: string
+          enum:
+          - PENDING
+          - COMPLETED
+          - CANCELLED
+          description: Sale status
+        notes:
+          type: string
+          description: Sale notes
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - patientId
+      - totalAmount
+    InventoryItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique inventory item identifier
+        name:
+          type: string
+          description: Product name
+        brand:
+          type: string
+          description: Product brand
+        model:
+          type: string
+          description: Product model
+        category:
+          type: string
+          description: Product category
+        barcode:
+          type: string
+          description: Product barcode
+        supplier:
+          type: string
+          description: Supplier name
+        description:
+          type: string
+          description: Product description
+        availableInventory:
+          type: integer
+          description: Available inventory count
+        totalInventory:
+          type: integer
+          description: Total inventory count
+        usedInventory:
+          type: integer
+          description: Used inventory count
+        inventory:
+          type: integer
+          description: Legacy field for available inventory
+        onTrial:
+          type: integer
+          description: Items currently on trial
+        reorderLevel:
+          type: integer
+          description: Minimum stock level for reordering
+        minInventory:
+          type: integer
+          description: Legacy field for reorder level
+        availableSerials:
+          type: array
+          items:
+            type: string
+          description: Available serial numbers
+        features:
+          type: array
+          items:
+            type: string
+          description: Product features
+        price:
+          type: number
+          format: float
+          description: Unit price
+        kdv:
+          type: number
+          format: float
+          description: VAT/KDV rate percentage
+          default: 20
+        vatRate:
+          type: number
+          format: float
+          description: VAT rate percentage (alias for kdv)
+          default: 20
+        vatIncludedPrice:
+          type: number
+          format: float
+          description: Price including VAT/KDV
+        stock:
+          type: integer
+          description: Current stock level (alias for availableInventory)
+        serialNumber:
+          type: string
+          description: Product serial number
+        direction:
+          type: string
+          enum:
+          - LEFT
+          - RIGHT
+          - BILATERAL
+          description: Hearing aid direction
+        ear:
+          type: string
+          enum:
+          - LEFT
+          - RIGHT
+          - BILATERAL
+          description: Legacy field for direction
+        warranty:
+          type: integer
+          description: Warranty period in months
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - name
+      - brand
+      - category
+      - price
+    Supplier:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique supplier identifier
+        name:
+          type: string
+          description: Supplier name
+        contactPerson:
+          type: string
+          description: Contact person name
+        phone:
+          type: string
+          description: Supplier phone
+        email:
+          type: string
+          format: email
+          description: Supplier email
+        address:
+          type: string
+          description: Supplier address
+        taxNumber:
+          type: string
+          description: Tax number
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          description: Supplier status
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - name
+      - contactPerson
+    Campaign:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique campaign identifier
+        name:
+          type: string
+          description: Campaign name
+        description:
+          type: string
+          description: Campaign description
+        startDate:
+          type: string
+          format: date
+          description: Campaign start date
+        endDate:
+          type: string
+          format: date
+          description: Campaign end date
+        budget:
+          type: number
+          format: decimal
+          description: Campaign budget
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - ACTIVE
+          - PAUSED
+          - COMPLETED
+          description: Campaign status
+        targetAudience:
+          type: string
+          description: Target audience
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - name
+      - startDate
+      - endDate
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique notification identifier
+        userId:
+          type: string
+          description: User ID
+        title:
+          type: string
+          description: Notification title
+        message:
+          type: string
+          description: Notification message
+        type:
+          type: string
+          enum:
+          - INFO
+          - WARNING
+          - ERROR
+          - SUCCESS
+          description: Notification type
+        isRead:
+          type: boolean
+          description: Read status
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - userId
+      - title
+      - message
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: integer
+          description: Error code
+        details:
+          type: object
+          description: Additional error details
+      required:
+      - error
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Success message
+        data:
+          type: object
+          description: Response data
+      required:
+      - message
+    PaginationInfo:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number (offset-based pagination)
+        perPage:
+          type: integer
+          description: Items per page
+        total:
+          type: integer
+          description: Total number of items (offset-based pagination)
+        totalPages:
+          type: integer
+          description: Total number of pages (offset-based pagination)
+        hasNext:
+          type: boolean
+          description: Whether there are more items available
+        nextCursor:
+          type: string
+          description: Cursor for next page (cursor-based pagination)
+        cursor:
+          type: string
+          description: Current cursor (cursor-based pagination)
+      required:
+      - page
+      - perPage
+      - total
+      - totalPages
+    PaymentRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique payment record identifier
+        patientId:
+          type: string
+          description: Patient ID
+        saleId:
+          type: string
+          description: Sale ID
+        promissoryNoteId:
+          type: string
+          description: Promissory note ID
+        amount:
+          type: number
+          format: decimal
+          description: Payment amount
+        paymentDate:
+          type: string
+          format: date-time
+          description: Payment date
+        dueDate:
+          type: string
+          format: date
+          description: Due date
+        paymentMethod:
+          type: string
+          description: Payment method
+        paymentType:
+          type: string
+          description: Payment type
+        status:
+          type: string
+          enum:
+          - PENDING
+          - COMPLETED
+          - CANCELLED
+          - OVERDUE
+          description: Payment status
+        referenceNumber:
+          type: string
+          description: Reference number
+        notes:
+          type: string
+          description: Payment notes
+        deviceId:
+          type: string
+          description: Device ID
+        ear:
+          type: string
+          enum:
+          - LEFT
+          - RIGHT
+          - BILATERAL
+          description: Which ear
+        reason:
+          type: string
+          description: Payment reason
+        fromInventory:
+          type: boolean
+          description: From inventory flag
+        listPrice:
+          type: number
+          format: decimal
+          description: List price
+        salePrice:
+          type: number
+          format: decimal
+          description: Sale price
+        sgkScheme:
+          type: string
+          description: SGK scheme
+        sgkSupport:
+          type: number
+          format: decimal
+          description: SGK support amount
+        discountType:
+          type: string
+          description: Discount type
+        discountValue:
+          type: number
+          format: decimal
+          description: Discount value
+        netPayable:
+          type: number
+          format: decimal
+          description: Net payable amount
+        productId:
+          type: string
+          description: Product ID
+        saleDate:
+          type: string
+          format: date-time
+          description: Sale date
+        listPriceTotal:
+          type: number
+          format: decimal
+          description: List price total
+        totalAmount:
+          type: number
+          format: decimal
+          description: Total amount
+        discountAmount:
+          type: number
+          format: decimal
+          description: Discount amount
+        finalAmount:
+          type: number
+          format: decimal
+          description: Final amount
+        paidAmount:
+          type: number
+          format: decimal
+          description: Paid amount
+        rightEarAssignmentId:
+          type: string
+          description: Right ear assignment ID
+        leftEarAssignmentId:
+          type: string
+          description: Left ear assignment ID
+        sgkCoverage:
+          type: number
+          format: decimal
+          description: SGK coverage
+        patientPayment:
+          type: number
+          format: decimal
+          description: Patient payment
+        planName:
+          type: string
+          description: Payment plan name
+        installmentCount:
+          type: integer
+          description: Number of installments
+        installmentAmount:
+          type: number
+          format: decimal
+          description: Installment amount
+        installmentNumber:
+          type: integer
+          description: Current installment number
+        remainingBalance:
+          type: number
+          format: decimal
+          description: Remaining balance
+        interestRate:
+          type: number
+          format: decimal
+          description: Interest rate
+        totalInterest:
+          type: number
+          format: decimal
+          description: Total interest
+        processingFee:
+          type: number
+          format: decimal
+          description: Processing fee amount
+        startDate:
+          type: string
+          format: date-time
+          description: Start date
+        paymentPlanId:
+          type: string
+          description: Payment plan ID
+        paidDate:
+          type: string
+          format: date-time
+          description: Paid date
+        lateFee:
+          type: number
+          format: decimal
+          description: Late fee amount
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - patientId
+      - amount
+      - paymentDate
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique user identifier
+        username:
+          type: string
+          description: Username
+        email:
+          type: string
+          format: email
+          description: User email
+        phone:
+          type: string
+          description: User phone number
+        passwordHash:
+          type: string
+          description: Password hash
+        firstName:
+          type: string
+          description: User first name
+        lastName:
+          type: string
+          description: User last name
+        role:
+          type: string
+          description: User role
+        isActive:
+          type: boolean
+          description: User active status
+        lastLogin:
+          type: string
+          format: date-time
+          description: Last login date
+        passwordResetToken:
+          type: string
+          description: Password reset token
+        passwordResetExpires:
+          type: string
+          format: date-time
+          description: Password reset expiry
+        userId:
+          type: string
+          description: User ID for audit
+        action:
+          type: string
+          description: User action
+        entityType:
+          type: string
+          description: Entity type
+        entityId:
+          type: string
+          description: Entity ID
+        ipAddress:
+          type: string
+          description: IP address
+        userAgent:
+          type: string
+          description: User agent
+        details:
+          type: object
+          description: Additional details
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - username
+      - email
+    CommunicationTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique template identifier
+        name:
+          type: string
+          description: Template name
+        description:
+          type: string
+          description: Template description
+        templateType:
+          type: string
+          enum:
+          - sms
+          - email
+          description: Type of communication template
+        category:
+          type: string
+          description: Template category (appointment_reminder, payment_due, welcome, etc.)
+        subject:
+          type: string
+          description: Email subject (for email templates)
+        bodyText:
+          type: string
+          description: Plain text content
+        bodyHtml:
+          type: string
+          description: HTML content (for email templates)
+        variables:
+          type: array
+          items:
+            type: string
+          description: Available template variables
+        isActive:
+          type: boolean
+          description: Whether template is active
+    CommunicationMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique message identifier
+        messageType:
+          type: string
+          enum:
+          - sms
+          - email
+          description: Type of message (sms or email)
+        patientId:
+          type: string
+          description: Patient ID
+        campaignId:
+          type: string
+          description: Campaign ID (if part of a campaign)
+        templateId:
+          type: string
+          description: Template ID used for this message
+        status:
+          type: string
+          description: Message status (sent, delivered, failed, etc.)
+        phoneNumber:
+          type: string
+          description: Phone number (for SMS messages)
+        toEmail:
+          type: string
+          description: Recipient email address (for email messages)
+        fromEmail:
+          type: string
+          description: Sender email address (for email messages)
+        subject:
+          type: string
+          description: Email subject (for email messages)
+        message:
+          type: string
+          description: Message content (for SMS)
+        bodyText:
+          type: string
+          description: Plain text content (for email)
+        bodyHtml:
+          type: string
+          description: HTML content (for email)
+        sentAt:
+          type: string
+          format: date-time
+          description: When the message was sent
+        deliveredAt:
+          type: string
+          format: date-time
+          description: When the message was delivered
+        errorMessage:
+          type: string
+          description: Error message if sending failed
+        cost:
+          type: number
+          format: float
+          description: Cost of sending the message
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        isSystem:
+          type: boolean
+          description: Whether template is a system template
+        usageCount:
+          type: integer
+          description: Number of times template has been used
+        lastUsedAt:
+          type: string
+          format: date-time
+          description: Last time template was used
+      required:
+      - name
+      - templateType
+      - bodyText
+    CommunicationTemplateCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Template name
+        description:
+          type: string
+          description: Template description
+        templateType:
+          type: string
+          enum:
+          - sms
+          - email
+          description: Type of communication template
+        category:
+          type: string
+          description: Template category
+        subject:
+          type: string
+          description: Email subject (for email templates)
+        bodyText:
+          type: string
+          description: Plain text content
+        bodyHtml:
+          type: string
+          description: HTML content (for email templates)
+        variables:
+          type: array
+          items:
+            type: string
+          description: Available template variables
+        isActive:
+          type: boolean
+          default: true
+          description: Whether template is active
+      required:
+      - name
+      - templateType
+      - bodyText
+    CommunicationTemplateUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Template name
+        description:
+          type: string
+          description: Template description
+        category:
+          type: string
+          description: Template category
+        subject:
+          type: string
+          description: Email subject (for email templates)
+        bodyText:
+          type: string
+          description: Plain text content
+        bodyHtml:
+          type: string
+          description: HTML content (for email templates)
+        variables:
+          type: array
+          items:
+            type: string
+          description: Available template variables
+        isActive:
+          type: boolean
+          description: Whether template is active

@@ -1,10 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { usePatientAppointments } from '../hooks/patient/usePatientAppointments';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
-import { ErrorBoundary } from './common/ErrorBoundary';
 import { AppointmentSchedulingForm } from './forms/AppointmentSchedulingForm';
 import { Calendar, AlertCircle, Plus, Search, Filter } from 'lucide-react';
-import { Button } from './ui/Button';
+import { Button, Input, Select } from '@x-ear/ui-web';
 
 interface PatientAppointmentsTabProps {
   patientId: string;
@@ -110,11 +109,6 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({
     );
   }
 
-  const handleAppointmentClick = (appointment: any) => {
-    // TODO: Implement appointment detail modal or navigation
-    console.log('Appointment clicked:', appointment);
-  };
-
   const handleScheduleAppointment = () => {
     setShowSchedulingForm(true);
   };
@@ -123,7 +117,7 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({
     setShowSchedulingForm(false);
   };
 
-  const handleAppointmentSave = async (appointmentData: any) => {
+  const handleAppointmentSave = async (appointmentData: unknown) => {
     setIsSubmitting(true);
     try {
       // TODO: Implement appointment save API call
@@ -158,13 +152,13 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({
             </label>
             <div className="relative mt-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
-              <input
+              <Input
                 type="text"
                 id="search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Randevu türü, notlar veya durum ara..."
-                className="pl-10 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="pl-10"
               />
             </div>
           </div>
@@ -172,36 +166,33 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({
             <label htmlFor="appointmentType" className="block text-sm font-medium text-gray-700">
               Randevu Türü
             </label>
-            <select
-              id="appointmentType"
+            <Select
+              label="Randevu Türü"
               value={appointmentTypeFilter}
               onChange={(e) => setAppointmentTypeFilter(e.target.value)}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="">Tümü</option>
-              {appointmentTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
+              options={[
+                { value: '', label: 'Tümü' },
+                ...appointmentTypes.map(type => ({ value: type, label: type }))
+              ]}
+              className="mt-1"
+            />
           </div>
           <div>
             <label htmlFor="dateRange" className="block text-sm font-medium text-gray-700">
               Tarih Aralığı
             </label>
             <div className="grid grid-cols-2 gap-2 mt-1">
-              <input
+              <Input
                 type="date"
                 id="startDate"
                 value={dateRange.start}
                 onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
-              <input
+              <Input
                 type="date"
                 id="endDate"
                 value={dateRange.end}
                 onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>
           </div>

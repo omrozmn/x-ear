@@ -1,40 +1,374 @@
-import React from 'react';
-import { Modal, Button, Input } from '@x-ear/ui-web';
+import React, { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { format } from 'date-fns';
+import { tr } from 'date-fns/locale';
+import {
+  Modal,
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+  DatePicker,
+  Text,
+  VStack,
+  HStack,
+  FormControl,
+  FormLabel,
+  Alert,
+  AlertDescription,
+} from '@x-ear/ui-web';
+import { Appointment, AppointmentStatus, AppointmentType } from '../../types/appointment';
+import { PatientAutocomplete } from './PatientAutocomplete';
+import { Patient } from '../../types/patient/patient-base.types';
 
-type Props = {
+// Validation schema
+const appointmentSchema = z.object({
+  patientId: z.string().min(1, 'Hasta seçimi zorunludur'),
+  patientName: z.string().min(1, 'Hasta adı zorunludur'),
+  date: z.date({ required_error: 'Tarih seçimi zorunludur' }),
+  time: z.string().min(1, 'Saat seçimi zorunludur'),
+  type: z.enum(['consultation', 'hearing-test', 'device-trial', 'follow-up'], { required_error: 'Randevu türü seçimi zorunludur' }),
+  status: z.enum(['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show', 'rescheduled']).default('scheduled'),
+  notes: z.string().optional(),
+  duration: z.number().min(15).max(240).default(30),
+  branchId: z.string().optional(),
+});
+
+type AppointmentFormData = z.infer<typeof appointmentSchema>;
+
+interface AppointmentFormModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => void;
-  initialData?: any;
-};
+  onSubmit: (data: AppointmentFormData) => Promise<void>;
+  initialData?: Appointment | null;
+  initialDate?: Date;
+  initialTime?: string;
+  isLoading?: boolean;
+  error?: string | null;
+}
 
-export function AppointmentFormModal({ open, onClose, onSubmit, initialData }: Props) {
-  const [title, setTitle] = React.useState(initialData?.title ?? '');
+// Time slots for appointment scheduling
+const TIME_SLOTS = [
+  { value: '08:00', label: '08:00' },
+  { value: '08:30', label: '08:30' },
+  { value: '09:00', label: '09:00' },
+  { value: '09:30', label: '09:30' },
+  { value: '10:00', label: '10:00' },
+  { value: '10:30', label: '10:30' },
+  { value: '11:00', label: '11:00' },
+  { value: '11:30', label: '11:30' },
+  { value: '12:00', label: '12:00' },
+  { value: '12:30', label: '12:30' },
+  { value: '13:00', label: '13:00' },
+  { value: '13:30', label: '13:30' },
+  { value: '14:00', label: '14:00' },
+  { value: '14:30', label: '14:30' },
+  { value: '15:00', label: '15:00' },
+  { value: '15:30', label: '15:30' },
+  { value: '16:00', label: '16:00' },
+  { value: '16:30', label: '16:30' },
+  { value: '17:00', label: '17:00' },
+  { value: '17:30', label: '17:30' },
+  { value: '18:00', label: '18:00' },
+];
 
-  React.useEffect(() => {
-    setTitle(initialData?.title ?? '');
-  }, [initialData]);
+const APPOINTMENT_TYPES = [
+  { value: 'consultation', label: 'Konsültasyon' },
+  { value: 'hearing-test', label: 'İşitme Testi' },
+  { value: 'device-trial', label: 'Cihaz Denemesi' },
+  { value: 'follow-up', label: 'Kontrol' },
+];
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    onSubmit({ ...initialData, title });
-  }
+const APPOINTMENT_STATUSES = [
+  { value: 'scheduled', label: 'Planlandı' },
+  { value: 'confirmed', label: 'Onaylandı' },
+  { value: 'cancelled', label: 'İptal Edildi' },
+  { value: 'completed', label: 'Tamamlandı' },
+];
+
+const DURATION_OPTIONS = [
+  { value: '15', label: '15 dakika' },
+  { value: '30', label: '30 dakika' },
+  { value: '45', label: '45 dakika' },
+  { value: '60', label: '1 saat' },
+];
+
+const BRANCH_OPTIONS = [
+  { value: 'ana-sube', label: 'Ana Şube' },
+  { value: 'sehir-merkezi', label: 'Şehir Merkezi' },
+  { value: 'avm', label: 'AVM' },
+];
+
+export function AppointmentFormModal({ 
+  open, 
+  onClose, 
+  onSubmit, 
+  initialData,
+  initialDate,
+  initialTime,
+  isLoading = false,
+  error = null,
+}: AppointmentFormModalProps) {
+  const isEditing = !!initialData;
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<AppointmentFormData>({
+    resolver: zodResolver(appointmentSchema),
+    defaultValues: {
+      patientId: '',
+      patientName: '',
+      date: new Date(),
+      time: '09:00',
+      type: 'consultation',
+      status: 'scheduled',
+      notes: '',
+      duration: 30,
+      branchId: '',
+    },
+  });
+
+  // Reset form when modal opens/closes or appointment changes
+  useEffect(() => {
+    if (open) {
+      if (initialData) {
+        reset({
+          patientId: initialData.patientId,
+          patientName: initialData.patientName || '',
+          date: new Date(initialData.date),
+          time: initialData.time,
+          type: initialData.type,
+          status: initialData.status,
+          notes: initialData.notes || '',
+          duration: initialData.duration || 30,
+          branchId: initialData.branchId || '',
+        });
+      } else {
+        reset({
+          patientId: '',
+          patientName: '',
+          date: initialDate || new Date(),
+          time: initialTime || '09:00',
+          type: 'consultation',
+          status: 'scheduled',
+          notes: '',
+          duration: 30,
+          branchId: '',
+        });
+      }
+    }
+  }, [open, initialData, initialDate, initialTime, reset]);
+
+  const handleFormSubmit = async (data: AppointmentFormData) => {
+    try {
+      await onSubmit(data);
+      onClose();
+    } catch (err) {
+      console.error('Form submission error:', err);
+    }
+  };
+
+  const handleClose = () => {
+    if (!isSubmitting) {
+      onClose();
+    }
+  };
+
+  const selectedDate = watch('date');
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={initialData ? 'Edit Appointment' : 'New Appointment'}>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Title</label>
-          <Input value={title} onChange={(e: any) => setTitle(e.target.value)} />
+    <Modal isOpen={open} onClose={handleClose} size="lg">
+      <div className="p-6">
+        <div className="mb-6">
+          <Text className="text-xl font-semibold">
+            {isEditing ? 'Randevuyu Düzenle' : 'Yeni Randevu'}
+          </Text>
+          {selectedDate && (
+            <Text className="text-sm text-gray-600 mt-1">
+              {format(selectedDate, 'dd MMMM yyyy, EEEE', { locale: tr })}
+            </Text>
+          )}
         </div>
 
-        <div className="flex justify-end space-x-2">
-          <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit">Save</Button>
-        </div>
-      </form>
+        {error && (
+          <Alert className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+          <VStack spacing="md">
+            {/* Patient Information */}
+            <FormControl className="w-full">
+              <FormLabel>Hasta Arama *</FormLabel>
+              <Controller
+                name="patientName"
+                control={control}
+                render={({ field }) => (
+                  <PatientAutocomplete
+                    value={field.value}
+                    onSelect={(patient: Patient) => {
+                      setValue('patientId', patient.id || '');
+                      setValue('patientName', patient.firstName + ' ' + patient.lastName);
+                    }}
+                    placeholder="Hasta adı veya TC ile arayın..."
+                    error={errors.patientName?.message}
+                  />
+                )}
+              />
+            </FormControl>
+
+            {/* Date and Time */}
+            <HStack spacing="md" className="w-full">
+              <FormControl className="flex-1">
+                <FormLabel>Tarih *</FormLabel>
+                <Controller
+                  name="date"
+                  control={control}
+                  render={({ field }) => (
+                    <DatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      minDate={new Date()}
+                      error={errors.date?.message}
+                    />
+                  )}
+                />
+              </FormControl>
+
+              <FormControl className="flex-1">
+                <FormLabel>Saat *</FormLabel>
+                <Controller
+                  name="time"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      type="time"
+                      placeholder="Saat seçin"
+                      error={errors.time?.message}
+                    />
+                  )}
+                />
+              </FormControl>
+            </HStack>
+
+            {/* Type, Duration and Branch */}
+            <HStack spacing="md" className="w-full">
+              <FormControl className="flex-1">
+                <FormLabel>Randevu Türü *</FormLabel>
+                <Controller
+                  name="type"
+                  control={control}
+                  render={({ field }) => (
+                    <Select 
+                      {...field}
+                      options={APPOINTMENT_TYPES}
+                      placeholder="Tür seçin"
+                      error={errors.type?.message}
+                    />
+                  )}
+                />
+              </FormControl>
+
+              <FormControl className="flex-1">
+                <FormLabel>Süre</FormLabel>
+                <Controller
+                  name="duration"
+                  control={control}
+                  render={({ field }) => (
+                    <Select 
+                      value={field.value?.toString()}
+                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      options={DURATION_OPTIONS}
+                      placeholder="Süre seçin"
+                    />
+                  )}
+                />
+              </FormControl>
+
+              <FormControl className="flex-1">
+                <FormLabel>Şube</FormLabel>
+                <Controller
+                  name="branchId"
+                  control={control}
+                  render={({ field }) => (
+                    <Select 
+                      {...field}
+                      options={BRANCH_OPTIONS}
+                      placeholder="Şube seçin"
+                    />
+                  )}
+                />
+              </FormControl>
+            </HStack>
+
+            {/* Status (only for editing) */}
+            {isEditing && (
+              <FormControl className="w-full">
+                <FormLabel>Durum</FormLabel>
+                <Controller
+                  name="status"
+                  control={control}
+                  render={({ field }) => (
+                    <Select 
+                      {...field}
+                      options={APPOINTMENT_STATUSES}
+                      placeholder="Durum seçin"
+                    />
+                  )}
+                />
+              </FormControl>
+            )}
+
+            {/* Notes */}
+            <FormControl className="w-full">
+              <FormLabel>Notlar</FormLabel>
+              <Controller
+                name="notes"
+                control={control}
+                render={({ field }) => (
+                  <Textarea
+                    {...field}
+                    placeholder="Randevu notları..."
+                    rows={3}
+                  />
+                )}
+              />
+            </FormControl>
+          </VStack>
+
+          {/* Actions */}
+          <div className="flex justify-end space-x-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              disabled={isSubmitting}
+            >
+              İptal
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting || isLoading}
+              loading={isSubmitting || isLoading}
+            >
+              {isEditing ? 'Güncelle' : 'Kaydet'}
+            </Button>
+          </div>
+        </form>
+      </div>
     </Modal>
   );
 }

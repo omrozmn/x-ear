@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import useUtsRegistrations, { useStartBulkUtsRegistration, usePollUtsJob } from '@/hooks/uts/useUts';
-import { Button } from '@x-ear/ui-web';
+import { Button, Textarea } from '@x-ear/ui-web';
 import UTSBulkUpload from '@/components/uts/UTSBulkUpload';
 import UTSRegisterModal from '@/components/uts/UTSRegisterModal';
 
@@ -22,7 +22,7 @@ export const UTSPage: React.FC = () => {
     <div>
       <h2>ÜTS Kayıtları</h2>
       <div style={{ margin: '1rem 0' }}>
-        <textarea value={csv} onChange={(e) => setCsv(e.target.value)} rows={8} style={{ width: '100%' }} />
+        <Textarea value={csv} onChange={(e) => setCsv(e.target.value)} rows={8} style={{ width: '100%' }} />
         <div style={{ marginTop: '0.5rem' }}>
           <Button onClick={handleStart} disabled={(startBulk as any).isLoading || (startBulk as any).isMutating}>
             Toplu Kayıt Başlat

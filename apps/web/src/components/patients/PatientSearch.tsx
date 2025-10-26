@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Input, Button, Spinner } from '@x-ear/ui-web';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { Input, Button, Loading } from '@x-ear/ui-web';
 import { Search, X, Clock, User, Phone, Filter } from 'lucide-react';
 import { PatientSearchItem } from '../../types/patient/patient-search.types';
 
@@ -235,7 +235,7 @@ export function PatientSearch({
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           {isSearching ? (
-            <Spinner className="h-5 w-5 text-gray-400" />
+            <Loading className="h-5 w-5 text-gray-400" />
           ) : (
             <Search className="h-5 w-5 text-gray-400" />
           )}
@@ -413,7 +413,7 @@ export function PatientSearch({
             <div>
               {isSearching ? (
                 <div className="p-4 text-center">
-                  <Spinner className="h-6 w-6 mx-auto mb-2" />
+                  <Loading className="h-6 w-6 mx-auto mb-2" />
                   <p className="text-sm text-gray-500">Aranıyor...</p>
                 </div>
               ) : results.length > 0 ? (

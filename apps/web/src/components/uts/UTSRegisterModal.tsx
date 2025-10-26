@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@x-ear/ui-web';
+import { Button, Textarea } from '@x-ear/ui-web';
 import { useStartBulkUtsRegistration } from '@/hooks/uts/useUts';
 
 const Schema = z.object({
@@ -36,7 +36,7 @@ export const UTSRegisterModal: React.FC<{
         <h3>ÜTS Toplu Kayıt Başlat</h3>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div>
-            <textarea {...register('csv')} rows={8} style={{ width: '100%' }} />
+            <Textarea {...register('csv')} rows={8} className="w-full" />
             {errors.csv && <div style={{ color: 'red' }}>{errors.csv.message}</div>}
           </div>
           <div style={{ marginTop: 12, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>

@@ -1,20 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Button } from '../ui/Button';
+import { Button, Input, Textarea } from '@x-ear/ui-web';
 import { Modal } from '../ui/Modal';
-import { FileText, Upload, X, AlertCircle, CheckCircle } from 'lucide-react';
-
-interface PatientDocument {
-  id?: string;
-  patientId: string;
-  documentType: 'sgk_report' | 'prescription' | 'medical_report' | 'invoice' | 'receipt' | 'other';
-  fileName: string;
-  fileSize: number;
-  mimeType: string;
-  uploadedBy: string;
-  uploadedAt: string;
-  description?: string;
-  tags?: string[];
-}
+import { Upload, X, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface DocumentUploadFormProps {
   patientId: string;
@@ -152,25 +139,6 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const getDocumentTypeText = (type: string): string => {
-    switch (type) {
-      case 'sgk_report':
-        return 'SGK Raporu';
-      case 'prescription':
-        return 'Reçete';
-      case 'medical_report':
-        return 'Tıbbi Rapor';
-      case 'invoice':
-        return 'Fatura';
-      case 'receipt':
-        return 'Makbuz';
-      case 'other':
-        return 'Diğer';
-      default:
-        return type;
-    }
-  };
-
   return (
     <Modal
       open={isOpen}
@@ -202,6 +170,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
               onChange={handleFileInputChange}
               accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.txt"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              data-allow-raw
             />
 
             {selectedFile ? (
@@ -260,6 +229,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
             value={documentType}
             onChange={(e) => setDocumentType(e.target.value)}
             className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.documentType ? 'border-red-300' : ''}`}
+            data-allow-raw
           >
             <option value="">Doküman türü seçin...</option>
             <option value="sgk_report">SGK Raporu</option>
@@ -279,7 +249,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Açıklama
           </label>
-          <textarea
+          <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Doküman hakkında açıklama..."
@@ -293,7 +263,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Etiketler
           </label>
-          <input
+          <Input
             type="text"
             value={tags}
             onChange={(e) => setTags(e.target.value)}

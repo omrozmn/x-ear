@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react'
+import { Button } from '@x-ear/ui-web'
 
 interface PatientCSVUploadProps {
   onUpload?: (file: File) => Promise<void>
@@ -141,18 +142,20 @@ export const PatientCSVUpload: React.FC<PatientCSVUploadProps> = ({
             accept=".csv"
             onChange={handleChange}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            data-allow-raw
           />
           
           <Upload className="mx-auto h-12 w-12 text-gray-400" />
           <div className="mt-4">
             <p className="text-sm text-gray-600">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={onButtonClick}
                 className="font-medium text-indigo-600 hover:text-indigo-500"
               >
                 Dosya seçin
-              </button>
+              </Button>
               {' '}veya sürükleyip bırakın
             </p>
             <p className="text-xs text-gray-500 mt-1">
@@ -184,12 +187,13 @@ export const PatientCSVUpload: React.FC<PatientCSVUploadProps> = ({
           <p className="text-sm text-green-600 font-medium">
             {uploadStatus.message}
           </p>
-          <button
+          <Button
             onClick={resetUpload}
+            variant="ghost"
             className="mt-3 text-sm text-gray-500 hover:text-gray-700"
           >
             Yeni dosya yükle
-          </button>
+          </Button>
         </div>
       )}
 
@@ -200,18 +204,20 @@ export const PatientCSVUpload: React.FC<PatientCSVUploadProps> = ({
             {uploadStatus.message}
           </p>
           <div className="flex justify-center space-x-3">
-            <button
+            <Button
               onClick={resetUpload}
+              variant="ghost"
               className="text-sm text-gray-500 hover:text-gray-700"
             >
               İptal
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={onButtonClick}
+              variant="ghost"
               className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
             >
               Tekrar dene
-            </button>
+            </Button>
           </div>
         </div>
       )}

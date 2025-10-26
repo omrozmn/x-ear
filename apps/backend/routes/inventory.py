@@ -85,6 +85,286 @@ def get_all_inventory():
         }), 500
 
 
+@inventory_bp.route('/search', methods=['GET'])
+def advanced_search():
+    """Advanced product search with comprehensive filtering"""
+    try:
+        # Search parameters
+        q = request.args.get('q', '').strip()
+        category = request.args.get('category')
+        brand = request.args.get('brand')
+        min_price = request.args.get('minPrice', type=float)
+        max_price = request.args.get('maxPrice', type=float)
+        in_stock = request.args.get('inStock', type=bool)
+        low_stock = request.args.get('lowStock', 'false').lower() == 'true'
+        features = request.args.get('features', '').split(',') if request.args.get('features') else []
+        supplier = request.args.get('supplier')
+        warranty_period = request.args.get('warrantyPeriod', type=int)
+        
+        # Sorting parameters
+        sort_by = request.args.get('sortBy', 'name')
+        sort_order = request.args.get('sortOrder', 'asc')
+        
+        # Pagination parameters
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 20))
+        
+        # Validate parameters
+        if page < 1:
+            page = 1
+        if limit < 1 or limit > 100:
+            limit = 20
+        
+        valid_sort_fields = ['name', 'price', 'stock', 'brand', 'category', 'createdAt']
+        if sort_by not in valid_sort_fields:
+            sort_by = 'name'
+        
+        if sort_order not in ['asc', 'desc']:
+            sort_order = 'asc'
+        
+        # Build query
+        query = Inventory.query
+        
+        # Text search across multiple fields
+        if q:
+            search_filter = db.or_(
+                Inventory.name.ilike(f'%{q}%'),
+                Inventory.brand.ilike(f'%{q}%'),
+                Inventory.model.ilike(f'%{q}%'),
+                Inventory.barcode.ilike(f'%{q}%'),
+                Inventory.description.ilike(f'%{q}%')
+            )
+            query = query.filter(search_filter)
+        
+        # Category filter
+        if category:
+            query = query.filter(Inventory.category == category)
+        
+        # Brand filter
+        if brand:
+            query = query.filter(Inventory.brand == brand)
+        
+        # Price range filter
+        if min_price is not None:
+            query = query.filter(Inventory.price >= min_price)
+        if max_price is not None:
+            query = query.filter(Inventory.price <= max_price)
+        
+        # Stock filters
+        if in_stock is not None:
+            if in_stock:
+                query = query.filter(Inventory.available_inventory > 0)
+            else:
+                query = query.filter(Inventory.available_inventory <= 0)
+        
+        if low_stock:
+            query = query.filter(Inventory.available_inventory <= Inventory.reorder_level)
+        
+        # Features filter (assuming features are stored as JSON or comma-separated)
+        if features and features[0]:  # Check if features list is not empty
+            for feature in features:
+                if feature.strip():
+                    query = query.filter(Inventory.features.ilike(f'%{feature.strip()}%'))
+        
+        # Supplier filter
+        if supplier:
+            query = query.filter(Inventory.supplier == supplier)
+        
+        # Warranty period filter
+        if warranty_period is not None:
+            query = query.filter(Inventory.warranty_period >= warranty_period)
+        
+        # Apply sorting
+        sort_column = getattr(Inventory, sort_by, Inventory.name)
+        if sort_order == 'desc':
+            query = query.order_by(sort_column.desc())
+        else:
+            query = query.order_by(sort_column.asc())
+        
+        # Get total count before pagination
+        total_count = query.count()
+        
+        # Apply pagination
+        offset = (page - 1) * limit
+        items = query.offset(offset).limit(limit).all()
+        
+        # Calculate pagination metadata
+        total_pages = (total_count + limit - 1) // limit
+        
+        # Get filter options for frontend
+        categories = db.session.query(Inventory.category).distinct().filter(
+            Inventory.category.isnot(None)
+        ).all()
+        brands = db.session.query(Inventory.brand).distinct().filter(
+            Inventory.brand.isnot(None)
+        ).all()
+        suppliers = db.session.query(Inventory.supplier).distinct().filter(
+            Inventory.supplier.isnot(None)
+        ).all()
+        
+        # Get price range
+        price_stats = db.session.query(
+            db.func.min(Inventory.price),
+            db.func.max(Inventory.price)
+        ).first()
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'items': [item.to_dict() for item in items],
+                'pagination': {
+                    'page': page,
+                    'limit': limit,
+                    'total': total_count,
+                    'totalPages': total_pages
+                },
+                'filters': {
+                    'categories': [cat[0] for cat in categories if cat[0]],
+                    'brands': [brand[0] for brand in brands if brand[0]],
+                    'suppliers': [sup[0] for sup in suppliers if sup[0]],
+                    'priceRange': {
+                        'min': float(price_stats[0]) if price_stats[0] else 0,
+                        'max': float(price_stats[1]) if price_stats[1] else 0
+                    }
+                }
+            },
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 500
+
+
+@inventory_bp.route('/categories_old', methods=['GET'])
+def get_categories_old():
+    """Get all available product categories with counts"""
+    try:
+        # Get categories with item counts
+        categories = db.session.query(
+            Inventory.category,
+            db.func.count(Inventory.id).label('count')
+        ).filter(
+            Inventory.category.isnot(None)
+        ).group_by(Inventory.category).all()
+        
+        category_list = []
+        for category, count in categories:
+            if category and category.strip():
+                category_list.append({
+                    'id': category.lower().replace(' ', '_'),
+                    'name': category,
+                    'count': count,
+                    'description': f'{count} items in {category}'
+                })
+        
+        return jsonify({
+            'success': True,
+            'data': category_list,
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 500
+
+
+@inventory_bp.route('/brands_old', methods=['GET'])
+def get_brands_old():
+    """Get all available product brands with counts and categories"""
+    try:
+        # Get brands with item counts and associated categories
+        brands_data = db.session.query(
+            Inventory.brand,
+            Inventory.category,
+            db.func.count(Inventory.id).label('count')
+        ).filter(
+            Inventory.brand.isnot(None)
+        ).group_by(Inventory.brand, Inventory.category).all()
+        
+        # Organize brands with their categories
+        brands_dict = {}
+        for brand, category, count in brands_data:
+            if brand and brand.strip():
+                if brand not in brands_dict:
+                    brands_dict[brand] = {
+                        'name': brand,
+                        'count': 0,
+                        'categories': []
+                    }
+                brands_dict[brand]['count'] += count
+                if category and category not in brands_dict[brand]['categories']:
+                    brands_dict[brand]['categories'].append(category)
+        
+        brand_list = list(brands_dict.values())
+        
+        return jsonify({
+            'success': True,
+            'data': brand_list,
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 500
+
+
+@inventory_bp.route('/features', methods=['GET'])
+def get_features():
+    """Get all available product features with counts"""
+    try:
+        # Get all items with features
+        items_with_features = db.session.query(Inventory.features, Inventory.category).filter(
+            Inventory.features.isnot(None)
+        ).all()
+        
+        features_dict = {}
+        for features_str, category in items_with_features:
+            if features_str and features_str.strip():
+                # Split features by comma and process each
+                feature_list = [f.strip() for f in features_str.split(',') if f.strip()]
+                for feature in feature_list:
+                    if feature not in features_dict:
+                        features_dict[feature] = {
+                            'name': feature,
+                            'count': 0,
+                            'category': category
+                        }
+                    features_dict[feature]['count'] += 1
+        
+        feature_list = list(features_dict.values())
+        
+        return jsonify({
+            'success': True,
+            'data': feature_list,
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': str(uuid4()),
+            'timestamp': now_utc().isoformat()
+        }), 500
+
+
 @inventory_bp.route('/brands', methods=['GET'])
 def get_brands():
     """Get available brands from inventory"""

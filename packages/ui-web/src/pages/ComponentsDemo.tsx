@@ -20,7 +20,7 @@ import {
   Plus,
   Settings
 } from 'lucide-react';
-import type { Column, TableAction, BulkAction, FormField, FormSection } from '../components';
+import type { Column, TableAction, BulkAction, DynamicFormField, DynamicFormSection } from '../components';
 
 // Sample data for DataTable
 const samplePatients = [
@@ -142,7 +142,7 @@ const ComponentsDemo: React.FC = () => {
   ];
 
   // Form fields for DynamicForm demo
-  const formFields: FormField[] = [
+  const formFields: DynamicFormField[] = [
     {
       name: 'firstName',
       label: 'Ad',
@@ -202,7 +202,7 @@ const ComponentsDemo: React.FC = () => {
     },
   ];
 
-  const formSections: FormSection[] = [
+  const formSections: DynamicFormSection[] = [
     {
       title: 'Kişisel Bilgiler',
       description: 'Temel kişisel bilgilerinizi girin',

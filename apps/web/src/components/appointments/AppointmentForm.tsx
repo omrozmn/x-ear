@@ -1,4 +1,4 @@
-import { Button, Input, Textarea } from '@x-ear/ui-web';
+import { Button, Input, Textarea, Select } from '@x-ear/ui-web';
 import React, { useState, useEffect } from 'react';
 import { Appointment, CreateAppointmentData, UpdateAppointmentData, AppointmentType, AppointmentStatus } from '../../types/appointment';
 import { useAppointments } from '../../hooks/useAppointments';
@@ -241,24 +241,21 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Hasta *
             </label>
-            <select
+            <Select
               value={formData.patientId}
               onChange={(e) => handleInputChange('patientId', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.patientId ? 'border-red-300' : 'border-gray-300'
-              }`}
-              disabled={!!patientId} // Disable if patientId is provided as prop
-            >
-              <option value="">Hasta seçiniz</option>
-              {patients.map(patient => (
-                <option key={patient.id} value={patient.id}>
-                  {patient.firstName && patient.lastName 
+              options={[
+                { value: '', label: 'Hasta seçiniz' },
+                ...patients.map(patient => ({
+                  value: patient.id,
+                  label: patient.firstName && patient.lastName 
                     ? `${patient.firstName} ${patient.lastName}` 
                     : `${patient.firstName || patient.lastName || 'İsimsiz Hasta'}`
-                  } - {patient.phone || 'Telefon yok'}
-                </option>
-              ))}
-            </select>
+                }))
+              ]}
+              className={`w-full ${errors.patientId ? 'border-red-300' : ''}`}
+              disabled={!!patientId} // Disable if patientId is provided as prop
+            />
             {errors.patientId && (
               <p className="mt-1 text-sm text-red-600">{errors.patientId}</p>
             )}
@@ -326,23 +323,22 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Randevu Türü *
             </label>
-            <select
+            <Select
               value={formData.type}
               onChange={(e) => handleInputChange('type', e.target.value as AppointmentType)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.type ? 'border-red-300' : 'border-gray-300'
-              }`}
-            >
-              <option value="consultation">Konsültasyon</option>
-              <option value="follow_up">Kontrol Muayenesi</option>
-              <option value="trial">Deneme Başlangıç</option>
-              <option value="delivery">Cihaz Teslimi</option>
-              <option value="control_visit">Kontrol Ziyareti</option>
-              <option value="battery_renewal">Pil Yenileme</option>
-              <option value="repair">Tamir</option>
-              <option value="fitting">Cihaz Ayarı</option>
-              <option value="assessment">Değerlendirme</option>
-            </select>
+              options={[
+                { value: 'consultation', label: 'Konsültasyon' },
+                { value: 'follow_up', label: 'Kontrol Muayenesi' },
+                { value: 'trial', label: 'Deneme Başlangıç' },
+                { value: 'delivery', label: 'Cihaz Teslimi' },
+                { value: 'control_visit', label: 'Kontrol Ziyareti' },
+                { value: 'battery_renewal', label: 'Pil Yenileme' },
+                { value: 'repair', label: 'Tamir' },
+                { value: 'fitting', label: 'Cihaz Ayarı' },
+                { value: 'assessment', label: 'Değerlendirme' }
+              ]}
+              className={`w-full ${errors.type ? 'border-red-300' : ''}`}
+            />
             {errors.type && (
               <p className="mt-1 text-sm text-red-600">{errors.type}</p>
             )}
@@ -353,18 +349,19 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Durum
             </label>
-            <select
+            <Select
               value={formData.status}
               onChange={(e) => handleInputChange('status', e.target.value as AppointmentStatus)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="scheduled">Planlandı</option>
-              <option value="confirmed">Onaylandı</option>
-              <option value="completed">Tamamlandı</option>
-              <option value="cancelled">İptal Edildi</option>
-              <option value="no_show">Gelmedi</option>
-              <option value="rescheduled">Ertelendi</option>
-            </select>
+              options={[
+                { value: 'scheduled', label: 'Planlandı' },
+                { value: 'confirmed', label: 'Onaylandı' },
+                { value: 'completed', label: 'Tamamlandı' },
+                { value: 'cancelled', label: 'İptal Edildi' },
+                { value: 'no_show', label: 'Gelmedi' },
+                { value: 'rescheduled', label: 'Ertelendi' }
+              ]}
+              className="w-full"
+            />
           </div>
 
           {/* Title */}

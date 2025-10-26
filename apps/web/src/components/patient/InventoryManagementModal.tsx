@@ -25,11 +25,16 @@ export interface InventoryItem {
   totalStock: number;
   availableStock: number;
   assignedStock: number;
+  onTrialStock: number;
+  defectiveStock: number;
   price: number;
   listPrice: number;
   sgkPrice: number;
   warrantyPeriod: number;
   isActive: boolean;
+  supplier?: string;
+  supplierId?: string;
+  ear?: 'left' | 'right' | 'both';
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -49,6 +54,10 @@ interface InventoryFormData {
   category: string;
   type: string;
   totalStock: number;
+  availableStock: number;
+  assignedStock: number;
+  onTrialStock: number;
+  defectiveStock: number;
   price: number;
   listPrice: number;
   sgkPrice: number;
@@ -94,6 +103,10 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
     category: '',
     type: '',
     totalStock: 0,
+    availableStock: 0,
+    assignedStock: 0,
+    onTrialStock: 0,
+    defectiveStock: 0,
     price: 0,
     listPrice: 0,
     sgkPrice: 0,
@@ -140,8 +153,10 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
           type: 'behind_ear',
           serialNumbers: ['AT001', 'AT002', 'AT003'],
           totalStock: 15,
-          availableStock: 12,
+          availableStock: 10,
           assignedStock: 3,
+          onTrialStock: 2,
+          defectiveStock: 0,
           price: 2500,
           listPrice: 3000,
           sgkPrice: 2200,
@@ -160,8 +175,10 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
           type: 'internal',
           serialNumbers: ['CC001', 'CC002'],
           totalStock: 8,
-          availableStock: 6,
+          availableStock: 4,
           assignedStock: 2,
+          onTrialStock: 2,
+          defectiveStock: 0,
           price: 15000,
           listPrice: 18000,
           sgkPrice: 14000,
@@ -246,8 +263,6 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
         id: Date.now().toString(),
         ...formData,
         serialNumbers: [],
-        availableStock: formData.totalStock,
-        assignedStock: 0,
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -333,6 +348,10 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
       category: '',
       type: '',
       totalStock: 0,
+      availableStock: 0,
+      assignedStock: 0,
+      onTrialStock: 0,
+      defectiveStock: 0,
       price: 0,
       listPrice: 0,
       sgkPrice: 0,
@@ -351,6 +370,10 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
       category: item.category,
       type: item.type,
       totalStock: item.totalStock,
+      availableStock: item.availableStock,
+      assignedStock: item.assignedStock,
+      onTrialStock: item.onTrialStock || 0,
+      defectiveStock: item.defectiveStock || 0,
       price: item.price,
       listPrice: item.listPrice,
       sgkPrice: item.sgkPrice,
@@ -396,9 +419,15 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
   ];
 
   const getStockStatus = (item: InventoryItem) => {
-    const stockPercentage = (item.availableStock / item.totalStock) * 100;
+    const availableForSale = item.availableStock - (item.onTrialStock || 0);
+    const stockPercentage = (availableForSale / item.totalStock) * 100;
+    
+    if (item.onTrialStock > 0 && item.onTrialStock >= item.availableStock) {
+      return { color: 'text-blue-600', label: 'All on Trial' };
+    }
     if (stockPercentage <= 10) return { color: 'text-red-600', label: 'Critical' };
     if (stockPercentage <= 25) return { color: 'text-yellow-600', label: 'Low' };
+    if (item.onTrialStock > 0) return { color: 'text-blue-600', label: 'Some on Trial' };
     return { color: 'text-green-600', label: 'Good' };
   };
 
@@ -531,6 +560,15 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                          <div className="space-y-1">
                            <div className="text-sm">
                              <span className="font-medium">Available:</span> {item.availableStock}
+                           </div>
+                           <div className="text-sm">
+                             <span className="font-medium">Assigned:</span> {item.assignedStock}
+                           </div>
+                           <div className="text-sm">
+                             <span className="font-medium">On Trial:</span> {item.onTrialStock || 0}
+                           </div>
+                           <div className="text-sm">
+                             <span className="font-medium">Defective:</span> {item.defectiveStock || 0}
                            </div>
                            <div className="text-sm">
                              <span className="font-medium">Total:</span> {item.totalStock}

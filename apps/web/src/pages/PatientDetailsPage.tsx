@@ -26,6 +26,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useGlobalError } from '../components/GlobalErrorHandler';
 import { PATIENT_DETAILS_TAB_LEGACY } from '../constants/storage-keys';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
+import { Button } from '@x-ear/ui-web';
 
 export const PatientDetailsPage: React.FC = () => {
   const { patientId } = useParams({ strict: false }) as { patientId?: string };
@@ -199,6 +200,7 @@ export const PatientDetailsPage: React.FC = () => {
               activeTab={activeTab}
               isLoading={isLoading}
               tabCounts={tabCounts}
+              sales={sales}
             />
           </ErrorBoundary>
         </div>
@@ -210,13 +212,14 @@ export const PatientDetailsPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header with back button */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <button
+        <Button
           onClick={handleGoBack}
+          variant="ghost"
           className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Hasta Listesine Dön
-        </button>
+        </Button>
       </div>
       {renderContent()}
     </div>

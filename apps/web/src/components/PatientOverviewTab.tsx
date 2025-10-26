@@ -2,8 +2,6 @@ import React from 'react';
 import { Patient } from '../types/patient';
 import {
   User,
-  Phone,
-  Mail,
   MapPin,
   Tag,
   AlertCircle,

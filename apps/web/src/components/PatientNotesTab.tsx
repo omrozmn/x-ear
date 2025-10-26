@@ -1,10 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { usePatientNotes } from '../hooks/patient/usePatientNotes';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
-import { ErrorBoundary } from './common/ErrorBoundary';
 import { PatientNoteForm } from './forms/PatientNoteForm';
 import { FileText, AlertCircle, Plus, Search, Filter } from 'lucide-react';
-import { Button } from './ui/Button';
+import { Button, Input, Select } from '@x-ear/ui-web';
 import { patientApiService } from '../services/patient/patient-api.service';
 
 interface PatientNotesTabProps {
@@ -142,11 +141,6 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({
     );
   }
 
-  const handleNoteClick = (note: any) => {
-    // TODO: Implement note detail modal or navigation
-    console.log('Note clicked:', note);
-  };
-
   const handleAddNote = () => {
     setShowNoteForm(true);
   };
@@ -155,7 +149,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({
     setShowNoteForm(false);
   };
 
-  const handleNoteSave = async (noteData: any) => {
+  const handleNoteSave = async (noteData: Record<string, unknown>) => {
     setIsSubmitting(true);
     try {
       await patientApiService.createNote(patientId, noteData);
@@ -198,13 +192,13 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({
             </label>
             <div className="relative mt-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
-              <input
+              <Input
                 type="text"
                 id="search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Başlık, içerik veya etiket ara..."
-                className="pl-10 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="pl-10"
               />
             </div>
           </div>
@@ -212,52 +206,46 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({
             <label htmlFor="noteType" className="block text-sm font-medium text-gray-700">
               Not Türü
             </label>
-            <select
+            <Select
               id="noteType"
               value={noteTypeFilter}
               onChange={(e) => setNoteTypeFilter(e.target.value)}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="">Tümü</option>
-              {noteTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
+              options={[
+                { value: '', label: 'Tümü' },
+                ...noteTypes.map(type => ({ value: type, label: type }))
+              ]}
+            />
           </div>
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-gray-700">
               Kategori
             </label>
-            <select
+            <Select
               id="category"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="">Tümü</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+              options={[
+                { value: '', label: 'Tümü' },
+                ...categories.map(cat => ({ value: cat, label: cat }))
+              ]}
+            />
           </div>
           <div>
             <label htmlFor="dateRange" className="block text-sm font-medium text-gray-700">
               Tarih Aralığı
             </label>
             <div className="grid grid-cols-2 gap-2 mt-1">
-              <input
+              <Input
                 type="date"
                 id="startDate"
                 value={dateRange.start}
                 onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
-              <input
+              <Input
                 type="date"
                 id="endDate"
                 value={dateRange.end}
                 onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>
           </div>

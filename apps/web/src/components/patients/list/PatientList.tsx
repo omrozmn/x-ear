@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Patient } from '@/types/patient';
+import { Button } from '@x-ear/ui-web';
 
 interface PatientListProps {
   patients: Patient[];
@@ -60,12 +61,12 @@ export function PatientList({ patients }: PatientListProps) {
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button className="text-indigo-600 hover:text-indigo-900 mr-3">
+                <Button variant="ghost" className="text-indigo-600 hover:text-indigo-900 mr-3">
                   Düzenle
-                </button>
-                <button className="text-red-600 hover:text-red-900">
+                </Button>
+                <Button variant="ghost" className="text-red-600 hover:text-red-900">
                   Sil
-                </button>
+                </Button>
               </td>
             </tr>
           ))}

@@ -1,9 +1,5 @@
 import React from 'react';
 import { Patient } from '../types/patient';
-import { PatientDeviceCard } from './patient/PatientDeviceCard';
-import { PatientSaleCard } from './patient/PatientSaleCard';
-import { PatientTimelineCard } from './patient/PatientTimelineCard';
-import { PatientDocumentCard } from './patient/PatientDocumentCard';
 import { PatientOverviewTab } from './PatientOverviewTab';
 import { PatientDevicesTab } from './PatientDevicesTab';
 import { PatientSalesTab } from './PatientSalesTab';
@@ -12,6 +8,7 @@ import { PatientDocumentsTab } from './PatientDocumentsTab';
 import { PatientAppointmentsTab } from './PatientAppointmentsTab';
 import { PatientHearingTestsTab } from './PatientHearingTestsTab';
 import { PatientNotesTab } from './PatientNotesTab';
+import { PatientSGKTab } from './PatientSGKTab';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { ErrorBoundary } from './common/ErrorBoundary';
 import { Clock } from 'lucide-react';interface PatientTabContentProps {
@@ -24,13 +21,15 @@ import { Clock } from 'lucide-react';interface PatientTabContentProps {
     timeline: number;
     documents: number;
   };
+  sales?: any[];
 }
 
 export const PatientTabContent: React.FC<PatientTabContentProps> = ({ 
   activeTab, 
   patient, 
   isLoading,
-  tabCounts 
+  tabCounts,
+  sales 
 }) => {
   if (isLoading || !patient) {
     return (
@@ -39,15 +38,6 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
       </div>
     );
   }
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Belirtilmemiş';
-    return new Date(dateString).toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
 
   const renderComingSoon = (tabName: string) => (
     <div className="p-6 text-center">
@@ -84,6 +74,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
           <PatientSalesTab
             patientId={patient?.id || ''}
             tabCount={tabCounts?.sales}
+            sales={sales}
           />
         </ErrorBoundary>
       );
@@ -121,6 +112,12 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
       return (
         <ErrorBoundary>
           <PatientNotesTab patientId={patient?.id || ''} />
+        </ErrorBoundary>
+      );
+    case 'sgk':
+      return (
+        <ErrorBoundary>
+          <PatientSGKTab patientId={patient?.id || ''} />
         </ErrorBoundary>
       );
     case 'settings':

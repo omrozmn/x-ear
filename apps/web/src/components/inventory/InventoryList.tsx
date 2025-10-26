@@ -2,9 +2,10 @@ import { Button } from '@x-ear/ui-web';
 import React, { useState, useEffect, useMemo } from 'react';
 import { InventoryItem, InventoryFilters, InventoryStatus } from '../../types/inventory';
 import { inventoryService } from '../../services/inventory.service';
+import { SearchHighlight } from '../common/SearchHighlight';
 
 interface InventoryListProps {
-  filters?: InventoryFilters;
+  filters?: InventoryFilters & { enableFuzzySearch?: boolean; maxResults?: number };
   onItemSelect?: (item: InventoryItem) => void;
   onItemEdit?: (item: InventoryItem) => void;
   onItemDelete?: (item: InventoryItem) => void;
@@ -203,9 +204,19 @@ export const InventoryList: React.FC<InventoryListProps> = ({
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        <SearchHighlight 
+                          text={item.name} 
+                          searchTerm={filters.search || ''} 
+                        />
+                      </div>
                       {item.model && (
-                        <div className="text-sm text-gray-500">{item.model}</div>
+                        <div className="text-sm text-gray-500">
+                          <SearchHighlight 
+                            text={item.model} 
+                            searchTerm={filters.search || ''} 
+                          />
+                        </div>
                       )}
                     </div>
                   </div>
@@ -214,7 +225,10 @@ export const InventoryList: React.FC<InventoryListProps> = ({
                   {item.category}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {item.brand}
+                  <SearchHighlight 
+                    text={item.brand} 
+                    searchTerm={filters.search || ''} 
+                  />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <div className="flex items-center">

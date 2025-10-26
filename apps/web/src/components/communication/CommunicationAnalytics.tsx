@@ -14,7 +14,7 @@ import {
   Download,
   RefreshCw
 } from 'lucide-react';
-import { Card, Button, Badge } from '@x-ear/ui-web';
+import { Card, Button, Badge, Select } from '@x-ear/ui-web';
 
 interface CommunicationStats {
   totalMessages: number;
@@ -276,16 +276,16 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
         </div>
         
         <div className="flex items-center space-x-3">
-          <select
+          <Select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value as '7d' | '30d' | '90d' | 'custom')}
-            className="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="7d">Son 7 Gün</option>
-            <option value="30d">Son 30 Gün</option>
-            <option value="90d">Son 90 Gün</option>
-            <option value="custom">Özel</option>
-          </select>
+            options={[
+              { value: '7d', label: 'Son 7 Gün' },
+              { value: '30d', label: 'Son 30 Gün' },
+              { value: '90d', label: 'Son 90 Gün' },
+              { value: 'custom', label: 'Özel' }
+            ]}
+          />
           
           <Button
             variant="outline"
@@ -347,15 +347,15 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Mesaj Hacmi Trendi</h3>
-            <select
+            <Select
               value={selectedMetric}
               onChange={(e) => setSelectedMetric(e.target.value as 'volume' | 'delivery' | 'cost')}
-              className="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="volume">Hacim</option>
-              <option value="delivery">Teslimat</option>
-              <option value="cost">Maliyet</option>
-            </select>
+              options={[
+                { value: 'volume', label: 'Hacim' },
+                { value: 'delivery', label: 'Teslimat' },
+                { value: 'cost', label: 'Maliyet' }
+              ]}
+            />
           </div>
           
           {/* Simple Chart Placeholders */}

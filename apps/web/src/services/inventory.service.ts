@@ -19,6 +19,8 @@ import {
 } from '../types/inventory';
 import { INVENTORY_DATA } from '../constants/storage-keys';
 import { outbox } from '../utils/outbox';
+import { searchProducts, FuzzySearchResult } from '../utils/fuzzy-search';
+import { searchAnalytics } from '../utils/search-analytics';
 
 export class InventoryService {
   private storageKey = INVENTORY_DATA;
@@ -180,20 +182,61 @@ export class InventoryService {
   }
 
   // Search and Filter
-  async searchItems(filters: InventoryFilters): Promise<InventorySearchResult> {
+  async searchItems(filters: InventoryFilters & { enableFuzzySearch?: boolean; maxResults?: number }): Promise<InventorySearchResult> {
+    const startTime = performance.now();
     const allItems = this.loadInventory();
     let filteredItems = [...allItems];
 
-    // Apply filters
+    // Apply search filter with fuzzy search support
     if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      filteredItems = filteredItems.filter(item =>
-        item.name.toLowerCase().includes(searchTerm) ||
-        item.brand.toLowerCase().includes(searchTerm) ||
-        item.model?.toLowerCase().includes(searchTerm) ||
-        item.supplier?.toLowerCase().includes(searchTerm) ||
-        item.barcode?.toLowerCase().includes(searchTerm)
-      );
+      if (filters.enableFuzzySearch) {
+        // Use fuzzy search for better matching
+        const fuzzyResults = searchProducts(filters.search, allItems, {
+          maxResults: filters.maxResults || 50,
+          threshold: 0.3,
+          enablePhonetic: true,
+          enableTypoTolerance: true,
+          weights: {
+            name: 0.4,
+            brand: 0.3,
+            model: 0.2,
+            barcode: 0.1
+          }
+        });
+        
+        // Extract items from fuzzy search results and maintain order by relevance
+        filteredItems = fuzzyResults.map(result => result.item as InventoryItem);
+        
+        // Track search analytics
+        const executionTime = performance.now() - startTime;
+        searchAnalytics.trackSearch({
+          query: filters.search,
+          resultCount: filteredItems.length,
+          searchType: 'fuzzy',
+          executionTime,
+          context: 'inventory'
+        });
+      } else {
+        // Fallback to basic string matching
+        const searchTerm = filters.search.toLowerCase();
+        filteredItems = filteredItems.filter(item =>
+          item.name.toLowerCase().includes(searchTerm) ||
+          item.brand.toLowerCase().includes(searchTerm) ||
+          item.model?.toLowerCase().includes(searchTerm) ||
+          item.supplier?.toLowerCase().includes(searchTerm) ||
+          item.barcode?.toLowerCase().includes(searchTerm)
+        );
+        
+        // Track search analytics
+        const executionTime = performance.now() - startTime;
+        searchAnalytics.trackSearch({
+          query: filters.search,
+          resultCount: filteredItems.length,
+          searchType: 'basic',
+          executionTime,
+          context: 'inventory'
+        });
+      }
     }
 
     if (filters.category) {

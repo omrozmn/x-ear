@@ -53,7 +53,7 @@ export function AppointmentsPage() {
       <AppointmentFormModal
         open={open}
         onClose={close}
-        onSubmit={(data) => {
+        onSubmit={async (data) => {
           // TODO: wire create/update
           console.log('submit', data);
           close();

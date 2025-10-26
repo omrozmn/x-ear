@@ -593,3 +593,43 @@ def get_patient_devices(patient_id):
             'error': str(e),
             'timestamp': datetime.now().isoformat()
         }), 500
+
+
+@patients_bp.route('/patients/<patient_id>/sales', methods=['GET'])
+def get_patient_sales(patient_id):
+    """Get all sales for a specific patient"""
+    try:
+        from models.sales import Sale
+        
+        # Get patient to verify existence
+        patient = db.session.get(Patient, patient_id)
+        if not patient:
+            return jsonify({
+                'success': False,
+                'error': 'Patient not found',
+                'timestamp': datetime.now().isoformat()
+            }), 404
+        
+        # Get all sales for this patient
+        sales = Sale.query.filter_by(patient_id=patient_id).order_by(Sale.sale_date.desc()).all()
+        
+        sales_data = [sale.to_dict() for sale in sales]
+        
+        return jsonify({
+            'success': True,
+            'data': sales_data,
+            'meta': {
+                'patientId': patient_id,
+                'patientName': f"{patient.first_name} {patient.last_name}",
+                'salesCount': len(sales_data)
+            },
+            'timestamp': datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Get patient sales error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500

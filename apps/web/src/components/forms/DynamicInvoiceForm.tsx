@@ -14,6 +14,7 @@ import { INVOICE_FORM_SCHEMA } from '../../data/invoice-schema';
 interface DynamicInvoiceFormProps {
   onSubmit: (data: InvoiceFormData) => void;
   onValidationChange?: (result: InvoiceFormValidationResult) => void;
+  onFormDataChange?: (data: InvoiceFormData) => void;
   initialData?: Partial<InvoiceFormData>;
   disabled?: boolean;
   className?: string;
@@ -31,6 +32,7 @@ interface InvoiceItem {
 export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
   onSubmit,
   onValidationChange,
+  onFormDataChange,
   initialData = {},
   disabled = false,
   className = ''
@@ -329,6 +331,17 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
   useEffect(() => {
     validateForm();
   }, [formData, items, visibleSections]);
+
+  // Call onFormDataChange when form data changes
+  useEffect(() => {
+    if (onFormDataChange) {
+      const submitData: InvoiceFormData = {
+        ...formData,
+        items: items.filter(item => item.description.trim() !== '')
+      };
+      onFormDataChange(submitData);
+    }
+  }, [formData, items, onFormDataChange]);
 
   // Render field based on type
   const renderField = (section: InvoiceFieldSection, field: InvoiceFieldDefinition) => {

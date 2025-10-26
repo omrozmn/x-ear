@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useState } from 'react';
-import { Button } from '@x-ear/ui-web';
+import { Button, Card, CardContent, Badge } from '@x-ear/ui-web';
 import DocumentUploadModal from '@/components/sgk/DocumentUploadModal';
 import { useSgkDocuments, useDeleteSgkDocument } from '@/hooks/sgk/useSgkDocuments';
 
@@ -28,30 +28,34 @@ export default function DocumentList({ patientId }: Props) {
       {!isLoading && docs.length === 0 && <div>No documents found.</div>}
 
       {!isLoading && docs.length > 0 && (
-        <ul className="space-y-2">
+        <div className="space-y-2">
           {docs.map((d: any) => (
-            <li key={d.id} className="flex items-center justify-between p-2 border rounded">
-              <div>
-                <div className="font-medium">{d.name || d.filename || 'Document'}</div>
-                <div className="text-sm text-gray-500">{d.createdAt || d.created_at || ''}</div>
-                {d.status === 'queued' && (
-                  <div className="mt-1 inline-block px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">Queued</div>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <a href={d.url || d.downloadUrl} target="_blank" rel="noreferrer">
-                  <Button variant="ghost">Open</Button>
-                </a>
-                <Button
-                  variant="danger"
-                  onClick={() => deleteMutation.mutate({ id: d.id, idempotencyKey: `${Date.now()}-${Math.random()}` })}
-                >
-                  Delete
-                </Button>
-              </div>
-            </li>
+            <Card key={d.id}>
+              <CardContent className="flex items-center justify-between p-4">
+                <div>
+                  <div className="font-medium">{d.name || d.filename || 'Document'}</div>
+                  <div className="text-sm text-gray-500">{d.createdAt || d.created_at || ''}</div>
+                  {d.status === 'queued' && (
+                    <Badge variant="warning" className="mt-1">
+                      Queued
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <a href={d.url || d.downloadUrl} target="_blank" rel="noreferrer">
+                    <Button variant="ghost">Open</Button>
+                  </a>
+                  <Button
+                    variant="danger"
+                    onClick={() => deleteMutation.mutate({ id: d.id, idempotencyKey: `${Date.now()}-${Math.random()}` })}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           ))}
-        </ul>
+        </div>
       )}
 
       <DocumentUploadModal

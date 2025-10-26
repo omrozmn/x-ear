@@ -88,6 +88,7 @@ export const AUTOMATION_LOGS = 'x-ear.automation.logs@v1' // Legacy: automationL
 export const INVENTORY_DATA = 'x-ear.inventory.data@v1' // Legacy: inventoryData, xear_crm_inventory
 export const INVOICES_DATA = 'x-ear.invoices.data@v1' // Legacy: invoices, xear_invoices
 export const PURCHASES_DATA = 'x-ear.purchases.data@v1' // Purchase invoices data
+export const PATIENT_SALES_DATA = 'x-ear.patients.salesData@v1' // Patient sales data cache
 export const SAVED_VIEWS = 'x-ear.patients.savedViews@v1' // Legacy: xear_saved_views
 export const OCR_DYNAMIC_NAMES = 'x-ear.ocr.dynamicNames@v1' // Legacy: ocrDynamicNames
 export const CURRENT_USER = 'x-ear.auth.currentUser@v1' // Legacy: currentUser, currentUserId
@@ -145,6 +146,7 @@ export const ALL_STORAGE_KEYS = [
   INVENTORY_DATA,
   INVOICES_DATA,
   PURCHASES_DATA,
+  PATIENT_SALES_DATA,
   SAVED_VIEWS,
   OCR_DYNAMIC_NAMES,
   CURRENT_USER,

@@ -107,7 +107,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient, isLoading
                       return address;
                     } else if (typeof address === 'object' && address !== null) {
                       // Handle address object with city, district, fullAddress
-                      const addressObj = address as any;
+                      const addressObj = address as { fullAddress?: string; district?: string; city?: string };
                       return addressObj.fullAddress || 
                              `${addressObj.district || ''} ${addressObj.city || ''}`.trim() ||
                              'Adres bilgisi yok';

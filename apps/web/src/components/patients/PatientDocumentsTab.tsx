@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Badge } from '@x-ear/ui-web';
+import { Button, Input, Select, Badge } from '@x-ear/ui-web';
 import { Card, CardContent } from '@x-ear/ui-web';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { Upload, Eye, Download, Trash2, FileText, X, AlertCircle, CheckCircle, Clock, Search } from 'lucide-react';
@@ -409,16 +409,16 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Belge Türü
                   </label>
-                  <select 
+                  <Select
                     value={selectedDocumentType}
                     onChange={(e) => setSelectedDocumentType(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="other">Diğer</option>
-                    <option value="sgk">SGK Belgesi</option>
-                    <option value="medical">Tıbbi Rapor</option>
-                    <option value="invoice">Fatura</option>
-                  </select>
+                    options={[
+                      { value: 'other', label: 'Diğer' },
+                      { value: 'sgk', label: 'SGK Belgesi' },
+                      { value: 'medical', label: 'Tıbbi Rapor' },
+                      { value: 'invoice', label: 'Fatura' }
+                    ]}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -483,17 +483,17 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
             className="pl-10"
           />
         </div>
-        <select
+        <Select
           value={selectedDocumentType}
           onChange={(e) => setSelectedDocumentType(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all">Tümü</option>
-          <option value="sgk">SGK</option>
-          <option value="medical">Tıbbi</option>
-          <option value="invoice">Fatura</option>
-          <option value="other">Diğer</option>
-        </select>
+          options={[
+            { value: 'all', label: 'Tümü' },
+            { value: 'sgk', label: 'SGK' },
+            { value: 'medical', label: 'Tıbbi' },
+            { value: 'invoice', label: 'Fatura' },
+            { value: 'other', label: 'Diğer' }
+          ]}
+        />
       </div>
 
       {/* Documents Grid */}

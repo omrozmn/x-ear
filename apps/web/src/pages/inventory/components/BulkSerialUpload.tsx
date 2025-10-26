@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Button, Card } from '@x-ear/ui-web';
+import { Button, Card, Textarea, Input } from '@x-ear/ui-web';
 import Papa from 'papaparse';
 
 interface BulkSerialUploadProps {
@@ -207,6 +207,7 @@ export const BulkSerialUpload: React.FC<BulkSerialUploadProps> = ({
                     accept=".csv,.txt"
                     onChange={handleFileSelect}
                     className="hidden"
+                    data-allow-raw="true"
                   />
                   <p className="text-xs text-gray-500">
                     Desteklenen formatlar: .csv, .txt
@@ -235,10 +236,10 @@ export const BulkSerialUpload: React.FC<BulkSerialUploadProps> = ({
                   Manuel Giriş
                 </h4>
                 
-                <textarea
-                  className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none"
+                <Textarea
                   placeholder="Seri numaralarını her satıra bir tane gelecek şekilde yazın veya virgülle ayırın&#10;&#10;Örnek:&#10;SN001&#10;SN002&#10;SN003"
                   onChange={(e) => handleTextInput(e.target.value)}
+                  className="resize-none"
                 />
                 
                 <p className="text-xs text-gray-500 mt-2">

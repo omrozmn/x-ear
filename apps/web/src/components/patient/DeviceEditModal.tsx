@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { PatientDevice } from '../../types/patient';
 import { Modal } from '../ui/Modal';
+import { Input, Select, Textarea, Button } from '@x-ear/ui-web';
 import {
   Search,
   Calendar,
   DollarSign,
   CreditCard,
-  Percent,
   Calculator,
   Clock,
   FileText,
-  AlertCircle,
-  CheckCircle,
-  X,
-  Plus,
-  Minus
+  CheckCircle
 } from 'lucide-react';
 
 interface DeviceEditModalProps {
@@ -31,7 +27,7 @@ interface DeviceInventoryItem {
   type: 'hearing_aid' | 'cochlear_implant' | 'bone_anchored';
   listPrice: number;
   availableSerials: string[];
-  specifications?: Record<string, any>;
+  specifications?: Record<string, string | number | boolean>;
 }
 
 interface ExtendedFormData extends Partial<PatientDevice> {
@@ -56,11 +52,11 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
   const [selectedDevice, setSelectedDevice] = useState<DeviceInventoryItem | null>(null);
   
   // SGK and pricing
-  const [sgkAmounts, setSgkAmounts] = useState({
+  const sgkAmounts = {
     hearingAid: 2500,
     cochlearImplant: 15000,
     boneAnchored: 8000
-  });
+  };
   
   // Mock device inventory
   useEffect(() => {
@@ -194,15 +190,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
     }
   };
 
-  const calculateRemainingAmount = () => {
-    const salePrice = formData.salePrice || calculateSalePrice();
-    const sgkReduction = formData.sgkReduction || 0;
-    const downPayment = formData.downPayment || 0;
-    
-    return Math.max(0, salePrice - sgkReduction - downPayment);
-  };
-
-  const handleInputChange = (field: keyof ExtendedFormData, value: any) => {
+  const handleInputChange = (field: keyof ExtendedFormData, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Clear error when user starts typing
@@ -222,9 +210,10 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
     
     if (field === 'sgkReduction') {
       const salePrice = formData.salePrice || calculateSalePrice();
+      const numericValue = typeof value === 'number' ? value : (parseFloat(value as string) || 0);
       setFormData(prev => ({
         ...prev,
-        patientPayment: Math.max(0, salePrice - (value || 0))
+        patientPayment: Math.max(0, salePrice - numericValue)
       }));
     }
   };
@@ -322,12 +311,11 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
           
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
+            <Input
               type="text"
               placeholder="Cihaz ara (marka, model)..."
               value={deviceSearch}
               onChange={(e) => setDeviceSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           
@@ -381,20 +369,18 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
             <label className="block text-sm font-medium text-gray-700">
               Seri Numarası *
             </label>
-            <select
+            <Select
               value={formData.serialNumber || ''}
-              onChange={(e) => handleInputChange('serialNumber', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.serialNumber ? 'border-red-300' : 'border-gray-300'
-              }`}
-            >
-              <option value="">Seri numarası seçin</option>
-              {selectedDevice.availableSerials.map((serial) => (
-                <option key={serial} value={serial}>
-                  {serial}
-                </option>
-              ))}
-            </select>
+              onChange={(event) => handleInputChange('serialNumber', event.target.value)}
+              options={[
+                { value: '', label: 'Seri numarası seçin' },
+                ...selectedDevice.availableSerials.map((serial) => ({
+                  value: serial,
+                  label: serial
+                }))
+              ]}
+              className={errors.serialNumber ? 'border-red-300' : ''}
+            />
             {errors.serialNumber && <p className="text-red-600 text-sm">{errors.serialNumber}</p>}
           </div>
         )}
@@ -411,6 +397,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
               { value: 'both', label: 'Bilateral', color: 'purple' }
             ].map((option) => (
               <button
+                data-allow-raw="true"
                 key={option.value}
                 type="button"
                 onClick={() => handleInputChange('ear', option.value)}
@@ -435,13 +422,11 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
             </label>
             <div className="relative">
               <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
+              <Input
                 type="date"
                 value={formData.assignedDate || ''}
                 onChange={(e) => handleInputChange('assignedDate', e.target.value)}
-                className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.assignedDate ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={errors.assignedDate ? 'border-red-300' : ''}
               />
             </div>
             {errors.assignedDate && <p className="text-red-600 text-sm">{errors.assignedDate}</p>}
@@ -451,20 +436,19 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
             <label className="block text-sm font-medium text-gray-700">
               Atama Sebebi *
             </label>
-            <select
+            <Select
               value={formData.reason || ''}
-              onChange={(e) => handleInputChange('reason', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.reason ? 'border-red-300' : 'border-gray-300'
-              }`}
-            >
-              <option value="">Sebep seçin</option>
-              <option value="new">Yeni Hasta</option>
-              <option value="replacement">Değişim</option>
-              <option value="upgrade">Yükseltme</option>
-              <option value="trial">Deneme</option>
-              <option value="warranty">Garanti</option>
-            </select>
+              onChange={(event) => handleInputChange('reason', event.target.value)}
+              options={[
+                { value: '', label: 'Sebep seçin' },
+                { value: 'new', label: 'Yeni Hasta' },
+                { value: 'replacement', label: 'Değişim' },
+                { value: 'upgrade', label: 'Yükseltme' },
+                { value: 'trial', label: 'Deneme' },
+                { value: 'warranty', label: 'Garanti' }
+              ]}
+              className={errors.reason ? 'border-red-300' : ''}
+            />
             {errors.reason && <p className="text-red-600 text-sm">{errors.reason}</p>}
           </div>
         </div>
@@ -482,6 +466,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
               { value: 'defective', label: 'Arızalı', color: 'red' }
             ].map((status) => (
               <button
+                data-allow-raw="true"
                 key={status.value}
                 type="button"
                 onClick={() => handleInputChange('status', status.value)}
@@ -505,11 +490,10 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
             </label>
             <div className="relative">
               <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
+              <Input
                 type="date"
                 value={formData.trialEndDate || ''}
                 onChange={(e) => handleInputChange('trialEndDate', e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -528,14 +512,12 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 Liste Fiyatı *
               </label>
               <div className="relative">
-                <input
+                <Input
                   type="number"
                   value={formData.listPrice || ''}
                   onChange={(e) => handleInputChange('listPrice', parseFloat(e.target.value) || 0)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.listPrice ? 'border-red-300' : 'border-gray-300'
-                  }`}
                   placeholder="0"
+                  className={errors.listPrice ? 'border-red-300' : ''}
                 />
                 <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">₺</span>
               </div>
@@ -547,14 +529,12 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 Satış Fiyatı
               </label>
               <div className="relative">
-                <input
+                <Input
                   type="number"
                   value={formData.salePrice || ''}
                   onChange={(e) => handleInputChange('salePrice', parseFloat(e.target.value) || 0)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.salePrice ? 'border-red-300' : 'border-gray-300'
-                  }`}
                   placeholder="0"
+                  className={errors.salePrice ? 'border-red-300' : ''}
                 />
                 <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">₺</span>
               </div>
@@ -568,14 +548,12 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 SGK Katkısı
               </label>
               <div className="relative">
-                <input
+                <Input
                   type="number"
                   value={formData.sgkReduction || ''}
                   onChange={(e) => handleInputChange('sgkReduction', parseFloat(e.target.value) || 0)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.sgkReduction ? 'border-red-300' : 'border-gray-300'
-                  }`}
                   placeholder="0"
+                  className={errors.sgkReduction ? 'border-red-300' : ''}
                 />
                 <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">₺</span>
               </div>
@@ -587,13 +565,13 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 Hasta Ödemesi
               </label>
               <div className="relative">
-                <input
+                <Input
                   type="number"
                   value={formData.patientPayment || ''}
                   onChange={(e) => handleInputChange('patientPayment', parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
                   placeholder="0"
                   readOnly
+                  className="bg-gray-50"
                 />
                 <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">₺</span>
               </div>
@@ -617,6 +595,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
               const Icon = method.icon;
               return (
                 <button
+                  data-allow-raw="true"
                   key={method.value}
                   type="button"
                   onClick={() => handleInputChange('paymentMethod', method.value)}
@@ -641,11 +620,10 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
           </label>
           <div className="relative">
             <FileText className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
-            <textarea
+            <Textarea
               value={formData.notes || ''}
               onChange={(e) => handleInputChange('notes', e.target.value)}
               rows={3}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               placeholder="Cihaz ataması ile ilgili notlar..."
             />
           </div>
@@ -653,19 +631,19 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
 
         {/* Form Actions */}
         <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-          <button
+          <Button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            variant="ghost"
           >
             İptal
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            variant="primary"
           >
             {device ? 'Güncelle' : 'Kaydet'}
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

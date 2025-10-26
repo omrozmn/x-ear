@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal, Button, Input } from '@x-ear/ui-web';
+import { Modal, Button, Input, FileUpload } from '@x-ear/ui-web';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,7 +13,7 @@ export default function DocumentUploadModal({ patientId, isOpen, onClose, onUplo
   const [submitting, setSubmitting] = useState(false);
   const upload = useUploadSgkDocument(patientId);
 
-  const { register, handleSubmit } = useForm({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, setValue } = useForm({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
@@ -43,7 +43,16 @@ export default function DocumentUploadModal({ patientId, isOpen, onClose, onUplo
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label className="block text-sm font-medium">File</label>
-          <Input type="file" {...register('file')} />
+          <FileUpload
+            accept="image/*,.pdf"
+            onChange={(files) => {
+              if (files && files.length > 0) {
+                setValue('file', files[0]);
+              }
+            }}
+            className="w-full"
+            description="JPEG, PNG, PDF formatlarında dosyalar"
+          />
         </div>
 
         <div className="flex items-center justify-end gap-2">

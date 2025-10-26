@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Badge, Button } from '@x-ear/ui-web';
+import { Badge, Button, Input } from '@x-ear/ui-web';
 
 interface FeatureTagInputProps {
   value: string[];
@@ -123,7 +123,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
           ))}
           
           {/* Input field */}
-          <input
+          <Input
             ref={inputRef}
             type="text"
             value={inputValue}

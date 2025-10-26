@@ -28,6 +28,8 @@ tags:
   description: Health check operations
 - name: Inventory
   description: Inventory management operations
+- name: Invoices
+  description: Invoice management operations
 - name: Notifications
   description: Notification operations
 - name: Ocr
@@ -38,6 +40,8 @@ tags:
   description: Patient timeline operations
 - name: Products
   description: Product management operations
+- name: Promissory-notes
+  description: Promissory note management operations
 - name: Reports
   description: Reporting operations
 - name: Sales
@@ -1427,6 +1431,265 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       description: Create a new inventory category
+  /api/invoices:
+    post:
+      summary: Create a new invoice
+      operationId: invoices_create_invoice
+      tags:
+      - Invoices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patient_id:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      description:
+                        type: string
+                      quantity:
+                        type: integer
+                      unit_price:
+                        type: number
+                      total:
+                        type: number
+                total_amount:
+                  type: number
+                tax_amount:
+                  type: number
+                discount_amount:
+                  type: number
+              required:
+              - patient_id
+              - items
+              - total_amount
+      responses:
+        '201':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoice_id:
+                        type: string
+                      invoice_number:
+                        type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Create a new invoice for a patient
+  /api/invoices/{invoice_id}:
+    get:
+      summary: Get invoice by ID
+      operationId: invoices_get_invoice
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoice_id:
+                        type: string
+                      invoice_number:
+                        type: string
+                      patient_id:
+                        type: string
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      total_amount:
+                        type: number
+                      tax_amount:
+                        type: number
+                      discount_amount:
+                        type: number
+                      created_at:
+                        type: string
+                        format: date-time
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve an invoice by its ID
+    delete:
+      summary: Delete invoice by ID
+      operationId: invoices_delete_invoice
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Delete an invoice by its ID
+  /api/invoices/{invoice_id}/pdf:
+    get:
+      summary: Generate invoice PDF
+      operationId: invoices_generate_invoice_pdf
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice PDF generated successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Generate and download a PDF for the specified invoice
+  /api/invoices/{invoice_id}/send-to-gib:
+    post:
+      summary: Send invoice to GİB
+      operationId: invoices_send_to_gib
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice sent to GİB successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      gib_response:
+                        type: object
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Send the invoice to GİB (Turkish Revenue Administration)
   /api/notifications:
     get:
       summary: GET /api/notifications
@@ -1691,6 +1954,45 @@ paths:
         '201':
           description: Success
       description: Create new assign-devices-extended
+  /api/patients/{patient_id}/devices:
+    get:
+      summary: Get all devices assigned to a specific patient
+      operationId: patients_get_patient_devices
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+                  meta:
+                    type: object
+                    properties:
+                      patientId:
+                        type: string
+                      patientName:
+                        type: string
+                      deviceCount:
+                        type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+      description: Get all devices assigned to a specific patient
   /api/patients/{patient_id}/ereceipts:
     post:
       summary: POST /api/patients/{patient_id}/ereceipts
@@ -1820,6 +2122,21 @@ paths:
         '204':
           description: Success
       description: Delete {note_id}
+  /api/patients/{patient_id}/promissory-notes:
+    get:
+      summary: Get all promissory notes for a patient
+      operationId: payments_get_patient_promissory_notes
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
   /api/patients/{patient_id}/sales:
     get:
       summary: GET /api/patients/{patient_id}/sales
@@ -1835,6 +2152,12 @@ paths:
       responses:
         '200':
           description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sale'
       description: Retrieve sales information
   /api/patients/{patient_id}/sgk-documents:
     get:
@@ -2173,6 +2496,63 @@ paths:
         '201':
           description: Success
       description: Create new suppliers
+  /api/promissory-notes:
+    post:
+      summary: Create multiple promissory notes
+      operationId: payments_create_promissory_notes
+      tags:
+      - Promissory-notes
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/promissory-notes/{note_id}:
+    patch:
+      summary: Update a promissory note
+      operationId: payments_update_promissory_note
+      tags:
+      - Promissory-notes
+      parameters:
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/promissory-notes/{note_id}/collect:
+    post:
+      summary: Collect payment for a promissory note (full or partial)
+      operationId: payments_collect_promissory_note
+      tags:
+      - Promissory-notes
+      parameters:
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
   /api/register-phone:
     post:
       summary: POST /api/register-phone
@@ -2400,6 +2780,178 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaymentRecord'
       description: Create new payment-plan
+  /api/sales/{sale_id}/promissory-notes:
+    get:
+      summary: Get all promissory notes for a specific sale
+      operationId: payments_get_sale_promissory_notes
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/sales/{sale_id}/invoice:
+    post:
+      summary: Create invoice for sale
+      operationId: sales_create_sale_invoice
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                invoice_type:
+                  type: string
+                  enum: [standard, proforma]
+                additional_notes:
+                  type: string
+      responses:
+        '201':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoice_id:
+                        type: string
+                      invoice_number:
+                        type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Sale not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Create an invoice for the specified sale
+    get:
+      summary: Get invoice for sale
+      operationId: sales_get_sale_invoice
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoice_id:
+                        type: string
+                      invoice_number:
+                        type: string
+                      sale_id:
+                        type: string
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      total_amount:
+                        type: number
+                      tax_amount:
+                        type: number
+                      created_at:
+                        type: string
+                        format: date-time
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Sale or invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve the invoice for the specified sale
+  /api/sales/{sale_id}/invoice/pdf:
+    get:
+      summary: Generate sale invoice PDF
+      operationId: sales_generate_sale_invoice_pdf
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Sale invoice PDF generated successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Sale or invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Generate and download a PDF for the specified sale invoice
   /api/settings:
     put:
       summary: Update system settings
@@ -3226,6 +3778,26 @@ components:
           type: number
           format: float
           description: Unit price
+        kdv:
+          type: number
+          format: float
+          description: VAT/KDV rate percentage
+          default: 20
+        vatRate:
+          type: number
+          format: float
+          description: VAT rate percentage (alias for kdv)
+          default: 20
+        vatIncludedPrice:
+          type: number
+          format: float
+          description: Price including VAT/KDV
+        stock:
+          type: integer
+          description: Current stock level (alias for availableInventory)
+        serialNumber:
+          type: string
+          description: Product serial number
         direction:
           type: string
           enum:

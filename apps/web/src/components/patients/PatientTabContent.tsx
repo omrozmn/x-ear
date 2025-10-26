@@ -18,12 +18,18 @@ interface PatientTabContentProps {
   patient: Patient;
   activeTab: PatientTab;
   onPatientUpdate?: (p: Patient) => void;
+  sales?: any[];
+  isLoading?: boolean;
+  tabCounts?: any;
 }
 
 export const PatientTabContent: React.FC<PatientTabContentProps> = ({
   patient,
   activeTab,
   onPatientUpdate,
+  sales,
+  isLoading,
+  tabCounts
 }) => {
   const renderComingSoon = (tabName: string) => (
     <div className="p-6 text-center">
@@ -57,7 +63,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
     case 'sales':
       return (
         <ErrorBoundary>
-          <PatientSalesTab patientId={patient?.id || ''} />
+          <PatientSalesTab patientId={patient?.id || ''} sales={sales} />
         </ErrorBoundary>
       );
     case 'timeline':

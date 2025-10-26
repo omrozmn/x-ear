@@ -883,7 +883,7 @@ var DataTable = ({
     );
     rowSelection.onChange(newSelectedKeys, newSelectedRows);
   };
-  const sizeClasses5 = {
+  const sizeClasses6 = {
     small: "text-sm",
     medium: "text-base",
     large: "text-lg"
@@ -1074,7 +1074,7 @@ var DataTable = ({
         )) })
       ] })
     ] }) }) }),
-    /* @__PURE__ */ jsx6("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs6("table", { className: `min-w-full divide-y divide-gray-200 dark:divide-gray-700 ${sizeClasses5[size]}`, children: [
+    /* @__PURE__ */ jsx6("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs6("table", { className: `min-w-full divide-y divide-gray-200 dark:divide-gray-700 ${sizeClasses6[size]}`, children: [
       /* @__PURE__ */ jsx6("thead", { className: "bg-gray-50 dark:bg-gray-700", children: /* @__PURE__ */ jsxs6("tr", { children: [
         rowSelection && /* @__PURE__ */ jsx6("th", { className: `${cellPadding[size]} text-left`, children: /* @__PURE__ */ jsx6(
           "input",
@@ -1176,6 +1176,7 @@ import { jsx as jsx7, jsxs as jsxs7 } from "react/jsx-runtime";
 var variantClasses = {
   primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
   secondary: "bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500",
+  default: "bg-gray-100 text-gray-800 hover:bg-gray-200 focus:ring-gray-300",
   outline: "border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-blue-500",
   ghost: "text-gray-700 hover:bg-gray-100 focus:ring-gray-500",
   danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
@@ -1342,6 +1343,21 @@ var Select = forwardRef2(({
   ] });
 });
 Select.displayName = "Select";
+var SelectContent = ({
+  children,
+  className = ""
+}) => {
+  return /* @__PURE__ */ jsx9("div", { className: `select-content ${className}`, children });
+};
+var SelectItem = ({ value, children, className = "", disabled = false }) => {
+  return /* @__PURE__ */ jsx9("option", { value, disabled, className, children });
+};
+var SelectTrigger = ({ children, className = "", onClick }) => {
+  return /* @__PURE__ */ jsx9("div", { className: `select-trigger ${className}`, onClick, children });
+};
+var SelectValue = ({ placeholder, className = "" }) => {
+  return /* @__PURE__ */ jsx9("span", { className: `select-value ${className}`, children: placeholder });
+};
 
 // src/components/ui/Textarea.tsx
 import { forwardRef as forwardRef3 } from "react";
@@ -1434,7 +1450,7 @@ var Badge = ({
 
 // src/components/ui/Checkbox.tsx
 import { forwardRef as forwardRef4 } from "react";
-import { Check as Check2, Minus as Minus2 } from "lucide-react";
+import { Check, Minus as Minus2 } from "lucide-react";
 import { jsx as jsx12, jsxs as jsxs11 } from "react/jsx-runtime";
 var Checkbox = forwardRef4(({
   label,
@@ -1467,7 +1483,7 @@ var Checkbox = forwardRef4(({
           ...props
         }
       ),
-      /* @__PURE__ */ jsx12("div", { className: "absolute inset-0 flex items-center justify-center pointer-events-none", children: indeterminate ? /* @__PURE__ */ jsx12(Minus2, { className: "w-3 h-3 text-white" }) : props.checked ? /* @__PURE__ */ jsx12(Check2, { className: "w-3 h-3 text-white" }) : null })
+      /* @__PURE__ */ jsx12("div", { className: "absolute inset-0 flex items-center justify-center pointer-events-none", children: indeterminate ? /* @__PURE__ */ jsx12(Minus2, { className: "w-3 h-3 text-white" }) : props.checked ? /* @__PURE__ */ jsx12(Check, { className: "w-3 h-3 text-white" }) : null })
     ] }),
     (label || error || helperText) && /* @__PURE__ */ jsxs11("div", { className: "ml-2 flex-1", children: [
       label && /* @__PURE__ */ jsx12(
@@ -3005,9 +3021,144 @@ var FileUpload = ({
   ] });
 };
 
+// src/components/ui/PdfPreviewModal.tsx
+import { jsx as jsx21, jsxs as jsxs20 } from "react/jsx-runtime";
+var PdfPreviewModal = ({ isOpen, onClose, title = "Preview", pdfUrl }) => {
+  if (!isOpen)
+    return null;
+  return /* @__PURE__ */ jsx21("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50", children: /* @__PURE__ */ jsxs20("div", { className: "bg-white rounded-md shadow-lg w-[90%] max-w-4xl h-[90%] flex flex-col overflow-hidden", children: [
+    /* @__PURE__ */ jsxs20("div", { className: "flex items-center justify-between p-4 border-b", children: [
+      /* @__PURE__ */ jsx21("h3", { className: "font-semibold", children: title }),
+      /* @__PURE__ */ jsxs20("div", { className: "space-x-2", children: [
+        /* @__PURE__ */ jsx21("button", { className: "px-3 py-1 text-sm", onClick: onClose, children: "Close" }),
+        pdfUrl && /* @__PURE__ */ jsx21("a", { href: pdfUrl, target: "_blank", rel: "noreferrer", className: "px-3 py-1 text-sm bg-blue-600 text-white rounded", children: "Open" })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx21("div", { className: "flex-1 bg-gray-100", children: pdfUrl ? /* @__PURE__ */ jsx21("iframe", { src: pdfUrl, className: "w-full h-full", title: "pdf-preview" }) : /* @__PURE__ */ jsx21("div", { className: "p-6 text-center text-gray-600", children: "No PDF available" }) })
+  ] }) });
+};
+var PdfPreviewModal_default = PdfPreviewModal;
+
+// src/components/ui/SgkMultiUpload.tsx
+import { useState as useState12, useRef as useRef6 } from "react";
+import { jsx as jsx22, jsxs as jsxs21 } from "react/jsx-runtime";
+var SgkMultiUpload = () => {
+  const [files, setFiles] = useState12([]);
+  const [results, setResults] = useState12([]);
+  const [uploading, setUploading] = useState12(false);
+  const [previewUrl, setPreviewUrl] = useState12();
+  const [isPreviewOpen, setIsPreviewOpen] = useState12(false);
+  const inputRef = useRef6(null);
+  const onFiles = (fList) => {
+    if (!fList)
+      return;
+    const arr = Array.from(fList);
+    const allowed = arr.filter((f) => /image\/(png|jpeg|jpg|tiff|bmp)/i.test(f.type) || /\.(png|jpe?g|tiff?|bmp)$/i.test(f.name));
+    setFiles((prev) => [...prev, ...allowed].slice(0, 50));
+  };
+  const removeFile = (idx) => setFiles((prev) => prev.filter((_, i) => i !== idx));
+  const upload = async () => {
+    if (!files.length)
+      return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      files.forEach((f) => fd.append("files", f, f.name));
+      const res = await fetch("/api/sgk/upload", { method: "POST", body: fd });
+      const json = await res.json();
+      setResults(json.files || []);
+    } catch (e) {
+      console.error("Upload failed", e);
+      alert("Upload failed, check console");
+    } finally {
+      setUploading(false);
+    }
+  };
+  const openPreview = (pdfPath) => {
+    if (!pdfPath)
+      return;
+    const url = pdfPath.startsWith("http") ? pdfPath : `${window.location.origin}/uploads/sgk/${encodeURIComponent(pdfPath)}`;
+    setPreviewUrl(url);
+    setIsPreviewOpen(true);
+  };
+  return /* @__PURE__ */ jsxs21("div", { className: "space-y-4", children: [
+    /* @__PURE__ */ jsxs21("div", { className: "border-2 border-dashed p-4 rounded", children: [
+      /* @__PURE__ */ jsx22(
+        "input",
+        {
+          ref: inputRef,
+          type: "file",
+          accept: "image/*",
+          multiple: true,
+          onChange: (e) => onFiles(e.target.files)
+        }
+      ),
+      /* @__PURE__ */ jsx22("div", { className: "mt-2 text-sm text-gray-600", children: "Supported: png, jpg, jpeg, tiff, bmp. Max 50 files." })
+    ] }),
+    files.length > 0 && /* @__PURE__ */ jsxs21("div", { className: "space-y-2", children: [
+      /* @__PURE__ */ jsxs21("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxs21("h4", { className: "font-medium", children: [
+          "Files to upload (",
+          files.length,
+          ")"
+        ] }),
+        /* @__PURE__ */ jsxs21("div", { className: "space-x-2", children: [
+          /* @__PURE__ */ jsx22("button", { className: "px-3 py-1 bg-gray-200 rounded", onClick: () => {
+            setFiles([]);
+            inputRef.current && (inputRef.current.value = "");
+          }, children: "Clear" }),
+          /* @__PURE__ */ jsx22("button", { className: "px-3 py-1 bg-blue-600 text-white rounded", onClick: upload, disabled: uploading, children: uploading ? "Uploading..." : "Upload" })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx22("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3", children: files.map((f, i) => /* @__PURE__ */ jsxs21("div", { className: "border rounded p-2 bg-white", children: [
+        /* @__PURE__ */ jsx22("div", { className: "text-sm font-medium truncate", children: f.name }),
+        /* @__PURE__ */ jsxs21("div", { className: "text-xs text-gray-500", children: [
+          (f.size / 1024).toFixed(0),
+          " KB"
+        ] }),
+        /* @__PURE__ */ jsx22("div", { className: "mt-2 flex space-x-2", children: /* @__PURE__ */ jsx22("button", { className: "text-xs px-2 py-1 border rounded", onClick: () => removeFile(i), children: "Remove" }) })
+      ] }, i)) })
+    ] }),
+    results.length > 0 && /* @__PURE__ */ jsxs21("div", { className: "mt-4 space-y-3", children: [
+      /* @__PURE__ */ jsx22("h4", { className: "font-medium", children: "Results" }),
+      results.map((r, idx) => /* @__PURE__ */ jsxs21("div", { className: "p-3 border rounded bg-white", children: [
+        /* @__PURE__ */ jsxs21("div", { className: "flex items-center justify-between", children: [
+          /* @__PURE__ */ jsxs21("div", { children: [
+            /* @__PURE__ */ jsx22("div", { className: "font-semibold", children: r.fileName }),
+            /* @__PURE__ */ jsxs21("div", { className: "text-sm text-gray-500", children: [
+              "Status: ",
+              r.status
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx22("div", { className: "space-x-2", children: r.result && r.result.pdf_filename && /* @__PURE__ */ jsx22("button", { className: "px-2 py-1 bg-indigo-600 text-white rounded text-sm", onClick: () => openPreview(r.result.pdf_filename), children: "Preview PDF" }) })
+        ] }),
+        /* @__PURE__ */ jsxs21("div", { className: "mt-2 text-sm text-gray-700", children: [
+          /* @__PURE__ */ jsxs21("div", { children: [
+            /* @__PURE__ */ jsx22("strong", { children: "Patient:" }),
+            " ",
+            r.result?.patient_info?.name || "Unknown"
+          ] }),
+          /* @__PURE__ */ jsxs21("div", { children: [
+            /* @__PURE__ */ jsx22("strong", { children: "TC partial:" }),
+            " ",
+            r.result?.tc_partial || "-"
+          ] }),
+          /* @__PURE__ */ jsxs21("div", { children: [
+            /* @__PURE__ */ jsx22("strong", { children: "Matched patient:" }),
+            " ",
+            r.result?.matched_patient ? r.result.matched_patient.patient.fullName : "No"
+          ] })
+        ] })
+      ] }, idx))
+    ] }),
+    /* @__PURE__ */ jsx22(PdfPreviewModal_default, { isOpen: isPreviewOpen, onClose: () => setIsPreviewOpen(false), pdfUrl: previewUrl, title: "SGK PDF Preview" })
+  ] });
+};
+var SgkMultiUpload_default = SgkMultiUpload;
+
 // src/components/ui/Pagination.tsx
 import { clsx as clsx7 } from "clsx";
-import { Fragment as Fragment3, jsx as jsx21, jsxs as jsxs20 } from "react/jsx-runtime";
+import { Fragment as Fragment3, jsx as jsx23, jsxs as jsxs22 } from "react/jsx-runtime";
 var defaultItemsPerPageOptions = [10, 25, 50, 100];
 var Pagination = ({
   currentPage,
@@ -3057,7 +3208,7 @@ var Pagination = ({
   const visiblePages = getVisiblePages();
   const isFirstPage = currentPage === 1;
   const isLastPage = currentPage === totalPages;
-  const sizeClasses5 = {
+  const sizeClasses6 = {
     sm: {
       button: "px-2 py-1 text-xs",
       select: "text-xs px-2 py-1",
@@ -3074,7 +3225,7 @@ var Pagination = ({
       text: "text-base"
     }
   };
-  const currentSizeClasses = sizeClasses5[size];
+  const currentSizeClasses = sizeClasses6[size];
   const baseButtonClasses = clsx7(
     "border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
     "transition-colors duration-200 font-medium",
@@ -3094,10 +3245,10 @@ var Pagination = ({
   };
   const startItem = totalItems ? Math.min((currentPage - 1) * itemsPerPage + 1, totalItems) : 0;
   const endItem = totalItems ? Math.min(currentPage * itemsPerPage, totalItems) : 0;
-  return /* @__PURE__ */ jsxs20("div", { className: clsx7("flex flex-col sm:flex-row items-center justify-between gap-4", className), children: [
-    showItemsPerPage && onItemsPerPageChange && /* @__PURE__ */ jsxs20("div", { className: "flex items-center gap-2", children: [
-      /* @__PURE__ */ jsx21("span", { className: clsx7("text-gray-700", currentSizeClasses.text), children: itemsPerPageText }),
-      /* @__PURE__ */ jsx21(
+  return /* @__PURE__ */ jsxs22("div", { className: clsx7("flex flex-col sm:flex-row items-center justify-between gap-4", className), children: [
+    showItemsPerPage && onItemsPerPageChange && /* @__PURE__ */ jsxs22("div", { className: "flex items-center gap-2", children: [
+      /* @__PURE__ */ jsx23("span", { className: clsx7("text-gray-700", currentSizeClasses.text), children: itemsPerPageText }),
+      /* @__PURE__ */ jsx23(
         "select",
         {
           value: itemsPerPage,
@@ -3108,12 +3259,12 @@ var Pagination = ({
             currentSizeClasses.select,
             disabled && "opacity-50 cursor-not-allowed"
           ),
-          children: itemsPerPageOptions.map((option) => /* @__PURE__ */ jsx21("option", { value: option, children: option }, option))
+          children: itemsPerPageOptions.map((option) => /* @__PURE__ */ jsx23("option", { value: option, children: option }, option))
         }
       )
     ] }),
-    /* @__PURE__ */ jsxs20("div", { className: "flex items-center gap-1", children: [
-      showFirstLast && totalPages > maxVisiblePages && /* @__PURE__ */ jsx21(
+    /* @__PURE__ */ jsxs22("div", { className: "flex items-center gap-1", children: [
+      showFirstLast && totalPages > maxVisiblePages && /* @__PURE__ */ jsx23(
         "button",
         {
           onClick: () => handlePageChange(1),
@@ -3128,7 +3279,7 @@ var Pagination = ({
           children: firstText
         }
       ),
-      showPrevNext && /* @__PURE__ */ jsxs20(
+      showPrevNext && /* @__PURE__ */ jsxs22(
         "button",
         {
           onClick: () => handlePageChange(currentPage - 1),
@@ -3141,14 +3292,14 @@ var Pagination = ({
           ),
           "aria-label": previousText,
           children: [
-            /* @__PURE__ */ jsx21("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }) }),
-            /* @__PURE__ */ jsx21("span", { className: "ml-1 hidden sm:inline", children: previousText })
+            /* @__PURE__ */ jsx23("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx23("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }) }),
+            /* @__PURE__ */ jsx23("span", { className: "ml-1 hidden sm:inline", children: previousText })
           ]
         }
       ),
-      showPageNumbers && /* @__PURE__ */ jsxs20(Fragment3, { children: [
-        visiblePages[0] > 1 && /* @__PURE__ */ jsxs20(Fragment3, { children: [
-          /* @__PURE__ */ jsx21(
+      showPageNumbers && /* @__PURE__ */ jsxs22(Fragment3, { children: [
+        visiblePages[0] > 1 && /* @__PURE__ */ jsxs22(Fragment3, { children: [
+          /* @__PURE__ */ jsx23(
             "button",
             {
               onClick: () => handlePageChange(1),
@@ -3157,9 +3308,9 @@ var Pagination = ({
               children: "1"
             }
           ),
-          visiblePages[0] > 2 && /* @__PURE__ */ jsx21("span", { className: clsx7("px-2", currentSizeClasses.text, "text-gray-500"), children: "..." })
+          visiblePages[0] > 2 && /* @__PURE__ */ jsx23("span", { className: clsx7("px-2", currentSizeClasses.text, "text-gray-500"), children: "..." })
         ] }),
-        visiblePages.map((page) => /* @__PURE__ */ jsx21(
+        visiblePages.map((page) => /* @__PURE__ */ jsx23(
           "button",
           {
             onClick: () => handlePageChange(page),
@@ -3174,9 +3325,9 @@ var Pagination = ({
           },
           page
         )),
-        visiblePages[visiblePages.length - 1] < totalPages && /* @__PURE__ */ jsxs20(Fragment3, { children: [
-          visiblePages[visiblePages.length - 1] < totalPages - 1 && /* @__PURE__ */ jsx21("span", { className: clsx7("px-2", currentSizeClasses.text, "text-gray-500"), children: "..." }),
-          /* @__PURE__ */ jsx21(
+        visiblePages[visiblePages.length - 1] < totalPages && /* @__PURE__ */ jsxs22(Fragment3, { children: [
+          visiblePages[visiblePages.length - 1] < totalPages - 1 && /* @__PURE__ */ jsx23("span", { className: clsx7("px-2", currentSizeClasses.text, "text-gray-500"), children: "..." }),
+          /* @__PURE__ */ jsx23(
             "button",
             {
               onClick: () => handlePageChange(totalPages),
@@ -3187,7 +3338,7 @@ var Pagination = ({
           )
         ] })
       ] }),
-      showPrevNext && /* @__PURE__ */ jsxs20(
+      showPrevNext && /* @__PURE__ */ jsxs22(
         "button",
         {
           onClick: () => handlePageChange(currentPage + 1),
@@ -3200,12 +3351,12 @@ var Pagination = ({
           ),
           "aria-label": nextText,
           children: [
-            /* @__PURE__ */ jsx21("span", { className: "mr-1 hidden sm:inline", children: nextText }),
-            /* @__PURE__ */ jsx21("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M9 5l7 7-7 7" }) })
+            /* @__PURE__ */ jsx23("span", { className: "mr-1 hidden sm:inline", children: nextText }),
+            /* @__PURE__ */ jsx23("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx23("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M9 5l7 7-7 7" }) })
           ]
         }
       ),
-      showFirstLast && totalPages > maxVisiblePages && /* @__PURE__ */ jsx21(
+      showFirstLast && totalPages > maxVisiblePages && /* @__PURE__ */ jsx23(
         "button",
         {
           onClick: () => handlePageChange(totalPages),
@@ -3221,7 +3372,7 @@ var Pagination = ({
         }
       )
     ] }),
-    showTotalItems && totalItems && /* @__PURE__ */ jsxs20("div", { className: clsx7("text-gray-700", currentSizeClasses.text), children: [
+    showTotalItems && totalItems && /* @__PURE__ */ jsxs22("div", { className: clsx7("text-gray-700", currentSizeClasses.text), children: [
       startItem,
       "-",
       endItem,
@@ -3241,7 +3392,7 @@ var SimplePagination = ({
   disabled = false,
   className
 }) => {
-  return /* @__PURE__ */ jsx21(
+  return /* @__PURE__ */ jsx23(
     Pagination,
     {
       currentPage,
@@ -3258,7 +3409,7 @@ var SimplePagination = ({
 };
 
 // src/components/ui/Card.tsx
-import { jsx as jsx22 } from "react/jsx-runtime";
+import { jsx as jsx24 } from "react/jsx-runtime";
 var cardVariants = {
   default: "bg-white border border-gray-200 rounded-lg shadow-sm",
   outlined: "bg-white border-2 border-gray-300 rounded-lg",
@@ -3283,7 +3434,7 @@ var Card = ({
     paddingVariants[padding],
     className
   ].filter(Boolean).join(" ");
-  return /* @__PURE__ */ jsx22("div", { className: classes, ...props, children });
+  return /* @__PURE__ */ jsx24("div", { className: classes, ...props, children });
 };
 var CardHeader = ({
   className = "",
@@ -3291,7 +3442,7 @@ var CardHeader = ({
   ...props
 }) => {
   const classes = ["flex flex-col space-y-1.5 pb-4", className].filter(Boolean).join(" ");
-  return /* @__PURE__ */ jsx22("div", { className: classes, ...props, children });
+  return /* @__PURE__ */ jsx24("div", { className: classes, ...props, children });
 };
 var CardTitle = ({
   className = "",
@@ -3299,7 +3450,7 @@ var CardTitle = ({
   ...props
 }) => {
   const classes = ["text-lg font-semibold leading-none tracking-tight", className].filter(Boolean).join(" ");
-  return /* @__PURE__ */ jsx22("h3", { className: classes, ...props, children });
+  return /* @__PURE__ */ jsx24("h3", { className: classes, ...props, children });
 };
 var CardContent = ({
   className = "",
@@ -3307,7 +3458,7 @@ var CardContent = ({
   ...props
 }) => {
   const classes = ["pt-0", className].filter(Boolean).join(" ");
-  return /* @__PURE__ */ jsx22("div", { className: classes, ...props, children });
+  return /* @__PURE__ */ jsx24("div", { className: classes, ...props, children });
 };
 var CardFooter = ({
   className = "",
@@ -3315,12 +3466,12 @@ var CardFooter = ({
   ...props
 }) => {
   const classes = ["flex items-center pt-4", className].filter(Boolean).join(" ");
-  return /* @__PURE__ */ jsx22("div", { className: classes, ...props, children });
+  return /* @__PURE__ */ jsx24("div", { className: classes, ...props, children });
 };
 
 // src/components/ui/Alert.tsx
 import { AlertCircle as AlertCircle6, CheckCircle as CheckCircle2, Info as Info2, XCircle } from "lucide-react";
-import { jsx as jsx23, jsxs as jsxs21 } from "react/jsx-runtime";
+import { jsx as jsx25, jsxs as jsxs23 } from "react/jsx-runtime";
 var alertVariants = {
   info: "bg-blue-50 border-blue-200 text-blue-800",
   success: "bg-green-50 border-green-200 text-green-800",
@@ -3347,27 +3498,33 @@ var Alert = ({
     alertVariants[variant],
     className
   ].filter(Boolean).join(" ");
-  return /* @__PURE__ */ jsxs21("div", { className: classes, ...props, children: [
-    /* @__PURE__ */ jsx23(Icon, { className: "w-5 h-5 mt-0.5 flex-shrink-0" }),
-    /* @__PURE__ */ jsxs21("div", { className: "flex-1", children: [
-      title && /* @__PURE__ */ jsx23("h4", { className: "font-medium mb-1", children: title }),
-      /* @__PURE__ */ jsx23("div", { className: "text-sm", children })
+  return /* @__PURE__ */ jsxs23("div", { className: classes, ...props, children: [
+    /* @__PURE__ */ jsx25(Icon, { className: "w-5 h-5 mt-0.5 flex-shrink-0" }),
+    /* @__PURE__ */ jsxs23("div", { className: "flex-1", children: [
+      title && /* @__PURE__ */ jsx25("h4", { className: "font-medium mb-1", children: title }),
+      /* @__PURE__ */ jsx25("div", { className: "text-sm", children })
     ] }),
-    onClose && /* @__PURE__ */ jsx23(
+    onClose && /* @__PURE__ */ jsx25(
       "button",
       {
         onClick: onClose,
         className: "flex-shrink-0 ml-auto text-current opacity-70 hover:opacity-100",
         "aria-label": "Close alert",
-        children: /* @__PURE__ */ jsx23(XCircle, { className: "w-4 h-4" })
+        children: /* @__PURE__ */ jsx25(XCircle, { className: "w-4 h-4" })
       }
     )
   ] });
 };
+var AlertDescription = ({
+  children,
+  className = ""
+}) => {
+  return /* @__PURE__ */ jsx25("div", { className: `text-sm ${className}`, children });
+};
 
 // src/components/ui/Tooltip.tsx
-import { useState as useState12 } from "react";
-import { jsx as jsx24, jsxs as jsxs22 } from "react/jsx-runtime";
+import { useState as useState13 } from "react";
+import { jsx as jsx26, jsxs as jsxs24 } from "react/jsx-runtime";
 var positionClasses = {
   top: "bottom-full left-1/2 transform -translate-x-1/2 mb-2",
   bottom: "top-full left-1/2 transform -translate-x-1/2 mt-2",
@@ -3380,8 +3537,8 @@ var Tooltip = ({
   children,
   className = ""
 }) => {
-  const [isVisible, setIsVisible] = useState12(false);
-  return /* @__PURE__ */ jsxs22(
+  const [isVisible, setIsVisible] = useState13(false);
+  return /* @__PURE__ */ jsxs24(
     "div",
     {
       className: `relative inline-block ${className}`,
@@ -3389,13 +3546,13 @@ var Tooltip = ({
       onMouseLeave: () => setIsVisible(false),
       children: [
         children,
-        isVisible && /* @__PURE__ */ jsxs22(
+        isVisible && /* @__PURE__ */ jsxs24(
           "div",
           {
             className: `absolute z-50 px-2 py-1 text-sm text-white bg-gray-900 rounded shadow-lg whitespace-nowrap ${positionClasses[position]}`,
             children: [
               content,
-              /* @__PURE__ */ jsx24(
+              /* @__PURE__ */ jsx26(
                 "div",
                 {
                   className: `absolute w-2 h-2 bg-gray-900 transform rotate-45 ${position === "top" ? "top-full left-1/2 -translate-x-1/2 -mt-1" : position === "bottom" ? "bottom-full left-1/2 -translate-x-1/2 -mb-1" : position === "left" ? "left-full top-1/2 -translate-y-1/2 -ml-1" : "right-full top-1/2 -translate-y-1/2 -mr-1"}`
@@ -3410,8 +3567,8 @@ var Tooltip = ({
 };
 
 // src/components/ui/Dropdown.tsx
-import { useState as useState13, useRef as useRef6, useEffect as useEffect8 } from "react";
-import { jsx as jsx25, jsxs as jsxs23 } from "react/jsx-runtime";
+import { useState as useState14, useRef as useRef7, useEffect as useEffect8 } from "react";
+import { jsx as jsx27, jsxs as jsxs25 } from "react/jsx-runtime";
 var positionClasses2 = {
   "bottom-left": "top-full left-0 mt-1",
   "bottom-right": "top-full right-0 mt-1",
@@ -3425,8 +3582,8 @@ var Dropdown = ({
   className = "",
   onSelect
 }) => {
-  const [isOpen, setIsOpen] = useState13(false);
-  const dropdownRef = useRef6(null);
+  const [isOpen, setIsOpen] = useState14(false);
+  const dropdownRef = useRef7(null);
   useEffect8(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -3443,13 +3600,13 @@ var Dropdown = ({
       setIsOpen(false);
     }
   };
-  return /* @__PURE__ */ jsxs23("div", { ref: dropdownRef, className: `relative inline-block ${className}`, children: [
-    /* @__PURE__ */ jsx25("div", { onClick: () => setIsOpen(!isOpen), className: "cursor-pointer", children: trigger }),
-    isOpen && /* @__PURE__ */ jsx25(
+  return /* @__PURE__ */ jsxs25("div", { ref: dropdownRef, className: `relative inline-block ${className}`, children: [
+    /* @__PURE__ */ jsx27("div", { onClick: () => setIsOpen(!isOpen), className: "cursor-pointer", children: trigger }),
+    isOpen && /* @__PURE__ */ jsx27(
       "div",
       {
         className: `absolute z-50 min-w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 ${positionClasses2[position]}`,
-        children: items.map((item, index) => /* @__PURE__ */ jsx25(
+        children: items.map((item, index) => /* @__PURE__ */ jsx27(
           "button",
           {
             onClick: () => handleItemClick(item),
@@ -3464,10 +3621,232 @@ var Dropdown = ({
   ] });
 };
 
+// src/components/ui/Box.tsx
+import { jsx as jsx28 } from "react/jsx-runtime";
+var Box = ({
+  children,
+  className = "",
+  ...props
+}) => {
+  return /* @__PURE__ */ jsx28("div", { className, ...props, children });
+};
+
+// src/components/ui/Text.tsx
+import { jsx as jsx29 } from "react/jsx-runtime";
+var sizeClasses5 = {
+  xs: "text-xs",
+  sm: "text-sm",
+  md: "text-base",
+  lg: "text-lg",
+  xl: "text-xl"
+};
+var weightClasses = {
+  normal: "font-normal",
+  medium: "font-medium",
+  semibold: "font-semibold",
+  bold: "font-bold"
+};
+var colorClasses3 = {
+  gray: "text-gray-700 dark:text-gray-300",
+  red: "text-red-600 dark:text-red-400",
+  blue: "text-blue-600 dark:text-blue-400",
+  green: "text-green-600 dark:text-green-400",
+  yellow: "text-yellow-600 dark:text-yellow-400"
+};
+var Text = ({
+  children,
+  as: Component = "p",
+  size = "md",
+  weight = "normal",
+  color = "gray",
+  className = "",
+  ...props
+}) => {
+  const classes = [
+    sizeClasses5[size],
+    weightClasses[weight],
+    colorClasses3[color],
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ jsx29(Component, { className: classes, ...props, children });
+};
+
+// src/components/ui/FormControl.tsx
+import { jsx as jsx30 } from "react/jsx-runtime";
+var FormControl = ({
+  children,
+  isRequired = false,
+  isInvalid = false,
+  isDisabled = false,
+  className = "",
+  ...props
+}) => {
+  const classes = [
+    "form-control",
+    isRequired && "required",
+    isInvalid && "invalid",
+    isDisabled && "disabled",
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ jsx30("div", { className: classes, ...props, children });
+};
+
+// src/components/ui/FormLabel.tsx
+import { jsx as jsx31, jsxs as jsxs26 } from "react/jsx-runtime";
+var FormLabel = ({
+  children,
+  isRequired = false,
+  className = "",
+  ...props
+}) => {
+  const classes = [
+    "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1",
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ jsxs26("label", { className: classes, ...props, children: [
+    children,
+    isRequired && /* @__PURE__ */ jsx31("span", { className: "text-red-500 ml-1", children: "*" })
+  ] });
+};
+
+// src/components/ui/Stack.tsx
+import { jsx as jsx32 } from "react/jsx-runtime";
+var alignClasses = {
+  start: "items-start",
+  center: "items-center",
+  end: "items-end",
+  stretch: "items-stretch"
+};
+var justifyClasses = {
+  start: "justify-start",
+  center: "justify-center",
+  end: "justify-end",
+  between: "justify-between",
+  around: "justify-around",
+  evenly: "justify-evenly"
+};
+var HStack = ({
+  children,
+  spacing = 4,
+  align = "center",
+  justify = "start",
+  className = "",
+  ...props
+}) => {
+  const spacingClass = typeof spacing === "number" ? `gap-${spacing}` : `gap-[${spacing}]`;
+  const classes = [
+    "flex flex-row",
+    spacingClass,
+    alignClasses[align],
+    justifyClasses[justify],
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ jsx32("div", { className: classes, ...props, children });
+};
+var VStack = ({
+  children,
+  spacing = 4,
+  align = "stretch",
+  justify = "start",
+  className = "",
+  ...props
+}) => {
+  const spacingClass = typeof spacing === "number" ? `gap-${spacing}` : `gap-[${spacing}]`;
+  const classes = [
+    "flex flex-col",
+    spacingClass,
+    alignClasses[align],
+    justifyClasses[justify],
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ jsx32("div", { className: classes, ...props, children });
+};
+
+// src/components/ui/Grid.tsx
+import { jsx as jsx33 } from "react/jsx-runtime";
+var SimpleGrid = ({
+  children,
+  columns = 1,
+  spacing = 4,
+  minChildWidth,
+  className = "",
+  ...props
+}) => {
+  let gridClasses = "grid";
+  if (minChildWidth) {
+    gridClasses += ` grid-cols-[repeat(auto-fit,minmax(${minChildWidth},1fr))]`;
+  } else if (typeof columns === "number") {
+    gridClasses += ` grid-cols-${columns}`;
+  } else {
+    const { base = 1, sm, md, lg, xl } = columns;
+    gridClasses += ` grid-cols-${base}`;
+    if (sm)
+      gridClasses += ` sm:grid-cols-${sm}`;
+    if (md)
+      gridClasses += ` md:grid-cols-${md}`;
+    if (lg)
+      gridClasses += ` lg:grid-cols-${lg}`;
+    if (xl)
+      gridClasses += ` xl:grid-cols-${xl}`;
+  }
+  const spacingClass = typeof spacing === "number" ? `gap-${spacing}` : `gap-[${spacing}]`;
+  const classes = [
+    gridClasses,
+    spacingClass,
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ jsx33("div", { className: classes, ...props, children });
+};
+
+// src/components/ui/AlertIcon.tsx
+import { jsx as jsx34 } from "react/jsx-runtime";
+var iconMap2 = {
+  info: "\u{1F6C8}",
+  warning: "\u26A0\uFE0F",
+  success: "\u2713",
+  error: "\u2715"
+};
+var colorMap = {
+  info: "text-blue-500",
+  warning: "text-yellow-500",
+  success: "text-green-500",
+  error: "text-red-500"
+};
+var AlertIcon = ({
+  status = "info",
+  className = "",
+  ...props
+}) => {
+  const classes = [
+    "inline-flex items-center justify-center w-5 h-5 mr-2",
+    colorMap[status],
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ jsx34("span", { className: classes, ...props, children: iconMap2[status] });
+};
+
+// src/components/ui/Label.tsx
+import { jsx as jsx35, jsxs as jsxs27 } from "react/jsx-runtime";
+var Label = ({
+  children,
+  required = false,
+  className = "",
+  ...props
+}) => {
+  const classes = [
+    "block text-sm font-medium text-gray-700 mb-1",
+    className
+  ].filter(Boolean).join(" ");
+  return /* @__PURE__ */ jsxs27("label", { className: classes, ...props, children: [
+    children,
+    required && /* @__PURE__ */ jsx35("span", { className: "text-red-500 ml-1", children: "*" })
+  ] });
+};
+
 // src/components/forms/DynamicForm.tsx
-import { useState as useState14, useEffect as useEffect9, useCallback as useCallback5 } from "react";
-import { ChevronDown as ChevronDown4, AlertCircle as AlertCircle7, Check as Check3 } from "lucide-react";
-import { Fragment as Fragment4, jsx as jsx26, jsxs as jsxs24 } from "react/jsx-runtime";
+import { useState as useState15, useEffect as useEffect9, useCallback as useCallback5 } from "react";
+import { ChevronDown as ChevronDown4, AlertCircle as AlertCircle7, Check as Check2 } from "lucide-react";
+import { Fragment as Fragment4, jsx as jsx36, jsxs as jsxs28 } from "react/jsx-runtime";
 var DynamicForm = ({
   fields = [],
   sections = [],
@@ -3487,10 +3866,10 @@ var DynamicForm = ({
   validateOnChange = false,
   validateOnBlur = true
 }) => {
-  const [formData, setFormData] = useState14(initialData);
-  const [errors, setErrors] = useState14({});
-  const [touched, setTouched] = useState14({});
-  const [collapsedSections, setCollapsedSections] = useState14({});
+  const [formData, setFormData] = useState15(initialData);
+  const [errors, setErrors] = useState15({});
+  const [touched, setTouched] = useState15({});
+  const [collapsedSections, setCollapsedSections] = useState15({});
   useEffect9(() => {
     const initialCollapsed = {};
     sections.forEach((section) => {
@@ -3616,7 +3995,7 @@ var DynamicForm = ({
     const renderInput = () => {
       switch (field.type) {
         case "textarea":
-          return /* @__PURE__ */ jsx26(
+          return /* @__PURE__ */ jsx36(
             "textarea",
             {
               id: field.name,
@@ -3632,8 +4011,8 @@ var DynamicForm = ({
             }
           );
         case "select":
-          return /* @__PURE__ */ jsxs24("div", { className: "relative", children: [
-            /* @__PURE__ */ jsxs24(
+          return /* @__PURE__ */ jsxs28("div", { className: "relative", children: [
+            /* @__PURE__ */ jsxs28(
               "select",
               {
                 id: field.name,
@@ -3645,16 +4024,16 @@ var DynamicForm = ({
                 required: field.required,
                 className: `${baseInputClasses} pr-10 appearance-none`,
                 children: [
-                  /* @__PURE__ */ jsx26("option", { value: "", children: field.placeholder || "Se\xE7iniz..." }),
-                  field.options?.map((option) => /* @__PURE__ */ jsx26("option", { value: option.value, children: option.label }, option.value))
+                  /* @__PURE__ */ jsx36("option", { value: "", children: field.placeholder || "Se\xE7iniz..." }),
+                  field.options?.map((option) => /* @__PURE__ */ jsx36("option", { value: option.value, children: option.label }, option.value))
                 ]
               }
             ),
-            /* @__PURE__ */ jsx26(ChevronDown4, { className: "absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" })
+            /* @__PURE__ */ jsx36(ChevronDown4, { className: "absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" })
           ] });
         case "multiselect":
-          return /* @__PURE__ */ jsx26("div", { className: "space-y-2", children: field.options?.map((option) => /* @__PURE__ */ jsxs24("label", { className: "flex items-center", children: [
-            /* @__PURE__ */ jsx26(
+          return /* @__PURE__ */ jsx36("div", { className: "space-y-2", children: field.options?.map((option) => /* @__PURE__ */ jsxs28("label", { className: "flex items-center", children: [
+            /* @__PURE__ */ jsx36(
               "input",
               {
                 type: "checkbox",
@@ -3668,11 +4047,11 @@ var DynamicForm = ({
                 className: "rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
               }
             ),
-            /* @__PURE__ */ jsx26("span", { className: "text-sm text-gray-700 dark:text-gray-300", children: option.label })
+            /* @__PURE__ */ jsx36("span", { className: "text-sm text-gray-700 dark:text-gray-300", children: option.label })
           ] }, option.value)) });
         case "radio":
-          return /* @__PURE__ */ jsx26("div", { className: "space-y-2", children: field.options?.map((option) => /* @__PURE__ */ jsxs24("label", { className: "flex items-center", children: [
-            /* @__PURE__ */ jsx26(
+          return /* @__PURE__ */ jsx36("div", { className: "space-y-2", children: field.options?.map((option) => /* @__PURE__ */ jsxs28("label", { className: "flex items-center", children: [
+            /* @__PURE__ */ jsx36(
               "input",
               {
                 type: "radio",
@@ -3685,11 +4064,11 @@ var DynamicForm = ({
                 className: "border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
               }
             ),
-            /* @__PURE__ */ jsx26("span", { className: "text-sm text-gray-700 dark:text-gray-300", children: option.label })
+            /* @__PURE__ */ jsx36("span", { className: "text-sm text-gray-700 dark:text-gray-300", children: option.label })
           ] }, option.value)) });
         case "checkbox":
-          return /* @__PURE__ */ jsxs24("label", { className: "flex items-center", children: [
-            /* @__PURE__ */ jsx26(
+          return /* @__PURE__ */ jsxs28("label", { className: "flex items-center", children: [
+            /* @__PURE__ */ jsx36(
               "input",
               {
                 type: "checkbox",
@@ -3700,10 +4079,10 @@ var DynamicForm = ({
                 className: "rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
               }
             ),
-            /* @__PURE__ */ jsx26("span", { className: "text-sm text-gray-700 dark:text-gray-300", children: field.label })
+            /* @__PURE__ */ jsx36("span", { className: "text-sm text-gray-700 dark:text-gray-300", children: field.label })
           ] });
         case "file":
-          return /* @__PURE__ */ jsx26(
+          return /* @__PURE__ */ jsx36(
             "input",
             {
               type: "file",
@@ -3719,7 +4098,7 @@ var DynamicForm = ({
             }
           );
         case "number":
-          return /* @__PURE__ */ jsx26(
+          return /* @__PURE__ */ jsx36(
             "input",
             {
               type: "number",
@@ -3738,7 +4117,7 @@ var DynamicForm = ({
             }
           );
         default:
-          return /* @__PURE__ */ jsx26(
+          return /* @__PURE__ */ jsx36(
             "input",
             {
               type: field.type,
@@ -3758,15 +4137,15 @@ var DynamicForm = ({
           );
       }
     };
-    return /* @__PURE__ */ jsxs24("div", { className: "space-y-1", children: [
-      field.type !== "checkbox" && /* @__PURE__ */ jsxs24("label", { htmlFor: field.name, className: "block text-sm font-medium text-gray-700 dark:text-gray-300", children: [
+    return /* @__PURE__ */ jsxs28("div", { className: "space-y-1", children: [
+      field.type !== "checkbox" && /* @__PURE__ */ jsxs28("label", { htmlFor: field.name, className: "block text-sm font-medium text-gray-700 dark:text-gray-300", children: [
         field.label,
-        field.required && /* @__PURE__ */ jsx26("span", { className: "text-red-500 ml-1", children: "*" })
+        field.required && /* @__PURE__ */ jsx36("span", { className: "text-red-500 ml-1", children: "*" })
       ] }),
       renderInput(),
-      field.description && /* @__PURE__ */ jsx26("p", { className: "text-sm text-gray-500 dark:text-gray-400", children: field.description }),
-      showError && /* @__PURE__ */ jsxs24("div", { className: "flex items-center text-sm text-red-600 dark:text-red-400", children: [
-        /* @__PURE__ */ jsx26(AlertCircle7, { className: "w-4 h-4 mr-1" }),
+      field.description && /* @__PURE__ */ jsx36("p", { className: "text-sm text-gray-500 dark:text-gray-400", children: field.description }),
+      showError && /* @__PURE__ */ jsxs28("div", { className: "flex items-center text-sm text-red-600 dark:text-red-400", children: [
+        /* @__PURE__ */ jsx36(AlertCircle7, { className: "w-4 h-4 mr-1" }),
         error
       ] })
     ] }, field.name);
@@ -3774,8 +4153,8 @@ var DynamicForm = ({
   const renderActions = () => {
     if (!showActions)
       return null;
-    return /* @__PURE__ */ jsxs24("div", { className: "flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700", children: [
-      onReset && /* @__PURE__ */ jsx26(
+    return /* @__PURE__ */ jsxs28("div", { className: "flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700", children: [
+      onReset && /* @__PURE__ */ jsx36(
         "button",
         {
           type: "button",
@@ -3785,7 +4164,7 @@ var DynamicForm = ({
           children: resetText
         }
       ),
-      onCancel && /* @__PURE__ */ jsx26(
+      onCancel && /* @__PURE__ */ jsx36(
         "button",
         {
           type: "button",
@@ -3795,17 +4174,17 @@ var DynamicForm = ({
           children: cancelText
         }
       ),
-      /* @__PURE__ */ jsx26(
+      /* @__PURE__ */ jsx36(
         "button",
         {
           type: "submit",
           disabled: loading || disabled,
           className: "inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed",
-          children: loading ? /* @__PURE__ */ jsxs24(Fragment4, { children: [
-            /* @__PURE__ */ jsx26("div", { className: "animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" }),
+          children: loading ? /* @__PURE__ */ jsxs28(Fragment4, { children: [
+            /* @__PURE__ */ jsx36("div", { className: "animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" }),
             "Kaydediliyor..."
-          ] }) : /* @__PURE__ */ jsxs24(Fragment4, { children: [
-            /* @__PURE__ */ jsx26(Check3, { className: "w-4 h-4 mr-2" }),
+          ] }) : /* @__PURE__ */ jsxs28(Fragment4, { children: [
+            /* @__PURE__ */ jsx36(Check2, { className: "w-4 h-4 mr-2" }),
             submitText
           ] })
         }
@@ -3814,18 +4193,18 @@ var DynamicForm = ({
   };
   const renderSection = (section) => {
     const isCollapsed = collapsedSections[section.title];
-    return /* @__PURE__ */ jsxs24("div", { className: "border border-gray-200 dark:border-gray-700 rounded-lg", children: [
-      /* @__PURE__ */ jsx26(
+    return /* @__PURE__ */ jsxs28("div", { className: "border border-gray-200 dark:border-gray-700 rounded-lg", children: [
+      /* @__PURE__ */ jsx36(
         "div",
         {
           className: `px-4 py-3 bg-gray-50 dark:bg-gray-700 ${section.collapsible ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" : ""}`,
           onClick: section.collapsible ? () => toggleSection(section.title) : void 0,
-          children: /* @__PURE__ */ jsxs24("div", { className: "flex items-center justify-between", children: [
-            /* @__PURE__ */ jsxs24("div", { children: [
-              /* @__PURE__ */ jsx26("h3", { className: "text-lg font-medium text-gray-900 dark:text-gray-100", children: section.title }),
-              section.description && /* @__PURE__ */ jsx26("p", { className: "text-sm text-gray-600 dark:text-gray-400 mt-1", children: section.description })
+          children: /* @__PURE__ */ jsxs28("div", { className: "flex items-center justify-between", children: [
+            /* @__PURE__ */ jsxs28("div", { children: [
+              /* @__PURE__ */ jsx36("h3", { className: "text-lg font-medium text-gray-900 dark:text-gray-100", children: section.title }),
+              section.description && /* @__PURE__ */ jsx36("p", { className: "text-sm text-gray-600 dark:text-gray-400 mt-1", children: section.description })
             ] }),
-            section.collapsible && /* @__PURE__ */ jsx26(
+            section.collapsible && /* @__PURE__ */ jsx36(
               ChevronDown4,
               {
                 className: `w-5 h-5 text-gray-400 transition-transform ${isCollapsed ? "-rotate-90" : ""}`
@@ -3834,30 +4213,151 @@ var DynamicForm = ({
           ] })
         }
       ),
-      (!section.collapsible || !isCollapsed) && /* @__PURE__ */ jsx26("div", { className: "p-4 space-y-4", children: section.fields.map(renderField) })
+      (!section.collapsible || !isCollapsed) && /* @__PURE__ */ jsx36("div", { className: "p-4 space-y-4", children: section.fields.map(renderField) })
     ] }, section.title);
   };
-  return /* @__PURE__ */ jsxs24("form", { onSubmit: handleSubmit, className: `space-y-6 ${className}`, children: [
+  return /* @__PURE__ */ jsxs28("form", { onSubmit: handleSubmit, className: `space-y-6 ${className}`, children: [
     actionPosition === "top" && renderActions(),
-    sections.length > 0 ? /* @__PURE__ */ jsx26("div", { className: "space-y-6", children: sections.map(renderSection) }) : /* @__PURE__ */ jsx26("div", { className: "space-y-4", children: fields.map(renderField) }),
+    sections.length > 0 ? /* @__PURE__ */ jsx36("div", { className: "space-y-6", children: sections.map(renderSection) }) : /* @__PURE__ */ jsx36("div", { className: "space-y-4", children: fields.map(renderField) }),
     (actionPosition === "bottom" || actionPosition === "both") && renderActions()
   ] });
 };
 
+// src/components/forms/FormField.tsx
+import { jsx as jsx37, jsxs as jsxs29 } from "react/jsx-runtime";
+var FormField = ({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+  required = false,
+  disabled = false,
+  error,
+  icon: Icon,
+  className = "",
+  step,
+  min,
+  max
+}) => {
+  return /* @__PURE__ */ jsxs29("div", { className: `space-y-1 ${className}`, children: [
+    /* @__PURE__ */ jsxs29(Label, { className: "text-xs font-medium text-gray-600 block", children: [
+      label,
+      required && /* @__PURE__ */ jsx37("span", { className: "text-red-500 ml-1", children: "*" })
+    ] }),
+    /* @__PURE__ */ jsxs29("div", { className: "relative", children: [
+      Icon && /* @__PURE__ */ jsx37("div", { className: "absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none", children: /* @__PURE__ */ jsx37(Icon, { className: "w-3 h-3 text-gray-400" }) }),
+      /* @__PURE__ */ jsx37(
+        Input,
+        {
+          type,
+          value,
+          onChange: (e) => onChange(e.target.value),
+          placeholder,
+          required,
+          disabled,
+          className: Icon ? "pl-6" : "",
+          step,
+          min,
+          max
+        }
+      )
+    ] }),
+    error && /* @__PURE__ */ jsx37("div", { className: "text-red-600 text-xs mt-1", children: error })
+  ] });
+};
+
+// src/components/forms/PriceInput.tsx
+import { jsx as jsx38, jsxs as jsxs30 } from "react/jsx-runtime";
+var PriceInput = ({
+  label,
+  value,
+  onChange,
+  currency = "TRY",
+  placeholder,
+  required = false,
+  disabled = false,
+  error,
+  className = ""
+}) => {
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("tr-TR", {
+      style: "currency",
+      currency
+    }).format(amount);
+  };
+  return /* @__PURE__ */ jsxs30("div", { className, children: [
+    /* @__PURE__ */ jsx38(
+      Input,
+      {
+        label,
+        type: "number",
+        value,
+        onChange,
+        placeholder,
+        required,
+        disabled,
+        error,
+        step: "0.01",
+        min: "0",
+        rightIcon: /* @__PURE__ */ jsx38("span", { className: "text-sm text-gray-500", children: currency })
+      }
+    ),
+    typeof value === "number" && value > 0 && /* @__PURE__ */ jsx38("div", { className: "text-xs text-gray-500 mt-1", children: formatCurrency(value) })
+  ] });
+};
+
+// src/components/forms/DeviceSelector.tsx
+import { jsx as jsx39 } from "react/jsx-runtime";
+var DeviceSelector = ({
+  label,
+  devices,
+  value,
+  onChange,
+  placeholder = "Cihaz se\xE7in...",
+  required = false,
+  disabled = false,
+  error,
+  className = "",
+  showStock = true,
+  showPrice = true
+}) => {
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("tr-TR", {
+      style: "currency",
+      currency: "TRY"
+    }).format(amount);
+  };
+  const options = devices.map((device) => ({
+    value: device.id,
+    label: `${device.brand} ${device.model} - ${formatCurrency(device.price)} ${showStock ? `(Stok: ${device.stock})` : ""}`,
+    disabled: device.stock === 0
+  }));
+  return /* @__PURE__ */ jsx39("div", { className, children: /* @__PURE__ */ jsx39(
+    Select,
+    {
+      label,
+      options,
+      value,
+      onChange: (e) => onChange(e.target.value),
+      placeholder,
+      required,
+      disabled,
+      error,
+      fullWidth: true
+    }
+  ) });
+};
+
 // src/pages/ComponentsDemo.tsx
-import { useState as useState15 } from "react";
+import { useState as useState16 } from "react";
 import {
-  Users as Users2,
-  Package as Package2,
-  Calendar as Calendar3,
-  TrendingUp as TrendingUp2,
   Edit,
   Trash2,
   Eye,
-  Plus as Plus2,
-  Settings as Settings3
+  Plus
 } from "lucide-react";
-import { jsx as jsx27, jsxs as jsxs25 } from "react/jsx-runtime";
+import { jsx as jsx40, jsxs as jsxs31 } from "react/jsx-runtime";
 var samplePatients = [
   { id: 1, name: "Ahmet Y\u0131lmaz", phone: "0532 123 4567", email: "ahmet@example.com", status: "Aktif", lastVisit: "2024-01-15" },
   { id: 2, name: "Fatma Kaya", phone: "0533 234 5678", email: "fatma@example.com", status: "Beklemede", lastVisit: "2024-01-10" },
@@ -3866,10 +4366,10 @@ var samplePatients = [
   { id: 5, name: "Ali \xD6zkan", phone: "0536 567 8901", email: "ali@example.com", status: "Aktif", lastVisit: "2024-01-14" }
 ];
 var ComponentsDemo = () => {
-  const [sidebarOpen, setSidebarOpen] = useState15(false);
-  const [selectedPatients, setSelectedPatients] = useState15([]);
-  const [currentPage, setCurrentPage] = useState15(1);
-  const [pageSize, setPageSize] = useState15(10);
+  const [sidebarOpen, setSidebarOpen] = useState16(false);
+  const [selectedPatients, setSelectedPatients] = useState16([]);
+  const [currentPage, setCurrentPage] = useState16(1);
+  const [pageSize, setPageSize] = useState16(10);
   const { isOpen: isModalOpen, openModal, closeModal } = useModal();
   const { isOpen: isFormModalOpen, openModal: openFormModal, closeModal: closeFormModal } = useModal();
   const user = {
@@ -3877,23 +4377,16 @@ var ComponentsDemo = () => {
     email: "ornek@xear.com",
     avatar: "https://ui-avatars.com/api/?name=Dr+\xD6rnek+Kullan\u0131c\u0131&background=3b82f6&color=fff"
   };
-  const navigationItems = [
-    { id: "dashboard", label: "Dashboard", icon: /* @__PURE__ */ jsx27(TrendingUp2, { className: "w-5 h-5" }), path: "/dashboard" },
-    { id: "patients", label: "Hastalar", icon: /* @__PURE__ */ jsx27(Users2, { className: "w-5 h-5" }), path: "/patients" },
-    { id: "appointments", label: "Randevular", icon: /* @__PURE__ */ jsx27(Calendar3, { className: "w-5 h-5" }), path: "/appointments" },
-    { id: "inventory", label: "Envanter", icon: /* @__PURE__ */ jsx27(Package2, { className: "w-5 h-5" }), path: "/inventory" },
-    { id: "settings", label: "Ayarlar", icon: /* @__PURE__ */ jsx27(Settings3, { className: "w-5 h-5" }), path: "/settings" }
-  ];
   const columns = [
     {
       key: "name",
       title: "Hasta Ad\u0131",
       sortable: true,
-      render: (value, record) => /* @__PURE__ */ jsxs25("div", { className: "flex items-center", children: [
-        /* @__PURE__ */ jsx27("div", { className: "w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3", children: /* @__PURE__ */ jsx27("span", { className: "text-blue-600 font-medium text-sm", children: value.split(" ").map((n) => n[0]).join("") }) }),
-        /* @__PURE__ */ jsxs25("div", { children: [
-          /* @__PURE__ */ jsx27("div", { className: "font-medium text-gray-900 dark:text-gray-100", children: value }),
-          /* @__PURE__ */ jsx27("div", { className: "text-sm text-gray-500", children: record.email })
+      render: (value, record) => /* @__PURE__ */ jsxs31("div", { className: "flex items-center", children: [
+        /* @__PURE__ */ jsx40("div", { className: "w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3", children: /* @__PURE__ */ jsx40("span", { className: "text-blue-600 font-medium text-sm", children: value.split(" ").map((n) => n[0]).join("") }) }),
+        /* @__PURE__ */ jsxs31("div", { children: [
+          /* @__PURE__ */ jsx40("div", { className: "font-medium text-gray-900 dark:text-gray-100", children: value }),
+          /* @__PURE__ */ jsx40("div", { className: "text-sm text-gray-500", children: record.email })
         ] })
       ] })
     },
@@ -3906,7 +4399,7 @@ var ComponentsDemo = () => {
       key: "status",
       title: "Durum",
       sortable: true,
-      render: (value) => /* @__PURE__ */ jsx27("span", { className: `inline-flex px-2 py-1 text-xs font-semibold rounded-full ${value === "Aktif" ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" : value === "Beklemede" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400" : "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"}`, children: value })
+      render: (value) => /* @__PURE__ */ jsx40("span", { className: `inline-flex px-2 py-1 text-xs font-semibold rounded-full ${value === "Aktif" ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400" : value === "Beklemede" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400" : "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"}`, children: value })
     },
     {
       key: "lastVisit",
@@ -3919,21 +4412,21 @@ var ComponentsDemo = () => {
     {
       key: "view",
       label: "G\xF6r\xFCnt\xFCle",
-      icon: /* @__PURE__ */ jsx27(Eye, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ jsx40(Eye, { className: "w-4 h-4" }),
       onClick: (record) => console.log("Viewing:", record),
       variant: "secondary"
     },
     {
       key: "edit",
       label: "D\xFCzenle",
-      icon: /* @__PURE__ */ jsx27(Edit, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ jsx40(Edit, { className: "w-4 h-4" }),
       onClick: (record) => console.log("Editing:", record),
       variant: "primary"
     },
     {
       key: "delete",
       label: "Sil",
-      icon: /* @__PURE__ */ jsx27(Trash2, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ jsx40(Trash2, { className: "w-4 h-4" }),
       onClick: (record) => console.log("Deleting:", record),
       variant: "danger"
     }
@@ -3942,14 +4435,14 @@ var ComponentsDemo = () => {
     {
       key: "activate",
       label: "Aktifle\u015Ftir",
-      icon: /* @__PURE__ */ jsx27(Plus2, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ jsx40(Plus, { className: "w-4 h-4" }),
       onClick: (records) => console.log("Activating:", records),
       variant: "primary"
     },
     {
       key: "delete",
       label: "Toplu Sil",
-      icon: /* @__PURE__ */ jsx27(Trash2, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ jsx40(Trash2, { className: "w-4 h-4" }),
       onClick: (records) => console.log("Bulk deleting:", records),
       variant: "danger"
     }
@@ -4036,19 +4529,19 @@ var ComponentsDemo = () => {
   patientStats[1].value = samplePatients.filter((p) => p.status === "Aktif").length.toString();
   patientStats[2].value = samplePatients.filter((p) => p.status === "Beklemede").length.toString();
   patientStats[3].value = "2";
-  return /* @__PURE__ */ jsx27(
+  return /* @__PURE__ */ jsx40(
     Layout_default,
     {
       user,
       currentPath: "/demo",
-      children: /* @__PURE__ */ jsxs25("div", { className: "p-6 space-y-8", children: [
-        /* @__PURE__ */ jsxs25("div", { children: [
-          /* @__PURE__ */ jsx27("h1", { className: "text-3xl font-bold text-gray-900 dark:text-gray-100", children: "UI Bile\u015Fenleri Demo" }),
-          /* @__PURE__ */ jsx27("p", { className: "text-gray-600 dark:text-gray-400 mt-2", children: "X-Ear uygulamas\u0131 i\xE7in olu\u015Fturulan modern React bile\u015Fenlerinin demo sayfas\u0131" })
+      children: /* @__PURE__ */ jsxs31("div", { className: "p-6 space-y-8", children: [
+        /* @__PURE__ */ jsxs31("div", { children: [
+          /* @__PURE__ */ jsx40("h1", { className: "text-3xl font-bold text-gray-900 dark:text-gray-100", children: "UI Bile\u015Fenleri Demo" }),
+          /* @__PURE__ */ jsx40("p", { className: "text-gray-600 dark:text-gray-400 mt-2", children: "X-Ear uygulamas\u0131 i\xE7in olu\u015Fturulan modern React bile\u015Fenlerinin demo sayfas\u0131" })
         ] }),
-        /* @__PURE__ */ jsxs25("section", { children: [
-          /* @__PURE__ */ jsx27("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "\u0130statistik Kartlar\u0131" }),
-          /* @__PURE__ */ jsx27("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6", children: patientStats.map((stat, index) => /* @__PURE__ */ jsx27(
+        /* @__PURE__ */ jsxs31("section", { children: [
+          /* @__PURE__ */ jsx40("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "\u0130statistik Kartlar\u0131" }),
+          /* @__PURE__ */ jsx40("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6", children: patientStats.map((stat, index) => /* @__PURE__ */ jsx40(
             StatsCard,
             {
               ...stat,
@@ -4058,7 +4551,7 @@ var ComponentsDemo = () => {
             },
             index
           )) }),
-          /* @__PURE__ */ jsx27("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6", children: inventoryStats.map((stat, index) => /* @__PURE__ */ jsx27(
+          /* @__PURE__ */ jsx40("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6", children: inventoryStats.map((stat, index) => /* @__PURE__ */ jsx40(
             StatsCard,
             {
               ...stat,
@@ -4067,10 +4560,10 @@ var ComponentsDemo = () => {
             index
           )) })
         ] }),
-        /* @__PURE__ */ jsxs25("section", { children: [
-          /* @__PURE__ */ jsx27("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "Modal Bile\u015Fenleri" }),
-          /* @__PURE__ */ jsxs25("div", { className: "flex space-x-4", children: [
-            /* @__PURE__ */ jsx27(
+        /* @__PURE__ */ jsxs31("section", { children: [
+          /* @__PURE__ */ jsx40("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "Modal Bile\u015Fenleri" }),
+          /* @__PURE__ */ jsxs31("div", { className: "flex space-x-4", children: [
+            /* @__PURE__ */ jsx40(
               "button",
               {
                 onClick: openModal,
@@ -4078,7 +4571,7 @@ var ComponentsDemo = () => {
                 children: "Basit Modal A\xE7"
               }
             ),
-            /* @__PURE__ */ jsx27(
+            /* @__PURE__ */ jsx40(
               "button",
               {
                 onClick: openFormModal,
@@ -4087,7 +4580,7 @@ var ComponentsDemo = () => {
               }
             )
           ] }),
-          /* @__PURE__ */ jsx27(
+          /* @__PURE__ */ jsx40(
             Modal,
             {
               isOpen: isModalOpen,
@@ -4098,10 +4591,10 @@ var ComponentsDemo = () => {
               },
               title: "\xD6rnek Modal",
               size: "md",
-              children: /* @__PURE__ */ jsx27("div", { className: "p-4", children: /* @__PURE__ */ jsx27("p", { className: "text-gray-600 dark:text-gray-400", children: "Bu bir \xF6rnek modal i\xE7eri\u011Fidir. Modal bile\u015Feni farkl\u0131 boyutlarda, \xF6zelle\u015Ftirilebilir footer'lar ile kullan\u0131labilir." }) })
+              children: /* @__PURE__ */ jsx40("div", { className: "p-4", children: /* @__PURE__ */ jsx40("p", { className: "text-gray-600 dark:text-gray-400", children: "Bu bir \xF6rnek modal i\xE7eri\u011Fidir. Modal bile\u015Feni farkl\u0131 boyutlarda, \xF6zelle\u015Ftirilebilir footer'lar ile kullan\u0131labilir." }) })
             }
           ),
-          /* @__PURE__ */ jsx27(
+          /* @__PURE__ */ jsx40(
             Modal,
             {
               isOpen: isFormModalOpen,
@@ -4109,7 +4602,7 @@ var ComponentsDemo = () => {
               title: "Hasta Bilgileri",
               size: "lg",
               showFooter: false,
-              children: /* @__PURE__ */ jsx27("div", { className: "p-4", children: /* @__PURE__ */ jsx27(
+              children: /* @__PURE__ */ jsx40("div", { className: "p-4", children: /* @__PURE__ */ jsx40(
                 DynamicForm,
                 {
                   sections: formSections,
@@ -4122,9 +4615,9 @@ var ComponentsDemo = () => {
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs25("section", { children: [
-          /* @__PURE__ */ jsx27("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "Veri Tablosu" }),
-          /* @__PURE__ */ jsx27(
+        /* @__PURE__ */ jsxs31("section", { children: [
+          /* @__PURE__ */ jsx40("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "Veri Tablosu" }),
+          /* @__PURE__ */ jsx40(
             DataTable,
             {
               data: samplePatients,
@@ -4157,9 +4650,9 @@ var ComponentsDemo = () => {
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs25("section", { children: [
-          /* @__PURE__ */ jsx27("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "Dinamik Form" }),
-          /* @__PURE__ */ jsx27("div", { className: "bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700", children: /* @__PURE__ */ jsx27(
+        /* @__PURE__ */ jsxs31("section", { children: [
+          /* @__PURE__ */ jsx40("h2", { className: "text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4", children: "Dinamik Form" }),
+          /* @__PURE__ */ jsx40("div", { className: "bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700", children: /* @__PURE__ */ jsx40(
             DynamicForm,
             {
               fields: formFields,
@@ -4178,13 +4671,13 @@ var ComponentsDemo = () => {
 var ComponentsDemo_default = ComponentsDemo;
 
 // src/pages/InventoryPage.tsx
-import { useState as useState16, useEffect as useEffect10, useMemo as useMemo2 } from "react";
+import { useState as useState17, useEffect as useEffect10, useMemo as useMemo2 } from "react";
 import {
   Search as Search3,
-  Plus as Plus3,
+  Plus as Plus2,
   Upload,
   Download,
-  MoreHorizontal as MoreHorizontal2,
+  MoreHorizontal,
   Package as Package3,
   AlertTriangle as AlertTriangle2,
   DollarSign as DollarSign2,
@@ -4193,7 +4686,7 @@ import {
   Trash2 as Trash22,
   Eye as Eye2
 } from "lucide-react";
-import { jsx as jsx28, jsxs as jsxs26 } from "react/jsx-runtime";
+import { jsx as jsx41, jsxs as jsxs32 } from "react/jsx-runtime";
 var sampleInventoryData = [
   {
     id: "1",
@@ -4236,23 +4729,23 @@ var categories = ["All", "Electronics", "Accessories", "Components", "Tools"];
 var brands = ["All", "TechBrand", "AudioMax", "ComponentCorp", "ToolMaster"];
 var statusOptions = ["All", "Active", "Inactive", "Discontinued"];
 var InventoryPage = () => {
-  const [inventoryData, setInventoryData] = useState16(sampleInventoryData);
-  const [loading, setLoading] = useState16(false);
-  const [filters, setFilters] = useState16({
+  const [inventoryData, setInventoryData] = useState17(sampleInventoryData);
+  const [loading, setLoading] = useState17(false);
+  const [filters, setFilters] = useState17({
     search: "",
     category: "All",
     brand: "All",
     status: "All",
     lowStock: false
   });
-  const [isAddModalOpen, setIsAddModalOpen] = useState16(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState16(false);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState16(false);
-  const [isBulkModalOpen, setIsBulkModalOpen] = useState16(false);
-  const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState16(false);
-  const [selectedItem, setSelectedItem] = useState16(null);
-  const [bulkOperation, setBulkOperation] = useState16("category");
-  const [bulkFormData, setBulkFormData] = useState16({
+  const [isAddModalOpen, setIsAddModalOpen] = useState17(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState17(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState17(false);
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState17(false);
+  const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState17(false);
+  const [selectedItem, setSelectedItem] = useState17(null);
+  const [bulkOperation, setBulkOperation] = useState17("category");
+  const [bulkFormData, setBulkFormData] = useState17({
     category: "",
     priceType: "percentage",
     // percentage, fixed, increase, decrease
@@ -4262,13 +4755,13 @@ var InventoryPage = () => {
     stockValue: "",
     supplier: ""
   });
-  const [selectedRowKeys, setSelectedRowKeys] = useState16([]);
-  const [pagination, setPagination] = useState16({
+  const [selectedRowKeys, setSelectedRowKeys] = useState17([]);
+  const [pagination, setPagination] = useState17({
     current: 1,
     pageSize: 20,
     total: 0
   });
-  const [formData, setFormData] = useState16({
+  const [formData, setFormData] = useState17({
     productName: "",
     brand: "",
     model: "",
@@ -4326,9 +4819,9 @@ var InventoryPage = () => {
       key: "productName",
       title: "Product Name",
       sortable: true,
-      render: (value, record) => /* @__PURE__ */ jsxs26("div", { className: "flex flex-col", children: [
-        /* @__PURE__ */ jsx28("span", { className: "font-medium text-gray-900 dark:text-white", children: value }),
-        /* @__PURE__ */ jsxs26("span", { className: "text-sm text-gray-500 dark:text-gray-400", children: [
+      render: (value, record) => /* @__PURE__ */ jsxs32("div", { className: "flex flex-col", children: [
+        /* @__PURE__ */ jsx41("span", { className: "font-medium text-gray-900 dark:text-white", children: value }),
+        /* @__PURE__ */ jsxs32("span", { className: "text-sm text-gray-500 dark:text-gray-400", children: [
           record.brand,
           " - ",
           record.model
@@ -4339,15 +4832,15 @@ var InventoryPage = () => {
       key: "category",
       title: "Category",
       sortable: true,
-      render: (value) => /* @__PURE__ */ jsx28(Badge, { variant: "secondary", children: value })
+      render: (value) => /* @__PURE__ */ jsx41(Badge, { variant: "secondary", children: value })
     },
     {
       key: "stock",
       title: "Stock",
       sortable: true,
-      render: (value, record) => /* @__PURE__ */ jsxs26("div", { className: "flex items-center space-x-2", children: [
-        /* @__PURE__ */ jsx28("span", { className: `font-medium ${value <= record.minStock ? "text-red-600" : "text-gray-900 dark:text-white"}`, children: value }),
-        value <= record.minStock && /* @__PURE__ */ jsx28(AlertTriangle2, { className: "w-4 h-4 text-red-500" })
+      render: (value, record) => /* @__PURE__ */ jsxs32("div", { className: "flex items-center space-x-2", children: [
+        /* @__PURE__ */ jsx41("span", { className: `font-medium ${value <= record.minStock ? "text-red-600" : "text-gray-900 dark:text-white"}`, children: value }),
+        value <= record.minStock && /* @__PURE__ */ jsx41(AlertTriangle2, { className: "w-4 h-4 text-red-500" })
       ] })
     },
     {
@@ -4376,7 +4869,7 @@ var InventoryPage = () => {
     {
       key: "status",
       title: "Status",
-      render: (value) => /* @__PURE__ */ jsx28(
+      render: (value) => /* @__PURE__ */ jsx41(
         Badge,
         {
           variant: value === "active" ? "success" : value === "inactive" ? "warning" : "danger",
@@ -4389,7 +4882,7 @@ var InventoryPage = () => {
     {
       key: "view",
       label: "View Details",
-      icon: /* @__PURE__ */ jsx28(Eye2, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ jsx41(Eye2, { className: "w-4 h-4" }),
       onClick: (record) => {
         setSelectedItem(record);
         setIsDetailsModalOpen(true);
@@ -4398,7 +4891,7 @@ var InventoryPage = () => {
     {
       key: "edit",
       label: "Edit",
-      icon: /* @__PURE__ */ jsx28(Edit2, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ jsx41(Edit2, { className: "w-4 h-4" }),
       onClick: (record) => {
         setSelectedItem(record);
         setFormData(record);
@@ -4408,7 +4901,7 @@ var InventoryPage = () => {
     {
       key: "delete",
       label: "Delete",
-      icon: /* @__PURE__ */ jsx28(Trash22, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ jsx41(Trash22, { className: "w-4 h-4" }),
       variant: "danger",
       onClick: (record) => {
         if (window.confirm(`Are you sure you want to delete ${record.productName}?`)) {
@@ -4421,7 +4914,7 @@ var InventoryPage = () => {
     {
       key: "bulk-operations",
       label: "Bulk Operations",
-      icon: /* @__PURE__ */ jsx28(MoreHorizontal2, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ jsx41(MoreHorizontal, { className: "w-4 h-4" }),
       onClick: (selectedRecords) => {
         setIsBulkModalOpen(true);
       }
@@ -4429,7 +4922,7 @@ var InventoryPage = () => {
     {
       key: "delete",
       label: "Delete Selected",
-      icon: /* @__PURE__ */ jsx28(Trash22, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ jsx41(Trash22, { className: "w-4 h-4" }),
       variant: "danger",
       onClick: (selectedRecords) => {
         if (window.confirm(`Are you sure you want to delete ${selectedRecords.length} items?`)) {
@@ -4442,13 +4935,13 @@ var InventoryPage = () => {
     {
       key: "export",
       label: "Export Selected",
-      icon: /* @__PURE__ */ jsx28(Download, { className: "w-4 h-4" }),
+      icon: /* @__PURE__ */ jsx41(Download, { className: "w-4 h-4" }),
       onClick: (selectedRecords) => {
         exportToCSV(selectedRecords);
       }
     }
   ];
-  const handleBulkOperation = async () => {
+  const handleBulkOperation = () => {
     const selectedRecords = inventoryData.filter((item) => selectedRowKeys.includes(item.id));
     if (selectedRecords.length === 0) {
       alert("Please select items to perform bulk operations");
@@ -4775,99 +5268,99 @@ var InventoryPage = () => {
   const handleRowSelection = (selectedRowKeys2, selectedRows) => {
     setSelectedRowKeys(selectedRowKeys2);
   };
-  return /* @__PURE__ */ jsxs26("div", { className: "p-6 space-y-6", children: [
-    /* @__PURE__ */ jsxs26("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ jsxs26("div", { children: [
-        /* @__PURE__ */ jsx28("h1", { className: "text-2xl font-bold text-gray-900 dark:text-white", children: "Inventory Management" }),
-        /* @__PURE__ */ jsx28("p", { className: "text-gray-600 dark:text-gray-400", children: "Manage your product inventory" })
+  return /* @__PURE__ */ jsxs32("div", { className: "p-6 space-y-6", children: [
+    /* @__PURE__ */ jsxs32("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxs32("div", { children: [
+        /* @__PURE__ */ jsx41("h1", { className: "text-2xl font-bold text-gray-900 dark:text-white", children: "Inventory Management" }),
+        /* @__PURE__ */ jsx41("p", { className: "text-gray-600 dark:text-gray-400", children: "Manage your product inventory" })
       ] }),
-      /* @__PURE__ */ jsxs26("div", { className: "flex items-center space-x-3", children: [
-        /* @__PURE__ */ jsx28(
+      /* @__PURE__ */ jsxs32("div", { className: "flex items-center space-x-3", children: [
+        /* @__PURE__ */ jsx41(
           Button,
           {
             variant: "outline",
             onClick: printInventory,
-            icon: /* @__PURE__ */ jsx28(Download, { className: "w-4 h-4" }),
+            icon: /* @__PURE__ */ jsx41(Download, { className: "w-4 h-4" }),
             children: "Print"
           }
         ),
-        /* @__PURE__ */ jsx28(
+        /* @__PURE__ */ jsx41(
           Button,
           {
             variant: "outline",
             onClick: () => exportToCSV(filteredData),
-            icon: /* @__PURE__ */ jsx28(Download, { className: "w-4 h-4" }),
+            icon: /* @__PURE__ */ jsx41(Download, { className: "w-4 h-4" }),
             children: "Export CSV"
           }
         ),
-        /* @__PURE__ */ jsx28(
+        /* @__PURE__ */ jsx41(
           Button,
           {
             variant: "outline",
             onClick: () => setIsBulkUploadModalOpen(true),
-            icon: /* @__PURE__ */ jsx28(Upload, { className: "w-4 h-4" }),
+            icon: /* @__PURE__ */ jsx41(Upload, { className: "w-4 h-4" }),
             children: "Bulk Upload"
           }
         ),
-        /* @__PURE__ */ jsx28(
+        /* @__PURE__ */ jsx41(
           Button,
           {
             onClick: () => setIsAddModalOpen(true),
-            icon: /* @__PURE__ */ jsx28(Plus3, { className: "w-4 h-4" }),
+            icon: /* @__PURE__ */ jsx41(Plus2, { className: "w-4 h-4" }),
             children: "Add Product"
           }
         )
       ] })
     ] }),
-    /* @__PURE__ */ jsxs26("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6", children: [
-      /* @__PURE__ */ jsx28(
+    /* @__PURE__ */ jsxs32("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6", children: [
+      /* @__PURE__ */ jsx41(
         StatsCard,
         {
           title: "Total Products",
           value: stats.totalProducts.toString(),
           color: "blue",
-          icon: /* @__PURE__ */ jsx28(Package3, { className: "w-6 h-6" })
+          icon: /* @__PURE__ */ jsx41(Package3, { className: "w-6 h-6" })
         }
       ),
-      /* @__PURE__ */ jsx28(
+      /* @__PURE__ */ jsx41(
         StatsCard,
         {
           title: "Low Stock",
           value: stats.lowStockCount.toString(),
           color: "red",
-          icon: /* @__PURE__ */ jsx28(AlertTriangle2, { className: "w-6 h-6" })
+          icon: /* @__PURE__ */ jsx41(AlertTriangle2, { className: "w-6 h-6" })
         }
       ),
-      /* @__PURE__ */ jsx28(
+      /* @__PURE__ */ jsx41(
         StatsCard,
         {
           title: "Total Value",
           value: `\u20BA${stats.totalValue.toFixed(2)}`,
           color: "green",
-          icon: /* @__PURE__ */ jsx28(DollarSign2, { className: "w-6 h-6" })
+          icon: /* @__PURE__ */ jsx41(DollarSign2, { className: "w-6 h-6" })
         }
       ),
-      /* @__PURE__ */ jsx28(
+      /* @__PURE__ */ jsx41(
         StatsCard,
         {
           title: "Active Items",
           value: stats.activeTrials.toString(),
           color: "purple",
-          icon: /* @__PURE__ */ jsx28(TrendingUp3, { className: "w-6 h-6" })
+          icon: /* @__PURE__ */ jsx41(TrendingUp3, { className: "w-6 h-6" })
         }
       )
     ] }),
-    /* @__PURE__ */ jsx28(Card, { className: "p-4", children: /* @__PURE__ */ jsxs26("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4", children: [
-      /* @__PURE__ */ jsx28("div", { className: "lg:col-span-2", children: /* @__PURE__ */ jsx28(
+    /* @__PURE__ */ jsx41(Card, { className: "p-4", children: /* @__PURE__ */ jsxs32("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4", children: [
+      /* @__PURE__ */ jsx41("div", { className: "lg:col-span-2", children: /* @__PURE__ */ jsx41(
         Input,
         {
           placeholder: "Search products, brands, models...",
           value: filters.search,
           onChange: (e) => handleFilterChange("search", e.target.value),
-          leftIcon: /* @__PURE__ */ jsx28(Search3, { className: "w-4 h-4" })
+          leftIcon: /* @__PURE__ */ jsx41(Search3, { className: "w-4 h-4" })
         }
       ) }),
-      /* @__PURE__ */ jsx28(
+      /* @__PURE__ */ jsx41(
         Select,
         {
           value: filters.category,
@@ -4876,7 +5369,7 @@ var InventoryPage = () => {
           placeholder: "Category"
         }
       ),
-      /* @__PURE__ */ jsx28(
+      /* @__PURE__ */ jsx41(
         Select,
         {
           value: filters.brand,
@@ -4885,7 +5378,7 @@ var InventoryPage = () => {
           placeholder: "Brand"
         }
       ),
-      /* @__PURE__ */ jsx28(
+      /* @__PURE__ */ jsx41(
         Select,
         {
           value: filters.status,
@@ -4894,7 +5387,7 @@ var InventoryPage = () => {
           placeholder: "Status"
         }
       ),
-      /* @__PURE__ */ jsx28("div", { className: "flex items-center", children: /* @__PURE__ */ jsx28(
+      /* @__PURE__ */ jsx41("div", { className: "flex items-center", children: /* @__PURE__ */ jsx41(
         Checkbox,
         {
           checked: filters.lowStock,
@@ -4903,7 +5396,7 @@ var InventoryPage = () => {
         }
       ) })
     ] }) }),
-    /* @__PURE__ */ jsx28(Card, { children: /* @__PURE__ */ jsx28(
+    /* @__PURE__ */ jsx41(Card, { children: /* @__PURE__ */ jsx41(
       DataTable,
       {
         data: filteredData.slice(
@@ -4929,7 +5422,7 @@ var InventoryPage = () => {
         striped: true
       }
     ) }),
-    /* @__PURE__ */ jsx28(
+    /* @__PURE__ */ jsx41(
       Modal,
       {
         isOpen: isAddModalOpen,
@@ -4937,9 +5430,9 @@ var InventoryPage = () => {
         onSave: handleAddItem,
         title: "Add New Product",
         size: "lg",
-        children: /* @__PURE__ */ jsxs26("div", { className: "space-y-4", children: [
-          /* @__PURE__ */ jsxs26("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
-            /* @__PURE__ */ jsx28(
+        children: /* @__PURE__ */ jsxs32("div", { className: "space-y-4", children: [
+          /* @__PURE__ */ jsxs32("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Product Name *",
@@ -4948,7 +5441,7 @@ var InventoryPage = () => {
                 placeholder: "Enter product name"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Brand *",
@@ -4957,7 +5450,7 @@ var InventoryPage = () => {
                 placeholder: "Enter brand"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Model",
@@ -4966,7 +5459,7 @@ var InventoryPage = () => {
                 placeholder: "Enter model"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Select,
               {
                 label: "Category *",
@@ -4976,7 +5469,7 @@ var InventoryPage = () => {
                 placeholder: "Select category"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Stock Quantity",
@@ -4986,7 +5479,7 @@ var InventoryPage = () => {
                 placeholder: "0"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Minimum Stock",
@@ -4996,7 +5489,7 @@ var InventoryPage = () => {
                 placeholder: "0"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Unit Price",
@@ -5007,7 +5500,7 @@ var InventoryPage = () => {
                 placeholder: "0.00"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Barcode",
@@ -5016,7 +5509,7 @@ var InventoryPage = () => {
                 placeholder: "Enter barcode"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Supplier",
@@ -5025,7 +5518,7 @@ var InventoryPage = () => {
                 placeholder: "Enter supplier"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Warranty Period",
@@ -5035,7 +5528,7 @@ var InventoryPage = () => {
               }
             )
           ] }),
-          /* @__PURE__ */ jsx28(
+          /* @__PURE__ */ jsx41(
             Select,
             {
               label: "Status",
@@ -5051,7 +5544,7 @@ var InventoryPage = () => {
         ] })
       }
     ),
-    /* @__PURE__ */ jsx28(
+    /* @__PURE__ */ jsx41(
       Modal,
       {
         isOpen: isEditModalOpen,
@@ -5062,9 +5555,9 @@ var InventoryPage = () => {
         onSave: handleEditItem,
         title: "Edit Product",
         size: "lg",
-        children: /* @__PURE__ */ jsxs26("div", { className: "space-y-4", children: [
-          /* @__PURE__ */ jsxs26("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
-            /* @__PURE__ */ jsx28(
+        children: /* @__PURE__ */ jsxs32("div", { className: "space-y-4", children: [
+          /* @__PURE__ */ jsxs32("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Product Name *",
@@ -5073,7 +5566,7 @@ var InventoryPage = () => {
                 placeholder: "Enter product name"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Brand *",
@@ -5082,7 +5575,7 @@ var InventoryPage = () => {
                 placeholder: "Enter brand"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Model",
@@ -5091,7 +5584,7 @@ var InventoryPage = () => {
                 placeholder: "Enter model"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Select,
               {
                 label: "Category *",
@@ -5101,7 +5594,7 @@ var InventoryPage = () => {
                 placeholder: "Select category"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Stock Quantity",
@@ -5111,7 +5604,7 @@ var InventoryPage = () => {
                 placeholder: "0"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Minimum Stock",
@@ -5121,7 +5614,7 @@ var InventoryPage = () => {
                 placeholder: "0"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Unit Price",
@@ -5132,7 +5625,7 @@ var InventoryPage = () => {
                 placeholder: "0.00"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Barcode",
@@ -5141,7 +5634,7 @@ var InventoryPage = () => {
                 placeholder: "Enter barcode"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Supplier",
@@ -5150,7 +5643,7 @@ var InventoryPage = () => {
                 placeholder: "Enter supplier"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx41(
               Input,
               {
                 label: "Warranty Period",
@@ -5160,7 +5653,7 @@ var InventoryPage = () => {
               }
             )
           ] }),
-          /* @__PURE__ */ jsx28(
+          /* @__PURE__ */ jsx41(
             Select,
             {
               label: "Status",
@@ -5176,19 +5669,19 @@ var InventoryPage = () => {
         ] })
       }
     ),
-    /* @__PURE__ */ jsx28(
+    /* @__PURE__ */ jsx41(
       Modal,
       {
         isOpen: isBulkUploadModalOpen,
         onClose: () => setIsBulkUploadModalOpen(false),
         title: "Bulk Upload Products",
         size: "md",
-        children: /* @__PURE__ */ jsxs26("div", { className: "space-y-4", children: [
-          /* @__PURE__ */ jsxs26("div", { className: "text-center", children: [
-            /* @__PURE__ */ jsx28(Upload, { className: "w-12 h-12 mx-auto text-gray-400 mb-4" }),
-            /* @__PURE__ */ jsx28("p", { className: "text-gray-600 dark:text-gray-400", children: "Upload a CSV file with your product data" })
+        children: /* @__PURE__ */ jsxs32("div", { className: "space-y-4", children: [
+          /* @__PURE__ */ jsxs32("div", { className: "text-center", children: [
+            /* @__PURE__ */ jsx41(Upload, { className: "w-12 h-12 mx-auto text-gray-400 mb-4" }),
+            /* @__PURE__ */ jsx41("p", { className: "text-gray-600 dark:text-gray-400", children: "Upload a CSV file with your product data" })
           ] }),
-          /* @__PURE__ */ jsx28("div", { className: "border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6", children: /* @__PURE__ */ jsx28(
+          /* @__PURE__ */ jsx41("div", { className: "border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6", children: /* @__PURE__ */ jsx41(
             "input",
             {
               type: "file",
@@ -5199,7 +5692,7 @@ var InventoryPage = () => {
               }
             }
           ) }),
-          /* @__PURE__ */ jsx28("div", { className: "text-sm text-gray-500 dark:text-gray-400", children: /* @__PURE__ */ jsx28("p", { children: "CSV format: Product Name, Brand, Model, Category, Stock, Min Stock, Unit Price, Barcode, Supplier, Warranty Period" }) })
+          /* @__PURE__ */ jsx41("div", { className: "text-sm text-gray-500 dark:text-gray-400", children: /* @__PURE__ */ jsx41("p", { children: "CSV format: Product Name, Brand, Model, Category, Stock, Min Stock, Unit Price, Barcode, Supplier, Warranty Period" }) })
         ] })
       }
     )
@@ -5208,8 +5701,11 @@ var InventoryPage = () => {
 var InventoryPage_default = InventoryPage;
 export {
   Alert,
+  AlertDescription,
+  AlertIcon,
   Autocomplete,
   Badge,
+  Box,
   Button,
   Card,
   CardContent,
@@ -5220,26 +5716,49 @@ export {
   ComponentsDemo_default as ComponentsDemo,
   DataTable,
   DatePicker,
+  DeviceSelector,
+  Modal as Dialog,
+  Modal as DialogContent,
+  Modal as DialogHeader,
+  Modal as DialogTitle,
   Dropdown,
   DynamicForm,
   FileUpload,
+  FormControl,
+  FormField,
+  FormLabel,
+  HStack,
   Input,
   InventoryPage_default as InventoryPage,
+  Label,
   Layout_default as Layout,
   Loading,
   Modal,
   MultiSelect,
   Pagination,
+  PdfPreviewModal_default as PdfPreviewModal,
+  PriceInput,
   Radio,
   RadioGroup,
   Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SgkMultiUpload_default as SgkMultiUpload,
+  SimpleGrid,
   SimplePagination,
   Spinner,
   StatsCard,
   Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Text,
   Textarea,
   ToastProvider,
   Tooltip,
+  VStack,
   createInventoryStats,
   createPatientStats,
   useModal,
