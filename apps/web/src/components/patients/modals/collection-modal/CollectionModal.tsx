@@ -55,7 +55,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
   const handlePromissoryPaymentSubmit = (noteId: string, amount: number) => {
     collectPromissoryPayment(noteId, amount);
     if (onPromissoryPaymentCreate) {
-      onPromissoryPaymentCreate({ noteId, amount });
+      onPromissoryPaymentCreate({ id: noteId, amount, date: new Date().toISOString(), status: 'completed', method: 'promissory_note' } as any);
     }
   };
 

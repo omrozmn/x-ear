@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Search, Filter, X, MapPin, User, FileText, Save, Star, Clock, Trash2 } from 'lucide-react';
+import { Search, Filter, X, Star, Clock, Trash2, Save } from 'lucide-react';
 import { Button, Input, Checkbox, Badge, Card, Modal, useModal, Textarea, useToastHelpers } from '@x-ear/ui-web';
 import { Patient } from '../../types/patient';
 import { fuzzySearch, FuzzySearchOptions } from '../../utils/fuzzy-search';
@@ -34,67 +34,6 @@ interface SearchFilters {
   sortOrder: 'asc' | 'desc';
 }
 
-interface SearchField {
-  id: keyof SearchFilters;
-  label: string;
-  type: 'text' | 'number' | 'select' | 'date' | 'checkbox' | 'tags';
-  icon: React.ReactNode;
-  options?: { label: string; value: string }[];
-  placeholder?: string;
-}
-
-const SEARCH_FIELDS: SearchField[] = [
-  {
-    id: 'query',
-    label: 'Genel Arama',
-    type: 'text',
-    icon: <Search className="w-4 h-4" />,
-    placeholder: 'Ad, telefon, e-posta ile ara...'
-  },
-  {
-    id: 'location',
-    label: 'Konum',
-    type: 'text',
-    icon: <MapPin className="w-4 h-4" />,
-    placeholder: 'Şehir, ilçe, mahalle...'
-  },
-  {
-    id: 'segment',
-    label: 'Segment',
-    type: 'select',
-    icon: <User className="w-4 h-4" />,
-    options: [
-      { label: 'Tümü', value: '' },
-      { label: 'VIP', value: 'vip' },
-      { label: 'Yeni', value: 'new' },
-      { label: 'Deneme', value: 'trial' },
-      { label: 'Satın Alınmış', value: 'purchased' },
-      { label: 'Kontrol', value: 'control' },
-      { label: 'Yenileme', value: 'renewal' },
-      { label: 'Mevcut', value: 'existing' }
-    ]
-  },
-  {
-    id: 'status',
-    label: 'Durum',
-    type: 'select',
-    icon: <FileText className="w-4 h-4" />,
-    options: [
-      { label: 'Tümü', value: '' },
-      { label: 'Aktif', value: 'active' },
-      { label: 'Pasif', value: 'inactive' }
-    ]
-  }
-];
-
-const SORT_OPTIONS = [
-  { label: 'Ad (A-Z)', value: 'name' },
-  { label: 'Kayıt Tarihi', value: 'createdAt' },
-  { label: 'Son Güncelleme', value: 'updatedAt' },
-  { label: 'Yaş', value: 'age' },
-  { label: 'Telefon', value: 'phone' }
-];
-
 const DEFAULT_FILTERS: SearchFilters = {
   query: '',
   fuzzySearch: true,
@@ -119,17 +58,15 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
 }) => {
   const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [savedQueriesList, setSavedQueriesList] = useState<SavedQuery[]>([]);
   const [showSavedQueries, setShowSavedQueries] = useState(false);
   const [selectedSavedQuery, setSelectedSavedQuery] = useState<SavedQuery | null>(null);
   
   // Modals
   const saveQueryModal = useModal();
-  const editQueryModal = useModal();
   
   // Toast helpers
-  const { success, error, warning } = useToastHelpers();
+  const { success, error } = useToastHelpers();
   
   // Save query form state
   const [saveQueryForm, setSaveQueryForm] = useState({
@@ -144,15 +81,6 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
     setSavedQueriesList(savedQueries.load());
   }, []);
 
-  // Mevcut etiketleri çıkar
-  const extractedTags = useMemo(() => {
-    const tagSet = new Set<string>();
-    patients.forEach(patient => {
-      patient.tags?.forEach(tag => tagSet.add(tag));
-    });
-    return Array.from(tagSet).sort();
-  }, [patients]);
-
   // Filtrelenmiş sonuçları hesapla
   const filteredResults = useMemo(() => {
     let results = [...patients];
@@ -166,7 +94,11 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
           includeScore: true
         };
         
-        const fuzzyResults = fuzzySearch(results, filters.query, fuzzyOptions);
+        const fuzzyResults = fuzzySearch(
+          results.map(p => ({ ...p })),
+          filters.query,
+          fuzzyOptions
+        );
         results = fuzzyResults.map(result => result.item);
       } else {
         // Exact search (existing logic)
@@ -253,8 +185,8 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
 
     // Sıralama
     results.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number | Date | undefined;
+      let bValue: string | number | Date | undefined;
 
       if (filters.sortBy === 'name') {
         aValue = `${a.firstName} ${a.lastName}`.toLowerCase();
@@ -263,17 +195,34 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
         aValue = a.birthDate ? new Date().getFullYear() - new Date(a.birthDate).getFullYear() : 0;
         bValue = b.birthDate ? new Date().getFullYear() - new Date(b.birthDate).getFullYear() : 0;
       } else {
-        aValue = a[filters.sortBy as keyof Patient];
-        bValue = b[filters.sortBy as keyof Patient];
+        aValue = a[filters.sortBy as keyof Patient] as string | number | Date | undefined;
+        bValue = b[filters.sortBy as keyof Patient] as string | number | Date | undefined;
       }
 
-      if (typeof aValue === 'string') {
-        aValue = aValue.toLowerCase();
-        bValue = bValue?.toLowerCase() || '';
+      if (typeof aValue === 'string' || typeof bValue === 'string') {
+        const aStr = (aValue as string | undefined)?.toLowerCase() ?? '';
+        const bStr = (bValue as string | undefined)?.toLowerCase() ?? '';
+        if (aStr < bStr) return filters.sortOrder === 'asc' ? -1 : 1;
+        if (aStr > bStr) return filters.sortOrder === 'asc' ? 1 : -1;
+        return 0;
       }
 
-      if (aValue < bValue) return filters.sortOrder === 'asc' ? -1 : 1;
-      if (aValue > bValue) return filters.sortOrder === 'asc' ? 1 : -1;
+      if (typeof aValue === 'number' || typeof bValue === 'number') {
+        const aNum = (typeof aValue === 'number' ? aValue : 0);
+        const bNum = (typeof bValue === 'number' ? bValue : 0);
+        if (aNum < bNum) return filters.sortOrder === 'asc' ? -1 : 1;
+        if (aNum > bNum) return filters.sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      }
+
+      if (aValue instanceof Date || bValue instanceof Date) {
+        const aDate = (aValue instanceof Date ? aValue : new Date(0)).getTime();
+        const bDate = (bValue instanceof Date ? bValue : new Date(0)).getTime();
+        if (aDate < bDate) return filters.sortOrder === 'asc' ? -1 : 1;
+        if (aDate > bDate) return filters.sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      }
+
       return 0;
     });
 
@@ -288,10 +237,10 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
         return;
       }
 
-      const newQuery = savedQueries.create(
+      savedQueries.create(
         saveQueryForm.name,
         filters.query,
-        filters,
+        { ...filters },
         {
           description: saveQueryForm.description,
           isDefault: saveQueryForm.isDefault,
@@ -310,8 +259,8 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
         isDefault: false,
         tags: []
       });
-    } catch (err: any) {
-      error(err.message || 'Sorgu kaydedilemedi');
+    } catch (err: unknown) {
+      error(err instanceof Error ? err.message : 'Sorgu kaydedilemedi');
     }
   }, [saveQueryForm, filters, success, error, saveQueryModal]);
 
@@ -322,13 +271,13 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
       savedQueries.use(query.id);
       
       // Apply the saved filters
-      setFilters(query.filters as SearchFilters);
+      setFilters(query.filters as unknown as SearchFilters);
       setSelectedSavedQuery(query);
       
       success(`"${query.name}" sorgusu yüklendi`);
       setSavedQueriesList(savedQueries.load()); // Refresh to update usage count
-    } catch (err: any) {
-      error(err.message || 'Sorgu yüklenemedi');
+    } catch (err: unknown) {
+      error(err instanceof Error ? err.message : 'Sorgu yüklenemedi');
     }
   }, [success, error]);
 
@@ -338,8 +287,8 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
       savedQueries.delete(queryId);
       setSavedQueriesList(savedQueries.load());
       success('Sorgu silindi');
-    } catch (err: any) {
-      error(err.message || 'Sorgu silinemedi');
+    } catch (err: unknown) {
+      error(err instanceof Error ? err.message : 'Sorgu silinemedi');
     }
   }, [success, error]);
 
@@ -356,20 +305,9 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
   }, [onClearFilters]);
 
   // Filtre değerini güncelle
-  const updateFilter = useCallback((key: keyof SearchFilters, value: any) => {
+  const updateFilter = useCallback(<K extends keyof SearchFilters>(key: K, value: SearchFilters[K]) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setSelectedSavedQuery(null); // Clear selected query when filters change
-  }, []);
-
-  // Etiket ekle/çıkar
-  const toggleTag = useCallback((tag: string) => {
-    setFilters(prev => ({
-      ...prev,
-      tags: prev.tags.includes(tag)
-        ? prev.tags.filter(t => t !== tag)
-        : [...prev.tags, tag]
-    }));
-    setSelectedSavedQuery(null);
   }, []);
 
   // Aktif filtre sayısı
@@ -412,7 +350,7 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
           <div className="flex items-center space-x-2">
             <Checkbox
               checked={filters.fuzzySearch}
-              onChange={(checked) => updateFilter('fuzzySearch', checked)}
+              onChange={(e) => updateFilter('fuzzySearch', !!(e?.target?.checked))}
             />
             <span className="text-sm text-gray-600">Fuzzy Search</span>
           </div>
@@ -481,7 +419,7 @@ export const PatientAdvancedSearch: React.FC<PatientAdvancedSearchProps> = ({
               <label className="text-sm font-medium text-blue-900">
                 Fuzzy Search Hassasiyeti: {Math.round(filters.fuzzyThreshold * 100)}%
               </label>
-              <input
+              <Input
                 type="range"
                 min="0.1"
                 max="1"

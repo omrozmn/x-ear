@@ -358,14 +358,57 @@ def create_patient():
                 missing.append(field)
         if missing:
             return jsonify({'success': False, 'error': f'Missing required fields: {",".join(missing)}'}), 400
+        
+        # Validate phone format
+        phone = data.get('phone', '').strip()
+        if phone:
+            # Remove common phone separators
+            phone_digits = ''.join(c for c in phone if c.isdigit())
+            # Turkish phone numbers should be 10 or 11 digits (with or without country code)
+            if len(phone_digits) < 10 or len(phone_digits) > 11:
+                return jsonify({
+                    'success': False, 
+                    'error': 'Geçerli bir telefon numarası giriniz',
+                    'details': {'phone': 'Geçerli bir telefon numarası giriniz'}
+                }), 400
 
-        # Check if patient with same phone number already exists (for idempotency)
+        # Validate TC number if provided
+        tc_number = data.get('tcNumber')
+        if tc_number and tc_number.strip():
+            from utils.tc_validator import validate_tc_number
+            is_valid, error_msg = validate_tc_number(tc_number)
+            if not is_valid:
+                return jsonify({'success': False, 'error': error_msg}), 400
+            
+            # Check if TC number already exists
+            existing_tc = Patient.query.filter_by(tc_number=tc_number).first()
+            if existing_tc:
+                return jsonify({
+                    'success': False, 
+                    'error': 'Bu TC Kimlik No ile kayıtlı bir hasta zaten mevcut',
+                    'existingPatient': {
+                        'id': existing_tc.id,
+                        'firstName': existing_tc.first_name,
+                        'lastName': existing_tc.last_name,
+                        'phone': existing_tc.phone
+                    }
+                }), 409
+
+        # Check if patient with same phone number already exists
         phone = data.get('phone')
         if phone:
             existing_patient = Patient.query.filter_by(phone=phone).first()
             if existing_patient:
-                # Return existing patient with 200 status for idempotency
-                return jsonify({'success': True, 'data': existing_patient.to_dict()}), 200
+                return jsonify({
+                    'success': False, 
+                    'error': 'Bu telefon numarası ile kayıtlı bir hasta zaten mevcut',
+                    'existingPatient': {
+                        'id': existing_patient.id,
+                        'firstName': existing_patient.first_name,
+                        'lastName': existing_patient.last_name,
+                        'phone': existing_patient.phone
+                    }
+                }), 409
 
         patient = Patient.from_dict(data)
         db.session.add(patient)
@@ -384,7 +427,10 @@ def create_patient():
         # If SQLAlchemy IntegrityError, surface as a 409 conflict
         from sqlalchemy.exc import IntegrityError
         if isinstance(e, IntegrityError):
-            return jsonify({'success': False, 'error': 'Database integrity error: ' + str(e.orig)}), 409
+            # Check if it's a TC number duplicate
+            if 'tc_number' in str(e).lower():
+                return jsonify({'success': False, 'error': 'Bu TC Kimlik No ile kayıtlı bir hasta zaten mevcut'}), 409
+            return jsonify({'success': False, 'error': 'Veritabanı bütünlük hatası: Bu kayıt zaten mevcut'}), 409
         # Surface read-only DB errors with a distinct status so frontend can
         # display a clear message to operators. SQLite raises sqlite3.OperationalError
         # when the DB file is not writable (e.g. permissions or mounted read-only).
@@ -404,9 +450,15 @@ def update_patient(patient_id):
         if not data:
             return jsonify({'success': False, 'error': 'No data provided'}), 400
 
+        logger.info(f'🔍 UPDATE PATIENT - Patient ID: {patient_id}')
+        logger.info(f'🔍 UPDATE PATIENT - Received data: {data}')
+        logger.info(f'🔍 UPDATE PATIENT - branchId in data: {data.get("branchId")}')
+
         patient = db.session.get(Patient, patient_id)
         if not patient:
             return jsonify({'success': False, 'error': 'Patient not found'}), 404
+
+        logger.info(f'🔍 UPDATE PATIENT - Current branch_id: {patient.branch_id}')
 
         # Normalize keys: accept camelCase incoming fields and map to model attributes
         key_map = {
@@ -423,6 +475,7 @@ def update_patient(patient_id):
             'conversionStep': 'conversion_step',
             'referredBy': 'referred_by',
             'priorityScore': 'priority_score',
+            'branchId': 'branch_id',
             'tags': 'tags',
             'sgkInfo': 'sgk_info',
             'phone': 'phone',
@@ -430,7 +483,7 @@ def update_patient(patient_id):
         }
 
         # Whitelist of allowed direct-mapped model attributes (snake_case)
-        allowed_attrs = set(['first_name','last_name','tc_number','identity_number','phone','email','gender','status','segment','acquisition_type','conversion_step','referred_by','priority_score'])
+        allowed_attrs = set(['first_name','last_name','tc_number','identity_number','phone','email','gender','status','segment','acquisition_type','conversion_step','referred_by','priority_score','branch_id'])
 
         for k, v in data.items():
             # Special fields handled explicitly
@@ -458,12 +511,13 @@ def update_patient(patient_id):
                 patient.address_full = address.get('fullAddress')
                 continue
 
-            # Normalize key to model attribute
+            # Normalized key to model attribute
             normalized = key_map.get(k, k)
 
             # If normalized is a direct attribute, set it
             if normalized in allowed_attrs and hasattr(patient, normalized):
                 try:
+                    logger.info(f'🔍 Setting {normalized} = {v}')
                     setattr(patient, normalized, v)
                 except Exception as e:
                     logger.debug('Failed to set attribute %s on patient: %s', normalized, e)
@@ -480,6 +534,8 @@ def update_patient(patient_id):
             # Unknown/unhandled fields
             logger.debug('Ignored unknown patient update field: %s', k)
 
+        logger.info(f'🔍 UPDATE PATIENT - Final branch_id: {patient.branch_id}')
+        
         db.session.commit()
         from app import log_activity
         log_activity('system', 'update', 'patient', patient.id, {'changes': data}, request)

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Bookmark, Plus, Edit2, Trash2, Eye } from 'lucide-react'
-import { usePatientFilters } from '@/hooks/patients/usePatientFilters'
+import { usePatientFilters } from '@/hooks/patient/usePatientFilters'
 
 interface SavedView {
   id: string

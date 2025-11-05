@@ -11,7 +11,6 @@ import {
   CheckCircle,
   Clock,
   MoreVertical,
-  Eye,
   Edit,
   Trash2,
   Download,
@@ -19,11 +18,16 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { usePatients, useDeletePatient } from '../../hooks/patient/usePatients';
-
-import type { Patient } from '../../types/patient';
-
-
+import type { Patient } from '../../types/patient/index';
 import { PatientCommunicationIntegration } from './PatientCommunicationIntegration';
+import { 
+  getStatusBadge, 
+  formatDate, 
+  formatPhone, 
+  getSegmentBadge, 
+  getAcquisitionStatusBadge, 
+  getBranchBadge 
+} from './PatientListHelpers';
 
 interface PatientListProps {
   patients: Patient[];
@@ -31,8 +35,10 @@ interface PatientListProps {
   selectedPatients?: string[];
   onPatientSelect?: (patientId: string) => void;
   onPatientClick?: (patient: Patient) => void;
+  onView?: (patient: Patient) => void;
   onEdit?: (patient: Patient) => void;
   onDelete?: (patient: Patient) => void;
+  onTagClick?: (patient: Patient) => void;
   onBulkAction?: (action: string, patientIds: string[]) => void;
   showSelection?: boolean;
   showActions?: boolean;
@@ -81,8 +87,10 @@ export function PatientList({
   selectedPatients = [],
   onPatientSelect,
   onPatientClick,
+  onView,
   onEdit,
   onDelete,
+  onTagClick,
   onBulkAction,
   showSelection = false,
   showActions = true,
@@ -117,68 +125,6 @@ export function PatientList({
     }
   }, [patients, selectedPatients, isAllSelected, onPatientSelect]);
 
-  const getStatusBadge = (status?: string) => {
-    switch (status) {
-      case 'ACTIVE':
-        return <Badge variant="success" size="sm">Aktif</Badge>;
-      case 'INACTIVE':
-        return <Badge variant="warning" size="sm">Pasif</Badge>;
-      default:
-        return <Badge variant="secondary" size="sm">Bilinmiyor</Badge>;
-    }
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    try {
-      return new Date(dateString).toLocaleDateString('tr-TR');
-    } catch {
-      return '-';
-    }
-  };
-
-  const formatPhone = (phone?: string) => {
-    if (!phone) return '-';
-    // Format Turkish phone number
-    const cleaned = phone.replace(/\D/g, '');
-    if (cleaned.length === 11 && cleaned.startsWith('0')) {
-      return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(7, 9)} ${cleaned.slice(9)}`;
-    }
-    return phone;
-  };
-
-  const getSegmentBadge = (segment?: string) => {
-    if (!segment) return <Badge variant="secondary" size="sm">-</Badge>;
-    
-    switch (segment.toUpperCase()) {
-      case 'PREMIUM':
-        return <Badge variant="success" size="sm">Premium</Badge>;
-      case 'STANDARD':
-        return <Badge variant="default" size="sm">Standard</Badge>;
-      case 'BASIC':
-        return <Badge variant="secondary" size="sm">Basic</Badge>;
-      default:
-        return <Badge variant="secondary" size="sm">{segment}</Badge>;
-    }
-  };
-
-  const getAcquisitionStatusBadge = (acquisitionType?: string) => {
-    if (!acquisitionType) return <Badge variant="secondary" size="sm">-</Badge>;
-    
-    switch (acquisitionType.toLowerCase()) {
-      case 'organic':
-        return <Badge variant="success" size="sm">Organik</Badge>;
-      case 'referral':
-        return <Badge variant="default" size="sm">Referans</Badge>;
-      case 'marketing':
-        return <Badge variant="warning" size="sm">Pazarlama</Badge>;
-      case 'social':
-        return <Badge variant="primary" size="sm">Sosyal</Badge>;
-      default:
-        return <Badge variant="secondary" size="sm">{acquisitionType}</Badge>;
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -207,7 +153,7 @@ export function PatientList({
           <div
             key={patient.id}
             className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => onPatientClick?.(patient)}
+            onClick={() => (onView || onPatientClick)?.(patient)}
             onMouseEnter={() => setHoveredPatient(patient.id || null)}
             onMouseLeave={() => setHoveredPatient(null)}
           >
@@ -307,7 +253,7 @@ export function PatientList({
                 )}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
                   <SortableHeader
-                    field="firstName"
+                    field="name"
                     label="Ad Soyad"
                     sortBy={sortBy}
                     sortOrder={sortOrder}
@@ -315,37 +261,22 @@ export function PatientList({
                   />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-                  <SortableHeader
-                    field="tcNumber"
-                    label="TC Kimlik"
-                    sortBy={sortBy}
-                    sortOrder={sortOrder}
-                    onSort={onSort}
-                  />
+                  TC Kimlik
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px]">
-                  <SortableHeader
-                    field="phone"
-                    label="Telefon"
-                    sortBy={sortBy}
-                    sortOrder={sortOrder}
-                    onSort={onSort}
-                  />
+                  Telefon
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                   Segment
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-                  Kazanım Durumu
+                  Kazanım
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                  Şube
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
-                  <SortableHeader
-                    field="status"
-                    label="Durum"
-                    sortBy={sortBy}
-                    sortOrder={sortOrder}
-                    onSort={onSort}
-                  />
+                  Durum
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
                   <SortableHeader
@@ -368,7 +299,7 @@ export function PatientList({
                 <tr
                   key={patient.id}
                   className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
-                  onClick={() => onPatientClick?.(patient)}
+                  onClick={() => (onView || onPatientClick)?.(patient)}
                   onMouseEnter={() => setHoveredPatient(patient.id || null)}
                   onMouseLeave={() => setHoveredPatient(null)}
                 >
@@ -404,13 +335,44 @@ export function PatientList({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {formatPhone(patient.phone)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td 
+                    className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTagClick?.(patient);
+                    }}
+                    title="Etiket güncellemek için tıklayın"
+                  >
                     {getSegmentBadge(patient.segment)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td 
+                    className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTagClick?.(patient);
+                    }}
+                    title="Etiket güncellemek için tıklayın"
+                  >
                     {getAcquisitionStatusBadge(patient.acquisitionType)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td 
+                    className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTagClick?.(patient);
+                    }}
+                    title="Etiket güncellemek için tıklayın"
+                  >
+                    {getBranchBadge((patient as any).branchId, (patient as any).branch)}
+                  </td>
+                  <td 
+                    className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTagClick?.(patient);
+                    }}
+                    title="Etiket güncellemek için tıklayın"
+                  >
                     {getStatusBadge(patient.status)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -418,7 +380,7 @@ export function PatientList({
                   </td>
                   {showActions && (
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-1">
+                      <div className="flex items-center justify-end space-x-2">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -426,10 +388,10 @@ export function PatientList({
                             e.stopPropagation();
                             onEdit?.(patient);
                           }}
-                          className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600"
+                          className="h-9 w-9 p-0 hover:bg-blue-50 hover:text-blue-600"
                           title="Düzenle"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit className="h-5 w-5" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -438,10 +400,10 @@ export function PatientList({
                             e.stopPropagation();
                             setCommunicationPatient(patient);
                           }}
-                          className="h-8 w-8 p-0 hover:bg-green-50 hover:text-green-600"
+                          className="h-9 w-9 p-0 hover:bg-green-50 hover:text-green-600"
                           title="İletişim"
                         >
-                          <MessageSquare className="h-4 w-4" />
+                          <MessageSquare className="h-5 w-5" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -450,10 +412,10 @@ export function PatientList({
                             e.stopPropagation();
                             onDelete?.(patient);
                           }}
-                          className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                          className="h-9 w-9 p-0 hover:bg-red-50 hover:text-red-600"
                           title="Sil"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-5 w-5" />
                         </Button>
                       </div>
                     </td>

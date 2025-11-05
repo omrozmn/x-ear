@@ -7,7 +7,8 @@ import {
   Badge,
   Card,
   CardContent,
-  Spinner
+  Spinner,
+  Checkbox
 } from '@x-ear/ui-web';
 import { DollarSign, Calendar, Receipt, CreditCard, Banknote, AlertCircle, CheckCircle } from 'lucide-react';
 import type { CollectionState, PaymentCalculations } from '../types';
@@ -241,12 +242,10 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
             {installments.map((installment) => (
               <div key={installment.id} className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id={`installment-${installment.id}`}
                     checked={state.selectedInstallments.includes(installment.id!)}
                     onChange={(e) => onInstallmentSelection(installment.id!, e.target.checked)}
-                    className="rounded border-gray-300"
                   />
                   <label htmlFor={`installment-${installment.id}`} className="text-sm">
                     {installment.note}
@@ -281,12 +280,10 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
       {/* Generate Receipt Option */}
       <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
+        <Checkbox
           id="generateReceipt"
           checked={state.generateReceipt}
           onChange={(e) => onStateUpdate({ generateReceipt: e.target.checked })}
-          className="rounded border-gray-300"
         />
         <label htmlFor="generateReceipt" className="text-sm text-gray-700">
           Makbuz oluştur

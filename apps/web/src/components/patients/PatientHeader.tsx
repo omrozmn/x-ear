@@ -45,6 +45,7 @@ const Badge: React.FC<{
 interface PatientHeaderProps {
   patient: Patient;
   onEdit?: () => void;
+  onTagUpdate?: () => void;
   onCall?: () => void;
   onDelete?: () => void;
   onPrint?: () => void;
@@ -52,11 +53,13 @@ interface PatientHeaderProps {
   onSendSMS?: () => void;
   onCopyInfo?: () => void;
   onGenerateReport?: () => void;
+  isLoading?: boolean;
 }
 
 export const PatientHeader: React.FC<PatientHeaderProps> = ({
   patient,
   onEdit,
+  onTagUpdate,
   onCall,
   onDelete,
   onPrint,
@@ -64,7 +67,24 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
   onSendSMS,
   onCopyInfo,
   onGenerateReport,
+  isLoading,
 }) => {
+  if (isLoading || !patient) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="animate-pulse">
+          <div className="flex items-start space-x-4">
+            <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
+            <div className="flex-1 space-y-2">
+              <div className="h-6 bg-gray-200 rounded w-48"></div>
+              <div className="h-4 bg-gray-200 rounded w-32"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const formatStatus = (status?: string) => {
     if (!status) return { label: 'Belirtilmemiş', variant: 'secondary' as const };
     const statusMap: Record<string, { label: string; variant: 'success' | 'warning' | 'danger' | 'secondary' }> = {
@@ -222,81 +242,19 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
             </Button>
           )}
 
-          {/* Secondary Actions Dropdown */}
-          <div className="relative group">
+          {onTagUpdate && (
             <Button
-              variant="outline"
               size="sm"
-              icon={<MoreHorizontal className="w-4 h-4" />}
+              onClick={onTagUpdate}
+              className="bg-green-600 hover:bg-green-700 text-white"
+              icon={<Edit className="w-4 h-4" />}
+              iconPosition="left"
             >
-              Diğer
+              Etiket Güncelle
             </Button>
-            
-            {/* Dropdown Menu */}
-            <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-              <div className="py-1">
-                {onPrint && (
-                  <Button
-                    variant="ghost"
-                    onClick={onPrint}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 justify-start"
-                  >
-                    <Printer className="w-4 h-4 mr-3" />
-                    Yazdır
-                  </Button>
-                )}
-                
-                {onExport && (
-                  <Button
-                    variant="ghost"
-                    onClick={onExport}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 justify-start"
-                  >
-                    <Download className="w-4 h-4 mr-3" />
-                    Dışa Aktar
-                  </Button>
-                )}
-                
-                {onGenerateReport && (
-                  <Button
-                    variant="ghost"
-                    onClick={onGenerateReport}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 justify-start"
-                  >
-                    <FileText className="w-4 h-4 mr-3" />
-                    Rapor Oluştur
-                  </Button>
-                )}
-                
-                {onCopyInfo && (
-                  <Button
-                    variant="ghost"
-                    onClick={onCopyInfo}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 justify-start"
-                  >
-                    <Copy className="w-4 h-4 mr-3" />
-                    Bilgileri Kopyala
-                  </Button>
-                )}
-                
-                {onDelete && (
-                  <>
-                    <div className="border-t border-gray-100 my-1"></div>
-                    <Button
-                      variant="ghost"
-                      onClick={onDelete}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 justify-start"
-                    >
-                      <Trash2 className="w-4 h-4 mr-3" />
-                      Sil
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
   );
-}
+};

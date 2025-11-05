@@ -1,5 +1,6 @@
 import { Patient } from '../../../../../types/patient/patient-base.types';
 import { Sale, PaymentRecord } from '../../../../../types/patient/patient-communication.types';
+import { PaymentRecord as OrvalPaymentRecord } from '../../../../../generated/orval-types';
 
 export interface PromissoryNote {
   id: string;
@@ -19,8 +20,8 @@ export interface CollectionModalProps {
   onClose: () => void;
   patient: Patient;
   sale: Sale;
-  onPaymentCreate: (paymentData: Record<string, unknown>) => void;
-  onPromissoryPaymentCreate?: (paymentData: Record<string, unknown>) => void;
+  onPaymentCreate: (paymentData: OrvalPaymentRecord) => void;
+  onPromissoryPaymentCreate?: (paymentData: OrvalPaymentRecord) => void;
   onCreatePromissoryNote?: (noteData: Record<string, unknown>) => void;
 }
 

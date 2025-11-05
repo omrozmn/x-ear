@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Plus, Edit, X, Check, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Button, Badge, Input, Textarea, Select } from '@x-ear/ui-web';
 import { Patient } from '../../types/patient';
@@ -34,7 +34,7 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
     loadAppointments();
   }, [patient.id]);
 
-  const loadAppointments = async () => {
+  const loadAppointments = useCallback(async () => {
     if (!patient.id) return;
     
     setLoading(true);
@@ -56,7 +56,7 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
     } finally {
       setLoading(false);
     }
-  };
+  }, [patient.id]);
 
   // Filter appointments based on current filters
   const filteredAppointments = appointments.filter(appointment => {

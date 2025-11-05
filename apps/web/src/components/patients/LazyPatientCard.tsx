@@ -5,10 +5,8 @@ import {
   Phone, 
   Mail, 
   MessageSquare,
-  Eye,
   Edit,
   Trash2,
-  Calendar,
   MapPin,
   Clock
 } from 'lucide-react';
@@ -267,8 +265,15 @@ const LazyPatientCard: React.FC<LazyPatientCardProps> = memo(({
                     {(() => {
                       const address = patient.address;
                       if (typeof address === 'object' && address !== null) {
-                        const addressObj = address as any;
-                        return addressObj.fullAddress || 
+                        const addressObj = address as {
+                          street?: string;
+                          city?: string;
+                          district?: string;
+                          postalCode?: string;
+                          country?: string;
+                          full?: string;
+                        };
+                        return addressObj.full || 
                                `${addressObj.district || ''} ${addressObj.city || ''}`.trim() ||
                                'Adres bilgisi yok';
                       }

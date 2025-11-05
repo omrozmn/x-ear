@@ -163,11 +163,13 @@ function SaleModal({ isOpen, onClose, patient, onSaleCreate }: SaleModalProps) {
         alert('Satış başarıyla kaydedildi!');
 
         // Create timeline and sales logs
-        const saleId = response.data?.id || response.data?.sale_id;
-        if (saleId && notes.trim()) {
+        const saleId = response.data?.id;
+        if (saleId && notes.trim() && patient.id) {
           await createTimelineLog(patient.id, notes, saleId);
         }
-        await createSalesLog(patient.id, saleData, saleId);
+        if (saleId && patient.id) {
+          await createSalesLog(patient.id, saleData, saleId);
+        }
 
         onSaleCreate(response.data);
         handleClose();
@@ -210,7 +212,7 @@ function SaleModal({ isOpen, onClose, patient, onSaleCreate }: SaleModalProps) {
         title: 'Ürün Satışı Gerçekleştirildi',
         description: `Ürün satışı yapıldı: ${selectedDevice?.brand} ${selectedDevice?.model || selectedDevice?.name}`,
         details: {
-          sale_id: saleId,
+          id: saleId,
           product_id: selectedDevice?.id,
           product_name: `${selectedDevice?.brand} ${selectedDevice?.model || selectedDevice?.name}`,
           amount: totals.total,

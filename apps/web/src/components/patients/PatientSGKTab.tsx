@@ -144,14 +144,18 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patient, onPatient
     setIsLoading(true);
     setError(null);
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('patientId', patientId);
-      formData.append('documentType', documentType);
-      if (uploadNotes) formData.append('notes', uploadNotes);
+      const body = {
+        patientId,
+        documentType,
+        file: selectedFile,
+        notes: uploadNotes || undefined,
+        autoProcess: false,
+      };
 
-      const uploadResult = await sgkService.uploadDocument(formData, {
-        idempotencyKey: `sgk-upload-${patientId}-${Date.now()}`
+      const uploadResult = await sgkService.uploadDocument(body, {
+        headers: {
+          'Idempotency-Key': `sgk-upload-${patientId}-${Date.now()}`
+        }
       });
 
       showSuccess('Başarılı', 'SGK belgesi başarıyla yüklendi');

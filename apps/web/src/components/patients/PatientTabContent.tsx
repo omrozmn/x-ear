@@ -5,7 +5,7 @@ import { ErrorBoundary } from '../ErrorBoundary';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { PatientOverviewTab } from './PatientOverviewTab';
 import { PatientDevicesTab } from '../PatientDevicesTab';
-import { PatientSalesTab } from '../PatientSalesTab';
+import PatientSalesTab from './PatientSalesTab';
 import { PatientTimelineTab } from '../PatientTimelineTab';
 import { PatientDocumentsTab } from '../PatientDocumentsTab';
 import { PatientAppointmentsTab } from '../PatientAppointmentsTab';
@@ -31,6 +31,13 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
   isLoading,
   tabCounts
 }) => {
+  if (isLoading || !patient) {
+    return (
+      <div className="p-6" role="status" aria-label="Hasta bilgileri yükleniyor">
+        <LoadingSkeleton lines={6} />
+      </div>
+    );
+  }
   const renderComingSoon = (tabName: string) => (
     <div className="p-6 text-center">
       <div className="max-w-sm mx-auto">
@@ -63,7 +70,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
     case 'sales':
       return (
         <ErrorBoundary>
-          <PatientSalesTab patientId={patient?.id || ''} sales={sales} />
+          <PatientSalesTab patient={patient} />
         </ErrorBoundary>
       );
     case 'timeline':

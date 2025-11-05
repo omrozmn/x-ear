@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Input, Badge, Select } from '@x-ear/ui-web';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Button, Input, Badge, Textarea } from '@x-ear/ui-web';
 import { useToastHelpers } from '@x-ear/ui-web';
-import { Truck, Package, CheckCircle, Clock, AlertCircle, Calendar, User, MapPin, Loader2 } from 'lucide-react';
-import { Patient } from '../../types/patient/patient-base.types';
+import { Truck, Package, CheckCircle, Clock, AlertCircle, User, MapPin, Loader2 } from 'lucide-react';
 import { timelineService } from '../../services/timeline.service';
 
 interface MaterialDeliverySectionProps {
-  patient: Patient;
   patientId: string;
 }
 
@@ -82,7 +80,7 @@ const StatusBadge: React.FC<{ status: string; className?: string }> = ({ status,
   );
 };
 
-export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = ({ patient, patientId }) => {
+export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = ({ patientId }) => {
   const { success: showSuccess, error: showError } = useToastHelpers();
 
   const [deliveryBatches, setDeliveryBatches] = useState<DeliveryBatch[]>([]);
@@ -98,12 +96,7 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
   const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState('');
   const [deliveryNotes, setDeliveryNotes] = useState('');
 
-  // Load delivery batches on component mount
-  useEffect(() => {
-    loadDeliveryBatches();
-  }, [patientId]);
-
-  const loadDeliveryBatches = async () => {
+  const loadDeliveryBatches = useCallback(async () => {
     setIsLoading(true);
     try {
       // Mock data - in real implementation, this would come from API
@@ -166,13 +159,18 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
       ];
 
       setDeliveryBatches(mockBatches);
-    } catch (error: any) {
-      const errorMessage = error?.message || 'Teslimat bilgileri yüklenirken hata oluştu';
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Teslimat bilgileri yüklenirken hata oluştu';
       showError('Hata', errorMessage);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [showError]);
+
+  // Load delivery batches on component mount
+  useEffect(() => {
+    loadDeliveryBatches();
+  }, [loadDeliveryBatches]);
 
   const handleViewDelivery = (batch: DeliveryBatch) => {
     setSelectedBatch(batch);
@@ -232,8 +230,8 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
       setDeliveryNotes('');
       setShowNewDeliveryModal(false);
 
-    } catch (error: any) {
-      const errorMessage = error?.message || 'Teslimat oluşturulurken hata oluştu';
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Teslimat oluşturulurken hata oluştu';
       showError('Hata', errorMessage);
     } finally {
       setIsCreatingDelivery(false);
@@ -253,7 +251,7 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
     setDeliveryItems(prev => [...prev, newItem]);
   };
 
-  const handleUpdateDeliveryItem = (index: number, field: keyof DeliveryItem, value: any) => {
+  const handleUpdateDeliveryItem = (index: number, field: keyof DeliveryItem, value: string | number | undefined) => {
     setDeliveryItems(prev => prev.map((item, i) => {
       if (i === index) {
         const updatedItem = { ...item, [field]: value };
@@ -306,8 +304,8 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
 
       showSuccess('Başarılı', 'Teslimat başarıyla tamamlandı olarak işaretlendi');
 
-    } catch (error: any) {
-      const errorMessage = error?.message || 'Teslimat güncellenirken hata oluştu';
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Teslimat güncellenirken hata oluştu';
       showError('Hata', errorMessage);
     }
   };
@@ -672,11 +670,10 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Teslimat Adresi *
                 </label>
-                <textarea
+                <Textarea
                   value={deliveryAddress}
                   onChange={(e) => setDeliveryAddress(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Teslimat adresini girin"
                 />
               </div>
@@ -698,11 +695,10 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Notlar
                 </label>
-                <textarea
+                <Textarea
                   value={deliveryNotes}
                   onChange={(e) => setDeliveryNotes(e.target.value)}
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Teslimat ile ilgili notlar"
                 />
               </div>

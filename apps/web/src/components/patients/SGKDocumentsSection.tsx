@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Button } from '@x-ear/ui-web';
+import { Button, Select } from '@x-ear/ui-web';
 import { Download, Eye, FileText, Calendar, Filter } from 'lucide-react';
 
 interface DeliveredEReceipt {
@@ -97,18 +97,17 @@ export const SGKDocumentsSection: React.FC<SGKDocumentsSectionProps> = ({
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <Filter className="w-4 h-4 text-gray-500" />
-              <select
+              <Select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Tüm Aylar</option>
-                {availableMonths.map(month => (
-                  <option key={month} value={month}>
-                    {formatMonthName(month)}
-                  </option>
-                ))}
-              </select>
+                options={[
+                  { value: "", label: "Tüm Aylar" },
+                  ...availableMonths.map(month => ({
+                    value: month,
+                    label: formatMonthName(month)
+                  }))
+                ]}
+              />
             </div>
 
             {/* Toplu İndirme Butonu */}

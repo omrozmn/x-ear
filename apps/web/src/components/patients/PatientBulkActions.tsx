@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
+import { Button, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@x-ear/ui-web'
 import { 
   Tag, 
   MessageSquare, 
@@ -14,9 +15,7 @@ import {
   X, 
   AlertTriangle,
   Users,
-  Send,
-  Plus,
-  Edit3
+  Send
 } from 'lucide-react'
 
 interface PatientBulkActionsProps {
@@ -31,7 +30,7 @@ interface PatientBulkActionsProps {
   onBulkExport: (format: 'csv' | 'excel' | 'pdf') => Promise<void>
   onBulkStatusChange: (status: 'active' | 'inactive' | 'archived') => Promise<void>
   onBulkDelete: () => Promise<void>
-  onBulkScheduleAppointment: (appointmentData: any) => Promise<void>
+  onBulkScheduleAppointment: (appointmentData: { notes?: string }) => Promise<void>
   onBulkAssignToSegment: (segment: string) => Promise<void>
   availableTags?: string[]
   availableSegments?: string[]
@@ -43,7 +42,7 @@ interface PatientBulkActionsProps {
 interface BulkAction {
   id: string
   name: string
-  icon: React.ComponentType<any>
+  icon: React.ComponentType<{ className?: string }>
   color: string
   bgColor: string
   description: string
@@ -80,7 +79,6 @@ export const PatientBulkActions: React.FC<PatientBulkActionsProps> = ({
   const [showActionModal, setShowActionModal] = useState(false)
   const [currentAction, setCurrentAction] = useState<BulkAction | null>(null)
   const [inputValue, setInputValue] = useState('')
-  const [inputValues, setInputValues] = useState<Record<string, any>>({})
   const [isProcessing, setIsProcessing] = useState(false)
 
   const selectedCount = selectedPatients.length
@@ -275,21 +273,7 @@ export const PatientBulkActions: React.FC<PatientBulkActionsProps> = ({
     dangerous: 'Tehlikeli İşlemler'
   }
 
-  const handleActionClick = useCallback((action: BulkAction) => {
-    if (disabled || loading) return
-
-    setCurrentAction(action)
-    setInputValue('')
-    setInputValues({})
-    
-    if (action.requiresInput || action.requiresConfirmation) {
-      setShowActionModal(true)
-    } else {
-      executeAction(action)
-    }
-  }, [disabled, loading])
-
-  const executeAction = useCallback(async (action: BulkAction, inputData?: any) => {
+  const executeAction = useCallback(async (action: BulkAction, inputData?: string) => {
     if (!action || selectedCount === 0) return
 
     setIsProcessing(true)
@@ -358,11 +342,24 @@ export const PatientBulkActions: React.FC<PatientBulkActionsProps> = ({
     onBulkAssignToSegment
   ])
 
+  const handleActionClick = useCallback((action: BulkAction) => {
+    if (disabled || loading) return
+
+    setCurrentAction(action)
+    setInputValue('')
+    
+    if (action.requiresInput || action.requiresConfirmation) {
+      setShowActionModal(true)
+    } else {
+      executeAction(action)
+    }
+  }, [disabled, loading, executeAction])
+
   const handleConfirmAction = useCallback(() => {
     if (currentAction) {
       executeAction(currentAction, inputValue)
     }
-  }, [currentAction, inputValue, executeAction])
+  }, [currentAction, inputValue, executeAction]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (selectedCount === 0) {
     return (
@@ -386,23 +383,26 @@ export const PatientBulkActions: React.FC<PatientBulkActionsProps> = ({
               {selectedCount} hasta seçili
             </span>
             {selectedCount < totalPatients && (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={onSelectAll}
-                className="ml-3 text-sm text-blue-600 hover:text-blue-800 underline"
+                className="ml-3 text-blue-600 hover:text-blue-800"
                 disabled={disabled || loading}
               >
                 Tümünü seç ({totalPatients})
-              </button>
+              </Button>
             )}
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onDeselectAll}
-            className="text-sm text-gray-600 hover:text-gray-800 flex items-center"
             disabled={disabled || loading}
           >
             <X className="w-4 h-4 mr-1" />
             Seçimi temizle
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -414,18 +414,19 @@ export const PatientBulkActions: React.FC<PatientBulkActionsProps> = ({
               {categoryLabels[category as keyof typeof categoryLabels]}
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-              {actions.map((action) => {
+              {(actions as BulkAction[]).map((action) => {
                 const Icon = action.icon
                 const isDisabled = disabled || loading || isProcessing
                 const isDangerous = action.category === 'dangerous'
                 
                 return (
-                  <button
+                  <Button
                     key={action.id}
+                    variant="ghost"
                     onClick={() => handleActionClick(action)}
                     disabled={isDisabled}
                     className={`
-                      relative p-3 rounded-lg border transition-all duration-200
+                      relative p-3 h-auto flex-col transition-all duration-200
                       ${isDisabled 
                         ? 'opacity-50 cursor-not-allowed' 
                         : 'hover:shadow-md hover:-translate-y-0.5'
@@ -452,7 +453,7 @@ export const PatientBulkActions: React.FC<PatientBulkActionsProps> = ({
                         {action.maxSelection ? `≤${action.maxSelection}` : `≥${action.minSelection}`}
                       </div>
                     )}
-                  </button>
+                  </Button>
                 )
               })}
             </div>
@@ -469,13 +470,14 @@ export const PatientBulkActions: React.FC<PatientBulkActionsProps> = ({
                 <h3 className="text-lg font-medium text-gray-900">
                   {currentAction.name}
                 </h3>
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setShowActionModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
                   disabled={isProcessing}
                 >
                   <X className="w-5 h-5" />
-                </button>
+                </Button>
               </div>
             </div>
             
@@ -508,11 +510,10 @@ export const PatientBulkActions: React.FC<PatientBulkActionsProps> = ({
                   </label>
                   
                   {currentAction.inputType === 'textarea' ? (
-                    <textarea
+                    <Textarea
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       placeholder={currentAction.inputPlaceholder}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       rows={4}
                       disabled={isProcessing}
                     />
@@ -521,8 +522,8 @@ export const PatientBulkActions: React.FC<PatientBulkActionsProps> = ({
                       <select
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         disabled={isProcessing}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value="">Seçin...</option>
                         {currentAction.inputOptions?.map((option) => (
@@ -535,24 +536,22 @@ export const PatientBulkActions: React.FC<PatientBulkActionsProps> = ({
                       {/* Allow custom input for tags */}
                       {(currentAction.id === 'add-tag' || currentAction.id === 'remove-tag') && (
                         <div className="mt-2">
-                          <input
+                          <Input
                             type="text"
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
                             placeholder="Veya yeni etiket yazın..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             disabled={isProcessing}
                           />
                         </div>
                       )}
                     </div>
                   ) : (
-                    <input
+                    <Input
                       type="text"
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       placeholder={currentAction.inputPlaceholder}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       disabled={isProcessing}
                     />
                   )}
@@ -561,27 +560,17 @@ export const PatientBulkActions: React.FC<PatientBulkActionsProps> = ({
             </div>
             
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setShowActionModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 disabled={isProcessing}
               >
                 İptal
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleConfirmAction}
                 disabled={isProcessing || (currentAction.requiresInput && !inputValue.trim())}
-                className={`
-                  px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2
-                  ${currentAction.category === 'dangerous'
-                    ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
-                    : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
-                  }
-                  ${(isProcessing || (currentAction.requiresInput && !inputValue.trim()))
-                    ? 'opacity-50 cursor-not-allowed'
-                    : ''
-                  }
-                `}
+                variant={currentAction.category === 'dangerous' ? 'danger' : 'primary'}
               >
                 {isProcessing ? (
                   <div className="flex items-center">
@@ -594,7 +583,7 @@ export const PatientBulkActions: React.FC<PatientBulkActionsProps> = ({
                     {currentAction.name}
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

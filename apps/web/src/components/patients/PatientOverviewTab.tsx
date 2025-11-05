@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Patient } from '../../types/patient/patient-base.types';
-import { User, Phone, Mail, MapPin, Tag, AlertCircle, CheckCircle, Plus, Edit, MessageSquare } from 'lucide-react';
+import { User, Phone, Mail, MapPin, Tag, AlertCircle, CheckCircle, Plus, Edit, MessageSquare, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { PatientNoteForm } from '../forms/PatientNoteForm';
+import { Modal } from '@x-ear/ui-web';
 
 interface PatientOverviewTabProps {
   patient: Patient;
@@ -16,6 +17,8 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
   const [showNoteForm, setShowNoteForm] = useState(false);
   const [showTagModal, setShowTagModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedLabel, setSelectedLabel] = useState<import('../../types/patient/patient-base.types').PatientLabel | undefined>(patient.labels?.[0]);
+  const [labelNotes, setLabelNotes] = useState('');
 
   if (!patient) {
     return (
@@ -58,8 +61,36 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
   };
 
   const handleUpdateTags = () => {
+    setSelectedLabel(patient.labels?.[0]);
+    setLabelNotes('');
     setShowTagModal(true);
   };
+
+  const handleSaveLabel = async () => {
+    setIsSubmitting(true);
+    try {
+      // TODO: Implement API call to update patient label
+      console.log('Updating label:', { newLabel: selectedLabel, notes: labelNotes });
+      if (onPatientUpdate) {
+        onPatientUpdate({ ...patient, labels: selectedLabel ? [selectedLabel] : patient.labels });
+      }
+      setShowTagModal(false);
+    } catch (error) {
+      console.error('Label update failed:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const labelOptions = [
+    { value: 'yeni', label: 'Yeni Hasta' },
+    { value: 'arama-yapildi', label: 'Arama Yapıldı' },
+    { value: 'randevu-verildi', label: 'Randevu Verildi' },
+    { value: 'geldi', label: 'Geldi' },
+    { value: 'deneme-yapildi', label: 'Deneme Yapıldı' },
+    { value: 'satis-tamamlandi', label: 'Satış Tamamlandı' },
+    { value: 'kontrol-hastasi', label: 'Kontrol Hastası' }
+  ];
 
   const handleSendSMS = async () => {
     // TODO: Check SMS package availability from settings

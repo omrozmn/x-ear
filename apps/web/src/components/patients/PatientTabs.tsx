@@ -164,13 +164,6 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({
       count: patient.notes?.length || 0,
       disabled: false,
     },
-    {
-      id: 'appointments',
-      label: 'Randevular',
-      icon: <Calendar className="w-4 h-4" />,
-      count: 0, // Geçici olarak 0, Patient tipinde henüz appointments alanı yok
-      disabled: false,
-    },
   ];
 
   return (
