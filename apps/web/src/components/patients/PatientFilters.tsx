@@ -1,8 +1,10 @@
-import React, { useState, useCallback } from 'react';
-import { Button, DatePicker } from '@x-ear/ui-web';
+import React, { useState, useCallback, useMemo } from 'react';
+import { Button, DatePicker, Autocomplete } from '@x-ear/ui-web';
+import type { AutocompleteOption } from '@x-ear/ui-web';
 import { PatientFilters as PatientFiltersType } from '../../types/patient/patient-search.types';
-import { Filter, X, ChevronUp, Users, Building, Calendar, TrendingUp } from 'lucide-react';
+import { Filter, X, ChevronUp, Users, Building, Calendar, TrendingUp, MapPin } from 'lucide-react';
 import type { PatientStatus, PatientSegment } from '../../types/patient/patient-base.types';
+import citiesData from '../../data/cities.json';
 
 interface PatientFiltersProps {
   filters: PatientFiltersType;
@@ -34,6 +36,25 @@ export function PatientFilters({
   showCompact = false // Default false to show expanded
 }: PatientFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(true); // Default true for always expanded
+
+  const cityOptions = useMemo<AutocompleteOption[]>(() => {
+    return citiesData.cities.map(city => ({
+      id: city.name,
+      value: city.name,
+      label: city.name
+    }));
+  }, []);
+
+  const districtOptions = useMemo<AutocompleteOption[]>(() => {
+    if (!filters.city) return [];
+    const selectedCity = citiesData.cities.find(c => c.name === filters.city);
+    if (!selectedCity) return [];
+    return selectedCity.districts.map(district => ({
+      id: district,
+      value: district,
+      label: district
+    }));
+  }, [filters.city]);
 
   const handleFilterChange = useCallback((key: keyof PatientFiltersType, value: any) => {
     onChange({
@@ -297,6 +318,42 @@ export function PatientFilters({
                 )}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* City/District Filter */}
+        <div>
+          <div className="flex items-center space-x-2 mb-2">
+            <MapPin className="h-3 w-3 text-gray-500" />
+            <label className="text-xs font-medium text-gray-700">Konum</label>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Autocomplete
+              options={cityOptions}
+              value={cityOptions.find(c => c.value === filters.city) || null}
+              onChange={(option) => {
+                handleFilterChange('city', option?.value || undefined);
+                if (option?.value !== filters.city) {
+                  handleFilterChange('district', undefined);
+                }
+              }}
+              placeholder="Tüm İller"
+              allowClear
+              minSearchLength={0}
+              maxResults={100}
+              className="h-9 text-sm"
+            />
+            <Autocomplete
+              options={districtOptions}
+              value={districtOptions.find(d => d.value === filters.district) || null}
+              onChange={(option) => handleFilterChange('district', option?.value || undefined)}
+              placeholder={filters.city ? 'Tüm İlçeler' : 'Önce İl Seçiniz'}
+              disabled={!filters.city}
+              allowClear
+              minSearchLength={0}
+              maxResults={200}
+              className="h-9 text-sm"
+            />
           </div>
         </div>
       </div>

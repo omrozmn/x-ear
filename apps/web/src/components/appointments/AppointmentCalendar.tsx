@@ -1,5 +1,5 @@
 import { Button } from '@x-ear/ui-web';
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Appointment, CalendarView } from '../../types/appointment';
 import { useAppointments } from '../../hooks/useAppointments';
 import { AppointmentModal } from './AppointmentModal';
@@ -29,10 +29,15 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<'view' | 'create'>('view');
+  const [quickAppointmentData, setQuickAppointmentData] = useState<{
+    date: string;
+    time: string;
+  } | null>(null);
 
   // Handle appointment click
   const handleAppointmentClick = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
+    setQuickAppointmentData(null);
     setModalMode('view');
     setShowModal(true);
     onAppointmentClick?.(appointment);
@@ -44,9 +49,15 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     onDateClick?.(dateStr);
   };
 
-  // Handle time slot click (for day/week views)
+  // Handle time slot click (for day/week views) - Quick appointment creation
   const handleTimeSlotClick = (date: Date, time: string) => {
+    const dateStr = date.toISOString().split('T')[0];
     setCurrentDate(date);
+    setSelectedAppointment(null);
+    setQuickAppointmentData({
+      date: dateStr,
+      time: time
+    });
     setModalMode('create');
     setShowModal(true);
   };
@@ -56,11 +67,24 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     setCurrentDate(date);
   };
 
-  // Handle day double click (for month view)
+  // Handle day double click (for month view) - Quick appointment creation
   const handleDayDoubleClick = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
     setCurrentDate(date);
+    setSelectedAppointment(null);
+    setQuickAppointmentData({
+      date: dateStr,
+      time: '09:00' // Default time for double-click
+    });
     setModalMode('create');
     setShowModal(true);
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setShowModal(false);
+    setSelectedAppointment(null);
+    setQuickAppointmentData(null);
   };
 
   if (loading) {
@@ -184,10 +208,11 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       <AppointmentModal
         appointment={selectedAppointment || undefined}
         isOpen={showModal}
-        onClose={() => setShowModal(false)}
+        onClose={handleModalClose}
         mode={modalMode}
-        initialDate={selectedAppointment?.date || currentDate.toISOString().split('T')[0]}
-        initialTime={selectedAppointment?.time}
+        quickAppointmentData={quickAppointmentData}
+        initialDate={quickAppointmentData?.date || selectedAppointment?.date || currentDate.toISOString().split('T')[0]}
+        initialTime={quickAppointmentData?.time || selectedAppointment?.time}
       />
     </div>
   );

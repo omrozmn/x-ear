@@ -2,7 +2,7 @@ import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import { useState, useEffect } from 'react';
 import { Invoice, InvoiceType, InvoiceStatus, CreateInvoiceData, UpdateInvoiceData } from '../../types/invoice';
 import { Patient } from '../../types/patient';
-import { usePatients } from '../../hooks/patient/usePatients';
+import { usePatients } from '../../hooks/usePatients';
 
 interface InvoiceFormProps {
   invoice?: Invoice;

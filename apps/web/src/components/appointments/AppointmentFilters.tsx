@@ -11,7 +11,6 @@ import {
   Input,
   Select,
   DatePicker,
-  Checkbox,
   Badge,
   VStack,
   HStack,
@@ -22,7 +21,7 @@ import { AppointmentStatus, AppointmentType, AppointmentFilters as IAppointmentF
 const filterSchema = z.object({
   search: z.string().optional(),
   status: z.array(z.enum(['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show', 'rescheduled'])).optional(),
-  type: z.array(z.enum(['consultation', 'follow_up', 'trial', 'delivery', 'control_visit', 'battery_renewal', 'repair', 'fitting', 'assessment'])).optional(),
+  type: z.array(z.enum(['consultation', 'follow-up', 'hearing-test', 'device-trial'])).optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   clinician: z.string().optional(),
@@ -52,14 +51,9 @@ const STATUS_OPTIONS = [
 // Type options with labels
 const TYPE_OPTIONS = [
   { value: 'consultation', label: 'Consultation' },
-  { value: 'follow_up', label: 'Follow Up' },
-  { value: 'trial', label: 'Trial' },
-  { value: 'delivery', label: 'Delivery' },
-  { value: 'control_visit', label: 'Control Visit' },
-  { value: 'battery_renewal', label: 'Battery Renewal' },
-  { value: 'repair', label: 'Repair' },
-  { value: 'fitting', label: 'Fitting' },
-  { value: 'assessment', label: 'Assessment' },
+  { value: 'follow-up', label: 'Follow Up' },
+  { value: 'hearing-test', label: 'Hearing Test' },
+  { value: 'device-trial', label: 'Device Trial' },
 ] as const;
 
 // Mock clinician options (in real app, this would come from API)
@@ -131,7 +125,7 @@ export const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
 
     // Remove undefined values
     const cleanFilters = Object.fromEntries(
-      Object.entries(filters).filter(([_, value]) => value !== undefined)
+      Object.entries(filters).filter(([, value]) => value !== undefined)
     ) as IAppointmentFilters;
 
     onFiltersChange(cleanFilters);
@@ -260,19 +254,20 @@ export const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
               <label className="block text-sm font-medium mb-2">Status</label>
               <div className="flex flex-wrap gap-2">
                 {STATUS_OPTIONS.map((option) => (
-                  <button
+                  <Button
                     key={option.value}
                     type="button"
                     onClick={() => handleStatusToggle(option.value as AppointmentStatus)}
                     className="cursor-pointer hover:opacity-80 transition-opacity"
                     disabled={isLoading}
+                    variant="ghost"
                   >
                     <Badge
                       variant={selectedStatuses.includes(option.value as AppointmentStatus) ? 'primary' : 'secondary'}
                     >
                       {option.label}
                     </Badge>
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -285,19 +280,20 @@ export const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
                   <label className="block text-sm font-medium mb-2">Type</label>
                   <div className="flex flex-wrap gap-2">
                     {TYPE_OPTIONS.map((option) => (
-                      <button
+                      <Button
                         key={option.value}
                         type="button"
                         onClick={() => handleTypeToggle(option.value as AppointmentType)}
                         className="cursor-pointer hover:opacity-80 transition-opacity"
                         disabled={isLoading}
+                        variant="ghost"
                       >
                         <Badge
                           variant={selectedTypes.includes(option.value as AppointmentType) ? 'primary' : 'secondary'}
                         >
                           {option.label}
                         </Badge>
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>

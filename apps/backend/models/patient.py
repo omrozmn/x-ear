@@ -40,6 +40,7 @@ class Patient(BaseModel, JSONMixin):
     conversion_step = db.Column(db.String(50))
     referred_by = db.Column(db.String(100))
     priority_score = db.Column(db.Integer, default=0)
+    branch_id = db.Column(db.String(50))  # Branch assignment for patient
     
     # JSON fields (stored as Text, accessed via properties)
     tags = db.Column(db.Text)  # JSON string
@@ -104,6 +105,7 @@ class Patient(BaseModel, JSONMixin):
             'conversionStep': self.conversion_step,
             'referredBy': self.referred_by,
             'priorityScore': self.priority_score,
+            'branchId': self.branch_id,
             'tags': self.tags_json,
             'sgkInfo': self.sgk_info_json
         }
@@ -151,6 +153,7 @@ class Patient(BaseModel, JSONMixin):
         patient.conversion_step = data.get('conversionStep') or data.get('conversion_step')
         patient.referred_by = data.get('referredBy')
         patient.priority_score = data.get('priorityScore', 0)
+        patient.branch_id = data.get('branchId') or data.get('branch_id')
         
         # JSON fields
         patient.tags_json = data.get('tags', [])

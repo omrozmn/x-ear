@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@x-ear/ui-web';
 import { Download, Edit, Eye, Search, CheckCircle, Clock, AlertCircle, Plus } from 'lucide-react';
 import { useToastHelpers } from '@x-ear/ui-web';
@@ -34,11 +34,7 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patientId }) => {
   const [selectedEReceipt, setSelectedEReceipt] = useState<EReceipt | null>(null);
   const [editingEReceipt, setEditingEReceipt] = useState<EReceipt | null>(null);
 
-  useEffect(() => {
-    loadSavedEReceipts();
-  }, [patientId]);
-
-  const loadSavedEReceipts = async () => {
+  const loadSavedEReceipts = useCallback(async () => {
     setLoading(true);
     try {
       // Mock data - gerçek uygulamada API'den gelecek
@@ -132,7 +128,11 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patientId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadSavedEReceipts();
+  }, [patientId, loadSavedEReceipts]);
 
   const downloadPatientForm = async (eReceipt: EReceipt) => {
     try {
@@ -323,12 +323,14 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patientId }) => {
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">E-Reçete Detayları - {selectedEReceipt.number}</h3>
-                <button
+                <Button
                   onClick={() => setSelectedEReceipt(null)}
+                  variant="ghost"
+                  size="sm"
                   className="text-gray-400 hover:text-gray-600"
                 >
                   ✕
-                </button>
+                </Button>
               </div>
 
               <div className="space-y-6">
@@ -434,12 +436,14 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patientId }) => {
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">E-Reçete Düzenle - {editingEReceipt.number}</h3>
-                <button
+                <Button
                   onClick={() => setEditingEReceipt(null)}
+                  variant="ghost"
+                  size="sm"
                   className="text-gray-400 hover:text-gray-600"
                 >
                   ✕
-                </button>
+                </Button>
               </div>
 
               <div className="space-y-6">

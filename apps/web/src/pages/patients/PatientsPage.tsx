@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { Suspense, useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { PatientList } from '@/components/patients/PatientList';
 import { PatientSearch, PatientSearchFilters } from '@/components/patients/PatientSearch';
 import { PatientFilters } from '@/components/patients/PatientFilters';
@@ -11,9 +12,10 @@ import { PatientBulkOperations } from '@/components/patients/PatientBulkOperatio
 import { PatientAdvancedSearch } from '@/components/patients/PatientAdvancedSearch';
 import { PatientMatching } from '@/components/patients/PatientMatching';
 import { Tabs } from '@x-ear/ui-web';
-import { usePatients } from '../../hooks/patient/usePatients';
+import { usePatients } from '../../hooks/usePatients';
 
 export function PatientsPage() {
+  const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
   const [filters, setFilters] = useState<PatientSearchFilters>({});
   const [selectedPatients, setSelectedPatients] = useState<Patient[]>([]);
@@ -21,7 +23,7 @@ export function PatientsPage() {
   // Use the patients hook to fetch data
   const { data: patientsData, isLoading, error } = usePatients({
     page: 1,
-    per_page: 50, // Show more patients per page
+    per_page: 200, // Show ALL patients (DB has ~114)
     search: searchValue || undefined,
     status: filters.status || undefined
   });
@@ -111,6 +113,21 @@ export function PatientsPage() {
     console.log('Bulk assign to segment:', segment, selectedPatients);
   };
 
+  const handlePatientClick = (patient: Patient) => {
+    console.log('=== PATIENT CLICK ===');
+    console.log('Patient:', patient);
+    console.log('Patient ID:', patient.id);
+    if (patient.id) {
+      console.log('Navigating to:', `/patients/${patient.id}`);
+      navigate({ 
+        to: '/patients/$patientId', 
+        params: { patientId: String(patient.id) } 
+      });
+    } else {
+      console.error('Patient ID is missing!');
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -173,6 +190,7 @@ export function PatientsPage() {
             <PatientList 
               patients={patients || []} 
               loading={isLoading}
+              onPatientClick={handlePatientClick}
             />
           </div>
         </Tabs.Content>

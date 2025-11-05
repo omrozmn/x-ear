@@ -1906,6 +1906,75 @@ paths:
                 $ref: '#/components/schemas/Patient'
       description: Register a new patient with personal and medical information
   /api/patients/{patient_id}:
+    get:
+      summary: GET /api/patients/{patient_id}
+      operationId: patients_get_patient
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve a specific patient by ID
+    put:
+      summary: PUT /api/patients/{patient_id}
+      operationId: patients_update_patient
+      tags:
+      - Patients
+      x-storage-keys:
+      - key: PATIENT_FORM_VALIDATION_STATE
+        description: Form validation state and errors
+        type: object
+      - key: PATIENT_EDIT_DRAFT
+        description: Draft edit data for auto-save
+        type: object
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Update patient information including demographics, contact, and CRM fields
     delete:
       summary: DELETE /api/patients/{patient_id}
       operationId: patients_delete_patient
@@ -3429,6 +3498,7 @@ components:
         tcNumber:
           type: string
           description: Turkish citizenship number
+          nullable: true
         identityNumber:
           type: string
           description: Identity number
@@ -3506,7 +3576,6 @@ components:
           type: string
           format: date-time
       required:
-      - tcNumber
       - firstName
       - lastName
       - phone

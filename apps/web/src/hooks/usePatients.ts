@@ -132,6 +132,41 @@ export function usePatients(options: UsePatientsOptions = {}) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [enableRealTimeSync]);
 
+  // Listen for patient CRUD events from patientService
+  useEffect(() => {
+    const handlePatientCreated = (event: CustomEvent) => {
+      const { patient } = event.detail;
+      setPatients(prev => [...prev, patient]);
+    };
+
+    const handlePatientUpdated = (event: CustomEvent) => {
+      const { patient: updatedPatient } = event.detail;
+      setPatients(prev => prev.map(p => p.id === updatedPatient.id ? updatedPatient : p));
+    };
+
+    const handlePatientDeleted = (event: CustomEvent) => {
+      const { id } = event.detail;
+      setPatients(prev => prev.filter(p => p.id !== id));
+    };
+
+    const handlePatientsUpdated = (event: CustomEvent) => {
+      const { patients: updatedPatients } = event.detail;
+      setPatients(updatedPatients);
+    };
+
+    window.addEventListener('patient:created', handlePatientCreated as EventListener);
+    window.addEventListener('patient:updated', handlePatientUpdated as EventListener);
+    window.addEventListener('patient:deleted', handlePatientDeleted as EventListener);
+    window.addEventListener('patients:updated', handlePatientsUpdated as EventListener);
+
+    return () => {
+      window.removeEventListener('patient:created', handlePatientCreated as EventListener);
+      window.removeEventListener('patient:updated', handlePatientUpdated as EventListener);
+      window.removeEventListener('patient:deleted', handlePatientDeleted as EventListener);
+      window.removeEventListener('patients:updated', handlePatientsUpdated as EventListener);
+    };
+  }, []);
+
   // Search patients
   const searchPatients = useCallback(async (filters: SimpleCacheFilters) => {
     try {
@@ -358,15 +393,26 @@ export function usePatients(options: UsePatientsOptions = {}) {
     return searchResults ? searchResults.totalCount : patients.length;
   }, [searchResults, patients.length]);
 
+  // Return in TanStack Query format for compatibility
   return {
-    // Data
+    // TanStack Query compatible format
+    data: {
+      patients,
+      total: totalCount,
+      page: 1,
+      pageSize: patients.length,
+      hasMore: false
+    },
+    isLoading,
+    error,
+    refetch: refreshPatients,
+    
+    // Legacy direct access (for backward compatibility)
     patients,
     searchResults,
     totalCount,
-    isLoading,
     isSearching,
     isSyncing,
-    error,
     
     // Search & Filter
     searchPatients,
@@ -492,4 +538,71 @@ export function usePatientDevices(patientId: string) {
     error,
     refetch: fetchDevices
   };
+}
+
+// Export mutation hooks - These DON'T use the main hook
+// Instead, they import services directly to avoid Rules of Hooks violations
+export function useCreatePatient() {
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  
+  const mutateAsync = useCallback(async (data: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>) => {
+    setIsPending(true);
+    setError(null);
+    try {
+      const result = await patientService.createPatient(data);
+      return result;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to create patient');
+      setError(error);
+      throw error;
+    } finally {
+      setIsPending(false);
+    }
+  }, []);
+
+  return { mutateAsync, isPending, isError: !!error, error };
+}
+
+export function useUpdatePatient() {
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  
+  const mutateAsync = useCallback(async ({ patientId, updates }: { patientId: string; updates: Partial<Patient> }) => {
+    setIsPending(true);
+    setError(null);
+    try {
+      const result = await patientService.updatePatient(patientId, updates);
+      return result;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to update patient');
+      setError(error);
+      throw error;
+    } finally {
+      setIsPending(false);
+    }
+  }, []);
+
+  return { mutateAsync, isPending, isError: !!error, error };
+}
+
+export function useDeletePatient() {
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  
+  const mutateAsync = useCallback(async (patientId: string) => {
+    setIsPending(true);
+    setError(null);
+    try {
+      await patientService.deletePatient(patientId);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to delete patient');
+      setError(error);
+      throw error;
+    } finally {
+      setIsPending(false);
+    }
+  }, []);
+
+  return { mutateAsync, isPending, isError: !!error, error };
 }

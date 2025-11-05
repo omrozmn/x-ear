@@ -25,8 +25,8 @@ export interface PatientFilters {
   ageRange?: AgeRange;
   registrationDateRange?: DateRange;
   lastVisitDateRange?: DateRange;
-  city?: string[];
-  district?: string[];
+  city?: string;
+  district?: string;
   assignedTo?: string[];
   hasOutstandingBalance?: boolean;
   balanceRange?: AmountRange;

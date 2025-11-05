@@ -54,7 +54,8 @@ export function PatientDetail({ patientId: propPatientId }: PatientDetailProps) 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const { searchPatients } = usePatients();
+  const { data: patientsData } = usePatients({ page: 1, per_page: 200 });
+  const patients = patientsData?.patients || [];
 
   useEffect(() => {
     if (!patientId) {
@@ -72,8 +73,7 @@ export function PatientDetail({ patientId: propPatientId }: PatientDetailProps) 
       setError(null);
       
       // Search for the specific patient by ID
-      const result = (await searchPatients({ search: patientId })) as unknown as { patients?: PatientSearchItem[] } | undefined;
-      const foundPatient = result?.patients?.find(p => p.id === patientId) ?? null;
+      const foundPatient = patients.find(p => p.id === patientId) ?? null;
       
       if (foundPatient) {
         setPatient(foundPatient);

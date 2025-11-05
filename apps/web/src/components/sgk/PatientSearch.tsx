@@ -19,7 +19,8 @@ const PatientSearch: React.FC<PatientSearchProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const { patients, isLoading } = usePatients();
+  const { data: patientsData, isLoading } = usePatients({ page: 1, per_page: 200 });
+  const patients = patientsData?.patients || [];
 
   // Auto-suggest based on OCR result
   useEffect(() => {

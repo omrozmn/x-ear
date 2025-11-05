@@ -17,7 +17,7 @@ import {
   Upload,
   MessageSquare
 } from 'lucide-react';
-import { usePatients, useDeletePatient } from '../../hooks/patient/usePatients';
+import { useDeletePatient } from '../../hooks/usePatients';
 import type { Patient } from '../../types/patient/index';
 import { PatientCommunicationIntegration } from './PatientCommunicationIntegration';
 import { 
@@ -153,7 +153,10 @@ export function PatientList({
           <div
             key={patient.id}
             className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => (onView || onPatientClick)?.(patient)}
+            onClick={() => {
+              console.log('=== PATIENT CARD CLICK ===', patient);
+              (onView || onPatientClick)?.(patient);
+            }}
             onMouseEnter={() => setHoveredPatient(patient.id || null)}
             onMouseLeave={() => setHoveredPatient(null)}
           >

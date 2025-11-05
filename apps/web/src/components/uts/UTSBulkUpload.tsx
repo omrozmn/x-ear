@@ -1,14 +1,28 @@
 import * as React from 'react';
-import { Button } from '@x-ear/ui-web';
+import { Button, Input } from '@x-ear/ui-web';
 import { useStartBulkUtsRegistration } from '@/hooks/uts/useUts';
 import { outbox } from '@/utils/outbox';
 import parseAndMapCsv from '@/utils/uts-csv';
+
+// Types derived from CSV parsing utilities
+type UtsPayload = {
+  serial: string;
+  manufacturer: string;
+  model: string;
+  patientTc: string;
+};
+
+type UtsCsvPreview = {
+  rows: Record<string, string>[];
+  mapped: { raw: Record<string, string>; mapped: UtsPayload }[];
+  errors: { row: number; errors: string[] }[];
+};
 
 export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = ({ onStarted }) => {
   const [fileContent, setFileContent] = React.useState<string>('');
   const startBulk = useStartBulkUtsRegistration();
 
-  const [preview, setPreview] = React.useState<any | null>(null);
+  const [preview, setPreview] = React.useState<UtsCsvPreview | null>(null);
 
   const handleFile = (file: File | null) => {
     if (!file) return;
@@ -16,43 +30,40 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
     reader.onload = () => {
       const text = String(reader.result || '');
       setFileContent(text);
-      const parsed = parseAndMapCsv(text);
+      const parsed = parseAndMapCsv(text) as UtsCsvPreview;
       setPreview(parsed);
     };
     reader.readAsText(file);
   };
 
   const handleSubmit = async () => {
-    // Parse CSV
-    const parsed = parseAndMapCsv(fileContent);
-    const mappedRows = parsed.mapped.map((m:any) => m.mapped);
-
+    if (!fileContent) return;
+    // Send to backend via outbox for offline-first, idempotent processing
     try {
-      const res = await startBulk.mutateAsync({ rows: mappedRows });
-      // If backend returns jobId, notify parent
-      if (res && (res as any).jobId && onStarted) onStarted((res as any).jobId);
+      const idempotencyKey = `uts_bulk_${Date.now()}`;
+      await outbox.addOperation({
+        method: 'POST',
+        endpoint: '/api/uts/registrations/bulk',
+        data: {
+          csv: fileContent,
+        },
+        headers: { 'Idempotency-Key': idempotencyKey },
+        maxRetries: 5,
+      });
+
+      // Also trigger immediate processing via mutation for online case
+      const res = await (startBulk as ReturnType<typeof useStartBulkUtsRegistration>).mutateAsync({ csv: fileContent });
+      const jobId = (res as { jobId?: string }).jobId || `queued-${Date.now()}`;
+      onStarted?.(jobId);
     } catch (err) {
-      // On failure (likely offline), enqueue to outbox
-      try {
-        await outbox.addOperation({
-          method: 'POST',
-          endpoint: '/api/uts/registrations/bulk',
-          data: { rows: mappedRows },
-          headers: { 'Idempotency-Key': `uts_bulk_${Date.now()}` },
-          maxRetries: 5,
-        });
-        // Notify user via event or toast (omitted here)
-      } catch (e) {
-        console.error('Failed to enqueue UTS bulk operation', e);
-        throw e;
-      }
+      console.error('Failed to start UTS bulk registration:', err);
     }
   };
 
   return (
     <div>
       <div>
-        <input type="file" accept="text/csv" onChange={(e) => handleFile(e.target.files ? e.target.files[0] : null)} />
+        <Input type="file" accept="text/csv" onChange={(e) => handleFile(e.target.files ? e.target.files[0] : null)} />
       </div>
       {preview && (
         <div style={{ marginTop: 8 }}>
@@ -61,7 +72,7 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
             <div style={{ color: 'red' }}>
               Hatalar:
               <ul>
-                {preview.errors.map((err:any, idx:number) => (
+                {preview.errors.map((err, idx) => (
                   <li key={idx}>Satır {err.row + 1}: {err.errors.join(', ')}</li>
                 ))}
               </ul>
@@ -78,7 +89,7 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
                 </tr>
               </thead>
               <tbody>
-                {preview.mapped && preview.mapped.map((m:any, i:number) => (
+                {preview.mapped && preview.mapped.map((m, i) => (
                   <tr key={i} style={{ borderTop: '1px solid #f3f3f3' }}>
                     <td>{m.mapped.serial}</td>
                     <td>{m.mapped.manufacturer}</td>
@@ -92,7 +103,7 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
         </div>
       )}
       <div style={{ marginTop: 8 }}>
-        <Button onClick={handleSubmit} disabled={(startBulk as any).isLoading || !fileContent}>
+        <Button onClick={handleSubmit} disabled={(startBulk as ReturnType<typeof useStartBulkUtsRegistration>).isPending || !fileContent}>
           CSV ile Toplu Kayıt
         </Button>
       </div>

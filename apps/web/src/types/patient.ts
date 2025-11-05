@@ -50,7 +50,7 @@ export interface PatientDevice {
   side: 'left' | 'right' | 'both';
   ear?: 'left' | 'right' | 'both' | 'bilateral'; // Alternative to side for legacy compatibility
   type: 'hearing_aid' | 'cochlear_implant' | 'bone_anchored';
-  status: 'active' | 'trial' | 'returned' | 'replaced' | 'assigned' | 'defective';
+  status: 'active' | 'trial' | 'returned' | 'replaced';
   purchaseDate?: string;
   assignedDate?: string;
   warrantyExpiry?: string;

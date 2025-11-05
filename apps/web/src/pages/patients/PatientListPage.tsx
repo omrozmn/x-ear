@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { usePatients } from '../../hooks/patient/usePatients';
+import { usePatients } from '../../hooks/usePatients';
 import { usePatientMutations } from '../../hooks/patient/usePatientMutations';
 import { Patient } from '../../types/patient';
 import { PatientSegment, PatientLabel } from '../../types/patient/patient-base.types';

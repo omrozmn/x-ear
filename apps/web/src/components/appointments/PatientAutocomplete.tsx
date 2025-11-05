@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@x-ear/ui-web';
-import { Search, User } from 'lucide-react';
-import { usePatients } from '../../hooks/patient/usePatients';
+import { Search } from 'lucide-react';
+import { usePatients } from '../../hooks/usePatients';
 import { Patient } from '../../types/patient/patient-base.types';
 
 interface PatientAutocompleteProps {

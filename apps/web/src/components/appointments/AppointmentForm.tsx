@@ -2,7 +2,7 @@ import { Button, Input, Textarea, Select } from '@x-ear/ui-web';
 import React, { useState, useEffect } from 'react';
 import { Appointment, CreateAppointmentData, UpdateAppointmentData, AppointmentType, AppointmentStatus } from '../../types/appointment';
 import { useAppointments } from '../../hooks/useAppointments';
-import { usePatients } from '../../hooks/patient/usePatients';
+import { usePatients } from '../../hooks/usePatients';
 
 interface AppointmentFormProps {
   appointment?: Appointment;

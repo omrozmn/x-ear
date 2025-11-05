@@ -55,7 +55,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
     return labels[type] || type;
   };
 
-  const validateFile = (file: File): string | null => {
+  const validateFile = useCallback((file: File): string | null => {
     if (file.size > maxFileSize) {
       return `Dosya boyutu ${Math.round(maxFileSize / 1024 / 1024)}MB'dan büyük olamaz`;
     }
@@ -74,7 +74,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
     }
 
     return null;
-  };
+  }, [maxFileSize]);
 
   const handleFileSelect = useCallback((file: File) => {
     const error = validateFile(file);
@@ -97,7 +97,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
     // Clear previous results
     setOcrResult(null);
     setValidation(null);
-  }, [maxFileSize, onUploadError]);
+  }, [onUploadError, validateFile]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -170,7 +170,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
       }
 
       // Create document
-      const documentData = {
+      const documentData: Omit<SGKDocument, 'id' | 'createdAt' | 'updatedAt'> = {
         patientId: formData.patientId,
         filename: selectedFile?.name || 'document',
         documentType: formData.documentType,
@@ -419,13 +419,12 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
         {/* Auto Process Option */}
         {!compact && (
           <div className="flex items-center">
-            <input
+            <Input
               type="checkbox"
               id="autoProcess"
               checked={formData.autoProcess || false}
               onChange={(e) => setFormData(prev => ({ ...prev, autoProcess: e.target.checked }))}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              data-allow-raw
             />
             <label htmlFor="autoProcess" className="ml-2 block text-sm text-gray-900">
               Otomatik OCR işlemi yap (görüntü dosyaları için)

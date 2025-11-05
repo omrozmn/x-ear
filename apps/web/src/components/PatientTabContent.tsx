@@ -1,8 +1,8 @@
 import React from 'react';
-import { Patient } from '../types/patient';
+import { Patient } from '../types/patient/patient-base.types';
 import { PatientOverviewTab } from './PatientOverviewTab';
 import { PatientDevicesTab } from './PatientDevicesTab';
-import { PatientSalesTab } from './PatientSalesTab';
+import PatientSalesTab from './patients/PatientSalesTab';
 import { PatientTimelineTab } from './PatientTimelineTab';
 import { PatientDocumentsTab } from './PatientDocumentsTab';
 import { PatientAppointmentsTab } from './PatientAppointmentsTab';
@@ -11,7 +11,9 @@ import { PatientNotesTab } from './PatientNotesTab';
 import { PatientSGKTab } from './PatientSGKTab';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { ErrorBoundary } from './common/ErrorBoundary';
-import { Clock } from 'lucide-react';interface PatientTabContentProps {
+import { Clock } from 'lucide-react';
+
+interface PatientTabContentProps {
   activeTab: string;
   patient?: Patient;
   isLoading?: boolean;
@@ -21,15 +23,14 @@ import { Clock } from 'lucide-react';interface PatientTabContentProps {
     timeline: number;
     documents: number;
   };
-  sales?: any[];
+  // removed unused sales prop
 }
 
 export const PatientTabContent: React.FC<PatientTabContentProps> = ({ 
   activeTab, 
   patient, 
   isLoading,
-  tabCounts,
-  sales 
+  tabCounts
 }) => {
   if (isLoading || !patient) {
     return (
@@ -71,11 +72,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
     case 'sales':
       return (
         <ErrorBoundary>
-          <PatientSalesTab
-            patientId={patient?.id || ''}
-            tabCount={tabCounts?.sales}
-            sales={sales}
-          />
+          <PatientSalesTab patient={patient} />
         </ErrorBoundary>
       );
     case 'timeline':

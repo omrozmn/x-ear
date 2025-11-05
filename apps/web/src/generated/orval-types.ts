@@ -62,7 +62,7 @@ export interface Patient {
   /** Unique patient identifier */
   id?: string;
   /** Turkish citizenship number */
-  tcNumber: string;
+  tcNumber?: string;
   /** Turkish citizenship number (snake_case alias) */
   tc_number?: string;
   /** Identity number */

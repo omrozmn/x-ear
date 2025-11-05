@@ -238,6 +238,9 @@ def list_patients():
         per_page = int(request.args.get('per_page', 20))
         cursor = request.args.get('cursor')  # For cursor-based pagination
         search = request.args.get('search', '')
+        status = request.args.get('status', '')
+        city = request.args.get('city', '')
+        district = request.args.get('district', '')
         
         query = Patient.query
         
@@ -252,6 +255,18 @@ def list_patients():
                     Patient.email.ilike(search_term)
                 )
             )
+        
+        # Apply status filter
+        if status:
+            query = query.filter(Patient.status == status)
+        
+        # Apply city filter
+        if city:
+            query = query.filter(Patient.address_city == city)
+        
+        # Apply district filter
+        if district:
+            query = query.filter(Patient.address_district == district)
         
         # Cursor-based pagination for better performance with large datasets
         if cursor:
@@ -299,6 +314,13 @@ def list_patients():
                         Patient.email.ilike(search_term)
                     )
                 )
+            if status:
+                total_query = total_query.filter(Patient.status == status)
+            if city:
+                total_query = total_query.filter(Patient.address_city == city)
+            if district:
+                total_query = total_query.filter(Patient.address_district == district)
+            
             total_count = total_query.count()
             total_pages = (total_count + per_page - 1) // per_page
             
@@ -479,11 +501,16 @@ def update_patient(patient_id):
             'tags': 'tags',
             'sgkInfo': 'sgk_info',
             'phone': 'phone',
-            'email': 'email'
+            'email': 'email',
+            'city': 'address_city',
+            'district': 'address_district',
+            'addressCity': 'address_city',
+            'addressDistrict': 'address_district',
+            'addressFull': 'address_full'
         }
 
         # Whitelist of allowed direct-mapped model attributes (snake_case)
-        allowed_attrs = set(['first_name','last_name','tc_number','identity_number','phone','email','gender','status','segment','acquisition_type','conversion_step','referred_by','priority_score','branch_id'])
+        allowed_attrs = set(['first_name','last_name','tc_number','identity_number','phone','email','gender','status','segment','acquisition_type','conversion_step','referred_by','priority_score','branch_id','address_city','address_district','address_full'])
 
         for k, v in data.items():
             # Special fields handled explicitly
