@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UtsRouteImport } from './routes/uts'
 import { Route as TestRouteImport } from './routes/test'
 import { Route as ReportsRouteImport } from './routes/reports'
-import { Route as PatientsRouteImport } from './routes/patients'
 import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
@@ -38,11 +37,6 @@ const TestRoute = TestRouteImport.update({
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PatientsRoute = PatientsRouteImport.update({
-  id: '/patients',
-  path: '/patients',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InvoicesRoute = InvoicesRouteImport.update({
@@ -71,9 +65,9 @@ const SgkIndexRoute = SgkIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const PatientsIndexRoute = PatientsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => PatientsRoute,
+  id: '/patients/',
+  path: '/patients/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const InvoicesIndexRoute = InvoicesIndexRouteImport.update({
   id: '/',
@@ -86,9 +80,9 @@ const SgkDownloadsRoute = SgkDownloadsRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const PatientsPatientIdRoute = PatientsPatientIdRouteImport.update({
-  id: '/$patientId',
-  path: '/$patientId',
-  getParentRoute: () => PatientsRoute,
+  id: '/patients/$patientId',
+  path: '/patients/$patientId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const InvoicesPurchasesRoute = InvoicesPurchasesRouteImport.update({
   id: '/purchases',
@@ -106,7 +100,6 @@ export interface FileRoutesByFullPath {
   '/appointments': typeof AppointmentsRoute
   '/inventory': typeof InventoryRoute
   '/invoices': typeof InvoicesRouteWithChildren
-  '/patients': typeof PatientsRouteWithChildren
   '/reports': typeof ReportsRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
@@ -115,7 +108,7 @@ export interface FileRoutesByFullPath {
   '/patients/$patientId': typeof PatientsPatientIdRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
   '/invoices/': typeof InvoicesIndexRoute
-  '/patients/': typeof PatientsIndexRoute
+  '/patients': typeof PatientsIndexRoute
   '/sgk': typeof SgkIndexRoute
 }
 export interface FileRoutesByTo {
@@ -139,7 +132,6 @@ export interface FileRoutesById {
   '/appointments': typeof AppointmentsRoute
   '/inventory': typeof InventoryRoute
   '/invoices': typeof InvoicesRouteWithChildren
-  '/patients': typeof PatientsRouteWithChildren
   '/reports': typeof ReportsRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
@@ -158,7 +150,6 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/inventory'
     | '/invoices'
-    | '/patients'
     | '/reports'
     | '/test'
     | '/uts'
@@ -167,7 +158,7 @@ export interface FileRouteTypes {
     | '/patients/$patientId'
     | '/sgk/downloads'
     | '/invoices/'
-    | '/patients/'
+    | '/patients'
     | '/sgk'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -190,7 +181,6 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/inventory'
     | '/invoices'
-    | '/patients'
     | '/reports'
     | '/test'
     | '/uts'
@@ -208,11 +198,12 @@ export interface RootRouteChildren {
   AppointmentsRoute: typeof AppointmentsRoute
   InventoryRoute: typeof InventoryRoute
   InvoicesRoute: typeof InvoicesRouteWithChildren
-  PatientsRoute: typeof PatientsRouteWithChildren
   ReportsRoute: typeof ReportsRoute
   TestRoute: typeof TestRoute
   UtsRoute: typeof UtsRoute
+  PatientsPatientIdRoute: typeof PatientsPatientIdRoute
   SgkDownloadsRoute: typeof SgkDownloadsRoute
+  PatientsIndexRoute: typeof PatientsIndexRoute
   SgkIndexRoute: typeof SgkIndexRoute
 }
 
@@ -237,13 +228,6 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof ReportsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/patients': {
-      id: '/patients'
-      path: '/patients'
-      fullPath: '/patients'
-      preLoaderRoute: typeof PatientsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/invoices': {
@@ -283,10 +267,10 @@ declare module '@tanstack/react-router' {
     }
     '/patients/': {
       id: '/patients/'
-      path: '/'
-      fullPath: '/patients/'
+      path: '/patients'
+      fullPath: '/patients'
       preLoaderRoute: typeof PatientsIndexRouteImport
-      parentRoute: typeof PatientsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/invoices/': {
       id: '/invoices/'
@@ -304,10 +288,10 @@ declare module '@tanstack/react-router' {
     }
     '/patients/$patientId': {
       id: '/patients/$patientId'
-      path: '/$patientId'
+      path: '/patients/$patientId'
       fullPath: '/patients/$patientId'
       preLoaderRoute: typeof PatientsPatientIdRouteImport
-      parentRoute: typeof PatientsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/invoices/purchases': {
       id: '/invoices/purchases'
@@ -342,30 +326,17 @@ const InvoicesRouteWithChildren = InvoicesRoute._addFileChildren(
   InvoicesRouteChildren,
 )
 
-interface PatientsRouteChildren {
-  PatientsPatientIdRoute: typeof PatientsPatientIdRoute
-  PatientsIndexRoute: typeof PatientsIndexRoute
-}
-
-const PatientsRouteChildren: PatientsRouteChildren = {
-  PatientsPatientIdRoute: PatientsPatientIdRoute,
-  PatientsIndexRoute: PatientsIndexRoute,
-}
-
-const PatientsRouteWithChildren = PatientsRoute._addFileChildren(
-  PatientsRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppointmentsRoute: AppointmentsRoute,
   InventoryRoute: InventoryRoute,
   InvoicesRoute: InvoicesRouteWithChildren,
-  PatientsRoute: PatientsRouteWithChildren,
   ReportsRoute: ReportsRoute,
   TestRoute: TestRoute,
   UtsRoute: UtsRoute,
+  PatientsPatientIdRoute: PatientsPatientIdRoute,
   SgkDownloadsRoute: SgkDownloadsRoute,
+  PatientsIndexRoute: PatientsIndexRoute,
   SgkIndexRoute: SgkIndexRoute,
 }
 export const routeTree = rootRouteImport

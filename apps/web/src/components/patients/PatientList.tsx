@@ -302,7 +302,18 @@ export function PatientList({
                 <tr
                   key={patient.id}
                   className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
-                  onClick={() => (onView || onPatientClick)?.(patient)}
+                  onClick={() => {
+                    console.log('=== TABLE ROW CLICK ===', patient);
+                    console.log('onPatientClick:', onPatientClick);
+                    console.log('onView:', onView);
+                    const handler = onView || onPatientClick;
+                    console.log('Handler to call:', handler);
+                    if (handler) {
+                      handler(patient);
+                    } else {
+                      console.error('No click handler available!');
+                    }
+                  }}
                   onMouseEnter={() => setHoveredPatient(patient.id || null)}
                   onMouseLeave={() => setHoveredPatient(null)}
                 >

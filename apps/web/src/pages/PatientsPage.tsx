@@ -81,8 +81,19 @@ export function PatientsPage() {
     }
   };
 
-  const handleViewPatient = (patient: Patient) => {
-    navigate({ to: `/patients/${patient.id}` });
+  const handlePatientClick = (patient: Patient) => {
+    console.log('=== PATIENT CLICK ===');
+    console.log('Patient:', patient);
+    console.log('Patient ID:', patient.id);
+    if (patient.id) {
+      console.log('Navigating to:', `/patients/${patient.id}`);
+      navigate({ 
+        to: '/patients/$patientId', 
+        params: { patientId: String(patient.id) } 
+      });
+    } else {
+      console.error('Patient ID is missing!');
+    }
   };
 
   const handleClearFilters = () => {
@@ -341,7 +352,7 @@ export function PatientsPage() {
             <PatientList
               patients={paginatedPatients}
               onEdit={handleEditPatient}
-              onView={handleViewPatient}
+              onPatientClick={handlePatientClick}
               onDelete={handleDeletePatient}
               onPatientSelect={handlePatientSelect}
               selectedPatients={selectedPatients}
