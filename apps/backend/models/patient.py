@@ -94,11 +94,15 @@ class Patient(BaseModel, JSONMixin):
             'birthDate': (lambda d: (d.isoformat() if hasattr(d, 'isoformat') else (str(d) if d is not None else None)))(self.birth_date),
             'dob': (lambda d: (d.date().isoformat() if hasattr(d, 'date') else (str(d) if d is not None else None)))(self.birth_date),
             'gender': self.gender,
+            # Address fields - both nested (legacy) and flat (OpenAPI spec)
             'address': {
                 'city': self.address_city,
                 'district': self.address_district,
                 'fullAddress': self.address_full
             },
+            'addressCity': self.address_city,
+            'addressDistrict': self.address_district,
+            'addressFull': self.address_full,
             'status': self.status.value if self.status else None,
             'segment': self.segment,
             'acquisitionType': self.acquisition_type,
