@@ -2,23 +2,27 @@ import React, { useState } from 'react';
 import { Patient } from '../../types/patient/patient-base.types';
 import { User, Phone, Mail, MapPin, Tag, AlertCircle, CheckCircle, Plus, Edit, MessageSquare, X } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { PatientNoteForm } from '../forms/PatientNoteForm';
-import { Modal } from '@x-ear/ui-web';
+import { Modal, Input, Textarea } from '@x-ear/ui-web';
 
 interface PatientOverviewTabProps {
   patient: Patient;
   onPatientUpdate?: (patient: Patient) => void;
+  showNoteModal?: boolean;
+  onCloseNoteModal?: () => void;
 }
 
 export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
   patient,
   onPatientUpdate,
+  showNoteModal = false,
+  onCloseNoteModal,
 }) => {
-  const [showNoteForm, setShowNoteForm] = useState(false);
-  const [showTagModal, setShowTagModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedLabel, setSelectedLabel] = useState<import('../../types/patient/patient-base.types').PatientLabel | undefined>(patient.labels?.[0]);
-  const [labelNotes, setLabelNotes] = useState('');
+  const [noteTitle, setNoteTitle] = useState('');
+  const [noteContent, setNoteContent] = useState('');
+
+  // Use external control for modal state
+  const isModalOpen = showNoteModal;
 
   if (!patient) {
     return (
@@ -46,106 +50,82 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
   };
 
   const getStatusText = (status?: string) => {
-    switch (status) {
-      case 'active':
-        return 'Aktif';
-      case 'inactive':
-        return 'Pasif';
-      default:
-        return 'Bilinmiyor';
+    const statusMap: Record<string, string> = {
+      ACTIVE: 'Aktif',
+      active: 'Aktif',
+      INACTIVE: 'Pasif',
+      inactive: 'Pasif',
+      TRIAL: 'Deneme',
+      trial: 'Deneme',
+      archived: 'Arşivlenmiş'
+    };
+    return statusMap[status || ''] || 'Bilinmiyor';
+  };
+
+  const getSegmentText = (segment?: string) => {
+    const segmentMap: Record<string, string> = {
+      NEW: 'Yeni',
+      TRIAL: 'Deneme',
+      PURCHASED: 'Satın Almış',
+      CONTROL: 'Kontrol',
+      RENEWAL: 'Yenileme',
+      EXISTING: 'Mevcut',
+      VIP: 'VIP'
+    };
+    return segmentMap[segment || ''] || 'Belirtilmemiş';
+  };
+
+  const getAcquisitionTypeText = (type?: string) => {
+    const typeMap: Record<string, string> = {
+      referral: 'Referans',
+      online: 'Online',
+      'walk-in': 'Ziyaret',
+      'social-media': 'Sosyal Medya',
+      advertisement: 'Reklam',
+      tabela: 'Tabela'
+    };
+    return typeMap[type || ''] || 'Belirtilmemiş';
+  };
+
+
+
+  const handleNoteSave = async () => {
+    if (!noteContent.trim()) {
+      return;
     }
-  };
-
-  const handleAddNote = () => {
-    setShowNoteForm(true);
-  };
-
-  const handleUpdateTags = () => {
-    setSelectedLabel(patient.labels?.[0]);
-    setLabelNotes('');
-    setShowTagModal(true);
-  };
-
-  const handleSaveLabel = async () => {
-    setIsSubmitting(true);
-    try {
-      // TODO: Implement API call to update patient label
-      console.log('Updating label:', { newLabel: selectedLabel, notes: labelNotes });
-      if (onPatientUpdate) {
-        onPatientUpdate({ ...patient, labels: selectedLabel ? [selectedLabel] : patient.labels });
-      }
-      setShowTagModal(false);
-    } catch (error) {
-      console.error('Label update failed:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const labelOptions = [
-    { value: 'yeni', label: 'Yeni Hasta' },
-    { value: 'arama-yapildi', label: 'Arama Yapıldı' },
-    { value: 'randevu-verildi', label: 'Randevu Verildi' },
-    { value: 'geldi', label: 'Geldi' },
-    { value: 'deneme-yapildi', label: 'Deneme Yapıldı' },
-    { value: 'satis-tamamlandi', label: 'Satış Tamamlandı' },
-    { value: 'kontrol-hastasi', label: 'Kontrol Hastası' }
-  ];
-
-  const handleSendSMS = async () => {
-    // TODO: Check SMS package availability from settings
-    // For now, show a placeholder alert
-    alert('SMS gönderme özelliği ayarlar menüsünden SMS paketi kontrolü yapılacak şekilde geliştirilecek.');
-  };
-
-  const handleNoteSave = async (noteData: Record<string, unknown>) => {
+    
     setIsSubmitting(true);
     try {
       // TODO: Implement note saving logic
-      console.log('Saving note:', noteData);
-      setShowNoteForm(false);
+      console.log('Saving note:', { 
+        patientId: patient.id,
+        title: noteTitle || 'Not',
+        content: noteContent 
+      });
+      
+      // Close modal and reset form
+      if (onCloseNoteModal) {
+        onCloseNoteModal();
+      }
+      setNoteTitle('');
+      setNoteContent('');
     } catch (error) {
       console.error('Note save failed:', error);
-      throw error;
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCloseModal = () => {
+    if (onCloseNoteModal) {
+      onCloseNoteModal();
+    }
+    setNoteTitle('');
+    setNoteContent('');
   };
 
   return (
     <div className="space-y-6">
-      {/* Quick Action Buttons */}
-      <div className="bg-white border rounded-lg shadow-sm">
-        <div className="p-4 border-b">
-          <h3 className="text-lg font-medium text-gray-900">Hızlı İşlemler</h3>
-        </div>
-        <div className="p-4">
-          <div className="flex flex-wrap gap-3">
-            <Button
-              onClick={handleAddNote}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Not Ekle
-            </Button>
-            <Button
-              onClick={handleUpdateTags}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Etiket Güncelle
-            </Button>
-            <Button
-              onClick={handleSendSMS}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2"
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              SMS Gönder
-            </Button>
-          </div>
-        </div>
-      </div>
-
       {/* Personal Information */}
       <div className="bg-white border rounded-lg shadow-sm">
         <div className="p-6 border-b">
@@ -204,6 +184,32 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
                 </p>
               </div>
             </div>
+
+            <div className="flex items-center space-x-3">
+              <Tag className="w-5 h-5 text-gray-400" />
+              <div>
+                <p className="text-sm font-medium text-gray-500">Segment</p>
+                <p className="text-sm text-gray-900">{getSegmentText(patient.segment)}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <Tag className="w-5 h-5 text-gray-400" />
+              <div>
+                <p className="text-sm font-medium text-gray-500">Kazanım Türü</p>
+                <p className="text-sm text-gray-900">{getAcquisitionTypeText(patient.acquisitionType)}</p>
+              </div>
+            </div>
+
+            {patient.branchId && patient.branchId !== 'branch-1' && (
+              <div className="flex items-center space-x-3">
+                <MapPin className="w-5 h-5 text-gray-400" />
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Şube</p>
+                  <p className="text-sm text-gray-900">{patient.branchId}</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -214,19 +220,35 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
           <h3 className="text-lg font-medium text-gray-900">Adres Bilgileri</h3>
         </div>
         <div className="p-6">
-          <div className="flex items-start space-x-3">
-            <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-500 mb-1">Adres</p>
-              <p className="text-sm text-gray-900">
-                {(() => {
-                  if (!patient.addressFull) {
-                    return 'Adres bilgisi bulunmuyor';
-                  }
-                  
-                  return patient.addressFull;
-                })()}
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex items-center space-x-3">
+              <MapPin className="w-5 h-5 text-gray-400" />
+              <div>
+                <p className="text-sm font-medium text-gray-500">İl</p>
+                <p className="text-sm text-gray-900">
+                  {patient.addressCity || 'Belirtilmemiş'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <MapPin className="w-5 h-5 text-gray-400" />
+              <div>
+                <p className="text-sm font-medium text-gray-500">İlçe</p>
+                <p className="text-sm text-gray-900">
+                  {patient.addressDistrict || 'Belirtilmemiş'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-3 md:col-span-3">
+              <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-500 mb-1">Adres</p>
+                <p className="text-sm text-gray-900">
+                  {patient.addressFull || 'Adres bilgisi bulunmuyor'}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -287,15 +309,55 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
       </div>
 
       {/* Note Form Modal */}
-      {showNoteForm && (
-        <PatientNoteForm
-          patientId={patient.id || ''}
-          isOpen={showNoteForm}
-          onClose={() => setShowNoteForm(false)}
-          onSave={handleNoteSave}
-          isLoading={isSubmitting}
-        />
-      )}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title="Not Ekle"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Başlık (Opsiyonel)
+            </label>
+            <Input
+              value={noteTitle}
+              onChange={(e) => setNoteTitle(e.target.value)}
+              placeholder="Not başlığı"
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Not <span className="text-red-500">*</span>
+            </label>
+            <Textarea
+              value={noteContent}
+              onChange={(e) => setNoteContent(e.target.value)}
+              placeholder="Notunuzu buraya yazın..."
+              rows={5}
+              className="w-full"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={handleCloseModal}
+              disabled={isSubmitting}
+            >
+              İptal
+            </Button>
+            <Button
+              onClick={handleNoteSave}
+              disabled={!noteContent.trim() || isSubmitting}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {isSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

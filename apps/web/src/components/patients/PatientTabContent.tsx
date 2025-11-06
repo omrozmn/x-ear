@@ -21,6 +21,8 @@ interface PatientTabContentProps {
   sales?: any[];
   isLoading?: boolean;
   tabCounts?: any;
+  showNoteModal?: boolean;
+  onCloseNoteModal?: () => void;
 }
 
 export const PatientTabContent: React.FC<PatientTabContentProps> = ({
@@ -29,7 +31,9 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
   onPatientUpdate,
   sales,
   isLoading,
-  tabCounts
+  tabCounts,
+  showNoteModal,
+  onCloseNoteModal
 }) => {
   if (isLoading || !patient) {
     return (
@@ -58,7 +62,11 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
     case 'overview':
       return (
         <ErrorBoundary>
-          <PatientOverviewTab patient={patient} />
+          <PatientOverviewTab 
+            patient={patient} 
+            showNoteModal={showNoteModal}
+            onCloseNoteModal={onCloseNoteModal}
+          />
         </ErrorBoundary>
       );
     case 'devices':

@@ -21,12 +21,15 @@ import { usePatientDocuments } from '../hooks/patient/usePatientDocuments';
 import { PatientHeader } from '../components/patients/PatientHeader';
 import { PatientTabs, type PatientTab } from '../components/patients/PatientTabs';
 import { PatientTabContent } from '../components/patients/PatientTabContent';
+import { PatientFormModal } from '../components/patients/PatientFormModal';
+import { PatientTagUpdateModal } from '../components/patients/PatientTagUpdateModal';
 import { ErrorMessage, NetworkError, NotFoundError } from '../components/ErrorMessage';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useGlobalError } from '../components/GlobalErrorHandler';
 import { PATIENT_DETAILS_TAB_LEGACY } from '../constants/storage-keys';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { Button } from '@x-ear/ui-web';
+import { useUpdatePatient } from '../hooks/usePatients';
 
 export const PatientDetailsPage: React.FC = () => {
   const { patientId } = useParams({ strict: false }) as { patientId?: string };
@@ -36,8 +39,12 @@ export const PatientDetailsPage: React.FC = () => {
     const saved = localStorage.getItem(PATIENT_DETAILS_TAB_LEGACY);
     return (saved as PatientTab) || 'general';
   });
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showTagModal, setShowTagModal] = useState(false);
+  const [showNoteModal, setShowNoteModal] = useState(false);
 
-  const { patient, isLoading, error } = usePatient(patientId);
+  const { patient, isLoading, error, refetch } = usePatient(patientId);
+  const updatePatientMutation = useUpdatePatient();
   const { devices } = usePatientDevices(patientId, patient?.devices);
   const { sales } = usePatientSales(patientId);
   const { timeline } = usePatientTimeline(patientId);
@@ -67,8 +74,12 @@ export const PatientDetailsPage: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; className: string }> = {
+      ACTIVE: { label: 'Aktif', className: 'bg-green-100 text-green-800' },
       active: { label: 'Aktif', className: 'bg-green-100 text-green-800' },
+      INACTIVE: { label: 'Pasif', className: 'bg-yellow-100 text-yellow-800' },
       inactive: { label: 'Pasif', className: 'bg-yellow-100 text-yellow-800' },
+      TRIAL: { label: 'Deneme', className: 'bg-blue-100 text-blue-800' },
+      trial: { label: 'Deneme', className: 'bg-blue-100 text-blue-800' },
       archived: { label: 'Arşiv', className: 'bg-gray-100 text-gray-800' },
     };
     const statusInfo = statusMap[status] || { label: status, className: 'bg-gray-100 text-gray-800' };
@@ -138,7 +149,13 @@ export const PatientDetailsPage: React.FC = () => {
     return (
       <>
         {/* Patient Header */}
-        <PatientHeader patient={patient} isLoading={isLoading} />
+        <PatientHeader 
+          patient={patient} 
+          isLoading={isLoading}
+          onEdit={() => setShowEditModal(true)}
+          onTagUpdate={() => setShowTagModal(true)}
+          onAddNote={() => setShowNoteModal(true)}
+        />
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 px-6">
@@ -201,6 +218,8 @@ export const PatientDetailsPage: React.FC = () => {
               isLoading={isLoading}
               tabCounts={tabCounts}
               sales={sales}
+              showNoteModal={showNoteModal}
+              onCloseNoteModal={() => setShowNoteModal(false)}
             />
           </ErrorBoundary>
         </div>
@@ -222,6 +241,50 @@ export const PatientDetailsPage: React.FC = () => {
         </Button>
       </div>
       {renderContent()}
+
+      {/* Edit Modal */}
+      {showEditModal && patient && (
+        <PatientFormModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onSubmit={async (data) => {
+            try {
+              await updatePatientMutation.mutateAsync({
+                patientId: patient.id!,
+                updates: data
+              });
+              await refetch?.();
+              return patient;
+            } catch (error) {
+              console.error('Failed to update patient:', error);
+              throw error;
+            }
+          }}
+          initialData={patient}
+          title="Hasta Düzenle"
+        />
+      )}
+
+      {/* Tag Update Modal */}
+      {showTagModal && patient && (
+        <PatientTagUpdateModal
+          patient={patient}
+          isOpen={showTagModal}
+          onClose={() => setShowTagModal(false)}
+          onUpdate={async (updates) => {
+            try {
+              await updatePatientMutation.mutateAsync({
+                patientId: patient.id!,
+                updates
+              });
+              await refetch?.();
+            } catch (error) {
+              console.error('Failed to update patient tags:', error);
+              throw error;
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

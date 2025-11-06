@@ -310,30 +310,13 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
             </span>
           )}
         </h3>
-        <div className="flex items-center space-x-2">
-          <Button
-            onClick={handleInventoryManagement}
-            aria-label="Envanter Yönetimi"
-            className="flex items-center justify-center px-3 py-2 rounded-lg bg-purple-500 text-white hover:bg-purple-600"
-          >
-            <Settings className="w-4 h-4 mr-2" aria-hidden="true" />
-            Envanter
-          </Button>
-          <Button
-            onClick={() => window.location.reload()}
-            aria-label="Yenile"
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-500 text-white hover:bg-gray-600"
-          >
-            <RefreshCw className="w-5 h-5" aria-hidden="true" />
-          </Button>
-          <Button
-            onClick={handleAssignDevice}
-            aria-label="Cihaz ata"
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500 text-white hover:bg-blue-600"
-          >
-            <Plus className="w-5 h-5" aria-hidden="true" />
-          </Button>
-        </div>
+        <button
+          onClick={handleAssignDevice}
+          aria-label="Cihaz ata"
+          className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all"
+        >
+          <Plus className="w-6 h-6" aria-hidden="true" />
+        </button>
       </div>
 
       {successMessage && (
@@ -369,13 +352,13 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
           <p className="text-gray-500 mb-4">
             Bu hastaya henüz cihaz atanmamış. Satış işlemi sonrasında cihazlar burada görünecek.
           </p>
-          <Button
+          <button
             onClick={handleAssignDevice}
-            className="bg-blue-500 text-white hover:bg-blue-600"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4 mr-2" />
             İlk Cihazı Ata
-          </Button>
+          </button>
         </div>
       ) : (
         <div className="grid gap-4" role="list" aria-label="Hasta cihazları listesi">

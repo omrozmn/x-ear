@@ -230,6 +230,18 @@ export function PatientsPage() {
               <RefreshCw className="h-4 w-4 mr-2" />
               Yenile
             </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                // TODO: Navigate to settings page with patients tab active
+                console.log('TODO: Open settings with patients tab');
+                alert('TODO: Ayarlar sayfasında hastalar sekmesi açılacak');
+              }}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Hasta Ayarları
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setShowCSVModal(true)}>
               <Upload className="h-4 w-4 mr-2" />
               Toplu Yükle

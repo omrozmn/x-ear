@@ -320,12 +320,12 @@ export function PatientFormModal({
       <form onSubmit={handleSubmit} className="space-y-4">
             {/* Personal Information */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">Kişisel Bilgiler</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Kişisel Bilgiler</h3>
               
               {/* Row 1: Ad, Soyad */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Ad <span className="text-red-500">*</span>
                   </label>
                   <Input
@@ -341,7 +341,7 @@ export function PatientFormModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Soyad <span className="text-red-500">*</span>
                   </label>
                   <Input
@@ -360,7 +360,7 @@ export function PatientFormModal({
               {/* Row 2: Telefon, E-posta */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Telefon <span className="text-red-500">*</span>
                   </label>
                   <Input
@@ -376,7 +376,7 @@ export function PatientFormModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     E-posta
                   </label>
                   <Input
@@ -395,7 +395,7 @@ export function PatientFormModal({
               {/* Row 3: TC, Doğum Tarihi */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     TC Kimlik No
                   </label>
                   <Input
@@ -458,10 +458,10 @@ export function PatientFormModal({
                 </div>
               </div>
 
-              {/* Row 5: Adres (2 columns width) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              {/* Row 5: Adres (2 columns width) - Extra margin to prevent label overlap */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Adres
                   </label>
                   <Textarea
@@ -477,7 +477,7 @@ export function PatientFormModal({
               {/* Row 6: Durum, Segment */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Durum
                   </label>
                   <div className="relative">
@@ -496,7 +496,7 @@ export function PatientFormModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Segment
                   </label>
                   <div className="relative">
@@ -523,7 +523,7 @@ export function PatientFormModal({
               {/* Row 7: Kazanım Türü, Şube */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Kazanım Türü
                   </label>
                   <div className="relative">
@@ -547,7 +547,7 @@ export function PatientFormModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Şube
                   </label>
                   <div className="relative">

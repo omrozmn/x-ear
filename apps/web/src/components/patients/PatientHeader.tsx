@@ -53,6 +53,7 @@ interface PatientHeaderProps {
   onSendSMS?: () => void;
   onCopyInfo?: () => void;
   onGenerateReport?: () => void;
+  onAddNote?: () => void;
   isLoading?: boolean;
 }
 
@@ -67,6 +68,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
   onSendSMS,
   onCopyInfo,
   onGenerateReport,
+  onAddNote,
   isLoading,
 }) => {
   if (isLoading || !patient) {
@@ -88,12 +90,42 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
   const formatStatus = (status?: string) => {
     if (!status) return { label: 'Belirtilmemiş', variant: 'secondary' as const };
     const statusMap: Record<string, { label: string; variant: 'success' | 'warning' | 'danger' | 'secondary' }> = {
+      ACTIVE: { label: 'Aktif', variant: 'success' },
       active: { label: 'Aktif', variant: 'success' },
+      INACTIVE: { label: 'Pasif', variant: 'secondary' },
       inactive: { label: 'Pasif', variant: 'secondary' },
+      PENDING: { label: 'Beklemede', variant: 'warning' },
       pending: { label: 'Beklemede', variant: 'warning' },
+      TRIAL: { label: 'Deneme', variant: 'warning' },
+      trial: { label: 'Deneme', variant: 'warning' },
       archived: { label: 'Arşivlenmiş', variant: 'danger' },
     };
     return statusMap[status] || { label: status, variant: 'secondary' as const };
+  };
+
+  const formatSegment = (segment?: string) => {
+    const segmentMap: Record<string, string> = {
+      NEW: 'Yeni',
+      TRIAL: 'Deneme',
+      PURCHASED: 'Satın Almış',
+      CONTROL: 'Kontrol',
+      RENEWAL: 'Yenileme',
+      EXISTING: 'Mevcut',
+      VIP: 'VIP'
+    };
+    return segmentMap[segment || ''] || segment || 'Belirtilmemiş';
+  };
+
+  const formatAcquisitionType = (type?: string) => {
+    const typeMap: Record<string, string> = {
+      referral: 'Referans',
+      online: 'Online',
+      'walk-in': 'Ziyaret',
+      'social-media': 'Sosyal Medya',
+      advertisement: 'Reklam',
+      tabela: 'Tabela'
+    };
+    return typeMap[type || ''] || type || 'Belirtilmemiş';
   };
 
   const formatPriorityScore = (score?: number) => {
@@ -130,16 +162,15 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
               <h1 className="text-2xl font-bold text-gray-900">
                 {patient.firstName || ''} {patient.lastName || ''}
               </h1>
-              <Badge variant={statusInfo.variant}>
-                {statusInfo.label}
-              </Badge>
-              <span className="text-sm text-gray-500">
-                Öncelik: {formatPriorityScore(patient.priorityScore)}
-              </span>
             </div>
 
-            <div className="text-sm text-gray-600 mb-3">
-              <span className="font-medium">Segment:</span> {patient.segment || 'Belirtilmemiş'}
+            <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
+              <div>
+                <span className="font-medium">Segment:</span> {formatSegment(patient.segment)}
+              </div>
+              <div>
+                <span className="font-medium">Kazanım Türü:</span> {formatAcquisitionType(patient.acquisitionType)}
+              </div>
             </div>
 
             {/* Contact Info */}
@@ -168,44 +199,62 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
                 <MapPin className="w-4 h-4 text-gray-400" />
                 <span>
                   {(() => {
-                    const address = patient.address;
-                    if (typeof address === 'object' && address !== null) {
-                      const addressObj = address as Record<string, unknown>;
-                      return (addressObj.fullAddress as string) || 
-                             `${addressObj.district || ''} ${addressObj.city || ''}`.trim() ||
-                             'Belirtilmemiş';
+                    // İl ve İlçe bilgisi
+                    const city = patient.addressCity || (typeof patient.address === 'object' ? (patient.address as any)?.city : '');
+                    const district = patient.addressDistrict || (typeof patient.address === 'object' ? (patient.address as any)?.district : '');
+                    if (city || district) {
+                      return `${district || ''} ${city || ''}`.trim();
                     }
-                    return patient.addressFull || address || 'Belirtilmemiş';
+                    return 'Belirtilmemiş';
                   })()}
                 </span>
               </div>
 
               <div className="flex items-center space-x-2">
-                <Calendar className="w-4 h-4 text-gray-400" />
-                <span>Kazanım: {patient.acquisitionType || 'Belirtilmemiş'}</span>
+                <MapPin className="w-4 h-4 text-gray-400" />
+                <span>
+                  {(() => {
+                    // Tam adres
+                    const address = patient.address;
+                    if (typeof address === 'object' && address !== null) {
+                      const addressObj = address as Record<string, unknown>;
+                      return (addressObj.fullAddress as string) || 'Belirtilmemiş';
+                    }
+                    return patient.addressFull || address || 'Belirtilmemiş';
+                  })()}
+                </span>
               </div>
             </div>
 
             {/* Additional Info */}
-            <div className="mt-4 flex items-center space-x-4 text-sm text-gray-500">
-              <span>Kayıt: {formatDate(patient.createdAt)}</span>
-              {patient.tags && patient.tags.length > 0 && (
-                <div className="flex items-center space-x-1">
-                  <span>Etiketler:</span>
-                  {patient.tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" size="sm">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
+            {patient.tags && patient.tags.length > 0 && (
+              <div className="mt-4 flex items-center space-x-1 text-sm text-gray-500">
+                <span>Etiketler:</span>
+                {patient.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary" size="sm">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-2">
           {/* Primary Actions */}
+          {onAddNote && (
+            <Button
+              size="sm"
+              onClick={onAddNote}
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg transition-all"
+              icon={<MessageSquare className="w-4 h-4" />}
+              iconPosition="left"
+            >
+              Not Ekle
+            </Button>
+          )}
+          
           {onCall && (
             <Button
               variant="outline"
