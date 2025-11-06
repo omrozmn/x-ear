@@ -218,6 +218,9 @@ export function PatientFormModal({
         email: formData.email?.trim() || undefined,
         birthDate: formData.birthDate?.trim() || undefined,
         address: formData.address?.trim() || undefined,
+        // Send both formats for backend compatibility
+        city: formData.city?.trim() || undefined,
+        district: formData.district?.trim() || undefined,
         addressCity: formData.city?.trim() || undefined,
         addressDistrict: formData.district?.trim() || undefined,
         branchId: formData.branchId?.trim() || undefined,
@@ -412,12 +415,12 @@ export function PatientFormModal({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Doğum Tarihi
                   </label>
-                  <DatePicker
-                    value={formData.birthDate ? new Date(formData.birthDate) : null}
-                    onChange={(date) => handleInputChange('birthDate', date ? date.toISOString().split('T')[0] : '')}
-                    placeholder="Doğum tarihi seçin"
-                    error={errors.birthDate}
-                    fullWidth
+                  <Input
+                    type="date"
+                    value={formData.birthDate || ''}
+                    onChange={(e) => handleInputChange('birthDate', e.target.value)}
+                    placeholder="yyyy-mm-dd"
+                    className="h-10"
                   />
                   {errors.birthDate && (
                     <p className="mt-1 text-sm text-red-600">{errors.birthDate}</p>
@@ -425,7 +428,7 @@ export function PatientFormModal({
                 </div>
               </div>
 
-              {/* Row 4: İl, İlçe (2 columns), Adres (spans 2 columns on next row) */}
+              {/* Row 4: İl, İlçe */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                   <Autocomplete
@@ -458,8 +461,10 @@ export function PatientFormModal({
                     className="h-10"
                   />
                 </div>
+              </div>
 
-                {/* Adres spans full width (2 columns) */}
+              {/* Row 5: Adres (full width - 2 columns) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Adres

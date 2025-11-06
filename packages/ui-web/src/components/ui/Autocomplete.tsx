@@ -76,7 +76,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
 
   // Filter options based on search query
   useEffect(() => {
-    if (searchQuery.length >= minSearchLength) {
+    if (searchQuery.length >= minSearchLength || minSearchLength === 0) {
       const filtered = filterOptions(options, searchQuery).slice(0, maxResults);
       setFilteredOptions(filtered);
     } else {

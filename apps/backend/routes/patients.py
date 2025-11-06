@@ -505,12 +505,11 @@ def update_patient(patient_id):
             'city': 'address_city',
             'district': 'address_district',
             'addressCity': 'address_city',
-            'addressDistrict': 'address_district',
-            'addressFull': 'address_full'
+            'addressDistrict': 'address_district'
         }
 
         # Whitelist of allowed direct-mapped model attributes (snake_case)
-        allowed_attrs = set(['first_name','last_name','tc_number','identity_number','phone','email','gender','status','segment','acquisition_type','conversion_step','referred_by','priority_score','branch_id','address_city','address_district','address_full'])
+        allowed_attrs = set(['first_name','last_name','tc_number','identity_number','phone','email','gender','status','segment','acquisition_type','conversion_step','referred_by','priority_score','branch_id','address_city','address_district','address'])
 
         for k, v in data.items():
             # Special fields handled explicitly
@@ -531,11 +530,15 @@ def update_patient(patient_id):
                 except (ValueError, TypeError):
                     pass
                 continue
-            if k == 'address' and isinstance(v, dict):
-                address = v
-                patient.address_city = address.get('city')
-                patient.address_district = address.get('district')
-                patient.address_full = address.get('fullAddress')
+            if k == 'address':
+                if isinstance(v, dict):
+                    # Legacy dict format
+                    patient.address_city = v.get('city')
+                    patient.address_district = v.get('district')
+                    patient.address = v.get('fullAddress') or v.get('address')
+                elif isinstance(v, str):
+                    # New string format - just store the address text
+                    patient.address = v
                 continue
 
             # Normalized key to model attribute
