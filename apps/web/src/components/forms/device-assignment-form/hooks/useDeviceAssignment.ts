@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { DeviceInventoryItem } from '../components/DeviceSearchForm';
 import { DeviceAssignment } from '../components/AssignmentDetailsForm';
+
+const api = axios.create({
+  baseURL: 'http://localhost:5003'
+});
 
 interface UseDeviceAssignmentProps {
   patientId: string;
@@ -109,62 +114,40 @@ export const useDeviceAssignment = ({
   useEffect(() => {
     const loadInventory = async () => {
       try {
-        // Mock inventory data - replace with actual API call
-        const mockDevices: DeviceInventoryItem[] = [
-          {
-            id: '1',
-            brand: 'Phonak',
-            model: 'Audéo Paradise P90',
-            price: 12000,
-            ear: 'both',
-            availableInventory: 5,
-            availableSerials: ['PH001', 'PH002', 'PH003', 'PH004', 'PH005'],
-            barcode: 'PH-P90-001',
+        const response = await api.get('/api/inventory', {
+          params: {
             category: 'hearing_aid',
-            status: 'available'
-          },
-          {
-            id: '2',
-            brand: 'Oticon',
-            model: 'More 1',
-            price: 11500,
-            ear: 'both',
-            availableInventory: 3,
-            availableSerials: ['OT001', 'OT002', 'OT003'],
-            barcode: 'OT-M1-001',
-            category: 'hearing_aid',
-            status: 'available'
-          },
-          {
-            id: '3',
-            brand: 'Cochlear',
-            model: 'Nucleus 8',
-            price: 45000,
-            ear: 'both',
-            availableInventory: 2,
-            availableSerials: ['CO001', 'CO002'],
-            barcode: 'CO-N8-001',
-            category: 'cochlear_implant',
-            status: 'available'
-          },
-          {
-            id: '4',
-            brand: 'Baha',
-            model: 'Attract System',
-            price: 25000,
-            ear: 'both',
-            availableInventory: 1,
-            availableSerials: ['BA001'],
-            barcode: 'BA-AS-001',
-            category: 'bone_anchored',
-            status: 'available'
+            per_page: 100
           }
-        ];
+        });
         
-        setAvailableDevices(mockDevices);
-        setFilteredDevices(mockDevices);
+        const result = response.data;
+        
+        if (!result.success) {
+          throw new Error('Envanter yüklenemedi');
+        }
+        
+        // Transform backend data to frontend format
+        const devices: DeviceInventoryItem[] = result.data.map((item: any) => ({
+          id: item.id.toString(),
+          brand: item.brand || '',
+          model: item.model || '',
+          price: item.price || 0,
+          ear: item.ear || 'bilateral',
+          availableInventory: item.availableInventory || 0,
+          barcode: item.barcode || '',
+          category: item.category || 'hearing_aid',
+          status: (item.availableInventory || 0) > 0 ? 'available' : 'out_of_stock'
+        }));
+        
+        console.log('✓ Loaded inventory:', devices);
+        setAvailableDevices(devices);
+        setFilteredDevices(devices);
       } catch (error) {
         console.error('Envanter yüklenirken hata:', error);
+        // Keep empty array on error
+        setAvailableDevices([]);
+        setFilteredDevices([]);
       }
     };
 
