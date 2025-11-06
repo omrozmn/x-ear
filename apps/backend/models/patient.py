@@ -115,6 +115,14 @@ class Patient(BaseModel, JSONMixin):
     @staticmethod
     def from_dict(data):
         """Create Patient instance from dictionary data"""
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        logger.info(f'🔍 Patient.from_dict - Input data keys: {list(data.keys())}')
+        logger.info(f'🔍 Patient.from_dict - city: {data.get("city")}, addressCity: {data.get("addressCity")}')
+        logger.info(f'🔍 Patient.from_dict - district: {data.get("district")}, addressDistrict: {data.get("addressDistrict")}')
+        logger.info(f'🔍 Patient.from_dict - address: {data.get("address")}')
+        
         patient = Patient()
         patient.id = data.get('id') or gen_id("pat")
         # Handle TC number - convert empty string to None to avoid UNIQUE constraint issues
@@ -147,6 +155,7 @@ class Patient(BaseModel, JSONMixin):
             patient.address = address_data
         
         # Also check for direct city/district/addressCity/addressDistrict fields
+        # These take priority over nested address object
         if data.get('city'):
             patient.address_city = data.get('city')
         if data.get('addressCity'):
@@ -155,6 +164,11 @@ class Patient(BaseModel, JSONMixin):
             patient.address_district = data.get('district')
         if data.get('addressDistrict'):
             patient.address_district = data.get('addressDistrict')
+        
+        logger.info(f'🔍 Patient.from_dict - After processing:')
+        logger.info(f'🔍   address_city: {patient.address_city}')
+        logger.info(f'🔍   address_district: {patient.address_district}')
+        logger.info(f'🔍   address: {patient.address}')
         
         # CRM fields
         status_value = data.get('status', 'active')

@@ -412,19 +412,14 @@ export function PatientFormModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Doğum Tarihi
-                  </label>
-                  <Input
-                    type="date"
-                    value={formData.birthDate || ''}
-                    onChange={(e) => handleInputChange('birthDate', e.target.value)}
-                    placeholder="yyyy-mm-dd"
+                  <DatePicker
+                    label="Doğum Tarihi"
+                    value={formData.birthDate || undefined}
+                    onChange={(date) => handleInputChange('birthDate', date || '')}
+                    placeholder="GG/AA/YYYY"
                     className="h-10"
+                    error={errors.birthDate}
                   />
-                  {errors.birthDate && (
-                    <p className="mt-1 text-sm text-red-600">{errors.birthDate}</p>
-                  )}
                 </div>
               </div>
 
@@ -463,23 +458,23 @@ export function PatientFormModal({
                 </div>
               </div>
 
-              {/* Row 5: Adres (full width - 2 columns) */}
+              {/* Row 5: Adres (2 columns width) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Adres
                   </label>
-                  <Input
-                    type="text"
+                  <Textarea
                     value={formData.address}
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     placeholder="Mahalle, sokak, bina no"
-                    className="h-10"
+                    rows={2}
+                    className="resize-none"
                   />
                 </div>
               </div>
 
-              {/* Row 5: Durum, Segment */}
+              {/* Row 6: Durum, Segment */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -525,7 +520,7 @@ export function PatientFormModal({
                 </div>
               </div>
 
-              {/* Row 6: Kazanım Türü, Şube */}
+              {/* Row 7: Kazanım Türü, Şube */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

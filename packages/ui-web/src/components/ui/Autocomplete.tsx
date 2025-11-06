@@ -155,8 +155,17 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
       
       case 'Enter':
         e.preventDefault();
-        if (isOpen && highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
-          handleOptionSelect(filteredOptions[highlightedIndex]);
+        if (isOpen) {
+          if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
+            // Select highlighted option
+            handleOptionSelect(filteredOptions[highlightedIndex]);
+          } else if (filteredOptions.length === 1) {
+            // If only one match, select it automatically
+            handleOptionSelect(filteredOptions[0]);
+          } else if (filteredOptions.length > 0) {
+            // If multiple matches and none highlighted, select the first one
+            handleOptionSelect(filteredOptions[0]);
+          }
         }
         break;
       

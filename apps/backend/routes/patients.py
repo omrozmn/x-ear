@@ -373,6 +373,11 @@ def create_patient():
         if not data:
             return jsonify({'success': False, 'error': 'No data provided'}), 400
 
+        logger.info(f'🔍 CREATE PATIENT - Received data: {data}')
+        logger.info(f'🔍 CREATE PATIENT - city: {data.get("city")}, addressCity: {data.get("addressCity")}')
+        logger.info(f'🔍 CREATE PATIENT - district: {data.get("district")}, addressDistrict: {data.get("addressDistrict")}')
+        logger.info(f'🔍 CREATE PATIENT - address: {data.get("address")}')
+
         # Basic validation: ensure required fields exist to avoid DB integrity errors
         missing = []
         for field in ('firstName', 'lastName', 'phone'):
