@@ -438,6 +438,12 @@ def create_patient():
                 }), 409
 
         patient = Patient.from_dict(data)
+        
+        logger.info('🔍 CREATE PATIENT - After from_dict:')
+        logger.info('🔍   address_full: %s', patient.address_full)
+        logger.info('🔍   address_city: %s', patient.address_city)
+        logger.info('🔍   address_district: %s', patient.address_district)
+        
         db.session.add(patient)
         db.session.commit()
 
@@ -514,7 +520,7 @@ def update_patient(patient_id):
         }
 
         # Whitelist of allowed direct-mapped model attributes (snake_case)
-        allowed_attrs = set(['first_name','last_name','tc_number','identity_number','phone','email','gender','status','segment','acquisition_type','conversion_step','referred_by','priority_score','branch_id','address_city','address_district','address'])
+        allowed_attrs = {'first_name','last_name','tc_number','identity_number','phone','email','gender','status','segment','acquisition_type','conversion_step','referred_by','priority_score','branch_id','address_city','address_district','address_full'}
 
         for k, v in data.items():
             # Special fields handled explicitly
@@ -535,15 +541,19 @@ def update_patient(patient_id):
                 except (ValueError, TypeError):
                     pass
                 continue
-            if k == 'address':
+            if k == 'address' or k == 'addressFull':
+                logger.info('🔍 UPDATE - address field (%s): type=%s, value=%s', k, type(v).__name__, v)
                 if isinstance(v, dict):
                     # Legacy dict format
                     patient.address_city = v.get('city')
                     patient.address_district = v.get('district')
-                    patient.address = v.get('fullAddress') or v.get('address')
+                    patient.address_full = v.get('fullAddress') or v.get('address')
+                    logger.info('🔍 UPDATE - address dict processed: city=%s, district=%s, address_full=%s', 
+                              patient.address_city, patient.address_district, patient.address_full)
                 elif isinstance(v, str):
                     # New string format - just store the address text
-                    patient.address = v
+                    patient.address_full = v
+                    logger.info('🔍 UPDATE - address string set: %s', patient.address_full)
                 continue
 
             # Normalized key to model attribute
@@ -569,7 +579,11 @@ def update_patient(patient_id):
             # Unknown/unhandled fields
             logger.debug('Ignored unknown patient update field: %s', k)
 
-        logger.info(f'🔍 UPDATE PATIENT - Final branch_id: {patient.branch_id}')
+        logger.info('🔍 UPDATE PATIENT - After processing:')
+        logger.info('🔍   address_full: %s', patient.address_full)
+        logger.info('🔍   address_city: %s', patient.address_city)
+        logger.info('🔍   address_district: %s', patient.address_district)
+        logger.info('🔍   branch_id: %s', patient.branch_id)
         
         db.session.commit()
         from app import log_activity

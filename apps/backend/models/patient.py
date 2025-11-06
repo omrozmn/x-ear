@@ -118,10 +118,10 @@ class Patient(BaseModel, JSONMixin):
         import logging
         logger = logging.getLogger(__name__)
         
-        logger.info(f'🔍 Patient.from_dict - Input data keys: {list(data.keys())}')
-        logger.info(f'🔍 Patient.from_dict - city: {data.get("city")}, addressCity: {data.get("addressCity")}')
-        logger.info(f'🔍 Patient.from_dict - district: {data.get("district")}, addressDistrict: {data.get("addressDistrict")}')
-        logger.info(f'🔍 Patient.from_dict - address: {data.get("address")}')
+        logger.info('🔍 Patient.from_dict - Input data keys: %s', list(data.keys()))
+        logger.info('🔍 Patient.from_dict - city: %s, addressCity: %s', data.get("city"), data.get("addressCity"))
+        logger.info('🔍 Patient.from_dict - district: %s, addressDistrict: %s', data.get("district"), data.get("addressDistrict"))
+        logger.info('🔍 Patient.from_dict - address: %s', data.get("address"))
         
         patient = Patient()
         patient.id = data.get('id') or gen_id("pat")
@@ -149,10 +149,10 @@ class Patient(BaseModel, JSONMixin):
             # Legacy dict format
             patient.address_city = address_data.get('city')
             patient.address_district = address_data.get('district')
-            patient.address = address_data.get('fullAddress') or address_data.get('address')
+            patient.address_full = address_data.get('fullAddress') or address_data.get('address')
         elif isinstance(address_data, str):
             # New string format
-            patient.address = address_data
+            patient.address_full = address_data
         
         # Also check for direct city/district/addressCity/addressDistrict fields
         # These take priority over nested address object
@@ -165,10 +165,12 @@ class Patient(BaseModel, JSONMixin):
         if data.get('addressDistrict'):
             patient.address_district = data.get('addressDistrict')
         
-        logger.info(f'🔍 Patient.from_dict - After processing:')
-        logger.info(f'🔍   address_city: {patient.address_city}')
-        logger.info(f'🔍   address_district: {patient.address_district}')
-        logger.info(f'🔍   address: {patient.address}')
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info('🔍 Patient.from_dict - After processing:')
+        logger.info('🔍   address_city: %s', patient.address_city)
+        logger.info('🔍   address_district: %s', patient.address_district)
+        logger.info('🔍   address_full: %s', patient.address_full)
         
         # CRM fields
         status_value = data.get('status', 'active')

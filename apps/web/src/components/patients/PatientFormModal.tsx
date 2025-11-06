@@ -217,7 +217,7 @@ export function PatientFormModal({
         tcNumber: formData.tcNumber?.trim() || undefined,
         email: formData.email?.trim() || undefined,
         birthDate: formData.birthDate?.trim() || undefined,
-        address: formData.address?.trim() || undefined,
+        addressFull: formData.address?.trim() || undefined,
         // Send both formats for backend compatibility
         city: formData.city?.trim() || undefined,
         district: formData.district?.trim() || undefined,
