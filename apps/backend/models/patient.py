@@ -135,11 +135,26 @@ class Patient(BaseModel, JSONMixin):
             
         patient.gender = data.get('gender')
         
-        # Handle address
-        address = data.get('address') or {}
-        patient.address_city = address.get('city')
-        patient.address_district = address.get('district')
-        patient.address_full = address.get('fullAddress')
+        # Handle address - can be string or dict
+        address_data = data.get('address')
+        if isinstance(address_data, dict):
+            # Legacy dict format
+            patient.address_city = address_data.get('city')
+            patient.address_district = address_data.get('district')
+            patient.address = address_data.get('fullAddress') or address_data.get('address')
+        elif isinstance(address_data, str):
+            # New string format
+            patient.address = address_data
+        
+        # Also check for direct city/district/addressCity/addressDistrict fields
+        if data.get('city'):
+            patient.address_city = data.get('city')
+        if data.get('addressCity'):
+            patient.address_city = data.get('addressCity')
+        if data.get('district'):
+            patient.address_district = data.get('district')
+        if data.get('addressDistrict'):
+            patient.address_district = data.get('addressDistrict')
         
         # CRM fields
         status_value = data.get('status', 'active')
