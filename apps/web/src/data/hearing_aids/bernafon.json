@@ -1,0 +1,666 @@
+{
+  "brand": "Bernafon",
+  "specSchemaVersion": "1.0",
+  "lastScrapedAt": "2025-11-07T11:00:00Z",
+  "sourceUrls": [
+    "https://www.bernafon.com/",
+    "https://www.bernafon.com/products/hearing-aids/family/encanta",
+    "https://www.bernafon.com/products/hearing-aids/family/alpha-xt",
+    "https://www.bernafon.com/products/hearing-aids/family/alpha",
+    "https://www.bernafon.com/products/hearing-aids/family/leox"
+  ],
+  "categories": [],
+  "models": [
+    {
+      "family": "Encanta",
+      "model": "100 CONNECT",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech clarity",
+        "noise reduction",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "For low noise environments, Bluetooth connectivity",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/encanta"
+      ]
+    },
+    {
+      "family": "Encanta",
+      "model": "200 GO",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech clarity",
+        "noise reduction",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "For noisy environments, Bluetooth connectivity",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/encanta"
+      ]
+    },
+    {
+      "family": "Encanta",
+      "model": "300 ENGAGE",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech clarity",
+        "noise reduction",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "For group conversations, Bluetooth connectivity",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/encanta"
+      ]
+    },
+    {
+      "family": "Encanta",
+      "model": "400 PRO",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech clarity",
+        "noise reduction",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "For very noisy environments, Bluetooth connectivity",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/encanta"
+      ]
+    },
+    {
+      "family": "Encanta",
+      "model": "IIC",
+      "formFactor": "IIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech clarity",
+        "noise reduction",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Invisible in canal, Bluetooth connectivity",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/encanta"
+      ]
+    },
+    {
+      "family": "Encanta",
+      "model": "CIC",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech clarity",
+        "noise reduction",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Completely in canal, Bluetooth connectivity",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/encanta"
+      ]
+    },
+    {
+      "family": "Encanta",
+      "model": "ITC",
+      "formFactor": "ITC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech clarity",
+        "noise reduction",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "In the canal, Bluetooth connectivity",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/encanta"
+      ]
+    },
+    {
+      "family": "Encanta",
+      "model": "ITE",
+      "formFactor": "ITE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech clarity",
+        "noise reduction",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "In the ear, Bluetooth connectivity",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/encanta"
+      ]
+    },
+    {
+      "family": "Alpha XT",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech understanding",
+        "wind noise protector"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced speech understanding in noise",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/alpha-xt"
+      ]
+    },
+    {
+      "family": "Alpha XT",
+      "model": "miniRITE T R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech understanding",
+        "wind noise protector"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Rechargeable, advanced speech understanding in noise",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/alpha-xt"
+      ]
+    },
+    {
+      "family": "Alpha XT",
+      "model": "miniBTE T",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech understanding",
+        "wind noise protector"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "BTE style, advanced speech understanding in noise",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/alpha-xt"
+      ]
+    },
+    {
+      "family": "Alpha XT",
+      "model": "miniBTE T R",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech understanding",
+        "wind noise protector"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Rechargeable BTE, advanced speech understanding in noise",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/alpha-xt"
+      ]
+    },
+    {
+      "family": "Alpha",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech understanding",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Balanced speech and comfort",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+      ]
+    },
+    {
+      "family": "Alpha",
+      "model": "miniRITE T R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech understanding",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Rechargeable, balanced speech and comfort",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+      ]
+    },
+    {
+      "family": "Alpha",
+      "model": "miniBTE T",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech understanding",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "BTE style, balanced speech and comfort",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+      ]
+    },
+    {
+      "family": "Alpha",
+      "model": "miniBTE T R",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech understanding",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Rechargeable BTE, balanced speech and comfort",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+      ]
+    },
+    {
+      "family": "Alpha",
+      "model": "IIC",
+      "formFactor": "IIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech understanding",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Invisible in canal, balanced speech and comfort",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+      ]
+    },
+    {
+      "family": "Alpha",
+      "model": "CIC",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech understanding",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Completely in canal, balanced speech and comfort",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+      ]
+    },
+    {
+      "family": "Alpha",
+      "model": "ITC",
+      "formFactor": "ITC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech understanding",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "In the canal, balanced speech and comfort",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+      ]
+    },
+    {
+      "family": "Alpha",
+      "model": "Half Shell",
+      "formFactor": "ITE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech understanding",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Half shell ITE, balanced speech and comfort",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+      ]
+    },
+    {
+      "family": "Alpha",
+      "model": "Full Shell",
+      "formFactor": "ITE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Hybrid Technology"
+      },
+      "features": [
+        "speech understanding",
+        "music experience"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Full shell ITE, balanced speech and comfort",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+      ]
+    },
+    {
+      "family": "Leox",
+      "model": "BTE SP",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "super power amplification"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Super Power for severe hearing loss, suitable for children",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/leox"
+      ]
+    },
+    {
+      "family": "Leox",
+      "model": "BTE UP",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Bernafon",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "ultra power amplification"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Ultra Power for profound hearing loss, suitable for children",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/hearing-aids/family/leox"
+      ]
+    }
+  ],
+  "compatibility": {}
+}

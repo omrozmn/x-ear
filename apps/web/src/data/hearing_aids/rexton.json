@@ -1,0 +1,461 @@
+{
+  "brand": "Rexton",
+  "specSchemaVersion": "1.0",
+  "lastScrapedAt": "2025-11-07T12:00:00Z",
+  "sourceUrls": [
+    "https://www.rexton.com/tr-TR/hearing-aids",
+    "https://www.rexton.com/tr-tr/isitme-cihazlari/types/"
+  ],
+  "categories": [],
+  "models": [
+    {
+      "family": "Chronos",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Delta",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Zeta",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Kappa",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Lambda",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Mu",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Nu",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Xi",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Pi",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Rho",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Tau",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Upsilon",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Phi",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Chi",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Psi",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    },
+    {
+      "family": "Omega",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Rexton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "RIC model, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.rexton.com/tr-TR/hearing-aids"
+      ]
+    }
+  ],
+  "compatibility": {}
+}

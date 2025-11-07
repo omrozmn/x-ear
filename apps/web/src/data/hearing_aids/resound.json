@@ -1,0 +1,170 @@
+{
+  "brand": "ReSound",
+  "specSchemaVersion": "1.0.0",
+  "lastScrapedAt": "2025-11-07T06:00:00Z",
+  "sourceUrls": ["https://www.resound.com/en-us/hearing-aids/resound-hearing-aids"],
+  "categories": ["RIC","BTE","ITE","ITC","CIC","IIC","SP","HP","Pediatric"],
+  "models": [
+    {
+      "family": "Vivia",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "M&RIE"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features for everyday hearing."
+    },
+    {
+      "family": "Enzo IA",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "M&RIE"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Intelligent adaptation."
+    },
+    {
+      "family": "Savi",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "M&RIE"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Saves hearing in challenging environments."
+    },
+    {
+      "family": "Nexia",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "M&RIE"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Next generation hearing."
+    },
+    {
+      "family": "OMNIA",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "M&RIE"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Omni-directional hearing."
+    },
+    {
+      "family": "Key",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "M&RIE"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Key to better hearing."
+    },
+    {
+      "family": "LiNX Quattro",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "M&RIE"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Connected hearing."
+    },
+    {
+      "family": "ENZO Q",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "M&RIE"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "High performance."
+    }
+  ],
+  "compatibility": { "receivers": [], "domes": [], "earhooks": [] }
+}

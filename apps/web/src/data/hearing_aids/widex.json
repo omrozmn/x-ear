@@ -1,0 +1,210 @@
+{
+  "brand": "Widex",
+  "specSchemaVersion": "1.0.0",
+  "lastScrapedAt": "2025-11-07T05:00:00Z",
+  "sourceUrls": ["https://www.widex.com/en-us/hearing-aids", "https://www.widex.com/tr-TR/hearing-aids"],
+  "categories": ["RIC","BTE","ITE","ITC","CIC","IIC","SP","HP","Pediatric"],
+  "models": [
+    {
+      "family": "Allure",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "PureSound"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Naturally clear and precise sound."
+    },
+    {
+      "family": "Allure",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "PureSound"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Naturally clear and precise sound."
+    },
+    {
+      "family": "Allure",
+      "model": "ITE",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "PureSound"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Naturally clear and precise sound."
+    },
+    {
+      "family": "SmartRIC",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "PureSound"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Natural hearing experience."
+    },
+    {
+      "family": "Moment Sheer",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "PureSound"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Most natural hearing experience."
+    },
+    {
+      "family": "Moment Sheer",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "PureSound"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Most natural hearing experience."
+    },
+    {
+      "family": "Moment Sheer",
+      "model": "ITE",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "PureSound"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Most natural hearing experience."
+    },
+    {
+      "family": "Moment",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "PureSound"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Natural hearing experience."
+    },
+    {
+      "family": "Moment",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "PureSound"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Natural hearing experience."
+    },
+    {
+      "family": "Moment",
+      "model": "ITE",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "PureSound"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Natural hearing experience."
+    }
+  ],
+  "compatibility": { "receivers": [], "domes": [], "earhooks": [] }
+}

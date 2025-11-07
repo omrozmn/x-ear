@@ -39,6 +39,7 @@ class Inventory(db.Model):
     
     # Pricing
     price = db.Column(db.Float, nullable=False, default=0.0)
+    cost = db.Column(db.Float, default=0.0)  # Cost/purchase price
     
     # Features (JSON array for all product types)
     features = db.Column(db.Text)  # JSON array of product features
@@ -74,6 +75,7 @@ class Inventory(db.Model):
             'availableSerials': json.loads(self.available_serials) if self.available_serials else [],
             'features': json.loads(self.features) if self.features else [],
             'price': self.price,
+            'cost': self.cost,
             'direction': self.direction or self.ear,
             'ear': self.ear or self.direction,
             'warranty': self.warranty,
@@ -113,6 +115,7 @@ class Inventory(db.Model):
         
         # Pricing
         inventory.price = float(data.get('price', 0.0))
+        inventory.cost = float(data.get('cost', 0.0))
         
         # Direction/ear
         inventory.direction = data.get('direction') or data.get('ear')

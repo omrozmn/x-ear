@@ -1,10 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { InventoryPage } from '@x-ear/ui-web'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/inventory')({
-  component: Inventory,
+  component: InventoryLayout,
 })
 
-function Inventory() {
-  return <InventoryPage />
+function InventoryLayout() {
+  return <Outlet />
 }

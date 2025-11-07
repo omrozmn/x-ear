@@ -5,5 +5,3 @@ export * from './components';
 
 // Pages
 export { default as ComponentsDemo } from './pages/ComponentsDemo';
-export { default as InventoryPage } from './pages/InventoryPage';
-export { InventoryDetailPage } from './pages/InventoryDetailPage';

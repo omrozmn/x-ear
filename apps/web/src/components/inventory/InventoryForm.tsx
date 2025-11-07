@@ -11,6 +11,9 @@ import {
   UpdateInventoryData
 } from '../../types/inventory';
 import { inventoryService } from '../../services/inventory.service';
+import { SupplierAutocomplete } from '../../pages/inventory/components/SupplierAutocomplete';
+import { CategoryAutocomplete } from '../../pages/inventory/components/CategoryAutocomplete';
+import { BrandAutocomplete } from '../../pages/inventory/components/BrandAutocomplete';
 
 interface InventoryFormProps {
   item?: InventoryItem;
@@ -50,6 +53,13 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [featureInput, setFeatureInput] = useState('');
+  
+  // KDV and calculated fields
+  const [kdvRate, setKdvRate] = useState<number>(20); // Default 20%
+  const [onTrial, setOnTrial] = useState<number>(0);
+  const [priceWithKdv, setPriceWithKdv] = useState<number>(0);
+  const [kdvAmount, setKdvAmount] = useState<number>(0);
+  const [totalInventoryValue, setTotalInventoryValue] = useState<number>(0);
 
   useEffect(() => {
     if (item) {
@@ -76,6 +86,21 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
       });
     }
   }, [item]);
+
+  // Calculate KDV and total inventory value automatically
+  useEffect(() => {
+    // Calculate KDV amount and price with KDV
+    const kdvMultiplier = 1 + (kdvRate / 100);
+    const calculatedPriceWithKdv = formData.price * kdvMultiplier;
+    const calculatedKdvAmount = formData.price * (kdvRate / 100);
+    
+    setPriceWithKdv(calculatedPriceWithKdv);
+    setKdvAmount(calculatedKdvAmount);
+    
+    // Calculate total inventory value
+    const totalValue = formData.price * formData.availableInventory;
+    setTotalInventoryValue(totalValue);
+  }, [formData.price, formData.availableInventory, kdvRate]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -219,19 +244,14 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Marka *
-            </label>
-            <Input
-              type="text"
+            <BrandAutocomplete
               value={formData.brand}
-              onChange={(e) => handleInputChange('brand', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.brand ? 'border-red-300' : 'border-gray-300'
-              }`}
-              placeholder="Marka adını girin"
+              onChange={(value) => handleInputChange('brand', value)}
+              placeholder="Marka seçin veya yazın"
+              label="Marka"
+              required
+              error={errors.brand}
             />
-            {errors.brand && <p className="mt-1 text-sm text-red-600">{errors.brand}</p>}
           </div>
 
           <div>
@@ -264,24 +284,17 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
         {/* Category and Type */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <Select
-              label="Kategori *"
+            <CategoryAutocomplete
               value={formData.category}
-              onChange={(e) => {
-                const category = e.target.value as InventoryCategory;
-                handleInputChange('category', category);
+              onChange={(value) => {
+                handleInputChange('category', value as InventoryCategory);
                 // Reset type when category changes
                 handleInputChange('type', undefined);
               }}
-              options={[
-                { value: "hearing_aid", label: "İşitme Cihazı" },
-                { value: "battery", label: "Pil" },
-                { value: "accessory", label: "Aksesuar" },
-                { value: "ear_mold", label: "Kulak Kalıbı" },
-                { value: "cleaning_supplies", label: "Temizlik Malzemeleri" },
-                { value: "amplifiers", label: "Amplifikatör" }
-              ]}
-              fullWidth
+              placeholder="Kategori seçin veya yazın"
+              label="Kategori"
+              required
+              error={errors.category}
             />
           </div>
 
@@ -345,6 +358,24 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
+              Denemede
+            </label>
+            <Input
+              type="number"
+              min="0"
+              value={onTrial}
+              onChange={(e) => setOnTrial(parseInt(e.target.value) || 0)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Denemede olan ürün sayısı"
+            />
+            <p className="mt-1 text-xs text-gray-500">Müşterilerde deneme aşamasında olan ürün sayısı</p>
+          </div>
+        </div>
+
+        {/* Pricing Information */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Satış Fiyatı (₺) *
             </label>
             <Input
@@ -376,20 +407,67 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
             />
             {errors.cost && <p className="mt-1 text-sm text-red-600">{errors.cost}</p>}
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              KDV Oranı
+            </label>
+            <Select
+              value={kdvRate.toString()}
+              onChange={(e) => setKdvRate(parseFloat(e.target.value))}
+              options={[
+                { value: '0', label: '%0' },
+                { value: '1', label: '%1' },
+                { value: '10', label: '%10' },
+                { value: '20', label: '%20' }
+              ]}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              KDV Dahil Birim Fiyat (₺)
+            </label>
+            <div className="relative">
+              <Input
+                type="number"
+                value={priceWithKdv.toFixed(2)}
+                readOnly
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <span className="text-gray-500 text-sm">₺</span>
+              </div>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              KDV: ₺{kdvAmount.toFixed(2)} (%{kdvRate})
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Toplam Stok Değeri
+            </label>
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+              <span className="text-xl font-bold text-blue-900">
+                ₺{totalInventoryValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              {formData.availableInventory} adet × ₺{formData.price.toFixed(2)}
+            </p>
+          </div>
         </div>
 
         {/* Additional Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tedarikçi
-            </label>
-            <Input
-              type="text"
-              value={formData.supplier}
-              onChange={(e) => handleInputChange('supplier', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Tedarikçi adını girin"
+            <SupplierAutocomplete
+              value={formData.supplier || ''}
+              onChange={(value) => handleInputChange('supplier', value)}
+              placeholder="Tedarikçi adını girin veya seçin"
+              label="Tedarikçi"
             />
           </div>
 

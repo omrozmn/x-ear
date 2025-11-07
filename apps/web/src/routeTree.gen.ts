@@ -16,9 +16,12 @@ import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SuppliersIndexRouteImport } from './routes/suppliers/index'
 import { Route as SgkIndexRouteImport } from './routes/sgk/index'
 import { Route as PatientsIndexRouteImport } from './routes/patients/index'
 import { Route as InvoicesIndexRouteImport } from './routes/invoices/index'
+import { Route as InventoryIndexRouteImport } from './routes/inventory/index'
+import { Route as SuppliersSupplierIdRouteImport } from './routes/suppliers/$supplierId'
 import { Route as SgkDownloadsRouteImport } from './routes/sgk/downloads'
 import { Route as PatientsPatientIdRouteImport } from './routes/patients/$patientId'
 import { Route as InvoicesPurchasesRouteImport } from './routes/invoices/purchases'
@@ -60,6 +63,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SuppliersIndexRoute = SuppliersIndexRouteImport.update({
+  id: '/suppliers/',
+  path: '/suppliers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SgkIndexRoute = SgkIndexRouteImport.update({
   id: '/sgk/',
   path: '/sgk/',
@@ -74,6 +82,16 @@ const InvoicesIndexRoute = InvoicesIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => InvoicesRoute,
+} as any)
+const InventoryIndexRoute = InventoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => InventoryRoute,
+} as any)
+const SuppliersSupplierIdRoute = SuppliersSupplierIdRouteImport.update({
+  id: '/suppliers/$supplierId',
+  path: '/suppliers/$supplierId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SgkDownloadsRoute = SgkDownloadsRouteImport.update({
   id: '/sgk/downloads',
@@ -114,14 +132,16 @@ export interface FileRoutesByFullPath {
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
+  '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
+  '/inventory/': typeof InventoryIndexRoute
   '/invoices/': typeof InvoicesIndexRoute
   '/patients': typeof PatientsIndexRoute
   '/sgk': typeof SgkIndexRoute
+  '/suppliers': typeof SuppliersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
-  '/inventory': typeof InventoryRouteWithChildren
   '/reports': typeof ReportsRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
@@ -130,9 +150,12 @@ export interface FileRoutesByTo {
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
+  '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
+  '/inventory': typeof InventoryIndexRoute
   '/invoices': typeof InvoicesIndexRoute
   '/patients': typeof PatientsIndexRoute
   '/sgk': typeof SgkIndexRoute
+  '/suppliers': typeof SuppliersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -148,9 +171,12 @@ export interface FileRoutesById {
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
+  '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
+  '/inventory/': typeof InventoryIndexRoute
   '/invoices/': typeof InvoicesIndexRoute
   '/patients/': typeof PatientsIndexRoute
   '/sgk/': typeof SgkIndexRoute
+  '/suppliers/': typeof SuppliersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -167,14 +193,16 @@ export interface FileRouteTypes {
     | '/invoices/purchases'
     | '/patients/$patientId'
     | '/sgk/downloads'
+    | '/suppliers/$supplierId'
+    | '/inventory/'
     | '/invoices/'
     | '/patients'
     | '/sgk'
+    | '/suppliers'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/appointments'
-    | '/inventory'
     | '/reports'
     | '/test'
     | '/uts'
@@ -183,9 +211,12 @@ export interface FileRouteTypes {
     | '/invoices/purchases'
     | '/patients/$patientId'
     | '/sgk/downloads'
+    | '/suppliers/$supplierId'
+    | '/inventory'
     | '/invoices'
     | '/patients'
     | '/sgk'
+    | '/suppliers'
   id:
     | '__root__'
     | '/'
@@ -200,9 +231,12 @@ export interface FileRouteTypes {
     | '/invoices/purchases'
     | '/patients/$patientId'
     | '/sgk/downloads'
+    | '/suppliers/$supplierId'
+    | '/inventory/'
     | '/invoices/'
     | '/patients/'
     | '/sgk/'
+    | '/suppliers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -215,8 +249,10 @@ export interface RootRouteChildren {
   UtsRoute: typeof UtsRoute
   PatientsPatientIdRoute: typeof PatientsPatientIdRoute
   SgkDownloadsRoute: typeof SgkDownloadsRoute
+  SuppliersSupplierIdRoute: typeof SuppliersSupplierIdRoute
   PatientsIndexRoute: typeof PatientsIndexRoute
   SgkIndexRoute: typeof SgkIndexRoute
+  SuppliersIndexRoute: typeof SuppliersIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -270,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/suppliers/': {
+      id: '/suppliers/'
+      path: '/suppliers'
+      fullPath: '/suppliers'
+      preLoaderRoute: typeof SuppliersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sgk/': {
       id: '/sgk/'
       path: '/sgk'
@@ -290,6 +333,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/invoices/'
       preLoaderRoute: typeof InvoicesIndexRouteImport
       parentRoute: typeof InvoicesRoute
+    }
+    '/inventory/': {
+      id: '/inventory/'
+      path: '/'
+      fullPath: '/inventory/'
+      preLoaderRoute: typeof InventoryIndexRouteImport
+      parentRoute: typeof InventoryRoute
+    }
+    '/suppliers/$supplierId': {
+      id: '/suppliers/$supplierId'
+      path: '/suppliers/$supplierId'
+      fullPath: '/suppliers/$supplierId'
+      preLoaderRoute: typeof SuppliersSupplierIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/sgk/downloads': {
       id: '/sgk/downloads'
@@ -331,10 +388,12 @@ declare module '@tanstack/react-router' {
 
 interface InventoryRouteChildren {
   InventoryIdRoute: typeof InventoryIdRoute
+  InventoryIndexRoute: typeof InventoryIndexRoute
 }
 
 const InventoryRouteChildren: InventoryRouteChildren = {
   InventoryIdRoute: InventoryIdRoute,
+  InventoryIndexRoute: InventoryIndexRoute,
 }
 
 const InventoryRouteWithChildren = InventoryRoute._addFileChildren(
@@ -367,8 +426,10 @@ const rootRouteChildren: RootRouteChildren = {
   UtsRoute: UtsRoute,
   PatientsPatientIdRoute: PatientsPatientIdRoute,
   SgkDownloadsRoute: SgkDownloadsRoute,
+  SuppliersSupplierIdRoute: SuppliersSupplierIdRoute,
   PatientsIndexRoute: PatientsIndexRoute,
   SgkIndexRoute: SgkIndexRoute,
+  SuppliersIndexRoute: SuppliersIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

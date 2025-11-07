@@ -59,6 +59,7 @@ export interface DataTableProps<T = any> {
   striped?: boolean;
   hoverable?: boolean;
   className?: string;
+  onRowClick?: (record: T) => void;
 }
 
 export const DataTable = <T extends Record<string, any>>({
@@ -80,6 +81,7 @@ export const DataTable = <T extends Record<string, any>>({
   striped = false,
   hoverable = true,
   className = '',
+  onRowClick,
 }: DataTableProps<T>) => {
   const [searchValue, setSearchValue] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
@@ -182,7 +184,7 @@ export const DataTable = <T extends Record<string, any>>({
         {actions.map(action => (
           <button
             key={action.key}
-            onClick={() => action.onClick(record)}
+            onClick={(e) => { e.stopPropagation(); action.onClick(record) }}
             disabled={action.disabled?.(record)}
             className={`
               inline-flex items-center px-2 py-1 text-sm font-medium rounded-md
@@ -478,14 +480,17 @@ export const DataTable = <T extends Record<string, any>>({
                       ${striped && index % 2 === 1 ? 'bg-gray-50 dark:bg-gray-700/50' : ''}
                       ${hoverable ? 'hover:bg-gray-50 dark:hover:bg-gray-700/50' : ''}
                       ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+                      ${onRowClick ? 'cursor-pointer' : ''}
                     `}
-                  >
+                    onClick={() => onRowClick?.(record)}
+                >
                     {rowSelection && (
                       <td className={cellPadding[size]}>
                         <input
                           type="checkbox"
                           checked={isSelected}
                           disabled={checkboxProps.disabled}
+                          onClick={(e) => e.stopPropagation()}
                           onChange={(e) => handleSelectRow(record, e.target.checked)}
                           className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
                         />

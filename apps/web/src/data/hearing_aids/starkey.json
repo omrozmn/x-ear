@@ -1,0 +1,90 @@
+{
+  "brand": "Starkey",
+  "specSchemaVersion": "1.0.0",
+  "lastScrapedAt": "2025-11-07T07:00:00Z",
+  "sourceUrls": ["https://www.starkey.com/hearing-aids"],
+  "categories": ["RIC","BTE","ITE","ITC","CIC","IIC","SP","HP","Pediatric"],
+  "models": [
+    {
+      "family": "Omega AI",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "AI"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Most advanced AI hearing technology."
+    },
+    {
+      "family": "Signature Series",
+      "model": "ITE",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "AI"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom fit, discreet."
+    },
+    {
+      "family": "Edge AI",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "AI"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Seamless connectivity."
+    },
+    {
+      "family": "Genesis AI",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "AI"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Reliable and remarkable sound."
+    }
+  ],
+  "compatibility": { "receivers": [], "domes": [], "earhooks": [] }
+}

@@ -1,0 +1,359 @@
+{
+  "brand": "Beltone",
+  "specSchemaVersion": "1.0",
+  "lastScrapedAt": "2025-11-07T10:00:00Z",
+  "sourceUrls": [
+    "https://www.beltone.com/hearing-aids",
+    "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-imagine"
+  ],
+  "categories": [],
+  "models": [
+    {
+      "family": "Envision",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Intelligence Augmented"
+      },
+      "features": [
+        "AI",
+        "noise reduction",
+        "speech enhancement",
+        "Auracast"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "World's smallest AI hearing aid, Bluetooth LE Audio, Auracast Assistant",
+      "sourceUrls": [
+        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-envision"
+      ]
+    },
+    {
+      "family": "Envision",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Intelligence Augmented"
+      },
+      "features": [
+        "AI",
+        "noise reduction",
+        "speech enhancement",
+        "Auracast"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Bluetooth LE Audio, Auracast Assistant",
+      "sourceUrls": [
+        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-envision"
+      ]
+    },
+    {
+      "family": "Boost Max S",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 28
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Intelligence Augmented"
+      },
+      "features": [
+        "Clear Focus",
+        "feedback management",
+        "Auracast"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Super Power for severe/profound loss, Bluetooth LE Audio",
+      "sourceUrls": [
+        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-boost-max-s"
+      ]
+    },
+    {
+      "family": "Commence",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity",
+        "Auracast"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Best-in-class connectivity, Bluetooth LE Audio",
+      "sourceUrls": [
+        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-commence"
+      ]
+    },
+    {
+      "family": "Commence",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity",
+        "Auracast"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Best-in-class connectivity, Bluetooth LE Audio",
+      "sourceUrls": [
+        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-commence"
+      ]
+    },
+    {
+      "family": "Serene",
+      "model": "microRIE",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "CROS",
+        "Auracast"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Tiny design, Bluetooth LE Audio",
+      "sourceUrls": [
+        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-serene"
+      ]
+    },
+    {
+      "family": "Serene",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "CROS",
+        "Auracast"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Bluetooth LE Audio",
+      "sourceUrls": [
+        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-serene"
+      ]
+    },
+    {
+      "family": "Serene",
+      "model": "ITC",
+      "formFactor": "ITC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "CROS",
+        "Auracast"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom in-the-ear, Bluetooth LE Audio",
+      "sourceUrls": [
+        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-serene"
+      ]
+    },
+    {
+      "family": "Achieve",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Clarity in noisy environments",
+      "sourceUrls": [
+        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-achieve"
+      ]
+    },
+    {
+      "family": "Amaze",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Rechargeable battery lasts longer than 24 hours",
+      "sourceUrls": [
+        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-amaze"
+      ]
+    },
+    {
+      "family": "Rely",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "connectivity",
+        "streaming"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Various colors, rechargeability",
+      "sourceUrls": [
+        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-rely"
+      ]
+    },
+    {
+      "family": "Boost Ultra",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "sound quality",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Comprehensive solution, streaming to both ears",
+      "sourceUrls": [
+        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-boost-ultra"
+      ]
+    }
+  ],
+  "compatibility": {}
+}

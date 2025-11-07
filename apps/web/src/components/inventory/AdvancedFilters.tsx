@@ -202,7 +202,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
         <div className="flex items-center space-x-2">
           <Filter className="w-5 h-5 text-gray-500" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            Gelişmiş Filtreler
+            Filtreler
           </h3>
           {getActiveFilterCount() > 0 && (
             <Badge variant="secondary" className="ml-2">
@@ -258,9 +258,10 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           </label>
           <Select
             value={localFilters.category || ''}
-            onChange={(value) => handleFilterChange('category', value || undefined)}
+            onChange={(e) => handleFilterChange('category', e.target.value || undefined)}
             options={[{ value: '', label: 'Tüm Kategoriler' }, ...categoryOptions]}
             placeholder="Kategori seçin"
+            fullWidth
           />
         </div>
 
@@ -268,12 +269,18 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Marka
           </label>
-          <Select
+          <Input
+            list="brand-options"
             value={localFilters.brand || ''}
-            onChange={(value) => handleFilterChange('brand', value || undefined)}
-            options={[{ value: '', label: 'Tüm Markalar' }, ...brandOptions]}
-            placeholder="Marka seçin"
+            onChange={(e) => handleFilterChange('brand', e.target.value || undefined)}
+            placeholder="Marka seçin veya yazın"
+            fullWidth
           />
+          <datalist id="brand-options">
+            {brandOptions.map(option => (
+              <option key={option.value} value={option.value} />
+            ))}
+          </datalist>
         </div>
 
         <div>
@@ -284,6 +291,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             value={localFilters.stockStatus || 'all'}
             onChange={(e) => handleFilterChange('stockStatus', e.target.value)}
             options={stockStatusOptions}
+            fullWidth
           />
         </div>
       </div>

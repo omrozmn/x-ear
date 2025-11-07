@@ -1,0 +1,1250 @@
+{
+  "brand": "Oticon",
+  "specSchemaVersion": "1.0.0",
+  "lastScrapedAt": "2025-11-07T04:00:00Z",
+  "sourceUrls": ["https://www.oticon.com/products/hearing-aids"],
+  "categories": ["RIC","BTE","ITE","ITC","CIC","IIC","SP","HP","Pediatric"],
+  "models": [
+    {
+      "family": "Intent",
+      "model": "miniRITE",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "4D Sensor technology"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "World’s first hearing aid with 4D user-intent sensors."
+    },
+    {
+      "family": "Real",
+      "model": "miniRITE R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Stay sharp in the real world."
+    },
+    {
+      "family": "Real",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Stay sharp in the real world."
+    },
+    {
+      "family": "Real",
+      "model": "miniBTE R",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Stay sharp in the real world."
+    },
+    {
+      "family": "Real",
+      "model": "miniBTE T",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Stay sharp in the real world."
+    },
+    {
+      "family": "Own SI",
+      "model": "Invisible-in-the-Canal (IIC)",
+      "formFactor": "IIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom-made, ultimate discretion."
+    },
+    {
+      "family": "Own SI",
+      "model": "Completely-in-the-Canal (CIC)",
+      "formFactor": "CIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom-made, ultimate discretion."
+    },
+    {
+      "family": "Play PX",
+      "model": "miniRITE R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Designed for children’s development."
+    },
+    {
+      "family": "Play PX",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Designed for children’s development."
+    },
+    {
+      "family": "Play PX",
+      "model": "miniBTE R",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Designed for children’s development."
+    },
+    {
+      "family": "Play PX",
+      "model": "miniBTE T",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Designed for children’s development."
+    },
+    {
+      "family": "Own",
+      "model": "Invisible-in-the-Canal (IIC)",
+      "formFactor": "IIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom-made, optimal comfort."
+    },
+    {
+      "family": "Own",
+      "model": "Completely-in-the-Canal (CIC)",
+      "formFactor": "CIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom-made, optimal comfort."
+    },
+    {
+      "family": "Own",
+      "model": "In-the-Canal (ITC)",
+      "formFactor": "ITC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom-made, optimal comfort."
+    },
+    {
+      "family": "Own",
+      "model": "In-the-Ear Half Shell (ITE HS)",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom-made, optimal comfort."
+    },
+    {
+      "family": "Own",
+      "model": "In-the-Ear Full Shell (ITE FS)",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom-made, optimal comfort."
+    },
+    {
+      "family": "Xceed",
+      "model": "BTE Super Power",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Most powerful hearing aid."
+    },
+    {
+      "family": "Xceed",
+      "model": "BTE Ultra Power",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Most powerful hearing aid."
+    },
+    {
+      "family": "More",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Superior sound quality."
+    },
+    {
+      "family": "More",
+      "model": "miniRITE R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Superior sound quality."
+    },
+    {
+      "family": "More",
+      "model": "miniBTE R",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Superior sound quality."
+    },
+    {
+      "family": "More",
+      "model": "miniBTE T",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Superior sound quality."
+    },
+    {
+      "family": "Jet PX",
+      "model": "miniRITE R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "AI-enabled DNN"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "World’s first essential level hearing aid with AI."
+    },
+    {
+      "family": "Jet PX",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "AI-enabled DNN"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "World’s first essential level hearing aid with AI."
+    },
+    {
+      "family": "Jet PX",
+      "model": "miniBTE R",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "AI-enabled DNN"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "World’s first essential level hearing aid with AI."
+    },
+    {
+      "family": "Jet PX",
+      "model": "miniBTE T",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "AI-enabled DNN"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "World’s first essential level hearing aid with AI."
+    },
+    {
+      "family": "Zircon",
+      "model": "miniRITE R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "Zircon",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "Zircon",
+      "model": "miniBTE R",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "Zircon",
+      "model": "miniBTE T",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "Opn S",
+      "model": "miniRITE",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Open sound experience."
+    },
+    {
+      "family": "Opn S",
+      "model": "miniRITE R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Open sound experience."
+    },
+    {
+      "family": "Opn S",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Open sound experience."
+    },
+    {
+      "family": "Opn S",
+      "model": "BTE Plus Power",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Open sound experience."
+    },
+    {
+      "family": "Opn Play",
+      "model": "miniRITE",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "For children."
+    },
+    {
+      "family": "Opn Play",
+      "model": "miniRITE R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "For children."
+    },
+    {
+      "family": "Opn Play",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "For children."
+    },
+    {
+      "family": "Opn Play",
+      "model": "BTE Plus Power",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "For children."
+    },
+    {
+      "family": "Ruby",
+      "model": "miniRITE",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Essential features."
+    },
+    {
+      "family": "Ruby",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Essential features."
+    },
+    {
+      "family": "Ruby",
+      "model": "miniRITE R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Essential features."
+    },
+    {
+      "family": "Ruby",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Essential features."
+    },
+    {
+      "family": "Ruby",
+      "model": "BTE Plus Power",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Essential features."
+    },
+    {
+      "family": "Opn",
+      "model": "miniRITE",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Open sound experience."
+    },
+    {
+      "family": "Opn",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Open sound experience."
+    },
+    {
+      "family": "Opn",
+      "model": "BTE Plus Power",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Open sound experience."
+    },
+    {
+      "family": "Opn",
+      "model": "Invisible-in-the-Canal (IIC)",
+      "formFactor": "IIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Open sound experience."
+    },
+    {
+      "family": "Opn",
+      "model": "Completely-in-the-Canal (CIC)",
+      "formFactor": "CIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Open sound experience."
+    },
+    {
+      "family": "Opn",
+      "model": "In-the-Canal (ITC)",
+      "formFactor": "ITC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Open sound experience."
+    },
+    {
+      "family": "Opn",
+      "model": "In-the-Ear Half Shell (ITE HS)",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Open sound experience."
+    },
+    {
+      "family": "Opn",
+      "model": "In-the-Ear Full Shell (ITE FS)",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Open sound experience."
+    },
+    {
+      "family": "Siya",
+      "model": "miniRITE",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "Siya",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "Siya",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "Siya",
+      "model": "BTE Plus Power",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "Siya",
+      "model": "Invisible-in-the-Canal (IIC)",
+      "formFactor": "IIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "Siya",
+      "model": "Completely-in-the-Canal (CIC)",
+      "formFactor": "CIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "Siya",
+      "model": "In-the-Canal (ITC)",
+      "formFactor": "ITC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "Siya",
+      "model": "In-the-Ear Half Shell (ITE HS)",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "Siya",
+      "model": "In-the-Ear Full Shell (ITE FS)",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "CROS",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "CROS system."
+    },
+    {
+      "family": "CROS PX",
+      "model": "miniRITE R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "BrainHearing"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "CROS system."
+    }
+  ],
+  "compatibility": { "receivers": [], "domes": [], "earhooks": [] }
+}

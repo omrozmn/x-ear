@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { InventoryDetailPage } from '@x-ear/ui-web'
+import { InventoryDetailPage } from '../../pages/InventoryDetailPage'
 
 export const Route = createFileRoute('/inventory/$id')({
   component: InventoryDetail,

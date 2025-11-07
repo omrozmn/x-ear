@@ -1,0 +1,50 @@
+{
+  "brand": "Unitron",
+  "specSchemaVersion": "1.0.0",
+  "lastScrapedAt": "2025-11-07T08:00:00Z",
+  "sourceUrls": ["https://www.unitron.com/"],
+  "categories": ["RIC","BTE","ITE","ITC","CIC","IIC","SP","HP","Pediatric"],
+  "models": [
+    {
+      "family": "Moxi",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "uDirect"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced features."
+    },
+    {
+      "family": "North",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": "uDirect"
+      },
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Reliable performance."
+    }
+  ],
+  "compatibility": { "receivers": [], "domes": [], "earhooks": [] }
+}

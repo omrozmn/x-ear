@@ -1,5 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Plus } from 'lucide-react';
+import axios from 'axios';
 import { Input, Button } from '@x-ear/ui-web';
+
+const api = axios.create({
+  baseURL: 'http://localhost:5003'
+});
 
 interface SupplierAutocompleteProps {
   value: string;
@@ -72,6 +78,10 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     }
   }, [value, isOpen]);
 
+  // Check if current value is an exact match
+  const hasExactMatch = commonSuppliers.some(sup => sup.toLowerCase() === value.toLowerCase());
+  const showCreateNew = value.trim() && !hasExactMatch && isOpen;
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -104,6 +114,26 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
 
   const handleSupplierSelect = (supplier: string) => {
     onChange(supplier);
+    setIsOpen(false);
+    inputRef.current?.blur();
+  };
+
+  const handleCreateNew = async () => {
+    const newSupplier = value.trim();
+    if (!newSupplier) return;
+
+    try {
+      await api.post('/api/suppliers', { name: newSupplier });
+      console.log('New supplier created:', newSupplier);
+    } catch (error: any) {
+      if (error.response?.status === 409) {
+        console.log('Supplier already exists, using existing:', newSupplier);
+      } else {
+        console.warn('Failed to persist supplier to API, using locally:', error);
+      }
+    }
+    
+    onChange(newSupplier);
     setIsOpen(false);
     inputRef.current?.blur();
   };
@@ -155,7 +185,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
       </div>
 
       {/* Dropdown */}
-      {isOpen && filteredSuppliers.length > 0 && (
+      {isOpen && (filteredSuppliers.length > 0 || showCreateNew) && (
         <div
           ref={dropdownRef}
           className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
@@ -188,23 +218,26 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
             </Button>
           ))}
           
-          {/* Add new supplier option */}
-          {value && !commonSuppliers.some(s => s.toLowerCase() === value.toLowerCase()) && (
-            <div className="border-t border-gray-200 dark:border-gray-600">
-              <Button
-                variant="ghost"
-                size="sm"
-                type="button"
-                onClick={() => handleSupplierSelect(value)}
-                className="w-full px-4 py-3 text-left text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:bg-blue-50 dark:focus:bg-blue-900/20 focus:outline-none rounded-b-lg transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg className="w-4 h-4 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
-                  </svg>
-                  <span>"{value}" olarak ekle</span>
-                </div>
-              </Button>
+          {/* Create new supplier option */}
+          {showCreateNew && (
+            <div
+              role="option"
+              tabIndex={0}
+              onClick={handleCreateNew}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleCreateNew();
+                }
+              }}
+              className="px-4 py-2 cursor-pointer bg-green-50 hover:bg-green-100 focus:bg-green-100 focus:outline-none transition-colors border-t border-gray-200"
+            >
+              <div className="flex items-center gap-2">
+                <Plus className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-medium text-green-600">
+                  "{value}" tedarikçisini ekle
+                </span>
+              </div>
             </div>
           )}
         </div>

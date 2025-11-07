@@ -1,0 +1,99 @@
+{
+  "brand": "Jabra Enhance",
+  "specSchemaVersion": "1.0",
+  "lastScrapedAt": "2025-11-07T13:30:00Z",
+  "sourceUrls": [
+    "https://www.jabraenhance.com/hearing-aids/"
+  ],
+  "categories": [],
+  "models": [
+    {
+      "family": "Enhance Select",
+      "model": "700",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Jabra Enhance",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Advanced"
+      },
+      "features": [
+        "natural sound",
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Smallest nearly invisible, clear focused sound in noisy environments",
+      "sourceUrls": [
+        "https://www.jabraenhance.com/product/enhanceselect700"
+      ]
+    },
+    {
+      "family": "Enhance Select",
+      "model": "300",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Jabra Enhance",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Advanced"
+      },
+      "features": [
+        "natural sound",
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Affordable high-tech, excels in hearing several people in a crowd",
+      "sourceUrls": [
+        "https://www.jabraenhance.com/product/enhanceselect300"
+      ]
+    },
+    {
+      "family": "Enhance Select",
+      "model": "50R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Jabra Enhance",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Advanced"
+      },
+      "features": [
+        "natural sound",
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Quality sound, lower price to hear better in quieter places or when watching TV",
+      "sourceUrls": [
+        "https://www.jabraenhance.com/product/enhanceselect50r"
+      ]
+    }
+  ],
+  "compatibility": {}
+}

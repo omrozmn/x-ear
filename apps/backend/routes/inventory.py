@@ -25,7 +25,10 @@ def get_all_inventory():
     try:
         # Query parameters for filtering
         category = request.args.get('category')
-        low_stock = request.args.get('lowStock', 'false').lower() == 'true'
+        brand = request.args.get('brand')
+        supplier = request.args.get('supplier')
+        low_stock = request.args.get('low_stock', 'false').lower() == 'true'
+        out_of_stock = request.args.get('out_of_stock', 'false').lower() == 'true'
         search = request.args.get('search', '').lower()
         
         # Pagination parameters
@@ -44,8 +47,20 @@ def get_all_inventory():
         if category:
             query = query.filter_by(category=category)
         
+        if brand:
+            query = query.filter(Inventory.brand.ilike(f'%{brand}%'))
+        
+        if supplier:
+            query = query.filter(Inventory.supplier.ilike(f'%{supplier}%'))
+        
         if low_stock:
-            query = query.filter(Inventory.available_inventory <= Inventory.reorder_level)
+            query = query.filter(
+                Inventory.available_inventory > 0,
+                Inventory.available_inventory <= Inventory.reorder_level
+            )
+        
+        if out_of_stock:
+            query = query.filter(Inventory.available_inventory == 0)
         
         if search:
             query = query.filter(
@@ -562,6 +577,7 @@ def update_inventory_item(item_id):
         item.supplier = data.get('supplier', item.supplier)
         item.description = data.get('description', item.description)
         item.price = float(data.get('price', item.price))
+        item.cost = float(data.get('cost', item.cost)) if 'cost' in data else item.cost
         item.direction = data.get('direction') or data.get('ear', item.direction)
         item.ear = data.get('ear') or data.get('direction', item.ear)
         item.warranty = data.get('warranty', item.warranty)

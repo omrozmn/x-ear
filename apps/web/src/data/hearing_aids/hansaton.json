@@ -1,0 +1,208 @@
+{
+  "brand": "Hansaton",
+  "specSchemaVersion": "1.0",
+  "lastScrapedAt": "2025-11-07T13:00:00Z",
+  "sourceUrls": [
+    "https://www.hansaton.com/en-int/consumers/hearing-products/hearing-aids.html"
+  ],
+  "categories": [],
+  "models": [
+    {
+      "family": "Essenz",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 16
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Hansaton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "HearIntelligence 6.0"
+      },
+      "features": [
+        "noise reduction",
+        "speech enhancement"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced sound processing, rechargeable, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.hansaton.com/en-int/consumers/hearing-products/hearing-aids.html"
+      ]
+    },
+    {
+      "family": "Essenz",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 16
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Hansaton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "HearIntelligence 6.0"
+      },
+      "features": [
+        "noise reduction",
+        "speech enhancement"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced sound processing, rechargeable, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.hansaton.com/en-int/consumers/hearing-products/hearing-aids.html"
+      ]
+    },
+    {
+      "family": "Essenz",
+      "model": "ITE",
+      "formFactor": "ITE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 16
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Hansaton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "HearIntelligence 6.0"
+      },
+      "features": [
+        "noise reduction",
+        "speech enhancement"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced sound processing, rechargeable, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.hansaton.com/en-int/consumers/hearing-products/hearing-aids.html"
+      ]
+    },
+    {
+      "family": "FOKUS",
+      "model": "Ultra Power",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Hansaton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "ConversationLift",
+        "speech enhancement"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Ultra Power for severe loss, ConversationLift technology",
+      "sourceUrls": [
+        "https://www.hansaton.com/en-int/consumers/hearing-products/hearing-aids.html"
+      ]
+    },
+    {
+      "family": "STRATOS",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Hansaton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Available in multiple form factors, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.hansaton.com/en-int/consumers/hearing-products/hearing-aids.html"
+      ]
+    },
+    {
+      "family": "STRATOS",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Hansaton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Available in multiple form factors, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.hansaton.com/en-int/consumers/hearing-products/hearing-aids.html"
+      ]
+    },
+    {
+      "family": "STRATOS",
+      "model": "ITE",
+      "formFactor": "ITE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Hansaton",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "noise reduction",
+        "speech clarity"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Available in multiple form factors, Bluetooth enabled",
+      "sourceUrls": [
+        "https://www.hansaton.com/en-int/consumers/hearing-products/hearing-aids.html"
+      ]
+    }
+  ],
+  "compatibility": {}
+}

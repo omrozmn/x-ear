@@ -1,11 +1,16 @@
-import { Button } from '@x-ear/ui-web';
+import { Button, Badge, DataTable } from '@x-ear/ui-web';
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from '@tanstack/react-router';
+import axios from 'axios';
+import { AlertTriangle, Eye, Edit, Trash2 } from 'lucide-react';
 import { InventoryItem, InventoryFilters, InventoryStatus } from '../../types/inventory';
-import { inventoryService } from '../../services/inventory.service';
-import { SearchHighlight } from '../common/SearchHighlight';
+
+const api = axios.create({
+  baseURL: 'http://localhost:5003'
+});
 
 interface InventoryListProps {
-  filters?: InventoryFilters & { enableFuzzySearch?: boolean; maxResults?: number };
+  filters?: InventoryFilters;
   onItemSelect?: (item: InventoryItem) => void;
   onItemEdit?: (item: InventoryItem) => void;
   onItemDelete?: (item: InventoryItem) => void;
@@ -22,17 +27,62 @@ export const InventoryList: React.FC<InventoryListProps> = ({
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<keyof InventoryItem>('name');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     const loadItems = async () => {
       try {
         setLoading(true);
-        const result = await inventoryService.searchItems(filters);
-        setItems(result.items);
+        
+        // Build API query params
+        const params: any = {
+          per_page: 100
+        };
+        
+        if (filters.category) params.category = filters.category;
+        if (filters.brand) params.brand = filters.brand;
+        if (filters.search) params.search = filters.search;
+        if (filters.supplier) params.supplier = filters.supplier;
+        
+        // Stock status filter
+        if (filters.stockStatus && filters.stockStatus !== 'all') {
+          if (filters.stockStatus === 'low_stock') {
+            params.low_stock = true;
+          } else if (filters.stockStatus === 'out_of_stock') {
+            params.out_of_stock = true;
+          }
+        }
+        
+        const response = await api.get('/api/inventory', { params });
+        
+        if (response.data.success && Array.isArray(response.data.data)) {
+          // Map backend data to frontend format
+          const mappedItems: InventoryItem[] = response.data.data.map((item: any) => ({
+            id: String(item.id),
+            name: item.name || 'Unnamed Product',
+            brand: item.brand || '',
+            model: item.model || '',
+            category: item.category || '',
+            availableInventory: item.availableInventory || item.available_inventory || 0,
+            totalInventory: item.totalInventory || item.total_inventory || 0,
+            usedInventory: item.usedInventory || item.used_inventory || 0,
+            reorderLevel: item.reorderLevel || item.minInventory || item.min_inventory || 5,
+            price: parseFloat(item.price) || 0,
+            vatIncludedPrice: parseFloat(item.price) * 1.18 || 0,
+            totalValue: (item.availableInventory || item.available_inventory || 0) * parseFloat(item.price) || 0,
+            cost: parseFloat(item.cost) || 0,
+            barcode: item.barcode || '',
+            supplier: item.supplier || '',
+            description: item.description || '',
+            status: (item.availableInventory || item.available_inventory || 0) > 0 ? 'available' : 'out_of_stock',
+            createdAt: item.createdAt || item.created_at || new Date().toISOString(),
+            lastUpdated: item.updatedAt || item.updated_at || new Date().toISOString()
+          }));
+          
+          setItems(mappedItems);
+        }
         setError(null);
       } catch (err) {
+        console.error('Failed to load inventory:', err);
         setError(err instanceof Error ? err.message : 'Failed to load inventory');
       } finally {
         setLoading(false);
@@ -40,74 +90,121 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     };
 
     loadItems();
-
-    // Subscribe to inventory changes
-    const unsubscribe = inventoryService.subscribe((_updatedItems) => {
-      // Re-apply filters when items change
-      loadItems();
-    });
-
-    return unsubscribe;
   }, [filters]);
 
-  const sortedItems = useMemo(() => {
-    return [...items].sort((a, b) => {
-      const aValue = a[sortField];
-      const bValue = b[sortField];
-      
-      // Handle undefined values
-      if (aValue === undefined && bValue === undefined) return 0;
-      if (aValue === undefined) return 1;
-      if (bValue === undefined) return -1;
-      
-      if (aValue === bValue) return 0;
-      
-      const comparison = aValue < bValue ? -1 : 1;
-      return sortDirection === 'asc' ? comparison : -comparison;
-    });
-  }, [items, sortField, sortDirection]);
-
-  const handleSort = (field: keyof InventoryItem) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
+  // Table columns configuration - Turkish labels
+  const columns = [
+    {
+      key: 'name',
+      title: 'Ürün Adı',
+      sortable: true,
+      render: (value: string, record: InventoryItem) => (
+        <div className="flex flex-col">
+          <Link
+            to="/inventory/$id"
+            params={{ id: record.id }}
+            className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-left transition-colors"
+          >
+            {value}
+          </Link>
+          <span className="text-sm text-gray-500 dark:text-gray-400">{record.brand} - {record.model}</span>
+        </div>
+      )
+    },
+    {
+      key: 'category',
+      title: 'Kategori',
+      sortable: true,
+      render: (value: string) => (
+        <Badge variant="secondary">{value}</Badge>
+      )
+    },
+    {
+      key: 'availableInventory',
+      title: 'Stok',
+      sortable: true,
+      render: (value: number, record: InventoryItem) => (
+        <div className="flex items-center space-x-2">
+          <span className={`font-medium ${value <= record.reorderLevel ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>
+            {value}
+          </span>
+          {value <= record.reorderLevel && (
+            <AlertTriangle className="w-4 h-4 text-red-500" />
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'reorderLevel',
+      title: 'Min Stok',
+      sortable: true
+    },
+    {
+      key: 'price',
+      title: 'Birim Fiyat',
+      sortable: true,
+      render: (value: number) => `₺${value.toFixed(2)}`
+    },
+    {
+      key: 'vatIncludedPrice',
+      title: 'KDV Dahil Fiyat',
+      sortable: true,
+      render: (value: number) => `₺${value.toFixed(2)}`
+    },
+    {
+      key: 'totalValue',
+      title: 'Toplam Değer',
+      sortable: true,
+      render: (value: number) => `₺${value.toFixed(2)}`
+    },
+    {
+      key: 'status',
+      title: 'Durum',
+      render: (value: string) => (
+        <Badge 
+          variant={value === 'available' ? 'success' : value === 'low_stock' ? 'warning' : 'danger'}
+        >
+          {value === 'available' ? 'Mevcut' : value === 'low_stock' ? 'Düşük Stok' : 'Tükendi'}
+        </Badge>
+      )
     }
-  };
+  ];
 
-  const getStatusColor = (status: InventoryStatus) => {
-    switch (status) {
-      case 'available':
-        return 'text-green-600 bg-green-100';
-      case 'low_stock':
-        return 'text-yellow-600 bg-yellow-100';
-      case 'out_of_stock':
-        return 'text-red-600 bg-red-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
+  // Table actions
+  const actions = [
+    {
+      key: 'edit',
+      label: 'Düzenle',
+      icon: <Edit className="w-4 h-4" />,
+      onClick: (record: InventoryItem) => {
+        onItemEdit?.(record);
+      }
+    },
+    {
+      key: 'delete',
+      label: 'Sil',
+      icon: <Trash2 className="w-4 h-4" />,
+      variant: 'danger' as const,
+      onClick: (record: InventoryItem) => {
+        if (window.confirm(`${record.name} ürününü silmek istediğinizden emin misiniz?`)) {
+          onItemDelete?.(record);
+        }
+      }
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('tr-TR', {
-      style: 'currency',
-      currency: 'TRY'
-    }).format(amount);
-  };
+  ];
 
   if (loading) {
     return (
       <div className={`flex items-center justify-center p-8 ${className}`}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">Loading inventory...</span>
+        <span className="ml-2 text-gray-600 dark:text-gray-400">Envanter yükleniyor...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className={`bg-red-50 border border-red-200 rounded-md p-4 ${className}`}>
+      <div className={`bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 ${className}`}>
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -115,8 +212,8 @@ export const InventoryList: React.FC<InventoryListProps> = ({
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error loading inventory</h3>
-            <div className="mt-2 text-sm text-red-700">{error}</div>
+            <h3 className="text-sm font-medium text-red-800 dark:text-red-300">Envanter yüklenirken hata</h3>
+            <div className="mt-2 text-sm text-red-700 dark:text-red-400">{error}</div>
           </div>
         </div>
       </div>
@@ -129,158 +226,20 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No inventory items</h3>
-        <p className="mt-1 text-sm text-gray-500">Get started by adding your first inventory item.</p>
+        <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Envanter öğesi yok</h3>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">İlk envanter öğenizi ekleyerek başlayın.</p>
       </div>
     );
   }
 
   return (
-    <div className={`bg-white shadow overflow-hidden sm:rounded-md ${className}`}>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('name')}
-              >
-                <div className="flex items-center">
-                  Name
-                  {sortField === 'name' && (
-                    <svg className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'transform rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </div>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Category
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Brand
-              </th>
-              <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('availableInventory')}
-              >
-                <div className="flex items-center">
-                  Stock
-                  {sortField === 'availableInventory' && (
-                    <svg className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'transform rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </div>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('price')}
-              >
-                <div className="flex items-center">
-                  Price
-                  {sortField === 'price' && (
-                    <svg className={`ml-1 h-4 w-4 ${sortDirection === 'asc' ? 'transform rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </div>
-              </th>
-              <th className="relative px-6 py-3">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {sortedItems.map((item) => (
-              <tr 
-                key={item.id} 
-                className="hover:bg-gray-50 cursor-pointer"
-                onClick={() => onItemSelect?.(item)}
-              >
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        <SearchHighlight 
-                          text={item.name} 
-                          searchTerm={filters.search || ''} 
-                        />
-                      </div>
-                      {item.model && (
-                        <div className="text-sm text-gray-500">
-                          <SearchHighlight 
-                            text={item.model} 
-                            searchTerm={filters.search || ''} 
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {item.category}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <SearchHighlight 
-                    text={item.brand} 
-                    searchTerm={filters.search || ''} 
-                  />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <div className="flex items-center">
-                    <span className={`font-medium ${
-                      item.availableInventory <= item.reorderLevel 
-                        ? 'text-red-600' 
-                        : 'text-gray-900'
-                    }`}>
-                      {item.availableInventory}
-                    </span>
-                    <span className="text-gray-500 ml-1">/ {item.totalInventory}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(item.status || 'available')}`}>
-                    {(item.status || 'available').replace('_', ' ')}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatCurrency(item.price)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex items-center space-x-2">
-                    {onItemEdit && (
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onItemEdit(item);
-                        }}
-                        className="text-indigo-600 hover:text-indigo-900"
-                        variant='default'>
-                        Edit
-                      </Button>
-                    )}
-                    {onItemDelete && (
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onItemDelete(item);
-                        }}
-                        className="text-red-600 hover:text-red-900"
-                        variant='default'>
-                        Delete
-                      </Button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className={className}>
+      <DataTable
+        columns={columns}
+        data={items}
+        actions={actions}
+        loading={loading}
+      />
     </div>
   );
 };

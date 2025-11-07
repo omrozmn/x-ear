@@ -54,6 +54,8 @@ export interface InventoryItem {
   cost?: number;
   wholesalePrice?: number;
   retailPrice?: number;
+  vatIncludedPrice?: number;
+  totalValue?: number;
   
   // Features
   features?: string[];

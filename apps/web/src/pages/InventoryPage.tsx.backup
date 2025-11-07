@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import axios from 'axios';
 import { 
   Search, 
@@ -32,7 +32,7 @@ import {
   Card,
   Checkbox,
   Textarea
-} from '../components/ui';
+} from '@x-ear/ui-web';
 
 // Types
 interface InventoryItem {
@@ -117,8 +117,6 @@ const brands = ['All', 'TechBrand', 'AudioMax', 'ComponentCorp', 'ToolMaster'];
 const statusOptions = ['All', 'Active', 'Inactive', 'Discontinued'];
 
 export const InventoryPage: React.FC = () => {
-  const navigate = useNavigate();
-  
   // State management
   const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -299,23 +297,24 @@ export const InventoryPage: React.FC = () => {
   const columns = [
     {
       key: 'productName',
-      title: 'Product Name',
+      title: 'Ürün Adı',
       sortable: true,
       render: (value: string, record: InventoryItem) => (
         <div className="flex flex-col">
-          <button
-            onClick={() => navigate({ to: `/inventory/${record.id}` })}
+          <Link
+            to="/inventory/$id"
+            params={{ id: record.id }}
             className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-left transition-colors"
           >
             {value}
-          </button>
+          </Link>
           <span className="text-sm text-gray-500 dark:text-gray-400">{record.brand} - {record.model}</span>
         </div>
       )
     },
     {
       key: 'category',
-      title: 'Category',
+      title: 'Kategori',
       sortable: true,
       render: (value: string) => (
         <Badge variant="secondary">{value}</Badge>
@@ -323,7 +322,7 @@ export const InventoryPage: React.FC = () => {
     },
     {
       key: 'stock',
-      title: 'Stock',
+      title: 'Stok',
       sortable: true,
       render: (value: number, record: InventoryItem) => (
         <div className="flex items-center space-x-2">
