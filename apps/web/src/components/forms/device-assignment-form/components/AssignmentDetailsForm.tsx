@@ -172,43 +172,6 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
         )}
       </div>
 
-      {/* Status Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Durum *
-        </label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { value: 'assigned', label: 'Atandı' },
-            { value: 'trial', label: 'Deneme' },
-            { value: 'returned', label: 'İade Edildi' },
-            { value: 'defective', label: 'Arızalı' }
-          ].map((status) => (
-            <label key={status.value} className="relative">
-              <input
-                type="radio"
-                name="status"
-                value={status.value}
-                checked={formData.status === status.value}
-                onChange={(e) => updateFormData('status', e.target.value)}
-                className="sr-only"
-              />
-              <div className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                formData.status === status.value
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-              }`}>
-                {getStatusIcon(status.value)}
-                <span className="ml-2 text-sm font-medium">{status.label}</span>
-              </div>
-            </label>
-          ))}
-        </div>
-        {errors.status && (
-          <p className="mt-1 text-sm text-red-600">{errors.status}</p>
-        )}
-      </div>
-
       {/* Trial End Date */}
       {formData.status === 'trial' && (
         <div>
