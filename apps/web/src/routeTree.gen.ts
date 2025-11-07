@@ -23,6 +23,7 @@ import { Route as SgkDownloadsRouteImport } from './routes/sgk/downloads'
 import { Route as PatientsPatientIdRouteImport } from './routes/patients/$patientId'
 import { Route as InvoicesPurchasesRouteImport } from './routes/invoices/purchases'
 import { Route as InvoicesNewRouteImport } from './routes/invoices/new'
+import { Route as InventoryIdRouteImport } from './routes/inventory/$id'
 
 const UtsRoute = UtsRouteImport.update({
   id: '/uts',
@@ -94,15 +95,21 @@ const InvoicesNewRoute = InvoicesNewRouteImport.update({
   path: '/new',
   getParentRoute: () => InvoicesRoute,
 } as any)
+const InventoryIdRoute = InventoryIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => InventoryRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
-  '/inventory': typeof InventoryRoute
+  '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
   '/reports': typeof ReportsRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
+  '/inventory/$id': typeof InventoryIdRoute
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
@@ -114,10 +121,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
-  '/inventory': typeof InventoryRoute
+  '/inventory': typeof InventoryRouteWithChildren
   '/reports': typeof ReportsRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
+  '/inventory/$id': typeof InventoryIdRoute
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
@@ -130,11 +138,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
-  '/inventory': typeof InventoryRoute
+  '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
   '/reports': typeof ReportsRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
+  '/inventory/$id': typeof InventoryIdRoute
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/test'
     | '/uts'
+    | '/inventory/$id'
     | '/invoices/new'
     | '/invoices/purchases'
     | '/patients/$patientId'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/test'
     | '/uts'
+    | '/inventory/$id'
     | '/invoices/new'
     | '/invoices/purchases'
     | '/patients/$patientId'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/test'
     | '/uts'
+    | '/inventory/$id'
     | '/invoices/new'
     | '/invoices/purchases'
     | '/patients/$patientId'
@@ -196,7 +208,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppointmentsRoute: typeof AppointmentsRoute
-  InventoryRoute: typeof InventoryRoute
+  InventoryRoute: typeof InventoryRouteWithChildren
   InvoicesRoute: typeof InvoicesRouteWithChildren
   ReportsRoute: typeof ReportsRoute
   TestRoute: typeof TestRoute
@@ -307,8 +319,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvoicesNewRouteImport
       parentRoute: typeof InvoicesRoute
     }
+    '/inventory/$id': {
+      id: '/inventory/$id'
+      path: '/$id'
+      fullPath: '/inventory/$id'
+      preLoaderRoute: typeof InventoryIdRouteImport
+      parentRoute: typeof InventoryRoute
+    }
   }
 }
+
+interface InventoryRouteChildren {
+  InventoryIdRoute: typeof InventoryIdRoute
+}
+
+const InventoryRouteChildren: InventoryRouteChildren = {
+  InventoryIdRoute: InventoryIdRoute,
+}
+
+const InventoryRouteWithChildren = InventoryRoute._addFileChildren(
+  InventoryRouteChildren,
+)
 
 interface InvoicesRouteChildren {
   InvoicesNewRoute: typeof InvoicesNewRoute
@@ -329,7 +360,7 @@ const InvoicesRouteWithChildren = InvoicesRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppointmentsRoute: AppointmentsRoute,
-  InventoryRoute: InventoryRoute,
+  InventoryRoute: InventoryRouteWithChildren,
   InvoicesRoute: InvoicesRouteWithChildren,
   ReportsRoute: ReportsRoute,
   TestRoute: TestRoute,

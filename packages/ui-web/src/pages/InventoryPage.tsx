@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import axios from 'axios';
 import { 
   Search, 
   Plus, 
@@ -14,6 +16,10 @@ import {
   Trash2,
   Eye
 } from 'lucide-react';
+
+const api = axios.create({
+  baseURL: 'http://localhost:5003'
+});
 
 import { 
   DataTable, 
@@ -111,9 +117,11 @@ const brands = ['All', 'TechBrand', 'AudioMax', 'ComponentCorp', 'ToolMaster'];
 const statusOptions = ['All', 'Active', 'Inactive', 'Discontinued'];
 
 export const InventoryPage: React.FC = () => {
+  const navigate = useNavigate();
+  
   // State management
-  const [inventoryData, setInventoryData] = useState<InventoryItem[]>(sampleInventoryData);
-  const [loading, setLoading] = useState(false);
+  const [inventoryData, setInventoryData] = useState<InventoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<InventoryFilters>({
     search: '',
     category: 'All',
@@ -217,6 +225,68 @@ export const InventoryPage: React.FC = () => {
     };
   }, [inventoryData]);
 
+  // Load inventory data from API
+  useEffect(() => {
+    const loadInventory = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/api/inventory', {
+          params: {
+            category: 'hearing_aid', // Load hearing aids
+            per_page: 100
+          }
+        });
+        
+        if (response.data.success && Array.isArray(response.data.data)) {
+          // Map backend data to frontend format
+          const mappedData: InventoryItem[] = response.data.data.map((item: any) => {
+            // Handle features - can be string, array, or null
+            let featuresArray: string[] = [];
+            if (item.features) {
+              if (typeof item.features === 'string') {
+                featuresArray = item.features.split(',').map((f: string) => f.trim()).filter(Boolean);
+              } else if (Array.isArray(item.features)) {
+                featuresArray = item.features;
+              }
+            }
+            
+            return {
+              id: String(item.id),
+              productName: item.name || item.productName || 'Unnamed Product',
+              brand: item.brand || '',
+              model: item.model || '',
+              category: item.category || '',
+              stock: item.available_inventory || item.availableInventory || item.inventory || 0,
+              minStock: item.min_inventory || item.minInventory || item.minStock || 5,
+              unitPrice: parseFloat(item.price) || 0,
+              vatIncludedPrice: parseFloat(item.price) * 1.18 || 0,
+              totalValue: (item.available_inventory || item.availableInventory || 0) * parseFloat(item.price) || 0,
+              barcode: item.barcode || '',
+              serialNumber: item.serial_number || item.serialNumber || '',
+              supplier: item.supplier || '',
+              warrantyPeriod: item.warranty ? `${item.warranty} months` : '',
+              description: item.description || '',
+              features: featuresArray,
+              status: 'active',
+              createdAt: item.created_at || item.createdAt || new Date().toISOString(),
+              updatedAt: item.updated_at || item.updatedAt || new Date().toISOString()
+            };
+          });
+          
+          setInventoryData(mappedData);
+          console.log(`✅ Loaded ${mappedData.length} inventory items from API`);
+        }
+      } catch (error) {
+        console.error('❌ Failed to load inventory:', error);
+        // Keep empty array on error
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadInventory();
+  }, []);
+
   // Update pagination total when filtered data changes
   useEffect(() => {
     setPagination(prev => ({
@@ -233,7 +303,12 @@ export const InventoryPage: React.FC = () => {
       sortable: true,
       render: (value: string, record: InventoryItem) => (
         <div className="flex flex-col">
-          <span className="font-medium text-gray-900 dark:text-white">{value}</span>
+          <button
+            onClick={() => navigate({ to: `/inventory/${record.id}` })}
+            className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-left transition-colors"
+          >
+            {value}
+          </button>
           <span className="text-sm text-gray-500 dark:text-gray-400">{record.brand} - {record.model}</span>
         </div>
       )
