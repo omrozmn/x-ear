@@ -253,6 +253,7 @@ export const PatientDetailsPage: React.FC = () => {
                 patientId: patient.id!,
                 updates: data
               });
+              setShowEditModal(false);
               await refetch?.();
               return patient;
             } catch (error) {
@@ -262,6 +263,7 @@ export const PatientDetailsPage: React.FC = () => {
           }}
           initialData={patient}
           title="Hasta Düzenle"
+          isLoading={updatePatientMutation.isPending}
         />
       )}
 
@@ -271,10 +273,10 @@ export const PatientDetailsPage: React.FC = () => {
           patient={patient}
           isOpen={showTagModal}
           onClose={() => setShowTagModal(false)}
-          onUpdate={async (updates) => {
+          onUpdate={async (patientId: string, updates: any) => {
             try {
               await updatePatientMutation.mutateAsync({
-                patientId: patient.id!,
+                patientId,
                 updates
               });
               await refetch?.();

@@ -100,9 +100,6 @@ export function PatientTagUpdateModal({
           >
             <option value="ACTIVE">Aktif</option>
             <option value="INACTIVE">Pasif</option>
-            <option value="LEAD">Potansiyel</option>
-            <option value="TRIAL">Deneme</option>
-            <option value="CUSTOMER">Müşteri</option>
           </select>
         </div>
 

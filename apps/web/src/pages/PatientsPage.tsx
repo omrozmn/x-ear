@@ -134,10 +134,9 @@ export function PatientsPage() {
     try {
       await updatePatientMutation.mutateAsync({ patientId, updates });
       setTagUpdatePatient(null);
-      // Force refetch to update UI
-      handleRefresh();
     } catch (error) {
       console.error('Failed to update patient tags:', error);
+      throw error;
     }
   };
 
