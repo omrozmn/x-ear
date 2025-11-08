@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Upload, Download } from 'lucide-react';
+import { Plus, Upload, Download, AlertTriangle, Trash2 } from 'lucide-react';
 import { Button, Modal } from '@x-ear/ui-web';
 import { InventoryList } from '../components/inventory/InventoryList';
 import { InventoryStats } from '../components/inventory/InventoryStats';
@@ -21,7 +21,9 @@ export const InventoryPage: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
   
   // Data for filters
   const [categories, setCategories] = useState<string[]>([]);
@@ -76,15 +78,22 @@ export const InventoryPage: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleItemDelete = async (item: InventoryItem) => {
-    if (window.confirm(`${item.name} ürününü silmek istediğinizden emin misiniz?`)) {
-      try {
-        await api.delete(`/api/inventory/${item.id}`);
-        // Reload will happen via subscription
-      } catch (error) {
-        console.error('Delete failed:', error);
-        alert('Silme işlemi başarısız oldu');
-      }
+  const handleItemDelete = (item: InventoryItem) => {
+    setItemToDelete(item);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
+    try {
+      await api.delete(`/api/inventory/${itemToDelete.id}`);
+      setIsDeleteModalOpen(false);
+      setItemToDelete(null);
+      // Reload will happen via subscription
+    } catch (error) {
+      console.error('Delete failed:', error);
+      alert('Silme işlemi başarısız oldu');
     }
   };
 
@@ -197,10 +206,14 @@ export const InventoryPage: React.FC = () => {
         title="Yeni Ürün Ekle"
         size="lg"
       >
-        <InventoryForm
-          onSave={handleItemSave}
-          onCancel={() => setIsAddModalOpen(false)}
-        />
+        <div className="flex flex-col h-full">
+          <div className="flex-1 overflow-y-auto p-6">
+            <InventoryForm
+              onSave={handleItemSave}
+              onCancel={() => setIsAddModalOpen(false)}
+            />
+          </div>
+        </div>
       </Modal>
 
       {/* Edit Item Modal */}
@@ -250,6 +263,49 @@ export const InventoryPage: React.FC = () => {
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
             <p>CSV formatı: Ürün Adı, Marka, Model, Kategori, Stok, Fiyat, Barkod, Tedarikçi</p>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setItemToDelete(null);
+        }}
+        title="Ürünü Sil"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+              <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Ürünü silmek istediğinizden emin misiniz?
+              </h3>
+              {itemToDelete && (
+                <>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    <span className="font-semibold">{itemToDelete.name}</span> ürününü silmek üzeresiniz.
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Bu işlem geri alınamaz. Ürünle ilgili tüm veriler kalıcı olarak silinecektir.
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-end pt-4">
+            <Button
+              variant="danger"
+              onClick={confirmDelete}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Ürünü Sil
+            </Button>
           </div>
         </div>
       </Modal>

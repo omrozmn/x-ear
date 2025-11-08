@@ -1,19 +1,15 @@
 {
   "brand": "Bernafon",
-  "specSchemaVersion": "1.0",
-  "lastScrapedAt": "2025-11-07T11:00:00Z",
+  "specSchemaVersion": "1.0.0",
+  "lastScrapedAt": "2025-11-07T20:30:00Z",
   "sourceUrls": [
-    "https://www.bernafon.com/",
-    "https://www.bernafon.com/products/hearing-aids/family/encanta",
-    "https://www.bernafon.com/products/hearing-aids/family/alpha-xt",
-    "https://www.bernafon.com/products/hearing-aids/family/alpha",
-    "https://www.bernafon.com/products/hearing-aids/family/leox"
+    "https://www.bernafon.com/en/products/hearing-aids"
   ],
-  "categories": [],
+  "categories": ["RIC", "BTE", "ITE", "ITC", "CIC", "IIC", "SP", "UP", "CROS", "BiCROS"],
   "models": [
     {
       "family": "Encanta",
-      "model": "100 CONNECT",
+      "model": "miniRITE",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
@@ -21,226 +17,96 @@
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "app": true,
         "streaming": true
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
       "features": [
-        "speech clarity",
-        "noise reduction",
-        "music experience"
+        "Works with smartphone"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "For low noise environments, Bluetooth connectivity",
+      "notes": "Advanced family with exceptional sound quality",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/encanta"
+        "https://www.bernafon.com/products/663068/encanta-minirite"
       ]
     },
     {
       "family": "Encanta",
-      "model": "200 GO",
-      "formFactor": "RIC",
+      "model": "miniBTE R",
+      "formFactor": "BTE",
       "battery": {
         "type": "Rechargeable",
         "hoursTypical": null
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "app": true,
         "streaming": true
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
       "features": [
-        "speech clarity",
-        "noise reduction",
-        "music experience"
+        "Works with smartphone"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "For noisy environments, Bluetooth connectivity",
+      "notes": "Advanced family with exceptional sound quality",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/encanta"
+        "https://www.bernafon.com/products/845503/encanta-minibte-r"
       ]
     },
     {
       "family": "Encanta",
-      "model": "300 ENGAGE",
-      "formFactor": "RIC",
-      "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
-      },
-      "connectivity": {
-        "bluetooth": true,
-        "app": "Bernafon",
-        "streaming": true
-      },
-      "dsp": {
-        "platform": "Hybrid Technology"
-      },
-      "features": [
-        "speech clarity",
-        "noise reduction",
-        "music experience"
-      ],
-      "ipRating": null,
-      "channels": null,
-      "gtin": null,
-      "notes": "For group conversations, Bluetooth connectivity",
-      "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/encanta"
-      ]
-    },
-    {
-      "family": "Encanta",
-      "model": "400 PRO",
-      "formFactor": "RIC",
-      "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
-      },
-      "connectivity": {
-        "bluetooth": true,
-        "app": "Bernafon",
-        "streaming": true
-      },
-      "dsp": {
-        "platform": "Hybrid Technology"
-      },
-      "features": [
-        "speech clarity",
-        "noise reduction",
-        "music experience"
-      ],
-      "ipRating": null,
-      "channels": null,
-      "gtin": null,
-      "notes": "For very noisy environments, Bluetooth connectivity",
-      "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/encanta"
-      ]
-    },
-    {
-      "family": "Encanta",
-      "model": "IIC",
+      "model": "Invisible-in-the-Canal (IIC)",
       "formFactor": "IIC",
       "battery": {
-        "type": "Rechargeable",
+        "type": null,
         "hoursTypical": null
       },
       "connectivity": {
-        "bluetooth": true,
-        "app": "Bernafon",
-        "streaming": true
+        "bluetooth": false,
+        "telecoil": false
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
-      "features": [
-        "speech clarity",
-        "noise reduction",
-        "music experience"
-      ],
+      "features": [],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Invisible in canal, Bluetooth connectivity",
+      "notes": "Advanced family with exceptional sound quality",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/encanta"
+        "https://www.bernafon.com/products/723984/encanta-invisible-in-the-canal-iic"
       ]
     },
     {
       "family": "Encanta",
-      "model": "CIC",
+      "model": "Completely-in-the-Canal (CIC)",
       "formFactor": "CIC",
       "battery": {
-        "type": "Rechargeable",
+        "type": null,
         "hoursTypical": null
       },
       "connectivity": {
-        "bluetooth": true,
-        "app": "Bernafon",
-        "streaming": true
+        "bluetooth": false,
+        "telecoil": false
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
-      "features": [
-        "speech clarity",
-        "noise reduction",
-        "music experience"
-      ],
+      "features": [],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Completely in canal, Bluetooth connectivity",
+      "notes": "Advanced family with exceptional sound quality",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/encanta"
-      ]
-    },
-    {
-      "family": "Encanta",
-      "model": "ITC",
-      "formFactor": "ITC",
-      "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
-      },
-      "connectivity": {
-        "bluetooth": true,
-        "app": "Bernafon",
-        "streaming": true
-      },
-      "dsp": {
-        "platform": "Hybrid Technology"
-      },
-      "features": [
-        "speech clarity",
-        "noise reduction",
-        "music experience"
-      ],
-      "ipRating": null,
-      "channels": null,
-      "gtin": null,
-      "notes": "In the canal, Bluetooth connectivity",
-      "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/encanta"
-      ]
-    },
-    {
-      "family": "Encanta",
-      "model": "ITE",
-      "formFactor": "ITE",
-      "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
-      },
-      "connectivity": {
-        "bluetooth": true,
-        "app": "Bernafon",
-        "streaming": true
-      },
-      "dsp": {
-        "platform": "Hybrid Technology"
-      },
-      "features": [
-        "speech clarity",
-        "noise reduction",
-        "music experience"
-      ],
-      "ipRating": null,
-      "channels": null,
-      "gtin": null,
-      "notes": "In the ear, Bluetooth connectivity",
-      "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/encanta"
+        "https://www.bernafon.com/products/723985/encanta-completely-in-the-canal-cic"
       ]
     },
     {
@@ -248,27 +114,27 @@
       "model": "miniRITE T",
       "formFactor": "RIC",
       "battery": {
-        "type": "Zinc Air",
+        "type": null,
         "hoursTypical": null
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "telecoil": true,
+        "app": true,
         "streaming": true
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
       "features": [
-        "speech understanding",
-        "wind noise protector"
+        "Works with smartphone"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Advanced speech understanding in noise",
+      "notes": "Advanced hearing aids for clarity and comfort",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/alpha-xt"
+        "https://www.bernafon.com/products/521422/alpha-xt-minirite-t"
       ]
     },
     {
@@ -281,22 +147,22 @@
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "telecoil": true,
+        "app": true,
         "streaming": true
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
       "features": [
-        "speech understanding",
-        "wind noise protector"
+        "Works with smartphone"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Rechargeable, advanced speech understanding in noise",
+      "notes": "Advanced hearing aids for clarity and comfort",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/alpha-xt"
+        "https://www.bernafon.com/products/521423/alpha-xt-minirite-t-r"
       ]
     },
     {
@@ -304,27 +170,27 @@
       "model": "miniBTE T",
       "formFactor": "BTE",
       "battery": {
-        "type": "Zinc Air",
+        "type": null,
         "hoursTypical": null
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "telecoil": true,
+        "app": true,
         "streaming": true
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
       "features": [
-        "speech understanding",
-        "wind noise protector"
+        "Works with smartphone"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "BTE style, advanced speech understanding in noise",
+      "notes": "Advanced hearing aids for clarity and comfort",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/alpha-xt"
+        "https://www.bernafon.com/products/521420/alpha-xt-minibte-t"
       ]
     },
     {
@@ -337,22 +203,22 @@
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "telecoil": true,
+        "app": true,
         "streaming": true
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
       "features": [
-        "speech understanding",
-        "wind noise protector"
+        "Works with smartphone"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Rechargeable BTE, advanced speech understanding in noise",
+      "notes": "Advanced hearing aids for clarity and comfort",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/alpha-xt"
+        "https://www.bernafon.com/products/521421/alpha-xt-minibte-t-r"
       ]
     },
     {
@@ -360,27 +226,27 @@
       "model": "miniRITE T",
       "formFactor": "RIC",
       "battery": {
-        "type": "Zinc Air",
+        "type": null,
         "hoursTypical": null
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "telecoil": true,
+        "app": true,
         "streaming": true
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
       "features": [
-        "speech understanding",
-        "music experience"
+        "Works with smartphone"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Balanced speech and comfort",
+      "notes": "High-quality hearing aids balancing speech clarity and comfort",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+        "https://www.bernafon.com/products/391550/alpha-minirite-t"
       ]
     },
     {
@@ -393,22 +259,22 @@
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "telecoil": true,
+        "app": true,
         "streaming": true
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
       "features": [
-        "speech understanding",
-        "music experience"
+        "Works with smartphone"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Rechargeable, balanced speech and comfort",
+      "notes": "High-quality hearing aids balancing speech clarity and comfort",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+        "https://www.bernafon.com/products/335831/alpha-minirite-t-r"
       ]
     },
     {
@@ -416,27 +282,27 @@
       "model": "miniBTE T",
       "formFactor": "BTE",
       "battery": {
-        "type": "Zinc Air",
+        "type": null,
         "hoursTypical": null
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "telecoil": true,
+        "app": true,
         "streaming": true
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
       "features": [
-        "speech understanding",
-        "music experience"
+        "Works with smartphone"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "BTE style, balanced speech and comfort",
+      "notes": "High-quality hearing aids balancing speech clarity and comfort",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+        "https://www.bernafon.com/products/453983/alpha-minibte-t"
       ]
     },
     {
@@ -449,106 +315,99 @@
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "telecoil": true,
+        "app": true,
         "streaming": true
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
       "features": [
-        "speech understanding",
-        "music experience"
+        "Works with smartphone"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Rechargeable BTE, balanced speech and comfort",
+      "notes": "High-quality hearing aids balancing speech clarity and comfort",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+        "https://www.bernafon.com/products/454138/alpha-minibte-t-r"
       ]
     },
     {
       "family": "Alpha",
-      "model": "IIC",
+      "model": "Invisible-in-the-Canal (IIC)",
       "formFactor": "IIC",
       "battery": {
-        "type": "Zinc Air",
+        "type": null,
         "hoursTypical": null
       },
       "connectivity": {
-        "bluetooth": true,
-        "app": "Bernafon",
-        "streaming": true
+        "bluetooth": false,
+        "telecoil": false
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
-      "features": [
-        "speech understanding",
-        "music experience"
-      ],
+      "features": [],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Invisible in canal, balanced speech and comfort",
+      "notes": "High-quality hearing aids balancing speech clarity and comfort",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+        "https://www.bernafon.com/products/516602/alpha-invisible-in-the-canal-iic"
       ]
     },
     {
       "family": "Alpha",
-      "model": "CIC",
+      "model": "Completely-in-the-Canal (CIC)",
       "formFactor": "CIC",
       "battery": {
-        "type": "Zinc Air",
+        "type": null,
         "hoursTypical": null
       },
       "connectivity": {
-        "bluetooth": true,
-        "app": "Bernafon",
-        "streaming": true
+        "bluetooth": false,
+        "telecoil": false
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
-      "features": [
-        "speech understanding",
-        "music experience"
-      ],
+      "features": [],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Completely in canal, balanced speech and comfort",
+      "notes": "High-quality hearing aids balancing speech clarity and comfort",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+        "https://www.bernafon.com/products/516603/alpha-completely-in-the-canal-cic"
       ]
     },
     {
       "family": "Alpha",
-      "model": "ITC",
+      "model": "In-the-Canal (ITC)",
       "formFactor": "ITC",
       "battery": {
-        "type": "Zinc Air",
+        "type": null,
         "hoursTypical": null
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "telecoil": true,
+        "app": true,
         "streaming": true
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
       "features": [
-        "speech understanding",
-        "music experience"
+        "Works with smartphone",
+        "Supports either Bluetooth or telecoil"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "In the canal, balanced speech and comfort",
+      "notes": "High-quality hearing aids balancing speech clarity and comfort",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+        "https://www.bernafon.com/products/516601/alpha-in-the-canal-itc"
       ]
     },
     {
@@ -556,27 +415,28 @@
       "model": "Half Shell",
       "formFactor": "ITE",
       "battery": {
-        "type": "Zinc Air",
+        "type": null,
         "hoursTypical": null
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "telecoil": true,
+        "app": true,
         "streaming": true
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
       "features": [
-        "speech understanding",
-        "music experience"
+        "Works with smartphone",
+        "Supports either Bluetooth or telecoil"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Half shell ITE, balanced speech and comfort",
+      "notes": "High-quality hearing aids balancing speech clarity and comfort",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+        "https://www.bernafon.com/products/516599/alpha-half-shell"
       ]
     },
     {
@@ -584,27 +444,28 @@
       "model": "Full Shell",
       "formFactor": "ITE",
       "battery": {
-        "type": "Zinc Air",
+        "type": null,
         "hoursTypical": null
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "telecoil": true,
+        "app": true,
         "streaming": true
       },
       "dsp": {
-        "platform": "Hybrid Technology"
+        "platform": null
       },
       "features": [
-        "speech understanding",
-        "music experience"
+        "Works with smartphone",
+        "Supports either Bluetooth or telecoil"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Full shell ITE, balanced speech and comfort",
+      "notes": "High-quality hearing aids balancing speech clarity and comfort",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/alpha"
+        "https://www.bernafon.com/products/516604/alpha-full-shell"
       ]
     },
     {
@@ -612,26 +473,27 @@
       "model": "BTE SP",
       "formFactor": "BTE",
       "battery": {
-        "type": "Zinc Air",
+        "type": null,
         "hoursTypical": null
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "app": true,
         "streaming": true
       },
       "dsp": {
         "platform": null
       },
       "features": [
-        "super power amplification"
+        "Works with smartphone",
+        "Super Power amplification"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Super Power for severe hearing loss, suitable for children",
+      "notes": "Powerful sound in Super Power | Ultra Power for severe/profound loss",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/leox"
+        "https://www.bernafon.com/products/204248/leox-bte-sp"
       ]
     },
     {
@@ -639,28 +501,631 @@
       "model": "BTE UP",
       "formFactor": "BTE",
       "battery": {
-        "type": "Zinc Air",
+        "type": null,
         "hoursTypical": null
       },
       "connectivity": {
         "bluetooth": true,
-        "app": "Bernafon",
+        "app": true,
         "streaming": true
       },
       "dsp": {
         "platform": null
       },
       "features": [
-        "ultra power amplification"
+        "Works with smartphone",
+        "Ultra Power amplification"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Ultra Power for profound hearing loss, suitable for children",
+      "notes": "Powerful sound in Super Power | Ultra Power for severe/profound loss",
       "sourceUrls": [
-        "https://www.bernafon.com/products/hearing-aids/family/leox"
+        "https://www.bernafon.com/products/204249/leox-bte-up"
+      ]
+    },
+    {
+      "family": "Viron",
+      "model": "miniRITE",
+      "formFactor": "RIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Legacy family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/175001/viron-minirite"
+      ]
+    },
+    {
+      "family": "Viron",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Legacy family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/175003/viron-minirite-t"
+      ]
+    },
+    {
+      "family": "Viron",
+      "model": "miniRITE T R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Legacy family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/175002/viron-minirite-t-r"
+      ]
+    },
+    {
+      "family": "Viron",
+      "model": "BTE 105",
+      "formFactor": "BTE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Legacy family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/175004/viron-bte-105"
+      ]
+    },
+    {
+      "family": "Entra B",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/727193/entra-b-minirite-t"
+      ]
+    },
+    {
+      "family": "Entra B",
+      "model": "miniRITE T R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/727194/entra-b-minirite-t-r-"
+      ]
+    },
+    {
+      "family": "Entra B",
+      "model": "miniBTE T",
+      "formFactor": "BTE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/727191/entra-b-minibte-t"
+      ]
+    },
+    {
+      "family": "Entra B",
+      "model": "miniBTE T R",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/727192/entra-b-minibte-t-r"
+      ]
+    },
+    {
+      "family": "Entra B",
+      "model": "Invisible-in-the-Canal (IIC)",
+      "formFactor": "IIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/727187/entra-b-invisible-in-the-canal-iic"
+      ]
+    },
+    {
+      "family": "Entra B",
+      "model": "Completely-in-the-Canal (CIC)",
+      "formFactor": "CIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/727186/entra-b-completely-in-the-canal-cic"
+      ]
+    },
+    {
+      "family": "Entra B",
+      "model": "In-the-Canal (ITC)",
+      "formFactor": "ITC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone",
+        "Supports either Bluetooth or telecoil"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/727188/entra-b-in-the-canal-itc"
+      ]
+    },
+    {
+      "family": "Entra B",
+      "model": "Half Shell",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone",
+        "Supports either Bluetooth or telecoil"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/727190/entra-b-half-shell"
+      ]
+    },
+    {
+      "family": "Entra B",
+      "model": "Full Shell",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone",
+        "Supports either Bluetooth or telecoil"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/727189/entra-b-full-shell"
+      ]
+    },
+    {
+      "family": "Entra A",
+      "model": "miniRITE",
+      "formFactor": "RIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Basic entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/516578/entra-a-minirite"
+      ]
+    },
+    {
+      "family": "Entra A",
+      "model": "miniRITE T",
+      "formFactor": "RIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Basic entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/516572/entra-a-minirite-t"
+      ]
+    },
+    {
+      "family": "Entra A",
+      "model": "BTE 105",
+      "formFactor": "BTE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Basic entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/516573/entra-a-bte-105"
+      ]
+    },
+    {
+      "family": "Entra A",
+      "model": "Invisible-in-the-Canal (IIC)",
+      "formFactor": "IIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Basic entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/516574/entra-a-invisible-in-the-canal-iic"
+      ]
+    },
+    {
+      "family": "Entra A",
+      "model": "Completely-in-the-Canal (CIC)",
+      "formFactor": "CIC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": false
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Basic entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/516579/entra-a-completely-in-the-canal-cic"
+      ]
+    },
+    {
+      "family": "Entra A",
+      "model": "In-the-Canal (ITC)",
+      "formFactor": "ITC",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone",
+        "Supports either Bluetooth or telecoil"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Basic entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/516577/entra-a-in-the-canal-itc"
+      ]
+    },
+    {
+      "family": "Entra A",
+      "model": "Half Shell",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone",
+        "Supports either Bluetooth or telecoil"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Basic entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/516575/entra-a-half-shell"
+      ]
+    },
+    {
+      "family": "Entra A",
+      "model": "Full Shell",
+      "formFactor": "ITE",
+      "battery": {
+        "type": null,
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone",
+        "Supports either Bluetooth or telecoil"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Basic entry-level family",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/516576/entra-a-full-shell"
+      ]
+    },
+    {
+      "family": "CROS and BiCROS",
+      "model": "miniRITE T R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "telecoil": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": null
+      },
+      "features": [
+        "Works with smartphone"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "For single-sided deafness",
+      "sourceUrls": [
+        "https://www.bernafon.com/products/403917/cros-and-bicros-minirite-t-r"
       ]
     }
   ],
-  "compatibility": {}
+  "compatibility": { "receivers": [], "domes": [], "earhooks": [] }
 }

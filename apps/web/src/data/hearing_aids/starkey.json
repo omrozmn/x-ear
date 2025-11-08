@@ -7,83 +7,465 @@
   "models": [
     {
       "family": "Omega AI",
-      "model": "RIC",
+      "model": "mRIC R",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 51
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "AI"
+        "platform": "G3 Neuro Processor with DNN 360"
       },
-      "ipRating": null,
+      "features": ["Dual-network AI", "Edge Mode 2.0", "Auracast-ready", "respiratory rate monitor", "fall detection", "Gen AI Assistant", "TeleHear AI", "MultiFlex Tinnitus Pro"],
+      "ipRating": "IP68+",
       "channels": null,
       "gtin": null,
-      "notes": "Most advanced AI hearing technology."
+      "notes": "Flagship with 28% better speech intelligibility, 51h battery."
     },
     {
-      "family": "Signature Series",
-      "model": "ITE",
-      "formFactor": "ITE",
+      "family": "Omega AI",
+      "model": "RIC RT",
+      "formFactor": "RIC",
       "battery": {
-        "type": null,
-        "hoursTypical": null
+        "type": "Rechargeable",
+        "hoursTypical": 51
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "AI"
+        "platform": "G3 Neuro Processor with DNN 360"
       },
-      "ipRating": null,
+      "features": ["Dual-network AI", "Edge Mode 2.0", "Auracast-ready", "CROS-compatible", "respiratory rate monitor", "fall detection", "Gen AI Assistant", "TeleHear AI", "MultiFlex Tinnitus Pro"],
+      "ipRating": "IP68+",
       "channels": null,
       "gtin": null,
-      "notes": "Custom fit, discreet."
+      "notes": "Rechargeable with telecoil, for single-sided deafness."
+    },
+    {
+      "family": "Omega AI",
+      "model": "ITE R",
+      "formFactor": "ITE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 42
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "G3 Neuro Processor with DNN 360"
+      },
+      "features": ["Dual-network AI", "Edge Mode 2.0", "Auracast-ready", "respiratory rate monitor", "fall detection", "Gen AI Assistant", "TeleHear AI", "MultiFlex Tinnitus Pro"],
+      "ipRating": "IP68+",
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom rechargeable ITE."
+    },
+    {
+      "family": "Omega AI",
+      "model": "ITC R",
+      "formFactor": "ITC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 42
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "G3 Neuro Processor with DNN 360"
+      },
+      "features": ["Dual-network AI", "Edge Mode 2.0", "Auracast-ready", "respiratory rate monitor", "fall detection", "Gen AI Assistant", "TeleHear AI", "MultiFlex Tinnitus Pro"],
+      "ipRating": "IP68+",
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom rechargeable ITC."
+    },
+    {
+      "family": "Omega AI",
+      "model": "CIC",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "G3 Neuro Processor with DNN 360"
+      },
+      "features": ["Dual-network AI", "Edge Mode 2.0", "Auracast-ready", "respiratory rate monitor", "fall detection", "Gen AI Assistant", "TeleHear AI", "MultiFlex Tinnitus Pro"],
+      "ipRating": "IP68+",
+      "channels": null,
+      "gtin": null,
+      "notes": "Bluetooth CIC, almost invisible."
     },
     {
       "family": "Edge AI",
-      "model": "RIC",
+      "model": "mRIC R",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 51
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "AI"
+        "platform": "G2 Neuro Processor with DNN"
       },
-      "ipRating": null,
+      "features": ["Edge Mode+", "Auracast-ready", "fall detection", "balance assessment", "TeleHear", "MultiFlex Tinnitus Pro"],
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Seamless connectivity."
+      "notes": "Previous flagship, 30% better speech detection than Genesis."
     },
     {
-      "family": "Genesis AI",
-      "model": "RIC",
+      "family": "Edge AI",
+      "model": "RIC RT",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 51
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "AI"
+        "platform": "G2 Neuro Processor with DNN"
       },
-      "ipRating": null,
+      "features": ["Edge Mode+", "Auracast-ready", "CROS-compatible", "fall detection", "balance assessment", "TeleHear", "MultiFlex Tinnitus Pro"],
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Reliable and remarkable sound."
+      "notes": "Rechargeable RIC with telecoil."
+    },
+    {
+      "family": "Edge AI",
+      "model": "RIC 312",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "G2 Neuro Processor with DNN"
+      },
+      "features": ["Edge Mode+", "Auracast-ready", "fall detection", "balance assessment", "TeleHear", "MultiFlex Tinnitus Pro"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Disposable battery RIC."
+    },
+    {
+      "family": "Edge AI",
+      "model": "ITE R",
+      "formFactor": "ITE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 42
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "G2 Neuro Processor with DNN"
+      },
+      "features": ["Edge Mode+", "Auracast-ready", "fall detection", "balance assessment", "TeleHear", "MultiFlex Tinnitus Pro"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom rechargeable ITE."
+    },
+    {
+      "family": "Edge AI",
+      "model": "ITC R",
+      "formFactor": "ITC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 42
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "G2 Neuro Processor with DNN"
+      },
+      "features": ["Edge Mode+", "Auracast-ready", "fall detection", "balance assessment", "TeleHear", "MultiFlex Tinnitus Pro"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom rechargeable ITC."
+    },
+    {
+      "family": "Edge AI",
+      "model": "CIC",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "G2 Neuro Processor with DNN"
+      },
+      "features": ["Edge Mode+", "Auracast-ready", "fall detection", "balance assessment", "TeleHear", "MultiFlex Tinnitus Pro"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Bluetooth CIC."
+    },
+    {
+      "family": "Signature Series",
+      "model": "CIC R",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 38
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "app": false,
+        "streaming": false
+      },
+      "dsp": {
+        "platform": "Edge AI"
+      },
+      "features": ["Edge Mode+", "transient noise reduction", "wind noise adaptation", "music enhancement"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "World's smallest rechargeable CIC."
+    },
+    {
+      "family": "Signature Series",
+      "model": "CIC NW",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 144
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "app": false,
+        "streaming": false
+      },
+      "dsp": {
+        "platform": "Edge AI"
+      },
+      "features": ["Edge Mode+", "transient noise reduction", "wind noise adaptation", "music enhancement"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Non-wireless CIC with disposable battery."
+    },
+    {
+      "family": "Signature Series",
+      "model": "IIC NW",
+      "formFactor": "IIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "app": false,
+        "streaming": false
+      },
+      "dsp": {
+        "platform": "Genesis AI"
+      },
+      "features": ["Edge Mode+", "transient noise reduction", "wind noise adaptation", "music enhancement"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Invisible IIC, ultimate discreet."
+    },
+    {
+      "family": "Evolv AI",
+      "model": "mRIC 312",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Starkey Sound with AI"
+      },
+      "features": ["Edge Mode", "fall detection", "health tracking", "language translation", "TeleHear", "MultiFlex Tinnitus"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Budget AI RIC."
+    },
+    {
+      "family": "Evolv AI",
+      "model": "RIC 312",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Starkey Sound with AI"
+      },
+      "features": ["Edge Mode", "fall detection", "health tracking", "language translation", "TeleHear", "MultiFlex Tinnitus"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Standard RIC."
+    },
+    {
+      "family": "Evolv AI",
+      "model": "BTE 13",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Starkey Sound with AI"
+      },
+      "features": ["Edge Mode", "fall detection", "health tracking", "language translation", "TeleHear", "MultiFlex Tinnitus"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "BTE for severe loss."
+    },
+    {
+      "family": "Evolv AI",
+      "model": "BTE R",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Starkey Sound with AI"
+      },
+      "features": ["Edge Mode", "fall detection", "health tracking", "language translation", "TeleHear", "MultiFlex Tinnitus"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Rechargeable BTE."
+    },
+    {
+      "family": "Evolv AI",
+      "model": "Power Plus BTE 13",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Starkey Sound with AI"
+      },
+      "features": ["Edge Mode", "fall detection", "health tracking", "language translation", "TeleHear", "MultiFlex Tinnitus"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Power BTE for severe loss."
+    },
+    {
+      "family": "Evolv AI",
+      "model": "ITE R",
+      "formFactor": "ITE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Starkey Sound with AI"
+      },
+      "features": ["Edge Mode", "fall detection", "health tracking", "language translation", "TeleHear", "MultiFlex Tinnitus"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom rechargeable ITE."
+    },
+    {
+      "family": "Evolv AI",
+      "model": "CIC",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Starkey Sound with AI"
+      },
+      "features": ["Edge Mode", "fall detection", "health tracking", "language translation", "TeleHear", "MultiFlex Tinnitus"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom CIC."
     }
   ],
   "compatibility": { "receivers": [], "domes": [], "earhooks": [] }

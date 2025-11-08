@@ -79,40 +79,72 @@ export class InventoryService {
   }
 
   async createItem(data: CreateInventoryData): Promise<InventoryItem> {
-    const items = this.loadInventory();
-    
-    // Check for duplicate barcode
-    if (data.barcode && items.some(item => item.barcode === data.barcode)) {
-      throw new Error('Barcode already exists');
-    }
+    try {
+      // Use backend API instead of localStorage
+      const response = await fetch('http://localhost:5003/api/inventory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-    const newItem: InventoryItem = {
-      ...data,
-      id: `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      totalInventory: data.availableInventory,
-      usedInventory: 0,
-      status: data.availableInventory > 0 ? 'available' : 'out_of_stock',
-      createdAt: new Date().toISOString(),
-      lastUpdated: new Date().toISOString()
-    };
-
-    items.push(newItem);
-    this.saveInventory(items);
-
-    // Queue for sync
-    await outbox.addOperation({
-      method: 'POST',
-      endpoint: '/api/inventory',
-      data: newItem,
-      headers: {
-        'Idempotency-Key': `create-inventory-${newItem.id}-${Date.now()}`
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create inventory item');
       }
-    });
 
-    return newItem;
+      const result = await response.json();
+      const newItem = result.data;
+
+      // Update localStorage cache
+      const items = this.loadInventory();
+      items.push(newItem);
+      this.saveInventory(items);
+
+      return newItem;
+    } catch (error) {
+      console.error('Create item error:', error);
+      throw error;
+    }
   }
 
   async updateItem(id: string, data: UpdateInventoryData): Promise<InventoryItem> {
+    try {
+      // Use backend API instead of localStorage
+      const response = await fetch(`http://localhost:5003/api/inventory/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update inventory item');
+      }
+
+      const result = await response.json();
+      const updatedItem = result.data;
+
+      // Update localStorage cache
+      const items = this.loadInventory();
+      const index = items.findIndex(item => item.id === id);
+      
+      if (index !== -1) {
+        items[index] = updatedItem;
+        this.saveInventory(items);
+      }
+
+      return updatedItem;
+    } catch (error) {
+      console.error('Update item error:', error);
+      throw error;
+    }
+  }
+
+  async updateItemLegacy(id: string, data: UpdateInventoryData): Promise<InventoryItem> {
     const items = this.loadInventory();
     const index = items.findIndex(item => item.id === id);
     

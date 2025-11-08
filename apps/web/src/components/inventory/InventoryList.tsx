@@ -27,6 +27,9 @@ export const InventoryList: React.FC<InventoryListProps> = ({
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalItems, setTotalItems] = useState(0);
 
   useEffect(() => {
     const loadItems = async () => {
@@ -35,7 +38,8 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         
         // Build API query params
         const params: any = {
-          per_page: 100
+          page: currentPage,
+          per_page: pageSize
         };
         
         if (filters.category) params.category = filters.category;
@@ -79,8 +83,11 @@ export const InventoryList: React.FC<InventoryListProps> = ({
           }));
           
           setItems(mappedItems);
+          setTotalItems(response.data.total || response.data.pagination?.total || mappedItems.length);
+          setError(null);
+        } else {
+          setError('Invalid response format');
         }
-        setError(null);
       } catch (err) {
         console.error('Failed to load inventory:', err);
         setError(err instanceof Error ? err.message : 'Failed to load inventory');
@@ -90,7 +97,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     };
 
     loadItems();
-  }, [filters]);
+  }, [filters, currentPage, pageSize]);
 
   // Table columns configuration - Turkish labels
   const columns = [
@@ -239,6 +246,17 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         data={items}
         actions={actions}
         loading={loading}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: totalItems,
+          showSizeChanger: true,
+          pageSizeOptions: [10, 20, 50, 100],
+          onChange: (page, newPageSize) => {
+            setCurrentPage(page);
+            setPageSize(newPageSize);
+          }
+        }}
       />
     </div>
   );

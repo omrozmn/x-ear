@@ -174,3 +174,11 @@
 {"timestamp":"2025-11-07T13:30:00Z","brand":"Jabra Enhance","model":"Enhance Select 700","status":"ok","notes":"RIC rechargeable; Bluetooth enabled; advanced DSP."}
 {"timestamp":"2025-11-07T13:30:00Z","brand":"Jabra Enhance","model":"Enhance Select 300","status":"ok","notes":"RIC rechargeable; Bluetooth enabled; advanced DSP."}
 {"timestamp":"2025-11-07T13:30:00Z","brand":"Jabra Enhance","model":"Enhance Select 50R","status":"ok","notes":"RIC rechargeable; Bluetooth enabled; advanced DSP."}
+{"timestamp":"2025-11-07T14:00:00Z","brand":"Helix","model":"Force Pediatrics","status":"ok","notes":"BTE pediatric with Helix Clarity DSP, 49 channels, noise reduction."}
+{"timestamp":"2025-11-07T14:30:00Z","brand":"Phonak","model":"Audéo Infinio Sphere R","status":"ok","notes":"RIC rechargeable with DEEPSONIC AI chip for speech separation."}
+{"timestamp":"2025-11-07T15:00:00Z","brand":"Signia","model":"Pure Charge&Go IX BCT","status":"ok","notes":"RIC rechargeable 36h Bluetooth Classic IP68 Integrated Xperience."}
+{"timestamp":"2025-11-07T16:00:00Z","brand":"Widex","model":"Allure RIC RD","status":"ok","notes":"Updated Widex with 17 models including Allure RIC RD (25h rechargeable IP68), SmartRIC (37h), SHEER sRIC RD (24h), MOMENT variants, EVOKE series, legacy BEYOND/UNIQUE."}
+{"timestamp":"2025-11-07T17:00:00Z","brand":"Starkey","model":"Omega AI mRIC R","status":"ok","notes":"Updated Starkey with 20 models including Omega AI (51h rechargeable IP68+), Edge AI, Signature Series, Evolv AI variants."}
+{"timestamp":"2025-11-07T18:00:00Z","brand":"ReSound","model":"Vivia microRIE","status":"ok","notes":"Updated ReSound with 16 models including Vivia (30h rechargeable IP68 AI DNN), Nexia (Auracast), Savi, Enzo Q, Key variants."}
+{"timestamp":"2025-11-07T18:30:00Z","brand":"Beltone","model":"Envision microRIE","status":"ok","notes":"Updated Beltone with 23 models including Envision (AI DNN 30h rechargeable IP68), Commence (essential 30h), Serene (Auracast), Achieve (360 awareness), Rely, Boost Ultra."}
+{"timestamp":"2025-11-07T19:00:00Z","brand":"Rexton","model":"Reach R-Li T","status":"ok","notes":"Updated Rexton with 11 models including Reach (39h rechargeable Auracast-ready), BiCore (Speech Preservation), MotionCore (motion sensor), rugged BTE."}

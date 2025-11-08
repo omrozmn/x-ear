@@ -118,7 +118,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
     if (!newBrand) return;
 
     try {
-      await api.post('/api/device-brands', { name: newBrand });
+      await api.post('/api/inventory/brands', { name: newBrand });
       console.log('New brand created:', newBrand);
     } catch (error: any) {
       if (error.response?.status === 409) {

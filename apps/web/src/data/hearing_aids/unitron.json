@@ -1,49 +1,668 @@
 {
   "brand": "Unitron",
   "specSchemaVersion": "1.0.0",
-  "lastScrapedAt": "2025-11-07T08:00:00Z",
-  "sourceUrls": ["https://www.unitron.com/"],
-  "categories": ["RIC","BTE","ITE","ITC","CIC","IIC","SP","HP","Pediatric"],
+  "lastScrapedAt": "2025-11-07T20:00:00Z",
+  "sourceUrls": [
+    "https://www.hearingtracker.com/hearing-aids/unitron",
+    "https://www.unitron.com/"
+  ],
+  "categories": ["RIC", "BTE", "ITE", "ITC", "CIC", "IIC", "SP", "HP", "Pediatric"],
   "models": [
     {
-      "family": "Moxi",
-      "model": "RIC",
+      "family": "Smile",
+      "model": "Moxi S-R",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 24
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": "Remote Plus",
+        "streaming": true
       },
       "dsp": {
-        "platform": "uDirect"
+        "platform": "ERA processor"
       },
-      "ipRating": null,
+      "features": [
+        "HyperFocus",
+        "Speech Enhancement",
+        "Bluetooth LE Audio",
+        "hands-free calling",
+        "tap controls",
+        "tinnitus masker",
+        "6x transmission power"
+      ],
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Advanced features."
+      "notes": "Flagship with Integra OS, AI-Dome Proposer, enhanced connectivity",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
     },
     {
-      "family": "North",
-      "model": "RIC",
+      "family": "Vivante",
+      "model": "Moxi V-R",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 24
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": "Remote Plus",
+        "streaming": true
       },
       "dsp": {
-        "platform": "uDirect"
+        "platform": "PRISM"
       },
+      "features": [
+        "HyperFocus",
+        "AutoFocus 360",
+        "360 Conversation in Car",
+        "Soft Speech Lift",
+        "tap controls",
+        "hands-free calling",
+        "tinnitus masker",
+        "8 environment classifications"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Advanced personalization, Integra OS",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron-moxi-vivante"
+      ]
+    },
+    {
+      "family": "Vivante",
+      "model": "Moxi V-RT",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "HyperFocus",
+        "AutoFocus 360",
+        "360 Conversation in Car",
+        "Soft Speech Lift",
+        "tap controls",
+        "hands-free calling",
+        "telecoil",
+        "tinnitus masker",
+        "8 environment classifications"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "With telecoil, advanced personalization",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron-moxi-vivante"
+      ]
+    },
+    {
+      "family": "Vivante",
+      "model": "Moxi V-RS",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "HyperFocus",
+        "AutoFocus 360",
+        "360 Conversation in Car",
+        "Soft Speech Lift",
+        "tap controls",
+        "hands-free calling",
+        "tinnitus masker",
+        "8 environment classifications"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Slim design, advanced personalization",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron-moxi-vivante"
+      ]
+    },
+    {
+      "family": "Vivante",
+      "model": "Moxi V-312",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "HyperFocus",
+        "AutoFocus 360",
+        "360 Conversation in Car",
+        "Soft Speech Lift",
+        "tap controls",
+        "hands-free calling",
+        "tinnitus masker",
+        "8 environment classifications"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Battery-powered version",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron-moxi-vivante"
+      ]
+    },
+    {
+      "family": "Vivante",
+      "model": "Stride V-PR",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "HyperFocus",
+        "AutoFocus 360",
+        "360 Conversation in Car",
+        "Soft Speech Lift",
+        "tap controls",
+        "hands-free calling",
+        "tinnitus masker",
+        "8 environment classifications"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "BTE rechargeable",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron-moxi-vivante"
+      ]
+    },
+    {
+      "family": "Vivante",
+      "model": "Stride V-M",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "HyperFocus",
+        "AutoFocus 360",
+        "360 Conversation in Car",
+        "Soft Speech Lift",
+        "tap controls",
+        "hands-free calling",
+        "telecoil",
+        "tinnitus masker",
+        "8 environment classifications"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "BTE with telecoil",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron-moxi-vivante"
+      ]
+    },
+    {
+      "family": "Vivante",
+      "model": "Stride V-UP",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 504
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "HyperFocus",
+        "AutoFocus 360",
+        "360 Conversation in Car",
+        "Soft Speech Lift",
+        "tap controls",
+        "hands-free calling",
+        "telecoil",
+        "tinnitus masker",
+        "8 environment classifications"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Ultra-power BTE for severe-profound loss",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron-moxi-vivante"
+      ]
+    },
+    {
+      "family": "Blu",
+      "model": "Moxi B-R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "Soft Speech Lift",
+        "tap controls",
+        "hands-free calling",
+        "tinnitus masker"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Rechargeable RIC",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
+    },
+    {
+      "family": "Blu",
+      "model": "Moxi B-RT",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "Soft Speech Lift",
+        "tap controls",
+        "hands-free calling",
+        "telecoil",
+        "tinnitus masker"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Rechargeable RIC with telecoil",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
+    },
+    {
+      "family": "Blu",
+      "model": "Moxi B-312",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "Soft Speech Lift",
+        "tap controls",
+        "hands-free calling",
+        "tinnitus masker"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Battery-powered RIC",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
+    },
+    {
+      "family": "Blu",
+      "model": "Stride B-UP",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 504
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "Soft Speech Lift",
+        "tap controls",
+        "hands-free calling",
+        "telecoil",
+        "tinnitus masker"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Ultra-power BTE",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
+    },
+    {
+      "family": "Blu",
+      "model": "Stride B-PR",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "Soft Speech Lift",
+        "tap controls",
+        "hands-free calling",
+        "tinnitus masker"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Rechargeable BTE",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
+    },
+    {
+      "family": "Blu",
+      "model": "Insera B-312",
+      "formFactor": "ITE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "Soft Speech Lift",
+        "tap controls",
+        "hands-free calling",
+        "tinnitus masker"
+      ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Reliable performance."
+      "notes": "Custom ITE with Bluetooth",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
+    },
+    {
+      "family": "Blu",
+      "model": "Insera B-312 NW O",
+      "formFactor": "ITE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "Soft Speech Lift",
+        "tinnitus masker"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom ITE with telecoil",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
+    },
+    {
+      "family": "Blu",
+      "model": "Insera B-10 NW O",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "telecoil": true
+      },
+      "dsp": {
+        "platform": "PRISM"
+      },
+      "features": [
+        "Soft Speech Lift",
+        "tinnitus masker"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom CIC with telecoil",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
+    },
+    {
+      "family": "Discover Next",
+      "model": "Moxi Fit",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "SoundCore"
+      },
+      "features": [
+        "hands-free calling",
+        "tinnitus masker",
+        "7 environment classifications"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Entry-level RIC",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
+    },
+    {
+      "family": "Discover Next",
+      "model": "Moxi Move R",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "SoundCore"
+      },
+      "features": [
+        "hands-free calling",
+        "tinnitus masker",
+        "7 environment classifications"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Rechargeable RIC",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
+    },
+    {
+      "family": "Discover Next",
+      "model": "Moxi Jump RT",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "SoundCore"
+      },
+      "features": [
+        "hands-free calling",
+        "telecoil",
+        "tinnitus masker",
+        "7 environment classifications"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Rechargeable RIC with telecoil",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
+    },
+    {
+      "family": "Discover Next",
+      "model": "Stride PR",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "SoundCore"
+      },
+      "features": [
+        "hands-free calling",
+        "tinnitus masker",
+        "7 environment classifications"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Rechargeable BTE",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
+    },
+    {
+      "family": "Discover Next",
+      "model": "Insera",
+      "formFactor": "Custom",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "Remote Plus",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "SoundCore"
+      },
+      "features": [
+        "hands-free calling",
+        "tinnitus masker",
+        "7 environment classifications"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom IIC/CIC/ITE",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/unitron"
+      ]
     }
   ],
   "compatibility": { "receivers": [], "domes": [], "earhooks": [] }

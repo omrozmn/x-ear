@@ -1,0 +1,2438 @@
+{
+  "brand": "Helix",
+  "specSchemaVersion": "1.0.0",
+  "lastScrapedAt": "2025-11-07",
+  "sourceUrls": [
+    "https://helixhearing.com/"
+  ],
+  "categories": [
+    "RIC",
+    "BTE",
+    "ITC",
+    "CIC",
+    "IIC",
+    "SP",
+    "HP",
+    "Pediatric"
+  ],
+  "models": [
+    {
+      "family": "ALFA W  ŞARZLI (YENİ)",
+      "model": "S-P",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-S-P",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "WIRELESS-STRMNG-49 FRKNS  KANAL-8 PRG-TINNITUS-OTM.ORT.TNM-DNMK VE STTK TINTS-49 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "ALFA W  ŞARZLI (YENİ)",
+      "model": "S-P",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-S-P",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "WIRELESS-STRMNG-36 FRKNS KANAL-6 PRG-TINNITUS-OTM.ORT.TNM-DNMK VE STTK TINTS-24 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "ALFA W  ŞARZLI (YENİ)",
+      "model": "S-P",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-S-P",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "WIRELESS-STRMNG-24 FRKNS  KANAL-4 PRG-TINNITUS-OTM.ORT.TNM- STTK TINTS-16 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "ALFA W  ŞARZLI (YENİ)",
+      "model": "S-P",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-S-P",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": true,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "WIRELESS-16 FRKNS  KANAL-4 PRG-TINNITUS-12 BANT-6 WDRC KNL-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "ALFA W -WIRELESS",
+      "model": "SPn",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-SPn",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "WIRELESS-STRMNG-49 FRKNS  KANAL-8 PRG-TINNITUS-OTM.ORT.TNM-DNMK VE STTK TINTS-49 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "ALFA W -WIRELESS",
+      "model": "SPn",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-SPn",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "WIRELESS-STRMNG-36 FRKNS KANAL-6 PRG-TINNITUS-OTM.ORT.TNM-DNMK VE STTK TINTS-24 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "ALFA W -WIRELESS",
+      "model": "SPn",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-SPn",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "WIRELESS-STRMNG-24 FRKNS  KANAL-4 PRG-TINNITUS-OTM.ORT.TNM- STTK TINTS-16 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "ALFA W -WIRELESS",
+      "model": "SPn",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-SPn",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": true,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "WIRELESS-16 FRKNS  KANAL-4 PRG-TINNITUS-12 BANT-6 WDRC KNL-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "TIE X -WIRELESS",
+      "model": "TIE X 400",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-TIE-X-400",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "WIRELESS-STRMNG-49 FRKNS  KANAL-8 PRG-TINNITUS-OTM.ORT.TNM-DNMK VE STTK TINTS-49 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "TIE X -WIRELESS",
+      "model": "TIE X 300",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-TIE-X-300",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "WIRELESS-STRMNG-36 FRKNS KANAL-6 PRG-TINNITUS-OTM.ORT.TNM-DNMK VE STTK TINTS-24 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "TIE X -WIRELESS",
+      "model": "TIE X 200",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-TIE-X-200",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "WIRELESS-STRMNG-24 FRKNS  KANAL-4 PRG-TINNITUS-OTM.ORT.TNM- STTK TINTS-16 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "TIE X -WIRELESS",
+      "model": "TIE X 100",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-TIE-X-100",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": true,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "WIRELESS-16 FRKNS  KANAL-4 PRG-TINNITUS-12 BANT-6 WDRC KNL-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "TIE",
+      "model": "TIE 400",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-TIE-400",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "49 FRKNS  KANAL-8 PRG-TINNITUS-OTM.ORT.TNM-DNMK VE STTK TINTS-49 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "TIE",
+      "model": "TIE 300",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-TIE-300",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "36 FRKNS KANAL-6 PRG-TINNITUS-OTM.ORT.TNM-DNMK VE STTK TINTS-36 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "TIE",
+      "model": "TIE 200",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-TIE-200",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "24 FRKNS  KANAL-4 PRG-TINNITUS-OTM.ORT.TNM- STTK TINTS-24 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "TIE",
+      "model": "TIE 100",
+      "formFactor": "TIE ",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-TIE-100",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": true,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "16 FRKNS  KANAL-4 PRG-TINNITUS-16 BANT-6 WDRC KNL-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "ALFA3",
+      "model": "SPn",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-SPn",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": true,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "16 WDRC KANAL-16 BANT-6 PRG-TINNITUS-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "ALFA3",
+      "model": "SPn",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": true,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-SPn",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": true,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "12 WDRC KANAL-16 BANT-6 PRG-TINNITUS-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "FORCE",
+      "model": "SP",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": false,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-SP",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "49 FRKNS  KANAL-8 PRG-OTM.ORT.TNM-DNMK VE STTK TINTS-49 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "FORCE",
+      "model": "SP",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": false,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-SP",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "36 FRKNS KANAL-6 PRG--OTM.ORT.TNM-DNMK VE STTK TINTS-24 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "FORCE",
+      "model": "SP",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": false,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-SP",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "24 FRKNS  KANAL-4 PRG-OTM.ORT.TNM- STTK TINTS-16 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "FORCE",
+      "model": "SP",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": false,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-SP",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "16 FRKNS KANAL-4 PRG--12 BANT-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "ROTA 6",
+      "model": "XQ",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": false,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-XQ",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": true,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "6 WDRC KANAL-12 BANT-4 PRG-NANO KAPLAMA",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "TRT",
+      "model": "AI,R-TRT",
+      "formFactor": "TRT",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": false,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-AIR-TRT",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "16 Frekans Kanal-1 Program-Dinamik ve Statik Tinnutus-nano Kaplama",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "TRT",
+      "model": "AI,F-TRT",
+      "formFactor": "TRT",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": false,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-AIF-TRT",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "16 Frekans Kanal-1 Program-Dinamik ve Statik Tinnutus-nano Kaplama",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    },
+    {
+      "family": "TRT",
+      "model": "AI,BOX TRT",
+      "formFactor": "TRT",
+      "battery": {
+        "type": "Zinc Air",
+        "size": null,
+        "hoursTypical": null
+      },
+      "fittingRange": null,
+      "channels": null,
+      "ipRating": null,
+      "releaseYear": null,
+      "features": {
+        "bluetooth": {
+          "profiles": [],
+          "mfi": false,
+          "asha": false,
+          "multipoint": false
+        },
+        "noiseManagement": [],
+        "feedback": null,
+        "telecoil": false,
+        "tinnitus": false,
+        "tapControl": false,
+        "waterResistant": false
+      },
+      "connectivity": {
+        "app": null,
+        "accessories": []
+      },
+      "colors": [],
+      "sku": "HLX-AIBOX-TRT",
+      "sellerSku": null,
+      "barcodes": {
+        "ean": null,
+        "upc": null
+      },
+      "prices": {
+        "priceTier": null
+      },
+      "dsp": {
+        "platform": "Helix",
+        "samplingRateHz": null,
+        "latencyMs": null
+      },
+      "acoustics": {
+        "maxOutputSPL": null,
+        "fullOnGain": null,
+        "receiverOptions": []
+      },
+      "telecare": {
+        "remoteFitting": false,
+        "remoteAdjust": false
+      },
+      "charging": {
+        "caseModel": null,
+        "fullChargeTimeMin": null,
+        "fastChargeMin": null
+      },
+      "compatibility": {
+        "receivers": [],
+        "domes": [],
+        "earhooks": []
+      },
+      "package": {
+        "inBox": []
+      },
+      "regulatory": {
+        "udi": null,
+        "gtin": null,
+        "ce": true,
+        "fda": false,
+        "class": "II"
+      },
+      "hearingLossProfiles": [],
+      "algorithms": {
+        "directionality": null,
+        "windNoise": false,
+        "impulseNoise": false,
+        "ownVoice": false,
+        "musicMode": false
+      },
+      "streaming": {
+        "profiles": [],
+        "binaural": false,
+        "tapControl": false
+      },
+      "notes": "16 Frekans Kanal-1 Program-Dinamik ve Statik Tinnutus-nano Kaplama",
+      "sourceUrls": [
+        "https://helixhearing.com/"
+      ]
+    }
+  ]
+}

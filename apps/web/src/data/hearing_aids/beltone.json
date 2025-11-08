@@ -1,20 +1,20 @@
 {
   "brand": "Beltone",
-  "specSchemaVersion": "1.0",
-  "lastScrapedAt": "2025-11-07T10:00:00Z",
+  "specSchemaVersion": "1.0.0",
+  "lastScrapedAt": "2025-11-07T18:30:00Z",
   "sourceUrls": [
-    "https://www.beltone.com/hearing-aids",
-    "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-imagine"
+    "https://www.hearingtracker.com/hearing-aids/beltone",
+    "https://www.beltone.com/en/hearing-aids"
   ],
   "categories": [],
   "models": [
     {
       "family": "Envision",
-      "model": "RIC",
+      "model": "microRIE",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 30
       },
       "connectivity": {
         "bluetooth": true,
@@ -22,29 +22,32 @@
         "streaming": true
       },
       "dsp": {
-        "platform": "Intelligence Augmented"
+        "platform": "AI DNN"
       },
       "features": [
         "AI",
-        "noise reduction",
-        "speech enhancement",
-        "Auracast"
+        "Deep Neural Processing",
+        "Bluetooth LE Audio",
+        "Auracast",
+        "beamforming directionality",
+        "tap controls",
+        "hands-free calling"
       ],
-      "ipRating": null,
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "World's smallest AI hearing aid, Bluetooth LE Audio, Auracast Assistant",
+      "notes": "Flagship AI hearing aid, dual-chip architecture, trained on 13M speech samples",
       "sourceUrls": [
-        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-envision"
+        "https://www.hearingtracker.com/hearing-aids/beltone-envision"
       ]
     },
     {
       "family": "Envision",
-      "model": "BTE",
-      "formFactor": "BTE",
+      "model": "RIE 312",
+      "formFactor": "RIC",
       "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
+        "type": "Zinc Air",
+        "hoursTypical": 168
       },
       "connectivity": {
         "bluetooth": true,
@@ -52,29 +55,31 @@
         "streaming": true
       },
       "dsp": {
-        "platform": "Intelligence Augmented"
+        "platform": "AI DNN"
       },
       "features": [
         "AI",
-        "noise reduction",
-        "speech enhancement",
-        "Auracast"
+        "Deep Neural Processing",
+        "Bluetooth LE Audio",
+        "Auracast",
+        "beamforming directionality",
+        "telecoil"
       ],
-      "ipRating": null,
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Bluetooth LE Audio, Auracast Assistant",
+      "notes": "Battery-powered version with telecoil",
       "sourceUrls": [
-        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-envision"
+        "https://www.hearingtracker.com/hearing-aids/beltone-envision"
       ]
     },
     {
-      "family": "Boost Max S",
-      "model": "BTE",
-      "formFactor": "BTE",
+      "family": "Envision",
+      "model": "RIE 13",
+      "formFactor": "RIC",
       "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": 28
+        "type": "Zinc Air",
+        "hoursTypical": 312
       },
       "connectivity": {
         "bluetooth": true,
@@ -82,28 +87,31 @@
         "streaming": true
       },
       "dsp": {
-        "platform": "Intelligence Augmented"
+        "platform": "AI DNN"
       },
       "features": [
-        "Clear Focus",
-        "feedback management",
-        "Auracast"
+        "AI",
+        "Deep Neural Processing",
+        "Bluetooth LE Audio",
+        "Auracast",
+        "beamforming directionality",
+        "telecoil"
       ],
-      "ipRating": null,
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Super Power for severe/profound loss, Bluetooth LE Audio",
+      "notes": "Battery-powered version with telecoil",
       "sourceUrls": [
-        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-boost-max-s"
+        "https://www.hearingtracker.com/hearing-aids/beltone-envision"
       ]
     },
     {
       "family": "Commence",
-      "model": "RIC",
+      "model": "microRIE",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 30
       },
       "connectivity": {
         "bluetooth": true,
@@ -111,28 +119,29 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Advanced"
       },
       "features": [
-        "noise reduction",
-        "speech clarity",
-        "Auracast"
+        "Bluetooth LE Audio",
+        "Auracast",
+        "beamforming directionality",
+        "hands-free calling"
       ],
-      "ipRating": null,
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Best-in-class connectivity, Bluetooth LE Audio",
+      "notes": "Essential level with modern connectivity",
       "sourceUrls": [
-        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-commence"
+        "https://www.hearingtracker.com/hearing-aids/beltone-commence"
       ]
     },
     {
       "family": "Commence",
-      "model": "BTE",
-      "formFactor": "BTE",
+      "model": "RIE 312",
+      "formFactor": "RIC",
       "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
+        "type": "Zinc Air",
+        "hoursTypical": 168
       },
       "connectivity": {
         "bluetooth": true,
@@ -140,19 +149,48 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Advanced"
       },
       "features": [
-        "noise reduction",
-        "speech clarity",
-        "Auracast"
+        "Bluetooth LE Audio",
+        "Auracast",
+        "beamforming directionality"
       ],
-      "ipRating": null,
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Best-in-class connectivity, Bluetooth LE Audio",
+      "notes": "Battery-powered essential version",
       "sourceUrls": [
-        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-commence"
+        "https://www.hearingtracker.com/hearing-aids/beltone-commence"
+      ]
+    },
+    {
+      "family": "Commence",
+      "model": "RIE 13",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 312
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Advanced"
+      },
+      "features": [
+        "Bluetooth LE Audio",
+        "Auracast",
+        "beamforming directionality"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Battery-powered essential version",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/beltone-commence"
       ]
     },
     {
@@ -161,7 +199,7 @@
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 30
       },
       "connectivity": {
         "bluetooth": true,
@@ -169,19 +207,80 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Advanced"
       },
       "features": [
-        "noise reduction",
-        "CROS",
-        "Auracast"
+        "Bluetooth LE Audio",
+        "Auracast",
+        "tap controls",
+        "hands-free calling",
+        "CROS transmitter"
       ],
-      "ipRating": null,
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Tiny design, Bluetooth LE Audio",
+      "notes": "25% smaller than previous RIE models",
       "sourceUrls": [
-        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-serene"
+        "https://www.hearingtracker.com/hearing-aids/beltone-serene"
+      ]
+    },
+    {
+      "family": "Serene",
+      "model": "RIE 312",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Advanced"
+      },
+      "features": [
+        "Bluetooth LE Audio",
+        "Auracast",
+        "CROS transmitter"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Battery-powered version",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/beltone-serene"
+      ]
+    },
+    {
+      "family": "Serene",
+      "model": "RIE 13",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 312
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Advanced"
+      },
+      "features": [
+        "Bluetooth LE Audio",
+        "Auracast",
+        "CROS transmitter",
+        "telecoil"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Battery-powered version with telecoil",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/beltone-serene"
       ]
     },
     {
@@ -190,7 +289,7 @@
       "formFactor": "BTE",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 30
       },
       "connectivity": {
         "bluetooth": true,
@@ -198,28 +297,28 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Advanced"
       },
       "features": [
-        "noise reduction",
-        "CROS",
-        "Auracast"
+        "Bluetooth LE Audio",
+        "Auracast",
+        "CROS transmitter"
       ],
-      "ipRating": null,
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Bluetooth LE Audio",
+      "notes": "Behind-the-ear rechargeable",
       "sourceUrls": [
-        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-serene"
+        "https://www.hearingtracker.com/hearing-aids/beltone-serene"
       ]
     },
     {
       "family": "Serene",
-      "model": "ITC",
-      "formFactor": "ITC",
+      "model": "Custom Rechargeable",
+      "formFactor": "Custom",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 30
       },
       "connectivity": {
         "bluetooth": true,
@@ -227,28 +326,54 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Advanced"
       },
       "features": [
-        "noise reduction",
-        "CROS",
+        "Bluetooth LE Audio",
         "Auracast"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom in-the-ear rechargeable",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/beltone-serene"
+      ]
+    },
+    {
+      "family": "Serene",
+      "model": "CIC",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "app": "HearMax",
+        "streaming": false
+      },
+      "dsp": {
+        "platform": "Advanced"
+      },
+      "features": [
+        "discreet design"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Custom in-the-ear, Bluetooth LE Audio",
+      "notes": "Completely-in-canal, non-wireless",
       "sourceUrls": [
-        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-serene"
+        "https://www.hearingtracker.com/hearing-aids/beltone-serene"
       ]
     },
     {
       "family": "Achieve",
-      "model": "RIC",
+      "model": "miniRIE",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 30
       },
       "connectivity": {
         "bluetooth": true,
@@ -256,27 +381,28 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "360 Awareness"
       },
       "features": [
-        "noise reduction",
-        "speech clarity"
+        "surround-sound technology",
+        "150% speech improvement in noise",
+        "hands-free calling"
       ],
-      "ipRating": null,
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Clarity in noisy environments",
+      "notes": "CES 2023 Innovation Award winner",
       "sourceUrls": [
-        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-achieve"
+        "https://www.hearingtracker.com/hearing-aids/beltone-achieve"
       ]
     },
     {
-      "family": "Amaze",
-      "model": "RIC",
+      "family": "Achieve",
+      "model": "microRIE",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 30
       },
       "connectivity": {
         "bluetooth": true,
@@ -284,18 +410,130 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "360 Awareness"
       },
       "features": [
-        "noise reduction",
-        "speech clarity"
+        "surround-sound technology",
+        "150% speech improvement in noise",
+        "hands-free calling"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Smallest rechargeable RIE",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/beltone-achieve"
+      ]
+    },
+    {
+      "family": "Achieve",
+      "model": "RIE",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "360 Awareness"
+      },
+      "features": [
+        "surround-sound technology",
+        "150% speech improvement in noise"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Battery-powered version",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/beltone-achieve"
+      ]
+    },
+    {
+      "family": "Achieve",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 30
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "360 Awareness"
+      },
+      "features": [
+        "surround-sound technology",
+        "150% speech improvement in noise"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Behind-the-ear rechargeable",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/beltone-achieve"
+      ]
+    },
+    {
+      "family": "Achieve",
+      "model": "Custom ITE",
+      "formFactor": "ITE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 30
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "360 Awareness"
+      },
+      "features": [
+        "surround-sound technology",
+        "150% speech improvement in noise"
+      ],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom in-the-ear rechargeable",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/beltone-achieve"
+      ]
+    },
+    {
+      "family": "Achieve",
+      "model": "CIC",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "app": "HearMax",
+        "streaming": false
+      },
+      "dsp": {
+        "platform": "360 Awareness"
+      },
+      "features": [
+        "surround-sound technology"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Rechargeable battery lasts longer than 24 hours",
+      "notes": "Completely-in-canal, size 10 battery",
       "sourceUrls": [
-        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-amaze"
+        "https://www.hearingtracker.com/hearing-aids/beltone-achieve"
       ]
     },
     {
@@ -304,7 +542,7 @@
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 30
       },
       "connectivity": {
         "bluetooth": true,
@@ -312,18 +550,101 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Advanced"
       },
       "features": [
-        "connectivity",
-        "streaming"
+        "hands-free calling",
+        "at-home hearing care"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Various colors, rechargeability",
+      "notes": "Budget-friendly with advanced connectivity",
       "sourceUrls": [
-        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-rely"
+        "https://www.hearingtracker.com/hearing-aids/beltone-rely"
+      ]
+    },
+    {
+      "family": "Rely",
+      "model": "BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 30
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Advanced"
+      },
+      "features": [
+        "hands-free calling",
+        "at-home hearing care"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Behind-the-ear rechargeable",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/beltone-rely"
+      ]
+    },
+    {
+      "family": "Rely",
+      "model": "Custom ITE",
+      "formFactor": "ITE",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 30
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": "HearMax",
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Advanced"
+      },
+      "features": [
+        "hands-free calling",
+        "at-home hearing care"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom in-the-ear rechargeable",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/beltone-rely"
+      ]
+    },
+    {
+      "family": "Rely",
+      "model": "CIC",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "app": "HearMax",
+        "streaming": false
+      },
+      "dsp": {
+        "platform": "Advanced"
+      },
+      "features": [
+        "discreet design"
+      ],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Completely-in-canal, size 10 battery",
+      "sourceUrls": [
+        "https://www.hearingtracker.com/hearing-aids/beltone-rely"
       ]
     },
     {
@@ -331,8 +652,8 @@
       "model": "BTE",
       "formFactor": "BTE",
       "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
+        "type": "Zinc Air",
+        "hoursTypical": 504
       },
       "connectivity": {
         "bluetooth": true,
@@ -340,18 +661,18 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Advanced"
       },
       "features": [
-        "sound quality",
-        "speech clarity"
+        "severe-to-profound loss support",
+        "improved chipset"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Comprehensive solution, streaming to both ears",
+      "notes": "20% longer battery life than previous generation",
       "sourceUrls": [
-        "https://www.beltone.com/en/hearing-aids/beltone-hearing-solutions/beltone-boost-ultra"
+        "https://www.hearingtracker.com/hearing-aids/beltone-boost-ultra"
       ]
     }
   ],

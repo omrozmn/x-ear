@@ -27,4 +27,24 @@ export const apiClient = {
     // In real app wrap orval client calls here
     return fetchJson<InventoryItem[]>('/inventory');
   },
+  
+  async get<T>(path: string): Promise<{ data: T }> {
+    const data = await fetchJson<T>(path);
+    return { data };
+  },
+  
+  async post<T>(path: string, body: any): Promise<{ data: T }> {
+    const data = await fetchJson<T>(path, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    return { data };
+  },
+  
+  async delete(path: string): Promise<{ data: any }> {
+    const data = await fetchJson<any>(path, {
+      method: 'DELETE',
+    });
+    return { data };
+  },
 };

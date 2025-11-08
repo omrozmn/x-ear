@@ -123,7 +123,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     if (!newSupplier) return;
 
     try {
-      await api.post('/api/suppliers', { name: newSupplier });
+      await api.post('/api/suppliers', { company_name: newSupplier });
       console.log('New supplier created:', newSupplier);
     } catch (error: any) {
       if (error.response?.status === 409) {

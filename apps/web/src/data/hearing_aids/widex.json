@@ -7,27 +7,95 @@
   "models": [
     {
       "family": "Allure",
-      "model": "RIC",
+      "model": "RIC RD",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 25
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "PureSound"
+        "platform": "PureSound with ZeroDelay"
       },
+      "features": ["AI personalization", "Speech Enhancer Pro", "adaptive feedback suppression", "SoundRelax"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Flagship with W1 chip, 4x processing power, LE Audio, Auracast-ready."
+    },
+    {
+      "family": "MOMENT SmartRIC",
+      "model": "RD",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 37
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PureSound with ZeroDelay"
+      },
+      "features": ["L-shaped design", "dual-directional microphones", "SoundSense Learn", "SoundRelax"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Unique L-shaped RIC for better hearing in noise."
+    },
+    {
+      "family": "MOMENT SHEER",
+      "model": "sRIC RD",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PureSound with ZeroDelay"
+      },
+      "features": ["SoundSense Learn", "Made by You", "Made for You", "SoundRelax", "tinnitus therapy"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Smallest rechargeable RIC, enhanced AI personalization."
+    },
+    {
+      "family": "MOMENT",
+      "model": "RIC 312 D",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PureSound with ZeroDelay"
+      },
+      "features": ["SoundSense Learn", "Made for iPhone", "Android ASHA"],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Naturally clear and precise sound."
+      "notes": "Broad style options, rechargeable and disposable battery versions."
     },
     {
-      "family": "Allure",
-      "model": "BTE",
+      "family": "MOMENT",
+      "model": "BTE 13 D",
       "formFactor": "BTE",
       "battery": {
         "type": "Zinc Air",
@@ -35,79 +103,131 @@
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "PureSound"
+        "platform": "PureSound with ZeroDelay"
       },
+      "features": ["SoundSense Learn", "Made for iPhone", "Android ASHA"],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Naturally clear and precise sound."
+      "notes": "Behind-the-ear for severe hearing loss."
     },
     {
-      "family": "Allure",
-      "model": "ITE",
+      "family": "MOMENT",
+      "model": "mRIC R D",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 24
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "PureSound with ZeroDelay"
+      },
+      "features": ["SoundSense Learn", "Made for iPhone", "Android ASHA"],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Rechargeable mini RIC."
+    },
+    {
+      "family": "MOMENT",
+      "model": "CIC Micro",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "app": false,
+        "streaming": false
+      },
+      "dsp": {
+        "platform": "PureSound with ZeroDelay"
+      },
+      "features": ["SoundSense Learn"],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom in-the-canal, small size."
+    },
+    {
+      "family": "MOMENT",
+      "model": "ITE XP",
       "formFactor": "ITE",
       "battery": {
-        "type": null,
+        "type": "Zinc Air",
         "hoursTypical": null
       },
       "connectivity": {
-        "bluetooth": true,
-        "telecoil": false
+        "bluetooth": false,
+        "app": false,
+        "streaming": false
       },
       "dsp": {
-        "platform": "PureSound"
+        "platform": "PureSound with ZeroDelay"
       },
+      "features": ["SoundSense Learn"],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Naturally clear and precise sound."
+      "notes": "In-the-ear custom."
     },
     {
-      "family": "SmartRIC",
-      "model": "RIC",
+      "family": "EVOKE",
+      "model": "Fusion 2",
       "formFactor": "RIC",
       "battery": {
-        "type": "Rechargeable",
+        "type": "Zinc Air",
         "hoursTypical": null
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "PureSound"
+        "platform": "SoundSense Learn"
       },
+      "features": ["Machine learning", "A/B comparisons", "Made for iPhone"],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Natural hearing experience."
+      "notes": "Previous generation with AI personalization."
     },
     {
-      "family": "Moment Sheer",
-      "model": "RIC",
+      "family": "EVOKE",
+      "model": "RIC 10",
       "formFactor": "RIC",
       "battery": {
-        "type": "Rechargeable",
+        "type": "Zinc Air",
         "hoursTypical": null
       },
       "connectivity": {
-        "bluetooth": true,
-        "telecoil": false
+        "bluetooth": false,
+        "app": false,
+        "streaming": false
       },
       "dsp": {
-        "platform": "PureSound"
+        "platform": "SoundSense Learn"
       },
+      "features": ["Machine learning"],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Most natural hearing experience."
+      "notes": "Small RIC without direct streaming."
     },
     {
-      "family": "Moment Sheer",
-      "model": "BTE",
+      "family": "EVOKE",
+      "model": "BTE 13 D",
       "formFactor": "BTE",
       "battery": {
         "type": "Zinc Air",
@@ -115,95 +235,171 @@
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "PureSound"
+        "platform": "SoundSense Learn"
       },
+      "features": ["Machine learning", "Made for iPhone", "Android ASHA"],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Most natural hearing experience."
+      "notes": "BTE with direct streaming."
     },
     {
-      "family": "Moment Sheer",
-      "model": "ITE",
-      "formFactor": "ITE",
-      "battery": {
-        "type": null,
-        "hoursTypical": null
-      },
-      "connectivity": {
-        "bluetooth": true,
-        "telecoil": false
-      },
-      "dsp": {
-        "platform": "PureSound"
-      },
-      "ipRating": null,
-      "channels": null,
-      "gtin": null,
-      "notes": "Most natural hearing experience."
-    },
-    {
-      "family": "Moment",
-      "model": "RIC",
-      "formFactor": "RIC",
-      "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
-      },
-      "connectivity": {
-        "bluetooth": true,
-        "telecoil": false
-      },
-      "dsp": {
-        "platform": "PureSound"
-      },
-      "ipRating": null,
-      "channels": null,
-      "gtin": null,
-      "notes": "Natural hearing experience."
-    },
-    {
-      "family": "Moment",
-      "model": "BTE",
+      "family": "EVOKE",
+      "model": "Fashion BTE",
       "formFactor": "BTE",
       "battery": {
         "type": "Zinc Air",
         "hoursTypical": null
       },
       "connectivity": {
-        "bluetooth": true,
-        "telecoil": false
+        "bluetooth": false,
+        "app": false,
+        "streaming": false
       },
       "dsp": {
-        "platform": "PureSound"
+        "platform": "SoundSense Learn"
       },
+      "features": ["Machine learning"],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Natural hearing experience."
+      "notes": "Fashion BTE with size 312 battery."
     },
     {
-      "family": "Moment",
+      "family": "EVOKE",
+      "model": "Fashion Mini BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "app": false,
+        "streaming": false
+      },
+      "dsp": {
+        "platform": "SoundSense Learn"
+      },
+      "features": ["Machine learning"],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Mini BTE with size 312 battery."
+    },
+    {
+      "family": "EVOKE",
+      "model": "Fashion Power BTE",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "app": false,
+        "streaming": false
+      },
+      "dsp": {
+        "platform": "SoundSense Learn"
+      },
+      "features": ["Machine learning"],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Power BTE for severe loss, size 13 battery."
+    },
+    {
+      "family": "EVOKE",
+      "model": "CIC",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "app": false,
+        "streaming": false
+      },
+      "dsp": {
+        "platform": "SoundSense Learn"
+      },
+      "features": ["Machine learning"],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom CIC."
+    },
+    {
+      "family": "EVOKE",
       "model": "ITE",
       "formFactor": "ITE",
       "battery": {
-        "type": null,
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "app": false,
+        "streaming": false
+      },
+      "dsp": {
+        "platform": "SoundSense Learn"
+      },
+      "features": ["Machine learning"],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom ITE."
+    },
+    {
+      "family": "BEYOND",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
         "hoursTypical": null
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "PureSound"
+        "platform": "SoundSense Technology"
       },
+      "features": ["Made for iPhone", "MFi 2.4 GHz"],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Natural hearing experience."
+      "notes": "Legacy model, MFi compatible."
+    },
+    {
+      "family": "UNIQUE",
+      "model": "RIC",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": null
+      },
+      "connectivity": {
+        "bluetooth": false,
+        "app": false,
+        "streaming": false
+      },
+      "dsp": {
+        "platform": "Sound Class Technology"
+      },
+      "features": ["Wind Noise Attenuation", "Soft Level Noise Reduction"],
+      "ipRating": null,
+      "channels": null,
+      "gtin": null,
+      "notes": "Legacy model with 9 sound classes."
     }
   ],
   "compatibility": { "receivers": [], "domes": [], "earhooks": [] }

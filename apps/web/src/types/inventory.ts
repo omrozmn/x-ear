@@ -35,7 +35,9 @@ export interface InventoryItem {
   category: InventoryCategory;
   type?: InventoryType;
   barcode?: string;
+  stockCode?: string;
   supplier?: string;
+  unit?: string;
   description?: string;
   
   // Stock tracking
@@ -222,7 +224,9 @@ export interface InventoryFormData {
   category: InventoryCategory;
   type?: InventoryType;
   barcode?: string;
+  stockCode?: string;
   supplier?: string;
+  unit?: string;
   description?: string;
   availableInventory: number;
   reorderLevel: number;
@@ -253,10 +257,13 @@ export interface CreateInventoryData {
   model?: string;
   type?: InventoryType;
   barcode?: string;
+  stockCode?: string;
   supplier?: string;
+  unit?: string;
   description?: string;
   cost?: number;
   features?: string[];
+  availableSerials?: string[];
   ear?: EarDirection;
   sgkCode?: string;
   isMinistryTracked?: boolean;

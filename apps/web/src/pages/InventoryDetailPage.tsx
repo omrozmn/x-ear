@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import axios from 'axios';
-import { ArrowLeft, Edit, X, Trash2, Package, Save, Shield, Tag } from 'lucide-react';
-import { Button, Input, Select, Textarea, Card } from '@x-ear/ui-web';
+import { ArrowLeft, Edit, X, Trash2, Package, Save, Shield, Tag, AlertTriangle } from 'lucide-react';
+import { Button, Input, Select, Textarea, Card, Modal } from '@x-ear/ui-web';
 import { InventoryItem } from '../types/inventory';
 import { CategoryAutocomplete } from './inventory/components/CategoryAutocomplete';
 import { BrandAutocomplete } from './inventory/components/BrandAutocomplete';
@@ -28,9 +28,14 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
   
   // KDV and calculated fields
   const [kdvRate, setKdvRate] = useState<number>(20);
+  const [isPriceKdvIncluded, setIsPriceKdvIncluded] = useState<boolean>(false);
+  const [isCostKdvIncluded, setIsCostKdvIncluded] = useState<boolean>(false);
   
   // Serial modal state
   const [isSerialModalOpen, setIsSerialModalOpen] = useState(false);
+  
+  // Delete confirmation modal state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   
   // Calculated values - use editedItem.price in edit mode for real-time updates
   const currentPrice = isEditMode && editedItem.price !== undefined ? editedItem.price : (item?.price || 0);
@@ -97,17 +102,20 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
     if (!item) return;
     
-    if (window.confirm(`${item.name} ürününü silmek istediğinizden emin misiniz?`)) {
-      try {
-        await api.delete(`/api/inventory/${id}`);
-        navigate({ to: '/inventory' });
-      } catch (err) {
-        console.error('Delete failed:', err);
-        alert('Silme işlemi başarısız oldu');
-      }
+    try {
+      await api.delete(`/api/inventory/${id}`);
+      setIsDeleteModalOpen(false);
+      navigate({ to: '/inventory' });
+    } catch (err) {
+      console.error('Delete failed:', err);
+      alert('Silme işlemi başarısız oldu');
     }
   };
 
@@ -354,36 +362,88 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Barkod
-                </label>
-                {isEditMode ? (
-                  <Input
-                    value={editedItem.barcode || ''}
-                    onChange={(e) => setEditedItem({ ...editedItem, barcode: e.target.value })}
-                    fullWidth
-                  />
-                ) : (
-                  <p className="text-gray-900 dark:text-white font-mono">{item.barcode || '-'}</p>
-                )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Barkod
+                  </label>
+                  {isEditMode ? (
+                    <Input
+                      value={editedItem.barcode || ''}
+                      onChange={(e) => setEditedItem({ ...editedItem, barcode: e.target.value })}
+                      fullWidth
+                    />
+                  ) : (
+                    <p className="text-gray-900 dark:text-white font-mono">{item.barcode || '-'}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Stok Kodu
+                  </label>
+                  {isEditMode ? (
+                    <Input
+                      value={editedItem.stockCode || ''}
+                      onChange={(e) => setEditedItem({ ...editedItem, stockCode: e.target.value })}
+                      fullWidth
+                    />
+                  ) : (
+                    <p className="text-gray-900 dark:text-white font-mono">{item.stockCode || '-'}</p>
+                  )}
+                </div>
               </div>
 
-              <div>
-                {isEditMode ? (
-                  <SupplierAutocomplete
-                    value={editedItem.supplier || ''}
-                    onChange={(value) => setEditedItem({ ...editedItem, supplier: value })}
-                    label="Tedarikçi"
-                  />
-                ) : (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Tedarikçi
-                    </label>
-                    <p className="text-gray-900 dark:text-white">{item.supplier || '-'}</p>
-                  </div>
-                )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  {isEditMode ? (
+                    <SupplierAutocomplete
+                      value={editedItem.supplier || ''}
+                      onChange={(value) => setEditedItem({ ...editedItem, supplier: value })}
+                      label="Tedarikçi"
+                    />
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Tedarikçi
+                      </label>
+                      <p className="text-gray-900 dark:text-white">{item.supplier || '-'}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Birim
+                  </label>
+                  {isEditMode ? (
+                    <Select
+                      value={editedItem.unit || 'adet'}
+                      onChange={(e) => setEditedItem({ ...editedItem, unit: e.target.value })}
+                      options={[
+                        { value: 'adet', label: 'Adet' },
+                        { value: 'kutu', label: 'Kutu' },
+                        { value: 'paket', label: 'Paket' },
+                        { value: 'set', label: 'Set' },
+                        { value: 'metre', label: 'Metre' },
+                        { value: 'santimetre', label: 'Santimetre' },
+                        { value: 'litre', label: 'Litre' },
+                        { value: 'mililitre', label: 'Mililitre' },
+                        { value: 'kilogram', label: 'Kilogram' },
+                        { value: 'gram', label: 'Gram' },
+                        { value: 'dakika', label: 'Dakika' },
+                        { value: 'saat', label: 'Saat' },
+                        { value: 'gün', label: 'Gün' },
+                        { value: 'ay', label: 'Ay' },
+                        { value: 'yıl', label: 'Yıl' },
+                        { value: 'çift', label: 'Çift' },
+                      ]}
+                      fullWidth
+                    />
+                  ) : (
+                    <p className="text-gray-900 dark:text-white capitalize">{item.unit || 'adet'}</p>
+                  )}
+                </div>
               </div>
 
               {item.description && (
@@ -501,27 +561,119 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Birim Fiyat (KDV Hariç)
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Satış Fiyatı
+                    </label>
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isPriceKdvIncluded}
+                        onChange={(e) => setIsPriceKdvIncluded(e.target.checked)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                      />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">KDV Dahil</span>
+                    </label>
+                  </div>
                   {isEditMode ? (
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={editedItem.price || ''}
-                      onChange={(e) => setEditedItem({ ...editedItem, price: parseFloat(e.target.value) })}
-                      fullWidth
-                    />
+                    <>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={editedItem.price || ''}
+                        onChange={(e) => setEditedItem({ ...editedItem, price: parseFloat(e.target.value) })}
+                        fullWidth
+                      />
+                      {isPriceKdvIncluded ? (
+                        editedItem.price && editedItem.price > 0 && (
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            KDV Hariç: ₺{(editedItem.price / (1 + kdvRate / 100)).toFixed(2)}
+                          </p>
+                        )
+                      ) : (
+                        editedItem.price && editedItem.price > 0 && (
+                          <p className="mt-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
+                            KDV Dahil Toplam: ₺{(editedItem.price * (1 + kdvRate / 100)).toFixed(2)}
+                          </p>
+                        )
+                      )}
+                    </>
                   ) : (
-                    <p className="text-gray-900 dark:text-white">₺{item.price.toFixed(2)}</p>
+                    <>
+                      <p className="text-gray-900 dark:text-white">₺{item.price.toFixed(2)}</p>
+                      {isPriceKdvIncluded ? (
+                        item.price > 0 && (
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            KDV Hariç: ₺{(item.price / (1 + kdvRate / 100)).toFixed(2)}
+                          </p>
+                        )
+                      ) : (
+                        item.price > 0 && (
+                          <p className="mt-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
+                            KDV Dahil Toplam: ₺{(item.price * (1 + kdvRate / 100)).toFixed(2)}
+                          </p>
+                        )
+                      )}
+                    </>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Maliyet
-                  </label>
-                  <p className="text-gray-900 dark:text-white">₺{item.cost?.toFixed(2) || '0.00'}</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Maliyet
+                    </label>
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isCostKdvIncluded}
+                        onChange={(e) => setIsCostKdvIncluded(e.target.checked)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                      />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">KDV Dahil</span>
+                    </label>
+                  </div>
+                  {isEditMode ? (
+                    <>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={editedItem.cost || ''}
+                        onChange={(e) => setEditedItem({ ...editedItem, cost: parseFloat(e.target.value) || 0 })}
+                        fullWidth
+                      />
+                      {isCostKdvIncluded ? (
+                        editedItem.cost && editedItem.cost > 0 && (
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            KDV Hariç: ₺{(editedItem.cost / (1 + kdvRate / 100)).toFixed(2)}
+                          </p>
+                        )
+                      ) : (
+                        editedItem.cost && editedItem.cost > 0 && (
+                          <p className="mt-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
+                            KDV Dahil Toplam: ₺{(editedItem.cost * (1 + kdvRate / 100)).toFixed(2)}
+                          </p>
+                        )
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-gray-900 dark:text-white">₺{item.cost?.toFixed(2) || '0.00'}</p>
+                      {isCostKdvIncluded ? (
+                        item.cost && item.cost > 0 && (
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            KDV Hariç: ₺{(item.cost / (1 + kdvRate / 100)).toFixed(2)}
+                          </p>
+                        )
+                      ) : (
+                        item.cost && item.cost > 0 && (
+                          <p className="mt-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
+                            KDV Dahil Toplam: ₺{(item.cost * (1 + kdvRate / 100)).toFixed(2)}
+                          </p>
+                        )
+                      )}
+                    </>
+                  )}
                   {item.cost && item.cost > 0 && (
                     <p className="text-sm text-green-600 dark:text-green-400 mt-1">
                       Kar Marjı: %{profitMargin.toFixed(1)}
@@ -604,9 +756,45 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         onClose={() => setIsSerialModalOpen(false)}
         productName={item.name}
         availableCount={item.availableInventory}
-        existingSerials={item.features || []}
+        existingSerials={item.availableSerials || []}
         onSave={handleSaveSerials}
       />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Ürünü Sil"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+              <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Ürünü silmek istediğinizden emin misiniz?
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                <span className="font-semibold">{item.name}</span> ürününü silmek üzeresiniz.
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Bu işlem geri alınamaz. Ürünle ilgili tüm veriler kalıcı olarak silinecektir.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-end pt-4">
+            <Button
+              variant="danger"
+              onClick={confirmDelete}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Ürünü Sil
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

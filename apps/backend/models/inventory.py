@@ -9,6 +9,45 @@ def now_utc():
     """Return current UTC timestamp"""
     return datetime.now(timezone.utc)
 
+# Unit types for inventory items
+UNIT_TYPES = [
+    # Quantity units
+    'adet',  # piece
+    'kutu',  # box
+    'paket',  # package
+    'set',  # set
+    
+    # Length units
+    'metre',  # meter
+    'santimetre',  # centimeter
+    'milimetre',  # millimeter
+    'kilometre',  # kilometer
+    
+    # Volume units
+    'litre',  # liter
+    'mililitre',  # milliliter
+    
+    # Weight units
+    'kilogram',  # kilogram
+    'gram',  # gram
+    'ton',  # ton
+    
+    # Time units
+    'saniye',  # second
+    'dakika',  # minute
+    'saat',  # hour
+    'gün',  # day
+    'hafta',  # week
+    'ay',  # month
+    'yıl',  # year
+    
+    # Area units
+    'metrekare',  # square meter
+    
+    # Other
+    'çift',  # pair
+]
+
 
 class Inventory(db.Model):
     """
@@ -24,7 +63,9 @@ class Inventory(db.Model):
     model = db.Column(db.String(100))
     category = db.Column(db.String(50), nullable=False)  # hearing_aid, aksesuar, pil, bakim
     barcode = db.Column(db.String(100), unique=True, nullable=True)
+    stock_code = db.Column(db.String(100), unique=True, nullable=True)  # Stock/SKU code
     supplier = db.Column(db.String(200))
+    unit = db.Column(db.String(50), default='adet')  # Unit type (adet, metre, litre, etc.)
     description = db.Column(db.Text)
     
     # Inventory tracking
@@ -63,7 +104,9 @@ class Inventory(db.Model):
             'model': self.model,
             'category': self.category,
             'barcode': self.barcode,
+            'stockCode': self.stock_code,
             'supplier': self.supplier,
+            'unit': self.unit,
             'description': self.description,
             'availableInventory': self.available_inventory,
             'totalInventory': self.total_inventory,
@@ -95,7 +138,9 @@ class Inventory(db.Model):
         inventory.model = data.get('model', '')
         inventory.category = data.get('category', 'hearing_aid')
         inventory.barcode = data.get('barcode')
+        inventory.stock_code = data.get('stockCode')
         inventory.supplier = data.get('supplier', '')
+        inventory.unit = data.get('unit', 'adet')
         inventory.description = data.get('description', '')
         
         # Inventory levels - support both new and legacy field names

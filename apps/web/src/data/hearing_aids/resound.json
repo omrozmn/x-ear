@@ -7,163 +7,377 @@
   "models": [
     {
       "family": "Vivia",
-      "model": "RIC",
+      "model": "microRIE",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 30
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "M&RIE"
+        "platform": "360 chip with AI DNN"
       },
-      "ipRating": null,
+      "features": ["Intelligent Focus", "Auracast-ready", "M&RIE", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Advanced features for everyday hearing."
+      "notes": "Flagship with AI for 64% better speech in noise."
     },
     {
-      "family": "Enzo IA",
-      "model": "RIC",
+      "family": "Vivia",
+      "model": "RIE 312",
       "formFactor": "RIC",
       "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
+        "type": "Zinc Air",
+        "hoursTypical": 168
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "M&RIE"
+        "platform": "360 chip with AI DNN"
       },
-      "ipRating": null,
+      "features": ["Intelligent Focus", "Auracast-ready", "M&RIE", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Intelligent adaptation."
+      "notes": "Disposable battery version."
     },
     {
-      "family": "Savi",
-      "model": "RIC",
+      "family": "Vivia",
+      "model": "RIE 13",
       "formFactor": "RIC",
       "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
+        "type": "Zinc Air",
+        "hoursTypical": 336
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "M&RIE"
+        "platform": "360 chip with AI DNN"
       },
-      "ipRating": null,
+      "features": ["Intelligent Focus", "Auracast-ready", "M&RIE", "telecoil", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Saves hearing in challenging environments."
+      "notes": "With telecoil for hearing loops."
+    },
+    {
+      "family": "Vivia",
+      "model": "microRIE CROS",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 30
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "360 chip with AI DNN"
+      },
+      "features": ["Intelligent Focus", "Auracast-ready", "CROS-compatible", "tinnitus management"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "For single-sided deafness."
     },
     {
       "family": "Nexia",
-      "model": "RIC",
+      "model": "microRIE",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 30
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "M&RIE"
+        "platform": "360 chip"
       },
-      "ipRating": null,
+      "features": ["360 All-Around Directionality", "Auracast-ready", "M&RIE", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Next generation hearing."
+      "notes": "Former flagship, first with Auracast."
     },
     {
-      "family": "OMNIA",
-      "model": "RIC",
-      "formFactor": "RIC",
-      "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
-      },
-      "connectivity": {
-        "bluetooth": true,
-        "telecoil": false
-      },
-      "dsp": {
-        "platform": "M&RIE"
-      },
-      "ipRating": null,
-      "channels": null,
-      "gtin": null,
-      "notes": "Omni-directional hearing."
-    },
-    {
-      "family": "Key",
-      "model": "RIC",
-      "formFactor": "RIC",
-      "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
-      },
-      "connectivity": {
-        "bluetooth": true,
-        "telecoil": false
-      },
-      "dsp": {
-        "platform": "M&RIE"
-      },
-      "ipRating": null,
-      "channels": null,
-      "gtin": null,
-      "notes": "Key to better hearing."
-    },
-    {
-      "family": "LiNX Quattro",
-      "model": "RIC",
+      "family": "Nexia",
+      "model": "RIE 312",
       "formFactor": "RIC",
       "battery": {
         "type": "Zinc Air",
-        "hoursTypical": null
+        "hoursTypical": 168
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "M&RIE"
+        "platform": "360 chip"
       },
-      "ipRating": null,
+      "features": ["360 All-Around Directionality", "Auracast-ready", "M&RIE", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Connected hearing."
+      "notes": "Disposable battery version."
+    },
+    {
+      "family": "Nexia",
+      "model": "RIE 13",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 336
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "360 chip"
+      },
+      "features": ["360 All-Around Directionality", "Auracast-ready", "M&RIE", "telecoil", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "With telecoil."
+    },
+    {
+      "family": "Nexia",
+      "model": "BTE Power",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "360 chip"
+      },
+      "features": ["360 All-Around Directionality", "Auracast-ready", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Power BTE for severe loss."
+    },
+    {
+      "family": "Nexia",
+      "model": "BTE Ultra Power",
+      "formFactor": "BTE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "360 chip"
+      },
+      "features": ["360 All-Around Directionality", "Auracast-ready", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Ultra power for profound loss."
+    },
+    {
+      "family": "Nexia",
+      "model": "CIC",
+      "formFactor": "CIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "360 chip"
+      },
+      "features": ["360 All-Around Directionality", "Auracast-ready", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom CIC."
+    },
+    {
+      "family": "Nexia",
+      "model": "ITC",
+      "formFactor": "ITC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "360 chip"
+      },
+      "features": ["360 All-Around Directionality", "Auracast-ready", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom ITC."
+    },
+    {
+      "family": "Nexia",
+      "model": "ITE",
+      "formFactor": "ITE",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "360 chip"
+      },
+      "features": ["360 All-Around Directionality", "Auracast-ready", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Custom ITE."
+    },
+    {
+      "family": "Savi",
+      "model": "61",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 30
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "360 chip"
+      },
+      "features": ["360 All-Around Directionality", "Auracast-ready", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Essential line with Auracast."
+    },
+    {
+      "family": "Savi",
+      "model": "62",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "360 chip"
+      },
+      "features": ["360 All-Around Directionality", "Auracast-ready", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Disposable battery version."
+    },
+    {
+      "family": "Savi",
+      "model": "microRIE",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Rechargeable",
+        "hoursTypical": 30
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "360 chip"
+      },
+      "features": ["360 All-Around Directionality", "Auracast-ready", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP68",
+      "channels": null,
+      "gtin": null,
+      "notes": "Small rechargeable RIC."
     },
     {
       "family": "ENZO Q",
-      "model": "RIC",
-      "formFactor": "RIC",
+      "model": "BTE 98",
+      "formFactor": "BTE",
       "battery": {
         "type": "Zinc Air",
-        "hoursTypical": null
+        "hoursTypical": 504
       },
       "connectivity": {
         "bluetooth": true,
-        "telecoil": false
+        "app": true,
+        "streaming": true
       },
       "dsp": {
-        "platform": "M&RIE"
+        "platform": "Binaural Directionality III"
       },
-      "ipRating": null,
+      "features": ["High amplification", "feedback cancellation", "tinnitus management"],
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "High performance."
+      "notes": "Power BTE for severe-to-profound loss."
+    },
+    {
+      "family": "Key",
+      "model": "RIE 62",
+      "formFactor": "RIC",
+      "battery": {
+        "type": "Zinc Air",
+        "hoursTypical": 168
+      },
+      "connectivity": {
+        "bluetooth": true,
+        "app": true,
+        "streaming": true
+      },
+      "dsp": {
+        "platform": "Essential processing"
+      },
+      "features": ["Basic noise reduction", "Check My Fit", "tinnitus management"],
+      "ipRating": "IP58",
+      "channels": null,
+      "gtin": null,
+      "notes": "Budget option with Bluetooth in higher levels."
     }
   ],
   "compatibility": { "receivers": [], "domes": [], "earhooks": [] }

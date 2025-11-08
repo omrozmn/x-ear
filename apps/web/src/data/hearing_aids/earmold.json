@@ -1,0 +1,392 @@
+{
+  "specSchemaVersion": "1.0.0",
+  "lastUpdated": "2025-11-07",
+  "moldTypes": [
+    {
+      "id": "full_shell",
+      "label": "Full Shell (Full Concha)",
+      "description": "Konkanın tamamını dolduran, maksimum stabilite ve sızdırmazlık sağlayan kalıp.",
+      "occlusionLevel": "closed",
+      "retentionLevel": "high"
+    },
+    {
+      "id": "half_shell",
+      "label": "Half Shell",
+      "description": "Konkanın alt yarısını dolduran, daha kozmetik ama iyi stabilite sağlayan kalıp.",
+      "occlusionLevel": "semi_open",
+      "retentionLevel": "medium"
+    },
+    {
+      "id": "skeleton",
+      "label": "Skeleton",
+      "description": "Konka içinde halka şeklinde çerçeve, ortası boş; kozmetik + iyi tutuş.",
+      "occlusionLevel": "semi_open",
+      "retentionLevel": "medium_high"
+    },
+    {
+      "id": "semi_skeleton",
+      "label": "Semi Skeleton",
+      "description": "İskelet kalıbın arka/üst kısmı azaltılmış, daha açık ama tutucu yapı.",
+      "occlusionLevel": "semi_open",
+      "retentionLevel": "medium"
+    },
+    {
+      "id": "canal",
+      "label": "Canal Mold",
+      "description": "Sadece kulak kanalını dolduran, konkada minimal görünen kalıp.",
+      "occlusionLevel": "semi_open",
+      "retentionLevel": "low_medium"
+    },
+    {
+      "id": "canal_lock",
+      "label": "Canal Lock",
+      "description": "Kanal kalıba eklenen küçük kilit uzantısı; düşmeyi ve dönmeyi engeller.",
+      "occlusionLevel": "semi_open",
+      "retentionLevel": "medium_high"
+    },
+    {
+      "id": "open_mold",
+      "label": "Open / Non-Occluding",
+      "description": "Kulak kanalını mümkün olduğunca açık bırakan, minimal temaslı kalıp.",
+      "occlusionLevel": "open",
+      "retentionLevel": "low"
+    },
+    {
+      "id": "pediatric_full_soft",
+      "label": "Pediatric Full Shell (Soft)",
+      "description": "Çocuklar için yumuşak tam konka kalıp, sık değişim ve maksimum güvenlik için.",
+      "occlusionLevel": "closed",
+      "retentionLevel": "high"
+    },
+    {
+      "id": "ric_skeleton_canal",
+      "label": "RIC Custom Canal/Skeleton",
+      "description": "RIC alıcı entegre edilen küçük kanal veya mini-skeleton kalıp.",
+      "occlusionLevel": "configurable",
+      "retentionLevel": "medium_high"
+    }
+  ],
+  "ventTypes": [
+    {
+      "id": "none",
+      "label": "No Vent",
+      "type": "none",
+      "recommendedUse": "Çok ileri kayıp, maksimum kazanç, feedback kontrolü kritik."
+    },
+    {
+      "id": "pressure",
+      "label": "Pressure Vent",
+      "type": "parallel",
+      "diameterMmRange": [0.5, 0.8],
+      "recommendedUse": "Basınç eşitleme, ileri/profound kayıplarda akustik etkiyi minimum tutarak konfor."
+    },
+    {
+      "id": "small_parallel",
+      "label": "Small Vent",
+      "type": "parallel",
+      "diameterMmRange": [1.0, 1.6],
+      "recommendedUse": "Orta-ileri kayıpta sınırlı havalandırma, kontrollü bas kaybı."
+    },
+    {
+      "id": "medium_parallel",
+      "label": "Medium Vent",
+      "type": "parallel",
+      "diameterMmRange": [1.8, 2.4],
+      "recommendedUse": "Hafif-orta kayıpta oklüzyonu azaltırken yeterli kazancı koruma."
+    },
+    {
+      "id": "large_parallel",
+      "label": "Large / Open Vent",
+      "type": "parallel",
+      "diameterMmRange": [2.5, 3.5],
+      "recommendedUse": "Düşük frekansları iyi olan, yüksek frekans odaklı hafif kayıplar, open-fit."
+    },
+    {
+      "id": "select_a_vent",
+      "label": "Select-a-Vent (SAV)",
+      "type": "modular",
+      "diameterMmOptions": [0.8, 1.6, 2.0, 2.5, 3.0, null],
+      "recommendedUse": "Deneme-yanılma ile vent optimizasyonu gereken sınır vakalar."
+    }
+  ],
+  "tubingTypes": [
+    {
+      "id": "std_13_medium",
+      "label": "#13 Standard Medium Wall",
+      "recommendedUse": "Genel BTE uygulamaları, hafif-orta güç."
+    },
+    {
+      "id": "std_13_thick",
+      "label": "#13 Thick Wall",
+      "recommendedUse": "Yüksek güçlü BTE/SP/HP, mekanik titreşim ve feedback azaltma."
+    },
+    {
+      "id": "preformed_13",
+      "label": "Preformed #13",
+      "recommendedUse": "Standart BTE, kozmetik ve sabit kıvrım ihtiyacı."
+    },
+    {
+      "id": "libby_horn_3mm",
+      "label": "Libby Horn 3mm",
+      "recommendedUse": "Orta-yüksek frekanslarda ekstra kazanç gereken uygun kulak/mold hacmi."
+    },
+    {
+      "id": "libby_horn_4mm",
+      "label": "Libby Horn 4mm",
+      "recommendedUse": "Geniş kalıp hacminde maksimum HF vurgusu, seçili vakalar."
+    },
+    {
+      "id": "slim_tube",
+      "label": "Slim Tube",
+      "recommendedUse": "Mini BTE ve open-fit, hafif/orta HF kayıplar, kozmetik öncelikli."
+    },
+    {
+      "id": "ric_wire",
+      "label": "RIC Receiver Wire",
+      "recommendedUse": "RIC cihazlar; akustik tüp yerine elektriksel iletim, kalıpta receiver yuvası."
+    }
+  ],
+  "materials": [
+    {
+      "id": "acrylic",
+      "label": "Acrylic (Hard)",
+      "recommendedUse": "Yetişkin, hafif-orta kayıp; temizliği kolay, stabil şekil."
+    },
+    {
+      "id": "silicone_soft",
+      "label": "Silicone (Soft)",
+      "recommendedUse": "Çocuklar, ileri/profound kayıp, feedback riski yüksek vakalar."
+    },
+    {
+      "id": "vinyl",
+      "label": "Vinyl",
+      "recommendedUse": "Ara sertlik; seçili kullanıcı konfor tercihleri."
+    },
+    {
+      "id": "pe_hypoallergenic",
+      "label": "Polyethylene (Hypoallergenic)",
+      "recommendedUse": "Diğer materyallere alerjisi olan az sayıdaki kullanıcı."
+    }
+  ],
+  "deviceToMoldMapping": [
+    {
+      "deviceFormFactor": "BTE",
+      "powerClass": "Standard",
+      "hearingLossRangeDbHL": [20, 70],
+      "ageGroup": ["adult"],
+      "recommendedMolds": [
+        "skeleton",
+        "half_shell",
+        "canal",
+        "canal_lock"
+      ],
+      "defaultRecommendationPriority": [
+        "skeleton",
+        "canal_lock",
+        "half_shell"
+      ],
+      "venting": {
+        "mildLoss": ["medium_parallel", "large_parallel"],
+        "moderateLoss": ["small_parallel", "medium_parallel"],
+        "slopeHF": ["medium_parallel", "large_parallel"]
+      },
+      "tubing": [
+        "std_13_medium",
+        "preformed_13"
+      ],
+      "materialsPreferred": [
+        "acrylic",
+        "silicone_soft"
+      ],
+      "notes": "Kozmetik öncelik varsa canal/skeleton; feedback riski artarsa daha dolu kalıba ve daha küçük vente geç."
+    },
+    {
+      "deviceFormFactor": "BTE",
+      "powerClass": "SP_HP",
+      "hearingLossRangeDbHL": [70, 120],
+      "ageGroup": ["adult"],
+      "recommendedMolds": [
+        "full_shell"
+      ],
+      "defaultRecommendationPriority": [
+        "full_shell"
+      ],
+      "venting": {
+        "primary": ["pressure", "none"]
+      },
+      "tubing": [
+        "std_13_thick"
+      ],
+      "materialsPreferred": [
+        "silicone_soft"
+      ],
+      "notes": "Süper/Power BTE için her zaman tam, yumuşak ve mümkün olduğunca kapalı mold; öncelik akustik sızdırmazlık."
+    },
+    {
+      "deviceFormFactor": "RIC",
+      "powerClass": "Standard",
+      "hearingLossRangeDbHL": [20, 70],
+      "ageGroup": ["adult"],
+      "recommendedMolds": [
+        "open_mold",
+        "canal",
+        "canal_lock",
+        "ric_skeleton_canal"
+      ],
+      "defaultRecommendationPriority": [
+        "open_mold",
+        "canal_lock",
+        "ric_skeleton_canal"
+      ],
+      "venting": {
+        "normalLowFreq_mildHF": ["large_parallel", "open"],
+        "mildModerateAll": ["medium_parallel", "small_parallel"]
+      },
+      "tubing": [
+        "ric_wire"
+      ],
+      "materialsPreferred": [
+        "acrylic",
+        "silicone_soft"
+      ],
+      "notes": "Başlangıçta dome/open; feedback veya stabilite sorunu varsa custom canal/canal-lock RIC mold."
+    },
+    {
+      "deviceFormFactor": "RIC",
+      "powerClass": "Power",
+      "hearingLossRangeDbHL": [60, 95],
+      "ageGroup": ["adult"],
+      "recommendedMolds": [
+        "ric_skeleton_canal",
+        "full_shell"
+      ],
+      "defaultRecommendationPriority": [
+        "ric_skeleton_canal",
+        "full_shell"
+      ],
+      "venting": {
+        "primary": ["small_parallel", "pressure"]
+      },
+      "tubing": [
+        "ric_wire"
+      ],
+      "materialsPreferred": [
+        "acrylic",
+        "silicone_soft"
+      ],
+      "notes": "Power RIC için daima custom mold. Vent mümkün olduğunca küçük tutulur; açık-fit önerilmez."
+    },
+    {
+      "deviceFormFactor": "ITE",
+      "powerClass": "Standard",
+      "hearingLossRangeDbHL": [30, 75],
+      "ageGroup": ["adult"],
+      "recommendedMolds": [
+        "full_shell",
+        "half_shell"
+      ],
+      "defaultRecommendationPriority": [
+        "full_shell",
+        "half_shell"
+      ],
+      "venting": {
+        "mildModerate": ["medium_parallel", "large_parallel"],
+        "moreSevere": ["small_parallel"]
+      },
+      "tubing": [],
+      "materialsPreferred": [
+        "acrylic"
+      ],
+      "notes": "ITE kabuk kendi başına mold; hafif/orta kayıpta daha büyük vent, artan kayıpta küçült."
+    },
+    {
+      "deviceFormFactor": "ITC",
+      "powerClass": "Standard",
+      "hearingLossRangeDbHL": [30, 70],
+      "ageGroup": ["adult"],
+      "recommendedMolds": [
+        "canal",
+        "canal_lock"
+      ],
+      "defaultRecommendationPriority": [
+        "canal_lock",
+        "canal"
+      ],
+      "venting": {
+        "mildModerate": ["small_parallel", "medium_parallel"],
+        "moreSevere": ["pressure"]
+      },
+      "tubing": [],
+      "materialsPreferred": [
+        "acrylic"
+      ],
+      "notes": "ITC için genelde canal-lock tarz kabuk; küçük hacim sebebiyle vent sınırlı."
+    },
+    {
+      "deviceFormFactor": "CIC",
+      "powerClass": "LowMid",
+      "hearingLossRangeDbHL": [30, 60],
+      "ageGroup": ["adult"],
+      "recommendedMolds": [
+        "canal"
+      ],
+      "defaultRecommendationPriority": [
+        "canal"
+      ],
+      "venting": {
+        "primary": ["pressure"],
+        "optional": ["small_parallel"]
+      },
+      "tubing": [],
+      "materialsPreferred": [
+        "acrylic"
+      ],
+      "notes": "CIC = derin canal kabuk; kozmetik öncelikli, vent çok sınırlı tutulur."
+    },
+    {
+      "deviceFormFactor": "IIC",
+      "powerClass": "LowMid",
+      "hearingLossRangeDbHL": [30, 55],
+      "ageGroup": ["adult"],
+      "recommendedMolds": [
+        "canal"
+      ],
+      "defaultRecommendationPriority": [
+        "canal"
+      ],
+      "venting": {
+        "primary": ["none"],
+        "optional": ["pressure"]
+      },
+      "tubing": [],
+      "materialsPreferred": [
+        "acrylic"
+      ],
+      "notes": "IIC çok derin yerleşim; genelde ventsiz. Daha ağır kayıplarda önerilmez."
+    },
+    {
+      "deviceFormFactor": "Pediatric",
+      "powerClass": "Any_BTE",
+      "hearingLossRangeDbHL": [30, 120],
+      "ageGroup": ["pediatric"],
+      "recommendedMolds": [
+        "pediatric_full_soft"
+      ],
+      "defaultRecommendationPriority": [
+        "pediatric_full_soft"
+      ],
+      "venting": {
+        "severeProfound": ["none", "pressure"],
+        "mildModerate": ["small_parallel"]
+      },
+      "tubing": [
+        "std_13_medium",
+        "std_13_thick"
+      ],
+      "materialsPreferred": [
+        "silicone_soft"
+      ],
+      "notes": "Çocuklarda daima yumuşak tam kalıp + BTE. Sık büyüme nedeniyle kalıp periyodik yenilenir."
+    }
+  ]
+}

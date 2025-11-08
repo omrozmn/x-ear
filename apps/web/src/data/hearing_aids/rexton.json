@@ -1,20 +1,20 @@
 {
   "brand": "Rexton",
-  "specSchemaVersion": "1.0",
-  "lastScrapedAt": "2025-11-07T12:00:00Z",
+  "specSchemaVersion": "1.0.0",
+  "lastScrapedAt": "2025-11-07T19:00:00Z",
   "sourceUrls": [
-    "https://www.rexton.com/tr-TR/hearing-aids",
-    "https://www.rexton.com/tr-tr/isitme-cihazlari/types/"
+    "https://www.hearingtracker.com/hearing-aids/rexton",
+    "https://www.rexton.com/en-us/hearing-aids"
   ],
   "categories": [],
   "models": [
     {
-      "family": "Chronos",
-      "model": "RIC",
+      "family": "Reach",
+      "model": "R-Li T",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 39
       },
       "connectivity": {
         "bluetooth": true,
@@ -22,55 +22,59 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Multi-track focused processing"
       },
       "features": [
-        "noise reduction",
-        "speech clarity"
+        "Bluetooth LE Audio",
+        "Auracast-ready",
+        "hands-free calling",
+        "telecoil",
+        "ATEX certified",
+        "4 focus tracks"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "Advanced RIC model, Bluetooth enabled",
+      "notes": "Flagship RIC with 39h battery, scans soundscape 1000x/sec",
       "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
+        "https://www.hearingtracker.com/hearing-aids/rexton-reach"
       ]
     },
     {
-      "family": "Delta",
-      "model": "RIC",
-      "formFactor": "RIC",
+      "family": "Reach",
+      "model": "inoX-CIC Li 80",
+      "formFactor": "CIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 28
       },
       "connectivity": {
-        "bluetooth": true,
+        "bluetooth": false,
         "app": "Rexton",
-        "streaming": true
+        "streaming": false
       },
       "dsp": {
-        "platform": null
+        "platform": "Multi-track focused processing"
       },
       "features": [
-        "noise reduction",
-        "speech clarity"
+        "instant-fit",
+        "discreet design"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
+      "notes": "Almost invisible CIC with advanced tech, instant-fit sleeves",
       "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
+        "https://www.hearingtracker.com/hearing-aids/rexton-reach"
       ]
     },
     {
-      "family": "Zeta",
-      "model": "RIC",
+      "family": "BiCore",
+      "model": "R-Li",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 28
       },
       "connectivity": {
         "bluetooth": true,
@@ -78,27 +82,28 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Speech Preservation Technology"
       },
       "features": [
-        "noise reduction",
-        "speech clarity"
+        "hands-free calling",
+        "ultra-fast synchronization",
+        "analog-to-digital converter 117dB"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
+      "notes": "Advanced RIC rechargeable",
       "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
+        "https://www.hearingtracker.com/hearing-aids/rexton"
       ]
     },
     {
-      "family": "Kappa",
-      "model": "RIC",
+      "family": "BiCore",
+      "model": "R-Li T",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 39
       },
       "connectivity": {
         "bluetooth": true,
@@ -106,27 +111,30 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Speech Preservation Technology"
       },
       "features": [
-        "noise reduction",
-        "speech clarity"
+        "hands-free calling",
+        "ultra-fast synchronization",
+        "telecoil",
+        "analog-to-digital converter 117dB",
+        "ATEX certified"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
+      "notes": "Advanced RIC with telecoil, longer battery",
       "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
+        "https://www.hearingtracker.com/hearing-aids/rexton"
       ]
     },
     {
-      "family": "Lambda",
-      "model": "RIC",
+      "family": "BiCore",
+      "model": "R 312 RIC",
       "formFactor": "RIC",
       "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
+        "type": "Zinc Air",
+        "hoursTypical": 89
       },
       "connectivity": {
         "bluetooth": true,
@@ -134,27 +142,28 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Speech Preservation Technology"
       },
       "features": [
-        "noise reduction",
-        "speech clarity"
+        "hands-free calling",
+        "ultra-fast synchronization",
+        "CROS option"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
+      "notes": "Battery-powered RIC with CROS option",
       "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
+        "https://www.hearingtracker.com/hearing-aids/rexton"
       ]
     },
     {
-      "family": "Mu",
-      "model": "RIC",
+      "family": "BiCore",
+      "model": "Slim RIC (SR)",
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 20
       },
       "connectivity": {
         "bluetooth": true,
@@ -162,27 +171,29 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Speech Preservation Technology"
       },
       "features": [
-        "noise reduction",
-        "speech clarity"
+        "hands-free calling",
+        "ultra-fast synchronization",
+        "IP68 rated",
+        "sleek design"
       ],
-      "ipRating": null,
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
+      "notes": "Slim-line rechargeable RIC, water and dust resistant",
       "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
+        "https://www.hearingtracker.com/hearing-aids/rexton"
       ]
     },
     {
-      "family": "Nu",
-      "model": "RIC",
-      "formFactor": "RIC",
+      "family": "BiCore",
+      "model": "B-Li Rugged BTE",
+      "formFactor": "BTE",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 39
       },
       "connectivity": {
         "bluetooth": true,
@@ -190,27 +201,30 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Speech Preservation Technology"
       },
       "features": [
-        "noise reduction",
-        "speech clarity"
+        "hands-free calling",
+        "ultra-fast synchronization",
+        "IP X8 water resistance",
+        "impact resistant",
+        "ATEX certified"
       ],
-      "ipRating": null,
+      "ipRating": "IP X8",
       "channels": null,
       "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
+      "notes": "Rugged BTE for active users, submersible to 6ft",
       "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
+        "https://www.hearingtracker.com/hearing-aids/rexton"
       ]
     },
     {
-      "family": "Xi",
-      "model": "RIC",
-      "formFactor": "RIC",
+      "family": "MotionCore (M-Core)",
+      "model": "B-Li M BTE",
+      "formFactor": "BTE",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 30
       },
       "connectivity": {
         "bluetooth": true,
@@ -218,27 +232,28 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Motion Sensor"
       },
       "features": [
-        "noise reduction",
-        "speech clarity"
+        "motion sensor",
+        "120 hearing situations",
+        "iOS streaming"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
+      "notes": "Motion-sensing BTE for mild loss",
       "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
+        "https://www.hearingtracker.com/hearing-aids/rexton"
       ]
     },
     {
-      "family": "Pi",
-      "model": "RIC",
-      "formFactor": "RIC",
+      "family": "MotionCore (M-Core)",
+      "model": "B-Li P BTE",
+      "formFactor": "BTE",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 30
       },
       "connectivity": {
         "bluetooth": true,
@@ -246,27 +261,28 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Motion Sensor"
       },
       "features": [
-        "noise reduction",
-        "speech clarity"
+        "motion sensor",
+        "120 hearing situations",
+        "iOS streaming"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
+      "notes": "Motion-sensing BTE for moderate loss",
       "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
+        "https://www.hearingtracker.com/hearing-aids/rexton"
       ]
     },
     {
-      "family": "Rho",
-      "model": "RIC",
-      "formFactor": "RIC",
+      "family": "MotionCore (M-Core)",
+      "model": "B-Li HP BTE",
+      "formFactor": "BTE",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 61
       },
       "connectivity": {
         "bluetooth": true,
@@ -274,186 +290,48 @@
         "streaming": true
       },
       "dsp": {
-        "platform": null
+        "platform": "Motion Sensor"
       },
       "features": [
-        "noise reduction",
-        "speech clarity"
+        "motion sensor",
+        "120 hearing situations",
+        "iOS streaming"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
+      "notes": "Motion-sensing BTE for severe-profound loss, longest battery",
       "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
+        "https://www.hearingtracker.com/hearing-aids/rexton"
       ]
     },
     {
-      "family": "Tau",
-      "model": "RIC",
-      "formFactor": "RIC",
+      "family": "MotionCore (M-Core)",
+      "model": "iX instant-fit CIC",
+      "formFactor": "CIC",
       "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
+        "type": "Zinc Air",
+        "hoursTypical": 70
       },
       "connectivity": {
-        "bluetooth": true,
+        "bluetooth": false,
         "app": "Rexton",
-        "streaming": true
+        "streaming": false
       },
       "dsp": {
-        "platform": null
+        "platform": "Motion Sensor"
       },
       "features": [
-        "noise reduction",
-        "speech clarity"
+        "motion sensor",
+        "instant-fit",
+        "discreet design"
       ],
       "ipRating": null,
       "channels": null,
       "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
+      "notes": "Tiny CIC with motion sensing, size 10 battery",
       "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
-      ]
-    },
-    {
-      "family": "Upsilon",
-      "model": "RIC",
-      "formFactor": "RIC",
-      "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
-      },
-      "connectivity": {
-        "bluetooth": true,
-        "app": "Rexton",
-        "streaming": true
-      },
-      "dsp": {
-        "platform": null
-      },
-      "features": [
-        "noise reduction",
-        "speech clarity"
-      ],
-      "ipRating": null,
-      "channels": null,
-      "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
-      "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
-      ]
-    },
-    {
-      "family": "Phi",
-      "model": "RIC",
-      "formFactor": "RIC",
-      "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
-      },
-      "connectivity": {
-        "bluetooth": true,
-        "app": "Rexton",
-        "streaming": true
-      },
-      "dsp": {
-        "platform": null
-      },
-      "features": [
-        "noise reduction",
-        "speech clarity"
-      ],
-      "ipRating": null,
-      "channels": null,
-      "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
-      "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
-      ]
-    },
-    {
-      "family": "Chi",
-      "model": "RIC",
-      "formFactor": "RIC",
-      "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
-      },
-      "connectivity": {
-        "bluetooth": true,
-        "app": "Rexton",
-        "streaming": true
-      },
-      "dsp": {
-        "platform": null
-      },
-      "features": [
-        "noise reduction",
-        "speech clarity"
-      ],
-      "ipRating": null,
-      "channels": null,
-      "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
-      "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
-      ]
-    },
-    {
-      "family": "Psi",
-      "model": "RIC",
-      "formFactor": "RIC",
-      "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
-      },
-      "connectivity": {
-        "bluetooth": true,
-        "app": "Rexton",
-        "streaming": true
-      },
-      "dsp": {
-        "platform": null
-      },
-      "features": [
-        "noise reduction",
-        "speech clarity"
-      ],
-      "ipRating": null,
-      "channels": null,
-      "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
-      "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
-      ]
-    },
-    {
-      "family": "Omega",
-      "model": "RIC",
-      "formFactor": "RIC",
-      "battery": {
-        "type": "Rechargeable",
-        "hoursTypical": null
-      },
-      "connectivity": {
-        "bluetooth": true,
-        "app": "Rexton",
-        "streaming": true
-      },
-      "dsp": {
-        "platform": null
-      },
-      "features": [
-        "noise reduction",
-        "speech clarity"
-      ],
-      "ipRating": null,
-      "channels": null,
-      "gtin": null,
-      "notes": "RIC model, Bluetooth enabled",
-      "sourceUrls": [
-        "https://www.rexton.com/tr-TR/hearing-aids"
+        "https://www.hearingtracker.com/hearing-aids/rexton"
       ]
     }
   ],

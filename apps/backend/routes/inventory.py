@@ -13,7 +13,7 @@ def now_utc():
     return datetime.now(timezone.utc)
 
 # Add models directory to path to import inventory
-from models.inventory import Inventory
+from models.inventory import Inventory, UNIT_TYPES
 from uuid import uuid4
 
 inventory_bp = Blueprint('inventory', __name__, url_prefix='/api/inventory')
@@ -574,7 +574,9 @@ def update_inventory_item(item_id):
         item.model = data.get('model', item.model)
         item.category = data.get('category', item.category)
         item.barcode = data.get('barcode', item.barcode)
+        item.stock_code = data.get('stockCode', item.stock_code)
         item.supplier = data.get('supplier', item.supplier)
+        item.unit = data.get('unit', item.unit)
         item.description = data.get('description', item.description)
         item.price = float(data.get('price', item.price))
         item.cost = float(data.get('cost', item.cost)) if 'cost' in data else item.cost
@@ -1025,4 +1027,20 @@ def create_category():
             'error': str(e),
             'requestId': str(uuid4()),
             'timestamp': now_utc().isoformat()
+        }), 500
+
+
+@inventory_bp.route('/units', methods=['GET'])
+def get_units():
+    """Get all available unit types for inventory items"""
+    try:
+        return jsonify({
+            'success': True,
+            'data': UNIT_TYPES,
+            'message': 'Unit types retrieved successfully'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
         }), 500

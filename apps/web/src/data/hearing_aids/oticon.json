@@ -31,7 +31,7 @@
       "formFactor": "RIC",
       "battery": {
         "type": "Rechargeable",
-        "hoursTypical": null
+        "hoursTypical": 24
       },
       "connectivity": {
         "bluetooth": true,
@@ -40,10 +40,10 @@
       "dsp": {
         "platform": "BrainHearing"
       },
-      "ipRating": null,
+      "ipRating": "IP68",
       "channels": null,
       "gtin": null,
-      "notes": "Stay sharp in the real world."
+      "notes": "Stay sharp in the real world; 24h battery life."
     },
     {
       "family": "Real",
