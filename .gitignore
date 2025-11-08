@@ -1,2 +1,49 @@
-node_modules
-node_modules
+
+# Node
+node_modules/
+
+# Python virtual environments
+.venv/
+venv/
+env/
+env.bak/
+
+# Python caches and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution/build
+build/
+dist/
+*.egg-info/
+
+# Editor/temp
+.vscode/
+*.swp
+
+# dotenv/local env
+.env
+.env.*
+
+# Backend local instance files and DBs
+/apps/backend/instance/
+/apps/backend/database.db
+/apps/backend/xear_crm.db
+/apps/backend/*.db
+
+# Logs and pid files
+/apps/backend/*.log
+/apps/backend/*.pid
+
+# Large ML/model caches (local-only, often under home or project cache dirs)
+# These are typically downloaded during setup and must not be committed
+.cache/
+.paddleocr/
+.cache_transformers/
+hf_cache/
+huggingface/
+
+# Python package installers
+pip-wheel-metadata/
+
