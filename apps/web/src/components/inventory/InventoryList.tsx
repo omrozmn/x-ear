@@ -83,7 +83,9 @@ export const InventoryList: React.FC<InventoryListProps> = ({
           }));
           
           setItems(mappedItems);
-          setTotalItems(response.data.total || response.data.pagination?.total || mappedItems.length);
+          // Backend returns total in meta.total
+          const total = response.data.meta?.total || response.data.total || response.data.pagination?.total || mappedItems.length;
+          setTotalItems(total);
           setError(null);
         } else {
           setError('Invalid response format');

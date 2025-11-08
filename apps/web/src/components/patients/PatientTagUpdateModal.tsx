@@ -32,7 +32,7 @@ export function PatientTagUpdateModal({
       setStatus((patient.status as PatientStatus) || 'ACTIVE');
       setSegment((patient.segment as PatientSegment) || 'NEW');
       setAcquisitionType(patient.acquisitionType || '');
-      setBranchId(patient.branchId || '');
+      setBranchId((patient as any).branchId || '');
     }
   }, [patient]);
 

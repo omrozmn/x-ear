@@ -399,7 +399,6 @@ export function PatientsPage() {
           try {
             const result = await createPatientMutation.mutateAsync(data as Partial<Patient>);
             setShowNewPatientModal(false);
-            handleRefresh();
             return result;
           } catch (e) {
             console.error('Failed to create patient', e);
@@ -407,6 +406,7 @@ export function PatientsPage() {
           }
         }}
         title="Yeni Hasta"
+        isLoading={createPatientMutation.isPending}
       />
 
       {/* Edit Modal */}
@@ -422,7 +422,6 @@ export function PatientsPage() {
             });
             setIsEditModalOpen(false);
             setEditingPatient(null);
-            handleRefresh();
             return editingPatient;
           } catch (e) {
             console.error('Failed to update patient', e);
@@ -431,6 +430,7 @@ export function PatientsPage() {
         }}
         initialData={editingPatient || undefined}
         title="Hasta Düzenle"
+        isLoading={updatePatientMutation.isPending}
       />
 
       {/* Tag Update Modal */}
