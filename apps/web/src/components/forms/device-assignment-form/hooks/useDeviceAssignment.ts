@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { DeviceInventoryItem } from '../components/DeviceSearchForm';
 import { DeviceAssignment } from '../components/AssignmentDetailsForm';
@@ -57,7 +57,6 @@ export const useDeviceAssignment = ({
 
   // Device management state
   const [availableDevices, setAvailableDevices] = useState<DeviceInventoryItem[]>([]);
-  const [filteredDevices, setFilteredDevices] = useState<DeviceInventoryItem[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<DeviceInventoryItem | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -78,7 +77,13 @@ export const useDeviceAssignment = ({
 
   // Update form data helper - memoized to prevent unnecessary re-renders
   const updateFormData = useCallback((field: keyof DeviceAssignment, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      // Only update if value actually changed
+      if (prev[field] === value) {
+        return prev;
+      }
+      return { ...prev, [field]: value };
+    });
   }, []);
 
   // Reset form when modal opens/closes or assignment changes
@@ -149,7 +154,6 @@ export const useDeviceAssignment = ({
         
         console.log('✓ Loaded inventory:', devices);
         setAvailableDevices(devices);
-        setFilteredDevices(devices);
         
         // If editing and has deviceId, auto-select the device
         if (assignment?.deviceId) {
@@ -163,7 +167,6 @@ export const useDeviceAssignment = ({
         console.error('Envanter yüklenirken hata:', error);
         // Keep empty array on error
         setAvailableDevices([]);
-        setFilteredDevices([]);
       }
     };
 
@@ -172,18 +175,17 @@ export const useDeviceAssignment = ({
     }
   }, [isOpen, assignment]);
 
-  // Filter devices based on search term
-  useEffect(() => {
+  // Filter devices based on search term - using useMemo to prevent unnecessary re-renders
+  const filteredDevices = useMemo(() => {
     if (!searchTerm) {
-      setFilteredDevices(availableDevices);
-    } else {
-      const filtered = availableDevices.filter(device =>
-        device.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        device.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (device.barcode && device.barcode.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-      setFilteredDevices(filtered);
+      return availableDevices;
     }
+    
+    return availableDevices.filter(device =>
+      device.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      device.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (device.barcode && device.barcode.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
   }, [searchTerm, availableDevices]);
 
 
@@ -315,11 +317,9 @@ export const useDeviceAssignment = ({
     setSelectedDevice(null);
   };
 
-  // Merge formData with calculated pricing
-  const enrichedFormData = useMemo(() => ({
-    ...formData,
-    ...calculatedPricing
-  }), [formData, calculatedPricing]);
+  // Don't merge - return formData and calculatedPricing separately
+  // This prevents unnecessary re-renders when only one changes
+  const enrichedFormData = useMemo(() => formData, [formData]);
 
   return {
     // Form state

@@ -3580,7 +3580,13 @@ components:
           description: Inventory ID
         serialNumber:
           type: string
-          description: Device serial number
+          description: Device serial number (for single ear devices)
+        serialNumberLeft:
+          type: string
+          description: Left ear device serial number
+        serialNumberRight:
+          type: string
+          description: Right ear device serial number
         brand:
           type: string
           description: Device brand

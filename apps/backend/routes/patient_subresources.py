@@ -14,6 +14,34 @@ def now_utc():
 patient_subresources_bp = Blueprint('patient_subresources', __name__)
 
 
+@patient_subresources_bp.route('/patients/<patient_id>/devices', methods=['GET'])
+def get_patient_devices(patient_id):
+    """Get all devices assigned to a specific patient"""
+    from models.device import Device
+    
+    patient = db.session.get(Patient, patient_id)
+    if not patient:
+        return jsonify({
+            'success': False,
+            'error': 'Patient not found',
+            'timestamp': datetime.now().isoformat()
+        }), 404
+
+    # Get all devices assigned to this patient
+    devices = Device.query.filter_by(patient_id=patient_id).all()
+    
+    return jsonify({
+        "success": True,
+        "data": [device.to_dict() for device in devices],
+        "meta": {
+            "patientId": patient_id,
+            "patientName": f"{patient.first_name} {patient.last_name}",
+            "deviceCount": len(devices)
+        },
+        "timestamp": datetime.now().isoformat()
+    }), 200
+
+
 @patient_subresources_bp.route('/patients/<patient_id>/hearing-tests', methods=['GET'])
 def get_patient_hearing_tests(patient_id):
     patient = db.session.get(Patient, patient_id)

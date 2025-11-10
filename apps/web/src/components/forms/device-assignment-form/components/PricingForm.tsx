@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Input, Select } from '@x-ear/ui-web';
 import { CreditCard, Calculator, Percent, DollarSign } from 'lucide-react';
 
@@ -33,9 +33,9 @@ export const PricingForm: React.FC<PricingFormProps> = ({
   errors = {},
   showTrialPricing = false
 }) => {
-  const updateFormData = (field: keyof DeviceAssignment, value: any) => {
+  const updateFormData = useCallback((field: keyof DeviceAssignment, value: any) => {
     onFormDataChange({ [field]: value });
-  };
+  }, [onFormDataChange]);
 
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('tr-TR', {

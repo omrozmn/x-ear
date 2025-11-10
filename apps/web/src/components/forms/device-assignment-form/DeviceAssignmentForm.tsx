@@ -72,10 +72,19 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
   };
 
   // Memoize the callback to prevent unnecessary re-renders
+  // Use updateFormData directly for single field updates
   const handleFormDataChange = useCallback((data: Partial<DeviceAssignment>) => {
-    Object.entries(data).forEach(([key, value]) => {
+    // If only one field, use updateFormData directly
+    const entries = Object.entries(data);
+    if (entries.length === 1) {
+      const [key, value] = entries[0];
       updateFormData(key as keyof DeviceAssignment, value);
-    });
+    } else {
+      // Multiple fields - update all at once
+      entries.forEach(([key, value]) => {
+        updateFormData(key as keyof DeviceAssignment, value);
+      });
+    }
   }, [updateFormData]);
 
   if (!isOpen) return null;

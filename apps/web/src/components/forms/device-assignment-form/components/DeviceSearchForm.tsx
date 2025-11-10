@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Input } from '@x-ear/ui-web';
 import { Search, Package, Headphones } from 'lucide-react';
 
@@ -27,7 +27,7 @@ interface DeviceSearchFormProps {
   errors?: Record<string, string>;
 }
 
-export const DeviceSearchForm: React.FC<DeviceSearchFormProps> = ({
+export const DeviceSearchForm: React.FC<DeviceSearchFormProps> = memo(({
   searchTerm,
   onSearchChange,
   filteredDevices,
@@ -94,6 +94,7 @@ export const DeviceSearchForm: React.FC<DeviceSearchFormProps> = ({
             <Search className="w-4 h-4 text-gray-400" />
           </div>
           <Input
+            id="device-search-input"
             type="text"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -115,9 +116,8 @@ export const DeviceSearchForm: React.FC<DeviceSearchFormProps> = ({
                 <div
                   key={device.id}
                   onClick={() => onDeviceSelect(device)}
-                  className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-                    selectedDevice?.id === device.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
-                  }`}
+                  className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedDevice?.id === device.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+                    }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -140,9 +140,8 @@ export const DeviceSearchForm: React.FC<DeviceSearchFormProps> = ({
                       <div className="text-sm font-medium text-gray-900">
                         {formatPrice(device.price)}
                       </div>
-                      <div className={`text-xs ${
-                        device.status === 'available' ? 'text-green-600' : 'text-red-600'
-                      }`}>
+                      <div className={`text-xs ${device.status === 'available' ? 'text-green-600' : 'text-red-600'
+                        }`}>
                         {device.status === 'available' ? 'Mevcut' : 'Stokta Yok'}
                       </div>
                     </div>
@@ -180,4 +179,4 @@ export const DeviceSearchForm: React.FC<DeviceSearchFormProps> = ({
       )}
     </div>
   );
-};
+});

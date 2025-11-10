@@ -137,6 +137,15 @@ def create_device():
         
         device.status = DeviceStatus.from_legacy(data.get('status', 'in_stock'))
         device.price = data.get('price')
+        
+        # Handle serial numbers for left and right ear
+        if 'serialNumberLeft' in data:
+            serial_left = data['serialNumberLeft']
+            device.serial_number_left = serial_left if serial_left and serial_left.strip() else None
+        if 'serialNumberRight' in data:
+            serial_right = data['serialNumberRight']
+            device.serial_number_right = serial_right if serial_right and serial_right.strip() else None
+        
         # Handle notes: convert empty string to None
         notes_val = data.get('notes')
         device.notes = notes_val if notes_val and notes_val.strip() else None
@@ -257,6 +266,12 @@ def update_device(device_id):
             device.notes = data['notes']
         if 'serialNumber' in data:
             device.serial_number = data['serialNumber']
+        if 'serialNumberLeft' in data:
+            serial_left = data['serialNumberLeft']
+            device.serial_number_left = serial_left if serial_left and serial_left.strip() else None
+        if 'serialNumberRight' in data:
+            serial_right = data['serialNumberRight']
+            device.serial_number_right = serial_right if serial_right and serial_right.strip() else None
 
         if data.get('trialPeriod'):
             trial = data['trialPeriod']

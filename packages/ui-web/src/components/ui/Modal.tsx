@@ -44,43 +44,53 @@ export const Modal: React.FC<ModalProps> = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  // Handle ESC key press
+  // Keep latest handlers in refs so effect doesn't re-run when their identities change
+  const onCloseRef = useRef(onClose);
+  const closableRef = useRef(closable);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+  useEffect(() => { closableRef.current = closable; }, [closable]);
+
+  // Handle ESC key press and focus management only when modal opens/closes.
+  // Depend only on `isOpen` to avoid running cleanup on every prop identity change
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && closable) {
-        onClose();
+      if (event.key === 'Escape' && closableRef.current) {
+        onCloseRef.current();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscapeKey);
-      // Store previously focused element
-      previousFocusRef.current = document.activeElement as HTMLElement;
-      // Prevent body scroll
-      document.body.style.overflow = 'hidden';
-      
-      // Focus first focusable element in modal
-      setTimeout(() => {
-        const focusableElements = modalRef.current?.querySelectorAll(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusableElements && focusableElements.length > 0) {
-          (focusableElements[0] as HTMLElement).focus();
-        }
-      }, 100);
-    }
+    // Store previously focused element
+    previousFocusRef.current = document.activeElement as HTMLElement;
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleEscapeKey);
+
+    // Focus first focusable element in modal
+    const timer = setTimeout(() => {
+      const focusableElements = modalRef.current?.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusableElements && focusableElements.length > 0) {
+        (focusableElements[0] as HTMLElement).focus();
+      }
+    }, 100);
 
     return () => {
+      clearTimeout(timer);
       document.removeEventListener('keydown', handleEscapeKey);
-      if (isOpen) {
-        document.body.style.overflow = '';
-        // Restore focus to previously focused element
-        if (previousFocusRef.current) {
+      document.body.style.overflow = '';
+      // Restore focus to previously focused element
+      if (previousFocusRef.current) {
+        try {
           previousFocusRef.current.focus();
+        } catch (e) {
+          // ignore focus errors
         }
       }
     };
-  }, [isOpen, closable, onClose]);
+  }, [isOpen]);
 
   // Handle focus trap
   const handleKeyDown = (event: React.KeyboardEvent) => {

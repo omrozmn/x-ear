@@ -326,9 +326,30 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
                       <p className="font-medium text-gray-900">
                         {device.brand} {device.model}
                       </p>
-                      <p className="text-sm text-gray-600">
-                        Seri No: {device.serialNumber}
-                      </p>
+                      <div className="text-sm text-gray-600">
+                        {device.serialNumberLeft && device.serialNumberRight ? (
+                          <div className="flex items-center gap-3">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                              Sağ: {device.serialNumberRight}
+                            </span>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                              Sol: {device.serialNumberLeft}
+                            </span>
+                          </div>
+                        ) : device.serialNumberLeft ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                            Sol: {device.serialNumberLeft}
+                          </span>
+                        ) : device.serialNumberRight ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                            Sağ: {device.serialNumberRight}
+                          </span>
+                        ) : device.serialNumber ? (
+                          <span>Seri No: {device.serialNumber}</span>
+                        ) : (
+                          <span className="text-gray-400 italic">Seri no atanmamış</span>
+                        )}
+                      </div>
                     </div>
                     {getDeviceStatusBadge(device.status)}
                   </div>

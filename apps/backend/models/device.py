@@ -20,7 +20,9 @@ class Device(BaseModel):
     inventory_id = db.Column(db.String(50))
     
     # Device identification
-    serial_number = db.Column(db.String(100), unique=True)
+    serial_number = db.Column(db.String(100))  # General serial number (for single ear devices)
+    serial_number_left = db.Column(db.String(100))  # Left ear serial number
+    serial_number_right = db.Column(db.String(100))  # Right ear serial number
     brand = db.Column(db.String(50))
     model = db.Column(db.String(100))
     device_type = db.Column(db.String(20))  # BTE, ITE, etc.
@@ -57,6 +59,8 @@ class Device(BaseModel):
             'patientId': self.patient_id,
             'inventoryId': self.inventory_id,
             'serialNumber': self.serial_number,
+            'serialNumberLeft': self.serial_number_left,
+            'serialNumberRight': self.serial_number_right,
             'brand': self.brand,
             'model': self.model,
             'type': self.device_type,
@@ -83,6 +87,8 @@ class Device(BaseModel):
     # Index suggestions for future migration
     __table_args__ = (
         db.Index('ix_device_serial', 'serial_number'),
+        db.Index('ix_device_serial_left', 'serial_number_left'),
+        db.Index('ix_device_serial_right', 'serial_number_right'),
         db.Index('ix_device_category', 'category'),
         db.Index('ix_device_status', 'status'),
         db.Index('ix_device_patient', 'patient_id'),

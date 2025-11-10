@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Input, Select, Textarea } from '@x-ear/ui-web';
 import { Calendar, User, FileText, AlertCircle, CheckCircle, Clock, RotateCcw } from 'lucide-react';
 
@@ -49,9 +49,9 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
   onFormDataChange,
   errors = {}
 }) => {
-  const updateFormData = (field: keyof DeviceAssignment, value: any) => {
+  const updateFormData = useCallback((field: keyof DeviceAssignment, value: any) => {
     onFormDataChange({ [field]: value });
-  };
+  }, [onFormDataChange]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
