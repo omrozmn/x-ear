@@ -60,27 +60,59 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         
         if (response.data.success && Array.isArray(response.data.data)) {
           // Map backend data to frontend format
-          const mappedItems: InventoryItem[] = response.data.data.map((item: any) => ({
-            id: String(item.id),
-            name: item.name || 'Unnamed Product',
-            brand: item.brand || '',
-            model: item.model || '',
-            category: item.category || '',
-            availableInventory: item.availableInventory || item.available_inventory || 0,
-            totalInventory: item.totalInventory || item.total_inventory || 0,
-            usedInventory: item.usedInventory || item.used_inventory || 0,
-            reorderLevel: item.reorderLevel || item.minInventory || item.min_inventory || 5,
-            price: parseFloat(item.price) || 0,
-            vatIncludedPrice: parseFloat(item.price) * 1.18 || 0,
-            totalValue: (item.availableInventory || item.available_inventory || 0) * parseFloat(item.price) || 0,
-            cost: parseFloat(item.cost) || 0,
-            barcode: item.barcode || '',
-            supplier: item.supplier || '',
-            description: item.description || '',
-            status: (item.availableInventory || item.available_inventory || 0) > 0 ? 'available' : 'out_of_stock',
-            createdAt: item.createdAt || item.created_at || new Date().toISOString(),
-            lastUpdated: item.updatedAt || item.updated_at || new Date().toISOString()
-          }));
+          const mappedItems: InventoryItem[] = response.data.data.map((item: any) => {
+            // Handle features
+            let features: string[] = [];
+            if (item.features) {
+              if (typeof item.features === 'string') {
+                try {
+                  features = JSON.parse(item.features);
+                } catch {
+                  features = item.features.split(',').map((f: string) => f.trim()).filter(Boolean);
+                }
+              } else if (Array.isArray(item.features)) {
+                features = item.features;
+              }
+            }
+            
+            // Handle serial numbers
+            let availableSerials: string[] = [];
+            if (item.availableSerials) {
+              if (typeof item.availableSerials === 'string') {
+                try {
+                  availableSerials = JSON.parse(item.availableSerials);
+                } catch {
+                  availableSerials = [];
+                }
+              } else if (Array.isArray(item.availableSerials)) {
+                availableSerials = item.availableSerials;
+              }
+            }
+            
+            return {
+              id: String(item.id),
+              name: item.name || 'Unnamed Product',
+              brand: item.brand || '',
+              model: item.model || '',
+              category: item.category || '',
+              availableInventory: item.availableInventory || item.available_inventory || 0,
+              totalInventory: item.totalInventory || item.total_inventory || 0,
+              usedInventory: item.usedInventory || item.used_inventory || 0,
+              reorderLevel: item.reorderLevel || item.minInventory || item.min_inventory || 5,
+              price: parseFloat(item.price) || 0,
+              vatIncludedPrice: parseFloat(item.price) * 1.18 || 0,
+              totalValue: (item.availableInventory || item.available_inventory || 0) * parseFloat(item.price) || 0,
+              cost: parseFloat(item.cost) || 0,
+              barcode: item.barcode || '',
+              supplier: item.supplier || '',
+              description: item.description || '',
+              status: (item.availableInventory || item.available_inventory || 0) > 0 ? 'available' : 'out_of_stock',
+              features,
+              availableSerials,
+              createdAt: item.createdAt || item.created_at || new Date().toISOString(),
+              lastUpdated: item.updatedAt || item.updated_at || new Date().toISOString()
+            };
+          });
           
           setItems(mappedItems);
           // Backend returns total in meta.total

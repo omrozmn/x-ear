@@ -446,8 +446,179 @@ def get_sales():
             'timestamp': datetime.now().isoformat()
         }), 500
 
+@sales_bp.route('/device-assignments/<assignment_id>', methods=['PATCH'])
+@sales_bp.route('/device-assignments/<assignment_id>', methods=['PATCH'])
+def update_device_assignment(assignment_id):
+    """Update a device assignment (e.g., cancel, update serial numbers, pricing)"""
+    try:
+        from models.sales import DeviceAssignment
+        
+        assignment = db.session.get(DeviceAssignment, assignment_id)
+        if not assignment:
+            return jsonify({
+                'success': False,
+                'error': 'Device assignment not found',
+                'timestamp': datetime.now().isoformat()
+            }), 404
+        
+        data = request.get_json()
+        
+        # Update fields if provided
+        if 'status' in data:
+            assignment.notes = (assignment.notes or '') + f"\n[İptal edildi: {datetime.now().strftime('%Y-%m-%d %H:%M')}]"
+        
+        if 'ear_side' in data:
+            assignment.ear = data['ear_side']
+        
+        if 'reason' in data:
+            assignment.reason = data['reason']
+        
+        # Update device/inventory if changed
+        if 'device_id' in data:
+            assignment.device_id = data['device_id']
+        
+        if 'inventory_id' in data:
+            assignment.inventory_id = data['inventory_id']
+        
+        # Update pricing fields
+        if 'base_price' in data:
+            assignment.list_price = data['base_price']
+        
+        if 'discount_type' in data:
+            assignment.discount_type = data['discount_type']
+        
+        if 'discount_value' in data:
+            assignment.discount_value = data['discount_value']
+        
+        if 'payment_method' in data:
+            assignment.payment_method = data['payment_method']
+        
+        if 'notes' in data:
+            assignment.notes = data['notes']
+        
+        if 'sgk_scheme' in data:
+            assignment.sgk_scheme = data['sgk_scheme']
+        
+        # Recalculate pricing if any pricing field changed
+        pricing_fields = ['base_price', 'discount_type', 'discount_value', 'sgk_scheme']
+        should_recalculate = any(key in data for key in pricing_fields)
+        logger.info(f"🔢 Pricing recalculation check: {should_recalculate}, data keys: {list(data.keys())}")
+        
+        if should_recalculate:
+            from decimal import Decimal
+            import json
+            import os
+            
+            list_price = float(assignment.list_price or 0)
+            logger.info(f"💰 Starting pricing calculation: list_price={list_price}, sgk_scheme={assignment.sgk_scheme}")
+            
+            # Load SGK amounts from settings
+            settings_path = os.path.join(os.path.dirname(__file__), '..', 'current_settings.json')
+            sgk_amounts = {}
+            try:
+                with open(settings_path, 'r', encoding='utf-8') as f:
+                    settings = json.load(f)
+                    sgk_config = settings.get('data', {}).get('sgk', {}).get('schemes', {})
+                    for scheme_key, scheme_data in sgk_config.items():
+                        if 'coverage_amount' in scheme_data:
+                            sgk_amounts[scheme_key] = float(scheme_data['coverage_amount'])
+            except Exception as e:
+                logger.error(f"Failed to load SGK amounts from settings: {e}")
+                # Fallback to hardcoded values if settings file not found
+                sgk_amounts = {
+                    'under4_parent_working': 6104.44,
+                    'under4_parent_retired': 7630.56,
+                    'age5_12_parent_working': 5426.17,
+                    'age5_12_parent_retired': 6782.72,
+                    'age13_18_parent_working': 5087.04,
+                    'age13_18_parent_retired': 6358.88,
+                    'over18_working': 3391.36,
+                    'over18_retired': 4239.20
+                }
+            
+            # Calculate SGK support
+            sgk_support = 0
+            if assignment.sgk_scheme and assignment.sgk_scheme != 'no_coverage':
+                sgk_support = sgk_amounts.get(assignment.sgk_scheme, 0)
+                sgk_support = min(sgk_support, list_price)  # SGK can't be more than list price
+            
+            # Apply discount on price after SGK
+            price_after_sgk = list_price - sgk_support
+            discount_amount = 0
+            if assignment.discount_type == 'percentage' and assignment.discount_value:
+                discount_amount = (price_after_sgk * float(assignment.discount_value)) / 100
+            elif assignment.discount_type == 'amount' and assignment.discount_value:
+                discount_amount = float(assignment.discount_value)
+            
+            sale_price = max(0, price_after_sgk - discount_amount)
+            
+            # Handle bilateral (x2)
+            quantity = 2 if assignment.ear == 'B' else 1
+            net_payable = sale_price * quantity
+            
+            # Update calculated fields
+            assignment.sgk_support = Decimal(str(sgk_support))
+            assignment.sale_price = Decimal(str(sale_price))
+            assignment.net_payable = Decimal(str(net_payable))
+            
+            logger.info(f"✅ Pricing calculated: sgk_support={sgk_support}, sale_price={sale_price}, net_payable={net_payable}")
+        
+        if 'down_payment' in data:
+            # Store down payment info in notes or create payment record
+            pass
+        
+        # Update serial numbers
+        if 'serial_number' in data:
+            assignment.serial_number = data['serial_number']
+        
+        if 'serial_number_left' in data:
+            assignment.serial_number_left = data['serial_number_left']
+        
+        if 'serial_number_right' in data:
+            assignment.serial_number_right = data['serial_number_right']
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Device assignment updated successfully',
+            'data': assignment.to_dict(),
+            'timestamp': datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Update device assignment error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+
 @sales_bp.route('/patients/<patient_id>/assign-devices-extended', methods=['POST'])
 @idempotent(methods=['POST'])
+def assign_devices_extended(patient_id):
+    """Assign devices to patient with extended sale record creation."""
+    try:
+        data = request.get_json()
+        
+        # Validate input
+        if not data:
+            return jsonify({"success": False, "error": ERROR_NO_DATA_PROVIDED, "timestamp": datetime.now().isoformat()}), 400
+
+        device_assignments = data.get('device_assignments', [])
+        if not device_assignments:
+            return jsonify({"success": False, "error": "At least one device assignment required", "timestamp": datetime.now().isoformat()}), 400
+
+        # Continue with the rest of the function...
+        return _assign_devices_extended_impl(patient_id, data)
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Extended device assignment error: {str(e)}")
+        return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
+
+
 def _validate_assignment_input(data):
     """Validate input data for device assignment."""
     if not data:
@@ -633,10 +804,11 @@ def _log_device_assignment_activity(user_id, sale_id, device_count, total_amount
     )
 
 
-def assign_devices_extended(patient_id):
+def _assign_devices_extended_impl(patient_id, data):
+    """Implementation of device assignment with extended sale record."""
     try:
         # Validate input
-        data, error_response, status_code = _validate_assignment_input(request.get_json())
+        data, error_response, status_code = _validate_assignment_input(data)
         if error_response:
             return error_response, status_code
 

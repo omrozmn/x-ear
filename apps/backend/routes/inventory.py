@@ -14,6 +14,8 @@ def now_utc():
 
 # Add models directory to path to import inventory
 from models.inventory import Inventory, UNIT_TYPES
+from models.brand import Brand
+from models.category import Category
 from uuid import uuid4
 
 inventory_bp = Blueprint('inventory', __name__, url_prefix='/api/inventory')
@@ -382,18 +384,24 @@ def get_features():
 
 @inventory_bp.route('/brands', methods=['GET'])
 def get_brands():
-    """Get available brands from inventory"""
+    """Get available brands from both brands table and inventory"""
     try:
-        # Get distinct brands from inventory
-        brands = db.session.query(Inventory.brand).distinct().filter(Inventory.brand.isnot(None)).all()
+        # Get brands from brands table
+        brand_objects = Brand.query.all()
+        brands_from_table = [b.name for b in brand_objects]
         
-        # Convert to list and filter out empty strings
-        brand_list = [str(brand[0]) for brand in brands if brand[0] and str(brand[0]).strip()]
+        # Get distinct brands from inventory (for backwards compatibility)
+        inventory_brands = db.session.query(Inventory.brand).distinct().filter(Inventory.brand.isnot(None)).all()
+        brands_from_inventory = [str(brand[0]) for brand in inventory_brands if brand[0] and str(brand[0]).strip()]
+        
+        # Combine and deduplicate
+        all_brands = list(set(brands_from_table + brands_from_inventory))
+        all_brands.sort()
         
         return jsonify({
             'success': True,
             'data': {
-                'brands': brand_list
+                'brands': all_brands
             },
             'requestId': str(uuid4()),
             'timestamp': now_utc().isoformat()
@@ -411,7 +419,7 @@ def get_brands():
 @inventory_bp.route('/brands', methods=['POST'])
 @idempotent(methods=['POST'])
 def create_brand():
-    """Create a new brand by creating a placeholder inventory item"""
+    """Create a new brand"""
     try:
         data = request.get_json()
         if not data or 'name' not in data:
@@ -431,8 +439,8 @@ def create_brand():
                 'timestamp': now_utc().isoformat()
             }), 400
 
-        # Check if brand already exists
-        existing_brand = db.session.query(Inventory.brand).filter_by(brand=brand_name).first()
+        # Check if brand already exists in brands table
+        existing_brand = Brand.query.filter_by(name=brand_name).first()
         
         if existing_brand:
             return jsonify({
@@ -442,13 +450,16 @@ def create_brand():
                 'timestamp': now_utc().isoformat()
             }), 409
 
-        # No need to create placeholder items - just return success
-        # The brand will be available when actual inventory items are created with this brand
+        # Create new brand
+        new_brand = Brand(name=brand_name)
+        db.session.add(new_brand)
+        db.session.commit()
         
         return jsonify({
             'success': True,
             'data': {
-                'brand': brand_name
+                'brand': brand_name,
+                'id': new_brand.id
             },
             'requestId': str(uuid4()),
             'timestamp': now_utc().isoformat()
@@ -940,24 +951,30 @@ def get_inventory_stats():
 
 @inventory_bp.route('/categories', methods=['GET'])
 def get_categories():
-    """Get all unique inventory categories"""
+    """Get all unique inventory categories from both categories table and inventory"""
     try:
-        # Get distinct categories from inventory items
-        categories = db.session.query(Inventory.category).distinct().filter(
+        # Get categories from categories table
+        category_objects = Category.query.all()
+        categories_from_table = [c.name for c in category_objects]
+        
+        # Get distinct categories from inventory items (for backwards compatibility)
+        inventory_categories = db.session.query(Inventory.category).distinct().filter(
             Inventory.category.isnot(None),
             Inventory.category != ''
-        ).order_by(Inventory.category).all()
+        ).all()
+        categories_from_inventory = [category[0] for category in inventory_categories if category[0]]
         
-        # Extract category names from tuples
-        category_list = [category[0] for category in categories if category[0]]
+        # Combine and deduplicate
+        all_categories = list(set(categories_from_table + categories_from_inventory))
+        all_categories.sort()
         
         return jsonify({
             'success': True,
             'data': {
-                'categories': category_list
+                'categories': all_categories
             },
             'meta': {
-                'total': len(category_list)
+                'total': len(all_categories)
             },
             'requestId': str(uuid4()),
             'timestamp': now_utc().isoformat()
@@ -975,7 +992,7 @@ def get_categories():
 @inventory_bp.route('/categories', methods=['POST'])
 @idempotent(methods=['POST'])
 def create_category():
-    """Create a new inventory category by adding an inventory item with that category"""
+    """Create a new inventory category"""
     try:
         data = request.get_json()
         
@@ -997,8 +1014,8 @@ def create_category():
                 'timestamp': now_utc().isoformat()
             }), 400
         
-        # Check if category already exists
-        existing_category = db.session.query(Inventory.category).filter_by(category=category_name).first()
+        # Check if category already exists in categories table
+        existing_category = Category.query.filter_by(name=category_name).first()
         
         if existing_category:
             return jsonify({
@@ -1008,13 +1025,16 @@ def create_category():
                 'timestamp': now_utc().isoformat()
             }), 409
         
-        # No need to create placeholder items - just return success
-        # The category will be available when actual inventory items are created with this category
+        # Create new category
+        new_category = Category(name=category_name)
+        db.session.add(new_category)
+        db.session.commit()
         
         return jsonify({
             'success': True,
             'data': {
-                'category': category_name
+                'category': category_name,
+                'id': new_category.id
             },
             'requestId': str(uuid4()),
             'timestamp': now_utc().isoformat()

@@ -1,6 +1,7 @@
 import { Button } from '@x-ear/ui-web';
 import React, { useState } from 'react';
 import { Appointment, CalendarView } from '../../types/appointment';
+import { patientApiService } from '../../services/patient/patient-api.service';
 import { useAppointments } from '../../hooks/useAppointments';
 import { AppointmentModal } from './AppointmentModal';
 import { CalendarMonth } from './CalendarView/CalendarMonth';
@@ -14,6 +15,7 @@ interface AppointmentCalendarProps {
   onDateClick?: (date: string) => void;
   view?: CalendarView;
   selectedDate?: Date;
+  showCreateButton?: boolean;
 }
 
 export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
@@ -21,7 +23,8 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   onAppointmentClick,
   onDateClick,
   view = 'month',
-  selectedDate = new Date()
+  selectedDate = new Date(),
+  showCreateButton = true
 }) => {
   const { appointments, loading } = useAppointments();
   const [currentDate, setCurrentDate] = useState(selectedDate);
@@ -34,18 +37,42 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     time: string;
   } | null>(null);
 
-  // Handle appointment click
+  // Keep selectedAppointment in sync when underlying appointments list updates
+  React.useEffect(() => {
+    if (!selectedAppointment) return;
+    const updated = appointments.find(a => a.id === selectedAppointment.id);
+    if (updated) setSelectedAppointment(updated);
+  }, [appointments, selectedAppointment]);
+
+  // Handle appointment click — open modal immediately and enrich patient name asynchronously
   const handleAppointmentClick = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
     setQuickAppointmentData(null);
     setModalMode('view');
     setShowModal(true);
     onAppointmentClick?.(appointment);
+
+    // Best-effort: fetch patient name and update the selected appointment afterwards
+    (async () => {
+      try {
+        if (!appointment.patientName && appointment.patientId) {
+          const patient = await patientApiService.fetchPatient(appointment.patientId);
+          if (patient) {
+            setSelectedAppointment(prev => prev && prev.id === appointment.id ? { ...prev, patientName: patient.name } : prev);
+          }
+        }
+      } catch (err) {
+        // ignore failures
+      }
+    })();
   };
 
   // Handle date click
   const handleDateClick = (date: Date) => {
     const dateStr = date.toISOString().split('T')[0];
+    // navigate user to day view for clicked date
+    setCurrentDate(date);
+    setCurrentView('day');
     onDateClick?.(dateStr);
   };
 
@@ -146,18 +173,20 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
           </div>
         </div>
         
-        <Button
-          onClick={() => {
-            setModalMode('create');
-            setShowModal(true);
-          }}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          variant='default'>
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Yeni Randevu
-        </Button>
+        {showCreateButton && (
+          <Button
+            onClick={() => {
+              setModalMode('create');
+              setShowModal(true);
+            }}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            variant='default'>
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Yeni Randevu
+          </Button>
+        )}
       </div>
 
       {/* Calendar Views */}

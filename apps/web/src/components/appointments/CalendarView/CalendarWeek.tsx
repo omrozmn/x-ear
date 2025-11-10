@@ -223,17 +223,7 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
         </div>
       </div>
 
-      {/* Current time indicator for today */}
-      {weekDays.some(day => day.isToday) && (
-        <div
-          className="absolute left-0 right-0 h-0.5 bg-red-500 z-10 pointer-events-none"
-          style={{
-            top: `${((currentTime.getHours() - 8) * 60) + (currentTime.getMinutes()) + 120}px`,
-          }}
-        >
-          <div className="w-2 h-2 bg-red-500 rounded-full -ml-1 -mt-0.5"></div>
-        </div>
-      )}
+      {/* Current time indicator removed as requested */}
     </div>
   );
 };

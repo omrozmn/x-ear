@@ -28,11 +28,12 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredBrands, setFilteredBrands] = useState<string[]>([]);
+  const [allBrands, setAllBrands] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Common hearing aid brands
-  const brands = [
+  // Default hearing aid brands (fallback)
+  const defaultBrands = [
     'Phonak',
     'Oticon',
     'Widex',
@@ -75,20 +76,84 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
     'MDHearing'
   ];
 
+  // Load brands from API on mount
   useEffect(() => {
+    const loadBrands = async () => {
+      try {
+        const response = await api.get('/api/inventory/brands');
+        if (response.data.success && response.data.data?.brands) {
+          // Combine API brands with default brands
+          const apiBrands = response.data.data.brands;
+          const combined = [...new Set([...apiBrands, ...defaultBrands])];
+          setAllBrands(combined.sort());
+        } else {
+          setAllBrands(defaultBrands);
+        }
+      } catch (error) {
+        console.warn('Failed to load brands from API, using defaults:', error);
+        setAllBrands(defaultBrands);
+      }
+    };
+    loadBrands();
+  }, []);
+
+  useEffect(() => {
+    const brands = allBrands.length > 0 ? allBrands : defaultBrands;
     if (value && isOpen) {
-      const filtered = brands.filter(brand =>
-        brand.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredBrands(filtered.slice(0, 10));
+      // Normalize Turkish characters for better matching
+      const normalizeTurkish = (str: string) => {
+        return str
+          .toLowerCase()
+          .replace(/ğ/g, 'g')
+          .replace(/ü/g, 'u')
+          .replace(/ş/g, 's')
+          .replace(/ı/g, 'i')
+          .replace(/ö/g, 'o')
+          .replace(/ç/g, 'c');
+      };
+      
+      const normalizedValue = normalizeTurkish(value);
+      
+      // Score each brand
+      const scored = brands.map(brand => {
+        const normalizedBrand = normalizeTurkish(brand);
+        let score = 0;
+        
+        // Exact match
+        if (normalizedBrand === normalizedValue) score = 100;
+        // Starts with
+        else if (normalizedBrand.startsWith(normalizedValue)) score = 90;
+        // Contains
+        else if (normalizedBrand.includes(normalizedValue)) score = 70;
+        // Fuzzy match
+        else {
+          let matches = 0;
+          for (const char of normalizedValue) {
+            if (normalizedBrand.includes(char)) matches++;
+          }
+          score = (matches / normalizedValue.length) * 50;
+        }
+        
+        return { brand, score };
+      });
+      
+      // Filter and sort by score
+      const filtered = scored
+        .filter(item => item.score > 30)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 10)
+        .map(item => item.brand);
+      
+      setFilteredBrands(filtered);
     } else if (isOpen) {
       setFilteredBrands(brands.slice(0, 10));
     } else {
       setFilteredBrands([]);
     }
-  }, [value, isOpen]);
+  }, [value, isOpen, allBrands]);
 
   // Check if current value is an exact match
+  const brands = allBrands.length > 0 ? allBrands : defaultBrands;
   const hasExactMatch = brands.some(brand => brand.toLowerCase() === value.toLowerCase());
   const showCreateNew = value.trim() && !hasExactMatch && isOpen;
 
@@ -118,13 +183,19 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
     if (!newBrand) return;
 
     try {
-      await api.post('/api/inventory/brands', { name: newBrand });
-      console.log('New brand created:', newBrand);
+      const response = await api.post('/api/inventory/brands', { name: newBrand });
+      console.log('✅ New brand created:', newBrand);
+      // Add to local list immediately
+      setAllBrands(prev => [...new Set([...prev, newBrand])].sort());
     } catch (error: any) {
       if (error.response?.status === 409) {
         console.log('Brand already exists, using existing:', newBrand);
+        // Still add to local list
+        setAllBrands(prev => [...new Set([...prev, newBrand])].sort());
       } else {
         console.warn('Failed to persist brand to API, using locally:', error);
+        // Add to local list anyway
+        setAllBrands(prev => [...new Set([...prev, newBrand])].sort());
       }
     }
     

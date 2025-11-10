@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { DeviceInventoryItem } from '../components/DeviceSearchForm';
 import { DeviceAssignment } from '../components/AssignmentDetailsForm';
@@ -33,7 +33,6 @@ interface UseDeviceAssignmentReturn {
   
   // Pricing calculations
   sgkAmounts: Record<string, number>;
-  calculatePricing: () => void;
   
   // Form actions
   resetForm: () => void;
@@ -77,20 +76,25 @@ export const useDeviceAssignment = ({
     'over18_retired': 4239.20
   };
 
-  // Update form data helper
-  const updateFormData = (field: keyof DeviceAssignment, value: any) => {
+  // Update form data helper - memoized to prevent unnecessary re-renders
+  const updateFormData = useCallback((field: keyof DeviceAssignment, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
   // Reset form when modal opens/closes or assignment changes
   useEffect(() => {
     if (isOpen) {
       if (assignment) {
-        // Edit mode
+        // Edit mode - load assignment data
         setFormData({
           ...assignment,
-          assignedDate: assignment.assignedDate.split('T')[0] // Convert to date input format
+          assignedDate: assignment.assignedDate?.split('T')[0] || new Date().toISOString().split('T')[0]
         });
+        
+        // If assignment has deviceId, find and select the device
+        if (assignment.deviceId) {
+          setSearchTerm(''); // Will trigger device selection after inventory loads
+        }
       } else {
         // Create mode
         setFormData({
@@ -105,8 +109,10 @@ export const useDeviceAssignment = ({
         });
       }
       setErrors({});
-      setSearchTerm('');
-      setSelectedDevice(null);
+      if (!assignment) {
+        setSearchTerm('');
+        setSelectedDevice(null);
+      }
     }
   }, [isOpen, assignment, patientId]);
 
@@ -135,6 +141,7 @@ export const useDeviceAssignment = ({
           price: item.price || 0,
           ear: item.ear || 'bilateral',
           availableInventory: item.availableInventory || 0,
+          availableSerials: item.availableSerials || [],
           barcode: item.barcode || '',
           category: item.category || 'hearing_aid',
           status: (item.availableInventory || 0) > 0 ? 'available' : 'out_of_stock'
@@ -143,6 +150,15 @@ export const useDeviceAssignment = ({
         console.log('✓ Loaded inventory:', devices);
         setAvailableDevices(devices);
         setFilteredDevices(devices);
+        
+        // If editing and has deviceId, auto-select the device
+        if (assignment?.deviceId) {
+          const device = devices.find(d => d.id === assignment.deviceId);
+          if (device) {
+            setSelectedDevice(device);
+            setSearchTerm(`${device.brand} ${device.model}`);
+          }
+        }
       } catch (error) {
         console.error('Envanter yüklenirken hata:', error);
         // Keep empty array on error
@@ -154,7 +170,7 @@ export const useDeviceAssignment = ({
     if (isOpen) {
       loadInventory();
     }
-  }, [isOpen]);
+  }, [isOpen, assignment]);
 
   // Filter devices based on search term
   useEffect(() => {
@@ -170,56 +186,60 @@ export const useDeviceAssignment = ({
     }
   }, [searchTerm, availableDevices]);
 
-  // Calculate pricing when form data changes
-  const calculatePricing = () => {
-    if (formData.listPrice && formData.listPrice > 0) {
-      const listPrice = formData.listPrice;
-      let salePrice = listPrice;
-      let sgkReduction = 0;
-      
-      // Apply SGK reduction if applicable (matches legacy system logic)
-      if (formData.sgkSupportType && formData.sgkSupportType !== 'no_coverage') {
-        const sgkAmount = sgkAmounts[formData.sgkSupportType as keyof typeof sgkAmounts] || 0;
-        sgkReduction = Math.min(sgkAmount, listPrice);
-        salePrice = listPrice - sgkReduction;
-      }
-      
-      // Apply discount
-      let discountAmount = 0;
-      if (formData.discountType === 'percentage' && formData.discountValue) {
-        discountAmount = (salePrice * formData.discountValue) / 100;
-      } else if (formData.discountType === 'amount' && formData.discountValue) {
-        discountAmount = formData.discountValue;
-      }
-      
-      const finalSalePrice = Math.max(0, salePrice - discountAmount);
-      
-      // Calculate patient payment (considering bilateral devices)
-      const quantity = formData.ear === 'both' ? 2 : 1;
-      const patientPayment = Math.max(0, finalSalePrice * quantity);
-      const remainingAmount = Math.max(0, patientPayment - (formData.downPayment || 0));
-      
-      // Calculate monthly installment if applicable
-      let monthlyInstallment = 0;
-      if (formData.paymentMethod === 'installment' && formData.installmentCount && remainingAmount > 0) {
-        monthlyInstallment = remainingAmount / formData.installmentCount;
-      }
-      
-      setFormData(prev => ({
-        ...prev,
-        salePrice: finalSalePrice,
-        sgkReduction,
-        patientPayment,
-        remainingAmount,
-        monthlyInstallment
-      }));
-    }
-  };
 
-  // Auto-calculate pricing when relevant fields change
-  useEffect(() => {
-    calculatePricing();
-  }, [formData.listPrice, formData.sgkSupportType, formData.discountType, formData.discountValue, formData.downPayment]);
+
+  // Calculate pricing values using useMemo to avoid triggering re-renders
+  const calculatedPricing = useMemo(() => {
+    if (!formData.listPrice || formData.listPrice <= 0) {
+      return {
+        salePrice: 0,
+        sgkReduction: 0,
+        patientPayment: 0,
+        remainingAmount: 0,
+        monthlyInstallment: 0
+      };
+    }
+
+    const listPrice = formData.listPrice;
+    let salePrice = listPrice;
+    let sgkReduction = 0;
+    
+    // Apply SGK reduction if applicable (matches legacy system logic)
+    if (formData.sgkSupportType && formData.sgkSupportType !== 'no_coverage') {
+      const sgkAmount = sgkAmounts[formData.sgkSupportType as keyof typeof sgkAmounts] || 0;
+      sgkReduction = Math.min(sgkAmount, listPrice);
+      salePrice = listPrice - sgkReduction;
+    }
+    
+    // Apply discount
+    let discountAmount = 0;
+    if (formData.discountType === 'percentage' && formData.discountValue) {
+      discountAmount = (salePrice * formData.discountValue) / 100;
+    } else if (formData.discountType === 'amount' && formData.discountValue) {
+      discountAmount = formData.discountValue;
+    }
+    
+    const finalSalePrice = Math.max(0, salePrice - discountAmount);
+    
+    // Calculate patient payment (considering bilateral devices)
+    const quantity = formData.ear === 'both' ? 2 : 1;
+    const patientPayment = Math.max(0, finalSalePrice * quantity);
+    const remainingAmount = Math.max(0, patientPayment - (formData.downPayment || 0));
+    
+    // Calculate monthly installment if applicable
+    let monthlyInstallment = 0;
+    if (formData.paymentMethod === 'installment' && formData.installmentCount && remainingAmount > 0) {
+      monthlyInstallment = remainingAmount / formData.installmentCount;
+    }
+
+    return {
+      salePrice: finalSalePrice,
+      sgkReduction,
+      patientPayment,
+      remainingAmount,
+      monthlyInstallment
+    };
+  }, [formData.listPrice, formData.sgkSupportType, formData.discountType, formData.discountValue, formData.downPayment, formData.ear, formData.paymentMethod, formData.installmentCount, sgkAmounts]);
 
   // Handle device selection
   const handleDeviceSelect = (device: DeviceInventoryItem) => {
@@ -261,17 +281,8 @@ export const useDeviceAssignment = ({
       newErrors.ear = 'Kulak seçimi zorunludur';
     }
 
-    // Serial number validation
-    if (formData.ear === 'both') {
-      if (!formData.serialNumberLeft) {
-        newErrors.serialNumberLeft = 'Sol kulak seri numarası zorunludur';
-      }
-      if (!formData.serialNumberRight) {
-        newErrors.serialNumberRight = 'Sağ kulak seri numarası zorunludur';
-      }
-    } else if (!formData.serialNumber) {
-      newErrors.serialNumber = 'Seri numarası zorunludur';
-    }
+    // Serial number validation - NOT REQUIRED anymore
+    // Serial numbers are optional, can be assigned later
 
     // Pricing validation
     if (formData.reason === 'sale') {
@@ -304,9 +315,15 @@ export const useDeviceAssignment = ({
     setSelectedDevice(null);
   };
 
+  // Merge formData with calculated pricing
+  const enrichedFormData = useMemo(() => ({
+    ...formData,
+    ...calculatedPricing
+  }), [formData, calculatedPricing]);
+
   return {
     // Form state
-    formData,
+    formData: enrichedFormData,
     setFormData,
     updateFormData,
     
@@ -324,7 +341,6 @@ export const useDeviceAssignment = ({
     
     // Pricing calculations
     sgkAmounts,
-    calculatePricing,
     
     // Form actions
     resetForm

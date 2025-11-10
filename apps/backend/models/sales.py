@@ -57,7 +57,7 @@ class DeviceAssignment(BaseModel):
     
     # Foreign keys
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
-    device_id = db.Column(db.String(50), db.ForeignKey('devices.id'), nullable=False)
+    device_id = db.Column(db.String(50), nullable=True)  # Can be inventory_id or actual device_id
     sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'), nullable=True)  # Link to sale
     inventory_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=True)  # Link to inventory item
     
@@ -65,6 +65,11 @@ class DeviceAssignment(BaseModel):
     ear = db.Column(db.String(1))  # L, R, B for Left, Right, Both/Bilateral
     reason = db.Column(db.String(50))  # Sale, Trial, Replacement, etc.
     from_inventory = db.Column(db.Boolean, default=False)
+    
+    # Serial numbers for bilateral assignments
+    serial_number = db.Column(db.String(100))  # For single ear assignments
+    serial_number_left = db.Column(db.String(100))  # For bilateral - left ear
+    serial_number_right = db.Column(db.String(100))  # For bilateral - right ear
     
     # Pricing details
     list_price = db.Column(sa.Numeric(12, 2))
@@ -80,7 +85,7 @@ class DeviceAssignment(BaseModel):
     notes = db.Column(db.Text)
 
     # Relationships
-    device = db.relationship('Device', backref='assignments', lazy=True)
+    # device = db.relationship('Device', backref='assignments', lazy=True)  # Removed - device_id is not FK anymore
 
     def to_dict(self):
         base_dict = self.to_dict_base()
@@ -101,7 +106,10 @@ class DeviceAssignment(BaseModel):
             'discountValue': float(self.discount_value) if self.discount_value else None,
             'netPayable': float(self.net_payable) if self.net_payable else None,
             'paymentMethod': self.payment_method,
-            'notes': self.notes
+            'notes': self.notes,
+            'serialNumber': self.serial_number,
+            'serialNumberLeft': self.serial_number_left,
+            'serialNumberRight': self.serial_number_right
         }
         assignment_dict.update(base_dict)
         return assignment_dict

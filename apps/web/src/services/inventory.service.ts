@@ -80,6 +80,12 @@ export class InventoryService {
 
   async createItem(data: CreateInventoryData): Promise<InventoryItem> {
     try {
+      console.log('📤 CREATING ITEM:', {
+        features: data.features,
+        availableSerials: data.availableSerials,
+        serialsCount: data.availableSerials?.length
+      });
+      
       // Use backend API instead of localStorage
       const response = await fetch('http://localhost:5003/api/inventory', {
         method: 'POST',
@@ -97,10 +103,9 @@ export class InventoryService {
       const result = await response.json();
       const newItem = result.data;
 
-      // Update localStorage cache
-      const items = this.loadInventory();
-      items.push(newItem);
-      this.saveInventory(items);
+      // Clear localStorage cache to force refresh from API
+      localStorage.removeItem(this.storageKey);
+      console.log('🗑️ Cache cleared - will reload from API');
 
       return newItem;
     } catch (error) {
@@ -111,6 +116,13 @@ export class InventoryService {
 
   async updateItem(id: string, data: UpdateInventoryData): Promise<InventoryItem> {
     try {
+      console.log('📤 SENDING TO API:', {
+        id,
+        features: data.features,
+        availableSerials: data.availableSerials,
+        serialsCount: data.availableSerials?.length
+      });
+      
       // Use backend API instead of localStorage
       const response = await fetch(`http://localhost:5003/api/inventory/${id}`, {
         method: 'PUT',
@@ -128,14 +140,9 @@ export class InventoryService {
       const result = await response.json();
       const updatedItem = result.data;
 
-      // Update localStorage cache
-      const items = this.loadInventory();
-      const index = items.findIndex(item => item.id === id);
-      
-      if (index !== -1) {
-        items[index] = updatedItem;
-        this.saveInventory(items);
-      }
+      // Clear localStorage cache to force refresh from API
+      localStorage.removeItem(this.storageKey);
+      console.log('🗑️ Cache cleared - will reload from API');
 
       return updatedItem;
     } catch (error) {

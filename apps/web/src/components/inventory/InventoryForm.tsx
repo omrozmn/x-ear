@@ -49,24 +49,32 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
     sgkCode: '',
     isMinistryTracked: false,
     warranty: 12,
-    location: '',
-    notes: ''
+    location: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [featureInput, setFeatureInput] = useState('');
   
-  // KDV and calculated fields
-  const [kdvRate, setKdvRate] = useState<number>(20); // Default 20%
+  // KDV and calculated fields - Load from localStorage
+  const [kdvRate, setKdvRate] = useState<number>(() => {
+    const saved = localStorage.getItem('inventory_kdv_rate');
+    return saved ? parseFloat(saved) : 20;
+  });
   const [onTrial, setOnTrial] = useState<number>(0);
   const [priceWithKdv, setPriceWithKdv] = useState<number>(0);
   const [kdvAmount, setKdvAmount] = useState<number>(0);
   const [totalInventoryValue, setTotalInventoryValue] = useState<number>(0);
   
-  // KDV Dahil checkboxes
-  const [isPriceKdvIncluded, setIsPriceKdvIncluded] = useState<boolean>(false);
-  const [isCostKdvIncluded, setIsCostKdvIncluded] = useState<boolean>(false);
+  // KDV Dahil checkboxes - Load from localStorage
+  const [isPriceKdvIncluded, setIsPriceKdvIncluded] = useState<boolean>(() => {
+    const saved = localStorage.getItem('inventory_price_kdv_included');
+    return saved === 'true';
+  });
+  const [isCostKdvIncluded, setIsCostKdvIncluded] = useState<boolean>(() => {
+    const saved = localStorage.getItem('inventory_cost_kdv_included');
+    return saved === 'true';
+  });
   
   // Serial number management
   const [isSerialModalOpen, setIsSerialModalOpen] = useState<boolean>(false);
@@ -94,8 +102,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
         sgkCode: item.sgkCode || '',
         isMinistryTracked: item.isMinistryTracked || false,
         warranty: item.warranty || 12,
-        location: item.location || '',
-        notes: item.notes || ''
+        location: item.location || ''
       });
       
       // Load serials if item exists
@@ -103,20 +110,37 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
     }
   }, [item]);
 
+  // Save KDV preferences to localStorage
+  useEffect(() => {
+    localStorage.setItem('inventory_kdv_rate', kdvRate.toString());
+  }, [kdvRate]);
+
+  useEffect(() => {
+    localStorage.setItem('inventory_price_kdv_included', isPriceKdvIncluded.toString());
+  }, [isPriceKdvIncluded]);
+
+  useEffect(() => {
+    localStorage.setItem('inventory_cost_kdv_included', isCostKdvIncluded.toString());
+  }, [isCostKdvIncluded]);
+
   // Calculate KDV and total inventory value automatically
   useEffect(() => {
-    // Calculate KDV amount and price with KDV
-    const kdvMultiplier = 1 + (kdvRate / 100);
-    const calculatedPriceWithKdv = formData.price * kdvMultiplier;
-    const calculatedKdvAmount = formData.price * (kdvRate / 100);
+    // Calculate prices based on KDV inclusion
+    const priceExcludingKdv = isPriceKdvIncluded 
+      ? formData.price / (1 + kdvRate / 100) 
+      : formData.price;
+    const calculatedPriceWithKdv = isPriceKdvIncluded 
+      ? formData.price 
+      : formData.price * (1 + kdvRate / 100);
+    const calculatedKdvAmount = calculatedPriceWithKdv - priceExcludingKdv;
     
     setPriceWithKdv(calculatedPriceWithKdv);
     setKdvAmount(calculatedKdvAmount);
     
-    // Calculate total inventory value
-    const totalValue = formData.price * formData.availableInventory;
+    // Calculate total inventory value (always use price excluding KDV)
+    const totalValue = priceExcludingKdv * formData.availableInventory;
     setTotalInventoryValue(totalValue);
-  }, [formData.price, formData.availableInventory, kdvRate]);
+  }, [formData.price, formData.availableInventory, kdvRate, isPriceKdvIncluded]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -172,6 +196,11 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
         finalFormData.stockCode = `${brandPrefix}-${categoryPrefix}-${timestamp}`;
       }
       
+      // Convert empty barcode to null to avoid UNIQUE constraint issues
+      if (!finalFormData.barcode || finalFormData.barcode.trim() === '') {
+        finalFormData.barcode = undefined;
+      }
+      
       let savedItem: InventoryItem;
       
       if (item) {
@@ -181,6 +210,11 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
           ...finalFormData,
           availableSerials: serials.filter(s => s.trim() !== '')
         };
+        console.log('🔄 UPDATE DATA:', {
+          features: updateData.features,
+          availableSerials: updateData.availableSerials,
+          serialsCount: updateData.availableSerials?.length
+        });
         savedItem = await inventoryService.updateItem(item.id, updateData);
       } else {
         // Create new item
@@ -188,6 +222,11 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
           ...finalFormData,
           availableSerials: serials.filter(s => s.trim() !== '')
         };
+        console.log('✨ CREATE DATA:', {
+          features: createData.features,
+          availableSerials: createData.availableSerials,
+          serialsCount: createData.availableSerials?.length
+        });
         savedItem = await inventoryService.createItem(createData);
       }
       
@@ -263,7 +302,11 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
           </div>
         )}
 
-        {/* Basic Information */}
+        {/* TEMEL BİLGİLER */}
+        <div className="border-b border-gray-200 pb-2 mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Temel Bilgiler</h3>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -351,7 +394,11 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
 
         </div>
 
-        {/* Stock and Pricing */}
+        {/* STOK VE FİYATLANDIRMA */}
+        <div className="border-b border-gray-200 pb-2 mb-4 mt-8">
+          <h3 className="text-lg font-semibold text-gray-900">Stok ve Fiyatlandırma</h3>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -510,7 +557,11 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
           </div>
         </div>
 
-        {/* Additional Information */}
+        {/* TEDARİK VE DETAYLAR */}
+        <div className="border-b border-gray-200 pb-2 mb-4 mt-8">
+          <h3 className="text-lg font-semibold text-gray-900">Tedarik ve Detaylar</h3>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <SupplierAutocomplete
@@ -593,6 +644,11 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
           </div>
         )}
 
+        {/* ÖZELLİKLER VE SERİ NUMARALAR */}
+        <div className="border-b border-gray-200 pb-2 mb-4 mt-8">
+          <h3 className="text-lg font-semibold text-gray-900">Özellikler ve Seri Numaralar</h3>
+        </div>
+        
         {/* Features */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -654,33 +710,22 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
           </p>
         </div>
 
-        {/* Description and Notes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Açıklama
-            </label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ürün açıklamasını girin"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Notlar
-            </label>
-            <Textarea
-              value={formData.notes}
-              onChange={(e) => handleInputChange('notes', e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ek notlar girin"
-            />
-          </div>
+        {/* AÇIKLAMA */}
+        <div className="border-b border-gray-200 pb-2 mb-4 mt-8">
+          <h3 className="text-lg font-semibold text-gray-900">Açıklama</h3>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Açıklama
+          </label>
+          <Textarea
+            value={formData.description}
+            onChange={(e) => handleInputChange('description', e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Ürün açıklamasını girin"
+          />
         </div>
 
         {/* Form Actions */}

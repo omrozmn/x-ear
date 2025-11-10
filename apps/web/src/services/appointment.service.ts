@@ -25,6 +25,66 @@ class AppointmentService {
   constructor() {
     this.loadAppointments();
     this.setupStorageListener();
+    // If there are no local appointments, try to bootstrap from server
+    if (!this.appointments || this.appointments.length === 0) {
+      // Fire-and-forget bootstrap; failures should not block app
+      this.bootstrapFromServer();
+    }
+  }
+
+  // Try to load appointments from backend and populate local storage
+  private async bootstrapFromServer(): Promise<void> {
+    try {
+      const resp = await fetch('/api/appointments/list?page=1&per_page=1000', { credentials: 'same-origin' });
+      if (!resp.ok) return;
+      const json = await resp.json();
+      const items = (json && json.data) || [];
+
+      if (!Array.isArray(items) || items.length === 0) return;
+
+      // Try to fetch patient names to enrich appointments (best-effort)
+      let patientMap: Record<string, string> = {};
+      try {
+        // dynamic import to avoid circular dependencies at module load
+        const { patientApiService } = await import('./patient/patient-api.service');
+        const patients = await patientApiService.fetchAllPatients(1000);
+        patientMap = patients.reduce((acc: Record<string, string>, p: any) => {
+          if (p && p.id) acc[p.id] = p.name || '';
+          return acc;
+        }, {});
+      } catch (err) {
+        console.warn('Could not fetch patients for bootstrap:', err);
+      }
+
+      // Map backend shape to local Appointment type
+      this.appointments = items.map((d: any) => ({
+        id: d.id,
+        patientId: d.patientId,
+        patientName: d.patientName || patientMap[d.patientId] || '',
+        date: d.date,
+        time: d.time,
+        startTime: d.startTime || `${d.date}T${d.time}:00.000Z`,
+        endTime: d.endTime || new Date(`${d.date}T${d.time}:00Z`).toISOString(),
+        duration: d.duration || 30,
+        title: d.title || '',
+        type: d.type || 'consultation',
+        status: (d.status || 'scheduled').toLowerCase(),
+        notes: d.notes,
+        clinician: d.clinician || undefined,
+        clinicianId: d.clinicianId || undefined,
+        location: d.location || undefined,
+        branchId: d.branchId || undefined,
+        reminderSent: d.reminderSent || false,
+        createdBy: d.createdBy || undefined,
+        createdAt: d.createdAt || new Date().toISOString(),
+        updatedAt: d.updatedAt || new Date().toISOString()
+      }));
+
+      this.saveAppointments();
+      this.notify();
+    } catch (error) {
+      console.error('Failed to bootstrap appointments from server:', error);
+    }
   }
 
   // Event handling

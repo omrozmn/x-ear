@@ -28,11 +28,12 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredSuppliers, setFilteredSuppliers] = useState<string[]>([]);
+  const [allSuppliers, setAllSuppliers] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Common suppliers in hearing aid industry
-  const commonSuppliers = [
+  // Default suppliers (fallback)
+  const defaultSuppliers = [
     'Phonak Turkey',
     'Oticon Türkiye',
     'Widex Türkiye',
@@ -65,21 +66,93 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     'Hearing Care Turkey'
   ];
 
+  // Load suppliers from API
   useEffect(() => {
+    const loadSuppliers = async () => {
+      try {
+        // Try to load from suppliers endpoint first
+        const suppliersResponse = await api.get('/api/suppliers?per_page=1000');
+        if (suppliersResponse.data.success && Array.isArray(suppliersResponse.data.data)) {
+          const suppliers = suppliersResponse.data.data.map((s: any) => s.companyName).filter(Boolean);
+          const combined = [...new Set([...suppliers, ...defaultSuppliers])];
+          setAllSuppliers(combined.sort());
+          return;
+        }
+      } catch (error) {
+        console.warn('Failed to load from suppliers endpoint, trying inventory:', error);
+      }
+
+      // Fallback to inventory endpoint
+      try {
+        const response = await api.get('/api/inventory');
+        if (response.data.success && Array.isArray(response.data.data)) {
+          const items = response.data.data;
+          const suppliers = [...new Set(items.map((item: any) => item.supplier).filter(Boolean))] as string[];
+          const combined = [...new Set([...suppliers, ...defaultSuppliers])];
+          setAllSuppliers(combined.sort());
+        } else {
+          setAllSuppliers(defaultSuppliers);
+        }
+      } catch (error) {
+        console.warn('Failed to load suppliers from API, using defaults:', error);
+        setAllSuppliers(defaultSuppliers);
+      }
+    };
+    loadSuppliers();
+  }, []);
+
+  useEffect(() => {
+    const suppliers = allSuppliers.length > 0 ? allSuppliers : defaultSuppliers;
     if (value && isOpen) {
-      const filtered = commonSuppliers.filter(supplier =>
-        supplier.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredSuppliers(filtered.slice(0, 8)); // Limit to 8 results
+      // Normalize Turkish characters
+      const normalizeTurkish = (str: string) => {
+        return str
+          .toLowerCase()
+          .replace(/ğ/g, 'g')
+          .replace(/ü/g, 'u')
+          .replace(/ş/g, 's')
+          .replace(/ı/g, 'i')
+          .replace(/ö/g, 'o')
+          .replace(/ç/g, 'c');
+      };
+      
+      const normalizedValue = normalizeTurkish(value);
+      
+      const scored = suppliers.map(supplier => {
+        const normalizedSupplier = normalizeTurkish(supplier);
+        let score = 0;
+        
+        if (normalizedSupplier === normalizedValue) score = 100;
+        else if (normalizedSupplier.startsWith(normalizedValue)) score = 90;
+        else if (normalizedSupplier.includes(normalizedValue)) score = 70;
+        else {
+          let matches = 0;
+          for (const char of normalizedValue) {
+            if (normalizedSupplier.includes(char)) matches++;
+          }
+          score = (matches / normalizedValue.length) * 50;
+        }
+        
+        return { supplier, score };
+      });
+      
+      const filtered = scored
+        .filter(item => item.score > 30)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8)
+        .map(item => item.supplier);
+      
+      setFilteredSuppliers(filtered);
     } else if (isOpen) {
-      setFilteredSuppliers(commonSuppliers.slice(0, 8));
+      setFilteredSuppliers(suppliers.slice(0, 8));
     } else {
       setFilteredSuppliers([]);
     }
-  }, [value, isOpen]);
+  }, [value, isOpen, allSuppliers]);
 
   // Check if current value is an exact match
-  const hasExactMatch = commonSuppliers.some(sup => sup.toLowerCase() === value.toLowerCase());
+  const suppliers = allSuppliers.length > 0 ? allSuppliers : defaultSuppliers;
+  const hasExactMatch = suppliers.some(sup => sup.toLowerCase() === value.toLowerCase());
   const showCreateNew = value.trim() && !hasExactMatch && isOpen;
 
   useEffect(() => {
@@ -123,13 +196,19 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     if (!newSupplier) return;
 
     try {
-      await api.post('/api/suppliers', { company_name: newSupplier });
-      console.log('New supplier created:', newSupplier);
+      const response = await api.post('/api/suppliers', { company_name: newSupplier });
+      console.log('✅ New supplier created:', newSupplier);
+      // Add to local list immediately
+      setAllSuppliers(prev => [...new Set([...prev, newSupplier])].sort());
     } catch (error: any) {
       if (error.response?.status === 409) {
         console.log('Supplier already exists, using existing:', newSupplier);
+        // Still add to local list
+        setAllSuppliers(prev => [...new Set([...prev, newSupplier])].sort());
       } else {
         console.warn('Failed to persist supplier to API, using locally:', error);
+        // Add to local list anyway
+        setAllSuppliers(prev => [...new Set([...prev, newSupplier])].sort());
       }
     }
     

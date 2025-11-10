@@ -664,7 +664,8 @@ def search_patients():
 def get_patient_devices(patient_id):
     """Get all devices assigned to a specific patient"""
     try:
-        from models.device import Device
+        from models.sales import DeviceAssignment
+        from models.inventory import Inventory
         
         # Get patient to verify existence
         patient = db.session.get(Patient, patient_id)
@@ -675,10 +676,40 @@ def get_patient_devices(patient_id):
                 'timestamp': datetime.now().isoformat()
             }), 404
         
-        # Get all devices for this patient
-        devices = Device.query.filter_by(patient_id=patient_id).all()
+        # Get all device assignments for this patient
+        assignments = DeviceAssignment.query.filter_by(patient_id=patient_id).all()
         
-        devices_data = [device.to_dict() for device in devices]
+        devices_data = []
+        for assignment in assignments:
+            # Get inventory item details if available
+            inventory_item = None
+            if assignment.inventory_id:
+                inventory_item = db.session.get(Inventory, assignment.inventory_id)
+            
+            device_dict = assignment.to_dict()
+            
+            # Add inventory details
+            if inventory_item:
+                device_dict['brand'] = inventory_item.brand
+                device_dict['model'] = inventory_item.model
+                device_dict['deviceName'] = f"{inventory_item.brand} {inventory_item.model}"
+                device_dict['category'] = inventory_item.category
+                device_dict['barcode'] = inventory_item.barcode
+            else:
+                device_dict['deviceName'] = f"Device {assignment.device_id}"
+            
+            # Map fields for frontend compatibility
+            device_dict['earSide'] = assignment.ear
+            device_dict['assignedDate'] = assignment.created_at.isoformat() if assignment.created_at else None
+            device_dict['status'] = 'assigned'  # Default status
+            
+            # Serial numbers are already in device_dict from to_dict()
+            # No need to override - to_dict() already includes:
+            # - serialNumber
+            # - serialNumberLeft
+            # - serialNumberRight
+            
+            devices_data.append(device_dict)
         
         return jsonify({
             'success': True,

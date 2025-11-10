@@ -8,6 +8,8 @@ import { DeviceEditModal } from './patient/DeviceEditModal';
 import { DeviceTrialModal } from './patient/DeviceTrialModal';
 import { DeviceMaintenanceModal } from './patient/DeviceMaintenanceModal';
 import { InventoryManagementModal } from './patient/InventoryManagementModal';
+import { DeviceReplaceModal } from './patient/DeviceReplaceModal';
+import { ConfirmDialog } from './ui/ConfirmDialog';
 import { Smartphone, AlertCircle, Plus, Edit, Trash2, RefreshCw, Settings } from 'lucide-react';
 import { Button } from './ui/Button';
 import { PatientDevice } from '../types/patient';
@@ -62,40 +64,69 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
   const [showTrialModal, setShowTrialModal] = useState(false);
   const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
   const [showInventoryModal, setShowInventoryModal] = useState(false);
+  const [showReplaceModal, setShowReplaceModal] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<PatientDevice | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [deviceToCancel, setDeviceToCancel] = useState<string | null>(null);
 
   // Fetch devices data
-  const { data: fetchedDevices = [], isLoading, error } = usePatientDevices(patientId);
+  const { data: fetchedDevices = [], isLoading, error, refetch } = usePatientDevices(patientId);
 
-  // Use provided devices or fetched devices
-  const devicesList = devices || fetchedDevices;
+  // Use provided devices or fetched devices, sort by assignedDate (newest first)
+  const devicesList = (devices || fetchedDevices).sort((a, b) => {
+    const dateA = new Date(a.assignedDate || 0).getTime();
+    const dateB = new Date(b.assignedDate || 0).getTime();
+    return dateB - dateA; // Newest first
+  });
 
   // Helper function to convert PatientDevice to DeviceAssignment
-  const convertToDeviceAssignment = (device: PatientDevice | null): DeviceAssignment | null => {
-    if (!device) return null;
-    
-    return {
-      id: device.id,
-      deviceId: device.id,
-      patientId: patientId,
-      assignedDate: device.assignedDate || new Date().toISOString(),
-      assignedBy: device.assignedBy || 'Current User',
-      status: device.status as 'assigned' | 'trial' | 'returned' | 'defective',
-      ear: device.ear === 'bilateral' ? 'both' : (device.ear || 'both') as 'left' | 'right' | 'both',
-      reason: device.reason === 'new' ? 'sale' : device.reason === 'warranty' ? 'service' : device.reason === 'upgrade' ? 'replacement' : (device.reason || 'sale') as 'sale' | 'service' | 'repair' | 'trial' | 'replacement' | 'proposal' | 'other',
-      notes: device.notes,
-      trialEndDate: device.trialEndDate,
-      listPrice: device.listPrice,
-      salePrice: device.salePrice,
-      sgkReduction: device.sgkReduction,
-      patientPayment: device.patientPayment,
-      paymentMethod: device.paymentMethod,
-      serialNumber: device.serialNumber,
+  // Memoized to prevent unnecessary re-renders
+  const convertToDeviceAssignment = React.useMemo(() => {
+    return (device: PatientDevice | null): DeviceAssignment | null => {
+      if (!device) return null;
+      
+      // Get the correct ear value - handle both backend formats
+      let earValue: 'left' | 'right' | 'both' = 'both';
+      const earSide = (device as any).earSide;
+      const ear = device.ear || device.side;
+      
+      if (earSide === 'LEFT' || ear === 'left' || ear === 'L') {
+        earValue = 'left';
+      } else if (earSide === 'RIGHT' || ear === 'right' || ear === 'R') {
+        earValue = 'right';
+      } else if (earSide === 'BOTH' || ear === 'both' || ear === 'bilateral' || ear === 'B') {
+        earValue = 'both';
+      }
+      
+      return {
+        id: device.id,
+        deviceId: (device as any).inventoryId || (device as any).deviceId || device.id,
+        patientId: patientId,
+        assignedDate: device.assignedDate || new Date().toISOString(),
+        assignedBy: device.assignedBy || 'Current User',
+        status: device.status as 'assigned' | 'trial' | 'returned' | 'defective',
+        ear: earValue,
+        reason: device.reason === 'new' ? 'sale' : device.reason === 'warranty' ? 'service' : device.reason === 'upgrade' ? 'replacement' : (device.reason || 'sale') as 'sale' | 'service' | 'repair' | 'trial' | 'replacement' | 'proposal' | 'other',
+        notes: device.notes,
+        trialEndDate: device.trialEndDate,
+        listPrice: device.listPrice,
+        salePrice: device.salePrice,
+        sgkReduction: device.sgkReduction,
+        patientPayment: device.patientPayment,
+        paymentMethod: device.paymentMethod,
+        serialNumber: device.serialNumber || (device as any).serialNumberLeft || (device as any).serialNumberRight,
+        serialNumberLeft: (device as any).serialNumberLeft,
+        serialNumberRight: (device as any).serialNumberRight,
+        sgkSupportType: (device as any).sgkScheme || (device as any).sgkSupportType,
+        discountType: (device as any).discountType || 'none',
+        discountValue: (device as any).discountValue || 0,
+        downPayment: (device as any).downPayment || 0,
+      };
     };
-  };
+  }, [patientId]);
 
   // Clear messages after 5 seconds
   useEffect(() => {
@@ -120,7 +151,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
 
   const handleEditDevice = (device: PatientDevice) => {
     setEditingDevice(device);
-    setShowEditModal(true);
+    setShowAssignmentForm(true); // Open assignment form for editing
   };
 
   const handleEditModalClose = () => {
@@ -148,7 +179,52 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
     }
   };
 
-  const handleRemoveDevice = async (deviceId: string) => {
+  const handleCancelDevice = (deviceId: string) => {
+    setDeviceToCancel(deviceId);
+    setShowCancelConfirm(true);
+  };
+
+  const confirmCancelDevice = async () => {
+    if (!deviceToCancel) return;
+
+    try {
+      setIsSubmitting(true);
+      setActionError(null);
+      
+      // Update device status to cancelled
+      const response = await fetch(`http://localhost:5003/api/device-assignments/${deviceToCancel}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'cancelled' })
+      });
+
+      if (!response.ok) {
+        throw new Error('Cihaz iptal edilemedi');
+      }
+
+      setSuccessMessage('Cihaz ataması iptal edildi');
+      await refetch();
+    } catch (error: any) {
+      console.error('Error cancelling device:', error);
+      setActionError(error.message || 'Cihaz iptal edilirken bir hata oluştu');
+    } finally {
+      setIsSubmitting(false);
+      setShowCancelConfirm(false);
+      setDeviceToCancel(null);
+    }
+  };
+
+  const handleReplaceDevice = async (deviceId: string) => {
+    const device = devicesList.find(d => d.id === deviceId);
+    if (device) {
+      setSelectedDevice(device);
+      setShowReplaceModal(true);
+    }
+  };
+
+  const handleReplaceConfirm = async (deviceId: string, reason: string, notes: string) => {
     try {
       setActionError(null);
       // TODO: Implement API call to remove device
@@ -163,18 +239,6 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
     } catch (error) {
       console.error('Error removing device:', error);
       setActionError('Cihaz kaldırılırken bir hata oluştu');
-    }
-  };
-
-  const handleReplaceDevice = async (deviceId: string) => {
-    try {
-      setActionError(null);
-      // TODO: Implement device replacement logic
-      console.log('Replacing device:', deviceId);
-      setSuccessMessage('Cihaz değiştirme işlemi başlatıldı');
-    } catch (error) {
-      console.error('Error replacing device:', error);
-      setActionError('Cihaz değiştirilirken bir hata oluştu');
     }
   };
 
@@ -248,20 +312,141 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
       if (editingDevice) {
         // Update existing device
         console.log('Updating device assignment:', assignmentData);
+        
+        // Prepare update data for API
+        const updateData = {
+          ear_side: assignmentData.ear,
+          reason: assignmentData.reason || 'sale',
+          base_price: assignmentData.listPrice || 0,
+          discount_type: assignmentData.discountType || 'none',
+          discount_value: assignmentData.discountValue || 0,
+          payment_method: assignmentData.paymentMethod || 'cash',
+          notes: assignmentData.notes || '',
+          serial_number: assignmentData.serialNumber,
+          serial_number_left: assignmentData.serialNumberLeft,
+          serial_number_right: assignmentData.serialNumberRight,
+          sgk_scheme: assignmentData.sgkSupportType || 'no_coverage',
+          down_payment: assignmentData.downPayment || 0,
+          // Update device/inventory if changed
+          device_id: assignmentData.deviceId,
+          inventory_id: assignmentData.deviceId  // deviceId is actually inventoryId in our system
+        };
+        
+        console.log('📤 Sending device update data:', updateData);
+        console.log('📤 Assignment data from form:', assignmentData);
+        console.log('📤 Editing device:', editingDevice);
+        
+        // Call API to update device assignment
+        const response = await fetch(`http://localhost:5003/api/device-assignments/${editingDevice.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updateData)
+        });
+        
+        const result = await response.json();
+        
+        console.log('📥 Backend response:', result);
+        console.log('📥 Backend response FULL:', JSON.stringify(result, null, 2));
+        console.log('📥 Backend response data serial numbers:', {
+          serialNumber: result.data?.serialNumber,
+          serial_number: result.data?.serial_number,
+          serialNumberLeft: result.data?.serialNumberLeft,
+          serial_number_left: result.data?.serial_number_left,
+          serialNumberRight: result.data?.serialNumberRight,
+          serial_number_right: result.data?.serial_number_right
+        });
+        
+        if (!response.ok || !result.success) {
+          console.error('❌ Backend error details:', JSON.stringify(result, null, 2));
+          const errorMsg = result.error || result.message || `Backend error: ${response.status}`;
+          throw new Error(errorMsg);
+        }
+        
+        console.log('✅ Device assignment updated:', result);
+        console.log('✅ Updated device data:', result.data);
+        console.log('✅ Updated device FULL:', JSON.stringify(result.data, null, 2));
+        
         setSuccessMessage('Cihaz ataması başarıyla güncellendi');
+        
+        // WORKAROUND: Backend GET doesn't return updated data immediately
+        // Wait a bit and then refetch
+        console.log('🔄 Waiting 500ms before refetch...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        console.log('🔄 Refetching devices...');
+        await refetch();
+        console.log('✅ Devices refetched');
+        
+        // Dispatch event for other components
+        window.dispatchEvent(new CustomEvent('device:updated'));
       } else {
         // Create new device assignment
         console.log('Creating new device assignment:', assignmentData);
-        setSuccessMessage('Cihaz başarıyla atandı');
+        
+        // Prepare assignment data for API
+        const apiData = {
+          device_assignments: [{
+            inventoryId: assignmentData.deviceId,
+            ear_side: assignmentData.ear,
+            reason: assignmentData.reason || 'sale',
+            base_price: assignmentData.listPrice || 0,
+            discount_type: assignmentData.discountType || 'none',
+            discount_value: assignmentData.discountValue || 0,
+            payment_method: assignmentData.paymentMethod || 'cash',
+            notes: assignmentData.notes || '',
+            serial_number: assignmentData.serialNumber,
+            serial_number_left: assignmentData.serialNumberLeft,
+            serial_number_right: assignmentData.serialNumberRight
+          }],
+          sgk_scheme: assignmentData.sgkSupportType || 'no_coverage',
+          paidAmount: assignmentData.downPayment || 0,
+          downPayment: assignmentData.downPayment || 0,
+          payment_plan: assignmentData.paymentMethod || 'cash',
+          user_id: 'current_user',
+          accessories: [],
+          services: []
+        };
+        
+        console.log('📤 Sending device assignment data:', apiData);
+        
+        // Call API to create device assignment and sale record
+        const response = await fetch(`http://localhost:5003/api/patients/${patientId}/assign-devices-extended`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(apiData)
+        });
+        
+        const result = await response.json();
+        
+        console.log('📥 Backend response:', result);
+        console.log('📥 Response status:', response.status);
+        console.log('📥 Response OK:', response.ok);
+        
+        if (!response.ok || !result.success) {
+          console.error('❌ Backend error details:', JSON.stringify(result, null, 2));
+          const errorMsg = result.error || result.message || `Backend error: ${response.status}`;
+          throw new Error(errorMsg);
+        }
+        
+        console.log('✅ Device assignment created:', result);
+        setSuccessMessage('Cihaz başarıyla atandı ve satış kaydı oluşturuldu');
+        
+        // Refresh devices list
+        await refetch();
+        
+        // Dispatch event for other components
+        window.dispatchEvent(new CustomEvent('device:assigned'));
       }
       
       setShowAssignmentForm(false);
       setEditingDevice(null);
-      
-      // TODO: Refresh devices list
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in device assignment:', error);
-      setActionError(editingDevice ? 'Cihaz güncellenirken bir hata oluştu' : 'Cihaz atanırken bir hata oluştu');
+      setActionError(error.message || (editingDevice ? 'Cihaz güncellenirken bir hata oluştu' : 'Cihaz atanırken bir hata oluştu'));
     } finally {
       setIsSubmitting(false);
     }
@@ -361,71 +546,79 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
           </button>
         </div>
       ) : (
-        <div className="grid gap-4" role="list" aria-label="Hasta cihazları listesi">
-          {devicesList.map((device) => (
-            <div key={device.id} role="listitem" className="relative group">
-              <PatientDeviceCard
-                device={device}
-                onDeviceClick={handleDeviceClick}
-              />
-              
-              {/* Device action overlay */}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <div className="flex items-center space-x-1 bg-white rounded-lg shadow-lg border p-1">
-                  <Button
-                    onClick={() => handleEditDevice(device)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded"
-                    title="Düzenle"
-                    disabled={isSubmitting}
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    onClick={() => handleStartTrial(device)}
-                    className="p-2 text-green-600 hover:bg-green-50 rounded"
-                    title="Deneme Başlat"
-                    disabled={isSubmitting}
-                  >
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    onClick={() => handleDeviceMaintenance(device)}
-                    className="p-2 text-yellow-600 hover:bg-yellow-50 rounded"
-                    title="Bakım"
-                    disabled={isSubmitting}
-                  >
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    onClick={() => handleReplaceDevice(device.id)}
-                    className="p-2 text-orange-600 hover:bg-orange-50 rounded"
-                    title="Değiştir"
-                    disabled={isSubmitting}
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    onClick={() => handleRemoveDevice(device.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded"
-                    title="Kaldır"
-                    disabled={isSubmitting}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+        <div className="space-y-4" role="list" aria-label="Hasta cihazları listesi">
+          {devicesList.map((device) => {
+            const isBilateral = device.ear === 'both' || device.ear === 'bilateral' || (device as any).earSide === 'BOTH';
+            
+            // For bilateral, show two cards side by side (Right on left, Left on right - audiological view)
+            if (isBilateral) {
+              return (
+                <div key={device.id} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Right Ear Card - Red, on the left side */}
+                  <PatientDeviceCard
+                    device={{...device, ear: 'right', earSide: 'RIGHT', side: 'right'} as any}
+                    onEdit={handleEditDevice}
+                    onReplace={(d) => handleReplaceDevice(d.id)}
+                    onCancel={(d) => handleCancelDevice(d.id)}
+                    isCancelled={(device as any).status === 'cancelled'}
+                  />
+                  {/* Left Ear Card - Blue, on the right side */}
+                  <PatientDeviceCard
+                    device={{...device, ear: 'left', earSide: 'LEFT', side: 'left'} as any}
+                    onEdit={handleEditDevice}
+                    onReplace={(d) => handleReplaceDevice(d.id)}
+                    onCancel={(d) => handleCancelDevice(d.id)}
+                    isCancelled={(device as any).status === 'cancelled'}
+                  />
                 </div>
+              );
+            }
+            
+            // For single ear, position card based on ear (audiological view)
+            const isRight = device.ear === 'right' || device.ear === 'R' || (device as any).earSide === 'RIGHT';
+            const isLeft = device.ear === 'left' || device.ear === 'L' || (device as any).earSide === 'LEFT';
+            
+            return (
+              <div key={device.id} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Right ear on left column, Left ear on right column */}
+                {isRight ? (
+                  <>
+                    <PatientDeviceCard
+                      device={device}
+                      onEdit={handleEditDevice}
+                      onReplace={(d) => handleReplaceDevice(d.id)}
+                      onCancel={(d) => handleCancelDevice(d.id)}
+                      isCancelled={(device as any).status === 'cancelled'}
+                    />
+                    <div />
+                  </>
+                ) : (
+                  <>
+                    <div />
+                    <PatientDeviceCard
+                      device={device}
+                      onEdit={handleEditDevice}
+                      onReplace={(d) => handleReplaceDevice(d.id)}
+                      onCancel={(d) => handleCancelDevice(d.id)}
+                      isCancelled={(device as any).status === 'cancelled'}
+                    />
+                  </>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {showAssignmentForm && (
           <DeviceAssignmentForm
+            key={editingDevice?.id || 'new'}
             patientId={patientId}
-            assignment={convertToDeviceAssignment(editingDevice)}
+            assignment={editingDevice ? convertToDeviceAssignment(editingDevice) : null}
             isOpen={showAssignmentForm}
             onClose={handleAssignmentFormClose}
             onSave={handleDeviceAssignment}
+            onUpdate={handleDeviceAssignment}
           />
         )}
 
@@ -463,6 +656,28 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
           onClose={handleInventoryModalClose}
         />
       )}
+
+      {showReplaceModal && selectedDevice && (
+        <DeviceReplaceModal
+          device={selectedDevice}
+          isOpen={showReplaceModal}
+          onClose={() => setShowReplaceModal(false)}
+          onReplace={handleReplaceConfirm}
+        />
+      )}
+
+      <ConfirmDialog
+        isOpen={showCancelConfirm}
+        title="Cihaz Atamasını İptal Et"
+        description="Bu cihaz atamasını iptal etmek istediğinizden emin misiniz? İptal edilen atama kartı üzerinde çizili olarak görünecektir."
+        onClose={() => {
+          setShowCancelConfirm(false);
+          setDeviceToCancel(null);
+        }}
+        onConfirm={confirmCancelDevice}
+        confirmLabel="İptal Et"
+        cancelLabel="Vazgeç"
+      />
     </div>
   );
 };

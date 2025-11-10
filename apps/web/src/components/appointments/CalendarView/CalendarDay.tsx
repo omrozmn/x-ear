@@ -44,9 +44,18 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
     const startHour = 8;
     const endHour = 18;
 
+    // Only consider appointments for the currently selected date
+    const dayAppointments = appointments.filter(apt => {
+      try {
+        return startOfDay(new Date(apt.date)).getTime() === startOfDay(selectedDate).getTime();
+      } catch {
+        return false;
+      }
+    });
+
     for (let hour = startHour; hour <= endHour; hour++) {
       const time = `${hour.toString().padStart(2, '0')}:00`;
-      const slotAppointments = appointments.filter(apt => {
+      const slotAppointments = dayAppointments.filter(apt => {
         const aptHour = parseInt(apt.time.split(':')[0]);
         return aptHour === hour;
       });
@@ -59,7 +68,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
     }
 
     return slots;
-  }, [appointments]);
+  }, [appointments, selectedDate]);
 
   // Keyboard navigation
   useCalendarKeyboardNavigation({
@@ -160,17 +169,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
         ))}
       </div>
 
-      {/* Current time indicator */}
-      {isToday && (
-        <div
-          className="absolute left-16 right-4 h-0.5 bg-red-500 z-10 pointer-events-none"
-          style={{
-            top: `${((currentTime.getHours() - 8) * 80) + (currentTime.getMinutes() * 80 / 60) + 120}px`,
-          }}
-        >
-          <div className="w-2 h-2 bg-red-500 rounded-full -ml-1 -mt-0.5"></div>
-        </div>
-      )}
+      {/* Current time indicator removed as requested */}
     </div>
   );
 };

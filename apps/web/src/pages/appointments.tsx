@@ -104,9 +104,9 @@ export default function AppointmentsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
-        <div className="mb-8">
+        <div className="mb-8 relative">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Randevular</h1>
@@ -116,7 +116,8 @@ export default function AppointmentsPage() {
             </div>
             <Button
               onClick={handleCreateAppointment}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="absolute right-6 top-4 z-50 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none"
+              style={{ backgroundColor: '#2563EB', color: '#FFFFFF' }}
               variant='default'>
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -146,39 +147,7 @@ export default function AppointmentsPage() {
         {/* Stats Cards */}
         {getStatsCards()}
 
-        {/* View Mode Toggle */}
-        <div className="mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              <Button
-                onClick={() => setViewMode('calendar')}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  viewMode === 'calendar'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-                variant='default'>
-                <svg className="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Takvim
-              </Button>
-              <Button
-                onClick={() => setViewMode('list')}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  viewMode === 'list'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-                variant='default'>
-                <svg className="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                </svg>
-                Liste
-              </Button>
-            </div>
-          </div>
-        </div>
+        {/* View Mode Toggle removed (calendar controls are inside the calendar component) */}
 
         {/* Main Content */}
         <div className="space-y-6">
@@ -186,6 +155,7 @@ export default function AppointmentsPage() {
             <AppointmentCalendar
               onDateClick={handleDateClick}
               className="w-full"
+              showCreateButton={false}
             />
           ) : (
             <AppointmentList

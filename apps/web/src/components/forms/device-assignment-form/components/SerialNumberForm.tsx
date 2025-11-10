@@ -1,6 +1,5 @@
-import React from 'react';
-import { Input, Select } from '@x-ear/ui-web';
-import { Hash, AlertTriangle, CheckCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Hash, CheckCircle } from 'lucide-react';
 import { DeviceInventoryItem } from './DeviceSearchForm';
 
 export interface DeviceAssignment {
@@ -17,100 +16,107 @@ interface SerialNumberFormProps {
   errors?: Record<string, string>;
 }
 
+const SerialAutocomplete: React.FC<{
+  value: string;
+  onChange: (value: string) => void;
+  availableSerials: string[];
+  placeholder: string;
+  label: string;
+  color?: 'blue' | 'red';
+}> = ({ value, onChange, availableSerials, placeholder, label, color = 'blue' }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [filteredSerials, setFilteredSerials] = useState<string[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (value && isOpen) {
+      const filtered = availableSerials.filter(serial =>
+        serial.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredSerials(filtered);
+    } else if (isOpen) {
+      setFilteredSerials(availableSerials);
+    } else {
+      setFilteredSerials([]);
+    }
+  }, [value, isOpen, availableSerials]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelect = (serial: string) => {
+    onChange(serial);
+    setIsOpen(false);
+  };
+
+  const colorClasses = {
+    blue: 'text-blue-700',
+    red: 'text-red-700'
+  };
+
+  return (
+    <div className="relative">
+      <label className={`block text-sm font-medium mb-1 ${colorClasses[color]}`}>
+        {label} (Opsiyonel)
+      </label>
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          if (!isOpen) setIsOpen(true);
+        }}
+        onFocus={() => setIsOpen(true)}
+        placeholder={placeholder}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      
+      {isOpen && filteredSerials.length > 0 && (
+        <div
+          ref={dropdownRef}
+          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-auto"
+        >
+          {filteredSerials.map((serial, index) => (
+            <div
+              key={index}
+              onClick={() => handleSelect(serial)}
+              className="px-4 py-2 cursor-pointer hover:bg-blue-50 transition-colors"
+            >
+              <span className="text-sm text-gray-900 font-mono">{serial}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const SerialNumberForm: React.FC<SerialNumberFormProps> = ({
   formData,
   onFormDataChange,
   selectedDevice,
   errors = {}
 }) => {
-  const updateFormData = (field: keyof DeviceAssignment, value: any) => {
-    onFormDataChange({ ...formData, [field]: value });
+  const updateField = (field: keyof DeviceAssignment, value: string) => {
+    onFormDataChange({ [field]: value });
   };
 
-  const getAvailableSerials = (): string[] => {
-    return selectedDevice?.availableSerials || [];
-  };
-
-  const isSerialAvailable = (serial: string): boolean => {
-    return getAvailableSerials().includes(serial);
-  };
-
-  const renderSerialInput = (
-    label: string,
-    field: keyof DeviceAssignment,
-    placeholder: string
-  ) => {
-    const currentValue = formData[field] as string || '';
-    const availableSerials = getAvailableSerials();
-    const isValid = !currentValue || isSerialAvailable(currentValue);
-
-    return (
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {label}
-        </label>
-        <div className="space-y-2">
-          {/* Manual Input */}
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Hash className="w-4 h-4 text-gray-400" />
-            </div>
-            <Input
-              type="text"
-              value={currentValue}
-              onChange={(e) => updateFormData(field, e.target.value)}
-              placeholder={placeholder}
-              className={`pl-10 ${
-                errors[field] ? 'border-red-300' : 
-                currentValue && !isValid ? 'border-orange-300' : ''
-              }`}
-            />
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              {currentValue && (
-                isValid ? (
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                ) : (
-                  <AlertTriangle className="w-4 h-4 text-orange-500" />
-                )
-              )}
-            </div>
-          </div>
-
-          {/* Available Serials Dropdown */}
-          {availableSerials.length > 0 && (
-            <Select
-              value=""
-              onChange={(e) => {
-                if (e.target.value) {
-                  updateFormData(field, e.target.value);
-                }
-              }}
-              label=""
-              options={[
-                { value: '', label: 'Mevcut seri numaralarından seçin...' },
-                ...availableSerials.map(serial => ({
-                  value: serial,
-                  label: serial
-                }))
-              ]}
-              className="text-sm"
-            />
-          )}
-
-          {/* Validation Messages */}
-          {errors[field] && (
-            <p className="text-sm text-red-600">{errors[field]}</p>
-          )}
-          {currentValue && !isValid && (
-            <p className="text-sm text-orange-600 flex items-center">
-              <AlertTriangle className="w-3 h-3 mr-1" />
-              Bu seri numarası mevcut değil veya kullanımda
-            </p>
-          )}
-        </div>
-      </div>
-    );
-  };
+  const availableSerials = selectedDevice?.availableSerials || [];
 
   if (!selectedDevice) {
     return (
@@ -123,117 +129,81 @@ export const SerialNumberForm: React.FC<SerialNumberFormProps> = ({
     );
   }
 
+  const assignedSerials = [
+    formData.serialNumber,
+    formData.serialNumberLeft,
+    formData.serialNumberRight
+  ].filter(Boolean);
+
   return (
-    <div className="space-y-6">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-blue-900 mb-2 flex items-center">
+    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
+      <div>
+        <h4 className="text-sm font-medium text-blue-900 mb-1 flex items-center">
           <Hash className="w-4 h-4 mr-2" />
           Seri Numarası Yönetimi
         </h4>
         <p className="text-xs text-blue-700">
-          Seçilen cihaz: <strong>{selectedDevice.brand} {selectedDevice.model}</strong>
-        </p>
-        <p className="text-xs text-blue-600 mt-1">
-          Mevcut seri numaraları: {getAvailableSerials().length} adet
+          <strong>{selectedDevice.brand} {selectedDevice.model}</strong> - Mevcut: {availableSerials.length} adet
         </p>
       </div>
 
-      {/* Serial Number Assignment based on ear selection */}
+      {/* Serial Number Inputs - Audiological order: Right Left */}
       {formData.ear === 'both' ? (
-        // Bilateral - Both ears
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {renderSerialInput(
-            'Sol Kulak Seri No',
-            'serialNumberLeft',
-            'Sol kulak seri numarası'
-          )}
-          {renderSerialInput(
-            'Sağ Kulak Seri No',
-            'serialNumberRight',
-            'Sağ kulak seri numarası'
-          )}
+          <SerialAutocomplete
+            value={formData.serialNumberRight || ''}
+            onChange={(val) => updateField('serialNumberRight', val)}
+            availableSerials={availableSerials}
+            placeholder="Sağ kulak seri no"
+            label="Sağ Kulak Seri No"
+            color="red"
+          />
+          <SerialAutocomplete
+            value={formData.serialNumberLeft || ''}
+            onChange={(val) => updateField('serialNumberLeft', val)}
+            availableSerials={availableSerials}
+            placeholder="Sol kulak seri no"
+            label="Sol Kulak Seri No"
+            color="blue"
+          />
         </div>
       ) : (
-        // Single ear
-        renderSerialInput(
-          `${formData.ear === 'left' ? 'Sol' : 'Sağ'} Kulak Seri No`,
-          'serialNumber',
-          `${formData.ear === 'left' ? 'Sol' : 'Sağ'} kulak seri numarası`
-        )
+        <SerialAutocomplete
+          value={formData.serialNumber || ''}
+          onChange={(val) => updateField('serialNumber', val)}
+          availableSerials={availableSerials}
+          placeholder={`${formData.ear === 'left' ? 'Sol' : 'Sağ'} kulak seri no`}
+          label={`${formData.ear === 'left' ? 'Sol' : 'Sağ'} Kulak Seri No`}
+          color={formData.ear === 'left' ? 'blue' : 'red'}
+        />
       )}
 
-      {/* Available Serials List */}
-      {getAvailableSerials().length > 0 && (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h5 className="text-sm font-medium text-gray-900 mb-2">
-            Mevcut Seri Numaraları
-          </h5>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-            {getAvailableSerials().map((serial) => {
-              const isUsed = 
-                serial === formData.serialNumber ||
-                serial === formData.serialNumberLeft ||
-                serial === formData.serialNumberRight;
-              
-              return (
-                <div
-                  key={serial}
-                  className={`px-2 py-1 rounded text-xs font-mono ${
-                    isUsed
-                      ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                      : 'bg-white text-gray-700 border border-gray-300'
-                  }`}
-                >
-                  {serial}
-                  {isUsed && (
-                    <span className="ml-1 text-blue-600">✓</span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Serial Assignment Summary */}
-      {(formData.serialNumber || formData.serialNumberLeft || formData.serialNumberRight) && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <h5 className="text-sm font-medium text-green-900 mb-2 flex items-center">
-            <CheckCircle className="w-4 h-4 mr-2" />
+      {/* Assigned Serials Summary - Audiological view: Right Left (as facing a person) */}
+      {assignedSerials.length > 0 && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+          <h5 className="text-xs font-medium text-green-900 mb-2 flex items-center">
+            <CheckCircle className="w-3 h-3 mr-1" />
             Atanan Seri Numaraları
           </h5>
-          <div className="space-y-1 text-sm text-green-800">
-            {formData.serialNumber && (
-              <div>
-                <strong>{formData.ear === 'left' ? 'Sol' : 'Sağ'} Kulak:</strong> {formData.serialNumber}
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {/* Right Ear - Red (First column - audiological view) */}
+            {(formData.serialNumberRight || (formData.serialNumber && formData.ear === 'right')) && (
+              <div className="bg-red-50 border border-red-200 rounded px-2 py-1">
+                <strong className="text-red-700">Sağ:</strong>
+                <span className="ml-1 text-red-900 font-mono">
+                  {formData.serialNumberRight || formData.serialNumber}
+                </span>
               </div>
             )}
-            {formData.serialNumberLeft && (
-              <div>
-                <strong>Sol Kulak:</strong> {formData.serialNumberLeft}
+            {/* Left Ear - Blue (Second column - audiological view) */}
+            {(formData.serialNumberLeft || (formData.serialNumber && formData.ear === 'left')) && (
+              <div className="bg-blue-50 border border-blue-200 rounded px-2 py-1">
+                <strong className="text-blue-700">Sol:</strong>
+                <span className="ml-1 text-blue-900 font-mono">
+                  {formData.serialNumberLeft || formData.serialNumber}
+                </span>
               </div>
             )}
-            {formData.serialNumberRight && (
-              <div>
-                <strong>Sağ Kulak:</strong> {formData.serialNumberRight}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Warnings */}
-      {getAvailableSerials().length === 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" />
-            <div>
-              <h5 className="text-sm font-medium text-yellow-900">Uyarı</h5>
-              <p className="text-sm text-yellow-800 mt-1">
-                Bu cihaz için mevcut seri numarası bulunmuyor. 
-                Seri numarasını manuel olarak girmeniz gerekebilir.
-              </p>
-            </div>
           </div>
         </div>
       )}

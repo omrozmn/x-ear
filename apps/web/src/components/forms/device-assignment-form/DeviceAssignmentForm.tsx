@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Button, Modal } from '@x-ear/ui-web';
 import { Save } from 'lucide-react';
 import { DeviceSearchForm } from './components/DeviceSearchForm';
@@ -28,8 +28,6 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
   const {
     formData,
     updateFormData,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    availableDevices,
     filteredDevices,
     selectedDevice,
     searchTerm,
@@ -37,8 +35,6 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
     handleDeviceSelect,
     errors,
     validateForm,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    sgkAmounts,
     resetForm
   } = useDeviceAssignment({
     patientId,
@@ -75,6 +71,13 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
     onClose();
   };
 
+  // Memoize the callback to prevent unnecessary re-renders
+  const handleFormDataChange = useCallback((data: Partial<DeviceAssignment>) => {
+    Object.entries(data).forEach(([key, value]) => {
+      updateFormData(key as keyof DeviceAssignment, value);
+    });
+  }, [updateFormData]);
+
   if (!isOpen) return null;
 
   return (
@@ -86,18 +89,63 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
       showFooter={false}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Device Search */}
-        <div className="bg-gray-50 rounded-lg p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Cihaz Seçimi</h3>
-          <DeviceSearchForm
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            filteredDevices={filteredDevices}
-            selectedDevice={selectedDevice}
-            onDeviceSelect={handleDeviceSelect}
-            errors={errors}
-          />
-        </div>
+        {/* Device Search - Only show in create mode or collapsed in edit mode */}
+        {!assignment && (
+          <div className="bg-gray-50 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Cihaz Seçimi</h3>
+            <DeviceSearchForm
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              filteredDevices={filteredDevices}
+              selectedDevice={selectedDevice}
+              onDeviceSelect={handleDeviceSelect}
+              errors={errors}
+            />
+          </div>
+        )}
+
+        {/* In edit mode, show selected device info with option to change */}
+        {assignment && selectedDevice && (
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm text-blue-600 font-medium">Seçili Cihaz</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {selectedDevice.brand} {selectedDevice.model}
+                </p>
+                <p className="text-sm text-gray-600">Barkod: {selectedDevice.barcode || '-'}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  // Show device search in edit mode
+                  const searchSection = document.getElementById('device-search-section');
+                  if (searchSection) {
+                    searchSection.style.display = searchSection.style.display === 'none' ? 'block' : 'none';
+                  }
+                }}
+                className="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+              >
+                Farklı Cihaz Seç
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Device Search in edit mode (hidden by default) */}
+        {assignment && (
+          <div id="device-search-section" style={{ display: 'none' }} className="bg-gray-50 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Farklı Cihaz Seç</h3>
+            <DeviceSearchForm
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              filteredDevices={filteredDevices}
+              selectedDevice={selectedDevice}
+              onDeviceSelect={handleDeviceSelect}
+              errors={errors}
+            />
+          </div>
+        )}
 
         {/* Assignment Details */}
         {selectedDevice && (
@@ -105,11 +153,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
             <h3 className="text-lg font-medium text-gray-900 mb-4">Atama Detayları</h3>
             <AssignmentDetailsForm
               formData={formData}
-              onFormDataChange={(data) => {
-                Object.entries(data).forEach(([key, value]) => {
-                  updateFormData(key as keyof DeviceAssignment, value);
-                });
-              }}
+              onFormDataChange={handleFormDataChange}
               errors={errors}
             />
           </div>
@@ -121,11 +165,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
             <h3 className="text-lg font-medium text-gray-900 mb-4">Fiyatlandırma</h3>
             <PricingForm
               formData={formData}
-              onFormDataChange={(data) => {
-                Object.entries(data).forEach(([key, value]) => {
-                  updateFormData(key as keyof DeviceAssignment, value);
-                });
-              }}
+              onFormDataChange={handleFormDataChange}
               errors={errors}
             />
           </div>
@@ -138,13 +178,25 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
             <SerialNumberForm
               formData={formData}
               selectedDevice={selectedDevice}
-              onFormDataChange={(data) => {
-                Object.entries(data).forEach(([key, value]) => {
-                  updateFormData(key as keyof DeviceAssignment, value);
-                });
-              }}
+              onFormDataChange={handleFormDataChange}
               errors={errors}
             />
+          </div>
+        )}
+
+        {/* Notes - At the bottom */}
+        {selectedDevice && (
+          <div className="bg-gray-50 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Notlar</h3>
+            <div className="relative">
+              <textarea
+                value={formData.notes || ''}
+                onChange={(e) => updateFormData('notes', e.target.value)}
+                placeholder="Cihaz ataması ile ilgili notlar..."
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              />
+            </div>
           </div>
         )}
 

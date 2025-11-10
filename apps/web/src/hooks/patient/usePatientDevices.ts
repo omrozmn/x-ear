@@ -27,6 +27,17 @@ export function usePatientDevices(patientId: string) {
 
       // API response structure: { success: boolean, data: PatientDevice[], meta: {...} }
       if (response.data?.success && Array.isArray(response.data.data)) {
+        console.log('📥 Patient devices from backend:', response.data.data);
+        const firstDevice = response.data.data[0];
+        console.log('📥 First device FULL:', JSON.stringify(firstDevice, null, 2));
+        console.log('📥 Serial numbers check:', {
+          serialNumber: firstDevice?.serialNumber,
+          serial_number: firstDevice?.serial_number,
+          serialNumberLeft: firstDevice?.serialNumberLeft,
+          serial_number_left: firstDevice?.serial_number_left,
+          serialNumberRight: firstDevice?.serialNumberRight,
+          serial_number_right: firstDevice?.serial_number_right
+        });
         setDevices(response.data.data);
       } else {
         console.warn('Unexpected API response structure:', response.data);

@@ -15,7 +15,7 @@ export interface DeviceAssignment {
   trialEndDate?: string;
   returnDate?: string;
   condition?: string;
-  
+
   // Pricing fields
   listPrice?: number;
   trialListPrice?: number;
@@ -31,7 +31,7 @@ export interface DeviceAssignment {
   paymentMethod?: 'cash' | 'card' | 'transfer' | 'installment';
   installmentCount?: number;
   monthlyInstallment?: number;
-  
+
   // Serial numbers
   serialNumber?: string;
   serialNumberLeft?: string;
@@ -50,7 +50,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
   errors = {}
 }) => {
   const updateFormData = (field: keyof DeviceAssignment, value: any) => {
-    onFormDataChange({ ...formData, [field]: value });
+    onFormDataChange({ [field]: value });
   };
 
   const getStatusIcon = (status: string) => {
@@ -70,105 +70,103 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Assignment Information */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Assignment Information - 3 columns in one row: Sebep, Tarih, Atayan */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Atama Sebebi *
+          </label>
+          <select
+            value={formData.reason || ''}
+            onChange={(e) => updateFormData('reason', e.target.value)}
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.reason ? 'border-red-300' : 'border-gray-300'}`}
+          >
+            <option value="">Sebep seçiniz</option>
+            <option value="sale">Satış</option>
+            <option value="service">Servis</option>
+            <option value="repair">Tamir</option>
+            <option value="trial">Deneme</option>
+            <option value="replacement">Değişim</option>
+            <option value="proposal">Teklif</option>
+            <option value="other">Diğer</option>
+          </select>
+          {errors.reason && (
+            <p className="mt-1 text-sm text-red-600">{errors.reason}</p>
+          )}
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Atama Tarihi *
           </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Calendar className="w-4 h-4 text-gray-400" />
-            </div>
-            <Input
-              type="date"
-              value={formData.assignedDate || ''}
-              onChange={(e) => updateFormData('assignedDate', e.target.value)}
-              className={`pl-10 ${errors.assignedDate ? 'border-red-300' : ''}`}
-            />
-            {errors.assignedDate && (
-              <p className="mt-1 text-sm text-red-600">{errors.assignedDate}</p>
-            )}
-          </div>
+          <input
+            type="date"
+            value={formData.assignedDate || ''}
+            onChange={(e) => updateFormData('assignedDate', e.target.value)}
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.assignedDate ? 'border-red-300' : 'border-gray-300'}`}
+          />
+          {errors.assignedDate && (
+            <p className="mt-1 text-sm text-red-600">{errors.assignedDate}</p>
+          )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Atayan Kişi
           </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <User className="w-4 h-4 text-gray-400" />
-            </div>
-            <Input
-              type="text"
-              value={formData.assignedBy || ''}
-              onChange={(e) => updateFormData('assignedBy', e.target.value)}
-              placeholder="Atayan kişi adı"
-              className="pl-10"
-            />
-          </div>
+          <input
+            type="text"
+            value={formData.assignedBy || ''}
+            onChange={(e) => updateFormData('assignedBy', e.target.value)}
+            placeholder="Atayan kişi adı"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
       </div>
 
-      {/* Ear Selection */}
+      {/* Ear Selection - BUTTONS with color coding: Right=Red, Bilateral=Gradient, Left=Blue */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Kulak Seçimi *
         </label>
         <div className="grid grid-cols-3 gap-3">
           {[
-            { value: 'left', label: 'Sol Kulak' },
-            { value: 'right', label: 'Sağ Kulak' },
-            { value: 'both', label: 'Her İki Kulak' }
-          ].map((ear) => (
-            <label key={ear.value} className="relative">
-              <input
-                type="radio"
-                name="ear"
-                value={ear.value}
-                checked={formData.ear === ear.value}
-                onChange={(e) => updateFormData('ear', e.target.value)}
-                className="sr-only"
-              />
-              <div className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                formData.ear === ear.value
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-              }`}>
-                <span className="text-sm font-medium">{ear.label}</span>
-              </div>
-            </label>
-          ))}
+            { value: 'right', label: 'Sağ Kulak', color: 'red' },
+            { value: 'both', label: 'Bilateral', color: 'gradient' },
+            { value: 'left', label: 'Sol Kulak', color: 'blue' }
+          ].map((ear) => {
+            const isSelected = formData.ear === ear.value;
+            const colorClasses = {
+              blue: isSelected
+                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                : 'border-blue-300 bg-white text-blue-600 hover:bg-blue-50',
+              red: isSelected
+                ? 'border-red-500 bg-red-50 text-red-700'
+                : 'border-red-300 bg-white text-red-600 hover:bg-red-50',
+              gradient: isSelected
+                ? 'border-green-500 bg-green-50 text-green-700'
+                : 'border-green-300 bg-white text-green-600 hover:bg-green-50'
+            };
+
+            return (
+              <label key={ear.value} className="relative">
+                <input
+                  type="radio"
+                  name="ear"
+                  value={ear.value}
+                  checked={isSelected}
+                  onChange={(e) => updateFormData('ear', e.target.value)}
+                  className="sr-only"
+                />
+                <div className={`flex items-center justify-center p-3 border-2 rounded-lg cursor-pointer transition-colors ${colorClasses[ear.color as keyof typeof colorClasses]}`}>
+                  <span className="text-sm font-medium">{ear.label}</span>
+                </div>
+              </label>
+            );
+          })}
         </div>
         {errors.ear && (
           <p className="mt-1 text-sm text-red-600">{errors.ear}</p>
-        )}
-      </div>
-
-      {/* Assignment Reason */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Atama Sebebi *
-        </label>
-        <Select
-          value={formData.reason || ''}
-          onChange={(e) => updateFormData('reason', e.target.value)}
-          label=""
-          options={[
-            { value: '', label: 'Sebep seçiniz' },
-            { value: 'sale', label: 'Satış' },
-            { value: 'service', label: 'Servis' },
-            { value: 'repair', label: 'Tamir' },
-            { value: 'trial', label: 'Deneme' },
-            { value: 'replacement', label: 'Değişim' },
-            { value: 'proposal', label: 'Teklif' },
-            { value: 'other', label: 'Diğer' }
-          ]}
-          className={errors.reason ? 'border-red-300' : ''}
-        />
-        {errors.reason && (
-          <p className="mt-1 text-sm text-red-600">{errors.reason}</p>
         )}
       </div>
 
@@ -236,25 +234,6 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
           />
         </div>
       )}
-
-      {/* Notes */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Notlar
-        </label>
-        <div className="relative">
-          <div className="absolute top-3 left-3 flex items-start pointer-events-none">
-            <FileText className="w-4 h-4 text-gray-400" />
-          </div>
-          <Textarea
-            value={formData.notes || ''}
-            onChange={(e) => updateFormData('notes', e.target.value)}
-            placeholder="Cihaz ataması ile ilgili notlar..."
-            rows={3}
-            className="pl-10"
-          />
-        </div>
-      </div>
     </div>
   );
 };

@@ -48,9 +48,10 @@ export interface PatientDevice {
   model: string;
   serialNumber?: string;
   side: 'left' | 'right' | 'both';
-  ear?: 'left' | 'right' | 'both' | 'bilateral'; // Alternative to side for legacy compatibility
+  ear?: 'left' | 'right' | 'both' | 'bilateral' | 'L' | 'R' | 'B'; // Alternative to side for legacy compatibility
+  earSide?: 'LEFT' | 'RIGHT' | 'BOTH'; // Backend format
   type: 'hearing_aid' | 'cochlear_implant' | 'bone_anchored';
-  status: 'active' | 'trial' | 'returned' | 'replaced';
+  status: 'active' | 'trial' | 'returned' | 'replaced' | 'assigned';
   purchaseDate?: string;
   assignedDate?: string;
   warrantyExpiry?: string;

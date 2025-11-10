@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, make_response
 from models.base import db
 from models.appointment import Appointment
 from models.device import Device
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.orm import load_only
 import logging
 from utils.idempotency import idempotent
@@ -27,9 +27,20 @@ def get_appointments():
         query = Appointment.query
 
         if start_date:
-            query = query.filter(Appointment.date >= datetime.fromisoformat(start_date))
+            # Interpret date-only strings as start of day (inclusive)
+            if 'T' in start_date:
+                start_dt = datetime.fromisoformat(start_date)
+            else:
+                start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+            query = query.filter(Appointment.date >= start_dt)
         if end_date:
-            query = query.filter(Appointment.date <= datetime.fromisoformat(end_date))
+            # Interpret date-only strings as end of day (inclusive)
+            if 'T' in end_date:
+                end_dt = datetime.fromisoformat(end_date)
+            else:
+                # make the end_date inclusive for the entire day
+                end_dt = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1) - timedelta(microseconds=1)
+            query = query.filter(Appointment.date <= end_dt)
         if patient_id:
             query = query.filter_by(patient_id=patient_id)
         # Handle status filter with automatic conversion
@@ -338,11 +349,19 @@ def list_appointments():
 
         start_date = request.args.get('start_date')
         if start_date:
-            query = query.filter(Appointment.date >= datetime.fromisoformat(start_date))
+            if 'T' in start_date:
+                start_dt = datetime.fromisoformat(start_date)
+            else:
+                start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+            query = query.filter(Appointment.date >= start_dt)
 
         end_date = request.args.get('end_date')
         if end_date:
-            query = query.filter(Appointment.date <= datetime.fromisoformat(end_date))
+            if 'T' in end_date:
+                end_dt = datetime.fromisoformat(end_date)
+            else:
+                end_dt = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1) - timedelta(microseconds=1)
+            query = query.filter(Appointment.date <= end_dt)
 
         appointments = query.order_by(Appointment.date.desc()).paginate(page=page, per_page=per_page, error_out=False)
 

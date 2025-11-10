@@ -34,7 +34,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
   showTrialPricing = false
 }) => {
   const updateFormData = (field: keyof DeviceAssignment, value: any) => {
-    onFormDataChange({ ...formData, [field]: value });
+    onFormDataChange({ [field]: value });
   };
 
   const formatCurrency = (amount: number): string => {
@@ -69,22 +69,22 @@ export const PricingForm: React.FC<PricingFormProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs text-blue-700 mb-1">Deneme Liste Fiyatı</label>
-              <Input
+              <input
                 type="number"
                 value={formData.trialListPrice || ''}
                 onChange={(e) => updateFormData('trialListPrice', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
-                className="text-sm"
+                className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               />
             </div>
             <div>
               <label className="block text-xs text-blue-700 mb-1">Deneme Fiyatı</label>
-              <Input
+              <input
                 type="number"
                 value={formData.trialPrice || ''}
                 onChange={(e) => updateFormData('trialPrice', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
-                className="text-sm"
+                className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               />
             </div>
           </div>
@@ -98,38 +98,43 @@ export const PricingForm: React.FC<PricingFormProps> = ({
           Fiyatlandırma Bilgileri
         </h4>
 
-        {/* List Price */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Liste Fiyatı
-          </label>
-          <Input
-            type="number"
-            value={formData.listPrice || ''}
-            onChange={(e) => updateFormData('listPrice', parseFloat(e.target.value) || 0)}
-            placeholder="0.00"
-            className={errors.listPrice ? 'border-red-300' : ''}
-          />
-          {errors.listPrice && (
-            <p className="mt-1 text-sm text-red-600">{errors.listPrice}</p>
-          )}
-        </div>
+        {/* List Price and SGK Support - 2 columns in one row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* List Price */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Liste Fiyatı
+            </label>
+            <input
+              type="number"
+              value={formData.listPrice || ''}
+              onChange={(e) => updateFormData('listPrice', parseFloat(e.target.value) || 0)}
+              placeholder="0.00"
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.listPrice ? 'border-red-300' : 'border-gray-300'}`}
+            />
+            {errors.listPrice && (
+              <p className="mt-1 text-sm text-red-600">{errors.listPrice}</p>
+            )}
+          </div>
 
-        {/* SGK Support */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            SGK Destek Türü
-          </label>
-          <Select
-            value={formData.sgkSupportType || ''}
-            onChange={(e) => updateFormData('sgkSupportType', e.target.value)}
-            label=""
-            options={sgkSupportOptions}
-            className={errors.sgkSupportType ? 'border-red-300' : ''}
-          />
-          {errors.sgkSupportType && (
-            <p className="mt-1 text-sm text-red-600">{errors.sgkSupportType}</p>
-          )}
+          {/* SGK Support */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              SGK Destek Türü
+            </label>
+            <select
+              value={formData.sgkSupportType || ''}
+              onChange={(e) => updateFormData('sgkSupportType', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.sgkSupportType ? 'border-red-300' : 'border-gray-300'}`}
+            >
+              {sgkSupportOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            {errors.sgkSupportType && (
+              <p className="mt-1 text-sm text-red-600">{errors.sgkSupportType}</p>
+            )}
+          </div>
         </div>
 
         {/* SGK Reduction Display */}
@@ -150,16 +155,15 @@ export const PricingForm: React.FC<PricingFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               İndirim Türü
             </label>
-            <Select
+            <select
               value={formData.discountType || 'none'}
               onChange={(e) => updateFormData('discountType', e.target.value)}
-              label=""
-              options={[
-                { value: 'none', label: 'İndirim Yok' },
-                { value: 'percentage', label: 'Yüzde (%)' },
-                { value: 'amount', label: 'Tutar (₺)' }
-              ]}
-            />
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="none">İndirim Yok</option>
+              <option value="percentage">Yüzde (%)</option>
+              <option value="amount">Tutar (₺)</option>
+            </select>
           </div>
 
           {formData.discountType !== 'none' && (
@@ -167,22 +171,13 @@ export const PricingForm: React.FC<PricingFormProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 İndirim Değeri
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  {formData.discountType === 'percentage' ? (
-                    <Percent className="w-4 h-4 text-gray-400" />
-                  ) : (
-                    <span className="text-gray-400 text-sm">₺</span>
-                  )}
-                </div>
-                <Input
-                  type="number"
-                  value={formData.discountValue || ''}
-                  onChange={(e) => updateFormData('discountValue', parseFloat(e.target.value) || 0)}
-                  placeholder="0"
-                  className="pl-8"
-                />
-              </div>
+              <input
+                type="number"
+                value={formData.discountValue || ''}
+                onChange={(e) => updateFormData('discountValue', parseFloat(e.target.value) || 0)}
+                placeholder="0"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
           )}
         </div>
@@ -232,17 +227,42 @@ export const PricingForm: React.FC<PricingFormProps> = ({
           Ödeme Bilgileri
         </h4>
 
-        {/* Down Payment */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Peşinat
-          </label>
-          <Input
-            type="number"
-            value={formData.downPayment || ''}
-            onChange={(e) => updateFormData('downPayment', parseFloat(e.target.value) || 0)}
-            placeholder="0.00"
-          />
+        {/* Down Payment and Payment Method - 2 columns in one row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Down Payment */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Peşinat
+            </label>
+            <input
+              type="number"
+              value={formData.downPayment || ''}
+              onChange={(e) => updateFormData('downPayment', parseFloat(e.target.value) || 0)}
+              placeholder="0.00"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Payment Method */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Ödeme Yöntemi
+            </label>
+            <select
+              value={formData.paymentMethod || ''}
+              onChange={(e) => updateFormData('paymentMethod', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.paymentMethod ? 'border-red-300' : 'border-gray-300'}`}
+            >
+              <option value="">Ödeme yöntemini seçiniz</option>
+              <option value="cash">Nakit</option>
+              <option value="card">Kredi Kartı</option>
+              <option value="transfer">Havale/EFT</option>
+              <option value="installment">Taksit</option>
+            </select>
+            {errors.paymentMethod && (
+              <p className="mt-1 text-sm text-red-600">{errors.paymentMethod}</p>
+            )}
+          </div>
         </div>
 
         {/* Remaining Amount Display */}
@@ -257,29 +277,6 @@ export const PricingForm: React.FC<PricingFormProps> = ({
           </div>
         )}
 
-        {/* Payment Method */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Ödeme Yöntemi
-          </label>
-          <Select
-            value={formData.paymentMethod || ''}
-            onChange={(e) => updateFormData('paymentMethod', e.target.value)}
-            label=""
-            options={[
-              { value: '', label: 'Ödeme yöntemini seçiniz' },
-              { value: 'cash', label: 'Nakit' },
-              { value: 'card', label: 'Kredi Kartı' },
-              { value: 'transfer', label: 'Havale/EFT' },
-              { value: 'installment', label: 'Taksit' }
-            ]}
-            className={errors.paymentMethod ? 'border-red-300' : ''}
-          />
-          {errors.paymentMethod && (
-            <p className="mt-1 text-sm text-red-600">{errors.paymentMethod}</p>
-          )}
-        </div>
-
         {/* Installment Options */}
         {formData.paymentMethod === 'installment' && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -287,7 +284,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-yellow-700 mb-1">Taksit Sayısı</label>
-                <Select
+                <select
                   value={formData.installmentCount?.toString() || ''}
                   onChange={(e) => {
                     const count = parseInt(e.target.value);
@@ -295,25 +292,24 @@ export const PricingForm: React.FC<PricingFormProps> = ({
                     updateFormData('installmentCount', count);
                     updateFormData('monthlyInstallment', monthly);
                   }}
-                  label=""
-                  options={[
-                    { value: '', label: 'Taksit seçin' },
-                    { value: '3', label: '3 Taksit' },
-                    { value: '6', label: '6 Taksit' },
-                    { value: '9', label: '9 Taksit' },
-                    { value: '12', label: '12 Taksit' },
-                    { value: '18', label: '18 Taksit' },
-                    { value: '24', label: '24 Taksit' }
-                  ]}
-                />
+                  className="w-full px-3 py-2 border border-yellow-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white text-sm"
+                >
+                  <option value="">Taksit seçin</option>
+                  <option value="3">3 Taksit</option>
+                  <option value="6">6 Taksit</option>
+                  <option value="9">9 Taksit</option>
+                  <option value="12">12 Taksit</option>
+                  <option value="18">18 Taksit</option>
+                  <option value="24">24 Taksit</option>
+                </select>
               </div>
               <div>
                 <label className="block text-xs text-yellow-700 mb-1">Aylık Taksit</label>
-                <Input
+                <input
                   type="text"
                   value={formData.monthlyInstallment ? formatCurrency(formData.monthlyInstallment) : '₺0.00'}
                   readOnly
-                  className="bg-yellow-100 text-sm"
+                  className="w-full px-3 py-2 border border-yellow-300 rounded-lg bg-yellow-100 text-sm"
                 />
               </div>
             </div>

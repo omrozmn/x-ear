@@ -1,282 +1,240 @@
 import React from 'react';
 import { PatientDevice } from '../../types/patient';
-import {
-  Smartphone,
-  Settings,
-  Calendar,
-  Shield,
-  Battery,
-  DollarSign,
-  CreditCard,
-  Clock,
-  MapPin,
-  User,
-  FileText
-} from 'lucide-react';
+import { Edit, Trash2, RefreshCw } from 'lucide-react';
 
 interface PatientDeviceCardProps {
   device: PatientDevice;
-  onDeviceClick?: (device: PatientDevice) => void;
+  onEdit?: (device: PatientDevice) => void;
+  onReplace?: (device: PatientDevice) => void;
+  onCancel?: (device: PatientDevice) => void;
+  isCancelled?: boolean;
 }
 
 export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
   device,
-  onDeviceClick
+  onEdit,
+  onReplace,
+  onCancel,
+  isCancelled = false
 }) => {
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Belirtilmemiş';
-    return new Date(dateString).toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('tr-TR');
   };
 
   const formatCurrency = (amount?: number) => {
-    if (!amount) return 'Belirtilmemiş';
-    return `${amount.toLocaleString('tr-TR')} ₺`;
+    if (!amount) return '-';
+    return `₺${amount.toLocaleString('tr-TR')}`;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-      case 'assigned':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'trial':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'returned':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'defective':
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  const getReasonText = (reason?: string) => {
+    const reasons: Record<string, string> = {
+      'sale': 'Satış',
+      'service': 'Servis',
+      'repair': 'Tamir',
+      'trial': 'Deneme',
+      'replacement': 'Değişim',
+      'proposal': 'Teklif',
+      'other': 'Diğer'
+    };
+    return reasons[reason || ''] || reason || '-';
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active':
-      case 'assigned':
-        return 'Aktif';
-      case 'trial':
-        return 'Deneme';
-      case 'returned':
-        return 'İade';
-      case 'defective':
-        return 'Arızalı';
-      default:
-        return status;
-    }
+  const getPaymentMethodText = (method?: string) => {
+    const methods: Record<string, string> = {
+      'cash': 'Nakit',
+      'card': 'Kredi Kartı',
+      'transfer': 'Havale/EFT',
+      'installment': 'Taksit'
+    };
+    return methods[method || ''] || method || '-';
   };
 
-  const getEarColor = (ear: string) => {
+  const getSgkSupportText = (sgkType?: string) => {
+    const sgkTypes: Record<string, string> = {
+      'no_coverage': 'SGK Desteği Yok',
+      'under4_parent_working': '4 Yaş Altı (Veli Çalışan)',
+      'under4_parent_retired': '4 Yaş Altı (Veli Emekli)',
+      'age5_12_parent_working': '5-12 Yaş (Veli Çalışan)',
+      'age5_12_parent_retired': '5-12 Yaş (Veli Emekli)',
+      'age13_18_parent_working': '13-18 Yaş (Veli Çalışan)',
+      'age13_18_parent_retired': '13-18 Yaş (Veli Emekli)',
+      'over18_working': '18+ Yaş (Çalışan)',
+      'over18_retired': '18+ Yaş (Emekli)'
+    };
+    return sgkTypes[sgkType || ''] || sgkType || '-';
+  };
+
+  // Audiological view: Right=Red, Left=Blue
+  const getEarStyle = (ear: string) => {
     switch (ear?.toLowerCase()) {
       case 'left':
+      case 'l':
       case 'sol':
         return {
           border: 'border-l-4 border-l-blue-500',
           bg: 'bg-blue-50',
-          text: 'text-blue-700',
-          label: 'Sol Kulak'
+          badge: 'bg-blue-100 text-blue-700 border-blue-300'
         };
       case 'right':
+      case 'r':
       case 'sağ':
         return {
           border: 'border-l-4 border-l-red-500',
           bg: 'bg-red-50',
-          text: 'text-red-700',
-          label: 'Sağ Kulak'
+          badge: 'bg-red-100 text-red-700 border-red-300'
         };
       case 'both':
+      case 'b':
       case 'bilateral':
+        // Bilateral should not be shown as green - each ear should have its own color
+        // This case should not be reached as bilateral is split into left/right cards
         return {
-          border: 'border-l-4 border-l-purple-500',
-          bg: 'bg-purple-50',
-          text: 'text-purple-700',
-          label: 'Bilateral'
+          border: 'border-l-4 border-l-gray-400',
+          bg: 'bg-gray-50',
+          badge: 'bg-gray-100 text-gray-700 border-gray-300'
         };
       default:
         return {
           border: 'border-l-4 border-l-gray-400',
           bg: 'bg-gray-50',
-          text: 'text-gray-700',
-          label: ear || 'Belirtilmemiş'
+          badge: 'bg-gray-100 text-gray-700 border-gray-300'
         };
     }
   };
 
-  const earStyle = getEarColor(device.side || device.ear);
+  const earStyle = getEarStyle((device as any).earSide || device.ear || device.side || '');
 
   return (
-    <div
-      className={`bg-white rounded-lg p-4 border hover:shadow-md transition-shadow cursor-pointer ${earStyle.border} ${earStyle.bg}`}
-      onClick={() => onDeviceClick?.(device)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onDeviceClick?.(device);
-        }
-      }}
-      aria-label={`${device.brand} ${device.model} cihazı`}
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          {/* Header with device info and status */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-3">
-              <Smartphone className="w-5 h-5 text-gray-500" />
-              <div>
-                <h4 className="text-lg font-semibold text-gray-900">
-                  {device.brand} {device.model}
-                </h4>
-                <div className="flex items-center space-x-2 mt-1">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${earStyle.text} ${earStyle.bg}`}>
-                    <MapPin className="w-3 h-3 mr-1" />
-                    {earStyle.label}
-                  </span>
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(device.status)}`}>
-                    {getStatusText(device.status)}
-                  </span>
-                </div>
-              </div>
-            </div>
+    <div className={`relative bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow ${earStyle.border} ${isCancelled ? 'opacity-50' : ''}`}>
+      {/* Cancelled Overlay */}
+      {isCancelled && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+          <div className="w-full h-1 bg-red-500 transform rotate-12"></div>
+          <div className="absolute text-red-600 font-bold text-2xl bg-white px-4 py-1 rounded border-2 border-red-500">
+            İPTAL EDİLDİ
           </div>
+        </div>
+      )}
 
-          {/* Device Details Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
-            <div>
-              <span className="text-gray-500 flex items-center">
-                <Settings className="w-3 h-3 mr-1" />
-                Seri No:
-              </span>
-              <p className="font-medium text-gray-900">{device.serialNumber || 'Belirtilmemiş'}</p>
-            </div>
-            <div>
-              <span className="text-gray-500">Tip:</span>
-              <p className="font-medium text-gray-900">{device.type || 'Standart'}</p>
-            </div>
-            <div>
-              <span className="text-gray-500 flex items-center">
-                <DollarSign className="w-3 h-3 mr-1" />
-                Liste Fiyatı:
-              </span>
-              <p className="font-medium text-gray-900">{formatCurrency(device.listPrice || device.price)}</p>
-            </div>
-            <div>
-              <span className="text-gray-500 flex items-center">
-                <CreditCard className="w-3 h-3 mr-1" />
-                Satış Fiyatı:
-              </span>
-              <p className="font-medium text-gray-900">{formatCurrency(device.salePrice || device.price)}</p>
-            </div>
+      {/* Header */}
+      <div className={`px-4 py-3 ${earStyle.bg} border-b`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="font-semibold text-gray-900">
+              {(device as any).deviceName || `${device.brand || ''} ${device.model || ''}`.trim() || 'Bilinmeyen Cihaz'}
+            </h4>
           </div>
+          <span className={`px-2 py-1 rounded text-xs font-medium border ${earStyle.badge}`}>
+            {(device as any).earSide === 'LEFT' || device.ear === 'left' ? 'Sol' :
+              (device as any).earSide === 'RIGHT' || device.ear === 'right' ? 'Sağ' : 'Bilateral'}
+          </span>
+        </div>
+      </div>
 
-          {/* Pricing and Payment Info */}
-          {(device.sgkReduction || device.patientPayment || device.paymentMethod) && (
-            <div className="bg-gray-50 rounded-lg p-3 mb-4">
-              <h5 className="text-sm font-medium text-gray-700 mb-2">Ödeme Bilgileri</h5>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                {device.sgkReduction && (
-                  <div>
-                    <span className="text-gray-500">SGK Katkısı:</span>
-                    <p className="font-medium text-green-600">{formatCurrency(device.sgkReduction)}</p>
-                  </div>
-                )}
-                {device.patientPayment && (
-                  <div>
-                    <span className="text-gray-500">Hasta Ödemesi:</span>
-                    <p className="font-medium text-blue-600">{formatCurrency(device.patientPayment)}</p>
-                  </div>
-                )}
-                {device.paymentMethod && (
-                  <div>
-                    <span className="text-gray-500">Ödeme Yöntemi:</span>
-                    <p className="font-medium text-gray-900 capitalize">{device.paymentMethod}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Dates and Warranty */}
-          <div className="flex items-center space-x-6 text-sm text-gray-600 mb-3">
-            {(device.assignedDate || device.purchaseDate) && (
-              <div className="flex items-center">
-                <Calendar className="w-4 h-4 mr-1" aria-hidden="true" />
-                <span>Atama: {formatDate(device.assignedDate || device.purchaseDate)}</span>
-              </div>
-            )}
-            {device.warrantyExpiry && (
-              <div className="flex items-center">
-                <Shield className="w-4 h-4 mr-1" aria-hidden="true" />
-                <span>Garanti: {formatDate(device.warrantyExpiry)}</span>
-              </div>
-            )}
-            {device.batteryType && (
-              <div className="flex items-center">
-                <Battery className="w-4 h-4 mr-1" aria-hidden="true" />
-                <span>Pil: {device.batteryType}</span>
-              </div>
-            )}
+      {/* Content */}
+      <div className="px-4 py-3 space-y-2 text-sm">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+          <div>
+            <span className="text-gray-500">Barkod No:</span>
+            <p className="font-medium text-gray-900 font-mono">{(device as any).barcode || '-'}</p>
           </div>
-
-          {/* Trial Information */}
-          {device.status === 'trial' && device.trialEndDate && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-              <div className="flex items-center text-blue-700">
-                <Clock className="w-4 h-4 mr-2" />
-                <span className="text-sm font-medium">
-                  Deneme Süresi: {formatDate(device.trialEndDate)} tarihine kadar
-                </span>
-              </div>
+          <div>
+            <span className="text-gray-500">Seri No:</span>
+            <p className="font-medium text-gray-900 font-mono">
+              {/* For bilateral cards, show the correct serial based on ear side */}
+              {((device as any).earSide === 'RIGHT' || device.ear === 'right') && (device as any).serialNumberRight ? (device as any).serialNumberRight :
+                ((device as any).earSide === 'RIGHT' || device.ear === 'right') && (device as any).serial_number_right ? (device as any).serial_number_right :
+                  ((device as any).earSide === 'LEFT' || device.ear === 'left') && (device as any).serialNumberLeft ? (device as any).serialNumberLeft :
+                    ((device as any).earSide === 'LEFT' || device.ear === 'left') && (device as any).serial_number_left ? (device as any).serial_number_left :
+                      device.serialNumber ||
+                      (device as any).serial_number ||
+                      (device as any).serialNumberLeft ||
+                      (device as any).serial_number_left ||
+                      (device as any).serialNumberRight ||
+                      (device as any).serial_number_right ||
+                      '-'}
+            </p>
+          </div>
+          <div>
+            <span className="text-gray-500">SGK Destek Türü:</span>
+            <p className="font-medium text-gray-900">{getSgkSupportText((device as any).sgkScheme || (device as any).sgkSupportType)}</p>
+          </div>
+          <div>
+            <span className="text-gray-500">Atama Nedeni:</span>
+            <p className="font-medium text-gray-900">{getReasonText(device.reason)}</p>
+          </div>
+          <div>
+            <span className="text-gray-500">Atama Tarihi:</span>
+            <p className="font-medium text-gray-900">{formatDate(device.assignedDate)}</p>
+          </div>
+          <div>
+            <span className="text-gray-500">Liste Fiyatı:</span>
+            <p className="font-medium text-gray-900">{formatCurrency(device.listPrice)}</p>
+          </div>
+          <div>
+            <span className="text-gray-500">Satış Fiyatı:</span>
+            <p className="font-medium text-gray-900">{formatCurrency(device.salePrice)}</p>
+          </div>
+          {device.sgkReduction && (
+            <div>
+              <span className="text-gray-500">SGK Desteği:</span>
+              <p className="font-medium text-green-600">{formatCurrency(device.sgkReduction)}</p>
             </div>
           )}
-
-          {/* Assignment Details */}
-          {(device.assignedBy || device.reason) && (
-            <div className="border-t border-gray-200 pt-3">
-              <div className="flex items-center space-x-4 text-sm text-gray-600">
-                {device.assignedBy && (
-                  <div className="flex items-center">
-                    <User className="w-4 h-4 mr-1" />
-                    <span>Atan: {device.assignedBy}</span>
-                  </div>
-                )}
-                {device.reason && (
-                  <div>
-                    <span>Sebep: </span>
-                    <span className="capitalize">{device.reason}</span>
-                  </div>
-                )}
-              </div>
+          {device.patientPayment && (
+            <div>
+              <span className="text-gray-500">Hasta Ödemesi:</span>
+              <p className="font-medium text-blue-600">{formatCurrency(device.patientPayment)}</p>
             </div>
           )}
-
-          {/* Notes */}
-          {device.notes && (
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <div className="flex items-start text-gray-600">
-                <FileText className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
-                <div>
-                  <span className="text-sm font-medium text-gray-700">Notlar:</span>
-                  <p className="text-sm mt-1">{device.notes}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Settings indicator */}
-          {device.settings && (
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <div className="flex items-center text-gray-600">
-                <Settings className="w-4 h-4 mr-2" aria-hidden="true" />
-                <span className="text-sm">Cihaz ayarları mevcut</span>
-              </div>
+          <div>
+            <span className="text-gray-500">Ödeme Yöntemi:</span>
+            <p className="font-medium text-gray-900">{getPaymentMethodText(device.paymentMethod)}</p>
+          </div>
+          {device.assignedBy && (
+            <div>
+              <span className="text-gray-500">Atayan:</span>
+              <p className="font-medium text-gray-900">{device.assignedBy}</p>
             </div>
           )}
         </div>
+
+        {device.notes && (
+          <div className="pt-2 border-t">
+            <span className="text-gray-500">Notlar:</span>
+            <p className="text-gray-700 text-xs mt-1">{device.notes}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div className="px-4 py-3 bg-gray-50 border-t flex items-center justify-end gap-2">
+        <button
+          onClick={() => onEdit?.(device)}
+          className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-1"
+          title="Düzenle"
+        >
+          <Edit className="w-4 h-4" />
+          Düzenle
+        </button>
+        <button
+          onClick={() => onReplace?.(device)}
+          className="px-3 py-1.5 text-sm font-medium text-purple-600 hover:bg-purple-50 rounded-lg transition-colors flex items-center gap-1"
+          title="Değiştir"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Değiştir
+        </button>
+        <button
+          onClick={() => onCancel?.(device)}
+          className="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1"
+          title="İptal Et"
+          disabled={isCancelled}
+        >
+          <Trash2 className="w-4 h-4" />
+          {isCancelled ? 'İptal Edildi' : 'İptal'}
+        </button>
       </div>
     </div>
   );

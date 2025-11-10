@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import axios from 'axios';
-import { ArrowLeft, Edit, X, Trash2, Package, Save, Shield, Tag, AlertTriangle } from 'lucide-react';
-import { Button, Input, Select, Textarea, Card, Modal } from '@x-ear/ui-web';
+import { ArrowLeft, Edit, X, Trash2, Package, Save, AlertTriangle } from 'lucide-react';
+import { Button, Modal } from '@x-ear/ui-web';
 import { InventoryItem } from '../types/inventory';
-import { CategoryAutocomplete } from './inventory/components/CategoryAutocomplete';
-import { BrandAutocomplete } from './inventory/components/BrandAutocomplete';
-import { SupplierAutocomplete } from './inventory/components/SupplierAutocomplete';
 import { SerialNumberModal } from '../components/inventory/SerialNumberModal';
-import { FeaturesTagManager } from '../components/inventory/FeaturesTagManager';
+import { ProductInfoSection } from './inventory/components/ProductInfoSection';
+import { StockInfoSection } from './inventory/components/StockInfoSection';
+import { PricingInfoSection } from './inventory/components/PricingInfoSection';
+import { WarrantyInfoSection } from './inventory/components/WarrantyInfoSection';
 
 const api = axios.create({
   baseURL: 'http://localhost:5003'
@@ -25,25 +25,39 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
   const [error, setError] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedItem, setEditedItem] = useState<Partial<InventoryItem>>({});
-  
-  // KDV and calculated fields
-  const [kdvRate, setKdvRate] = useState<number>(20);
-  const [isPriceKdvIncluded, setIsPriceKdvIncluded] = useState<boolean>(false);
-  const [isCostKdvIncluded, setIsCostKdvIncluded] = useState<boolean>(false);
-  
+
+  // KDV and calculated fields - Load from localStorage
+  const [kdvRate, setKdvRate] = useState<number>(() => {
+    const saved = localStorage.getItem('inventory_kdv_rate');
+    return saved ? parseFloat(saved) : 20;
+  });
+  const [isPriceKdvIncluded, setIsPriceKdvIncluded] = useState<boolean>(() => {
+    const saved = localStorage.getItem('inventory_price_kdv_included');
+    return saved === 'true';
+  });
+  const [isCostKdvIncluded, setIsCostKdvIncluded] = useState<boolean>(() => {
+    const saved = localStorage.getItem('inventory_cost_kdv_included');
+    return saved === 'true';
+  });
+
   // Serial modal state
   const [isSerialModalOpen, setIsSerialModalOpen] = useState(false);
-  
+
   // Delete confirmation modal state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  
-  // Calculated values - use editedItem.price in edit mode for real-time updates
-  const currentPrice = isEditMode && editedItem.price !== undefined ? editedItem.price : (item?.price || 0);
-  const currentStock = isEditMode && editedItem.availableInventory !== undefined ? editedItem.availableInventory : (item?.availableInventory || 0);
-  const priceWithKdv = currentPrice * (1 + kdvRate / 100);
-  const kdvAmount = currentPrice * (kdvRate / 100);
-  const totalInventoryValue = currentPrice * currentStock;
-  const profitMargin = item && item.cost ? ((currentPrice - item.cost) / item.cost) * 100 : 0;
+
+  // Save KDV preferences to localStorage
+  useEffect(() => {
+    localStorage.setItem('inventory_kdv_rate', kdvRate.toString());
+  }, [kdvRate]);
+
+  useEffect(() => {
+    localStorage.setItem('inventory_price_kdv_included', isPriceKdvIncluded.toString());
+  }, [isPriceKdvIncluded]);
+
+  useEffect(() => {
+    localStorage.setItem('inventory_cost_kdv_included', isCostKdvIncluded.toString());
+  }, [isCostKdvIncluded]);
 
   useEffect(() => {
     loadItem();
@@ -53,10 +67,10 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
     try {
       setLoading(true);
       const response = await api.get(`/api/inventory/${id}`);
-      
+
       if (response.data.success && response.data.data) {
         const apiItem = response.data.data;
-        
+
         // Handle features
         let featuresArray: string[] = [];
         if (apiItem.features) {
@@ -66,7 +80,21 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
             featuresArray = apiItem.features;
           }
         }
-        
+
+        // Handle serial numbers
+        let serialsArray: string[] = [];
+        if (apiItem.availableSerials) {
+          if (typeof apiItem.availableSerials === 'string') {
+            try {
+              serialsArray = JSON.parse(apiItem.availableSerials);
+            } catch {
+              serialsArray = [];
+            }
+          } else if (Array.isArray(apiItem.availableSerials)) {
+            serialsArray = apiItem.availableSerials;
+          }
+        }
+
         const mappedItem: InventoryItem = {
           id: String(apiItem.id),
           name: apiItem.name || '',
@@ -86,11 +114,14 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
           description: apiItem.description || '',
           status: (apiItem.availableInventory || apiItem.available_inventory || 0) > 0 ? 'available' : 'out_of_stock',
           features: featuresArray,
+          availableSerials: serialsArray,
           warranty: apiItem.warranty,
+          stockCode: apiItem.stockCode || apiItem.stock_code || '',
+          unit: apiItem.unit || 'adet',
           createdAt: apiItem.createdAt || apiItem.created_at || '',
           lastUpdated: apiItem.updatedAt || apiItem.updated_at || ''
         };
-        
+
         setItem(mappedItem);
       }
       setError(null);
@@ -108,7 +139,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
   const confirmDelete = async () => {
     if (!item) return;
-    
+
     try {
       await api.delete(`/api/inventory/${id}`);
       setIsDeleteModalOpen(false);
@@ -127,11 +158,14 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         model: item.model,
         category: item.category,
         price: item.price,
+        cost: item.cost,
         barcode: item.barcode,
+        stockCode: item.stockCode,
         supplier: item.supplier,
         description: item.description,
         reorderLevel: item.reorderLevel,
         availableInventory: item.availableInventory,
+        unit: item.unit,
       });
       setIsEditMode(true);
     }
@@ -144,7 +178,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
   const handleSave = async () => {
     if (!item) return;
-    
+
     try {
       const response = await api.put(`/api/inventory/${id}`, {
         name: editedItem.name,
@@ -152,13 +186,16 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         model: editedItem.model,
         category: editedItem.category,
         price: editedItem.price,
+        cost: editedItem.cost,
         barcode: editedItem.barcode,
+        stockCode: editedItem.stockCode,
         supplier: editedItem.supplier,
         description: editedItem.description,
         minInventory: editedItem.reorderLevel,
         availableInventory: editedItem.availableInventory,
+        unit: editedItem.unit,
       });
-      
+
       if (response.data.success) {
         await loadItem();
         setIsEditMode(false);
@@ -172,12 +209,18 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
   const handleSaveSerials = async (serials: string[]) => {
     if (!item) return;
-    
+
     try {
+      console.log('💾 SAVING SERIALS:', {
+        itemId: id,
+        serials,
+        count: serials.length
+      });
+
       const response = await api.put(`/api/inventory/${id}`, {
         availableSerials: serials,
       });
-      
+
       if (response.data.success) {
         await loadItem();
       }
@@ -189,12 +232,18 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
   const handleFeaturesChange = async (features: string[]) => {
     if (!item) return;
-    
+
     try {
+      console.log('🏷️ SAVING FEATURES:', {
+        itemId: id,
+        features,
+        count: features.length
+      });
+
       const response = await api.put(`/api/inventory/${id}`, {
         features: features,
       });
-      
+
       if (response.data.success) {
         await loadItem();
       }
@@ -202,6 +251,10 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       console.error('Save features failed:', err);
       alert('Özellikler kaydetme işlemi başarısız oldu');
     }
+  };
+
+  const handleEditChange = (updates: Partial<InventoryItem>) => {
+    setEditedItem({ ...editedItem, ...updates });
   };
 
   if (loading) {
@@ -285,468 +338,43 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         </div>
       </div>
 
-      {/* Content - 2 Column Layout like Legacy */}
+      {/* Content - 2 Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* LEFT COLUMN - Product Information */}
+        {/* LEFT COLUMN - Product Information & Stock */}
         <div className="space-y-6">
-          <Card>
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                Ürün Bilgileri
-              </h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Ürün Adı
-                </label>
-                {isEditMode ? (
-                  <Input
-                    value={editedItem.name || ''}
-                    onChange={(e) => setEditedItem({ ...editedItem, name: e.target.value })}
-                    fullWidth
-                  />
-                ) : (
-                  <p className="text-gray-900 dark:text-white">{item.name}</p>
-                )}
-              </div>
+          <ProductInfoSection
+            item={item}
+            isEditMode={isEditMode}
+            editedItem={editedItem}
+            onEditChange={handleEditChange}
+            onFeaturesChange={handleFeaturesChange}
+          />
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  {isEditMode ? (
-                    <BrandAutocomplete
-                      value={editedItem.brand || ''}
-                      onChange={(value) => setEditedItem({ ...editedItem, brand: value })}
-                      label="Marka"
-                    />
-                  ) : (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Marka
-                      </label>
-                      <p className="text-gray-900 dark:text-white">{item.brand}</p>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Model
-                  </label>
-                  {isEditMode ? (
-                    <Input
-                      value={editedItem.model || ''}
-                      onChange={(e) => setEditedItem({ ...editedItem, model: e.target.value })}
-                      fullWidth
-                    />
-                  ) : (
-                    <p className="text-gray-900 dark:text-white">{item.model}</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                {isEditMode ? (
-                  <CategoryAutocomplete
-                    value={editedItem.category || ''}
-                    onChange={(value) => setEditedItem({ ...editedItem, category: value })}
-                    label="Kategori"
-                  />
-                ) : (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Kategori
-                    </label>
-                    <p className="text-gray-900 dark:text-white">{item.category}</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Barkod
-                  </label>
-                  {isEditMode ? (
-                    <Input
-                      value={editedItem.barcode || ''}
-                      onChange={(e) => setEditedItem({ ...editedItem, barcode: e.target.value })}
-                      fullWidth
-                    />
-                  ) : (
-                    <p className="text-gray-900 dark:text-white font-mono">{item.barcode || '-'}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Stok Kodu
-                  </label>
-                  {isEditMode ? (
-                    <Input
-                      value={editedItem.stockCode || ''}
-                      onChange={(e) => setEditedItem({ ...editedItem, stockCode: e.target.value })}
-                      fullWidth
-                    />
-                  ) : (
-                    <p className="text-gray-900 dark:text-white font-mono">{item.stockCode || '-'}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  {isEditMode ? (
-                    <SupplierAutocomplete
-                      value={editedItem.supplier || ''}
-                      onChange={(value) => setEditedItem({ ...editedItem, supplier: value })}
-                      label="Tedarikçi"
-                    />
-                  ) : (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Tedarikçi
-                      </label>
-                      <p className="text-gray-900 dark:text-white">{item.supplier || '-'}</p>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Birim
-                  </label>
-                  {isEditMode ? (
-                    <Select
-                      value={editedItem.unit || 'adet'}
-                      onChange={(e) => setEditedItem({ ...editedItem, unit: e.target.value })}
-                      options={[
-                        { value: 'adet', label: 'Adet' },
-                        { value: 'kutu', label: 'Kutu' },
-                        { value: 'paket', label: 'Paket' },
-                        { value: 'set', label: 'Set' },
-                        { value: 'metre', label: 'Metre' },
-                        { value: 'santimetre', label: 'Santimetre' },
-                        { value: 'litre', label: 'Litre' },
-                        { value: 'mililitre', label: 'Mililitre' },
-                        { value: 'kilogram', label: 'Kilogram' },
-                        { value: 'gram', label: 'Gram' },
-                        { value: 'dakika', label: 'Dakika' },
-                        { value: 'saat', label: 'Saat' },
-                        { value: 'gün', label: 'Gün' },
-                        { value: 'ay', label: 'Ay' },
-                        { value: 'yıl', label: 'Yıl' },
-                        { value: 'çift', label: 'Çift' },
-                      ]}
-                      fullWidth
-                    />
-                  ) : (
-                    <p className="text-gray-900 dark:text-white capitalize">{item.unit || 'adet'}</p>
-                  )}
-                </div>
-              </div>
-
-              {item.description && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Açıklama
-                  </label>
-                  {isEditMode ? (
-                    <Textarea
-                      value={editedItem.description || ''}
-                      onChange={(e) => setEditedItem({ ...editedItem, description: e.target.value })}
-                      rows={3}
-                      fullWidth
-                    />
-                  ) : (
-                    <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{item.description}</p>
-                  )}
-                </div>
-              )}
-
-              {/* Features Tag Manager */}
-              <FeaturesTagManager
-                features={item.features || []}
-                onChange={handleFeaturesChange}
-                isEditMode={isEditMode}
-              />
-
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Oluşturulma: {item.createdAt ? new Date(item.createdAt).toLocaleDateString('tr-TR') : '-'}
-                </p>
-                {item.lastUpdated && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Son Güncelleme: {new Date(item.lastUpdated).toLocaleDateString('tr-TR')}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </Card>
+          <StockInfoSection
+            item={item}
+            isEditMode={isEditMode}
+            editedItem={editedItem}
+            onEditChange={handleEditChange}
+            onSerialModalOpen={() => setIsSerialModalOpen(true)}
+          />
         </div>
 
-        {/* RIGHT COLUMN - Stock, Pricing, Warranty */}
+        {/* RIGHT COLUMN - Pricing & Warranty */}
         <div className="space-y-6">
+          <PricingInfoSection
+            item={item}
+            isEditMode={isEditMode}
+            editedItem={editedItem}
+            onEditChange={handleEditChange}
+            kdvRate={kdvRate}
+            onKdvRateChange={setKdvRate}
+            isPriceKdvIncluded={isPriceKdvIncluded}
+            onPriceKdvIncludedChange={setIsPriceKdvIncluded}
+            isCostKdvIncluded={isCostKdvIncluded}
+            onCostKdvIncludedChange={setIsCostKdvIncluded}
+          />
 
-          {/* Stock Information Card */}
-          <Card>
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                Stok Bilgileri
-              </h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Mevcut Stok
-                  </label>
-                  {isEditMode ? (
-                    <Input
-                      type="number"
-                      min="0"
-                      value={editedItem.availableInventory ?? item.availableInventory}
-                      onChange={(e) => setEditedItem({ ...editedItem, availableInventory: parseInt(e.target.value) || 0 })}
-                      fullWidth
-                    />
-                  ) : (
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {item.availableInventory} adet
-                    </p>
-                  )}
-                </div>
-
-                {/* Min Stock Level */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Min. Stok Seviyesi
-                  </label>
-                  {isEditMode ? (
-                    <Input
-                      type="number"
-                      min="0"
-                      value={editedItem.reorderLevel || item.reorderLevel}
-                      onChange={(e) => setEditedItem({ ...editedItem, reorderLevel: parseInt(e.target.value) || 0 })}
-                      fullWidth
-                    />
-                  ) : (
-                    <p className="text-lg text-gray-900 dark:text-white">
-                      {item.reorderLevel} adet
-                    </p>
-                  )}
-                </div>
-
-                {/* Serial Number Button */}
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsSerialModalOpen(true)}
-                    disabled={!item.availableInventory || item.availableInventory === 0}
-                    fullWidth
-                  >
-                    <Package className="w-4 h-4 mr-2" />
-                    Seri No Listesi ({item.availableInventory || 0} adet)
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Pricing Information Card */}
-          <Card>
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                Fiyat Bilgileri
-              </h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Satış Fiyatı
-                    </label>
-                    <label className="flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isPriceKdvIncluded}
-                        onChange={(e) => setIsPriceKdvIncluded(e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-                      />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">KDV Dahil</span>
-                    </label>
-                  </div>
-                  {isEditMode ? (
-                    <>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={editedItem.price || ''}
-                        onChange={(e) => setEditedItem({ ...editedItem, price: parseFloat(e.target.value) })}
-                        fullWidth
-                      />
-                      {isPriceKdvIncluded ? (
-                        editedItem.price && editedItem.price > 0 && (
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            KDV Hariç: ₺{(editedItem.price / (1 + kdvRate / 100)).toFixed(2)}
-                          </p>
-                        )
-                      ) : (
-                        editedItem.price && editedItem.price > 0 && (
-                          <p className="mt-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
-                            KDV Dahil Toplam: ₺{(editedItem.price * (1 + kdvRate / 100)).toFixed(2)}
-                          </p>
-                        )
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-gray-900 dark:text-white">₺{item.price.toFixed(2)}</p>
-                      {isPriceKdvIncluded ? (
-                        item.price > 0 && (
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            KDV Hariç: ₺{(item.price / (1 + kdvRate / 100)).toFixed(2)}
-                          </p>
-                        )
-                      ) : (
-                        item.price > 0 && (
-                          <p className="mt-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
-                            KDV Dahil Toplam: ₺{(item.price * (1 + kdvRate / 100)).toFixed(2)}
-                          </p>
-                        )
-                      )}
-                    </>
-                  )}
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Maliyet
-                    </label>
-                    <label className="flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isCostKdvIncluded}
-                        onChange={(e) => setIsCostKdvIncluded(e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-                      />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">KDV Dahil</span>
-                    </label>
-                  </div>
-                  {isEditMode ? (
-                    <>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={editedItem.cost || ''}
-                        onChange={(e) => setEditedItem({ ...editedItem, cost: parseFloat(e.target.value) || 0 })}
-                        fullWidth
-                      />
-                      {isCostKdvIncluded ? (
-                        editedItem.cost && editedItem.cost > 0 && (
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            KDV Hariç: ₺{(editedItem.cost / (1 + kdvRate / 100)).toFixed(2)}
-                          </p>
-                        )
-                      ) : (
-                        editedItem.cost && editedItem.cost > 0 && (
-                          <p className="mt-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
-                            KDV Dahil Toplam: ₺{(editedItem.cost * (1 + kdvRate / 100)).toFixed(2)}
-                          </p>
-                        )
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-gray-900 dark:text-white">₺{item.cost?.toFixed(2) || '0.00'}</p>
-                      {isCostKdvIncluded ? (
-                        item.cost && item.cost > 0 && (
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            KDV Hariç: ₺{(item.cost / (1 + kdvRate / 100)).toFixed(2)}
-                          </p>
-                        )
-                      ) : (
-                        item.cost && item.cost > 0 && (
-                          <p className="mt-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
-                            KDV Dahil Toplam: ₺{(item.cost * (1 + kdvRate / 100)).toFixed(2)}
-                          </p>
-                        )
-                      )}
-                    </>
-                  )}
-                  {item.cost && item.cost > 0 && (
-                    <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                      Kar Marjı: %{profitMargin.toFixed(1)}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    KDV Oranı
-                  </label>
-                  <Select
-                    value={kdvRate.toString()}
-                    onChange={(e) => setKdvRate(parseFloat(e.target.value))}
-                    options={[
-                      { value: '0', label: '%0' },
-                      { value: '1', label: '%1' },
-                      { value: '10', label: '%10' },
-                      { value: '20', label: '%20' }
-                    ]}
-                    fullWidth
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    KDV Dahil Birim Fiyat
-                  </label>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                    <p className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-                      ₺{priceWithKdv.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                      KDV: ₺{kdvAmount.toFixed(2)} (%{kdvRate})
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Toplam Stok Değeri
-                  </label>
-                  <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-3 rounded-lg">
-                    <p className="text-lg font-bold text-green-900 dark:text-green-100">
-                      ₺{totalInventoryValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                    <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                      {item.availableInventory} adet × ₺{item.price.toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Warranty Information Card */}
-          <Card>
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                Garanti Bilgileri
-              </h2>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                  <Shield className="w-4 h-4 mr-2" />
-                  Garanti Süresi
-                </label>
-                <p className="text-gray-900 dark:text-white">
-                  {item.warranty ? `${item.warranty} ay` : 'Belirtilmemiş'}
-                </p>
-              </div>
-            </div>
-          </Card>
+          <WarrantyInfoSection item={item} />
         </div>
       </div>
 

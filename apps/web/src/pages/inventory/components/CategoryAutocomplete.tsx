@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import axios from 'axios';
 import { Input } from '@x-ear/ui-web';
+import { getCategoryDisplay, getCategoryValue } from '../../../utils/category-mapping';
 
 const api = axios.create({
   baseURL: 'http://localhost:5003'
@@ -28,11 +29,18 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
+  const [allCategories, setAllCategories] = useState<string[]>([]);
+  const [displayValue, setDisplayValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Update display value when value changes
+  useEffect(() => {
+    setDisplayValue(getCategoryDisplay(value));
+  }, [value]);
 
-  // Common product categories
-  const categories = [
+  // Common product categories (fallback)
+  const defaultCategories = [
     'İşitme Cihazı',
     'Pil',
     'Aksesuar',
@@ -60,22 +68,79 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
     'Koruma Kılıfı'
   ];
 
+  // Load categories from API
   useEffect(() => {
-    if (value && isOpen) {
-      const filtered = categories.filter(category =>
-        category.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredCategories(filtered.slice(0, 10));
+    const loadCategories = async () => {
+      try {
+        const response = await api.get('/api/inventory/categories');
+        if (response.data.success && response.data.data?.categories) {
+          const apiCategories = response.data.data.categories;
+          const combined = [...new Set([...apiCategories, ...defaultCategories])];
+          setAllCategories(combined.sort());
+        } else {
+          setAllCategories(defaultCategories);
+        }
+      } catch (error) {
+        console.warn('Failed to load categories from API, using defaults:', error);
+        setAllCategories(defaultCategories);
+      }
+    };
+    loadCategories();
+  }, []);
+
+  useEffect(() => {
+    const categories = allCategories.length > 0 ? allCategories : defaultCategories;
+    if (displayValue && isOpen) {
+      // Normalize Turkish characters
+      const normalizeTurkish = (str: string) => {
+        return str
+          .toLowerCase()
+          .replace(/ğ/g, 'g')
+          .replace(/ü/g, 'u')
+          .replace(/ş/g, 's')
+          .replace(/ı/g, 'i')
+          .replace(/ö/g, 'o')
+          .replace(/ç/g, 'c');
+      };
+      
+      const normalizedValue = normalizeTurkish(displayValue);
+      
+      const scored = categories.map(cat => {
+        const normalizedCat = normalizeTurkish(cat);
+        let score = 0;
+        
+        if (normalizedCat === normalizedValue) score = 100;
+        else if (normalizedCat.startsWith(normalizedValue)) score = 90;
+        else if (normalizedCat.includes(normalizedValue)) score = 70;
+        else {
+          let matches = 0;
+          for (const char of normalizedValue) {
+            if (normalizedCat.includes(char)) matches++;
+          }
+          score = (matches / normalizedValue.length) * 50;
+        }
+        
+        return { cat, score };
+      });
+      
+      const filtered = scored
+        .filter(item => item.score > 30)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 10)
+        .map(item => item.cat);
+      
+      setFilteredCategories(filtered);
     } else if (isOpen) {
       setFilteredCategories(categories.slice(0, 10));
     } else {
       setFilteredCategories([]);
     }
-  }, [value, isOpen]);
+  }, [displayValue, isOpen, allCategories]);
 
   // Check if current value is an exact match
-  const hasExactMatch = categories.some(cat => cat.toLowerCase() === value.toLowerCase());
-  const showCreateNew = value.trim() && !hasExactMatch && isOpen;
+  const categories = allCategories.length > 0 ? allCategories : defaultCategories;
+  const hasExactMatch = categories.some(cat => cat.toLowerCase() === displayValue.toLowerCase());
+  const showCreateNew = displayValue.trim() && !hasExactMatch && isOpen;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -94,34 +159,43 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
   }, []);
 
   const handleSelect = (category: string) => {
-    onChange(category);
+    // Convert display label to backend value
+    const backendValue = getCategoryValue(category);
+    onChange(backendValue);
+    setDisplayValue(category);
     setIsOpen(false);
   };
 
   const handleCreateNew = async () => {
-    const newCategory = value.trim();
+    const newCategory = displayValue.trim();
     if (!newCategory) return;
 
     try {
-      // Try to save to backend
-      await api.post('/api/device-categories', { category: newCategory });
-      console.log('New category created:', newCategory);
+      await api.post('/api/inventory/categories', { category: newCategory });
+      console.log('✅ New category created:', newCategory);
+      // Add to local list immediately
+      setAllCategories(prev => [...new Set([...prev, newCategory])].sort());
     } catch (error: any) {
-      // If 409 conflict (already exists), silently use it
       if (error.response?.status === 409) {
         console.log('Category already exists, using existing:', newCategory);
       } else {
         console.warn('Failed to persist category to API, using locally:', error);
       }
+      // Add to local list anyway
+      setAllCategories(prev => [...new Set([...prev, newCategory])].sort());
     }
     
-    // Use the category regardless of backend success
     onChange(newCategory);
+    setDisplayValue(newCategory);
     setIsOpen(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value);
+    const inputValue = e.target.value;
+    setDisplayValue(inputValue);
+    // Try to find matching backend value
+    const backendValue = getCategoryValue(inputValue);
+    onChange(backendValue);
     if (!isOpen) setIsOpen(true);
   };
 
@@ -151,7 +225,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
         <Input
           ref={inputRef}
           type="text"
-          value={value}
+          value={displayValue}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
@@ -207,7 +281,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
                 <div className="flex items-center gap-2">
                   <Plus className="w-4 h-4 text-green-600" />
                   <span className="text-sm font-medium text-green-600">
-                    "{value}" kategorisini ekle
+                    "{displayValue}" kategorisini ekle
                   </span>
                 </div>
               </div>
