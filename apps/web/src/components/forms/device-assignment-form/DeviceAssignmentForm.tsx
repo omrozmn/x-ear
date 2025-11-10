@@ -48,14 +48,14 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     try {
       const assignmentData = formData as DeviceAssignment;
-      
+
       if (assignment?.id) {
         // Update existing assignment
         onUpdate?.(assignmentData);
@@ -63,7 +63,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
         // Create new assignment
         onSave?.(assignmentData);
       }
-      
+
       onClose();
     } catch (error) {
       console.error('Cihaz ataması kaydedilirken hata:', error);
