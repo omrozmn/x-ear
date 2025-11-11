@@ -16,7 +16,10 @@ export type InvoiceType =
   | 'proforma'     // proforma fatura
   | 'return'       // iade faturası
   | 'replacement'  // değişim faturası
-  | 'sgk';         // SGK faturası
+  | 'sgk'          // SGK faturası
+  | 'government'   // kamu faturası
+  | 'withholding'  // tevkifatlı fatura
+  | 'export_registered'; // ihraç kayıtlı
 
 // Backwards-compatible aliases used in some legacy services
 export type InvoiceTypeLegacy = InvoiceType | 'standard' | 'credit_note' | 'debit_note';
@@ -58,6 +61,11 @@ export interface InvoiceItem {
   warrantyPeriod?: number;
   // legacy/category used by some services
   category?: string;
+  
+  // Withholding (Tevkifat) fields
+  withholdingRate?: number;
+  withholdingAmount?: number;
+  taxFreeAmount?: number;
 }
 
 export interface InvoiceAddress {
@@ -133,6 +141,19 @@ export interface Invoice {
   
   // SGK specific fields
   sgkSubmissionId?: string;
+  
+  // Government invoice fields
+  governmentData?: GovernmentInvoiceData;
+  
+  // Withholding fields
+  withholdingData?: WithholdingData;
+  
+  // Additional info
+  orderInfo?: OrderInfo;
+  deliveryInfo?: DeliveryInfo;
+  internetSalesInfo?: InternetSalesInfo;
+  periodInfo?: PeriodInfo;
+  
   createdAt?: string;
   updatedAt?: string;
   createdBy?: string;
@@ -479,4 +500,74 @@ export interface InvoicePaymentPlan {
   }>;
   createdAt: string;
   updatedAt: string;
+}
+
+// Government Invoice (Kamu Faturası) Types
+export interface GovernmentInvoiceData {
+  exemptionReason?: string;
+  exemptionCode?: string;
+  exemptionDescription?: string;
+  exportReason?: string;
+  exportCode?: string;
+  exportDescription?: string;
+  isExempt?: boolean;
+  isExportRegistered?: boolean;
+}
+
+export interface ExemptionReason {
+  code: string;
+  description: string;
+  category: 'diplomatic' | 'military' | 'export' | 'other';
+}
+
+export interface ExportReason {
+  code: string;
+  description: string;
+  category: 'export_registered' | 'temporary_import' | 'inward_processing' | 'other';
+}
+
+// Withholding (Tevkifat) Types
+export interface WithholdingData {
+  withholdingRate: number;
+  withholdingAmount: number;
+  taxFreeAmount: number;
+  withholdingType?: 'partial' | 'full';
+  withholdingCode?: string;
+}
+
+export interface WithholdingCalculation {
+  baseAmount: number;
+  withholdingRate: number;
+  withholdingAmount: number;
+  taxFreeAmount: number;
+  netAmount: number;
+}
+
+// Additional Invoice Info Types
+export interface OrderInfo {
+  orderNumber?: string;
+  orderDate?: string;
+  orderReference?: string;
+}
+
+export interface DeliveryInfo {
+  deliveryNumber?: string;
+  deliveryDate?: string;
+  deliveryReference?: string;
+  carrierName?: string;
+  trackingNumber?: string;
+}
+
+export interface InternetSalesInfo {
+  websiteUrl?: string;
+  paymentPlatform?: string;
+  paymentDate?: string;
+  paymentReference?: string;
+  customerIpAddress?: string;
+}
+
+export interface PeriodInfo {
+  periodStart?: string;
+  periodEnd?: string;
+  periodDescription?: string;
 }

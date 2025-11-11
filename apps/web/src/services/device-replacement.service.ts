@@ -39,14 +39,28 @@ export class DeviceReplacementService {
 
       // Try to save to backend first
       try {
-        // Note: These API endpoints may not exist yet, using mock structure
-        const mockResponse = {
-          success: true,
-          data: { id: replacement.id }
-        };
-        console.log('Mock API call for replacement creation:', mockResponse);
+        const api = this.api;
+        if (api && api.replacementsCreateReplacement) {
+          const resp = await api.replacementsCreateReplacement({
+            id: replacement.id,
+            patientId: replacement.patientId,
+            saleId: replacement.saleId,
+            oldDeviceId: replacement.oldDeviceId,
+            newDeviceId: replacement.newDeviceId,
+            oldDeviceInfo: replacement.oldDeviceInfo,
+            newDeviceInfo: replacement.newDeviceInfo,
+            replacementReason: replacement.replacementReason,
+            priceDifference: replacement.priceDifference,
+            notes: replacement.notes,
+            createReturnInvoice: !!replacement.returnInvoiceId
+          });
+          if (resp?.data) {
+            // Use backend response as ground truth
+            replacement.id = resp.data.id || replacement.id;
+          }
+        }
       } catch (apiError) {
-        console.warn('Backend API unavailable, using local storage:', apiError);
+        console.warn('Backend API unavailable, using local storage fallback:', apiError);
       }
 
       // Save to local storage as backup/fallback

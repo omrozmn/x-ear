@@ -6,6 +6,8 @@ import { InvoiceModal } from '../components/modals/InvoiceModal';
 import { InvoiceBulkOperations } from '../components/invoice/InvoiceBulkOperations';
 import { InvoiceTemplateManager } from '../components/templates/InvoiceTemplateManager';
 import { EFaturaXMLGenerator } from '../components/invoice/EFaturaXMLGenerator';
+import { InvoiceFilters as InvoiceFiltersComponent } from '../components/invoices/InvoiceFilters';
+import { InvoiceStats } from '../components/invoices/InvoiceStats';
 
 interface InvoiceManagementPageProps {
   className?: string;

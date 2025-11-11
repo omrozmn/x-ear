@@ -170,6 +170,11 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
       setReplacementId(null);
       setReplacementStatus('draft');
       setGibError('');
+      // focus first control for accessibility
+      setTimeout(() => {
+        const el = document.querySelector('#return-exchange-first-input') as HTMLElement | null;
+        if (el) el.focus();
+      }, 50);
     }
   }, [isOpen]);
 
@@ -503,6 +508,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                   onChange={(e) => setReason(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   required
+                  id="return-exchange-first-input"
                 >
                   <option value="">Neden seçiniz</option>
                   {returnReasons.map((reasonOption) => (

@@ -1,4 +1,63 @@
 from flask import Blueprint, request, jsonify
+import uuid
+from apps.backend.models.replacement import Replacement
+from apps.backend import db
+from datetime import datetime
+
+bp = Blueprint('replacements', __name__, url_prefix='/api/replacements')
+
+
+@bp.route('', methods=['POST'])
+def create_replacement():
+    data = request.get_json() or {}
+    replacement_id = data.get('id') or f"REPL-{int(datetime.utcnow().timestamp())}-{uuid.uuid4().hex[:6]}"
+    r = Replacement(
+        id=replacement_id,
+        patient_id=data.get('patientId') or data.get('patient_id'),
+        sale_id=data.get('saleId') or data.get('sale_id'),
+        old_device_id=data.get('oldDeviceId') or data.get('old_device_id'),
+        new_device_id=data.get('newDeviceId') or data.get('new_device_id'),
+        old_device_info=data.get('oldDeviceInfo') or data.get('old_device_info'),
+        new_device_info=data.get('newDeviceInfo') or data.get('new_device_info'),
+        replacement_reason=data.get('replacementReason') or data.get('replacement_reason'),
+        status='pending',
+        price_difference=data.get('priceDifference') or data.get('price_difference'),
+        return_invoice_id=None,
+        return_invoice_status=None,
+        gib_sent=False,
+        created_by=data.get('createdBy') or 'system',
+        notes=data.get('notes')
+    )
+
+    db.session.add(r)
+    db.session.commit()
+
+    return jsonify({'success': True, 'data': r.to_dict()})
+
+
+@bp.route('/<replacement_id>', methods=['GET'])
+def get_replacement(replacement_id):
+    r = Replacement.query.get(replacement_id)
+    if not r:
+        return jsonify({'success': False, 'error': 'Replacement not found'}), 404
+    return jsonify({'success': True, 'data': r.to_dict()})
+
+
+@bp.route('/<replacement_id>/status', methods=['PATCH'])
+def patch_replacement_status(replacement_id):
+    data = request.get_json() or {}
+    new_status = data.get('status')
+    notes = data.get('notes')
+    r = Replacement.query.get(replacement_id)
+    if not r:
+        return jsonify({'success': False, 'error': 'Replacement not found'}), 404
+    r.status = new_status or r.status
+    if notes:
+        r.notes = (r.notes or '') + '\n' + notes
+    r.updated_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify({'success': True, 'data': r.to_dict()})
+from flask import Blueprint, request, jsonify
 from models.base import db
 from models.device_replacement import DeviceReplacement, ReturnInvoice
 from datetime import datetime
