@@ -1,10 +1,11 @@
 from datetime import datetime
+import json
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, JSON, Numeric
 from sqlalchemy.dialects.sqlite import DATETIME
-from .base import Base
+from .base import db, BaseModel
 
 
-class Replacement(Base):
+class Replacement(BaseModel):
     __tablename__ = 'replacements'
 
     id = Column(String, primary_key=True)
@@ -27,14 +28,22 @@ class Replacement(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def to_dict(self):
+        def parse_maybe_json(value):
+            if isinstance(value, str):
+                try:
+                    return json.loads(value)
+                except Exception:
+                    return value
+            return value
+
         return {
             'id': self.id,
             'patientId': self.patient_id,
             'saleId': self.sale_id,
             'oldDeviceId': self.old_device_id,
             'newDeviceId': self.new_device_id,
-            'oldDeviceInfo': self.old_device_info,
-            'newDeviceInfo': self.new_device_info,
+            'oldDeviceInfo': parse_maybe_json(self.old_device_info),
+            'newDeviceInfo': parse_maybe_json(self.new_device_info),
             'replacementReason': self.replacement_reason,
             'status': self.status,
             'priceDifference': float(self.price_difference) if self.price_difference is not None else None,

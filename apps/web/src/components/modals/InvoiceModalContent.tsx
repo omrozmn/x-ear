@@ -14,8 +14,9 @@ interface InvoiceModalContentProps {
   initialData?: Partial<InvoiceFormData>;
   patientId?: string;
   deviceId?: string;
-  mode?: 'create' | 'quick' | 'template';
+  mode?: 'create' | 'quick' | 'template' | 'edit';
   title?: string;
+  enableIncomingSelection?: boolean;
 }
 
 export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
@@ -28,6 +29,7 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
   deviceId,
   mode = 'create',
   title
+  , enableIncomingSelection = false
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationResult, setValidationResult] = useState<InvoiceFormValidationResult | null>(null);
@@ -36,6 +38,9 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
   const [showPreview, setShowPreview] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [currentFormData, setCurrentFormData] = useState<InvoiceFormData | null>(null);
+  const [incomingInvoices, setIncomingInvoices] = useState<Invoice[] | null>(null);
+  const [loadingIncoming, setLoadingIncoming] = useState(false);
+  const [selectedIncomingId, setSelectedIncomingId] = useState<string | null>(null);
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -47,6 +52,21 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
       setShowPreview(false);
       setIsGeneratingPdf(false);
       setCurrentFormData(null);
+    }
+    // load incoming invoices if enabled
+    if (isOpen && enableIncomingSelection) {
+      (async () => {
+        try {
+          setLoadingIncoming(true);
+          const service = new InvoiceService();
+          const res = await service.getInvoices({});
+          setIncomingInvoices(res.invoices || []);
+        } catch (e) {
+          console.warn('Could not load incoming invoices', e);
+        } finally {
+          setLoadingIncoming(false);
+        }
+      })();
     }
   }, [isOpen]);
 
@@ -72,19 +92,21 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
         invoiceData.deviceId = deviceId;
       }
 
-      // Create invoice using service
-      const invoiceService = new InvoiceService();
-      const createdInvoice = await invoiceService.createInvoice(invoiceData);
-
-      setCreatedInvoice(createdInvoice);
-
-      // Success callback
-      if (onSuccess) {
-        onSuccess(createdInvoice);
-      }
-
-      // Close modal
-      onClose();
+        const invoiceService = new InvoiceService();
+        // Only update when explicitly in edit mode
+        if (mode === 'edit') {
+          const id = (initialData as any)?.id as string;
+          const updated = await invoiceService.updateInvoice(id, invoiceData as any);
+          setCreatedInvoice(updated);
+          if (onSuccess) onSuccess(updated);
+          onClose();
+        } else {
+          // Create invoice using service
+          const createdInvoice = await invoiceService.createInvoice(invoiceData);
+          setCreatedInvoice(createdInvoice);
+          if (onSuccess) onSuccess(createdInvoice);
+          onClose();
+        }
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Fatura oluşturulurken bir hata oluştu';
@@ -137,6 +159,26 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleUseSelectedIncoming = () => {
+    if (!selectedIncomingId || !incomingInvoices) return;
+    const inv = incomingInvoices.find(i => i.id === selectedIncomingId);
+    if (!inv) return;
+    // Map selected invoice back to form initial data
+    const mapped: Partial<InvoiceFormData> = {
+      invoiceType: inv.type as any || 'corporate',
+      invoice_details: {
+        invoice_date: inv.issueDate || new Date().toISOString().split('T')[0],
+        invoice_number: inv.invoiceNumber || inv.id
+      },
+      items: (inv.items || []).map(it => ({ description: it.description || it.name || '', quantity: it.quantity || 1, unitPrice: it.unitPrice || it.total || 0, taxRate: it.taxRate || 18 })) as any,
+      notes: inv.notes || ''
+    };
+
+    // Merge with provided initialData (prefer selected invoice fields)
+    const merged = { ...(initialData || {}), ...mapped } as Partial<InvoiceFormData>;
+    setCurrentFormData(merged as InvoiceFormData);
   };
 
   // Handle PDF generation and download
@@ -342,6 +384,8 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
         return 'Hızlı Fatura Oluştur';
       case 'template':
         return 'Şablondan Fatura Oluştur';
+      case 'edit':
+        return 'Fatura Düzenle';
       default:
         return 'Yeni Fatura Oluştur';
     }
@@ -369,6 +413,24 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-6">
+          {enableIncomingSelection && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Gelen Faturalar (varsa seçim yap)</label>
+              {loadingIncoming ? (
+                <div className="text-sm text-gray-500">Yükleniyor...</div>
+              ) : (
+                <div className="flex gap-2 items-center">
+                  <select className="px-3 py-2 border rounded" value={selectedIncomingId || ''} onChange={(e) => setSelectedIncomingId(e.target.value || null)}>
+                    <option value="">-- Seçiniz --</option>
+                    {(incomingInvoices || []).map(inv => (
+                      <option key={inv.id} value={inv.id}>{inv.invoiceNumber || inv.id} — {inv.customerName || ''} — {inv.createdAt?.split('T')[0] || ''}</option>
+                    ))}
+                  </select>
+                  <Button type="button" variant="outline" onClick={handleUseSelectedIncoming} disabled={!selectedIncomingId}>Seçilen Faturayı Kullan</Button>
+                </div>
+              )}
+            </div>
+          )}
           {submitError && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
               <div className="flex">
@@ -391,7 +453,7 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
             onSubmit={handleSubmit}
             onValidationChange={handleValidationChange}
             onFormDataChange={handleFormDataChange}
-            initialData={initialData}
+            initialData={(currentFormData as any) || initialData}
             disabled={isSubmitting}
           />
         </div>
@@ -506,7 +568,7 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
                   Oluşturuluyor...
                 </>
               ) : (
-                'Fatura Oluştur'
+                (mode === 'edit' || (initialData as any)?.id) ? 'Fatura Güncelle' : 'Fatura Oluştur'
               )}
             </Button>
           </div>

@@ -215,7 +215,112 @@ export class InvoiceValidationService {
       errors['exchangeRate'] = 'Yabancı para birimi için döviz kuru gereklidir';
     }
 
+    // === YENİ İŞ KURALLARI (Legacy'den) ===
+
+    // Kamu faturası TRY kontrolü
+    if ((formData.scenario === '7' || formData.scenario === 'government') && formData.currency !== 'TRY') {
+      errors.currency = 'Kamu faturalarında para birimi TRY olmalıdır';
+    }
+
+    // SGK faturası TRY kontrolü
+    if ((formData.invoiceType === '14' || formData.invoiceType === 'sgk') && formData.currency !== 'TRY') {
+      errors.currency = 'SGK faturalarında para birimi TRY olmalıdır';
+    }
+
+    // Diğer senaryo TRY kontrolü
+    if (['36', '4', '2', 'other'].includes(formData.scenario || '') && formData.currency !== 'TRY') {
+      errors.currency = 'Bu senaryo için para birimi TRY olmalıdır';
+    }
+
+    // İade faturası KDV kontrolü
+    if (['15', '49'].includes(formData.invoiceType || '')) {
+      formData.items.forEach((item, index) => {
+        if (item.taxRate && item.taxRate !== 0) {
+          errors[`items[${index}].taxRate`] = `${index + 1}. kalem: İade faturalarında KDV oranı 0 olmalıdır`;
+        }
+      });
+    }
+
+    // Tevkifat oranı kontrolü
+    if (formData.withholdingRate !== undefined && formData.withholdingRate !== null) {
+      if (formData.withholdingRate < 0 || formData.withholdingRate > 100) {
+        errors.withholdingRate = 'Tevkifat oranı 0-100 arası olmalıdır';
+      }
+    }
+
+    // Özel matrah kontrolü
+    if (formData.specialBaseAmount !== undefined && formData.specialBaseAmount !== null) {
+      if (formData.specialBaseAmount < 0) {
+        errors.specialBaseAmount = 'Özel matrah tutarı negatif olamaz';
+      }
+      if (formData.specialBaseRate !== undefined && (formData.specialBaseRate < 0 || formData.specialBaseRate > 100)) {
+        errors.specialBaseRate = 'Özel matrah oranı 0-100 arası olmalıdır';
+      }
+    }
+
+    // Kamu faturası için istisna/ihraç kayıtlı sebep kontrolü
+    if (formData.scenario === '7' || formData.scenario === 'government') {
+      if (!formData.governmentExemptionReason && !formData.governmentExportRegisteredReason) {
+        errors.governmentExemptionReason = 'Kamu faturası için istisna veya ihraç kayıtlı sebebi seçmelisiniz';
+      }
+    }
+
+    // İhracat faturası için GTİP kodu kontrolü
+    if (formData.scenario === '5' || formData.scenario === 'export') {
+      formData.items.forEach((item, index) => {
+        if (!item.gtipCode) {
+          errors[`items[${index}].gtipCode`] = `${index + 1}. kalem: İhracat faturası için GTİP kodu gereklidir`;
+        }
+      });
+    }
+
+    // İlaç/Tıbbi Cihaz faturası için ruhsat no kontrolü
+    if (formData.scenario === '45' || formData.scenario === 'medical') {
+      formData.items.forEach((item, index) => {
+        if (!item.licenseNumber) {
+          errors[`items[${index}].licenseNumber`] = `${index + 1}. kalem: İlaç/Tıbbi cihaz için ruhsat numarası gereklidir`;
+        }
+      });
+    }
+
+    // TC Kimlik No algoritma kontrolü
+    if (formData.customerTcNumber) {
+      if (!this.validateTCKN(formData.customerTcNumber)) {
+        errors.customerTcNumber = 'Geçersiz T.C. Kimlik Numarası';
+      }
+    }
+
+    // Vergi No format kontrolü
+    if (formData.customerTaxNumber) {
+      if (!/^\d{10}$/.test(formData.customerTaxNumber)) {
+        errors.customerTaxNumber = 'Vergi numarası 10 haneli olmalıdır';
+      }
+    }
+
     return errors;
+  }
+
+  // TC Kimlik No algoritma kontrolü
+  private validateTCKN(tcNo: string): boolean {
+    if (!/^\d{11}$/.test(tcNo)) return false;
+    
+    const digits = tcNo.split('').map(Number);
+    
+    // İlk hane 0 olamaz
+    if (digits[0] === 0) return false;
+    
+    // 10. hane kontrolü
+    const sum1 = (digits[0] + digits[2] + digits[4] + digits[6] + digits[8]) * 7;
+    const sum2 = digits[1] + digits[3] + digits[5] + digits[7];
+    const digit10 = (sum1 - sum2) % 10;
+    if (digits[9] !== digit10) return false;
+    
+    // 11. hane kontrolü
+    const sum3 = digits.slice(0, 10).reduce((a, b) => a + b, 0);
+    const digit11 = sum3 % 10;
+    if (digits[10] !== digit11) return false;
+    
+    return true;
   }
 
   private generateWarnings(formData: InvoiceFormData): Record<string, string> {

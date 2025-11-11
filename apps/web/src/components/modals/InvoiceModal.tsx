@@ -11,8 +11,9 @@ interface InvoiceModalProps {
   initialData?: any;
   patientId?: string;
   deviceId?: string;
-  mode?: 'create' | 'quick' | 'template';
+  mode?: 'create' | 'quick' | 'template' | 'edit';
   title?: string;
+  enableIncomingSelection?: boolean;
 }
 
 export const InvoiceModal: React.FC<InvoiceModalProps> = ({
@@ -25,6 +26,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
   deviceId,
   mode = 'create',
   title
+  , enableIncomingSelection = false
 }) => {
   // Handle backdrop click
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -49,6 +51,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
         patientId={patientId}
         deviceId={deviceId}
         mode={mode}
+        enableIncomingSelection={enableIncomingSelection}
         title={title}
       />
     </div>

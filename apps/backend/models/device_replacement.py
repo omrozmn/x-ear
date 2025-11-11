@@ -1,5 +1,6 @@
 from .base import db
 from datetime import datetime
+import json
 
 class DeviceReplacement(db.Model):
     __tablename__ = 'device_replacements'
@@ -23,8 +24,8 @@ class DeviceReplacement(db.Model):
             'patientId': self.patient_id,
             'oldDeviceId': self.old_device_id,
             'newInventoryId': self.new_inventory_id,
-            'oldDeviceInfo': self.old_device_info,
-            'newDeviceInfo': self.new_device_info,
+            'oldDeviceInfo': (json.loads(self.old_device_info) if isinstance(self.old_device_info, str) else self.old_device_info),
+            'newDeviceInfo': (json.loads(self.new_device_info) if isinstance(self.new_device_info, str) else self.new_device_info),
             'status': self.status,
             'date': self.created_at.isoformat() if self.created_at else None,
             'createdAt': self.created_at.isoformat() if self.created_at else None,

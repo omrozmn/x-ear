@@ -60,6 +60,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
   // State management
   const [showAssignmentForm, setShowAssignmentForm] = useState(false);
   const [editingDevice, setEditingDevice] = useState<PatientDevice | null>(null);
+  const [prefillAssignment, setPrefillAssignment] = useState<DeviceAssignment | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTrialModal, setShowTrialModal] = useState(false);
   const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
@@ -224,21 +225,104 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
     }
   };
 
-  const handleReplaceConfirm = async (deviceId: string, reason: string, notes: string) => {
+  const handleReplaceConfirm = async (deviceId: string, reason: string, notes: string, newInventoryId?: string, newDeviceInfo?: any, selectedSerial?: string) => {
     try {
       setActionError(null);
-      // TODO: Implement API call to remove device
-      console.log('Removing device:', deviceId);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSuccessMessage('Cihaz başarıyla kaldırıldı');
-      
-      // TODO: Refresh devices list
+      // Create replacement record via backend API
+      const device = devicesList.find(d => d.id === deviceId);
+      if (!device) throw new Error('Cihaz bulunamadı');
+
+      const payload: any = {
+        oldDeviceId: device.id,
+        oldDeviceInfo: {
+          id: device.id,
+          brand: device.brand,
+          model: device.model,
+          serial: device.serialNumber,
+          type: device.type,
+          notes: device.notes,
+        },
+        replacementReason: reason,
+        notes: notes,
+        createdBy: 'current_user'
+      };
+
+      if (newInventoryId) {
+        payload.newInventoryId = newInventoryId;
+        payload.newDeviceInfo = newDeviceInfo || { id: newInventoryId };
+        if (selectedSerial) payload.newDeviceInfo.serial = selectedSerial;
+
+        // If requested new device is out of stock, append a note according to legacy behavior
+        try {
+          const avail = (payload.newDeviceInfo && payload.newDeviceInfo.availableInventory) || 0;
+          if (avail === 0) {
+            const note = 'STOK: stokta olmayan ürün satıldı';
+            payload.notes = (payload.notes ? payload.notes + '\n' : '') + note;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      console.log('📤 Creating replacement with payload:', payload);
+
+      const resp = await fetch(`http://localhost:5003/api/patients/${patientId}/replacements`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await resp.json();
+      console.log('📥 Replacement create response:', result);
+
+      if (!resp.ok || !result.success) {
+        const err = result.error || result.message || `Backend error: ${resp.status}`;
+        throw new Error(err);
+      }
+
+      setSuccessMessage('Değişim bildirimi oluşturuldu');
+
+      // Notify other parts of the app (Sales tab, lists) to refresh
+      window.dispatchEvent(new CustomEvent('replacement:created', { detail: result.data }));
+
+      // Refresh devices list to reflect any changes
+      await refetch();
+
+      // If a new inventory id was requested, prepare prefill data but DO NOT open assignment form automatically
+      if (newInventoryId) {
+        const prefill: DeviceAssignment = {
+          deviceId: newInventoryId,
+          patientId: patientId,
+          assignedDate: new Date().toISOString(),
+          assignedBy: 'current_user',
+          status: 'assigned',
+          ear: device.ear === 'both' ? 'both' : device.ear === 'left' ? 'left' : 'right',
+          reason: 'replacement',
+          notes: notes || '',
+          listPrice: newDeviceInfo?.listPrice || undefined,
+          salePrice: newDeviceInfo?.salePrice || undefined,
+          serialNumber: selectedSerial || (newDeviceInfo && newDeviceInfo.serial) || undefined,
+        } as DeviceAssignment;
+
+        // If inventory shows zero available, mark note
+        if ((newDeviceInfo && newDeviceInfo.availableInventory) === 0) {
+          prefill.notes = (prefill.notes ? prefill.notes + '\n' : '') + 'STOK: stokta olmayan ürün satıldı';
+        }
+
+        setPrefillAssignment(prefill);
+      } else {
+        setPrefillAssignment(null);
+      }
+
+      // NOTE: Do NOT open assignment form automatically. Legacy flow creates the replacement card
+      // under Sales/İade-Değişim and assignment (physically giving the new device to patient) is handled
+      // from the Sales card when stock actually arrives. If you want an explicit quick-assign action,
+      // we can add a button on the replacement card to open the assignment form manually.
     } catch (error) {
       console.error('Error removing device:', error);
-      setActionError('Cihaz kaldırılırken bir hata oluştu');
+      setActionError((error as any)?.message || 'Cihaz değiştirirken bir hata oluştu');
     }
   };
 
@@ -612,9 +696,9 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
 
       {showAssignmentForm && (
           <DeviceAssignmentForm
-            key={editingDevice?.id || 'new'}
+            key={editingDevice?.id || prefillAssignment?.deviceId || 'new'}
             patientId={patientId}
-            assignment={editingDevice ? convertToDeviceAssignment(editingDevice) : null}
+            assignment={prefillAssignment ?? (editingDevice ? convertToDeviceAssignment(editingDevice) : null)}
             isOpen={showAssignmentForm}
             onClose={handleAssignmentFormClose}
             onSave={handleDeviceAssignment}
@@ -660,6 +744,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
       {showReplaceModal && selectedDevice && (
         <DeviceReplaceModal
           device={selectedDevice}
+          patientId={patientId}
           isOpen={showReplaceModal}
           onClose={() => setShowReplaceModal(false)}
           onReplace={handleReplaceConfirm}

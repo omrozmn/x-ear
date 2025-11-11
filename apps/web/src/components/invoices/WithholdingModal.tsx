@@ -1,6 +1,5 @@
 import { Button, Input } from '@x-ear/ui-web';
 import { useState, useEffect } from 'react';
-import { WithholdingData, WithholdingCalculation } from '../../types/invoice';
 
 interface WithholdingModalProps {
   isOpen: boolean;
@@ -8,6 +7,12 @@ interface WithholdingModalProps {
   onSave: (data: WithholdingData) => void;
   initialData?: WithholdingData;
   itemIndex?: number;
+}
+
+interface WithholdingData {
+  withholdingRate: number;
+  taxFreeAmount: number;
+  withholdingAmount: number;
 }
 
 export function WithholdingModal({
@@ -18,56 +23,32 @@ export function WithholdingModal({
   itemIndex
 }: WithholdingModalProps) {
   const [formData, setFormData] = useState<WithholdingData>({
-    withholdingRate: 0,
-    withholdingAmount: 0,
-    taxFreeAmount: 0,
-    withholdingType: 'partial',
-    ...initialData
+    withholdingRate: initialData?.withholdingRate || 0,
+    taxFreeAmount: initialData?.taxFreeAmount || 0,
+    withholdingAmount: initialData?.withholdingAmount || 0
   });
-
-  const [calculation, setCalculation] = useState<WithholdingCalculation | null>(null);
 
   useEffect(() => {
     if (initialData) {
-      setFormData({ ...initialData });
+      setFormData(initialData);
     }
   }, [initialData]);
 
+  // Otomatik hesaplama
   useEffect(() => {
-    calculateWithholding();
+    if (formData.withholdingRate && formData.taxFreeAmount) {
+      const calculated = (formData.withholdingRate / 100) * formData.taxFreeAmount;
+      setFormData(prev => ({
+        ...prev,
+        withholdingAmount: parseFloat(calculated.toFixed(2))
+      }));
+    }
   }, [formData.withholdingRate, formData.taxFreeAmount]);
-
-  const calculateWithholding = () => {
-    const rate = formData.withholdingRate || 0;
-    const taxFree = formData.taxFreeAmount || 0;
-    const withholdingAmount = (rate / 100) * taxFree;
-    const netAmount = taxFree - withholdingAmount;
-
-    setCalculation({
-      baseAmount: taxFree,
-      withholdingRate: rate,
-      withholdingAmount,
-      taxFreeAmount: taxFree,
-      netAmount
-    });
-
-    setFormData(prev => ({
-      ...prev,
-      withholdingAmount
-    }));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
     onClose();
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('tr-TR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount);
   };
 
   if (!isOpen) return null;
@@ -84,112 +65,98 @@ export function WithholdingModal({
                 <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                     Tevkifat İade Bilgileri
-                    {itemIndex !== undefined && ` - Kalem ${itemIndex + 1}`}
+                    {itemIndex !== undefined && ` - Satır ${itemIndex + 1}`}
                   </h3>
 
                   <div className="space-y-4">
                     {/* Tevkifat Oranı */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tevkifat Oranı (%)
+                        Tevkifat İade Edilen Mal Oranı (%)
                       </label>
                       <Input
                         type="number"
-                        min="0"
-                        max="100"
                         step="0.01"
                         value={formData.withholdingRate}
-                        onChange={(e) => setFormData({ ...formData, withholdingRate: parseFloat(e.target.value) || 0 })}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          withholdingRate: parseFloat(e.target.value) || 0
+                        })}
                         className="w-full"
+                        placeholder="Örn: 50"
                         required
                       />
                       <p className="mt-1 text-xs text-gray-500">
-                        Örn: %10, %20, %50
+                        İade edilen mal için tevkifat oranını giriniz
                       </p>
                     </div>
 
                     {/* Tevkifatsız KDV Tutarı */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tevkifatsız KDV Tutarı (TL)
+                        Tevkifatsız İade KDV Tutarı (TL)
                       </label>
                       <Input
                         type="number"
-                        min="0"
                         step="0.01"
                         value={formData.taxFreeAmount}
-                        onChange={(e) => setFormData({ ...formData, taxFreeAmount: parseFloat(e.target.value) || 0 })}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          taxFreeAmount: parseFloat(e.target.value) || 0
+                        })}
                         className="w-full"
+                        placeholder="0.00"
                         required
                       />
                       <p className="mt-1 text-xs text-gray-500">
-                        Tevkifat uygulanmadan önceki KDV tutarı
+                        Tevkifatsız KDV tutarını giriniz
                       </p>
                     </div>
 
-                    {/* Hesaplanan Tevkifat Tutarı */}
+                    {/* Hesaplanan Tevkifat KDV Tutarı */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tevkifat KDV Tutarı (TL)
+                        Tevkifat İade KDV Tutarı (TL)
                       </label>
                       <Input
                         type="number"
+                        step="0.01"
                         value={formData.withholdingAmount}
                         readOnly
                         className="w-full bg-gray-50"
+                        placeholder="0.00"
                       />
                       <p className="mt-1 text-xs text-gray-500">
-                        Otomatik hesaplanır
+                        Otomatik hesaplanır: (Oran × Tevkifatsız Tutar) / 100
                       </p>
                     </div>
 
-                    {/* Calculation Summary */}
-                    {calculation && (
+                    {/* Hesaplama Özeti */}
+                    {formData.withholdingRate > 0 && formData.taxFreeAmount > 0 && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h4 className="text-sm font-medium text-blue-900 mb-3">Hesaplama Özeti</h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Tevkifatsız KDV:</span>
-                            <span className="font-medium text-gray-900">
-                              ₺{formatCurrency(calculation.taxFreeAmount)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Tevkifat Oranı:</span>
-                            <span className="font-medium text-gray-900">
-                              %{formatCurrency(calculation.withholdingRate)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between border-t border-blue-300 pt-2">
-                            <span className="text-gray-600">Tevkifat Tutarı:</span>
-                            <span className="font-medium text-blue-900">
-                              ₺{formatCurrency(calculation.withholdingAmount)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Net Tutar:</span>
-                            <span className="font-medium text-green-900">
-                              ₺{formatCurrency(calculation.netAmount)}
-                            </span>
+                        <div className="flex items-start">
+                          <span className="text-blue-400 mr-2">ℹ️</span>
+                          <div className="text-sm text-blue-700">
+                            <p className="font-medium mb-1">Hesaplama:</p>
+                            <p>
+                              {formData.withholdingRate}% × {formData.taxFreeAmount.toFixed(2)} TL = {' '}
+                              <span className="font-semibold">{formData.withholdingAmount.toFixed(2)} TL</span>
+                            </p>
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* Info Box */}
+                    {/* Uyarı */}
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                       <div className="flex">
-                        <div className="flex-shrink-0">
-                          <span className="text-yellow-400">⚠️</span>
-                        </div>
-                        <div className="ml-3">
-                          <h3 className="text-sm font-medium text-yellow-800">Bilgilendirme</h3>
-                          <div className="mt-2 text-sm text-yellow-700">
-                            <p>
-                              Tevkifat, KDV'nin bir kısmının alıcı tarafından kesilmesi işlemidir.
-                              Hesaplanan tevkifat tutarı, fatura toplamından düşülecektir.
-                            </p>
-                          </div>
+                        <span className="text-yellow-400 mr-2">⚠️</span>
+                        <div className="text-sm text-yellow-700">
+                          <p className="font-medium mb-1">Dikkat:</p>
+                          <p>
+                            Tevkifat iade bilgileri fatura satırına kaydedilecektir. 
+                            Bu bilgiler BirFatura üzerinden GİB'e gönderilecektir.
+                          </p>
                         </div>
                       </div>
                     </div>

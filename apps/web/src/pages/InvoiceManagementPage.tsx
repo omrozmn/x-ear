@@ -7,7 +7,9 @@ import { InvoiceBulkOperations } from '../components/invoice/InvoiceBulkOperatio
 import { InvoiceTemplateManager } from '../components/templates/InvoiceTemplateManager';
 import { EFaturaXMLGenerator } from '../components/invoice/EFaturaXMLGenerator';
 import { InvoiceFilters as InvoiceFiltersComponent } from '../components/invoices/InvoiceFilters';
+import { GovernmentInvoiceModal } from '../components/invoices/GovernmentInvoiceModal';
 import { InvoiceStats } from '../components/invoices/InvoiceStats';
+import { invoiceService } from '../services/invoice.service';
 
 interface InvoiceManagementPageProps {
   className?: string;
@@ -20,6 +22,8 @@ interface PageState {
   error: string | null;
   filters: InvoiceFilters;
   currentView: 'list' | 'templates' | 'bulk' | 'xml';
+  stats: any;
+  statsLoading: boolean;
 }
 
 interface ModalState {
@@ -38,7 +42,9 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
     isLoading: true,
     error: null,
     filters: {},
-    currentView: 'list'
+    currentView: 'list',
+    stats: {},
+    statsLoading: true
   });
 
   const [modalState, setModalState] = useState<ModalState>({
@@ -48,18 +54,52 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
     template: null
   });
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [governmentModalOpen, setGovernmentModalOpen] = useState(false);
+  const [currentInvoiceForGov, setCurrentInvoiceForGov] = useState<Invoice | null>(null);
 
-  // Load invoices on component mount
+  // Load invoices and stats on component mount
   useEffect(() => {
     loadInvoices();
+    loadStats();
+  }, []);
+
+  // If editId query param present, open editor for that invoice
+  useEffect(() => {
+    (async () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const editId = params.get('editId');
+        if (editId) {
+          const inv = await invoiceService.getInvoice(editId);
+          if (inv) {
+            handleEditInvoice(inv);
+            // remove param to avoid re-triggering
+            params.delete('editId');
+            const newSearch = params.toString();
+            const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '');
+            window.history.replaceState({}, '', newUrl);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not open invoice editor from editId param', err);
+      }
+    })();
+  }, []);
+
+  const loadStats = useCallback(async () => {
+    setState(prev => ({ ...prev, statsLoading: true }));
+    try {
+      const stats = await invoiceService.getInvoiceStats();
+      setState(prev => ({ ...prev, stats, statsLoading: false }));
+    } catch (error) {
+      console.error('Error loading stats:', error);
+      setState(prev => ({ ...prev, statsLoading: false }));
+    }
   }, []);
 
   const loadInvoices = useCallback(async () => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
-    
+
     try {
       // Mock data for demonstration
       const mockInvoices: Invoice[] = [
@@ -179,32 +219,82 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
     }
   }, []);
 
-  // Filter invoices based on search and filters
+  // Filter invoices based on filters
   const filteredInvoices = React.useMemo(() => {
     let filtered = state.invoices;
 
     // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (state.filters.search) {
+      const query = state.filters.search.toLowerCase();
       filtered = filtered.filter(invoice =>
         invoice.invoiceNumber.toLowerCase().includes(query) ||
         invoice.patientName.toLowerCase().includes(query) ||
-        invoice.patientPhone?.toLowerCase().includes(query)
+        invoice.patientPhone?.toLowerCase().includes(query) ||
+        invoice.billingAddress?.taxNumber?.toLowerCase().includes(query)
       );
     }
 
     // Apply status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(invoice => invoice.status === statusFilter);
+    if (state.filters.status && state.filters.status.length > 0) {
+      filtered = filtered.filter(invoice => state.filters.status!.includes(invoice.status));
     }
 
     // Apply type filter
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter(invoice => invoice.type === typeFilter);
+    if (state.filters.type && state.filters.type.length > 0) {
+      filtered = filtered.filter(invoice => state.filters.type!.includes(invoice.type as any));
+    }
+
+    // Apply date filters
+    if (state.filters.issueDateFrom) {
+      const from = new Date(state.filters.issueDateFrom);
+      filtered = filtered.filter(invoice =>
+        invoice.issueDate && new Date(invoice.issueDate) >= from
+      );
+    }
+
+    if (state.filters.issueDateTo) {
+      const to = new Date(state.filters.issueDateTo);
+      filtered = filtered.filter(invoice =>
+        invoice.issueDate && new Date(invoice.issueDate) <= to
+      );
+    }
+
+    // Apply amount filters
+    if (state.filters.amountMin !== undefined) {
+      filtered = filtered.filter(invoice =>
+        (invoice.grandTotal || invoice.totalAmount || 0) >= state.filters.amountMin!
+      );
+    }
+
+    if (state.filters.amountMax !== undefined) {
+      filtered = filtered.filter(invoice =>
+        (invoice.grandTotal || invoice.totalAmount || 0) <= state.filters.amountMax!
+      );
+    }
+
+    // Apply payment method filter
+    if (state.filters.paymentMethod && state.filters.paymentMethod.length > 0) {
+      filtered = filtered.filter(invoice =>
+        invoice.paymentMethod && state.filters.paymentMethod!.includes(invoice.paymentMethod)
+      );
+    }
+
+    // Apply GIB status filter
+    if (state.filters.gibStatus) {
+      filtered = filtered.filter(invoice => invoice.gibStatus === state.filters.gibStatus);
+    }
+
+    // Apply paid/overdue filters
+    if (state.filters.isPaid) {
+      filtered = filtered.filter(invoice => invoice.status === 'paid');
+    }
+
+    if (state.filters.isOverdue) {
+      filtered = filtered.filter(invoice => invoice.status === 'overdue');
     }
 
     return filtered;
-  }, [state.invoices, searchQuery, statusFilter, typeFilter]);
+  }, [state.invoices, state.filters]);
 
   const handleCreateInvoice = useCallback(() => {
     setModalState({
@@ -268,13 +358,40 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
   const handleBulkActionComplete = useCallback((action: string, results: any) => {
     // Refresh invoices after bulk action
     loadInvoices();
-    
+
     // Clear selection
     setState(prev => ({ ...prev, selectedInvoices: [] }));
-    
+
     // Show success message
     console.log(`Bulk action ${action} completed:`, results);
   }, [loadInvoices]);
+
+  const handleFiltersChange = useCallback((newFilters: InvoiceFilters) => {
+    setState(prev => ({ ...prev, filters: newFilters }));
+  }, []);
+
+  const handleApplyFilters = useCallback(() => {
+    // Filters are already applied via useMemo
+    console.log('Filters applied:', state.filters);
+  }, [state.filters]);
+
+  const handleResetFilters = useCallback(() => {
+    setState(prev => ({ ...prev, filters: {} }));
+  }, []);
+
+  const handleOpenGovernmentModal = useCallback((invoice?: Invoice) => {
+    setCurrentInvoiceForGov(invoice || null);
+    setGovernmentModalOpen(true);
+  }, []);
+
+  const handleSaveGovernmentData = useCallback((data: any) => {
+    console.log('Government invoice data:', data);
+    // TODO: Save to invoice
+    if (currentInvoiceForGov) {
+      // Update existing invoice
+    }
+    setGovernmentModalOpen(false);
+  }, [currentInvoiceForGov]);
 
   const closeModal = useCallback(() => {
     setModalState({
@@ -306,10 +423,10 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
           console.log('Creating invoice from template:', data);
           break;
       }
-      
+
       // Refresh invoices
       await loadInvoices();
-      
+
       // Close modal
       closeModal();
     } catch (error) {
@@ -334,7 +451,7 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
       <div className="page-header mb-6">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-bold text-gray-900">Fatura Yönetimi</h1>
-          
+
           <div className="header-actions flex gap-3">
             <Button
               onClick={handleQuickInvoice}
@@ -363,11 +480,10 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
               <Button
                 key={tab.key}
                 onClick={() => setState(prev => ({ ...prev, currentView: tab.key as any }))}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  state.currentView === tab.key
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${state.currentView === tab.key
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
                 variant='default'>
                 {tab.icon} {tab.label}
               </Button>
@@ -400,71 +516,16 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
       {/* Content based on current view */}
       {state.currentView === 'list' && (
         <div className="invoice-list-view">
-          {/* Filters */}
-          <div className="filters-section bg-gray-50 rounded-lg p-4 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Arama
-                </label>
-                <Input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Fatura no, hasta adı..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+          {/* Stats */}
+          <InvoiceStats stats={state.stats} loading={state.statsLoading} />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Durum
-                </label>
-                <Select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  options={[
-                    { value: 'all', label: 'Tüm Durumlar' },
-                    { value: 'draft', label: 'Taslak' },
-                    { value: 'sent', label: 'Gönderildi' },
-                    { value: 'approved', label: 'Onaylandı' },
-                    { value: 'paid', label: 'Ödendi' },
-                    { value: 'cancelled', label: 'İptal' }
-                  ]}
-                  placeholder="Durum seçiniz"
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tip
-                </label>
-                <Select
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                  options={[
-                    { value: 'all', label: 'Tüm Tipler' },
-                    { value: 'service', label: 'Hizmet' },
-                    { value: 'sale', label: 'Satış' },
-                    { value: 'proforma', label: 'Proforma' },
-                    { value: 'sgk', label: 'SGK' }
-                  ]}
-                  placeholder="Tip seçiniz"
-                  className="w-full"
-                />
-              </div>
-
-              <div className="flex items-end">
-                <Button
-                  onClick={loadInvoices}
-                  className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-                  variant='default'>
-                  🔄 Yenile
-                </Button>
-              </div>
-            </div>
-          </div>
+          {/* Filters Component */}
+          <InvoiceFiltersComponent
+            filters={state.filters}
+            onFiltersChange={handleFiltersChange}
+            onApply={handleApplyFilters}
+            onReset={handleResetFilters}
+          />
 
           {/* Bulk Operations */}
           {state.selectedInvoices.length > 0 && (
@@ -542,7 +603,7 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
               Birden fazla fatura seçerek toplu işlemler gerçekleştirebilirsiniz.
             </p>
           </div>
-          
+
           <InvoiceBulkOperations
             selectedInvoices={state.selectedInvoices}
             onBulkActionComplete={handleBulkActionComplete}
@@ -558,7 +619,7 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
               Faturalarınızı e-fatura XML formatında oluşturun ve GİB'e gönderin.
             </p>
           </div>
-          
+
           {state.selectedInvoices.length > 0 ? (
             state.selectedInvoices.map(invoice => (
               <div key={invoice.id} className="mb-6">
@@ -605,6 +666,14 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
           } : undefined}
         />
       )}
+
+      {/* Government Invoice Modal */}
+      <GovernmentInvoiceModal
+        isOpen={governmentModalOpen}
+        onClose={() => setGovernmentModalOpen(false)}
+        onSave={handleSaveGovernmentData}
+        initialData={currentInvoiceForGov?.governmentData}
+      />
     </div>
   );
 };
@@ -637,7 +706,7 @@ const InvoiceRow: React.FC<InvoiceRowProps> = ({
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
-    
+
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
         {config.label}
@@ -654,33 +723,33 @@ const InvoiceRow: React.FC<InvoiceRowProps> = ({
           onChange={(e) => onSelect(e.target.checked)}
           className="mr-4"
         />
-        
+
         <div className="flex-1 grid grid-cols-6 gap-4 items-center">
           <div>
             <div className="font-medium text-gray-900">{invoice.invoiceNumber}</div>
             <div className="text-sm text-gray-500">{invoice.issueDate}</div>
           </div>
-          
+
           <div>
             <div className="font-medium text-gray-900">{invoice.patientName}</div>
             <div className="text-sm text-gray-500">{invoice.patientPhone}</div>
           </div>
-          
+
           <div>
             {getStatusBadge(invoice.status)}
           </div>
-          
+
           <div>
             <span className="text-sm text-gray-500 capitalize">{invoice.type}</span>
           </div>
-          
+
           <div className="text-right">
             <div className="font-medium text-gray-900">
               ₺{invoice.grandTotal?.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) || '0.00'}
             </div>
             <div className="text-sm text-gray-500">{invoice.currency}</div>
           </div>
-          
+
           <div className="flex justify-end space-x-2">
             <Button
               onClick={onView}

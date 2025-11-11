@@ -1,7 +1,7 @@
 // Invoice Types for X-Ear CRM
 // Based on legacy EFatura structure and OpenAPI schema
 
-export type InvoiceStatus = 
+export type InvoiceStatus =
   | 'draft'        // taslak
   | 'sent'         // gonderildi
   | 'approved'     // onaylandi
@@ -10,13 +10,16 @@ export type InvoiceStatus =
   | 'paid'         // odendi
   | 'overdue';     // gecikmiş
 
-export type InvoiceType = 
+export type InvoiceType =
   | 'sale'         // satış faturası
   | 'service'      // hizmet faturası
   | 'proforma'     // proforma fatura
   | 'return'       // iade faturası
   | 'replacement'  // değişim faturası
-  | 'sgk'          // SGK faturası
+  | 'sgk';         // SGK faturası
+
+// Extended invoice types for government and special cases
+export type ExtendedInvoiceType = InvoiceType
   | 'government'   // kamu faturası
   | 'withholding'  // tevkifatlı fatura
   | 'export_registered'; // ihraç kayıtlı
@@ -24,7 +27,7 @@ export type InvoiceType =
 // Backwards-compatible aliases used in some legacy services
 export type InvoiceTypeLegacy = InvoiceType | 'standard' | 'credit_note' | 'debit_note';
 
-export type PaymentMethod = 
+export type PaymentMethod =
   | 'cash'         // nakit
   | 'credit_card'  // kredi kartı
   | 'bank_transfer'// havale
@@ -32,7 +35,7 @@ export type PaymentMethod =
   | 'sgk'          // SGK
   | 'check';       // çek
 
-export type TaxType = 
+export type TaxType =
   | 'kdv'          // KDV
   | 'otv'          // ÖTV
   | 'tevkifat'     // Tevkifat
@@ -51,20 +54,26 @@ export interface InvoiceItem {
   taxRate: number;
   taxAmount: number;
   totalPrice: number;
-  
+
   // SGK specific fields
   sgkCode?: string;
   isMinistryTracked?: boolean;
-  
+
   // Device specific fields
   serialNumber?: string;
   warrantyPeriod?: number;
   // legacy/category used by some services
   category?: string;
-  
+
   // Withholding (Tevkifat) fields
   withholdingRate?: number;
   withholdingAmount?: number;
+
+  // Extended features (Legacy parity)
+  unit?: ExtendedUnitType | string; // Extended unit types
+  serviceCode?: string; // Mal hizmet kodu
+  lineWithholding?: LineWithholdingData; // Satır bazında tevkifat
+  specialTaxBase?: number; // Özel matrah
   taxFreeAmount?: number;
 }
 
@@ -91,7 +100,7 @@ export interface Invoice {
   invoiceNumber: string;
   type: InvoiceTypeLegacy;
   status: InvoiceStatus;
-  
+
   // Patient/Customer information
   patientId?: string;
   patientName: string;
@@ -102,10 +111,10 @@ export interface Invoice {
   customerName?: string;
   customerTaxNumber?: string;
   customerAddress?: any;
-  
+
   // Items
   items?: InvoiceItem[];
-  
+
   // Address information
   billingAddress?: InvoiceAddress;
   shippingAddress?: InvoiceAddress;
@@ -113,7 +122,7 @@ export interface Invoice {
   dueDate?: string;
   paymentDate?: string;
   paymentMethod?: PaymentMethod;
-  
+
   subtotal?: number;
   totalDiscount?: number;
   taxes?: InvoiceTax[] | Array<{ type: string; rate: number; amount: number }>;
@@ -121,39 +130,52 @@ export interface Invoice {
   // legacy name used in some services
   totalAmount?: number;
   grandTotal?: number;
-  
+
   // Currency
   currency: string; // Default: 'TRY'
   exchangeRate?: number;
-  
+
   // Notes and references
   notes?: string;
   internalNotes?: string;
   referenceNumber?: string;
   orderNumber?: string;
-  
+
   // E-Fatura specific fields
   ettn?: string; // E-Fatura ETTN
   gibStatus?: 'not_sent' | 'sent' | 'accepted' | 'rejected';
   gibSentDate?: string;
   gibResponseDate?: string;
   gibErrorMessage?: string;
-  
+
   // SGK specific fields
   sgkSubmissionId?: string;
-  
+
   // Government invoice fields
   governmentData?: GovernmentInvoiceData;
-  
+
   // Withholding fields
   withholdingData?: WithholdingData;
-  
+
   // Additional info
   orderInfo?: OrderInfo;
   deliveryInfo?: DeliveryInfo;
   internetSalesInfo?: InternetSalesInfo;
   periodInfo?: PeriodInfo;
-  
+
+  // Extended features (Legacy parity)
+  scenarioData?: InvoiceScenarioData;
+  specialTaxBase?: SpecialTaxBaseData;
+  backdatedInvoice?: BackdatedInvoiceData;
+  returnInvoiceDetails?: ReturnInvoiceDetailsData;
+  customerLabel?: CustomerLabelData;
+  shipmentInfo?: ShipmentInfoData;
+  bankInfo?: BankInfoData;
+  paymentTerms?: PaymentTermsData;
+  issueTime?: string; // HH:mm format
+  isTechnologySupport?: boolean;
+  isMedicalDevice?: boolean;
+
   createdAt?: string;
   updatedAt?: string;
   createdBy?: string;
@@ -228,7 +250,7 @@ export interface InvoiceFilters {
   customerId?: string;
   customerName?: string;
   invoiceNumber?: string;
-  
+
   // Date filters
   issueDateFrom?: string;
   issueDateTo?: string;
@@ -236,17 +258,17 @@ export interface InvoiceFilters {
   dueDateTo?: string;
   paymentDateFrom?: string;
   paymentDateTo?: string;
-  
+
   // Amount filters
   amountMin?: number;
   amountMax?: number;
-  
+
   // Status filters
   isPaid?: boolean;
   isOverdue?: boolean;
   hasSgkSubmission?: boolean;
   gibStatus?: Invoice['gibStatus'];
-  
+
   // Pagination
   page?: number;
   limit?: number;
@@ -354,26 +376,26 @@ export interface InvoiceFormData {
   patientName: string;
   patientPhone?: string;
   patientTcNumber?: string;
-  
+
   // Address forms
   billingAddress: InvoiceAddress;
   shippingAddress?: InvoiceAddress;
   sameAsbilling?: boolean;
-  
+
   // Date and payment
   issueDate: string;
   dueDate?: string;
   paymentMethod?: PaymentMethod;
-  
+
   // Items
   items: InvoiceItem[];
-  
+
   // Calculations (computed)
   subtotal: number;
   totalDiscount: number;
   totalTax: number;
   grandTotal: number;
-  
+
   // Notes
   notes?: string;
   internalNotes?: string;
@@ -383,12 +405,12 @@ export interface InvoiceFormData {
   paid?: number;
   overdue?: number;
   orderNumber?: string;
-  
+
   // Options
   currency: string;
   exchangeRate?: number;
   autoCalculateTax: boolean;
-  
+
   // Template
   templateId?: string;
   saveAsTemplate?: boolean;
@@ -469,20 +491,20 @@ export interface InvoicePayment {
   paymentDate: string;
   referenceNumber?: string;
   notes?: string;
-  
+
   // Credit card specific
   cardLast4?: string;
   cardType?: string;
   transactionId?: string;
-  
+
   // Bank transfer specific
   bankName?: string;
   accountNumber?: string;
-  
+
   // Installment specific
   installmentNumber?: number;
   totalInstallments?: number;
-  
+
   createdAt: string;
   createdBy: string;
 }
@@ -570,4 +592,91 @@ export interface PeriodInfo {
   periodStart?: string;
   periodEnd?: string;
   periodDescription?: string;
+}
+
+// ============================================
+// EXTENDED INVOICE FEATURES (Legacy Parity)
+// ============================================
+
+// Scenario Types
+export type InvoiceScenario = 'sale' | 'service' | 'export' | 'government' | 'medical';
+
+export interface InvoiceScenarioData {
+  scenario: InvoiceScenario;
+  scenarioCode: number;
+  scenarioName: string;
+  scenarioDescription?: string;
+}
+
+// Special Tax Base (Özel Matrah)
+export interface SpecialTaxBaseData {
+  hasSpecialTaxBase: boolean;
+  amount?: number;
+  description?: string;
+  taxRate?: number;
+}
+
+// Backdated Invoice (Geriye Fatura)
+export interface BackdatedInvoiceData {
+  isBackdated: boolean;
+  originalDate?: string;
+  reason?: string;
+}
+
+// Return Invoice Details (İade Fatura Detayları)
+export interface ReturnInvoiceDetailsData {
+  returnInvoiceNumber?: string;
+  returnInvoiceDate?: string;
+  returnReason?: string;
+}
+
+// Customer Label (Alıcı Etiketi)
+export interface CustomerLabelData {
+  labelId?: string;
+  labelName?: string;
+  color?: string;
+}
+
+// Shipment Info (Sevk Bilgileri)
+export interface ShipmentInfoData {
+  shipmentDate?: string;
+  shipmentAddress?: InvoiceAddress;
+  carrier?: string;
+  trackingNumber?: string;
+}
+
+// Bank Info (Banka Bilgileri)
+export interface BankInfoData {
+  bankName?: string;
+  accountNumber?: string;
+  iban?: string;
+  swiftCode?: string;
+}
+
+// Payment Terms (Ödeme Koşulları)
+export interface PaymentTermsData {
+  paymentTerm?: string;
+  paymentDays?: number;
+  earlyPaymentDiscount?: number;
+  latePaymentPenalty?: number;
+}
+
+// Line Withholding (Satır Bazında Tevkifat)
+export interface LineWithholdingData {
+  code: string;
+  rate: number;
+  amount: number;
+}
+
+// Extended Unit Types
+export type ExtendedUnitType =
+  | 'Adet' | 'Kg' | 'Lt' | 'M' | 'M2' | 'M3'
+  | 'Ton' | 'Paket' | 'Koli' | 'Kutu' | 'Saat'
+  | 'Gün' | 'Ay' | 'Yıl' | 'Kişi' | 'Takım';
+
+// Product Service Code (Mal Hizmet Kodu)
+export interface ProductServiceCodeData {
+  code: string;
+  description: string;
+  category: string;
 }

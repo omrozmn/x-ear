@@ -3,6 +3,11 @@ import { useState, useEffect } from 'react';
 import { Invoice, InvoiceType, InvoiceStatus, CreateInvoiceData, UpdateInvoiceData } from '../../types/invoice';
 import { Patient } from '../../types/patient';
 import { usePatients } from '../../hooks/usePatients';
+import { PatientSearchSection } from './PatientSearchSection';
+import { CustomerLabelSection } from './CustomerLabelSection';
+import { UnitSelector } from './UnitSelector';
+import { ProductServiceCodeInput } from './ProductServiceCodeInput';
+import { LineWithholdingModal } from './LineWithholdingModal';
 
 interface InvoiceFormProps {
   invoice?: Invoice;
@@ -91,22 +96,12 @@ export default function InvoiceForm({ invoice, onSubmit, onCancel, isLoading = f
   });
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  const [patientSearch, setPatientSearch] = useState('');
-  const [patientResults, setPatientResults] = useState<Patient[]>([]);
-  const [showPatientDropdown, setShowPatientDropdown] = useState(false);
-
-  const searchPatientsQuery = usePatients(patientSearch.length >= 2 ? { search: patientSearch } : {});
-
-  // Search patients
-  useEffect(() => {
-    if (patientSearch.length >= 2 && searchPatientsQuery.data) {
-      setPatientResults(searchPatientsQuery.data.patients || []);
-      setShowPatientDropdown(true);
-    } else {
-      setPatientResults([]);
-      setShowPatientDropdown(false);
-    }
-  }, [patientSearch, searchPatientsQuery.data]);
+  const [lineWithholdingModal, setLineWithholdingModal] = useState<{
+    isOpen: boolean;
+    itemIndex: number;
+    itemName: string;
+    itemAmount: number;
+  }>({ isOpen: false, itemIndex: 0, itemName: '', itemAmount: 0 });
 
   const handlePatientSelect = (patient: Patient) => {
     setFormData(prev => ({
@@ -119,12 +114,33 @@ export default function InvoiceForm({ invoice, onSubmit, onCancel, isLoading = f
         ...prev.billingAddress,
         name: `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'İsimsiz Hasta',
         address: patient.addressFull || '',
-        city: '',
-        postalCode: ''
+        city: patient.city || '',
+        postalCode: patient.postalCode || '',
+        country: 'Türkiye'
       }
     }));
-    setPatientSearch(`${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'İsimsiz Hasta');
-    setShowPatientDropdown(false);
+  };
+
+  const handleOpenLineWithholding = (index: number) => {
+    const item = formData.items[index];
+    const itemTotal = item.quantity * item.unitPrice;
+    setLineWithholdingModal({
+      isOpen: true,
+      itemIndex: index,
+      itemName: item.name,
+      itemAmount: itemTotal
+    });
+  };
+
+  const handleSaveLineWithholding = (data: any) => {
+    setFormData(prev => ({
+      ...prev,
+      items: prev.items.map((item, i) =>
+        i === lineWithholdingModal.itemIndex
+          ? { ...item, lineWithholding: data }
+          : item
+      )
+    }));
   };
 
   // Form handlers
@@ -387,53 +403,22 @@ export default function InvoiceForm({ invoice, onSubmit, onCancel, isLoading = f
           </div>
         </div>
 
-        {/* Patient Selection */}
-        <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Hasta *
-          </label>
-          <div className="flex space-x-2">
-            <Input
-              type="text"
-              value={formData.patientName}
-              onChange={(e) => {
-                handleInputChange('patientName', e.target.value);
-                setPatientSearch(e.target.value);
-              }}
-              placeholder="Hasta adı yazın veya arayın..."
-              className={`flex-1 px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ${
-                validationErrors.patientName ? 'border-red-300' : 'border-gray-300'
-              }`}
-            />
-            <Button
-              type="button"
-              onClick={() => setShowPatientDropdown(!showPatientDropdown)}
-              className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              variant='default'>
-              🔍
-            </Button>
-          </div>
-          
-          {showPatientDropdown && patientResults.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-              {patientResults.map((patient: Patient) => (
-                <Button
-                  key={patient.id}
-                  type="button"
-                  onClick={() => handlePatientSelect(patient)}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
-                  variant='default'>
-                  <div className="font-medium">{`${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'İsimsiz Hasta'}</div>
-                  <div className="text-sm text-gray-500">{patient.phone}</div>
-                </Button>
-              ))}
-            </div>
-          )}
-          
-          {validationErrors.patientName && (
-            <p className="mt-1 text-sm text-red-600">{validationErrors.patientName}</p>
-          )}
-        </div>
+        {/* Patient Search */}
+        <PatientSearchSection
+          onPatientSelect={handlePatientSelect}
+          selectedPatient={{
+            patientId: formData.patientId,
+            patientName: formData.patientName,
+            patientPhone: formData.patientPhone,
+            patientTcNumber: formData.patientTcNumber
+          }}
+        />
+
+        {/* Customer Label */}
+        <CustomerLabelSection
+          customerLabel={formData.customerLabel}
+          onChange={(label) => handleInputChange('customerLabel', label)}
+        />
 
         {/* Invoice Items */}
         <div>

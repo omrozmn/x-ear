@@ -92,16 +92,20 @@ export class DeviceReplacementService {
    */
   async getPatientReplacements(patientId: string): Promise<DeviceReplacementHistory[]> {
     try {
-      // Try to fetch from backend first
+      // Try to fetch from backend first (use real API when available)
       try {
-        // Note: API endpoint may not exist yet, using mock
-        const mockResponse = { success: false };
-        console.log('Mock API call for patient replacements:', mockResponse);
+        const res = await fetch(`http://localhost:5003/api/patients/${patientId}/replacements`);
+        if (res.ok) {
+          const j = await res.json();
+          const items = (j.data || []).map((d: any) => this.normalizeReplacementData(d));
+          return items;
+        }
+        console.warn('Backend replacements fetch returned non-ok status, falling back to localStorage', res.status);
       } catch (apiError) {
-        console.warn('Backend API unavailable, using local storage:', apiError);
+        console.warn('Backend API unavailable for replacements, using local storage fallback:', apiError);
       }
 
-      // Fallback to local storage
+      // Fallback to local storage if backend not available
       return this.getFromLocalStorage().filter(r => r.patientId === patientId);
     } catch (error) {
       console.error('Error fetching patient replacements:', error);

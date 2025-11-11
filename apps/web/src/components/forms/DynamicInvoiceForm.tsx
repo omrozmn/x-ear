@@ -330,7 +330,8 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
   // Validate on mount and when form data changes
   useEffect(() => {
     validateForm();
-  }, [formData, items, visibleSections]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData, items]);
 
   // Call onFormDataChange when form data changes
   useEffect(() => {
@@ -341,7 +342,8 @@ export const DynamicInvoiceForm: React.FC<DynamicInvoiceFormProps> = ({
       };
       onFormDataChange(submitData);
     }
-  }, [formData, items, onFormDataChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData, items]);
 
   // Render field based on type
   const renderField = (section: InvoiceFieldSection, field: InvoiceFieldDefinition) => {

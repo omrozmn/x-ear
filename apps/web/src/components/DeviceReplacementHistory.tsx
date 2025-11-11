@@ -53,6 +53,24 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
     loadReplacements();
   }, [loadReplacements]);
 
+  // Listen for global replacement created events to refresh list
+  useEffect(() => {
+    const handler = (e: any) => {
+      try {
+        const detail = e?.detail;
+        // If event contains patient info, only reload when it matches
+        if (!detail || !detail.patient_id || detail.patient_id === patientId) {
+          loadReplacements();
+        }
+      } catch (err) {
+        loadReplacements();
+      }
+    };
+
+    window.addEventListener('replacement:created', handler as EventListener);
+    return () => window.removeEventListener('replacement:created', handler as EventListener);
+  }, [patientId, loadReplacements]);
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
