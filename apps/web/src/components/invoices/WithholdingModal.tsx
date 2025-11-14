@@ -1,5 +1,6 @@
 import { Button, Input } from '@x-ear/ui-web';
 import { useState, useEffect } from 'react';
+import { Info, AlertTriangle } from 'lucide-react';
 
 interface WithholdingModalProps {
   isOpen: boolean;
@@ -135,7 +136,7 @@ export function WithholdingModal({
                     {formData.withholdingRate > 0 && formData.taxFreeAmount > 0 && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div className="flex items-start">
-                          <span className="text-blue-400 mr-2">ℹ️</span>
+                          <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
                           <div className="text-sm text-blue-700">
                             <p className="font-medium mb-1">Hesaplama:</p>
                             <p>
@@ -150,7 +151,7 @@ export function WithholdingModal({
                     {/* Uyarı */}
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                       <div className="flex">
-                        <span className="text-yellow-400 mr-2">⚠️</span>
+                        <AlertTriangle className="text-yellow-400 mr-2 flex-shrink-0" size={18} />
                         <div className="text-sm text-yellow-700">
                           <p className="font-medium mb-1">Dikkat:</p>
                           <p>

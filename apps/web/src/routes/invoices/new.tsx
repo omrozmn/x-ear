@@ -1,11 +1,6 @@
-// @ts-nocheck
 import { createFileRoute } from '@tanstack/react-router'
-import { InvoicesPage } from '../../pages/InvoicesPage'
+import { NewInvoicePage } from '../../pages/NewInvoicePage'
 
 export const Route = createFileRoute('/invoices/new')({
-  component: NewInvoice,
+  component: NewInvoicePage,
 })
-
-function NewInvoice() {
-  return <InvoicesPage initialViewMode="form" />
-}

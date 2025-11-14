@@ -1,5 +1,6 @@
 import { Button, Select } from '@x-ear/ui-web';
 import { useState, useEffect } from 'react';
+import { Info } from 'lucide-react';
 import { GovernmentInvoiceData, ExemptionReason, ExportReason } from '../../types/invoice';
 
 interface GovernmentInvoiceModalProps {
@@ -154,7 +155,7 @@ export function GovernmentInvoiceModal({
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div className="flex">
                           <div className="flex-shrink-0">
-                            <span className="text-blue-400">ℹ️</span>
+                            <Info className="text-blue-400" size={18} />
                           </div>
                           <div className="ml-3">
                             <h3 className="text-sm font-medium text-blue-800">Bilgilendirme</h3>

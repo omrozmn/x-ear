@@ -176,3 +176,5 @@ export function SpecialBaseModal({
     </div>
   );
 }
+
+export default SpecialBaseModal;

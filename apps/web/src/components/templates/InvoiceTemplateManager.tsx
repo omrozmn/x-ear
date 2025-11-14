@@ -301,7 +301,8 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
           <h2 className="text-2xl font-bold text-gray-900">Fatura Şablonları</h2>
           <Button
             onClick={handleCreateTemplate}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-sm"
+            style={{ backgroundColor: '#2563eb', color: 'white' }}
             variant='default'>
             + Yeni Şablon
           </Button>
@@ -420,7 +421,8 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
             {(!state.searchQuery && state.selectedCategory === 'all') && (
               <Button
                 onClick={handleCreateTemplate}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-sm"
+                style={{ backgroundColor: '#2563eb', color: 'white' }}
                 variant='default'>
                 Yeni Şablon Oluştur
               </Button>
@@ -551,7 +553,8 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       <div className="template-actions">
         <Button
           onClick={onSelect}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
+          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium shadow-sm"
+          style={{ backgroundColor: '#2563eb', color: 'white' }}
           variant='default'>
           Şablonu Kullan
         </Button>

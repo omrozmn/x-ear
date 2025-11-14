@@ -1,5 +1,6 @@
 import { Input, Textarea } from '@x-ear/ui-web';
 import { useState } from 'react';
+import { ShoppingCart, Package, Truck, Building2, CreditCard } from 'lucide-react';
 
 interface AdditionalInfoSectionProps {
   orderInfo?: any;
@@ -33,56 +34,61 @@ export function AdditionalInfoSection({
         <button
           type="button"
           onClick={() => toggleSection('order')}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
             activeSection === 'order'
               ? 'bg-blue-600 text-white border-blue-600'
               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
           }`}>
-          🛒 Sipariş Bilgisi
+          <ShoppingCart size={16} />
+          Sipariş Bilgisi
         </button>
         
         <button
           type="button"
           onClick={() => toggleSection('delivery')}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
             activeSection === 'delivery'
               ? 'bg-blue-600 text-white border-blue-600'
               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
           }`}>
-          📦 İrsaliye Bilgisi
+          <Package size={16} />
+          İrsaliye Bilgisi
         </button>
         
         <button
           type="button"
           onClick={() => toggleSection('shipment')}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
             activeSection === 'shipment'
               ? 'bg-blue-600 text-white border-blue-600'
               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
           }`}>
-          🚚 Sevk Bilgisi
+          <Truck size={16} />
+          Sevk Bilgisi
         </button>
         
         <button
           type="button"
           onClick={() => toggleSection('bank')}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
             activeSection === 'bank'
               ? 'bg-blue-600 text-white border-blue-600'
               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
           }`}>
-          🏦 Banka Bilgisi
+          <Building2 size={16} />
+          Banka Bilgisi
         </button>
         
         <button
           type="button"
           onClick={() => toggleSection('payment')}
-          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
             activeSection === 'payment'
               ? 'bg-blue-600 text-white border-blue-600'
               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
           }`}>
-          💳 Ödeme Koşulları
+          <CreditCard size={16} />
+          Ödeme Koşulları
         </button>
       </div>
 

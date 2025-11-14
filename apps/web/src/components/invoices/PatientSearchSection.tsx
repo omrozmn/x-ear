@@ -1,5 +1,6 @@
 import { Input, Button } from '@x-ear/ui-web';
 import { useState, useEffect, useCallback } from 'react';
+import { CheckCircle } from 'lucide-react';
 import { usePatients } from '../../hooks/usePatients';
 import { Patient } from '../../types/patient';
 import { InvoiceAddress } from '../../types/invoice';
@@ -19,19 +20,18 @@ export function PatientSearchSection({ onPatientSelect, selectedPatient }: Patie
   const [showResults, setShowResults] = useState(false);
   const [selectedPatientData, setSelectedPatientData] = useState<Patient | null>(null);
 
-  const { data: patientsData, isLoading } = usePatients(
-    searchQuery.length >= 2 ? { searchTerm: searchQuery } : undefined
-  );
-
-  const patients = patientsData?.patients || [];
+  const { patients, isLoading, searchPatients } = usePatients({
+    cacheEnabled: true
+  });
 
   useEffect(() => {
-    if (searchQuery.length >= 2 && patients.length > 0) {
+    if (searchQuery.length >= 2) {
+      searchPatients({ search: searchQuery });
       setShowResults(true);
     } else {
       setShowResults(false);
     }
-  }, [searchQuery, patients]);
+  }, [searchQuery, searchPatients]);
 
   const handlePatientSelect = useCallback((patient: Patient) => {
     setSelectedPatientData(patient);
@@ -130,7 +130,7 @@ export function PatientSearchSection({ onPatientSelect, selectedPatient }: Patie
       {selectedPatientData && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-start">
-            <span className="text-green-400 text-2xl mr-3">✓</span>
+            <CheckCircle className="text-green-400 mr-3 flex-shrink-0" size={24} />
             <div className="flex-1">
               <h4 className="text-sm font-medium text-green-900 mb-2">
                 Hasta Seçildi
@@ -175,9 +175,12 @@ export function PatientSearchSection({ onPatientSelect, selectedPatient }: Patie
                   </div>
                 )}
               </div>
-              <p className="mt-2 text-xs text-green-700">
-                ✓ Hasta bilgileri faturaya otomatik olarak aktarıldı
-              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <CheckCircle className="text-green-600" size={16} />
+                <p className="text-xs text-green-700">
+                  Hasta bilgileri faturaya otomatik olarak aktarıldı
+                </p>
+              </div>
             </div>
           </div>
         </div>

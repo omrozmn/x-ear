@@ -1,37 +1,56 @@
 import { Select } from '@x-ear/ui-web';
+import { Info, AlertTriangle } from 'lucide-react';
 import { InvoiceScenario, InvoiceScenarioData } from '../../types/invoice';
+import { useState } from 'react';
 
 interface InvoiceScenarioSectionProps {
     scenarioData?: InvoiceScenarioData;
     onChange: (data: InvoiceScenarioData) => void;
+    disableSubScenario?: boolean; // Tip 14, 15, 35 için otomatik Temel
 }
 
-export function InvoiceScenarioSection({ scenarioData, onChange }: InvoiceScenarioSectionProps) {
+export function InvoiceScenarioSection({ scenarioData, onChange, disableSubScenario = false }: InvoiceScenarioSectionProps) {
+    const [showSubScenario, setShowSubScenario] = useState(scenarioData?.scenario === 'other');
+
     const scenarios = [
-        { code: 1, value: 'sale', label: 'Satış', description: 'İşitme cihazı satış faturası' },
-        { code: 2, value: 'service', label: 'Hizmet Faturası', description: 'Bakım, onarım ve diğer hizmetler' },
+        { code: 36, value: 'other', label: 'Diğer', description: 'Temel veya Ticari fatura (Alt senaryo seçimi gerekli)' },
         { code: 5, value: 'export', label: 'İhracat', description: 'İhracat faturası' },
         { code: 7, value: 'government', label: 'Kamu', description: 'Kamu kurumu faturası' },
         { code: 45, value: 'medical', label: 'İlaç/Tıbbi Cihaz', description: 'İlaç ve tıbbi cihaz faturası' }
     ];
 
+    const subScenarios = [
+        { code: 2, value: '2', label: 'Temel Fatura', description: 'Temel e-fatura senaryosu' },
+        { code: 3, value: '3', label: 'Ticari Fatura', description: 'Ticari e-fatura senaryosu' }
+    ];
+
     const handleScenarioChange = (value: string) => {
         const selected = scenarios.find(s => s.value === value);
         if (selected) {
+            const isOther = selected.value === 'other';
+            setShowSubScenario(isOther);
+            
             onChange({
                 scenario: selected.value as InvoiceScenario,
                 scenarioCode: selected.code,
                 scenarioName: selected.label,
-                scenarioDescription: selected.description
+                scenarioDescription: selected.description,
+                currentScenarioType: isOther ? '2' : undefined // Varsayılan Temel
+            });
+        }
+    };
+
+    const handleSubScenarioChange = (value: '2' | '3') => {
+        if (scenarioData) {
+            onChange({
+                ...scenarioData,
+                currentScenarioType: value
             });
         }
     };
 
     return (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Senaryo</h3>
-
-            <div className="grid grid-cols-1 gap-4">
+        <div className="space-y-4">
                 <div>
                     <Select
                         label="Fatura Senaryosu"
@@ -49,13 +68,34 @@ export function InvoiceScenarioSection({ scenarioData, onChange }: InvoiceScenar
                     </p>
                 </div>
 
+                {/* Alt Senaryo Seçimi - Sadece "Diğer" için */}
+                {showSubScenario && (
+                    <div>
+                        <Select
+                            label="Mevcut Fatura Senaryonuz"
+                            value={scenarioData?.currentScenarioType || '2'}
+                            onChange={(e) => handleSubScenarioChange(e.target.value as '2' | '3')}
+                            options={subScenarios.map(s => ({ value: s.value, label: s.label }))}
+                            disabled={disableSubScenario}
+                            fullWidth
+                            required
+                        />
+                        <p className="mt-2 text-sm text-gray-500">
+                            {disableSubScenario 
+                                ? 'Bu fatura tipi sadece Temel senaryo ile kullanılabilir.'
+                                : 'Temel veya Ticari fatura senaryosu seçiniz.'}
+                        </p>
+                    </div>
+                )}
+
                 {scenarioData?.scenario && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div className="flex items-start">
-                            <span className="text-blue-400 mr-2">ℹ️</span>
+                            <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
                             <div>
                                 <h4 className="text-sm font-medium text-blue-800 mb-1">
                                     {scenarioData.scenarioName}
+                                    {scenarioData.currentScenarioType && ` - ${scenarioData.currentScenarioType === '2' ? 'Temel' : 'Ticari'}`}
                                 </h4>
                                 <p className="text-sm text-blue-700">
                                     {scenarioData.scenarioDescription}
@@ -64,7 +104,23 @@ export function InvoiceScenarioSection({ scenarioData, onChange }: InvoiceScenar
                         </div>
                     </div>
                 )}
-            </div>
+
+                {/* E-Arşiv Uyarısı */}
+                {scenarioData?.scenario === 'other' && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                        <div className="flex items-start">
+                            <AlertTriangle className="text-amber-400 mr-2 flex-shrink-0" size={18} />
+                            <div>
+                                <h4 className="text-sm font-medium text-amber-800 mb-1">
+                                    E-Arşiv Fatura Bilgilendirmesi
+                                </h4>
+                                <p className="text-sm text-amber-700">
+                                    Alıcı E-Fatura mükellefi değilse, fatura otomatik olarak E-Arşiv fatura olarak düzenlenir.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
         </div>
     );
 }

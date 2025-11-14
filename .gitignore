@@ -47,3 +47,4 @@ huggingface/
 # Python package installers
 pip-wheel-metadata/
 
+apps/backend/.venv

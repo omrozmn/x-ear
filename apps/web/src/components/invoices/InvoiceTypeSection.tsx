@@ -1,5 +1,6 @@
 import { Select, Input, Checkbox } from '@x-ear/ui-web';
 import { useState, useEffect } from 'react';
+import { Info } from 'lucide-react';
 import { getCurrencyRestrictions } from '../../utils/currencyManager';
 
 interface InvoiceTypeSectionProps {
@@ -82,27 +83,31 @@ export function InvoiceTypeSection({
   const showSGKInfo = isSGKType;
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Fatura Tipi ve Özel Durumlar</h3>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="space-y-4">
         {/* Fatura Tipi */}
         <div>
-          <Select
-            label="Fatura Tipi"
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Fatura Tipi <span className="text-red-500">*</span>
+          </label>
+          <select
             value={invoiceType}
             onChange={(e) => onChange('invoiceType', e.target.value)}
-            options={invoiceTypes}
-            fullWidth
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
-          />
+          >
+            {invoiceTypes.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* SGK Bilgilendirme */}
         {showSGKInfo && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-start">
-              <span className="text-blue-400 mr-2">ℹ️</span>
+              <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
               <div>
                 <h4 className="text-sm font-medium text-blue-800 mb-1">
                   SGK Faturası
@@ -291,7 +296,6 @@ export function InvoiceTypeSection({
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }

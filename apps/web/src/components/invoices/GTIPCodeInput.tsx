@@ -1,5 +1,6 @@
 import { Input } from '@x-ear/ui-web';
 import { useState } from 'react';
+import { CheckCircle } from 'lucide-react';
 
 interface GTIPCodeInputProps {
     value: string;
@@ -95,7 +96,7 @@ export function GTIPCodeInput({
             {value && value.length === 8 && (
                 <div className="mt-2 bg-green-50 border border-green-200 rounded p-2">
                     <div className="flex items-center">
-                        <span className="text-green-600 mr-2">✓</span>
+                        <CheckCircle className="text-green-600 mr-2" size={16} />
                         <p className="text-xs text-green-700">
                             Geçerli GTİP kodu: <strong>{value}</strong>
                         </p>

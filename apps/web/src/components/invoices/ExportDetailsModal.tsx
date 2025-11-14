@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Input, Select, Button } from '@x-ear/ui-web';
+import { Info } from 'lucide-react';
 
 interface ExportDetailsModalProps {
   isOpen: boolean;
@@ -228,7 +229,7 @@ export function ExportDetailsModal({
               {/* Bilgilendirme */}
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-start">
-                  <span className="text-green-400 mr-2">ℹ️</span>
+                  <Info className="text-green-400 mr-2 flex-shrink-0" size={18} />
                   <div>
                     <h4 className="text-sm font-medium text-green-800 mb-1">
                       İhracat Faturası Bilgilendirme

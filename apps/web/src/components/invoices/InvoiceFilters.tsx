@@ -283,7 +283,8 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
             </Button>
             <Button
               onClick={onApply}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm"
+              style={{ backgroundColor: '#2563eb', color: 'white' }}
               variant="default">
               Filtrele
             </Button>

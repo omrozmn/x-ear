@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Input, Select, Button } from '@x-ear/ui-web';
+import { Input, Button } from '@x-ear/ui-web';
+import { Info, AlertTriangle } from 'lucide-react';
+import { MedicalDeviceData } from '../../types/invoice';
 
 interface MedicalDeviceModalProps {
   isOpen: boolean;
@@ -10,27 +12,6 @@ interface MedicalDeviceModalProps {
   itemName?: string;
 }
 
-export interface MedicalDeviceData {
-  licenseNumber: string;
-  serialNumber?: string;
-  lotNumber?: string;
-  deviceCode?: string;
-  deviceType?: string;
-  expiryDate?: string;
-  manufacturer?: string;
-}
-
-// İlaç/Tıbbi Cihaz Tipleri
-const DEVICE_TYPES = [
-  { value: '', label: 'Seçiniz' },
-  { value: 'medicine', label: 'İlaç' },
-  { value: 'medical_device', label: 'Tıbbi Cihaz' },
-  { value: 'medical_supply', label: 'Tıbbi Sarf Malzeme' },
-  { value: 'diagnostic', label: 'Tanı Kiti' },
-  { value: 'implant', label: 'İmplant' },
-  { value: 'prosthesis', label: 'Protez' }
-];
-
 export function MedicalDeviceModal({
   isOpen,
   onClose,
@@ -40,13 +21,11 @@ export function MedicalDeviceModal({
   itemName
 }: MedicalDeviceModalProps) {
   const [formData, setFormData] = useState<MedicalDeviceData>({
-    licenseNumber: initialData?.licenseNumber || '',
-    serialNumber: initialData?.serialNumber || '',
-    lotNumber: initialData?.lotNumber || '',
-    deviceCode: initialData?.deviceCode || '',
-    deviceType: initialData?.deviceType || '',
-    expiryDate: initialData?.expiryDate || '',
-    manufacturer: initialData?.manufacturer || ''
+    productType: initialData?.productType || 'ilac',
+    urunNo: initialData?.urunNo || '',
+    partiNo: initialData?.partiNo || '',
+    seriNo: initialData?.seriNo || '',
+    tarih: initialData?.tarih || ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -59,7 +38,7 @@ export function MedicalDeviceModal({
 
   const handleChange = (field: keyof MedicalDeviceData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user types
+
     if (errors[field]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -67,17 +46,48 @@ export function MedicalDeviceModal({
         return newErrors;
       });
     }
+
+    if (field === 'partiNo' && formData.productType === 'tibbicihaz') {
+      if (value.trim() !== '') {
+        setFormData(prev => ({ ...prev, seriNo: '' }));
+      }
+    }
   };
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.licenseNumber || formData.licenseNumber.trim() === '') {
-      newErrors.licenseNumber = 'Ruhsat numarası zorunludur';
+    if (!formData.productType) {
+      newErrors.productType = 'Ürün türü seçilmelidir';
     }
 
-    if (!formData.deviceType) {
-      newErrors.deviceType = 'Cihaz tipi seçilmelidir';
+    if (!formData.urunNo || formData.urunNo.trim() === '') {
+      newErrors.urunNo = formData.productType === 'ilac'
+        ? 'GTIN numarası zorunludur'
+        : 'UNO (Ürün Numarası) zorunludur';
+    }
+
+    if (!formData.partiNo || formData.partiNo.trim() === '') {
+      newErrors.partiNo = formData.productType === 'ilac'
+        ? 'Parti numarası zorunludur'
+        : 'LNO (Lot Numarası) zorunludur';
+    }
+
+    if (formData.productType === 'ilac' && (!formData.seriNo || formData.seriNo.trim() === '')) {
+      newErrors.seriNo = 'SN - Sıra Numarası zorunludur';
+    }
+
+    if (formData.productType === 'tibbicihaz') {
+      if ((!formData.partiNo || formData.partiNo.trim() === '') &&
+        (!formData.seriNo || formData.seriNo.trim() === '')) {
+        newErrors.seriNo = 'LNO veya SNO dan biri zorunludur';
+      }
+    }
+
+    if (!formData.tarih || formData.tarih.trim() === '') {
+      newErrors.tarih = formData.productType === 'ilac'
+        ? 'Son kullanma tarihi zorunludur'
+        : 'Üretim tarihi zorunludur';
     }
 
     setErrors(newErrors);
@@ -97,18 +107,32 @@ export function MedicalDeviceModal({
 
   if (!isOpen) return null;
 
+  const labels = formData.productType === 'ilac' ? {
+    urunNo: 'GTIN Numarası',
+    partiNo: 'Parti Numarası',
+    seriNo: 'SN - Sıra Numarası',
+    tarih: 'Son Kullanma Tarihi'
+  } : {
+    urunNo: 'UNO (Ürün Numarası)',
+    partiNo: 'LNO (Lot/Batch Numarası)',
+    seriNo: 'SNO (Seri/Sıra Numarası)',
+    tarih: 'Üretim Tarihi'
+  };
+
+  const seriNoDisabled = formData.productType === 'tibbicihaz' &&
+    formData.partiNo &&
+    formData.partiNo.trim() !== '';
+
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        {/* Overlay */}
         <div
           className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
           onClick={handleCancel}
         ></div>
 
-        {/* Modal */}
         <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-          {/* Header */}
           <div className="bg-purple-600 px-6 py-4">
             <h3 className="text-lg font-medium text-white">
               İlaç ve Tıbbi Cihaz Bilgileri
@@ -119,130 +143,145 @@ export function MedicalDeviceModal({
             )}
           </div>
 
-          {/* Body */}
           <div className="bg-white px-6 py-4">
             <div className="space-y-4">
-              {/* Cihaz Tipi */}
-              <div>
-                <Select
-                  label="Cihaz Tipi"
-                  value={formData.deviceType}
-                  onChange={(e) => handleChange('deviceType', e.target.value)}
-                  options={DEVICE_TYPES}
-                  error={errors.deviceType}
-                  fullWidth
-                  required
-                />
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Ürün Türü *
+                </label>
+                <div className="flex space-x-4">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="productType"
+                      value="ilac"
+                      checked={formData.productType === 'ilac'}
+                      onChange={(e) => handleChange('productType', e.target.value)}
+                      className="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">İlaç</span>
+                  </label>
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="productType"
+                      value="tibbicihaz"
+                      checked={formData.productType === 'tibbicihaz'}
+                      onChange={(e) => handleChange('productType', e.target.value)}
+                      className="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Tıbbi Cihaz</span>
+                  </label>
+                </div>
+                {errors.productType && (
+                  <p className="mt-1 text-sm text-red-600">{errors.productType}</p>
+                )}
               </div>
 
-              {/* Ruhsat Numarası */}
+
               <div>
                 <Input
                   type="text"
-                  label="Ruhsat Numarası"
-                  value={formData.licenseNumber}
-                  onChange={(e) => handleChange('licenseNumber', e.target.value)}
-                  placeholder="RN-12345678"
-                  error={errors.licenseNumber}
+                  label={labels.urunNo}
+                  value={formData.urunNo}
+                  onChange={(e) => handleChange('urunNo', e.target.value)}
+                  placeholder={formData.productType === 'ilac' ? 'GTIN-12345678' : 'UNO-12345678'}
+                  error={errors.urunNo}
                   fullWidth
                   required
                 />
                 <p className="mt-1 text-sm text-gray-500">
-                  İlaç veya tıbbi cihaz ruhsat numarasını giriniz
+                  {formData.productType === 'ilac'
+                    ? 'İlaç GTIN numarasını giriniz'
+                    : 'Tıbbi cihaz ürün numarasını giriniz'}
                 </p>
               </div>
 
-              {/* Cihaz Kodu */}
               <div>
                 <Input
                   type="text"
-                  label="Cihaz Kodu"
-                  value={formData.deviceCode}
-                  onChange={(e) => handleChange('deviceCode', e.target.value)}
-                  placeholder="DC-12345"
+                  label={labels.partiNo}
+                  value={formData.partiNo}
+                  onChange={(e) => handleChange('partiNo', e.target.value)}
+                  placeholder={formData.productType === 'ilac' ? 'PARTI-123456' : 'LNO-123456'}
+                  error={errors.partiNo}
                   fullWidth
+                  required
                 />
                 <p className="mt-1 text-sm text-gray-500">
-                  Ürün kodu veya barkod numarası
+                  {formData.productType === 'ilac'
+                    ? 'İlaç parti numarasını giriniz'
+                    : 'Tıbbi cihaz lot numarasını giriniz'}
                 </p>
               </div>
 
-              {/* Seri ve Lot Numarası */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Input
-                    type="text"
-                    label="Seri Numarası"
-                    value={formData.serialNumber}
-                    onChange={(e) => handleChange('serialNumber', e.target.value)}
-                    placeholder="SN-123456"
-                    fullWidth
-                  />
-                  <p className="mt-1 text-sm text-gray-500">
-                    Ürün seri numarası (varsa)
-                  </p>
-                </div>
-
-                <div>
-                  <Input
-                    type="text"
-                    label="Lot Numarası"
-                    value={formData.lotNumber}
-                    onChange={(e) => handleChange('lotNumber', e.target.value)}
-                    placeholder="LOT-123456"
-                    fullWidth
-                  />
-                  <p className="mt-1 text-sm text-gray-500">
-                    Üretim lot numarası (varsa)
-                  </p>
-                </div>
+              <div>
+                <Input
+                  type="text"
+                  label={labels.seriNo}
+                  value={formData.seriNo}
+                  onChange={(e) => handleChange('seriNo', e.target.value)}
+                  placeholder={formData.productType === 'ilac' ? 'SN-123456' : 'SNO-123456'}
+                  error={errors.seriNo}
+                  disabled={seriNoDisabled ? true : false}
+                  fullWidth
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  {formData.productType === 'ilac'
+                    ? 'İlaç sıra numarası (zorunlu)'
+                    : seriNoDisabled
+                      ? 'LNO dolu olduğunda SNO devre dışıdır'
+                      : 'Tıbbi cihaz seri numarası (LNO boşsa zorunlu)'}
+                </p>
               </div>
 
-              {/* Son Kullanma Tarihi ve Üretici */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Input
-                    type="date"
-                    label="Son Kullanma Tarihi"
-                    value={formData.expiryDate}
-                    onChange={(e) => handleChange('expiryDate', e.target.value)}
-                    fullWidth
-                  />
-                </div>
-
-                <div>
-                  <Input
-                    type="text"
-                    label="Üretici Firma"
-                    value={formData.manufacturer}
-                    onChange={(e) => handleChange('manufacturer', e.target.value)}
-                    placeholder="Üretici firma adı"
-                    fullWidth
-                  />
-                </div>
+              <div>
+                <Input
+                  type="date"
+                  label={labels.tarih}
+                  value={formData.tarih}
+                  onChange={(e) => handleChange('tarih', e.target.value)}
+                  error={errors.tarih}
+                  fullWidth
+                  required
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  {formData.productType === 'ilac'
+                    ? 'İlaç son kullanma tarihi'
+                    : 'Tıbbi cihaz üretim tarihi'}
+                </p>
               </div>
 
-              {/* Bilgilendirme */}
+
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                 <div className="flex items-start">
-                  <span className="text-purple-400 mr-2">ℹ️</span>
+                  <Info className="text-purple-400 mr-2 flex-shrink-0" size={18} />
                   <div>
                     <h4 className="text-sm font-medium text-purple-800 mb-1">
-                      İlaç ve Tıbbi Cihaz Faturası
+                      {formData.productType === 'ilac' ? 'İlaç Faturası' : 'Tıbbi Cihaz Faturası'}
                     </h4>
-                    <p className="text-sm text-purple-700">
-                      İlaç ve tıbbi cihaz faturalarında ruhsat numarası zorunludur. 
-                      Seri/Lot numarası ve son kullanma tarihi bilgileri önerilir.
-                    </p>
+                    <ul className="text-sm text-purple-700 list-disc list-inside space-y-1">
+                      {formData.productType === 'ilac' ? (
+                        <>
+                          <li>GTIN, Parti No, SN ve Son Kullanma Tarihi zorunludur</li>
+                          <li>Tüm alanlar aktiftir</li>
+                        </>
+                      ) : (
+                        <>
+                          <li>UNO, LNO/SNO ve Üretim Tarihi zorunludur</li>
+                          <li>LNO dolu ise SNO devre dışı kalır</li>
+                          <li>LNO boş ise SNO zorunludur</li>
+                        </>
+                      )}
+                    </ul>
                   </div>
                 </div>
               </div>
 
-              {/* Hata Mesajları */}
               {Object.keys(errors).length > 0 && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <div className="flex items-start">
-                    <span className="text-red-400 mr-2">⚠️</span>
+                    <AlertTriangle className="text-red-400 mr-2 flex-shrink-0" size={18} />
                     <div>
                       <h4 className="text-sm font-medium text-red-800 mb-1">
                         Lütfen zorunlu alanları doldurun
@@ -259,7 +298,6 @@ export function MedicalDeviceModal({
             </div>
           </div>
 
-          {/* Footer */}
           <div className="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
             <Button
               type="button"
@@ -283,3 +321,5 @@ export function MedicalDeviceModal({
     </div>
   );
 }
+
+export default MedicalDeviceModal;

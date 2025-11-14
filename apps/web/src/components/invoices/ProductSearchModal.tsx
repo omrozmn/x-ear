@@ -218,3 +218,5 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
     </div>
   );
 }
+
+export default ProductSearchModal;

@@ -1,4 +1,5 @@
 import { Input, Checkbox } from '@x-ear/ui-web';
+import { Info } from 'lucide-react';
 
 interface InvoiceDateTimeSectionProps {
   issueDate: string;
@@ -100,21 +101,6 @@ export function InvoiceDateTimeSection({
           </p>
         </div>
 
-        {/* Bilgilendirme */}
-        <div className="md:col-span-3 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <span className="text-blue-400 mr-2">ℹ️</span>
-            <div className="text-sm text-blue-700">
-              <p className="font-medium mb-1">Önemli Bilgiler:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Fatura tarihi ve saati GİB tarafından zorunludur</li>
-                <li>Genel iskonto tüm kalemlere uygulanır</li>
-                <li>Satır bazında iskonto için ürün satırlarını kullanın</li>
-                <li>Vade tarihi ödeme takibi için kullanılır</li>
-              </ul>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

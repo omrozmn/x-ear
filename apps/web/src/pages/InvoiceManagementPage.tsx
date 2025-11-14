@@ -1,11 +1,11 @@
-import { Button, Input, Select } from '@x-ear/ui-web';
+import { Button, Input } from '@x-ear/ui-web';
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { Zap, Plus, FileText, File, AlertTriangle, X, Eye, Edit2 } from 'lucide-react';
 import { Invoice, InvoiceFilters, InvoiceTemplate } from '../types/invoice';
 
 import { InvoiceModal } from '../components/modals/InvoiceModal';
-import { InvoiceBulkOperations } from '../components/invoice/InvoiceBulkOperations';
 import { InvoiceTemplateManager } from '../components/templates/InvoiceTemplateManager';
-import { EFaturaXMLGenerator } from '../components/invoice/EFaturaXMLGenerator';
 import { InvoiceFilters as InvoiceFiltersComponent } from '../components/invoices/InvoiceFilters';
 import { GovernmentInvoiceModal } from '../components/invoices/GovernmentInvoiceModal';
 import { InvoiceStats } from '../components/invoices/InvoiceStats';
@@ -36,6 +36,8 @@ interface ModalState {
 export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
   className = ''
 }) => {
+  const navigate = useNavigate();
+  
   const [state, setState] = useState<PageState>({
     invoices: [],
     selectedInvoices: [],
@@ -297,13 +299,9 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
   }, [state.invoices, state.filters]);
 
   const handleCreateInvoice = useCallback(() => {
-    setModalState({
-      isOpen: true,
-      mode: 'create',
-      invoice: null,
-      template: null
-    });
-  }, []);
+    // Navigate to new invoice page
+    navigate({ to: '/invoices/new' });
+  }, [navigate]);
 
   const handleQuickInvoice = useCallback(() => {
     setModalState({
@@ -455,15 +453,19 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
           <div className="header-actions flex gap-3">
             <Button
               onClick={handleQuickInvoice}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium flex items-center gap-2 shadow-sm"
+              style={{ backgroundColor: '#16a34a', color: 'white' }}
               variant='default'>
-              ⚡ Hızlı Fatura
+              <Zap size={18} />
+              Hızlı Fatura
             </Button>
             <Button
               onClick={handleCreateInvoice}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2 shadow-sm"
+              style={{ backgroundColor: '#2563eb', color: 'white' }}
               variant='default'>
-              + Yeni Fatura
+              <Plus size={18} />
+              Yeni Fatura
             </Button>
           </div>
         </div>
@@ -472,20 +474,19 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
         <div className="view-tabs border-b border-gray-200">
           <nav className="flex space-x-8">
             {[
-              { key: 'list', label: 'Fatura Listesi', icon: '📋' },
-              { key: 'templates', label: 'Şablonlar', icon: '📄' },
-              { key: 'bulk', label: 'Toplu İşlemler', icon: '⚡' },
-              { key: 'xml', label: 'E-Fatura XML', icon: '🏛️' }
+              { key: 'list', label: 'Fatura Listesi', Icon: FileText },
+              { key: 'templates', label: 'Şablonlar', Icon: File }
             ].map((tab) => (
               <Button
                 key={tab.key}
                 onClick={() => setState(prev => ({ ...prev, currentView: tab.key as any }))}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${state.currentView === tab.key
+                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${state.currentView === tab.key
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 variant='default'>
-                {tab.icon} {tab.label}
+                <tab.Icon size={16} />
+                {tab.label}
               </Button>
             ))}
           </nav>
@@ -496,7 +497,7 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
         <div className="error-message bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <div className="flex">
             <div className="flex-shrink-0">
-              <span className="text-red-400">⚠️</span>
+              <AlertTriangle className="text-red-400" size={20} />
             </div>
             <div className="ml-3">
               <h3 className="text-sm font-medium text-red-800">Hata</h3>
@@ -507,7 +508,7 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
                 onClick={() => setState(prev => ({ ...prev, error: null }))}
                 className="text-red-400 hover:text-red-600"
                 variant='default'>
-                ✕
+                <X size={16} />
               </Button>
             </div>
           </div>
@@ -526,17 +527,6 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
             onApply={handleApplyFilters}
             onReset={handleResetFilters}
           />
-
-          {/* Bulk Operations */}
-          {state.selectedInvoices.length > 0 && (
-            <div className="mb-6">
-              <InvoiceBulkOperations
-                selectedInvoices={state.selectedInvoices}
-                onBulkActionComplete={handleBulkActionComplete}
-                onSelectionClear={() => setState(prev => ({ ...prev, selectedInvoices: [] }))}
-              />
-            </div>
-          )}
 
           {/* Invoice Table */}
           <div className="invoice-table bg-white rounded-lg shadow overflow-hidden">
@@ -557,7 +547,7 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
             <div className="table-body">
               {filteredInvoices.length === 0 ? (
                 <div className="empty-state text-center py-12">
-                  <div className="text-gray-400 text-6xl mb-4">📄</div>
+                  <FileText className="text-gray-400 mx-auto mb-4" size={64} />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
                     Fatura bulunamadı
                   </h3>
@@ -566,8 +556,9 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
                   </p>
                   <Button
                     onClick={handleCreateInvoice}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2 mx-auto"
                     variant='default'>
+                    <Plus size={18} />
                     Yeni Fatura Oluştur
                   </Button>
                 </div>
@@ -594,50 +585,6 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
           onTemplateUpdate={() => console.log('Template updated')}
           onTemplateDelete={() => console.log('Template deleted')}
         />
-      )}
-      {state.currentView === 'bulk' && (
-        <div className="bulk-operations-view">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Toplu İşlemler</h2>
-            <p className="text-gray-600">
-              Birden fazla fatura seçerek toplu işlemler gerçekleştirebilirsiniz.
-            </p>
-          </div>
-
-          <InvoiceBulkOperations
-            selectedInvoices={state.selectedInvoices}
-            onBulkActionComplete={handleBulkActionComplete}
-            onSelectionClear={() => setState(prev => ({ ...prev, selectedInvoices: [] }))}
-          />
-        </div>
-      )}
-      {state.currentView === 'xml' && (
-        <div className="xml-generator-view">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-2">E-Fatura XML Oluşturucu</h2>
-            <p className="text-gray-600">
-              Faturalarınızı e-fatura XML formatında oluşturun ve GİB'e gönderin.
-            </p>
-          </div>
-
-          {state.selectedInvoices.length > 0 ? (
-            state.selectedInvoices.map(invoice => (
-              <div key={invoice.id} className="mb-6">
-                <EFaturaXMLGenerator invoice={invoice} />
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-12">
-              <div className="text-gray-400 text-6xl mb-4">🏛️</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                XML oluşturmak için fatura seçin
-              </h3>
-              <p className="text-gray-600">
-                Fatura listesinden XML oluşturmak istediğiniz faturaları seçin
-              </p>
-            </div>
-          )}
-        </div>
       )}
       {/* Invoice Modal */}
       {modalState.isOpen && (
@@ -756,14 +703,14 @@ const InvoiceRow: React.FC<InvoiceRowProps> = ({
               className="p-1 text-gray-400 hover:text-blue-600"
               title="Görüntüle"
               variant='default'>
-              👁️
+              <Eye size={18} />
             </Button>
             <Button
               onClick={onEdit}
               className="p-1 text-gray-400 hover:text-blue-600"
               title="Düzenle"
               variant='default'>
-              ✏️
+              <Edit2 size={18} />
             </Button>
           </div>
         </div>

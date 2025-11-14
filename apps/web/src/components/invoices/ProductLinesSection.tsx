@@ -1,12 +1,13 @@
 import { Input, Select, Button } from '@x-ear/ui-web';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Info, AlertTriangle, Copy, Trash2, BarChart3, DollarSign, RefreshCw, Pill, CheckCircle } from 'lucide-react';
 import { UnitSelector } from './UnitSelector';
 import { ProductServiceCodeInput } from './ProductServiceCodeInput';
 import { GTIPCodeInput } from './GTIPCodeInput';
-import { LineWithholdingModal, LineWithholdingData } from './LineWithholdingModal';
-import { SpecialBaseModal, SpecialBaseData } from './SpecialBaseModal';
-import { MedicalDeviceModal, MedicalDeviceData } from './MedicalDeviceModal';
-import { ProductSearchModal } from './ProductSearchModal';
+import LineWithholdingModal from './LineWithholdingModal';
+import SpecialBaseModal, { SpecialBaseData } from './SpecialBaseModal';
+import MedicalDeviceModal from './MedicalDeviceModal';
+import type { MedicalDeviceData, LineWithholdingData } from '../../types/invoice';
 
 interface ProductLine {
   id: string;
@@ -22,6 +23,7 @@ interface ProductLine {
   total: number;
   productServiceCode?: string;
   gtipCode?: string;
+  aliciStokKodu?: string; // KRİTİK EKSİK ALAN
   withholdingData?: LineWithholdingData;
   specialBaseData?: SpecialBaseData;
   medicalDeviceData?: MedicalDeviceData;
@@ -48,7 +50,6 @@ export function ProductLinesSection({
   const [withholdingModalOpen, setWithholdingModalOpen] = useState(false);
   const [specialBaseModalOpen, setSpecialBaseModalOpen] = useState(false);
   const [medicalModalOpen, setMedicalModalOpen] = useState(false);
-  const [productSearchModalOpen, setProductSearchModalOpen] = useState(false);
   const [currentLineIndex, setCurrentLineIndex] = useState<number>(0);
 
   // Koşullu görünürlük
@@ -58,6 +59,23 @@ export function ProductLinesSection({
   const isReturnType = ['15', '49', '50'].includes(invoiceType);
   const isMedicalScenario = scenario === '45' || scenario === 'medical';
   const isExportScenario = scenario === '5' || scenario === 'export';
+  
+  // Tevkifat İade için KDV otomatik 0
+  useEffect(() => {
+    if (isReturnWithholdingType) {
+      const updatedLines = lines.map(line => ({
+        ...line,
+        taxRate: 0,
+        taxAmount: 0
+      }));
+      
+      // Sadece değişiklik varsa güncelle
+      const hasChanges = lines.some(line => line.taxRate !== 0);
+      if (hasChanges) {
+        onChange(updatedLines);
+      }
+    }
+  }, [isReturnWithholdingType, invoiceType]);
 
   // KDV oranları
   const taxRates = [
@@ -114,28 +132,6 @@ export function ProductLinesSection({
       taxAmount: 0,
       total: 0
     };
-    onChange([...lines, newLine]);
-  };
-
-  const handleProductSelect = (product: any) => {
-    const newLine: ProductLine = {
-      id: Date.now().toString(),
-      name: product.name,
-      description: product.model || '',
-      quantity: 1,
-      unit: product.unit || 'Adet',
-      unitPrice: product.price || 0,
-      taxRate: product.taxRate || 18,
-      taxAmount: 0,
-      total: product.price || 0,
-      productServiceCode: product.code || ''
-    };
-    
-    // Calculate tax and total
-    const subtotal = newLine.quantity * newLine.unitPrice;
-    newLine.taxAmount = subtotal * (newLine.taxRate / 100);
-    newLine.total = subtotal + newLine.taxAmount;
-    
     onChange([...lines, newLine]);
   };
 
@@ -200,52 +196,69 @@ export function ProductLinesSection({
     total: lines.reduce((sum, line) => sum + (line.total || 0), 0)
   };
 
+  // İlk boş satırı ekle
+  useEffect(() => {
+    if (lines.length === 0) {
+      const initialLine: ProductLine = {
+        id: `line-${Date.now()}`,
+        name: '',
+        quantity: 1,
+        unit: 'Adet',
+        unitPrice: 0,
+        taxRate: 18,
+        taxAmount: 0,
+        total: 0
+      };
+      onChange([initialLine]);
+    }
+  }, [lines.length, onChange]);
+
   return (
     <div className="bg-white rounded-lg shadow p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Fatura Kalemleri</h3>
-        <div className="flex space-x-2">
-          <Button
-            type="button"
-            onClick={() => setProductSearchModalOpen(true)}
-            variant="default"
-            className="bg-green-600 hover:bg-green-700 text-white"
-          >
-            🔍 Ürün Ara
-          </Button>
-          <Button
-            type="button"
-            onClick={addLine}
-            variant="default"
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            + Yeni Kalem Ekle
-          </Button>
-        </div>
+        <h3 className="text-lg font-semibold text-gray-900">Ürün/Hizmet</h3>
+        <Button
+          type="button"
+          onClick={addLine}
+          variant="default"
+          style={{ backgroundColor: '#2563eb', color: 'white' }}
+          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm px-4 py-2"
+        >
+          + Yeni Kalem Ekle
+        </Button>
       </div>
 
       {/* Uyarılar */}
       {isReturnType && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-          <p className="text-sm text-amber-700">
-            ⚠️ İade faturası: KDV oranları otomatik olarak %0 yapılacaktır.
-          </p>
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="text-amber-600 flex-shrink-0" size={18} />
+            <p className="text-sm text-amber-700">
+              İade faturası: KDV oranları otomatik olarak %0 yapılacaktır.
+            </p>
+          </div>
         </div>
       )}
 
       {isMedicalScenario && (
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
-          <p className="text-sm text-purple-700">
-            ℹ️ İlaç/Tıbbi Cihaz faturası: Her kalem için ruhsat numarası gereklidir.
-          </p>
+          <div className="flex items-start gap-2">
+            <Info className="text-purple-600 flex-shrink-0" size={18} />
+            <p className="text-sm text-purple-700">
+              İlaç/Tıbbi Cihaz faturası: Her kalem için ruhsat numarası gereklidir.
+            </p>
+          </div>
         </div>
       )}
 
       {isExportScenario && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-          <p className="text-sm text-green-700">
-            ℹ️ İhracat faturası: Her kalem için GTİP kodu zorunludur.
-          </p>
+          <div className="flex items-start gap-2">
+            <Info className="text-green-600 flex-shrink-0" size={18} />
+            <p className="text-sm text-green-700">
+              İhracat faturası: Her kalem için GTİP kodu zorunludur.
+            </p>
+          </div>
         </div>
       )}
 
@@ -266,7 +279,7 @@ export function ProductLinesSection({
                   className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700"
                   title="Kopyala"
                 >
-                  📋
+                  <Copy size={18} />
                 </Button>
                 {lines.length > 1 && (
                   <Button
@@ -276,7 +289,7 @@ export function ProductLinesSection({
                     className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700"
                     title="Sil"
                   >
-                    🗑️
+                    <Trash2 size={18} />
                   </Button>
                 )}
               </div>
@@ -284,16 +297,17 @@ export function ProductLinesSection({
 
             {/* Ana Alanlar */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-              {/* Ürün/Hizmet Adı */}
+              {/* Ürün/Hizmet Adı - Arama ile */}
               <div className="md:col-span-3">
-                <Input
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ürün/Hizmet Adı <span className="text-red-500">*</span>
+                </label>
+                <input
                   type="text"
-                  label="Ürün/Hizmet Adı"
                   value={line.name}
                   onChange={(e) => handleLineChange(index, 'name', e.target.value)}
-                  placeholder="Ürün adı"
-                  error={errors[`lines.${index}.name`]}
-                  fullWidth
+                  placeholder="Ürün ara veya yaz..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
               </div>
@@ -317,7 +331,6 @@ export function ProductLinesSection({
                 <UnitSelector
                   value={line.unit}
                   onChange={(value) => handleLineChange(index, 'unit', value)}
-                  error={errors[`lines.${index}.unit`]}
                 />
               </div>
 
@@ -372,13 +385,24 @@ export function ProductLinesSection({
             </div>
 
             {/* Ek Alanlar */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
               {/* Mal/Hizmet Kodu */}
               <div>
                 <ProductServiceCodeInput
                   value={line.productServiceCode || ''}
                   onChange={(value) => handleLineChange(index, 'productServiceCode', value)}
-                  error={errors[`lines.${index}.productServiceCode`]}
+                />
+              </div>
+
+              {/* Alıcı Stok Kodu - KRİTİK EKSİK ALAN */}
+              <div>
+                <Input
+                  type="text"
+                  label="Alıcı Stok Kodu"
+                  value={line.aliciStokKodu || ''}
+                  onChange={(e) => handleLineChange(index, 'aliciStokKodu', e.target.value)}
+                  placeholder="Alıcının stok kodu"
+                  fullWidth
                 />
               </div>
 
@@ -417,10 +441,11 @@ export function ProductLinesSection({
                     type="button"
                     onClick={() => openWithholdingModal(index)}
                     variant="default"
-                    className="text-sm px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-300"
+                    className="text-sm px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-700 border border-orange-300 flex items-center gap-1"
                   >
-                    📊 Tevkifat
-                    {line.withholdingData && ' ✓'}
+                    <BarChart3 size={14} />
+                    Tevkifat
+                    {line.withholdingData && <CheckCircle size={14} className="ml-1" />}
                   </Button>
                 )}
 
@@ -430,10 +455,11 @@ export function ProductLinesSection({
                     type="button"
                     onClick={() => openSpecialBaseModal(index)}
                     variant="default"
-                    className="text-sm px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 border border-yellow-300"
+                    className="text-sm px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 border border-yellow-300 flex items-center gap-1"
                   >
-                    💰 Özel Matrah
-                    {line.specialBaseData && ' ✓'}
+                    <DollarSign size={14} />
+                    Özel Matrah
+                    {line.specialBaseData && <CheckCircle size={14} className="ml-1" />}
                   </Button>
                 )}
 
@@ -443,10 +469,11 @@ export function ProductLinesSection({
                     type="button"
                     onClick={() => openWithholdingModal(index)}
                     variant="default"
-                    className="text-sm px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 border border-red-300"
+                    className="text-sm px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 flex items-center gap-1"
                   >
-                    🔄 Tevkifat İade
-                    {line.withholdingData && ` (${line.withholdingData.returnedGoodsRate}% - ${line.withholdingData.withholdingTaxAmount} TL)`}
+                    <RefreshCw size={14} />
+                    Tevkifat İade
+                    {line.withholdingData && <CheckCircle size={14} className="ml-1" />}
                   </Button>
                 )}
 
@@ -456,10 +483,11 @@ export function ProductLinesSection({
                     type="button"
                     onClick={() => openMedicalModal(index)}
                     variant="default"
-                    className="text-sm px-3 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 border border-purple-300"
+                    className="text-sm px-3 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 border border-purple-300 flex items-center gap-1"
                   >
-                    💊 İlaç/Tıbbi Cihaz
-                    {line.medicalDeviceData && ' ✓'}
+                    <Pill size={14} />
+                    İlaç/Tıbbi Cihaz
+                    {line.medicalDeviceData && <CheckCircle size={14} className="ml-1" />}
                   </Button>
                 )}
               </div>
@@ -467,7 +495,7 @@ export function ProductLinesSection({
               {/* Koşullu Alan Göstergeleri */}
               {line.withholdingData && (isWithholdingType || isReturnWithholdingType) && (
                 <div className="text-xs text-gray-600 bg-orange-50 border border-orange-200 rounded p-2">
-                  Tevkifat: {line.withholdingData.returnedGoodsRate}% - {line.withholdingData.withholdingTaxAmount} TL
+                  Tevkifat bilgileri eklendi
                 </div>
               )}
 
@@ -541,12 +569,6 @@ export function ProductLinesSection({
         itemName={lines[currentLineIndex]?.name}
       />
 
-      {/* Product Search Modal */}
-      <ProductSearchModal
-        isOpen={productSearchModalOpen}
-        onClose={() => setProductSearchModalOpen(false)}
-        onSelect={handleProductSelect}
-      />
     </div>
   );
 }

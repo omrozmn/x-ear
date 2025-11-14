@@ -39,7 +39,8 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
+      className="fixed inset-0 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
+      style={{ zIndex: 9999 }}
       onClick={handleBackdropClick}
     >
       <InvoiceModalContent

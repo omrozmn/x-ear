@@ -75,6 +75,12 @@ export interface InvoiceItem {
   lineWithholding?: LineWithholdingData; // Satır bazında tevkifat
   specialTaxBase?: number; // Özel matrah
   taxFreeAmount?: number;
+  
+  // KRİTİK EKSİK ALAN
+  aliciStokKodu?: string; // Alıcı Stok Kodu
+  
+  // İlaç/Tıbbi Cihaz Bilgileri
+  medicalDeviceData?: MedicalDeviceData;
 }
 
 export interface InvoiceAddress {
@@ -599,13 +605,14 @@ export interface PeriodInfo {
 // ============================================
 
 // Scenario Types
-export type InvoiceScenario = 'sale' | 'service' | 'export' | 'government' | 'medical';
+export type InvoiceScenario = 'other' | 'export' | 'government' | 'medical' | 'device_sale';
 
 export interface InvoiceScenarioData {
   scenario: InvoiceScenario;
   scenarioCode: number;
   scenarioName: string;
   scenarioDescription?: string;
+  currentScenarioType?: '2' | '3'; // Temel (2) veya Ticari (3) - Senaryo 36 için
 }
 
 // Special Tax Base (Özel Matrah)
@@ -679,4 +686,62 @@ export interface ProductServiceCodeData {
   code: string;
   description: string;
   category: string;
+}
+
+// ============================================
+// KRİTİK EKSİK TYPE TANIMLARI
+// ============================================
+
+// SGK Invoice Data (Güncellenmiş)
+export interface SGKInvoiceData {
+  // Dönem Bilgileri
+  periodYear?: string;
+  periodMonth?: string;
+  periodStartDate?: string;
+  periodEndDate?: string;
+
+  // Tesis Bilgileri
+  facilityCode?: string;
+  facilityName?: string;
+
+  // Referans Bilgileri
+  referenceNumber?: string;
+  protocolNumber?: string;
+
+  // Ödeme Bilgileri
+  paymentAmount?: number;
+  paymentDate?: string;
+  paymentDescription?: string;
+
+  // SGK Özel Alanlar
+  sgkInstitutionCode?: string;
+  branchCode?: string;
+
+  // İlave Fatura Bilgileri (KRİTİK EKSİK ALANLAR)
+  additionalInfo?: 'E' | 'H' | 'O' | 'M' | 'A' | 'MH' | 'D';
+  mukellefKodu?: string;      // Eczane, Hastane, Optik, Medikal için zorunlu
+  mukellefAdi?: string;       // Eczane, Hastane, Optik, Medikal için zorunlu
+  dosyaNo?: string;           // E, H, O, M, A, MH için zorunlu
+  aboneNo?: string;           // Sadece Abonelik (A) için zorunlu
+}
+
+// Medical Device Data (Güncellenmiş)
+export interface MedicalDeviceData {
+  // Ürün Türü Seçimi (KRİTİK EKSİK ALAN)
+  productType?: 'ilac' | 'tibbicihaz';
+  
+  // Dinamik Alanlar (label'lar productType'a göre değişir)
+  urunNo?: string;      // İlaç: GTIN, Tıbbi Cihaz: UNO
+  partiNo?: string;     // İlaç: Parti No, Tıbbi Cihaz: LNO
+  seriNo?: string;      // İlaç: SN (zorunlu), Tıbbi Cihaz: SNO (LNO boşsa zorunlu)
+  tarih?: string;       // İlaç: Son Kullanma, Tıbbi Cihaz: Üretim Tarihi
+  
+  // Legacy alanlar (geriye dönük uyumluluk)
+  licenseNumber?: string;
+  serialNumber?: string;
+  lotNumber?: string;
+  deviceCode?: string;
+  deviceType?: string;
+  expiryDate?: string;
+  manufacturer?: string;
 }

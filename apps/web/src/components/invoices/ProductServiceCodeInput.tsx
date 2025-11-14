@@ -1,5 +1,6 @@
 import { Input, Select } from '@x-ear/ui-web';
 import { useState } from 'react';
+import { FileText } from 'lucide-react';
 
 interface ProductServiceCodeInputProps {
   value?: string;
@@ -52,8 +53,9 @@ export function ProductServiceCodeInput({
         <button
           type="button"
           onClick={() => setShowCommonCodes(!showCommonCodes)}
-          className="px-3 py-2 bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200 text-sm whitespace-nowrap">
-          📋 Sık Kullanılan
+          className="px-3 py-2 bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200 text-sm whitespace-nowrap flex items-center gap-1">
+          <FileText size={16} />
+          Sık Kullanılan
         </button>
       </div>
 

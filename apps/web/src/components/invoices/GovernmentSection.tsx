@@ -1,4 +1,5 @@
 import { Select, Input } from '@x-ear/ui-web';
+import { AlertTriangle } from 'lucide-react';
 import { InvoiceFormData } from '../../types/invoice';
 
 interface GovernmentSectionProps {
@@ -143,7 +144,7 @@ export function GovernmentSection({
         {/* Bilgilendirme */}
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
           <div className="flex items-start">
-            <span className="text-amber-400 mr-2">⚠️</span>
+            <AlertTriangle className="text-amber-400 mr-2 flex-shrink-0" size={18} />
             <div>
               <h4 className="text-sm font-medium text-amber-800 mb-1">
                 Kamu Faturası Uyarısı

@@ -1,4 +1,3 @@
-import { Button } from '@x-ear/ui-web';
 import { useState, useCallback, useEffect } from 'react';
 import { Invoice, CreateInvoiceData } from '../../types/invoice';
 import { InvoiceScenarioSection } from './InvoiceScenarioSection';
@@ -7,30 +6,33 @@ import { InvoiceDateTimeSection } from './InvoiceDateTimeSection';
 import { AdditionalInfoSection } from './AdditionalInfoSection';
 import { WithholdingModal } from './WithholdingModal';
 import { GovernmentInvoiceModal } from './GovernmentInvoiceModal';
-import { CustomerSection } from './CustomerSection';
-import { GovernmentSection } from './GovernmentSection';
-import { SGKInvoiceSection, SGKInvoiceData } from './SGKInvoiceSection';
-import { SpecialBaseModal } from './SpecialBaseModal';
+import { SGKInvoiceData } from '../../types/invoice';
 import { ExportDetailsModal, ExportDetailsData } from './ExportDetailsModal';
-import { MedicalDeviceModal, MedicalDeviceData } from './MedicalDeviceModal';
-import { getCurrencyRestrictions, getAutoCurrency } from '../../utils/currencyManager';
-import InvoiceForm from './InvoiceForm';
+import MedicalDeviceModal from './MedicalDeviceModal';
+import { MedicalDeviceData } from '../../types/invoice';
+import { getAutoCurrency } from '../../utils/currencyManager';
+import { ProductLinesSection } from './ProductLinesSection';
 
 interface InvoiceFormExtendedProps {
   invoice?: Invoice;
   onSubmit: (data: CreateInvoiceData) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  onDataChange?: (field: string, value: any) => void;
+  initialData?: any;
 }
 
 export function InvoiceFormExtended({
   invoice,
   onSubmit,
   onCancel,
-  isLoading = false
+  isLoading = false,
+  onDataChange,
+  initialData
 }: InvoiceFormExtendedProps) {
   const [extendedData, setExtendedData] = useState({
-    scenarioData: invoice?.scenarioData,
+    ...initialData,
+    scenarioData: invoice?.scenarioData || initialData?.scenarioData,
     specialTaxBase: invoice?.specialTaxBase,
     backdatedInvoice: invoice?.backdatedInvoice,
     returnInvoiceDetails: invoice?.returnInvoiceDetails,
@@ -48,9 +50,9 @@ export function InvoiceFormExtended({
     sgkData: (invoice as any)?.sgkData as SGKInvoiceData | undefined,
     exportDetails: (invoice as any)?.exportDetails as ExportDetailsData | undefined,
     medicalDeviceData: (invoice as any)?.medicalDeviceData as MedicalDeviceData | undefined,
-    invoiceType: invoice?.type || '',
-    scenario: invoice?.scenarioData?.scenario || '',
-    currency: invoice?.currency || 'TRY',
+    invoiceType: initialData?.invoiceType || invoice?.type || '',
+    scenario: initialData?.scenario || invoice?.scenarioData?.scenario || '',
+    currency: initialData?.currency || invoice?.currency || 'TRY',
     customerId: invoice?.customerId || '',
     customerName: invoice?.customerName || ''
   });
@@ -58,20 +60,17 @@ export function InvoiceFormExtended({
   // Modal states
   const [withholdingModalOpen, setWithholdingModalOpen] = useState(false);
   const [governmentModalOpen, setGovernmentModalOpen] = useState(false);
-  const [specialBaseModalOpen, setSpecialBaseModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [medicalModalOpen, setMedicalModalOpen] = useState(false);
   const [currentItemIndex, setCurrentItemIndex] = useState<number>();
 
-  // SGK mode state
-  const [isSGKMode, setIsSGKMode] = useState(false);
-
   // Koşullu görünürlük
   const currentScenario = extendedData.scenarioData?.scenario;
-  const showGovernmentSection = currentScenario === 'government';
-  const showSGKSection = extendedData.invoiceType === '14' || isSGKMode;
-  const showExportSection = currentScenario === 'export';
-  const showMedicalSection = currentScenario === 'medical';
+  const currentInvoiceType = extendedData.invoiceType;
+
+  // Özel durumlar
+  const autoBasicTypes = ['14', '15', '35']; // Otomatik Temel'e geçen tipler
+  const shouldForceBasic = currentScenario === 'other' && autoBasicTypes.includes(currentInvoiceType);
 
   // Para birimi otomatik kontrolü
   useEffect(() => {
@@ -80,24 +79,28 @@ export function InvoiceFormExtended({
       extendedData.scenario,
       extendedData.invoiceType
     );
-    
+
     if (autoCurrency !== extendedData.currency) {
       handleExtendedFieldChange('currency', autoCurrency);
     }
   }, [extendedData.scenario, extendedData.invoiceType]);
 
+  // Tip 14, 15, 35 için otomatik Temel'e geçiş
+  useEffect(() => {
+    if (shouldForceBasic && extendedData.scenarioData?.currentScenarioType !== '2') {
+      handleExtendedFieldChange('scenarioData', {
+        ...extendedData.scenarioData,
+        currentScenarioType: '2'
+      });
+    }
+  }, [shouldForceBasic, extendedData.scenarioData?.currentScenarioType]);
+
   const handleExtendedFieldChange = useCallback((field: string, value: any) => {
     setExtendedData(prev => ({ ...prev, [field]: value }));
-  }, []);
-
-  const handleBaseFormSubmit = useCallback((baseData: any) => {
-    // Merge base data with extended data
-    const completeData: CreateInvoiceData = {
-      ...baseData,
-      ...extendedData
-    };
-    onSubmit(completeData);
-  }, [extendedData, onSubmit]);
+    if (onDataChange) {
+      onDataChange(field, value);
+    }
+  }, [onDataChange]);
 
   const handleOpenWithholdingModal = useCallback((itemIndex?: number) => {
     setCurrentItemIndex(itemIndex);
@@ -124,25 +127,36 @@ export function InvoiceFormExtended({
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="w-full">
       {/* Extended Sections */}
-      <div className="space-y-6 mb-6">
-        {/* Senaryo */}
-        <InvoiceScenarioSection
-          scenarioData={extendedData.scenarioData}
-          onChange={(data) => handleExtendedFieldChange('scenarioData', data)}
-        />
+      <div className="space-y-6 p-6">
+        {/* Senaryo ve Fatura Tipi - Tek Kart */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Senaryo ve Fatura Tipi</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Senaryo */}
+            <div>
+              <InvoiceScenarioSection
+                scenarioData={extendedData.scenarioData}
+                onChange={(data) => handleExtendedFieldChange('scenarioData', data)}
+                disableSubScenario={shouldForceBasic}
+              />
+            </div>
 
-        {/* Fatura Tipi ve Özel Durumlar */}
-        <InvoiceTypeSection
-          invoiceType={invoice?.type || 'sale'}
-          specialTaxBase={extendedData.specialTaxBase}
-          backdatedInvoice={extendedData.backdatedInvoice}
-          returnInvoiceDetails={extendedData.returnInvoiceDetails}
-          isTechnologySupport={extendedData.isTechnologySupport}
-          isMedicalDevice={extendedData.isMedicalDevice}
-          onChange={handleExtendedFieldChange}
-        />
+            {/* Fatura Tipi */}
+            <div>
+              <InvoiceTypeSection
+                invoiceType={invoice?.type || 'sale'}
+                specialTaxBase={extendedData.specialTaxBase}
+                backdatedInvoice={extendedData.backdatedInvoice}
+                returnInvoiceDetails={extendedData.returnInvoiceDetails}
+                isTechnologySupport={extendedData.isTechnologySupport}
+                isMedicalDevice={extendedData.isMedicalDevice}
+                onChange={handleExtendedFieldChange}
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Tarih, Saat ve İskonto */}
         <InvoiceDateTimeSection
@@ -165,86 +179,31 @@ export function InvoiceFormExtended({
         />
       </div>
 
-      {/* Base Invoice Form */}
-      <InvoiceForm
-        invoice={invoice}
-        onSubmit={handleBaseFormSubmit}
-        onCancel={onCancel}
-        isLoading={isLoading}
+      {/* Product Lines */}
+      <ProductLinesSection
+        lines={extendedData.items || (invoice?.items || []).map((item, idx) => ({
+          id: item.id || `line-${idx}`,
+          name: item.name,
+          description: item.description,
+          quantity: item.quantity,
+          unit: 'C62',
+          unitPrice: item.unitPrice,
+          discount: item.discount,
+          discountType: item.discountType,
+          taxRate: item.taxRate,
+          taxAmount: item.taxAmount || 0,
+          total: item.totalPrice || 0
+        })) || []}
+        onChange={(lines) => {
+          // Direkt lines'ı kaydet
+          handleExtendedFieldChange('items', lines);
+        }}
+        invoiceType={extendedData.invoiceType}
+        scenario={extendedData.scenario}
+        currency={extendedData.currency}
       />
 
-      {/* Koşullu Bölümler - Senaryoya Göre */}
-      {showGovernmentSection && (
-        <GovernmentSection
-          formData={extendedData as any}
-          onChange={handleExtendedFieldChange}
-        />
-      )}
 
-      {showSGKSection && (
-        <SGKInvoiceSection
-          sgkData={extendedData.sgkData}
-          onChange={(data) => handleExtendedFieldChange('sgkData', data)}
-        />
-      )}
-
-      {showExportSection && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">İhracat Bilgileri</h3>
-            <Button
-              type="button"
-              onClick={() => setExportModalOpen(true)}
-              variant="default"
-              className="bg-blue-600 hover:bg-blue-700 text-white">
-              📋 İhracat Detayları
-            </Button>
-          </div>
-          {extendedData.exportDetails && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-sm text-green-800">
-                ✓ İhracat bilgileri kaydedildi
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {showMedicalSection && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">İlaç/Tıbbi Cihaz Bilgileri</h3>
-            <Button
-              type="button"
-              onClick={() => setMedicalModalOpen(true)}
-              variant="default"
-              className="bg-purple-600 hover:bg-purple-700 text-white">
-              💊 İlaç/Tıbbi Cihaz Detayları
-            </Button>
-          </div>
-          {extendedData.medicalDeviceData && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-sm text-green-800">
-                ✓ İlaç/Tıbbi cihaz bilgileri kaydedildi
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Action Buttons for Special Features */}
-      <div className="bg-white rounded-lg shadow p-6 mt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Özel İşlemler</h3>
-        <div className="flex flex-wrap gap-3">
-          <Button
-            type="button"
-            onClick={() => handleOpenWithholdingModal()}
-            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
-            variant="default">
-            📊 Tevkifat İade Bilgileri
-          </Button>
-        </div>
-      </div>
 
       {/* Modals */}
       <WithholdingModal
@@ -276,28 +235,6 @@ export function InvoiceFormExtended({
         lineIndex={0}
         itemName="Genel"
       />
-
-      {/* BirFatura Entegrasyon Bilgisi */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mt-6">
-        <div className="flex items-start">
-          <span className="text-3xl mr-4">🔗</span>
-          <div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">
-              BirFatura Entegrasyonu
-            </h4>
-            <p className="text-sm text-gray-700 mb-2">
-              Faturalarınız BirFatura aracılığıyla GİB'e gönderilecektir. 
-              BirFatura, e-fatura entegratörü olarak tüm yasal gereklilikleri karşılar.
-            </p>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>✅ Otomatik XML oluşturma</li>
-              <li>✅ GİB'e güvenli iletim</li>
-              <li>✅ ETTN numarası takibi</li>
-              <li>✅ Durum bildirimleri</li>
-            </ul>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

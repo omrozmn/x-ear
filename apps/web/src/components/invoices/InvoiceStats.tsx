@@ -1,3 +1,4 @@
+import { FileText, Edit3 as FilePenLine, Send, CheckCircle, DollarSign, Clock } from 'lucide-react';
 import { InvoiceStats as IInvoiceStats } from '../../types/invoice';
 
 interface InvoiceStatsProps {
@@ -34,42 +35,42 @@ export function InvoiceStats({ stats, loading = false }: InvoiceStatsProps) {
       title: 'Toplam Fatura',
       value: stats.total || 0,
       subtitle: '+12% bu ay',
-      icon: '📋',
+      Icon: FileText,
       color: 'blue'
     },
     {
       title: 'Taslak',
       value: stats.draft || 0,
       subtitle: `${stats.total ? Math.round(((stats.draft || 0) / stats.total) * 100) : 0}% oran`,
-      icon: '📝',
+      Icon: FilePenLine,
       color: 'gray'
     },
     {
       title: 'Gönderildi',
       value: stats.sent || 0,
       subtitle: `${stats.total ? Math.round(((stats.sent || 0) / stats.total) * 100) : 0}% oran`,
-      icon: '📤',
+      Icon: Send,
       color: 'blue'
     },
     {
       title: 'Ödendi',
       value: stats.paid || 0,
       subtitle: `${stats.total ? Math.round(((stats.paid || 0) / stats.total) * 100) : 0}% oran`,
-      icon: '✅',
+      Icon: CheckCircle,
       color: 'green'
     },
     {
       title: 'Toplam Tutar',
       value: formatCurrency(stats.totalAmount || 0),
       subtitle: '+8.2% bu ay',
-      icon: '💰',
+      Icon: DollarSign,
       color: 'purple'
     },
     {
       title: 'Bekleyen Ödeme',
       value: formatCurrency(stats.pendingAmount || 0),
       subtitle: `${stats.total ? stats.sent || 0 : 0} fatura`,
-      icon: '⏳',
+      Icon: Clock,
       color: 'orange'
     }
   ];
@@ -100,7 +101,7 @@ export function InvoiceStats({ stats, loading = false }: InvoiceStatsProps) {
                 <p className="text-xs text-gray-500">{card.subtitle}</p>
               </div>
               <div className={`p-3 ${colors.iconBg} rounded-full`}>
-                <span className="text-lg">{card.icon}</span>
+                <card.Icon className={colors.text} size={24} />
               </div>
             </div>
           </div>

@@ -1,35 +1,12 @@
 import { Input, Select, Button } from '@x-ear/ui-web';
 import { useState } from 'react';
+import { Info, AlertTriangle } from 'lucide-react';
+import { SGKInvoiceData } from '../../types/invoice';
 
 interface SGKInvoiceSectionProps {
     sgkData?: SGKInvoiceData;
     onChange: (data: SGKInvoiceData) => void;
     errors?: Record<string, string>;
-}
-
-export interface SGKInvoiceData {
-    // Dönem Bilgileri
-    periodYear?: string;
-    periodMonth?: string;
-    periodStartDate?: string;
-    periodEndDate?: string;
-
-    // Tesis Bilgileri
-    facilityCode?: string;
-    facilityName?: string;
-
-    // Referans Bilgileri
-    referenceNumber?: string;
-    protocolNumber?: string;
-
-    // Ödeme Bilgileri
-    paymentAmount?: number;
-    paymentDate?: string;
-    paymentDescription?: string;
-
-    // SGK Özel Alanlar
-    sgkInstitutionCode?: string;
-    branchCode?: string;
 }
 
 // Aylar
@@ -47,6 +24,17 @@ const MONTHS = [
     { value: '10', label: 'Ekim' },
     { value: '11', label: 'Kasım' },
     { value: '12', label: 'Aralık' }
+];
+
+// İlave Fatura Bilgileri
+const ADDITIONAL_INFO_OPTIONS = [
+    { value: 'E', label: 'Eczane' },
+    { value: 'H', label: 'Hastane' },
+    { value: 'O', label: 'Optik' },
+    { value: 'M', label: 'Medikal' },
+    { value: 'A', label: 'Abonelik' },
+    { value: 'MH', label: 'Mal/Hizmet' },
+    { value: 'D', label: 'Diğer' }
 ];
 
 export function SGKInvoiceSection({
@@ -71,6 +59,12 @@ export function SGKInvoiceSection({
         label: year.toString()
     }));
 
+    // İlave Fatura Bilgisi seçimine göre hangi alanların görüneceğini belirle
+    const additionalInfo = sgkData.additionalInfo || 'E';
+    const showMukellefFields = ['E', 'H', 'O', 'M'].includes(additionalInfo);
+    const showAboneNo = additionalInfo === 'A';
+    const showDosyaNo = ['E', 'H', 'O', 'M', 'A', 'MH'].includes(additionalInfo);
+
     return (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
@@ -85,7 +79,7 @@ export function SGKInvoiceSection({
             {/* Bilgilendirme */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <div className="flex items-start">
-                    <span className="text-blue-400 mr-2">ℹ️</span>
+                    <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
                     <div>
                         <h4 className="text-sm font-medium text-blue-800 mb-1">
                             SGK Faturası Otomatik Ayarlar
@@ -101,10 +95,95 @@ export function SGKInvoiceSection({
             </div>
 
             <div className="space-y-6">
+                {/* İlave Fatura Bilgileri - KRİTİK YENİ BÖLÜM */}
+                <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                    <h4 className="text-md font-medium text-gray-900 mb-4">İlave Fatura Bilgileri *</h4>
+
+                    <div className="space-y-4">
+                        <div>
+                            <Select
+                                label="İlave Fatura Bilgisi Tipi"
+                                value={additionalInfo}
+                                onChange={(e) => handleChange('additionalInfo', e.target.value as any)}
+                                options={ADDITIONAL_INFO_OPTIONS}
+                                error={errors.additionalInfo}
+                                fullWidth
+                                required
+                            />
+                            <p className="mt-1 text-sm text-gray-600">
+                                Fatura türüne göre gerekli bilgileri seçiniz
+                            </p>
+                        </div>
+
+                        {/* Mükellef Kodu ve Adı - E, H, O, M için */}
+                        {showMukellefFields && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded border border-blue-200">
+                                <div>
+                                    <Input
+                                        type="text"
+                                        label="Mükellef Kodu"
+                                        value={sgkData.mukellefKodu || ''}
+                                        onChange={(e) => handleChange('mukellefKodu', e.target.value)}
+                                        placeholder="Mükellef kodu"
+                                        error={errors.mukellefKodu}
+                                        fullWidth
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <Input
+                                        type="text"
+                                        label="Mükellef Adı"
+                                        value={sgkData.mukellefAdi || ''}
+                                        onChange={(e) => handleChange('mukellefAdi', e.target.value)}
+                                        placeholder="Mükellef adı"
+                                        error={errors.mukellefAdi}
+                                        fullWidth
+                                        required
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Dosya No - E, H, O, M, A, MH için */}
+                        {showDosyaNo && (
+                            <div className="bg-white p-4 rounded border border-blue-200">
+                                <Input
+                                    type="text"
+                                    label="Dosya No"
+                                    value={sgkData.dosyaNo || ''}
+                                    onChange={(e) => handleChange('dosyaNo', e.target.value)}
+                                    placeholder="Dosya numarası"
+                                    error={errors.dosyaNo}
+                                    fullWidth
+                                    required
+                                />
+                            </div>
+                        )}
+
+                        {/* Abone No - Sadece A için */}
+                        {showAboneNo && (
+                            <div className="bg-white p-4 rounded border border-blue-200">
+                                <Input
+                                    type="text"
+                                    label="Abone No"
+                                    value={sgkData.aboneNo || ''}
+                                    onChange={(e) => handleChange('aboneNo', e.target.value)}
+                                    placeholder="Abone numarası"
+                                    error={errors.aboneNo}
+                                    fullWidth
+                                    required
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+
                 {/* Dönem Bilgileri */}
                 <div className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-md font-medium text-gray-900">Dönem Bilgileri</h4>
+                        <h4 className="text-md font-medium text-gray-900">Dönem Bilgileri *</h4>
                         <Button
                             type="button"
                             onClick={() => setShowPeriodDetails(!showPeriodDetails)}
@@ -168,8 +247,8 @@ export function SGKInvoiceSection({
                     </div>
                 </div>
 
-                {/* Tesis Bilgileri */}
-                <div className="border border-gray-200 rounded-lg p-4">
+                {/* Tesis Bilgileri - GİZLENDİ */}
+                <div className="hidden border border-gray-200 rounded-lg p-4">
                     <h4 className="text-md font-medium text-gray-900 mb-4">Tesis Bilgileri</h4>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -181,10 +260,11 @@ export function SGKInvoiceSection({
                                 onChange={(e) => handleChange('facilityCode', e.target.value)}
                                 placeholder="Örn: 16810012"
                                 error={errors.facilityCode}
+                                maxLength={8}
                                 fullWidth
                             />
                             <p className="mt-1 text-sm text-gray-500">
-                                SGK tesis kodu (8 haneli)
+                                SGK tesis kodu (8 haneli, opsiyonel)
                             </p>
                         </div>
 
@@ -226,8 +306,8 @@ export function SGKInvoiceSection({
                     </div>
                 </div>
 
-                {/* Referans Bilgileri */}
-                <div className="border border-gray-200 rounded-lg p-4">
+                {/* Referans Bilgileri - GİZLENDİ */}
+                <div className="hidden border border-gray-200 rounded-lg p-4">
                     <h4 className="text-md font-medium text-gray-900 mb-4">Referans Bilgileri</h4>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -319,14 +399,14 @@ export function SGKInvoiceSection({
                 {/* Uyarı */}
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                     <div className="flex items-start">
-                        <span className="text-amber-400 mr-2">⚠️</span>
+                        <AlertTriangle className="text-amber-400 mr-2 flex-shrink-0" size={18} />
                         <div>
                             <h4 className="text-sm font-medium text-amber-800 mb-1">
                                 Önemli Bilgilendirme
                             </h4>
                             <p className="text-sm text-amber-700">
-                                SGK faturalarında dönem bilgileri, tesis kodu ve referans numarası zorunludur.
-                                Fatura tutarı SGK tarafından belirlenen protokol fiyatlarına uygun olmalıdır.
+                                SGK faturalarında dönem bilgileri ve ilave fatura bilgileri zorunludur.
+                                Seçtiğiniz ilave fatura bilgisi tipine göre ilgili alanları doldurunuz.
                             </p>
                         </div>
                     </div>
