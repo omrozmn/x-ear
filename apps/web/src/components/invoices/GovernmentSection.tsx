@@ -9,7 +9,7 @@ interface GovernmentSectionProps {
 }
 
 // Kamu İstisna Sebepleri (Legacy'den tam liste)
-const GOVERNMENT_EXEMPTION_REASONS = [
+export const GOVERNMENT_EXEMPTION_REASONS = [
   { value: '0', label: 'Seçiniz' },
   { value: '101', label: '101 - İhracat İstisnası' },
   { value: '102', label: '102 - Diplomatik İstisna' },
@@ -79,7 +79,7 @@ const GOVERNMENT_EXEMPTION_REASONS = [
 ];
 
 // Kamu İhraç Kayıtlı Sebepleri
-const GOVERNMENT_EXPORT_REGISTERED_REASONS = [
+export const GOVERNMENT_EXPORT_REGISTERED_REASONS = [
   { value: '0', label: 'Seçiniz' },
   { value: '701', label: '701 - 3065 s. KDV Kanununun 11/1-c md. Kapsamındaki İhraç Kayıtlı Satış' },
   { value: '702', label: '702 - DİİB ve Geçici Kabul Rejimi Kapsamındaki Satışlar' },

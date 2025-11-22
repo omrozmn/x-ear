@@ -5,7 +5,8 @@ import { ArrowLeft, FileText, CheckCircle, Pill, Info } from 'lucide-react';
 import { InvoiceFormExtended } from '../components/invoices/InvoiceFormExtended';
 import ExportDetailsCard from '../components/invoices/ExportDetailsCard';
 import { SGKInvoiceSection } from '../components/invoices/SGKInvoiceSection';
-import { GovernmentSection } from '../components/invoices/GovernmentSection';
+import { GovernmentSection, GOVERNMENT_EXEMPTION_REASONS } from '../components/invoices/GovernmentSection';
+import { Select } from '@x-ear/ui-web';
 import { CustomerSectionCompact } from '../components/invoices/CustomerSectionCompact';
 import WithholdingCard from '../components/invoices/WithholdingCard';
 
@@ -189,9 +190,12 @@ function InvoiceSidebar({
             <p className="text-xs text-gray-500">Seçilen istisna için neden kodunu belirtiniz</p>
           </div>
           <div>
-            <GovernmentSection
-              formData={{ ...extendedData }}
-              onChange={handlers.handleExtendedFieldChange}
+            <Select
+              label="İstisna Sebebi"
+              value={extendedData.governmentExemptionReason || '0'}
+              onChange={(e) => handlers.handleExtendedFieldChange('governmentExemptionReason', e.target.value)}
+              options={GOVERNMENT_EXEMPTION_REASONS}
+              fullWidth
             />
           </div>
         </div>
