@@ -229,6 +229,17 @@ export const createInventoryStats = () => [
       </svg>
     ),
   },
+  {
+    title: 'Toplam İşitme Cihazı',
+    value: '0',
+    color: 'purple' as const,
+    subtitle: 'Stok: 0',
+    icon: (
+      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M4 3a1 1 0 000 2h12a1 1 0 100-2H4zm0 4a1 1 0 000 2h12a1 1 0 100-2H4zM3 12a2 2 0 012-2h10a2 2 0 012 2v3a1 1 0 11-2 0v-3H5v3a1 1 0 11-2 0v-3z" />
+      </svg>
+    ),
+  },
 ];
 
 export default StatsCard;

@@ -69,6 +69,11 @@ export interface InvoiceItem {
   withholdingRate?: number;
   withholdingAmount?: number;
 
+  // Export / customs fields
+  gtipCode?: string;
+  // License number for medical/drug items
+  licenseNumber?: string;
+
   // Extended features (Legacy parity)
   unit?: ExtendedUnitType | string; // Extended unit types
   serviceCode?: string; // Mal hizmet kodu
@@ -103,6 +108,12 @@ export interface InvoiceTax {
 
 export interface Invoice {
   id: string;
+  /**
+   * If this invoice has been created on the server, the numeric server id.
+   * Local-only invoices may have a temporary id like `inv-001` — in that
+   * case `serverId` will be undefined until the invoice is synced.
+   */
+  serverId?: number;
   invoiceNumber: string;
   type: InvoiceTypeLegacy;
   status: InvoiceStatus;
@@ -380,6 +391,11 @@ export interface InvoiceFormData {
   type: InvoiceType;
   patientId?: string;
   patientName: string;
+  // Legacy/customer aliases used by invoice UI
+  customerId?: string;
+  customerName?: string;
+  governmentPayingCustomer?: boolean;
+  customerTaxNumber?: string;
   patientPhone?: string;
   patientTcNumber?: string;
 
@@ -387,6 +403,8 @@ export interface InvoiceFormData {
   billingAddress: InvoiceAddress;
   shippingAddress?: InvoiceAddress;
   sameAsbilling?: boolean;
+  // Selected customer address id (from address list)
+  customerAddressId?: string;
 
   // Date and payment
   issueDate: string;
@@ -421,6 +439,19 @@ export interface InvoiceFormData {
   templateId?: string;
   saveAsTemplate?: boolean;
   templateName?: string;
+
+  // UI helper fields
+  customerLabel?: string;
+
+  // Legacy/extended fields used by validation and various flows
+  scenario?: InvoiceScenario | string;
+  invoiceType?: string; // legacy invoice type code
+  withholdingRate?: number;
+  specialBaseAmount?: number;
+  specialBaseRate?: number;
+  governmentExemptionReason?: string;
+  governmentExportRegisteredReason?: string;
+  customerTcNumber?: string;
 }
 
 export interface InvoiceValidation {

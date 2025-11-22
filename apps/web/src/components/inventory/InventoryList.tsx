@@ -9,6 +9,16 @@ const api = axios.create({
   baseURL: 'http://localhost:5003'
 });
 
+// Human-friendly category labels (keep in sync with ProductForm CATEGORIES)
+const CATEGORY_LABELS: Record<string, string> = {
+  hearing_aid: 'İşitme Cihazı',
+  battery: 'Pil',
+  accessory: 'Aksesuar',
+  ear_mold: 'Kulak Kalıbı',
+  cleaning_supplies: 'Temizlik Malzemesi',
+  amplifiers: 'Amplifikatör'
+};
+
 interface InventoryListProps {
   filters?: InventoryFilters;
   onItemSelect?: (item: InventoryItem) => void;
@@ -89,12 +99,25 @@ export const InventoryList: React.FC<InventoryListProps> = ({
               }
             }
             
+            // Normalize category: backend may return either a key string or an object
+            // with label/name/value. Prefer human-readable fields when available.
+            const rawCategory = item.category;
+            let categoryLabel = '';
+            if (rawCategory) {
+              if (typeof rawCategory === 'string') {
+                  // Map known keys to human-friendly labels, otherwise show the raw string
+                  categoryLabel = CATEGORY_LABELS[rawCategory] || rawCategory;
+                } else if (typeof rawCategory === 'object') {
+                categoryLabel = rawCategory.label || rawCategory.name || rawCategory.value || rawCategory.title || '';
+              }
+            }
+
             return {
               id: String(item.id),
               name: item.name || 'Unnamed Product',
               brand: item.brand || '',
               model: item.model || '',
-              category: item.category || '',
+              category: categoryLabel || '',
               availableInventory: item.availableInventory || item.available_inventory || 0,
               totalInventory: item.totalInventory || item.total_inventory || 0,
               usedInventory: item.usedInventory || item.used_inventory || 0,

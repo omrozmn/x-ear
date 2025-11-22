@@ -1255,6 +1255,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
       description: Remove an item from inventory
+    put:
+      summary: Update an inventory item
+      operationId: inventory_update_inventory_item
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryItem'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/InventoryItem'
   /api/inventory/{item_id}/activity:
     get:
       summary: Get activity log for an inventory item
@@ -1537,7 +1566,7 @@ paths:
             schema:
               type: object
               properties:
-                patient_id:
+                patientId:
                   type: string
                 items:
                   type: array
@@ -1548,20 +1577,20 @@ paths:
                         type: string
                       quantity:
                         type: integer
-                      unit_price:
+                      unitPrice:
                         type: number
                       total:
                         type: number
-                total_amount:
+                totalAmount:
                   type: number
-                tax_amount:
+                taxAmount:
                   type: number
-                discount_amount:
+                discountAmount:
                   type: number
               required:
-              - patient_id
+              - patientId
               - items
-              - total_amount
+              - totalAmount
       responses:
         '201':
           description: Invoice created successfully
@@ -1626,17 +1655,17 @@ paths:
                         type: string
                       invoice_number:
                         type: string
-                      patient_id:
+                      patientId:
                         type: string
                       items:
                         type: array
                         items:
                           type: object
-                      total_amount:
+                      totalAmount:
                         type: number
-                      tax_amount:
+                      taxAmount:
                         type: number
-                      discount_amount:
+                      discountAmount:
                         type: number
                       created_at:
                         type: string
@@ -3939,6 +3968,14 @@ components:
           format: float
           description: VAT/KDV rate percentage
           default: 20
+        priceIncludesKdv:
+          type: boolean
+          description: Whether the listed price already includes VAT (KDV)
+          default: false
+        costIncludesKdv:
+          type: boolean
+          description: Whether the listed cost already includes VAT (KDV)
+          default: false
         vatRate:
           type: number
           format: float

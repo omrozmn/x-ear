@@ -1,0 +1,36 @@
+{% extends 'invoices/base.html' %}
+
+{% block content %}
+  <h2 style="margin-top:8px">{{ invoice.document_title or 'İade Faturası' }}</h2>
+
+  <div style="margin-top:8px; font-size:12px">
+    <strong>İade Nedeni</strong>
+    <div>{{ invoice.return_reason or invoice.notes or '' }}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ürün / Hizmet</th>
+        <th>Miktar</th>
+        <th>Birim Fiyat</th>
+        <th class="right">İade Tutarı</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in invoice.lines %}
+      <tr>
+        <td>{{ line.description }}</td>
+        <td>{{ line.quantity }}</td>
+        <td class="right">{{ line.unit_price }}</td>
+        <td class="right">{{ line.line_extension_amount }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="margin-top:12px; text-align:right">
+    <div class="small">İade Toplamı: {{ invoice.payable_amount }}</div>
+  </div>
+
+{% endblock %}

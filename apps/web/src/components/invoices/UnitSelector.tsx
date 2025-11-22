@@ -51,10 +51,12 @@ export function UnitSelector({ value, onChange, className }: UnitSelectorProps) 
 
   return (
     <Select
+      label="Birim"
       value={value || 'Adet'}
       onChange={(e) => onChange(e.target.value)}
       options={options}
       className={className}
+      fullWidth
     />
   );
 }

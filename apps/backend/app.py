@@ -323,6 +323,15 @@ app.register_blueprint(suppliers_bp)  # suppliers_bp already has /api prefix in 
 from routes.replacements import replacements_bp
 app.register_blueprint(replacements_bp)  # replacements_bp already has url_prefix='/api'
 
+# Additional invoice action routes (issue, copy, pdf serve, etc.)
+from routes.invoices_actions import invoices_actions_bp
+app.register_blueprint(invoices_actions_bp)
+
+# BirFatura adapter routes (adapter endpoints for frontend -> backend -> provider)
+from routes.birfatura import birfatura_bp
+# Register without url_prefix because routes in the blueprint already include `/api/EFatura/*` paths
+app.register_blueprint(birfatura_bp)
+
 # ===== NOTIFICATION ENDPOINTS =====
 # Notifications routes migrated to a blueprint in backend/routes/notifications.py
 from routes.notifications import notifications_bp

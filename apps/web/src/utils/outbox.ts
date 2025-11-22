@@ -9,6 +9,8 @@ export interface OutboxOperation {
   endpoint: string;
   data?: unknown;
   headers?: Record<string, string>;
+  /** Optional opaque metadata to attach to the operation (e.g. temp ids) */
+  meta?: Record<string, unknown> | unknown;
   timestamp?: number;
   status?: 'pending' | 'failed' | 'completed';
   retryCount?: number;

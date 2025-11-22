@@ -84,9 +84,17 @@ def get_all_inventory():
         has_next = page < total_pages
         has_prev = page > 1
         
+        # Safely serialize items so a single bad row doesn't cause a 500
+        data_list = []
+        for item in items:
+            try:
+                data_list.append(item.to_dict())
+            except Exception as _e:
+                print(f"Warning: failed to serialize inventory item {getattr(item, 'id', None)}: {_e}")
+                data_list.append({'id': getattr(item, 'id', None), 'name': getattr(item, 'name', None)})
         return jsonify({
             'success': True,
-            'data': [item.to_dict() for item in items],
+            'data': data_list,
             'meta': {
                 'page': page,
                 'perPage': per_page,
@@ -100,8 +108,7 @@ def get_all_inventory():
             'success': False,
             'error': str(e)
         }), 500
-
-
+    # Advanced search endpoint moved here: preserve original advanced_search behavior
 @inventory_bp.route('/search', methods=['GET'])
 def advanced_search():
     """Advanced product search with comprehensive filtering"""
@@ -225,10 +232,19 @@ def advanced_search():
             db.func.max(Inventory.price)
         ).first()
         
+        # Safely serialize items for the response
+        safe_items = []
+        for item in items:
+            try:
+                safe_items.append(item.to_dict())
+            except Exception as _e:
+                print(f"Warning: failed to serialize inventory item {getattr(item, 'id', None)}: {_e}")
+                safe_items.append({'id': getattr(item, 'id', None), 'name': getattr(item, 'name', None)})
+
         return jsonify({
             'success': True,
             'data': {
-                'items': [item.to_dict() for item in items],
+                'items': safe_items,
                 'pagination': {
                     'page': page,
                     'limit': limit,
@@ -353,8 +369,17 @@ def get_features():
         features_dict = {}
         for features_str, category in items_with_features:
             if features_str and features_str.strip():
-                # Split features by comma and process each
-                feature_list = [f.strip() for f in features_str.split(',') if f.strip()]
+                try:
+                    # Accept either JSON array or comma-separated string
+                    if features_str.strip().startswith('['):
+                        parsed = json.loads(features_str)
+                        feature_list = [f.strip() for f in parsed if isinstance(f, str) and f.strip()]
+                    else:
+                        feature_list = [f.strip() for f in features_str.split(',') if f.strip()]
+                except Exception:
+                    # Skip malformed feature values
+                    continue
+
                 for feature in feature_list:
                     if feature not in features_dict:
                         features_dict[feature] = {
@@ -591,6 +616,20 @@ def update_inventory_item(item_id):
         item.description = data.get('description', item.description)
         item.price = float(data.get('price', item.price))
         item.cost = float(data.get('cost', item.cost)) if 'cost' in data else item.cost
+        # VAT/KDV handling (support both vatRate and kdv payload fields)
+        if 'vatRate' in data:
+            item.vat_rate = float(data.get('vatRate') or data.get('kdv', item.vat_rate or 18))
+        elif 'kdv' in data:
+            item.vat_rate = float(data.get('kdv'))
+        # Price/cost include flags (frontend toggles) — support camelCase and snake_case
+        if 'priceIncludesKdv' in data:
+            item.price_includes_kdv = bool(data.get('priceIncludesKdv'))
+        elif 'price_includes_kdv' in data:
+            item.price_includes_kdv = bool(data.get('price_includes_kdv'))
+        if 'costIncludesKdv' in data:
+            item.cost_includes_kdv = bool(data.get('costIncludesKdv'))
+        elif 'cost_includes_kdv' in data:
+            item.cost_includes_kdv = bool(data.get('cost_includes_kdv'))
         item.direction = data.get('direction') or data.get('ear', item.direction)
         item.ear = data.get('ear') or data.get('direction', item.ear)
         item.warranty = data.get('warranty', item.warranty)
@@ -863,10 +902,18 @@ def get_low_stock_items():
             Inventory.available_inventory <= Inventory.reorder_level
         ).order_by(Inventory.available_inventory).all()
         
+        safe_items = []
+        for item in items:
+            try:
+                safe_items.append(item.to_dict())
+            except Exception as _e:
+                print(f"Warning: failed to serialize inventory item {getattr(item, 'id', None)}: {_e}")
+                safe_items.append({'id': getattr(item, 'id', None), 'name': getattr(item, 'name', None)})
+
         return jsonify({
             'success': True,
-            'data': [item.to_dict() for item in items],
-            'count': len(items)
+            'data': safe_items,
+            'count': len(safe_items)
         }), 200
         
     except Exception as e:
@@ -887,17 +934,39 @@ def get_inventory_stats():
         out_of_stock_count = Inventory.query.filter(
             Inventory.available_inventory == 0
         ).count()
+        # Total stock across all inventory items
+        try:
+            total_stock = int(db.session.query(db.func.coalesce(db.func.sum(Inventory.available_inventory), 0)).scalar() or 0)
+        except Exception:
+            total_stock = 0
         
-        total_value = db.session.query(
-            db.func.sum(Inventory.available_inventory * Inventory.price)
-        ).scalar() or 0
+        # Calculate total value taking into account whether stored price includes KDV (VAT)
+        # and the item's kdv_rate. If price includes KDV, use price as-is; otherwise
+        # multiply by (1 + kdv_rate/100).
+        try:
+            # SQL expression: available_inventory * (CASE WHEN price_includes_kdv THEN price ELSE price * (1 + kdv_rate/100) END)
+            total_value_expr = Inventory.available_inventory * db.case(
+                (Inventory.price_includes_kdv == True, Inventory.price),
+                else_=Inventory.price * (1 + (Inventory.kdv_rate / 100.0))
+            )
+            total_value = db.session.query(db.func.sum(total_value_expr)).scalar() or 0
+        except Exception:
+            # Fallback to simple multiplication if DB backend can't handle the case expression
+            total_value = db.session.query(
+                db.func.sum(Inventory.available_inventory * Inventory.price)
+            ).scalar() or 0
         
         # Category breakdown
         try:
+            # Use same VAT-aware expression for category breakdown values
+            category_value_expr = Inventory.available_inventory * db.case(
+                (Inventory.price_includes_kdv == True, Inventory.price),
+                else_=Inventory.price * (1 + (Inventory.kdv_rate / 100.0))
+            )
             category_stats = db.session.query(
                 Inventory.category,
                 db.func.count(Inventory.id).label('count'),
-                db.func.sum(Inventory.available_inventory * Inventory.price).label('value')
+                db.func.sum(category_value_expr).label('value')
             ).group_by(Inventory.category).all()
             
             category_breakdown = {}
@@ -911,10 +980,15 @@ def get_inventory_stats():
         
         # Brand breakdown
         try:
+            # Use same VAT-aware expression for brand breakdown values
+            brand_value_expr = Inventory.available_inventory * db.case(
+                (Inventory.price_includes_kdv == True, Inventory.price),
+                else_=Inventory.price * (1 + (Inventory.kdv_rate / 100.0))
+            )
             brand_stats = db.session.query(
                 Inventory.brand,
                 db.func.count(Inventory.id).label('count'),
-                db.func.sum(Inventory.available_inventory * Inventory.price).label('value')
+                db.func.sum(brand_value_expr).label('value')
             ).group_by(Inventory.brand).order_by(db.func.count(Inventory.id).desc()).limit(10).all()
             
             brand_breakdown = {}
@@ -933,6 +1007,15 @@ def get_inventory_stats():
                 'lowStockCount': low_stock_count,
                 'outOfStockCount': out_of_stock_count,
                 'totalValue': float(total_value),
+                # DB-level total count (alias for clarity); frontend should use this
+                'dbTotalItems': total_items,
+                # Total stock across all items
+                'totalStock': total_stock,
+                # Hearing aid specific KPIs
+                'hearingAid': {
+                    'count': Inventory.query.filter(Inventory.category == 'hearing_aid').count(),
+                    'stock': int(db.session.query(db.func.coalesce(db.func.sum(Inventory.available_inventory), 0)).filter(Inventory.category == 'hearing_aid').scalar() or 0)
+                },
                 'categoryBreakdown': category_breakdown,
                 'brandBreakdown': brand_breakdown
             },

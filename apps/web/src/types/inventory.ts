@@ -73,6 +73,11 @@ export interface InventoryItem {
   // Warranty
   warranty?: number; // months
   
+  // Invoice related fields
+  taxRate?: number; // KDV oranı
+  productServiceCode?: string; // Mal/Hizmet kodu
+  gtipCode?: string; // GTİP kodu (ihracat için)
+  
   // Status and metadata
   status?: InventoryStatus;
   notes?: string;

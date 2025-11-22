@@ -1,0 +1,30 @@
+{% extends 'invoices/base.html' %}
+
+{% block content %}
+  <h2 style="margin-top:8px">{{ invoice.document_title or 'Kargo Fişi' }}</h2>
+
+  <div style="margin-top:8px; font-size:12px">
+    <strong>Kargo Bilgileri</strong>
+    <div>Gönderici: {{ invoice.supplier.name if invoice.supplier else '' }}</div>
+    <div>Alıcı: {{ invoice.customer.name if invoice.customer else '' }}</div>
+    <div>Takip No: {{ invoice.tracking_number or invoice.trackingNumber or '' }}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>İçerik</th>
+        <th>Miktar</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in invoice.lines %}
+      <tr>
+        <td>{{ line.description }}</td>
+        <td class="right">{{ line.quantity }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

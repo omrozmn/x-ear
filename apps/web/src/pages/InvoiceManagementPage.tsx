@@ -10,6 +10,7 @@ import { InvoiceFilters as InvoiceFiltersComponent } from '../components/invoice
 import { GovernmentInvoiceModal } from '../components/invoices/GovernmentInvoiceModal';
 import { InvoiceStats } from '../components/invoices/InvoiceStats';
 import { invoiceService } from '../services/invoice.service';
+import { InvoiceList } from '../components/invoices/InvoiceList';
 
 interface InvoiceManagementPageProps {
   className?: string;
@@ -448,7 +449,9 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
       {/* Header */}
       <div className="page-header mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold text-gray-900">Fatura Yönetimi</h1>
+          <div className="flex items-center">
+            <h1 className="text-3xl font-bold text-gray-900">Fatura Yönetimi</h1>
+          </div>
 
           <div className="header-actions flex gap-3">
             <Button
@@ -528,53 +531,15 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
             onReset={handleResetFilters}
           />
 
-          {/* Invoice Table */}
+          {/* Invoice Table (now using shared InvoiceList component) */}
           <div className="invoice-table bg-white rounded-lg shadow overflow-hidden">
-            <div className="table-header bg-gray-50 px-6 py-3 border-b border-gray-200">
-              <div className="flex items-center">
-                <Input
-                  type="checkbox"
-                  checked={state.selectedInvoices.length === filteredInvoices.length && filteredInvoices.length > 0}
-                  onChange={(e) => handleSelectAll(e.target.checked)}
-                  className="mr-3"
-                />
-                <span className="font-medium text-gray-900">
-                  {filteredInvoices.length} fatura
-                </span>
-              </div>
-            </div>
-
-            <div className="table-body">
-              {filteredInvoices.length === 0 ? (
-                <div className="empty-state text-center py-12">
-                  <FileText className="text-gray-400 mx-auto mb-4" size={64} />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Fatura bulunamadı
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Arama kriterlerinizi değiştirin veya yeni fatura oluşturun
-                  </p>
-                  <Button
-                    onClick={handleCreateInvoice}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2 mx-auto"
-                    variant='default'>
-                    <Plus size={18} />
-                    Yeni Fatura Oluştur
-                  </Button>
-                </div>
-              ) : (
-                filteredInvoices.map((invoice) => (
-                  <InvoiceRow
-                    key={invoice.id}
-                    invoice={invoice}
-                    selected={state.selectedInvoices.some(i => i.id === invoice.id)}
-                    onSelect={(selected) => handleInvoiceSelect(invoice, selected)}
-                    onEdit={() => handleEditInvoice(invoice)}
-                    onView={() => handleViewInvoice(invoice)}
-                  />
-                ))
-              )}
-            </div>
+              <InvoiceList
+                onInvoiceSelect={(inv) => handleEditInvoice(inv)}
+                filters={state.filters}
+                onFiltersChange={handleFiltersChange}
+                showActions={true}
+                compact={false}
+              />
           </div>
         </div>
       )}

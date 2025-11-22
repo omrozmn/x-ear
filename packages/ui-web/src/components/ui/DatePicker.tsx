@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -7,6 +8,8 @@ const cn = (...classes: (string | undefined | null | boolean)[]) => {
 };
 
 interface DatePickerProps {
+  /** Called when user changes month or year via header selects (year, monthIndex 0-11) */
+  onMonthYearChange?: (year: number, monthIndex: number) => void;
   value?: Date | null;
   onChange?: (date: Date | null) => void;
   placeholder?: string;
@@ -32,6 +35,7 @@ const DAYS = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 export const DatePicker: React.FC<DatePickerProps> = ({
   value,
   onChange,
+  onMonthYearChange,
   placeholder = 'Tarih seçin',
   label,
   error,
@@ -46,14 +50,26 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(value || new Date());
+  const [availableYears, setAvailableYears] = useState<number[]>(() => {
+    const cur = new Date().getFullYear();
+    const yearsArr: number[] = [];
+    for (let y = cur - 5; y <= cur + 1; y++) yearsArr.push(y);
+    return yearsArr;
+  });
   const [timeValue, setTimeValue] = useState(
     value ? `${value.getHours().toString().padStart(2, '0')}:${value.getMinutes().toString().padStart(2, '0')}` : '00:00'
   );
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const popupRef = useRef<HTMLDivElement | null>(null);
+  const [popupStyle, setPopupStyle] = useState<React.CSSProperties | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const clickedInsideContainer = containerRef.current && containerRef.current.contains(target);
+      const clickedInsidePopup = popupRef.current && popupRef.current.contains(target);
+      if (!clickedInsideContainer && !clickedInsidePopup) {
         setIsOpen(false);
       }
     };
@@ -177,7 +193,16 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           placeholder={placeholder}
           disabled={disabled}
           readOnly
-          onClick={() => !disabled && setIsOpen(!isOpen)}
+          ref={inputRef}
+          onClick={() => {
+            if (disabled) return;
+            const next = !isOpen;
+            setIsOpen(next);
+            if (next && inputRef.current) {
+              const rect = inputRef.current.getBoundingClientRect();
+              setPopupStyle({ position: 'absolute', left: rect.left + window.scrollX, top: rect.bottom + window.scrollY + 8, zIndex: 9999 });
+            }
+          }}
           className={cn(
             'w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer',
             error ? 'border-red-300' : 'border-gray-300',
@@ -195,85 +220,123 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         </div>
       </div>
 
-      {isOpen && (
-        <div className="absolute z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-4 min-w-[280px]">
-          {/* Month Navigation */}
-          <div className="flex items-center justify-between mb-4">
-            <button
-              type="button"
-              onClick={() => navigateMonth('prev')}
-              className="p-1 hover:bg-gray-100 rounded"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            
-            <h3 className="text-sm font-medium">
-              {MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-            </h3>
-            
-            <button
-              type="button"
-              onClick={() => navigateMonth('next')}
-              className="p-1 hover:bg-gray-100 rounded"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* Days Header */}
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {DAYS.map(day => (
-              <div key={day} className="text-xs font-medium text-gray-500 text-center p-1">
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-1">
-            {days.map((date, index) => {
-              const isCurrentMonth = date.getMonth() === currentMonthNumber;
-              const isSelected = value ? isSameDay(date, value) : false;
-              const isToday = isSameDay(date, new Date());
-              const disabled = isDateDisabled(date);
-
-              return (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => handleDateSelect(date)}
-                  disabled={disabled}
-                  className={cn(
-                    'p-1 text-sm rounded hover:bg-gray-100 transition-colors',
-                    !isCurrentMonth && 'text-gray-300',
-                    isCurrentMonth && 'text-gray-900',
-                    isSelected && 'bg-blue-500 text-white hover:bg-blue-600',
-                    isToday && !isSelected && 'bg-blue-50 text-blue-600',
-                    disabled && 'cursor-not-allowed opacity-50'
-                  )}
+      {isOpen && (() => {
+        const popup = (
+          <div style={popupStyle as any} className="bg-white border border-gray-200 rounded-md shadow-lg p-4 min-w-[280px]">
+            {/* attach ref so outside clicks inside popup won't immediately close it */}
+            <div ref={popupRef}>
+            {/* Month Navigation */}
+            <div className="flex items-center justify-between mb-4">
+              <button
+                type="button"
+                onClick={() => navigateMonth('prev')}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <div className="flex items-center gap-2">
+                <select
+                  aria-label="Ay seçin"
+                  value={currentMonth.getMonth()}
+                  onChange={(e) => {
+                    const m = parseInt(e.target.value, 10);
+                    setCurrentMonth(prev => {
+                      const newDate = new Date(prev.getFullYear(), m, 1);
+                      onMonthYearChange?.(newDate.getFullYear(), newDate.getMonth());
+                      return newDate;
+                    });
+                  }}
+                  className="text-sm px-2 py-1 border rounded"
                 >
-                  {date.getDate()}
-                </button>
-              );
-            })}
-          </div>
+                  {MONTHS.map((m, i) => (
+                    <option key={m} value={i}>{m}</option>
+                  ))}
+                </select>
 
-          {/* Time Picker */}
-          {showTime && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <label className="block text-xs font-medium text-gray-700 mb-2">
-                Saat
-              </label>
-              <input
-                type="time"
-                value={timeValue}
-                onChange={(e) => handleTimeChange(e.target.value)}
-                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
+                <select
+                  aria-label="Yıl seçin"
+                  value={currentMonth.getFullYear()}
+                  onChange={(e) => {
+                    const y = parseInt(e.target.value, 10);
+                    setCurrentMonth(prev => {
+                      const newDate = new Date(y, prev.getMonth(), 1);
+                      onMonthYearChange?.(newDate.getFullYear(), newDate.getMonth());
+                      return newDate;
+                    });
+                  }}
+                  className="text-sm px-2 py-1 border rounded"
+                >
+                  {availableYears.map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigateMonth('next')}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
-          )}
-        </div>
-      )}
+
+            {/* Days Header */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {DAYS.map(day => (
+                <div key={day} className="text-xs font-medium text-gray-500 text-center p-1">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-1">
+              {days.map((date, index) => {
+                const isCurrentMonth = date.getMonth() === currentMonthNumber;
+                const isSelected = value ? isSameDay(date, value) : false;
+                const isToday = isSameDay(date, new Date());
+                const disabled = isDateDisabled(date);
+
+                return (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => handleDateSelect(date)}
+                    disabled={disabled}
+                    className={cn(
+                      'p-1 text-sm rounded hover:bg-gray-100 transition-colors',
+                      !isCurrentMonth && 'text-gray-300',
+                      isCurrentMonth && 'text-gray-900',
+                      isSelected && 'bg-blue-500 text-white hover:bg-blue-600',
+                      isToday && !isSelected && 'bg-blue-50 text-blue-600',
+                      disabled && 'cursor-not-allowed opacity-50'
+                    )}
+                  >
+                    {date.getDate()}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Time Picker */}
+            {showTime && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <label className="block text-xs font-medium text-gray-700 mb-2">
+                  Saat
+                </label>
+                <input
+                  type="time"
+                  value={timeValue}
+                  onChange={(e) => handleTimeChange(e.target.value)}
+                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+            )}
+          </div>
+            </div>
+        );
+        return typeof document !== 'undefined' ? createPortal(popup, document.body) : popup;
+      })()}
 
       {(error || helperText) && (
         <div className="mt-1 text-sm">

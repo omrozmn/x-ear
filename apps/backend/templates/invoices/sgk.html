@@ -1,0 +1,39 @@
+*{% extends 'invoices/base.html' %}
+
+{% block content %}
+  <h2 style="margin-top:8px">{{ invoice.document_title or 'SGK Faturası' }}</h2>
+
+  <div style="margin-top:8px; font-size:12px">
+    <strong>SGK Bilgileri</strong>
+    <div>SGK Protokol No: {{ invoice.sgk_protocol or invoice.sgkProtocol or '' }}</div>
+    <div>SGK Kapsamı: {{ invoice.sgk_coverage or invoice.sgkCoverage or '' }}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ürün / Hizmet</th>
+        <th>Miktar</th>
+        <th>Birim Fiyat</th>
+        <th class="right">Tutar</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in invoice.lines %}
+      <tr>
+        <td>{{ line.description }}</td>
+        <td>{{ line.quantity }}</td>
+        <td class="right">{{ line.unit_price }}</td>
+        <td class="right">{{ line.line_extension_amount }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="margin-top:12px; text-align:right">
+    <div class="small">Ara Toplam: {{ invoice.subtotal }}</div>
+    <div class="small">SGK Ödemesi: {{ invoice.sgk_coverage }}</div>
+    <div style="font-weight:700; font-size:14px">Alıcı Ödemesi: {{ invoice.payable_amount }}</div>
+  </div>
+
+{% endblock %}

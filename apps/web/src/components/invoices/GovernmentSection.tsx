@@ -4,7 +4,7 @@ import { InvoiceFormData } from '../../types/invoice';
 
 interface GovernmentSectionProps {
   formData: InvoiceFormData;
-  onChange: (field: string, value: any) => void;
+  onChange: (field: keyof InvoiceFormData, value: any) => void;
   errors?: Record<string, string>;
 }
 

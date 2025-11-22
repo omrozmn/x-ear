@@ -20,6 +20,7 @@ interface InvoiceFormExtendedProps {
   isLoading?: boolean;
   onDataChange?: (field: string, value: any) => void;
   initialData?: any;
+  onRequestLineEditor?: (type: 'withholding' | 'special' | 'medical', index: number) => void;
 }
 
 export function InvoiceFormExtended({
@@ -29,20 +30,19 @@ export function InvoiceFormExtended({
   isLoading = false,
   onDataChange,
   initialData
+  , onRequestLineEditor
 }: InvoiceFormExtendedProps) {
   const [extendedData, setExtendedData] = useState({
     ...initialData,
     scenarioData: invoice?.scenarioData || initialData?.scenarioData,
     specialTaxBase: invoice?.specialTaxBase,
-    backdatedInvoice: invoice?.backdatedInvoice,
     returnInvoiceDetails: invoice?.returnInvoiceDetails,
     customerLabel: invoice?.customerLabel,
     shipmentInfo: invoice?.shipmentInfo,
     bankInfo: invoice?.bankInfo,
     paymentTerms: invoice?.paymentTerms,
     issueTime: invoice?.issueTime || new Date().toTimeString().slice(0, 5),
-    isTechnologySupport: invoice?.isTechnologySupport,
-    isMedicalDevice: invoice?.isMedicalDevice,
+    
     orderInfo: invoice?.orderInfo,
     deliveryInfo: invoice?.deliveryInfo,
     governmentData: invoice?.governmentData,
@@ -51,8 +51,9 @@ export function InvoiceFormExtended({
     exportDetails: (invoice as any)?.exportDetails as ExportDetailsData | undefined,
     medicalDeviceData: (invoice as any)?.medicalDeviceData as MedicalDeviceData | undefined,
     invoiceType: initialData?.invoiceType || invoice?.type || '',
-    scenario: initialData?.scenario || invoice?.scenarioData?.scenario || '',
+    scenario: initialData?.scenario || invoice?.scenarioData?.scenario || 'other',
     currency: initialData?.currency || invoice?.currency || 'TRY',
+    totalDiscount: initialData?.totalDiscount ?? invoice?.totalDiscount ?? 0,
     customerId: invoice?.customerId || '',
     customerName: invoice?.customerName || ''
   });
@@ -67,6 +68,22 @@ export function InvoiceFormExtended({
   // Koşullu görünürlük
   const currentScenario = extendedData.scenarioData?.scenario;
   const currentInvoiceType = extendedData.invoiceType;
+
+  // Allowed invoice types mapping (should match InvoiceTypeSection)
+  const allowedTypesForScenario = (scenario?: string) => {
+    if (scenario === 'export') return ['13'];
+    if (scenario === 'government') return ['', '0', '13', '11', '18', '24', '32', '12', '19', '25', '33'];
+    return ['', '0', '50', '13', '11', '18', '24', '32', '12', '19', '25', '33', '14', '15', '49', '35'];
+  };
+
+  // If scenario changes and current invoiceType is not allowed, reset it to empty
+  useEffect(() => {
+    const scenario = extendedData.scenario || extendedData.scenarioData?.scenario || 'other';
+    const allowed = allowedTypesForScenario(scenario);
+    if (extendedData.invoiceType && !allowed.includes(String(extendedData.invoiceType))) {
+      handleExtendedFieldChange('invoiceType', '');
+    }
+  }, [extendedData.scenario, extendedData.scenarioData?.scenario]);
 
   // Özel durumlar
   const autoBasicTypes = ['14', '15', '35']; // Otomatik Temel'e geçen tipler
@@ -95,10 +112,26 @@ export function InvoiceFormExtended({
     }
   }, [shouldForceBasic, extendedData.scenarioData?.currentScenarioType]);
 
+  // İhracat tipi (13) seçildiğinde sidebar'ı aç
+  // Removed auto-opening export modal when invoice type is 13.
+  // Export details should be shown in the right-hand sidebar instead.
+
   const handleExtendedFieldChange = useCallback((field: string, value: any) => {
-    setExtendedData(prev => ({ ...prev, [field]: value }));
+    setExtendedData(prev => {
+      if (field === 'scenarioData') {
+        const newScenario = value?.scenario || prev.scenario || 'other';
+        return { ...prev, scenarioData: value, scenario: newScenario };
+      }
+      return { ...prev, [field]: value };
+    });
+
     if (onDataChange) {
-      onDataChange(field, value);
+      if (field === 'scenarioData') {
+        onDataChange('scenarioData', value);
+        onDataChange('scenario', value?.scenario || 'other');
+      } else {
+        onDataChange(field, value);
+      }
     }
   }, [onDataChange]);
 
@@ -146,12 +179,10 @@ export function InvoiceFormExtended({
             {/* Fatura Tipi */}
             <div>
               <InvoiceTypeSection
-                invoiceType={invoice?.type || 'sale'}
+                invoiceType={extendedData.invoiceType || ''}
+                scenario={extendedData.scenario || extendedData.scenarioData?.scenario || 'other'}
                 specialTaxBase={extendedData.specialTaxBase}
-                backdatedInvoice={extendedData.backdatedInvoice}
                 returnInvoiceDetails={extendedData.returnInvoiceDetails}
-                isTechnologySupport={extendedData.isTechnologySupport}
-                isMedicalDevice={extendedData.isMedicalDevice}
                 onChange={handleExtendedFieldChange}
               />
             </div>
@@ -201,6 +232,10 @@ export function InvoiceFormExtended({
         invoiceType={extendedData.invoiceType}
         scenario={extendedData.scenario}
         currency={extendedData.currency}
+        onCurrencyChange={(c) => handleExtendedFieldChange('currency', c)}
+        generalDiscount={extendedData.totalDiscount}
+        onGeneralDiscountChange={(v) => handleExtendedFieldChange('totalDiscount', v)}
+        onRequestLineEditor={onRequestLineEditor}
       />
 
 

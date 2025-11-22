@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Button } from '@x-ear/ui-web';
+import { Button, Input, DatePicker } from '@x-ear/ui-web';
 import { ArrowLeft, FileText, CheckCircle, Pill, Info } from 'lucide-react';
 import { InvoiceFormExtended } from '../components/invoices/InvoiceFormExtended';
+import ExportDetailsCard from '../components/invoices/ExportDetailsCard';
 import { SGKInvoiceSection } from '../components/invoices/SGKInvoiceSection';
 import { GovernmentSection } from '../components/invoices/GovernmentSection';
 import { CustomerSectionCompact } from '../components/invoices/CustomerSectionCompact';
+import WithholdingCard from '../components/invoices/WithholdingCard';
 
 export function NewInvoicePage() {
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<any>({
     invoiceType: '',
-    scenario: '',
+    scenario: 'other',
     currency: 'TRY'
   });
 
@@ -31,19 +33,57 @@ export function NewInvoicePage() {
     }
   };
 
+  const handleSaveDraft = async () => {
+    setIsSaving(true);
+    try {
+      // Minimal draft save behavior for now
+      console.log('Saving draft invoice:', formData);
+      // TODO: call draft API endpoint when available
+      navigate({ to: '/invoices' });
+    } catch (error) {
+      console.error('Error saving draft:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleCancel = () => {
     navigate({ to: '/invoices' });
   };
 
   const handleFormDataChange = (field: string, value: any) => {
-    setFormData((prev: any) => ({ ...prev, [field]: value }));
+    // Map complex fields from child components into flat formData used by the page
+    setFormData((prev: any) => {
+      const next = { ...prev };
+      if (field === 'scenarioData') {
+        next.scenarioData = value;
+        next.scenario = value?.scenario || 'other';
+      } else if (field === 'invoiceType') {
+        next.invoiceType = value;
+      } else {
+        next[field] = value;
+      }
+      return next;
+    });
   };
+
+  const [activeLineEditor, setActiveLineEditor] = useState<{ type: 'withholding' | 'special' | 'medical'; index: number } | null>(null);
+
+  const handleRequestLineEditor = (type: 'withholding' | 'special' | 'medical', index: number) => {
+    setActiveLineEditor({ type, index });
+  };
+
+  const handleCloseLineEditor = () => setActiveLineEditor(null);
 
   // Koşullu bölümleri hesapla
   const showSGKSection = formData.invoiceType === '14';
   const showGovernmentSection = formData.scenario === 'government';
+  // Export sidebar should only open for export scenario. If invoice type is '13' (İstisna)
+  // but scenario is not export, we show a separate Istisna Sebebi card instead (see below).
   const showExportSection = formData.scenario === 'export';
   const showMedicalSection = formData.scenario === 'medical';
+  const showReturnSection = ['15', '49', '50'].includes(formData.invoiceType);
+  const showSpecialBaseSection = ['12', '19', '25', '33'].includes(formData.invoiceType);
   
   // Özel işlemler görünürlüğü
   const isWithholdingType = ['11', '18', '24', '32'].includes(formData.invoiceType);
@@ -53,6 +93,7 @@ export function NewInvoicePage() {
     <NewInvoicePageContent 
       isSaving={isSaving}
       handleSubmit={handleSubmit}
+      handleSaveDraft={handleSaveDraft}
       handleCancel={handleCancel}
       formData={formData}
       onFormDataChange={handleFormDataChange}
@@ -60,8 +101,13 @@ export function NewInvoicePage() {
       showGovernmentSection={showGovernmentSection}
       showExportSection={showExportSection}
       showMedicalSection={showMedicalSection}
+      showReturnSection={showReturnSection}
       showSpecialOperations={showSpecialOperations}
+      showSpecialBaseSection={showSpecialBaseSection}
       isWithholdingType={isWithholdingType}
+      onRequestLineEditor={handleRequestLineEditor}
+      activeLineEditor={activeLineEditor}
+      onCloseLineEditor={handleCloseLineEditor}
     />
   );
 }
@@ -72,9 +118,21 @@ function InvoiceSidebar({
   showExportSection, 
   showMedicalSection, 
   showGovernmentSection,
+  showIstisnaReason,
+  showReturnSection,
+  showSpecialBaseSection,
   extendedData,
-  handlers 
+  handlers,
+  activeLineEditor,
+  onCloseLineEditor
 }: any) {
+  // Defensive local booleans to avoid ReferenceError if props are missing
+  const _showSGKSection = !!showSGKSection;
+  const _showExportSection = !!showExportSection;
+  const _showMedicalSection = !!showMedicalSection;
+  const _showGovernmentSection = !!showGovernmentSection;
+  const _showReturnSection = !!showReturnSection;
+  const _showSpecialBaseSection = !!showSpecialBaseSection;
   return (
     <div className="sticky top-24 space-y-4">
       {/* Fatura Alıcı - En Üstte */}
@@ -92,7 +150,7 @@ function InvoiceSidebar({
       />
 
       {/* SGK Section */}
-      {showSGKSection && (
+      {_showSGKSection && (
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
           <div className="p-4 border-b border-gray-200 bg-blue-50">
             <h3 className="text-sm font-bold text-gray-900">SGK Fatura Bilgileri</h3>
@@ -108,7 +166,7 @@ function InvoiceSidebar({
       )}
 
       {/* Government Section */}
-      {showGovernmentSection && (
+      {_showGovernmentSection && (
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
           <div className="p-4 border-b border-gray-200 bg-purple-50">
             <h3 className="text-sm font-bold text-gray-900">Kamu Fatura Bilgileri</h3>
@@ -123,37 +181,136 @@ function InvoiceSidebar({
         </div>
       )}
 
-      {/* Export Section */}
-      {showExportSection && (
+      {/* Istisna Sebebi card: show when invoiceType=13 selected outside export and government scenarios */}
+      {showIstisnaReason && (
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-gray-900">İhracat Bilgileri</h3>
-            <Button
-              type="button"
-              onClick={() => handlers.setExportModalOpen(true)}
-              variant="default"
-              size="sm"
-              style={{ backgroundColor: '#2563eb', color: 'white' }}
-              className="text-xs px-3 py-1">
-              <FileText size={14} className="mr-1" />
-              Detaylar
-            </Button>
+          <div className="mb-3">
+            <h3 className="text-sm font-bold text-gray-900">İstisna Sebebi</h3>
+            <p className="text-xs text-gray-500">Seçilen istisna için neden kodunu belirtiniz</p>
           </div>
-          {extendedData.exportDetails ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="text-green-600" size={16} />
-                <p className="text-xs text-green-800">İhracat bilgileri kaydedildi</p>
-              </div>
+          <div>
+            <GovernmentSection
+              formData={{ ...extendedData }}
+              onChange={handlers.handleExtendedFieldChange}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Export Section */}
+      {_showExportSection && (
+        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+          <div className="mb-3">
+            <h3 className="text-sm font-bold text-gray-900">İhracat Bilgileri</h3>
+          </div>
+          <div>
+            <ExportDetailsCard
+              value={extendedData.exportDetails}
+              onChange={(data) => handlers.handleExtendedFieldChange('exportDetails', data)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Özel Matrah (sidebar) */}
+      {_showSpecialBaseSection && (
+        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-900 mb-3">Özel Matrah Bilgileri</h3>
+          <div className="grid grid-cols-1 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Özel Matrah Tutarı</label>
+              <Input
+                type="number"
+                step="0.01"
+                value={extendedData.specialTaxBase?.amount || ''}
+                onChange={(e) => handlers.handleExtendedFieldChange('specialTaxBase', {
+                  ...extendedData.specialTaxBase,
+                  hasSpecialTaxBase: true,
+                  amount: parseFloat(e.target.value)
+                })}
+                className="w-full"
+                placeholder="0.00"
+              />
             </div>
-          ) : (
-            <p className="text-xs text-gray-500">İhracat detaylarını eklemek için butona tıklayın</p>
-          )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">KDV Oranı (%)</label>
+              <Input
+                type="number"
+                value={extendedData.specialTaxBase?.taxRate || ''}
+                onChange={(e) => handlers.handleExtendedFieldChange('specialTaxBase', {
+                  ...extendedData.specialTaxBase,
+                  taxRate: parseFloat(e.target.value)
+                })}
+                className="w-full"
+                placeholder="18"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
+              <Input
+                type="text"
+                value={extendedData.specialTaxBase?.description || ''}
+                onChange={(e) => handlers.handleExtendedFieldChange('specialTaxBase', {
+                  ...extendedData.specialTaxBase,
+                  description: e.target.value
+                })}
+                className="w-full"
+                placeholder="Özel matrah açıklaması"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+      {/* İade Fatura Bilgileri (moved to sidebar) */}
+      {_showReturnSection && (
+        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+          <div className="mb-3">
+            <h3 className="text-sm font-bold text-gray-900">İade Fatura Bilgileri</h3>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura No</label>
+              <Input
+                type="text"
+                value={extendedData.returnInvoiceDetails?.returnInvoiceNumber || ''}
+                onChange={(e) => handlers.handleExtendedFieldChange('returnInvoiceDetails', {
+                  ...extendedData.returnInvoiceDetails,
+                  returnInvoiceNumber: e.target.value
+                })}
+                className="w-full"
+                placeholder="İade edilen fatura numarası"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura Tarihi</label>
+              <DatePicker
+                value={extendedData.returnInvoiceDetails?.returnInvoiceDate ? new Date(extendedData.returnInvoiceDetails.returnInvoiceDate) : null}
+                onChange={(date) => handlers.handleExtendedFieldChange('returnInvoiceDetails', {
+                  ...extendedData.returnInvoiceDetails,
+                  returnInvoiceDate: date ? `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}` : ''
+                })}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">İade Nedeni</label>
+              <Input
+                type="text"
+                value={extendedData.returnInvoiceDetails?.returnReason || ''}
+                onChange={(e) => handlers.handleExtendedFieldChange('returnInvoiceDetails', {
+                  ...extendedData.returnInvoiceDetails,
+                  returnReason: e.target.value
+                })}
+                className="w-full"
+                placeholder="İade nedeni"
+              />
+            </div>
+          </div>
         </div>
       )}
 
       {/* Medical Section */}
-      {showMedicalSection && (
+      {_showMedicalSection && (
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-bold text-gray-900">İlaç/Tıbbi Cihaz</h3>
@@ -188,13 +345,46 @@ function InvoiceSidebar({
           <div className="space-y-3">
             {/* Tevkifatlı Fatura Uyarısı */}
             {handlers.isWithholdingType && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-xs text-blue-800 leading-relaxed">
-                  <span className="font-semibold">Tevkifatlı Fatura</span>
-                  <br />
-                  Bu fatura tipi için tevkifat bilgileri zorunludur. Ürün satırlarında tevkifat kodu ve oranı belirtiniz.
-                </p>
+              <div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                  <p className="text-xs text-blue-800 leading-relaxed">
+                    <span className="font-semibold">Tevkifatlı Fatura</span>
+                    <br />
+                    Bu fatura tipi için tevkifat bilgileri zorunludur. Ürün satırlarında tevkifat kodu ve oranı belirtiniz.
+                  </p>
+                </div>
+                <WithholdingCard
+                  value={extendedData.withholdingData}
+                  onChange={(data) => handlers.handleExtendedFieldChange('withholdingData', data)}
+                />
               </div>
+            )}
+          </div>
+        </div>
+      )}
+      {/* Per-line editor in sidebar (opened from product lines) */}
+      {activeLineEditor && (
+        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-gray-900">{activeLineEditor.type === 'withholding' ? 'Tevkifat (Kalem)' : activeLineEditor.type === 'special' ? 'Özel Matrah (Kalem)' : 'Tıbbi Cihaz (Kalem)'} #{activeLineEditor.index + 1}</h3>
+            <button onClick={onCloseLineEditor} className="text-sm text-gray-500">Kapat</button>
+          </div>
+          <div>
+            {activeLineEditor.type === 'withholding' && (
+              <WithholdingCard
+                value={extendedData.items?.[activeLineEditor.index]?.withholdingData}
+                onChange={(data) => {
+                  const items = Array.isArray(extendedData.items) ? [...extendedData.items] : [];
+                  items[activeLineEditor.index] = { ...(items[activeLineEditor.index] || {}), withholdingData: data };
+                  handlers.handleExtendedFieldChange('items', items);
+                }}
+              />
+            )}
+            {activeLineEditor.type === 'special' && (
+              <div className="text-sm text-gray-600">Özel matrah düzenleyici burada gösterilecek.</div>
+            )}
+            {activeLineEditor.type === 'medical' && (
+              <div className="text-sm text-gray-600">Tıbbi cihaz düzenleyici burada gösterilecek.</div>
             )}
           </div>
         </div>
@@ -207,6 +397,7 @@ function InvoiceSidebar({
 function NewInvoicePageContent({ 
   isSaving, 
   handleSubmit, 
+  handleSaveDraft,
   handleCancel, 
   formData, 
   onFormDataChange,
@@ -214,8 +405,13 @@ function NewInvoicePageContent({
   showGovernmentSection,
   showExportSection,
   showMedicalSection,
+  showReturnSection,
+  showSpecialBaseSection,
   showSpecialOperations,
-  isWithholdingType
+  isWithholdingType,
+  onRequestLineEditor,
+  activeLineEditor,
+  onCloseLineEditor
 }: any) {
 
   return (
@@ -251,7 +447,7 @@ function NewInvoicePageContent({
                 İptal
               </Button>
               <Button
-                onClick={() => {/* TODO: Save as draft */}}
+                onClick={handleSaveDraft}
                 variant="outline"
                 disabled={isSaving}
                 className="px-4 py-2 border-blue-300 text-blue-600 hover:bg-blue-50"
@@ -259,7 +455,8 @@ function NewInvoicePageContent({
                 Taslak Kaydet
               </Button>
               <Button
-                type="submit"
+                type="button"
+                onClick={() => handleSubmit(formData)}
                 disabled={isSaving}
                 style={{ backgroundColor: '#2563eb', color: 'white' }}
                 className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
@@ -282,6 +479,7 @@ function NewInvoicePageContent({
                 onCancel={handleCancel}
                 isLoading={isSaving}
                 onDataChange={onFormDataChange}
+                onRequestLineEditor={onRequestLineEditor}
                 initialData={formData}
               />
             </div>
@@ -293,7 +491,10 @@ function NewInvoicePageContent({
               showSGKSection={showSGKSection}
               showExportSection={showExportSection}
               showMedicalSection={showMedicalSection}
+              showSpecialBaseSection={showSpecialBaseSection}
+              showReturnSection={showReturnSection}
               showGovernmentSection={showGovernmentSection}
+              showIstisnaReason={formData.invoiceType === '13' && formData.scenario !== 'export' && formData.scenario !== 'government'}
               extendedData={formData}
               handlers={{
                 handleExtendedFieldChange: onFormDataChange,
@@ -302,6 +503,8 @@ function NewInvoicePageContent({
                 specialOperationsVisible: showSpecialOperations,
                 isWithholdingType: isWithholdingType
               }}
+              activeLineEditor={activeLineEditor}
+              onCloseLineEditor={onCloseLineEditor}
             />
           </div>
         </div>

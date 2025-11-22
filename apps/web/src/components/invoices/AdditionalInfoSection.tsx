@@ -1,4 +1,4 @@
-import { Input, Textarea } from '@x-ear/ui-web';
+import { Input, Textarea, DatePicker } from '@x-ear/ui-web';
 import { useState } from 'react';
 import { ShoppingCart, Package, Truck, Building2, CreditCard } from 'lucide-react';
 
@@ -116,12 +116,11 @@ export function AdditionalInfoSection({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Sipariş Tarihi
               </label>
-              <Input
-                type="date"
-                value={orderInfo?.orderDate || ''}
-                onChange={(e) => onChange('orderInfo', {
+              <DatePicker
+                value={orderInfo?.orderDate ? new Date(orderInfo.orderDate) : null}
+                onChange={(date) => onChange('orderInfo', {
                   ...orderInfo,
-                  orderDate: e.target.value
+                  orderDate: date ? `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}` : ''
                 })}
                 className="w-full"
               />
@@ -169,12 +168,11 @@ export function AdditionalInfoSection({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 İrsaliye Tarihi
               </label>
-              <Input
-                type="date"
-                value={deliveryInfo?.deliveryDate || ''}
-                onChange={(e) => onChange('deliveryInfo', {
+              <DatePicker
+                value={deliveryInfo?.deliveryDate ? new Date(deliveryInfo.deliveryDate) : null}
+                onChange={(date) => onChange('deliveryInfo', {
                   ...deliveryInfo,
-                  deliveryDate: e.target.value
+                  deliveryDate: date ? `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}` : ''
                 })}
                 className="w-full"
               />
@@ -207,12 +205,11 @@ export function AdditionalInfoSection({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Sevk Tarihi
               </label>
-              <Input
-                type="date"
-                value={shipmentInfo?.shipmentDate || ''}
-                onChange={(e) => onChange('shipmentInfo', {
+              <DatePicker
+                value={shipmentInfo?.shipmentDate ? new Date(shipmentInfo.shipmentDate) : null}
+                onChange={(date) => onChange('shipmentInfo', {
                   ...shipmentInfo,
-                  shipmentDate: e.target.value
+                  shipmentDate: date ? `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}` : ''
                 })}
                 className="w-full"
               />

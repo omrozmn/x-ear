@@ -1,6 +1,8 @@
 import { Button, Input, Select } from '@x-ear/ui-web';
 import React, { useState, useCallback, useMemo } from 'react';
+import { Send, XCircle, Download, Trash2, File } from 'lucide-react';
 import { Invoice, InvoiceBulkAction, InvoiceExportOptions } from '../../types/invoice';
+import { invoiceService } from '../../services/invoice.service';
 import { EFaturaSubmissionData, EFaturaIntegratorResponse } from '../../types/efatura';
 
 interface InvoiceBulkOperationsProps {
@@ -61,35 +63,35 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
     {
       type: 'send',
       label: 'Faturaları Gönder',
-      icon: '📤',
+      icon: 'send',
       requiresConfirmation: true,
       confirmationMessage: 'Seçili faturaları göndermek istediğinizden emin misiniz?'
     },
     {
       type: 'send_to_gib',
       label: 'GİB\'e Toplu Gönder',
-      icon: '🏛️',
+      icon: 'bank',
       requiresConfirmation: true,
       confirmationMessage: 'Seçili faturaları GİB\'e göndermek istediğinizden emin misiniz?'
     },
     {
       type: 'cancel',
       label: 'Faturaları İptal Et',
-      icon: '❌',
+      icon: 'cancel',
       requiresConfirmation: true,
       confirmationMessage: 'Seçili faturaları iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz.'
     },
     {
       type: 'export',
       label: 'Dışa Aktar',
-      icon: '📊',
+      icon: 'export',
       requiresConfirmation: false,
       confirmationMessage: ''
     },
     {
       type: 'delete',
       label: 'Sil',
-      icon: '🗑️',
+      icon: 'trash',
       requiresConfirmation: true,
       confirmationMessage: 'Seçili faturaları silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.'
     }
@@ -180,37 +182,29 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
 
   const processSendInvoices = async (): Promise<BulkOperationResult[]> => {
     const results: BulkOperationResult[] = [];
-    
     for (let i = 0; i < selectedInvoices.length; i++) {
       const invoice = selectedInvoices[i];
-      
       try {
-        // Simulate API call to send invoice
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Mock success/failure
-        const success = Math.random() > 0.1; // 90% success rate
-        
+        await invoiceService.sendInvoice(invoice.id);
         results.push({
           invoiceId: invoice.id,
           invoiceNumber: invoice.invoiceNumber,
-          success,
-          message: success ? 'Fatura başarıyla gönderildi' : undefined,
-          error: success ? undefined : 'Gönderim hatası'
+          success: true,
+          message: 'Fatura başarıyla gönderildi'
         });
-
-        setState(prev => ({
-          ...prev,
-          progress: ((i + 1) / selectedInvoices.length) * 100
-        }));
       } catch (error) {
         results.push({
           invoiceId: invoice.id,
           invoiceNumber: invoice.invoiceNumber,
           success: false,
-          error: error instanceof Error ? error.message : 'Bilinmeyen hata'
+          error: error instanceof Error ? error.message : 'Gönderim hatası'
         });
       }
+
+      setState(prev => ({
+        ...prev,
+        progress: ((i + 1) / selectedInvoices.length) * 100
+      }));
     }
 
     return results;
@@ -218,47 +212,39 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
 
   const processSendToGIB = async (): Promise<BulkOperationResult[]> => {
     const results: BulkOperationResult[] = [];
-    
-    // Group invoices into batches of 10 for GIB submission
-    const batchSize = 10;
-    const batches: Invoice[][] = [];
-    
-    for (let i = 0; i < selectedInvoices.length; i += batchSize) {
-      batches.push(selectedInvoices.slice(i, i + batchSize));
-    }
-
-    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
-      const batch = batches[batchIndex];
-      
-      try {
-        // Simulate batch submission to GIB via integrator
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Mock batch results
-        batch.forEach(invoice => {
-          const success = Math.random() > 0.05; // 95% success rate for GIB
+    // Use invoiceService.submitBulkEFatura if available
+    try {
+      const ids = selectedInvoices.map(i => i.id);
+      const resp = await invoiceService.submitBulkEFatura({ invoiceIds: ids, submissionDate: new Date().toISOString() } as any);
+      if (resp && resp.results && Array.isArray(resp.results)) {
+        resp.results.forEach((r: any) => {
           results.push({
-            invoiceId: invoice.id,
-            invoiceNumber: invoice.invoiceNumber,
-            success,
-            message: success ? 'GİB\'e başarıyla gönderildi' : undefined,
-            error: success ? undefined : 'GİB gönderim hatası'
+            invoiceId: r.invoiceId,
+            invoiceNumber: selectedInvoices.find(si => si.id === r.invoiceId)?.invoiceNumber || r.invoiceId,
+            success: !!r.success,
+            message: r.ettn ? `Ettn: ${r.ettn}` : r.message,
+            error: r.error
           });
         });
+      } else {
+        // Fallback: try individual sends
+        for (let i = 0; i < selectedInvoices.length; i++) {
+          const invoice = selectedInvoices[i];
+          try {
+            await invoiceService.sendInvoice(invoice.id);
+            results.push({ invoiceId: invoice.id, invoiceNumber: invoice.invoiceNumber, success: true, message: 'GİB gönderildi (simülasyon)' });
+          } catch (e) {
+            results.push({ invoiceId: invoice.id, invoiceNumber: invoice.invoiceNumber, success: false, error: e instanceof Error ? e.message : 'Hata' });
+          }
 
-        setState(prev => ({
-          ...prev,
-          progress: ((batchIndex + 1) / batches.length) * 100
-        }));
-      } catch (error) {
-        batch.forEach(invoice => {
-          results.push({
-            invoiceId: invoice.id,
-            invoiceNumber: invoice.invoiceNumber,
-            success: false,
-            error: error instanceof Error ? error.message : 'Batch gönderim hatası'
-          });
-        });
+          setState(prev => ({ ...prev, progress: ((i + 1) / selectedInvoices.length) * 100 }));
+        }
+      }
+    } catch (error) {
+      // fallback per-invoice
+      for (let i = 0; i < selectedInvoices.length; i++) {
+        const invoice = selectedInvoices[i];
+        results.push({ invoiceId: invoice.id, invoiceNumber: invoice.invoiceNumber, success: false, error: error instanceof Error ? error.message : 'GIB toplu gönderim hatası' });
       }
     }
 
@@ -267,140 +253,79 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
 
   const processCancelInvoices = async (): Promise<BulkOperationResult[]> => {
     const results: BulkOperationResult[] = [];
-    
     for (let i = 0; i < selectedInvoices.length; i++) {
       const invoice = selectedInvoices[i];
-      
       try {
-        // Check if invoice can be cancelled
         if (invoice.status === 'paid' || invoice.status === 'cancelled') {
-          results.push({
-            invoiceId: invoice.id,
-            invoiceNumber: invoice.invoiceNumber,
-            success: false,
-            error: 'Ödenen veya iptal edilmiş fatura iptal edilemez'
-          });
+          results.push({ invoiceId: invoice.id, invoiceNumber: invoice.invoiceNumber, success: false, error: 'Ödenen veya iptal edilmiş fatura iptal edilemez' });
           continue;
         }
 
-        // Simulate API call to cancel invoice
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        results.push({
-          invoiceId: invoice.id,
-          invoiceNumber: invoice.invoiceNumber,
-          success: true,
-          message: 'Fatura başarıyla iptal edildi'
-        });
-
-        setState(prev => ({
-          ...prev,
-          progress: ((i + 1) / selectedInvoices.length) * 100
-        }));
+        await invoiceService.cancelInvoice(invoice.id);
+        results.push({ invoiceId: invoice.id, invoiceNumber: invoice.invoiceNumber, success: true, message: 'Fatura başarıyla iptal edildi' });
       } catch (error) {
-        results.push({
-          invoiceId: invoice.id,
-          invoiceNumber: invoice.invoiceNumber,
-          success: false,
-          error: error instanceof Error ? error.message : 'İptal hatası'
-        });
+        results.push({ invoiceId: invoice.id, invoiceNumber: invoice.invoiceNumber, success: false, error: error instanceof Error ? error.message : 'İptal hatası' });
       }
+
+      setState(prev => ({ ...prev, progress: ((i + 1) / selectedInvoices.length) * 100 }));
     }
 
     return results;
   };
 
   const processExportInvoices = async (): Promise<void> => {
-    // Simulate export processing
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const exportData = selectedInvoices.map(invoice => ({
-      'Fatura No': invoice.invoiceNumber,
-      'Hasta': invoice.patientName,
-      'Tarih': invoice.issueDate,
-      'Tutar': invoice.grandTotal,
-      'Durum': invoice.status,
-      'Ödeme Yöntemi': invoice.paymentMethod || 'Belirtilmemiş'
-    }));
+    // Use invoiceService.exportInvoices to obtain export data
+    try {
+      const resp = await invoiceService.exportInvoices({ format: exportOptions.format, filters: undefined });
+      if (resp.success && resp.data) {
+        // For now, export as CSV as before
+        const exportData = resp.data.invoices.map((invoice: any) => ({
+          'Fatura No': invoice.invoiceNumber,
+          'Hasta': invoice.patientName,
+          'Tarih': invoice.issueDate,
+          'Tutar': invoice.grandTotal,
+          'Durum': invoice.status,
+          'Ödeme Yöntemi': invoice.paymentMethod || 'Belirtilmemiş'
+        }));
 
-    // Create and download file based on format
-    let content: string;
-    let fileName: string;
-    let mimeType: string;
+        const content = convertToCSV(exportData);
+        const fileName = `faturalar_${new Date().toISOString().split('T')[0]}.csv`;
+        const mimeType = exportOptions.format === 'excel' ? 'application/vnd.ms-excel' : 'text/csv';
 
-    switch (exportOptions.format) {
-      case 'csv':
-        content = convertToCSV(exportData);
-        fileName = `faturalar_${new Date().toISOString().split('T')[0]}.csv`;
-        mimeType = 'text/csv';
-        break;
-      case 'excel':
-        // For simplicity, we'll export as CSV with Excel-compatible format
-        content = convertToCSV(exportData);
-        fileName = `faturalar_${new Date().toISOString().split('T')[0]}.csv`;
-        mimeType = 'application/vnd.ms-excel';
-        break;
-      case 'pdf':
-        content = 'PDF export not implemented yet';
-        fileName = `faturalar_${new Date().toISOString().split('T')[0]}.pdf`;
-        mimeType = 'application/pdf';
-        break;
-      default:
-        throw new Error('Desteklenmeyen export formatı');
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else {
+        throw new Error(resp.error || 'Dışa aktarım başarısız');
+      }
+    } catch (error) {
+      throw error;
     }
-
-    // Download file
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   const processDeleteInvoices = async (): Promise<BulkOperationResult[]> => {
     const results: BulkOperationResult[] = [];
-    
     for (let i = 0; i < selectedInvoices.length; i++) {
       const invoice = selectedInvoices[i];
-      
       try {
-        // Check if invoice can be deleted
         if (invoice.status === 'paid') {
-          results.push({
-            invoiceId: invoice.id,
-            invoiceNumber: invoice.invoiceNumber,
-            success: false,
-            error: 'Ödenen fatura silinemez'
-          });
+          results.push({ invoiceId: invoice.id, invoiceNumber: invoice.invoiceNumber, success: false, error: 'Ödenen fatura silinemez' });
           continue;
         }
 
-        // Simulate API call to delete invoice
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        results.push({
-          invoiceId: invoice.id,
-          invoiceNumber: invoice.invoiceNumber,
-          success: true,
-          message: 'Fatura başarıyla silindi'
-        });
-
-        setState(prev => ({
-          ...prev,
-          progress: ((i + 1) / selectedInvoices.length) * 100
-        }));
+        await invoiceService.deleteInvoice(invoice.id);
+        results.push({ invoiceId: invoice.id, invoiceNumber: invoice.invoiceNumber, success: true, message: 'Fatura başarıyla silindi' });
       } catch (error) {
-        results.push({
-          invoiceId: invoice.id,
-          invoiceNumber: invoice.invoiceNumber,
-          success: false,
-          error: error instanceof Error ? error.message : 'Silme hatası'
-        });
+        results.push({ invoiceId: invoice.id, invoiceNumber: invoice.invoiceNumber, success: false, error: error instanceof Error ? error.message : 'Silme hatası' });
       }
+
+      setState(prev => ({ ...prev, progress: ((i + 1) / selectedInvoices.length) * 100 }));
     }
 
     return results;
@@ -526,15 +451,23 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
               key={action.type}
               onClick={() => handleBulkAction(action)}
               disabled={state.isProcessing}
-              className={`px-4 py-2 rounded text-sm font-medium disabled:opacity-50 ${
+              className={`p-2 rounded text-sm font-medium disabled:opacity-50 ${
                 action.type === 'delete' || action.type === 'cancel'
                   ? 'bg-red-600 text-white hover:bg-red-700'
                   : action.type === 'send_to_gib'
                   ? 'bg-purple-600 text-white hover:bg-purple-700'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
-              variant='default'>
-              {action.icon} {action.label}
+              variant='default'
+              title={action.label}
+              aria-label={action.label}
+            >
+              {/* Render lucide icon based on action.type */}
+              {action.type === 'send' && <Send size={16} />}
+              {action.type === 'send_to_gib' && <File size={16} />}
+              {action.type === 'cancel' && <XCircle size={16} />}
+              {action.type === 'export' && <Download size={16} />}
+              {action.type === 'delete' && <Trash2 size={16} />}
             </Button>
           ))}
         </div>

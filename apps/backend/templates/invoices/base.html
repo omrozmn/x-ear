@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font-family: DejaVu Sans, Arial, Helvetica, sans-serif; font-size: 12px; color: #222; }
+      .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px }
+      .logo { max-height:60px }
+      .meta { text-align:right; font-size:11px }
+      .title { font-size:18px; font-weight:700 }
+      table { width:100%; border-collapse: collapse; margin-top:12px }
+      th, td { padding:6px 8px; border:1px solid #ddd; vertical-align:top }
+      th { background:#f6f6f6; font-weight:700; }
+      .right { text-align:right }
+      .small { font-size:10px; color:#666 }
+      .signature { margin-top:24px }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="company">
+        {% if invoice.supplier and invoice.supplier.logo %}
+          <img class="logo" src="{{ invoice.supplier.logo }}" alt="logo" />
+        {% else %}
+          <strong>{{ invoice.supplier.name if invoice.supplier else '' }}</strong>
+        {% endif %}
+      </div>
+      <div class="meta">
+        <div class="title">{{ invoice.document_title or 'FATURA' }}</div>
+        <div class="small">UUID: {{ invoice.uuid or '' }}</div>
+        <div class="small">{{ invoice.issue_date or '' }}</div>
+      </div>
+    </div>
+
+    <div class="addresses">
+      <div style="float:left; width:48%">
+        <strong>Alıcı</strong>
+        <div>{{ invoice.customer.name if invoice.customer else '' }}</div>
+        <div class="small">{{ invoice.customer.address if invoice.customer else '' }}</div>
+      </div>
+      <div style="float:right; width:48%; text-align:right">
+        <strong>Satıcı</strong>
+        <div>{{ invoice.supplier.name if invoice.supplier else '' }}</div>
+        <div class="small">{{ invoice.supplier.address if invoice.supplier else '' }}</div>
+      </div>
+      <div style="clear:both"></div>
+    </div>
+
+    {% block content %}{% endblock %}
+
+    <div class="signature">
+      {% if invoice.signed %}
+        <div><strong>İmzalı</strong></div>
+      {% endif %}
+    </div>
+  </body>
+  </html>

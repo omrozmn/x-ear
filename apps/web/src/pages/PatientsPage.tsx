@@ -8,7 +8,7 @@ import React, { useState, useMemo } from 'react';
 import { Button, Input, Tabs, TabsContent, TabsList, TabsTrigger, Modal, Pagination } from '@x-ear/ui-web';
 import { useNavigate, Outlet, useParams } from '@tanstack/react-router';
 import { usePatients, useCreatePatient, useDeletePatient } from '../hooks/usePatients';
-import { Patient } from '../types/patient';
+import { Patient } from '../types/patient/patient-base.types';
 import { Users, CheckCircle, Flame, Headphones, Filter, Search, Plus, RefreshCw, Upload, Edit, Trash2, X, Settings } from 'lucide-react';
 import { PatientFormModal } from '../components/patients/PatientFormModal';
 import { useUpdatePatient } from '../hooks/usePatients';

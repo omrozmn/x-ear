@@ -1,7 +1,7 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { PatientTabContent } from '../components/PatientTabContent';
-import { Patient } from '../types/patient';
+import { Patient } from '../types/patient/patient-base.types';
 
 const meta: Meta<typeof PatientTabContent> = {
   title: 'Patient/PatientTabContent',

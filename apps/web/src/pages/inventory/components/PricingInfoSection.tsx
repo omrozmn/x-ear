@@ -59,6 +59,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                   checked={isPriceKdvIncluded}
                   onChange={(e) => onPriceKdvIncludedChange(e.target.checked)}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                  disabled={!isEditMode}
                 />
                 <span className="text-sm text-gray-600 dark:text-gray-400">KDV Dahil</span>
               </label>
@@ -71,6 +72,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                   value={editedItem.price || ''}
                   onChange={(e) => onEditChange({ price: parseFloat(e.target.value) })}
                   fullWidth
+                  disabled={!isEditMode}
                 />
                 {isPriceKdvIncluded ? (
                   editedItem.price && editedItem.price > 0 && (
@@ -117,6 +119,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                   checked={isCostKdvIncluded}
                   onChange={(e) => onCostKdvIncludedChange(e.target.checked)}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                  disabled={!isEditMode}
                 />
                 <span className="text-sm text-gray-600 dark:text-gray-400">KDV Dahil</span>
               </label>
@@ -129,6 +132,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                   value={editedItem.cost || ''}
                   onChange={(e) => onEditChange({ cost: parseFloat(e.target.value) || 0 })}
                   fullWidth
+                  disabled={!isEditMode}
                 />
                 {isCostKdvIncluded ? (
                   editedItem.cost && editedItem.cost > 0 && (
@@ -183,6 +187,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                 { value: '20', label: '%20' }
               ]}
               fullWidth
+              disabled={!isEditMode}
             />
           </div>
 

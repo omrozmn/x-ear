@@ -9,6 +9,26 @@ def now_utc():
     """Return current UTC timestamp"""
     return datetime.now(timezone.utc)
 
+
+def _parse_list_field(raw):
+    """Parse raw value into a Python list safely.
+    Accepts JSON array strings or comma-separated values. Returns empty list on error.
+    """
+    if not raw:
+        return []
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, (dict, int, float)):
+        return [str(raw)]
+    try:
+        return json.loads(raw)
+    except Exception:
+        # Fallback: try comma-separated parsing
+        try:
+            return [s.strip() for s in str(raw).split(',') if s.strip()]
+        except Exception:
+            return []
+
 # Unit types for inventory items
 UNIT_TYPES = [
     # Quantity units
@@ -81,6 +101,12 @@ class Inventory(db.Model):
     # Pricing
     price = db.Column(db.Float, nullable=False, default=0.0)
     cost = db.Column(db.Float, default=0.0)  # Cost/purchase price
+    # VAT/KDV rate stored as percentage (e.g. 18 for 18%)
+    # Stored as 'kdv_rate' in DB for consistency with previous migrations and schema
+    kdv_rate = db.Column('kdv_rate', db.Float, default=18.0)
+    # Whether the stored price and cost include VAT (KDV) already
+    price_includes_kdv = db.Column('price_includes_kdv', db.Boolean, default=False)
+    cost_includes_kdv = db.Column('cost_includes_kdv', db.Boolean, default=False)
     
     # Features (JSON array for all product types)
     features = db.Column(db.Text)  # JSON array of product features
@@ -97,6 +123,25 @@ class Inventory(db.Model):
 
     def to_dict(self):
         """Convert inventory item to dictionary for API responses"""
+        # internal wrapper uses module level parser
+        def _parse_list_field(raw):
+            # Returns a list for JSON array or comma-separated strings without raising
+            if not raw:
+                return []
+            if isinstance(raw, list):
+                return raw
+            if isinstance(raw, (dict, int, float)):
+                # Unexpected types: represent as string
+                return [str(raw)]
+            try:
+                return json.loads(raw)
+            except Exception:
+                # Fallback: try comma-separated parsing
+                try:
+                    return [s.strip() for s in str(raw).split(',') if s.strip()]
+                except Exception:
+                    return []
+
         return {
             'id': self.id,
             'name': self.name,
@@ -115,9 +160,18 @@ class Inventory(db.Model):
             'onTrial': self.on_trial,
             'reorderLevel': self.reorder_level,
             'minInventory': self.reorder_level,  # Legacy field
-            'availableSerials': json.loads(self.available_serials) if self.available_serials else [],
-            'features': json.loads(self.features) if self.features else [],
-            'price': self.price,
+            'availableSerials': _parse_list_field(self.available_serials),
+            'features': _parse_list_field(self.features),
+            'price': float(self.price) if self.price is not None else 0.0,
+            # Provide VAT-included price and total value for frontend convenience
+            # If stored price already includes KDV, use it; otherwise apply kdv_rate.
+            'vatIncludedPrice': float(self.price) if getattr(self, 'price_includes_kdv', False) else float(self.price * (1 + (getattr(self, 'kdv_rate', 0.0) / 100.0))),
+            'totalValue': float((float(self.price) if getattr(self, 'price_includes_kdv', False) else float(self.price * (1 + (getattr(self, 'kdv_rate', 0.0) / 100.0)))) * (self.available_inventory or 0)),
+            # Provide both aliases for backwards compatibility and OpenAPI schema
+            'kdv': float(getattr(self, 'kdv_rate', None)) if getattr(self, 'kdv_rate', None) is not None else None,
+            'vatRate': float(getattr(self, 'kdv_rate', None)) if getattr(self, 'kdv_rate', None) is not None else None,
+            'priceIncludesKdv': bool(getattr(self, 'price_includes_kdv', False)),
+            'costIncludesKdv': bool(getattr(self, 'cost_includes_kdv', False)),
             'cost': self.cost,
             'direction': self.direction or self.ear,
             'ear': self.ear or self.direction,
@@ -161,6 +215,22 @@ class Inventory(db.Model):
         # Pricing
         inventory.price = float(data.get('price', 0.0))
         inventory.cost = float(data.get('cost', 0.0))
+        # VAT/KDV
+        # Accept either 'kdv' or 'vatRate' from incoming payload and store into kdv_rate column
+        if 'vatRate' in data:
+            inventory.kdv_rate = float(data.get('vatRate') or data.get('kdv', 18))
+        else:
+            inventory.kdv_rate = float(data.get('kdv', data.get('vatRate', 18)))
+
+        # Price/cost include flags (frontend toggles)
+        if 'priceIncludesKdv' in data:
+            inventory.price_includes_kdv = bool(data.get('priceIncludesKdv'))
+        elif 'price_includes_kdv' in data:
+            inventory.price_includes_kdv = bool(data.get('price_includes_kdv'))
+        if 'costIncludesKdv' in data:
+            inventory.cost_includes_kdv = bool(data.get('costIncludesKdv'))
+        elif 'cost_includes_kdv' in data:
+            inventory.cost_includes_kdv = bool(data.get('cost_includes_kdv'))
         
         # Direction/ear
         inventory.direction = data.get('direction') or data.get('ear')
@@ -170,6 +240,23 @@ class Inventory(db.Model):
         inventory.warranty = data.get('warranty', 0)
         
         return inventory
+
+    # Provide convenient alias properties for 'kdv' and 'vat_rate' to match client expectations
+    @property
+    def vat_rate(self):
+        return getattr(self, 'kdv_rate', None)
+
+    @vat_rate.setter
+    def vat_rate(self, value):
+        self.kdv_rate = value
+
+    @property
+    def kdv(self):
+        return getattr(self, 'kdv_rate', None)
+
+    @kdv.setter
+    def kdv(self, value):
+        self.kdv_rate = value
 
     def add_serial_number(self, serial_number):
         """Add a serial number to available serials"""

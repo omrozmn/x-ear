@@ -94,25 +94,7 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
                 />
               </div>
 
-              <div>
-                <Select
-                  label="Fatura Tipi"
-                  value={filters.type?.[0] || ''}
-                  onChange={(e) => handleFilterChange('type', e.target.value ? [e.target.value as InvoiceType] : [])}
-                  options={[
-                    { value: '', label: 'Tümü' },
-                    { value: 'sale', label: 'Satış Faturası' },
-                    { value: 'service', label: 'Hizmet Faturası' },
-                    { value: 'proforma', label: 'Proforma' },
-                    { value: 'return', label: 'İade' },
-                    { value: 'sgk', label: 'SGK' },
-                    { value: 'government', label: 'Kamu' },
-                    { value: 'withholding', label: 'Tevkifatlı' },
-                    { value: 'export_registered', label: 'İhraç Kayıtlı' }
-                  ]}
-                  fullWidth
-                />
-              </div>
+              {/* Removed Fatura Tipi UI per request (Tip alanı kaldırıldı) */}
 
               <div>
                 <Select

@@ -1,4 +1,4 @@
-import { Input, Select, Button } from '@x-ear/ui-web';
+import { Input, Select, Button, DatePicker } from '@x-ear/ui-web';
 import { useState } from 'react';
 import { Info, AlertTriangle } from 'lucide-react';
 import { SGKInvoiceData } from '../../types/invoice';
@@ -42,14 +42,40 @@ export function SGKInvoiceSection({
     onChange,
     errors = {}
 }: SGKInvoiceSectionProps) {
-    const [showPeriodDetails, setShowPeriodDetails] = useState(false);
     const [showPaymentDetails, setShowPaymentDetails] = useState(false);
 
     const handleChange = (field: keyof SGKInvoiceData, value: any) => {
+        // Update the field
         onChange({
             ...sgkData,
             [field]: value
         });
+
+        // If year or month changed, and both present, auto-calc period start/end
+        if (field === 'periodYear' || field === 'periodMonth') {
+            const year = field === 'periodYear' ? value : sgkData.periodYear;
+            const month = field === 'periodMonth' ? value : sgkData.periodMonth;
+            if (year && month) {
+                const monthIndex = parseInt(String(month), 10) - 1; // 0-based
+                const start = new Date(Number(year), monthIndex, 1);
+                const end = new Date(Number(year), monthIndex + 1, 0);
+                const formatLocalISO = (d: Date) => {
+                    const yyyy = d.getFullYear();
+                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    return `${yyyy}-${mm}-${dd}`;
+                };
+                const startStr = formatLocalISO(start);
+                const endStr = formatLocalISO(end);
+                onChange({
+                    ...sgkData,
+                    periodYear: String(year),
+                    periodMonth: String(month),
+                    periodStartDate: startStr,
+                    periodEndDate: endStr
+                });
+            }
+        }
     };
 
     // Yıl listesi (son 5 yıl + gelecek 1 yıl)
@@ -67,34 +93,16 @@ export function SGKInvoiceSection({
 
     return (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">SGK Faturası Özel Bilgileri</h3>
-                <div className="flex items-center space-x-2">
-                    <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                        SGK Faturası
-                    </span>
-                </div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">SGK Faturası Özel Bilgileri</h3>
+            <div className="flex items-center space-x-2">
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                SGK Faturası
+              </span>
             </div>
+          </div>
 
-            {/* Bilgilendirme */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <div className="flex items-start">
-                    <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
-                    <div>
-                        <h4 className="text-sm font-medium text-blue-800 mb-1">
-                            SGK Faturası Otomatik Ayarlar
-                        </h4>
-                        <ul className="text-sm text-blue-700 list-disc list-inside space-y-1">
-                            <li>Alıcı: Sosyal Güvenlik Kurumu (Otomatik)</li>
-                            <li>Para Birimi: TRY (Zorunlu)</li>
-                            <li>Vergi Dairesi: ÇANKAYA VERGİ DAİRESİ</li>
-                            <li>Vergi No: 7750409379</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div className="space-y-6">
+          <div className="space-y-6">
                 {/* İlave Fatura Bilgileri - KRİTİK YENİ BÖLÜM */}
                 <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
                     <h4 className="text-md font-medium text-gray-900 mb-4">İlave Fatura Bilgileri *</h4>
@@ -184,14 +192,6 @@ export function SGKInvoiceSection({
                 <div className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">
                         <h4 className="text-md font-medium text-gray-900">Dönem Bilgileri *</h4>
-                        <Button
-                            type="button"
-                            onClick={() => setShowPeriodDetails(!showPeriodDetails)}
-                            variant="default"
-                            className="text-sm bg-blue-100 hover:bg-blue-200 text-blue-700"
-                        >
-                            {showPeriodDetails ? 'Gizle' : 'Detayları Göster'}
-                        </Button>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -219,31 +219,61 @@ export function SGKInvoiceSection({
                             />
                         </div>
 
-                        {showPeriodDetails && (
-                            <>
-                                <div>
-                                    <Input
-                                        type="date"
+                        <>
+                            <div>
+                                    <DatePicker
                                         label="Dönem Başlangıç Tarihi"
-                                        value={sgkData.periodStartDate || ''}
-                                        onChange={(e) => handleChange('periodStartDate', e.target.value)}
-                                        error={errors.periodStartDate}
+                                        value={sgkData.periodStartDate ? ((): Date | null => {
+                                            const parts = String(sgkData.periodStartDate).split('-');
+                                            if (parts.length === 3) return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+                                            return null;
+                                        })() : null}
+                                        onChange={(date) => {
+                                            if (!date) return handleChange('periodStartDate', '');
+                                            const yyyy = date.getFullYear();
+                                            const mm = String(date.getMonth() + 1).padStart(2, '0');
+                                            const dd = String(date.getDate()).padStart(2, '0');
+                                            handleChange('periodStartDate', `${yyyy}-${mm}-${dd}`);
+                                        }}
+                                        onMonthYearChange={(y, m) => {
+                                            const start = new Date(y, m, 1);
+                                            const end = new Date(y, m + 1, 0);
+                                            const formatLocalISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                                            handleChange('periodStartDate', formatLocalISO(start));
+                                            handleChange('periodEndDate', formatLocalISO(end));
+                                        }}
+                                        placeholder="Tarih seçin"
                                         fullWidth
                                     />
-                                </div>
+                            </div>
 
-                                <div>
-                                    <Input
-                                        type="date"
-                                        label="Dönem Bitiş Tarihi"
-                                        value={sgkData.periodEndDate || ''}
-                                        onChange={(e) => handleChange('periodEndDate', e.target.value)}
-                                        error={errors.periodEndDate}
-                                        fullWidth
-                                    />
-                                </div>
-                            </>
-                        )}
+                            <div>
+                                <DatePicker
+                                    label="Dönem Bitiş Tarihi"
+                                    value={sgkData.periodEndDate ? ((): Date | null => {
+                                        const parts = String(sgkData.periodEndDate).split('-');
+                                        if (parts.length === 3) return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+                                        return null;
+                                    })() : null}
+                                    onChange={(date) => {
+                                        if (!date) return handleChange('periodEndDate', '');
+                                        const yyyy = date.getFullYear();
+                                        const mm = String(date.getMonth() + 1).padStart(2, '0');
+                                        const dd = String(date.getDate()).padStart(2, '0');
+                                        handleChange('periodEndDate', `${yyyy}-${mm}-${dd}`);
+                                    }}
+                                    onMonthYearChange={(y, m) => {
+                                        const start = new Date(y, m, 1);
+                                        const end = new Date(y, m + 1, 0);
+                                        const formatLocalISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                                        handleChange('periodStartDate', formatLocalISO(start));
+                                        handleChange('periodEndDate', formatLocalISO(end));
+                                    }}
+                                    placeholder="Tarih seçin"
+                                    fullWidth
+                                />
+                            </div>
+                        </>
                     </div>
                 </div>
 
@@ -340,77 +370,9 @@ export function SGKInvoiceSection({
                     </div>
                 </div>
 
-                {/* Ödeme Bilgileri */}
-                <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-md font-medium text-gray-900">Ödenecek Tutar Bilgileri</h4>
-                        <Button
-                            type="button"
-                            onClick={() => setShowPaymentDetails(!showPaymentDetails)}
-                            variant="default"
-                            className="text-sm bg-green-100 hover:bg-green-200 text-green-700"
-                        >
-                            {showPaymentDetails ? 'Gizle' : 'Düzenle'}
-                        </Button>
-                    </div>
+                {/* Payment section removed as per UX changes */}
 
-                    {showPaymentDetails && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <Input
-                                    type="number"
-                                    label="Ödenecek Tutar (TL)"
-                                    value={sgkData.paymentAmount || ''}
-                                    onChange={(e) => handleChange('paymentAmount', parseFloat(e.target.value))}
-                                    placeholder="0.00"
-                                    step="0.01"
-                                    min="0"
-                                    error={errors.paymentAmount}
-                                    fullWidth
-                                />
-                            </div>
-
-                            <div>
-                                <Input
-                                    type="date"
-                                    label="Ödeme Tarihi"
-                                    value={sgkData.paymentDate || ''}
-                                    onChange={(e) => handleChange('paymentDate', e.target.value)}
-                                    error={errors.paymentDate}
-                                    fullWidth
-                                />
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <Input
-                                    type="text"
-                                    label="Ödeme Açıklaması"
-                                    value={sgkData.paymentDescription || ''}
-                                    onChange={(e) => handleChange('paymentDescription', e.target.value)}
-                                    placeholder="Ödeme ile ilgili açıklama"
-                                    error={errors.paymentDescription}
-                                    fullWidth
-                                />
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Uyarı */}
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                    <div className="flex items-start">
-                        <AlertTriangle className="text-amber-400 mr-2 flex-shrink-0" size={18} />
-                        <div>
-                            <h4 className="text-sm font-medium text-amber-800 mb-1">
-                                Önemli Bilgilendirme
-                            </h4>
-                            <p className="text-sm text-amber-700">
-                                SGK faturalarında dönem bilgileri ve ilave fatura bilgileri zorunludur.
-                                Seçtiğiniz ilave fatura bilgisi tipine göre ilgili alanları doldurunuz.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                {/* Uyarı kaldırıldı per UX isteği */}
             </div>
         </div>
     );

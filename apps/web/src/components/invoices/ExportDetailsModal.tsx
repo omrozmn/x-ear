@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Input, Select, Button } from '@x-ear/ui-web';
-import { Info } from 'lucide-react';
+import { Input, Select, Button, DatePicker } from '@x-ear/ui-web';
+import { Info, X } from 'lucide-react';
 
 interface ExportDetailsModalProps {
   isOpen: boolean;
@@ -91,25 +91,32 @@ export function ExportDetailsModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        {/* Overlay */}
-        <div
-          className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
-          onClick={handleCancel}
-        ></div>
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"
+        onClick={handleCancel}
+      />
 
-        {/* Modal */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+      {/* Sidebar */}
+      <div className="fixed right-0 top-0 h-full w-full md:w-[600px] bg-white shadow-2xl z-50 overflow-y-auto">
+        <div className="h-full flex flex-col">
           {/* Header */}
-          <div className="bg-green-600 px-6 py-4">
-            <h3 className="text-lg font-medium text-white">
+          <div className="bg-green-600 text-white px-6 py-4 flex items-center justify-between">
+            <h3 className="text-lg font-semibold">
               İhracat Detay Bilgileri
             </h3>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="text-white hover:text-gray-200"
+            >
+              <X size={24} />
+            </button>
           </div>
 
           {/* Body */}
-          <div className="bg-white px-6 py-4 max-h-[70vh] overflow-y-auto">
+          <div className="flex-1 overflow-y-auto px-6 py-4">
             <div className="space-y-4">
               {/* Gümrük Beyannamesi */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -128,11 +135,16 @@ export function ExportDetailsModal({
                 </div>
 
                 <div>
-                  <Input
-                    type="date"
+                  <DatePicker
                     label="Gümrük Beyanname Tarihi"
-                    value={formData.customsDeclarationDate}
-                    onChange={(e) => handleChange('customsDeclarationDate', e.target.value)}
+                    value={formData.customsDeclarationDate ? new Date(formData.customsDeclarationDate) : null}
+                    onChange={(date) => {
+                      if (!date) return handleChange('customsDeclarationDate', '');
+                      const yyyy = date.getFullYear();
+                      const mm = String(date.getMonth() + 1).padStart(2, '0');
+                      const dd = String(date.getDate()).padStart(2, '0');
+                      handleChange('customsDeclarationDate', `${yyyy}-${mm}-${dd}`);
+                    }}
                     fullWidth
                   />
                 </div>
@@ -245,7 +257,7 @@ export function ExportDetailsModal({
           </div>
 
           {/* Footer */}
-          <div className="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+          <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-end gap-3">
             <Button
               type="button"
               onClick={handleCancel}
@@ -265,6 +277,6 @@ export function ExportDetailsModal({
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

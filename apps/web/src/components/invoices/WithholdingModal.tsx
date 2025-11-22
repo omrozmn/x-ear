@@ -24,9 +24,9 @@ export function WithholdingModal({
   itemIndex
 }: WithholdingModalProps) {
   const [formData, setFormData] = useState<WithholdingData>({
-    withholdingRate: initialData?.withholdingRate || 0,
-    taxFreeAmount: initialData?.taxFreeAmount || 0,
-    withholdingAmount: initialData?.withholdingAmount || 0
+    withholdingRate: initialData?.withholdingRate ?? 0,
+    taxFreeAmount: initialData?.taxFreeAmount ?? 0,
+    withholdingAmount: initialData?.withholdingAmount ?? 0
   });
 
   useEffect(() => {
@@ -78,10 +78,10 @@ export function WithholdingModal({
                       <Input
                         type="number"
                         step="0.01"
-                        value={formData.withholdingRate}
+                        value={formData.withholdingRate === '' ? '' : String(formData.withholdingRate)}
                         onChange={(e) => setFormData({
                           ...formData,
-                          withholdingRate: parseFloat(e.target.value) || 0
+                          withholdingRate: e.target.value === '' ? '' as any : parseFloat(e.target.value)
                         })}
                         className="w-full"
                         placeholder="Örn: 50"
@@ -100,10 +100,10 @@ export function WithholdingModal({
                       <Input
                         type="number"
                         step="0.01"
-                        value={formData.taxFreeAmount}
+                        value={formData.taxFreeAmount === '' ? '' : String(formData.taxFreeAmount)}
                         onChange={(e) => setFormData({
                           ...formData,
-                          taxFreeAmount: parseFloat(e.target.value) || 0
+                          taxFreeAmount: e.target.value === '' ? '' as any : parseFloat(e.target.value)
                         })}
                         className="w-full"
                         placeholder="0.00"

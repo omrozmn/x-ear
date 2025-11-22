@@ -37,8 +37,8 @@ export function LineWithholdingModal({
 }: LineWithholdingModalProps) {
   const [formData, setFormData] = useState<LineWithholdingData>({
     code: initialData?.code || '',
-    rate: initialData?.rate || 0,
-    amount: initialData?.amount || 0
+    rate: initialData?.rate ?? 0,
+    amount: initialData?.amount ?? 0
   });
 
   useEffect(() => {
@@ -126,17 +126,17 @@ export function LineWithholdingModal({
                         Tevkifat Oranı (%)
                       </label>
                       <Input
-                        type="number"
-                        step="0.01"
-                        value={formData.rate}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          rate: parseFloat(e.target.value) || 0
-                        })}
-                        className="w-full"
-                        placeholder="20"
-                        required
-                      />
+                          type="number"
+                          step="0.01"
+                          value={formData.rate === '' ? '' : String(formData.rate)}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            rate: e.target.value === '' ? '' as any : parseFloat(e.target.value)
+                          })}
+                          className="w-full"
+                          placeholder="20"
+                          required
+                        />
                     </div>
 
                     {/* Hesaplanan Tevkifat Tutarı */}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Input, Button } from '@x-ear/ui-web';
+import { Input, Button, DatePicker } from '@x-ear/ui-web';
 import { Info, AlertTriangle } from 'lucide-react';
 import { MedicalDeviceData } from '../../types/invoice';
 
@@ -236,11 +236,10 @@ export function MedicalDeviceModal({
               </div>
 
               <div>
-                <Input
-                  type="date"
+                <DatePicker
                   label={labels.tarih}
-                  value={formData.tarih}
-                  onChange={(e) => handleChange('tarih', e.target.value)}
+                  value={formData.tarih ? new Date(formData.tarih) : null}
+                  onChange={(date) => handleChange('tarih', date ? `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}` : '')}
                   error={errors.tarih}
                   fullWidth
                   required

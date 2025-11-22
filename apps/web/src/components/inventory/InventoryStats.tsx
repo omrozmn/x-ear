@@ -16,6 +16,10 @@ interface InventoryStats {
   outOfStock: number;
   byCategory?: Record<string, number>;
   byStatus?: Record<string, number>;
+  hearingAid?: {
+    count: number;
+    stock: number;
+  };
 }
 
 export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }) => {
@@ -27,39 +31,31 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
     const loadStats = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/api/inventory', {
-          params: { per_page: 1000 }
-        });
-        const items = Array.isArray(response.data?.data) ? response.data.data : [];
+        const response = await api.get('/api/inventory/stats');
+        const data = response.data?.data || {};
 
         const calculatedStats: InventoryStats = {
-          total: items.length,
-          totalValue: items.reduce((sum: number, item: any) => {
-            const availableInventory = item.availableInventory || item.available_inventory || 0;
-            const price = parseFloat(item.price || 0);
-            return sum + (availableInventory * price);
-          }, 0),
-          lowStock: items.filter((item: any) => {
-            const availableInventory = item.availableInventory || item.available_inventory || 0;
-            const minInventory = item.minInventory || item.min_inventory || item.reorderLevel || item.reorder_level || 5;
-            return availableInventory <= minInventory && availableInventory > 0;
-          }).length,
-          outOfStock: items.filter((item: any) => {
-            const availableInventory = item.availableInventory || item.available_inventory || 0;
-            return availableInventory === 0;
-          }).length,
-          byCategory: {},
-          byStatus: {}
+          // Use DB-level totals returned by the stats endpoint (avoids pagination limits)
+          total: data.dbTotalItems ?? data.totalItems ?? 0,
+          totalValue: parseFloat(data.totalValue ?? 0),
+          lowStock: data.lowStockCount ?? 0,
+          outOfStock: data.outOfStockCount ?? 0,
+          byCategory: data.categoryBreakdown ? Object.keys(data.categoryBreakdown).reduce((acc: any, k: string) => {
+            acc[k] = data.categoryBreakdown[k].count ?? 0; return acc;
+          }, {}) : {},
+          byStatus: {},
+          // totalStock provided by backend (sum of available_inventory)
+          // default to 0 when missing
+          ...(data.totalStock !== undefined ? { totalStock: parseInt(data.totalStock, 10) || 0 } : {})
         };
 
-        items.forEach((item: any) => {
-          const cat = item.category || 'unknown';
-          calculatedStats.byCategory![cat] = (calculatedStats.byCategory![cat] || 0) + 1;
-
-          const availableInventory = item.availableInventory || item.available_inventory || 0;
-          const status = availableInventory > 0 ? 'available' : 'out_of_stock';
-          calculatedStats.byStatus![status] = (calculatedStats.byStatus![status] || 0) + 1;
-        });
+        // Attach hearing-aid info if available
+        if (data.hearingAid) {
+          (calculatedStats as any).hearingAid = {
+            count: data.hearingAid.count || 0,
+            stock: data.hearingAid.stock || 0
+          };
+        }
 
         setStats(calculatedStats);
         setError(null);
@@ -131,6 +127,7 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
     {
       name: 'Toplam Ürün',
       value: stats.total.toLocaleString(),
+      subtitle: stats.totalStock !== undefined ? `Stok: ${stats.totalStock.toLocaleString()}` : undefined,
       icon: (
         <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -174,24 +171,53 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
     }
   ];
 
+  // If backend provided hearing-aid KPIs, add a dedicated card
+  const hearingAidInfo = (stats as any).hearingAid;
+  if (hearingAidInfo) {
+    statCards.splice(1, 0, {
+      name: 'Toplam İşitme Cihazı',
+      value: (hearingAidInfo.count || 0).toLocaleString(),
+      subtitle: `Stok: ${hearingAidInfo.stock || 0}`,
+      icon: (
+        <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+      ),
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50'
+    });
+  }
+
+
   return (
     <div className={className}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Use a single-row flex layout so KPIs stay on one line and shrink on small screens */}
+      <div className="flex gap-4 items-stretch w-full flex-nowrap">
         {statCards.map((stat) => (
-          <div key={stat.name} className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
+          <div key={stat.name} className="bg-white overflow-hidden shadow rounded-lg flex-1 min-w-0">
+            <div className="p-4 sm:p-5">
               <div className="flex items-center">
-                <div className={`flex-shrink-0 ${stat.bgColor} p-2 rounded-md`}>
-                  {stat.icon}
-                </div>
-                <div className="ml-5 w-0 flex-1">
+                <div className={`flex-shrink-0 ${stat.bgColor} p-2 rounded-md`}>{stat.icon}</div>
+                <div className="ml-4 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      {stat.name}
-                    </dt>
-                    <dd className={`text-lg font-medium ${stat.color}`}>
+                    <dt className="text-sm font-medium text-gray-500 truncate">{stat.name}</dt>
+                    <dd
+                      className={`font-medium ${stat.color} text-lg sm:text-2xl md:text-3xl leading-tight`}
+                      style={{
+                        // Force single-line and allow the font to scale down more aggressively
+                        // so large currency values fit without wrapping.
+                        fontSize: 'clamp(0.75rem, 1.8vw, 1.6rem)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden'
+                      }}
+                    >
                       {stat.value}
                     </dd>
+                    {stat.subtitle && (
+                      <dd className="text-sm text-gray-500 mt-1" style={{ overflowWrap: 'anywhere', whiteSpace: 'normal' }}>
+                        {stat.subtitle}
+                      </dd>
+                    )}
                   </dl>
                 </div>
               </div>

@@ -6,6 +6,7 @@
  */
 
 import { InvoiceFormData } from '../types/invoice';
+import { getOutEBelgeV2API } from '../generated/birfatura/outEBelgeV2API';
 
 export interface BirFaturaResponse {
   success: boolean;
@@ -40,46 +41,14 @@ class BirFaturaService {
    */
   async createAndSend(invoiceData: InvoiceFormData): Promise<BirFaturaResponse> {
     try {
-      // 1. Önce faturayı oluştur
-      const createResponse = await fetch(`${this.baseURL}/Create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(invoiceData),
-      });
-
-      if (!createResponse.ok) {
-        throw new Error('Fatura oluşturulamadı');
-      }
-
-      const createData = await createResponse.json();
-      const invoiceId = createData.id || createData.invoiceId;
-
-      // 2. BirFatura'ya gönder
-      const sendResponse = await fetch(`${this.baseURL}/SendToBirFatura/${invoiceId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!sendResponse.ok) {
-        return {
-          success: false,
-          invoiceId,
-          error: 'BirFatura\'ya gönderilemedi',
-        };
-      }
-
-      const sendData = await sendResponse.json();
-
+      const api = getOutEBelgeV2API();
+      const body = { invoice: invoiceData } as any;
+      const resp = await api.postApiOutEBelgeV2SendBasicInvoiceFromModel(body);
+      const data = resp?.data || {};
       return {
-        success: true,
-        invoiceId,
-        birfaturaId: sendData.birfaturaId,
-        uuid: sendData.uuid,
-        message: 'Fatura başarıyla oluşturuldu ve BirFatura\'ya gönderildi',
+        success: !!data?.Success,
+        birfaturaId: data?.Result?.invoiceNo || undefined,
+        message: data?.Message,
       };
     } catch (error) {
       console.error('BirFatura createAndSend error:', error);
@@ -128,25 +97,12 @@ class BirFaturaService {
    */
   async send(invoiceId: string): Promise<BirFaturaResponse> {
     try {
-      const response = await fetch(`${this.baseURL}/SendToBirFatura/${invoiceId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('BirFatura\'ya gönderilemedi');
-      }
-
-      const data = await response.json();
-
+      const api = getOutEBelgeV2API();
+      const resp = await api.postApiOutEBelgeV2ReEnvelopeAndSend({ uuid: invoiceId });
+      const data = resp?.data || {};
       return {
-        success: true,
-        invoiceId,
-        birfaturaId: data.birfaturaId,
-        uuid: data.uuid,
-        message: 'Fatura BirFatura\'ya gönderildi',
+        success: !!data?.Success,
+        message: data?.Message,
       };
     } catch (error) {
       console.error('BirFatura send error:', error);
@@ -163,26 +119,12 @@ class BirFaturaService {
    */
   async getStatus(invoiceId: string): Promise<InvoiceStatus> {
     try {
-      const response = await fetch(`${this.baseURL}/GetStatus/${invoiceId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Durum sorgulanamadı');
-      }
-
-      const data = await response.json();
-
+      const api = getOutEBelgeV2API();
+      const resp = await api.postApiOutEBelgeV2GetEnvelopeStatusFromGIB({ envelopeID: invoiceId });
+      const data = resp?.data || {};
       return {
-        status: data.status || 'pending',
-        gibStatus: data.gibStatus,
-        gibResponse: data.gibResponse,
-        birfaturaStatus: data.birfaturaStatus,
-        lastUpdated: data.lastUpdated,
-        message: data.message,
+        status: ((data?.Result ?? data?.status) as any) || 'pending',
+        message: data?.Message || data?.message,
       };
     } catch (error) {
       console.error('BirFatura getStatus error:', error);
@@ -198,23 +140,13 @@ class BirFaturaService {
    */
   async getXML(invoiceId: string): Promise<XMLResponse | null> {
     try {
-      const response = await fetch(`${this.baseURL}/GetXML/${invoiceId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('XML indirilemedi');
-      }
-
-      const data = await response.json();
-
+      const api = getOutEBelgeV2API();
+      const resp = await api.postApiOutEBelgeV2DocumentDownloadByUUID({ documentUUID: invoiceId, inOutCode: 'OUT', systemTypeCodes: 'EFATURA', fileExtension: 'XML' } as any);
+      const data = resp?.data || {};
       return {
-        xml: data.xml,
-        format: data.format || 'UBL-TR',
-        encoding: data.encoding || 'UTF-8',
+        xml: data?.Result?.content || data?.Result?.content || '',
+        format: 'UBL-TR',
+        encoding: 'UTF-8',
       };
     } catch (error) {
       console.error('BirFatura getXML error:', error);

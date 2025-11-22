@@ -1,0 +1,35 @@
+{% extends 'invoices/base.html' %}
+
+{% block content %}
+  <h2 style="margin-top:8px">{{ invoice.document_title or 'Satış Faturası' }}</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ürün / Hizmet</th>
+        <th>Miktar</th>
+        <th>Birim Fiyat</th>
+        <th>İndirim</th>
+        <th class="right">Tutar</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in invoice.lines %}
+      <tr>
+        <td>{{ line.description }}</td>
+        <td>{{ line.quantity }}</td>
+        <td class="right">{{ line.unit_price }}</td>
+        <td class="right">{% if line.allowance_charge %}{{ line.allowance_charge }}{% else %}-{% endif %}</td>
+        <td class="right">{{ line.line_extension_amount }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="margin-top:12px; text-align:right">
+    <div class="small">Ara Toplam: {{ invoice.subtotal }}</div>
+    <div class="small">Vergiler: {{ invoice.tax_total }}</div>
+    <div style="font-weight:700; font-size:14px">Genel Toplam: {{ invoice.payable_amount }}</div>
+  </div>
+
+{% endblock %}
