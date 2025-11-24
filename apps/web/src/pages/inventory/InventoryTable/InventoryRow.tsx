@@ -33,7 +33,7 @@ const InventoryRow: React.FC<Props> = ({
       <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.name}</td>
       <td className="px-4 py-3 text-sm text-gray-500">{item.barcode ?? '-'}</td>
       <td className="px-4 py-3 text-sm text-gray-900">{item.availableInventory}</td>
-      <td className="px-4 py-3 text-sm text-gray-900">{item.price.toFixed(2)} ₺</td>
+      <td className="px-4 py-3 text-sm text-gray-900">{(item.price ?? 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TRY</td>
       <td className="px-4 py-3">
         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
           item.status === 'available' ? 'bg-green-100 text-green-800' :

@@ -1,18 +1,17 @@
-import React from 'react';
-import { Badge, Button } from '@x-ear/ui-web';
-import { 
-  Building2, 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Edit, 
-  Trash2, 
+import React, { useMemo, useState } from 'react';
+import { Badge, Button, DataTable, Column, TableAction } from '@x-ear/ui-web';
+import {
+  Building2,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Edit,
+  Trash2,
   Eye,
-  ChevronUp,
-  ChevronDown
 } from 'lucide-react';
 import type { SupplierExtended } from './supplier-search.types';
+// UniversalImporter now lives in the page header (SuppliersPage)
 
 interface SupplierListProps {
   suppliers: SupplierExtended[];
@@ -24,184 +23,168 @@ interface SupplierListProps {
   onSort?: (field: string) => void;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  pagination?: {
+    current: number;
+    pageSize: number;
+    total: number;
+    onChange: (page: number, pageSize: number) => void;
+  };
 }
 
-export function SupplierList({ 
-  suppliers, 
+export function SupplierList({
+  suppliers,
+  isLoading,
   onSupplierClick,
   onEditSupplier,
   onDeleteSupplier,
   onSort,
   sortBy,
-  sortOrder
+  sortOrder,
+  pagination
 }: SupplierListProps) {
-  const getStatusBadge = (isActive?: boolean) => {
-    if (isActive) {
-      return <Badge variant="success" size="sm">Aktif</Badge>;
+
+  
+
+  const columns: Column<SupplierExtended>[] = useMemo(() => [
+    {
+      key: 'companyName',
+      title: 'Şirket Adı',
+      sortable: true,
+      render: (_, supplier) => (
+        <div
+          className="flex items-center cursor-pointer group"
+          onClick={(e) => {
+            e.stopPropagation();
+            onSupplierClick?.(supplier);
+          }}
+        >
+          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center group-hover:ring-2 group-hover:ring-purple-200 transition-all">
+            <Building2 className="h-5 w-5 text-white" />
+          </div>
+          <div className="ml-4">
+            <div className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+              {supplier.companyName || supplier.name || 'İsimsiz'}
+            </div>
+            {supplier.companyCode && (
+              <div className="text-sm text-gray-500">
+                Kod: {supplier.companyCode}
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'contact',
+      title: 'İletişim',
+      render: (_, supplier) => (
+        <div className="space-y-1">
+          {supplier.contactPerson && (
+            <div className="flex items-center text-sm text-gray-900">
+              <User className="h-4 w-4 mr-2 text-gray-400" />
+              {supplier.contactPerson}
+            </div>
+          )}
+          {supplier.phone && (
+            <div className="flex items-center text-sm text-gray-600">
+              <Phone className="h-4 w-4 mr-2 text-gray-400" />
+              {supplier.phone}
+            </div>
+          )}
+          {supplier.email && (
+            <div className="flex items-center text-sm text-gray-600">
+              <Mail className="h-4 w-4 mr-2 text-gray-400" />
+              {supplier.email}
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'location',
+      title: 'Konum',
+      render: (_, supplier) => (
+        <>
+          {supplier.city && (
+            <div className="flex items-center text-sm text-gray-900">
+              <MapPin className="h-4 w-4 mr-2 text-gray-400" />
+              {supplier.city}
+              {supplier.country && supplier.country !== 'Türkiye' && (
+                <span className="text-gray-500">, {supplier.country}</span>
+              )}
+            </div>
+          )}
+        </>
+      )
+    },
+    {
+      key: 'status',
+      title: 'Durum',
+      render: (_, supplier) => (
+        supplier.isActive ?
+          <Badge variant="success" size="sm">Aktif</Badge> :
+          <Badge variant="secondary" size="sm">Pasif</Badge>
+      )
     }
-    return <Badge variant="secondary" size="sm">Pasif</Badge>;
-  };
+  ], [onSupplierClick]);
 
-  const renderSortIcon = (field: string) => {
-    if (sortBy !== field) return null;
-    return sortOrder === 'asc' ? 
-      <ChevronUp className="h-4 w-4 inline ml-1" /> : 
-      <ChevronDown className="h-4 w-4 inline ml-1" />;
-  };
+  const actions: TableAction<SupplierExtended>[] = useMemo(() => {
+    const list: TableAction<SupplierExtended>[] = [
+      {
+        key: 'view',
+        label: 'Görüntüle',
+        icon: <Eye className="h-4 w-4" />,
+        onClick: (supplier) => onSupplierClick?.(supplier),
+        variant: 'secondary'
+      }
+    ];
 
-  const handleRowClick = (supplier: SupplierExtended, e: React.MouseEvent) => {
-    // Don't trigger row click if clicking on buttons
-    if ((e.target as HTMLElement).closest('button')) {
-      return;
+    if (onEditSupplier) {
+      list.push({
+        key: 'edit',
+        label: 'Düzenle',
+        icon: <Edit className="h-4 w-4" />,
+        onClick: (supplier) => onEditSupplier(supplier),
+        variant: 'secondary'
+      });
     }
-    onSupplierClick?.(supplier);
-  };
 
-  // Safely handle suppliers array
-  const supplierList = suppliers || [];
+    if (onDeleteSupplier) {
+      list.push({
+        key: 'delete',
+        label: 'Sil',
+        icon: <Trash2 className="h-4 w-4" />,
+        onClick: (supplier) => onDeleteSupplier(supplier),
+        variant: 'danger'
+      });
+    }
+
+    return list;
+  }, [onSupplierClick, onEditSupplier, onDeleteSupplier]);
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th 
-              scope="col" 
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-              onClick={() => onSort?.('companyName')}
-            >
-              Şirket Adı {renderSortIcon('companyName')}
-            </th>
-            <th 
-              scope="col" 
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              İletişim
-            </th>
-            <th 
-              scope="col" 
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Konum
-            </th>
+    <>
+      <div className="flex items-center justify-between mb-3">
+        <div />
+        <div className="flex items-center space-x-2">
+          {/* Importer button moved to SuppliersPage header */}
+        </div>
+      </div>
 
-            <th 
-              scope="col" 
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Durum
-            </th>
-            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              İşlemler
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {supplierList.map((supplier) => (
-            <tr 
-              key={supplier.id} 
-              className="hover:bg-gray-50 cursor-pointer transition-colors"
-              onClick={(e) => handleRowClick(supplier, e)}
-            >
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
-                    <Building2 className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-gray-900">
-                      {supplier?.companyName || supplier?.name || 'İsimsiz'}
-                    </div>
-                    {supplier?.companyCode && (
-                      <div className="text-sm text-gray-500">
-                        Kod: {supplier.companyCode}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </td>
-              <td className="px-6 py-4">
-                <div className="space-y-1">
-                  {supplier?.contactPerson && (
-                    <div className="flex items-center text-sm text-gray-900">
-                      <User className="h-4 w-4 mr-2 text-gray-400" />
-                      {supplier.contactPerson}
-                    </div>
-                  )}
-                  {supplier?.phone && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Phone className="h-4 w-4 mr-2 text-gray-400" />
-                      {supplier.phone}
-                    </div>
-                  )}
-                  {supplier?.email && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Mail className="h-4 w-4 mr-2 text-gray-400" />
-                      {supplier.email}
-                    </div>
-                  )}
-                </div>
-              </td>
-              <td className="px-6 py-4">
-                {supplier?.city && (
-                  <div className="flex items-center text-sm text-gray-900">
-                    <MapPin className="h-4 w-4 mr-2 text-gray-400" />
-                    {supplier.city}
-                    {supplier?.country && supplier.country !== 'Türkiye' && (
-                      <span className="text-gray-500">, {supplier.country}</span>
-                    )}
-                  </div>
-                )}
-              </td>
+      <DataTable
+        data={suppliers || []}
+        columns={columns}
+        loading={isLoading}
+        actions={actions}
+        sortable={true}
+        onSort={(key, direction) => onSort?.(key)}
+        onRowClick={onSupplierClick}
+        rowKey="id"
+        emptyText="Tedarikçi bulunamadı"
+        pagination={pagination}
+      />
 
-              <td className="px-6 py-4 whitespace-nowrap">
-                {getStatusBadge(supplier?.isActive)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div className="flex items-center justify-end gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSupplierClick?.(supplier);
-                    }}
-                    className="p-2"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  {onEditSupplier && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditSupplier(supplier);
-                      }}
-                      className="p-2"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {onDeleteSupplier && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteSupplier(supplier);
-                      }}
-                      className="p-2 text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+      {/* Importer moved to page header (SuppliersPage) */}
+    </>
   );
 }

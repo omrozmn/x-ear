@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Input, Select, Button, Checkbox, Badge } from '@x-ear/ui-web';
+import BrandAutocomplete from '../../pages/inventory/components/BrandAutocomplete';
 import { 
   Search, 
   Filter, 
@@ -191,7 +192,16 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
     return count;
   };
 
-  const categoryOptions = categories.map(cat => ({ value: cat, label: cat }));
+  const CATEGORY_LABELS: Record<string, string> = {
+    hearing_aid: 'İşitme Cihazı',
+    battery: 'Pil',
+    accessory: 'Aksesuar',
+    ear_mold: 'Kulak Kalıbı',
+    cleaning_supplies: 'Temizlik Malzemesi',
+    amplifiers: 'Amplifikatör'
+  };
+
+  const categoryOptions = categories.map(cat => ({ value: cat, label: CATEGORY_LABELS[cat] || cat }));
   const brandOptions = brands.map(brand => ({ value: brand, label: brand }));
   const supplierOptions = suppliers.map(supplier => ({ value: supplier, label: supplier }));
 
@@ -201,9 +211,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <Filter className="w-5 h-5 text-gray-500" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            Filtreler
-          </h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Filtreler</h3>
           {getActiveFilterCount() > 0 && (
             <Badge variant="secondary" className="ml-2">
               {getActiveFilterCount()} aktif filtre
@@ -269,18 +277,13 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Marka
           </label>
-          <Input
-            list="brand-options"
+          <BrandAutocomplete
             value={localFilters.brand || ''}
-            onChange={(e) => handleFilterChange('brand', e.target.value || undefined)}
+            onChange={(v) => handleFilterChange('brand', v || undefined)}
             placeholder="Marka seçin veya yazın"
-            fullWidth
+            className="w-full"
+            label=""
           />
-          <datalist id="brand-options">
-            {brandOptions.map(option => (
-              <option key={option.value} value={option.value} />
-            ))}
-          </datalist>
         </div>
 
         <div>

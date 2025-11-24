@@ -1,7 +1,11 @@
-import { Button, Input } from '@x-ear/ui-web';
+import { Button, Input, Card } from '@x-ear/ui-web';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Zap, Plus, FileText, File, AlertTriangle, X, Eye, Edit2 } from 'lucide-react';
+import UniversalImporter from '../components/importer/UniversalImporter';
+import { useToastHelpers } from '@x-ear/ui-web';
+import invoicesSchema from '../components/importer/schemas/invoices';
+import { FieldDef } from '../components/importer/UniversalImporter';
 import { Invoice, InvoiceFilters, InvoiceTemplate } from '../types/invoice';
 
 import { InvoiceModal } from '../components/modals/InvoiceModal';
@@ -59,6 +63,8 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
 
   const [governmentModalOpen, setGovernmentModalOpen] = useState(false);
   const [currentInvoiceForGov, setCurrentInvoiceForGov] = useState<Invoice | null>(null);
+  const [isImporterOpen, setIsImporterOpen] = useState(false);
+  const [importResult, setImportResult] = useState<null | { created: number; updated: number; errors: any[] }>(null);
 
   // Load invoices and stats on component mount
   useEffect(() => {
@@ -454,6 +460,7 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
           </div>
 
           <div className="header-actions flex gap-3">
+            <Button onClick={() => setIsImporterOpen(true)} className="px-3 py-2">İçe Aktar</Button>
             <Button
               onClick={handleQuickInvoice}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium flex items-center gap-2 shadow-sm"
@@ -586,6 +593,59 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
         onSave={handleSaveGovernmentData}
         initialData={currentInvoiceForGov?.governmentData}
       />
+
+      <UniversalImporter
+        isOpen={isImporterOpen}
+        onClose={() => setIsImporterOpen(false)}
+        entityFields={[
+          // keep legacy keys for backend compatibility plus integrator names
+          { key: 'invoiceNumber', label: 'Fatura No' },
+          { key: 'eInvoiceId', label: 'Fatura No (eInvoiceId)' },
+          { key: 'patientName', label: 'Hasta / Alıcı Adı' },
+          { key: 'billingName', label: 'Alıcı / İsim (billingName)' },
+          { key: 'patientPhone', label: 'Telefon' },
+          { key: 'billingMobilePhone', label: 'Telefon (mobil)' },
+          { key: 'patientTcNumber', label: 'TC Kimlik No' },
+          { key: 'taxNo', label: 'Vergi No (TC/VKN)' },
+          { key: 'issueDate', label: 'Düzenlenme Tarihi' },
+          { key: 'invoiceDate', label: 'Fatura Tarihi (invoiceDate)' },
+          { key: 'dueDate', label: 'Vade Tarihi' },
+          { key: 'currency', label: 'Para Birimi' },
+          { key: 'grandTotal', label: 'Toplam Tutar' },
+          { key: 'totalPaidTaxIncluding', label: 'Toplam Tutar (KDV dahil)' }
+        ] as FieldDef[]}
+        zodSchema={invoicesSchema}
+        uploadEndpoint={'/api/invoices/bulk_upload'}
+        modalTitle={'Toplu Fatura Yükleme'}
+        sampleDownloadUrl={'/import_samples/invoices_sample.csv'}
+        onComplete={(res) => {
+          const { success: showSuccess, error: showError } = useToastHelpers();
+          if (res.errors && res.errors.length > 0) {
+            showError(`Fatura import tamamlandı — Hatalı satır: ${res.errors.length}`);
+          } else {
+            showSuccess(`Fatura import tamamlandı — Oluşturulan: ${res.created}`);
+          }
+          setImportResult(res);
+          loadInvoices();
+          setIsImporterOpen(false);
+        }}
+      />
+      {importResult && (
+        <div className="mt-4">
+          <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm">Oluşturulan: <strong>{importResult.created}</strong></div>
+                <div className="text-sm">Güncellenen: <strong>{importResult.updated}</strong></div>
+                <div className="text-sm">Hatalı satır: <strong>{importResult.errors?.length || 0}</strong></div>
+              </div>
+              <div>
+                <Button variant="outline" onClick={() => setImportResult(null)}>Kapat</Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

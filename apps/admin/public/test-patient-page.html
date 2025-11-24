@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasta Detay Sayfası Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .patient-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .patient-item {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        .patient-item:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Hasta Detay Sayfası Test</h1>
+        <p>Bu sayfa hasta detay sayfasının render edilmesi ve console hatalarını test eder.</p>
+
+        <!-- Test 1: Patient List -->
+        <div class="test-section">
+            <h3>1. Hasta Listesi Test</h3>
+            <button onclick="testPatientList()">Hasta Listesini Getir</button>
+            <div id="patientListResult"></div>
+            <div id="patientList" class="patient-list" style="display: none;"></div>
+        </div>
+
+        <!-- Test 2: Patient Detail -->
+        <div class="test-section">
+            <h3>2. Hasta Detay Test</h3>
+            <input type="text" id="patientIdInput" placeholder="Hasta ID girin (örn: pat_046df984)" style="width: 300px; padding: 8px; margin: 5px;">
+            <button onclick="testPatientDetail()">Hasta Detayını Getir</button>
+            <div id="patientDetailResult"></div>
+        </div>
+
+        <!-- Test 3: Frontend Route Test -->
+        <div class="test-section">
+            <h3>3. Frontend Route Test</h3>
+            <button onclick="testFrontendRoute()">Hasta Detay Sayfasını Aç</button>
+            <div id="routeTestResult"></div>
+        </div>
+
+        <!-- Test 4: Console Errors -->
+        <div class="test-section">
+            <h3>4. Console Hataları</h3>
+            <button onclick="checkConsoleErrors()">Console Hatalarını Kontrol Et</button>
+            <div id="consoleErrorsResult"></div>
+        </div>
+
+        <!-- Test 5: API Response Format -->
+        <div class="test-section">
+            <h3>5. API Response Format Test</h3>
+            <button onclick="testApiResponseFormat()">API Response Formatını Kontrol Et</button>
+            <div id="apiFormatResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let consoleErrors = [];
+        let originalConsoleError = console.error;
+        
+        // Console error'ları yakala
+        console.error = function(...args) {
+            consoleErrors.push({
+                timestamp: new Date().toISOString(),
+                message: args.join(' ')
+            });
+            originalConsoleError.apply(console, args);
+        };
+
+        async function testPatientList() {
+            const resultDiv = document.getElementById('patientListResult');
+            const listDiv = document.getElementById('patientList');
+            
+            try {
+                resultDiv.innerHTML = '<div class="info">Hasta listesi yükleniyor...</div>';
+                
+                const response = await fetch('/api/patients?per_page=10');
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    resultDiv.innerHTML = `<div class="success">✅ Hasta listesi başarıyla yüklendi (${data.data.length} hasta)</div>`;
+                    
+                    // Hasta listesini göster
+                    listDiv.style.display = 'block';
+                    listDiv.innerHTML = data.data.map(patient => 
+                        `<div class="patient-item" onclick="selectPatient('${patient.id}')">
+                            <strong>${patient.fullName || patient.firstName + ' ' + patient.lastName}</strong> 
+                            (ID: ${patient.id})
+                        </div>`
+                    ).join('');
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Hasta listesi yüklenemedi: ${data.error || 'Bilinmeyen hata'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Network hatası: ${error.message}</div>`;
+            }
+        }
+
+        function selectPatient(patientId) {
+            document.getElementById('patientIdInput').value = patientId;
+            testPatientDetail();
+        }
+
+        async function testPatientDetail() {
+            const patientId = document.getElementById('patientIdInput').value.trim();
+            const resultDiv = document.getElementById('patientDetailResult');
+            
+            if (!patientId) {
+                resultDiv.innerHTML = '<div class="error">❌ Lütfen bir hasta ID girin</div>';
+                return;
+            }
+            
+            try {
+                resultDiv.innerHTML = '<div class="info">Hasta detayı yükleniyor...</div>';
+                
+                const response = await fetch(`/api/patients/${patientId}`);
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Hasta detayı başarıyla yüklendi</div>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Hasta bulunamadı: ${data.error || 'Bilinmeyen hata'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Network hatası: ${error.message}</div>`;
+            }
+        }
+
+        function testFrontendRoute() {
+            const patientId = document.getElementById('patientIdInput').value.trim() || 'pat_046df984';
+            const resultDiv = document.getElementById('routeTestResult');
+            
+            // Yeni sekmede hasta detay sayfasını aç
+            const url = `/patients/${patientId}`;
+            window.open(url, '_blank');
+            
+            resultDiv.innerHTML = `
+                <div class="info">
+                    ℹ️ Hasta detay sayfası yeni sekmede açıldı: <a href="${url}" target="_blank">${url}</a>
+                    <br>Sayfanın düzgün yüklenip yüklenmediğini kontrol edin.
+                </div>
+            `;
+        }
+
+        function checkConsoleErrors() {
+            const resultDiv = document.getElementById('consoleErrorsResult');
+            
+            if (consoleErrors.length === 0) {
+                resultDiv.innerHTML = '<div class="success">✅ Console hatası bulunamadı</div>';
+            } else {
+                const errorList = consoleErrors.map(error => 
+                    `<div style="margin: 5px 0; padding: 5px; background: #fff3cd; border-left: 3px solid #ffc107;">
+                        <strong>${error.timestamp}</strong><br>
+                        ${error.message}
+                    </div>`
+                ).join('');
+                
+                resultDiv.innerHTML = `
+                    <div class="error">❌ ${consoleErrors.length} console hatası bulundu:</div>
+                    ${errorList}
+                `;
+            }
+        }
+
+        async function testApiResponseFormat() {
+            const resultDiv = document.getElementById('apiFormatResult');
+            
+            try {
+                resultDiv.innerHTML = '<div class="info">API response formatı kontrol ediliyor...</div>';
+                
+                // Test different endpoints
+                const tests = [
+                    { name: 'Health Check', url: '/api/health' },
+                    { name: 'Patients List', url: '/api/patients?per_page=1' },
+                    { name: 'Patient Detail', url: '/api/patients/pat_046df984' }
+                ];
+                
+                let results = [];
+                
+                for (const test of tests) {
+                    try {
+                        const response = await fetch(test.url);
+                        const data = await response.json();
+                        
+                        const hasSuccess = 'success' in data;
+                        const hasRequestId = 'requestId' in data;
+                        const hasTimestamp = 'timestamp' in data;
+                        
+                        results.push(`
+                            <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd;">
+                                <strong>${test.name}</strong><br>
+                                ✅ Success field: ${hasSuccess ? '✓' : '✗'}<br>
+                                ✅ RequestId field: ${hasRequestId ? '✓' : '✗'}<br>
+                                ✅ Timestamp field: ${hasTimestamp ? '✓' : '✗'}<br>
+                                Status: ${response.status}
+                            </div>
+                        `);
+                    } catch (error) {
+                        results.push(`
+                            <div style="margin: 10px 0; padding: 10px; border: 1px solid #f00;">
+                                <strong>${test.name}</strong><br>
+                                ❌ Error: ${error.message}
+                            </div>
+                        `);
+                    }
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="success">API Response Format Test Sonuçları:</div>
+                    ${results.join('')}
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Test hatası: ${error.message}</div>`;
+            }
+        }
+
+        // Sayfa yüklendiğinde otomatik testleri çalıştır
+        window.addEventListener('load', function() {
+            console.log('🏥 Hasta detay sayfası test sayfası yüklendi');
+            
+            // 2 saniye sonra hasta listesini otomatik yükle
+            setTimeout(() => {
+                testPatientList();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

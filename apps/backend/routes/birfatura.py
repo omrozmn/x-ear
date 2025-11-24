@@ -1,11 +1,14 @@
 from flask import Blueprint, request, jsonify
+from datetime import datetime, timedelta
 
 from services.birfatura.service import BirfaturaClient
 from services.birfatura.mappers import invoice_to_basic_model, invoice_xml_to_base64
+from services.birfatura.invoice_sync import InvoiceSyncService
 
 birfatura_bp = Blueprint('birfatura_bp', __name__)
 
 client = BirfaturaClient()
+sync_service = InvoiceSyncService()
 
 
 @birfatura_bp.route('/api/EFatura/sendDocument', methods=['POST'])
@@ -66,3 +69,43 @@ def out_send_basic_invoice_from_model():
         return jsonify(resp), 200
     except Exception as e:
         return jsonify({'Success': False, 'Message': str(e)}), 502
+
+
+@birfatura_bp.route('/api/birfatura/sync-invoices', methods=['POST'])
+def sync_invoices():
+    payload = request.get_json() or {}
+
+    start_date = None
+    end_date = None
+
+    if 'start_date' in payload:
+        try:
+            start_date = datetime.fromisoformat(payload['start_date'])
+        except (ValueError, TypeError):
+            pass
+
+    if 'end_date' in payload:
+        try:
+            end_date = datetime.fromisoformat(payload['end_date'])
+        except (ValueError, TypeError):
+            pass
+
+    try:
+        stats = sync_service.sync_invoices(start_date, end_date)
+        request_id = request.headers.get('X-Request-ID')
+        return jsonify({
+            'success': True,
+            'data': {
+                'imported': stats
+            },
+            'requestId': request_id,
+            'timestamp': datetime.utcnow().isoformat()
+        }), 200
+    except Exception as e:
+        request_id = request.headers.get('X-Request-ID')
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': request_id,
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500

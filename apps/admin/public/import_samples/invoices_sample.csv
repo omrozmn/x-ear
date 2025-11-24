@@ -1,0 +1,3 @@
+invoiceNumber,patientName,patientPhone,patientTcNumber,issueDate,dueDate,currency,grandTotal
+INV-2025-001,Ahmet Yilmaz,+905551234567,12345678901,2025-11-01,2025-11-15,TRY,150.00
+INV-2025-002,Fatma Demir,+905559876543,23456789012,2025-11-03,2025-11-20,TRY,531.00

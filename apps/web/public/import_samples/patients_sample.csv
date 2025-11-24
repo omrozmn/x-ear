@@ -1,0 +1,3 @@
+firstName,lastName,tcNumber,phone,email,birthDate,gender
+Ahmet,Yilmaz,12345678901,05551234567,ahmet@example.com,1980-05-12,M
+Fatma,Demir,23456789012,05559876543,fatma@example.com,1990-11-23,F

@@ -47,7 +47,11 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
 
   const formatCurrency = (amount?: number) => {
     const safe = amount ?? 0;
-    return safe.toLocaleString('tr-TR') + ' TL';
+    try {
+      return safe.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TRY';
+    } catch (e) {
+      return `${Number(safe).toFixed(2)} TRY`;
+    }
   };
 
   const getVatRate = (sale: PatientSale) => {

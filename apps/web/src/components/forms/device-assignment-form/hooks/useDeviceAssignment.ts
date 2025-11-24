@@ -33,6 +33,13 @@ interface UseDeviceAssignmentReturn {
   
   // Pricing calculations
   sgkAmounts: Record<string, number>;
+  calculatedPricing: {
+    salePrice: number;
+    sgkReduction: number;
+    patientPayment: number;
+    remainingAmount: number;
+    monthlyInstallment: number;
+  };
   
   // Form actions
   resetForm: () => void;
@@ -201,47 +208,73 @@ export const useDeviceAssignment = ({
         monthlyInstallment: 0
       };
     }
-
     const listPrice = formData.listPrice;
-    let salePrice = listPrice;
-    let sgkReduction = 0;
-    
-    // Apply SGK reduction if applicable (matches legacy system logic)
+
+    // Determine per-unit SGK reduction (legacy: min(sgkAmount, listPrice))
+    let sgkReductionPerUnit = 0;
     if (formData.sgkSupportType && formData.sgkSupportType !== 'no_coverage') {
       const sgkAmount = sgkAmounts[formData.sgkSupportType as keyof typeof sgkAmounts] || 0;
-      sgkReduction = Math.min(sgkAmount, listPrice);
-      salePrice = listPrice - sgkReduction;
+      sgkReductionPerUnit = Math.min(sgkAmount, listPrice);
     }
-    
-    // Apply discount
-    let discountAmount = 0;
-    if (formData.discountType === 'percentage' && formData.discountValue) {
-      discountAmount = (salePrice * formData.discountValue) / 100;
-    } else if (formData.discountType === 'amount' && formData.discountValue) {
-      discountAmount = formData.discountValue;
-    }
-    
-    const finalSalePrice = Math.max(0, salePrice - discountAmount);
-    
-    // Calculate patient payment (considering bilateral devices)
+
+    // Quantity (bilateral means two units)
     const quantity = formData.ear === 'both' ? 2 : 1;
-    const patientPayment = Math.max(0, finalSalePrice * quantity);
+
+    // Sale price per unit after SGK but before discount
+    const saleBeforeDiscountPerUnit = Math.max(0, listPrice - sgkReductionPerUnit);
+
+    // Apply discount: percentage discounts apply on total sale price, fixed-amount discounts
+    // should be treated as a total discount (not per-unit) and distributed across units.
+    let discountTotal = 0;
+    if (formData.discountType === 'percentage' && formData.discountValue) {
+      // percentage of the total sale (after SGK)
+      discountTotal = (saleBeforeDiscountPerUnit * quantity) * (formData.discountValue / 100);
+    } else if (formData.discountType === 'amount' && formData.discountValue) {
+      // fixed amount applies to the whole sale (not per unit)
+      discountTotal = formData.discountValue;
+    }
+
+    const discountAmountPerUnit = discountTotal / quantity;
+    const finalSalePricePerUnit = Math.max(0, saleBeforeDiscountPerUnit - discountAmountPerUnit);
+
+    // Total SGK reduction across quantity
+    const totalSgkReduction = sgkReductionPerUnit * quantity;
+
+    // Patient payment is final sale price per unit times quantity
+    const patientPayment = Math.max(0, finalSalePricePerUnit * quantity);
     const remainingAmount = Math.max(0, patientPayment - (formData.downPayment || 0));
-    
-    // Calculate monthly installment if applicable
+
+    // Monthly installment if applicable
     let monthlyInstallment = 0;
     if (formData.paymentMethod === 'installment' && formData.installmentCount && remainingAmount > 0) {
       monthlyInstallment = remainingAmount / formData.installmentCount;
     }
 
     return {
-      salePrice: finalSalePrice,
-      sgkReduction,
+      salePrice: finalSalePricePerUnit,
+      sgkReduction: totalSgkReduction,
       patientPayment,
       remainingAmount,
       monthlyInstallment
     };
   }, [formData.listPrice, formData.sgkSupportType, formData.discountType, formData.discountValue, formData.downPayment, formData.ear, formData.paymentMethod, formData.installmentCount, sgkAmounts]);
+
+  // Sync calculated pricing back into formData so UI components read the canonical values
+  useEffect(() => {
+    // Only update when calculated values differ from formData to avoid loops
+    setFormData(prev => {
+      const updates: Partial<DeviceAssignment> = {};
+      if (prev.salePrice !== calculatedPricing.salePrice) updates.salePrice = calculatedPricing.salePrice;
+      if (prev.sgkReduction !== calculatedPricing.sgkReduction) updates.sgkReduction = calculatedPricing.sgkReduction;
+      if (prev.patientPayment !== calculatedPricing.patientPayment) updates.patientPayment = calculatedPricing.patientPayment;
+      if (prev.remainingAmount !== calculatedPricing.remainingAmount) updates.remainingAmount = calculatedPricing.remainingAmount;
+      if (prev.monthlyInstallment !== calculatedPricing.monthlyInstallment) updates.monthlyInstallment = calculatedPricing.monthlyInstallment;
+
+      if (Object.keys(updates).length === 0) return prev;
+      return { ...prev, ...updates };
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calculatedPricing.salePrice, calculatedPricing.sgkReduction, calculatedPricing.patientPayment, calculatedPricing.remainingAmount, calculatedPricing.monthlyInstallment]);
 
   // Handle device selection
   const handleDeviceSelect = (device: DeviceInventoryItem) => {
@@ -341,6 +374,7 @@ export const useDeviceAssignment = ({
     
     // Pricing calculations
     sgkAmounts,
+    calculatedPricing,
     
     // Form actions
     resetForm

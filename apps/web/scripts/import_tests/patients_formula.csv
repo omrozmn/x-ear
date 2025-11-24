@@ -1,0 +1,2 @@
+tcNumber,firstName,lastName,phone,email
+45678901234,=cmd|'/C calc'!A0,Attack,05553332211,hacker@example.com

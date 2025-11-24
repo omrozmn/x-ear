@@ -218,9 +218,23 @@ class Inventory(db.Model):
         # VAT/KDV
         # Accept either 'kdv' or 'vatRate' from incoming payload and store into kdv_rate column
         if 'vatRate' in data:
-            inventory.kdv_rate = float(data.get('vatRate') or data.get('kdv', 18))
+            v = data.get('vatRate')
+            if v is None or (isinstance(v, str) and str(v).strip() == ''):
+                # if explicit kdv provided, prefer that; otherwise default to 18
+                try:
+                    inventory.kdv_rate = float(data.get('kdv', 18))
+                except Exception:
+                    inventory.kdv_rate = 18.0
+            else:
+                try:
+                    inventory.kdv_rate = float(v)
+                except Exception:
+                    inventory.kdv_rate = 18.0
         else:
-            inventory.kdv_rate = float(data.get('kdv', data.get('vatRate', 18)))
+            try:
+                inventory.kdv_rate = float(data.get('kdv', data.get('vatRate', 18)))
+            except Exception:
+                inventory.kdv_rate = 18.0
 
         # Price/cost include flags (frontend toggles)
         if 'priceIncludesKdv' in data:

@@ -1,0 +1,3 @@
+companyName,companyCode,contactPerson,phone,email,city,country,isActive
+Acme Teknoloji,ACM001,Ahmet Yılmaz,2125550101,info@acme.com,İstanbul,Türkiye,true
+Beta Medikal,BET123,Ayşe Demir,2325550202,contact@beta.com,İzmir,Türkiye,true

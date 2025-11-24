@@ -1,5 +1,8 @@
 import { Button, Input, Select } from '@x-ear/ui-web';
 import React, { useState } from 'react';
+import UniversalImporter, { FieldDef } from '../components/importer/UniversalImporter';
+import { useToastHelpers } from '@x-ear/ui-web';
+import invoicesSchema from '../components/importer/schemas/invoices';
 import { Purchase, PurchaseFilters, PurchaseStatus, PurchaseItem } from '../types/purchase';
 import { PurchaseList } from '../components/purchases/PurchaseList';
 
@@ -18,6 +21,21 @@ export function PurchasesPage() {
     setSelectedPurchase(null);
     setViewMode('form');
   };
+
+  const [isImporterOpen, setIsImporterOpen] = useState(false);
+
+  const invoiceFields: FieldDef[] = [
+    // include both legacy and integrator names for robust mapping
+    { key: 'invoiceNumber', label: 'Fatura No' },
+    { key: 'eInvoiceId', label: 'Fatura No (eInvoiceId)' },
+    { key: 'supplierName', label: 'Tedarikçi Adı' },
+    { key: 'billingName', label: 'Tedarikçi / İsim (billingName)' },
+    { key: 'invoiceDate', label: 'Düzenlenme Tarihi' },
+    { key: 'dueDate', label: 'Vade Tarihi' },
+    { key: 'grandTotal', label: 'Toplam Tutar' },
+    { key: 'totalPaidTaxIncluding', label: 'Toplam Tutar (KDV dahil)' },
+    { key: 'currency', label: 'Para Birimi' }
+  ];
 
   const handleEditPurchase = (purchase: Purchase) => {
     setSelectedPurchase(purchase);
@@ -99,93 +117,72 @@ export function PurchasesPage() {
                   </p>
                 </div>
               </div>
+              <div className="mt-2 md:mt-0 md:ml-4 flex items-center gap-3">
+                <Button onClick={() => setIsImporterOpen(true)} className="px-3 py-2 bg-blue-600 text-white hover:bg-blue-700">İçe Aktar</Button>
+              </div>
             </div>
             
-            {/* Filter Toggle */}
-            <div className="mt-4 flex items-center justify-between">
-              <Button
-                onClick={() => setShowFilters(!showFilters)}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                variant='default'>
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
-                </svg>
-                Filtreler
-                {showFilters ? (
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                )}
-              </Button>
-            </div>
+            {/* Filters Card placed under header */}
+            <div className="mt-4 bg-white rounded-lg shadow p-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Durum
+                  </label>
+                  <Select
+                    value={filters.status || ''}
+                    onChange={(e) => setFilters({ ...filters, status: e.target.value as PurchaseStatus || undefined })}
+                    options={[
+                      { value: '', label: 'Tümü' },
+                      { value: 'draft', label: 'Taslak' },
+                      { value: 'sent', label: 'Gönderildi' },
+                      { value: 'approved', label: 'Onaylandı' },
+                      { value: 'rejected', label: 'Reddedildi' },
+                      { value: 'paid', label: 'Ödendi' },
+                      { value: 'cancelled', label: 'İptal' }
+                    ]}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
 
-            {/* Filters Panel */}
-            {showFilters && (
-              <div className="mt-4 bg-gray-50 rounded-lg p-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Durum
-                    </label>
-                    <Select
-                      value={filters.status || ''}
-                      onChange={(e) => setFilters({ ...filters, status: e.target.value as PurchaseStatus || undefined })}
-                      options={[
-                        { value: '', label: 'Tümü' },
-                        { value: 'draft', label: 'Taslak' },
-                        { value: 'sent', label: 'Gönderildi' },
-                        { value: 'approved', label: 'Onaylandı' },
-                        { value: 'rejected', label: 'Reddedildi' },
-                        { value: 'paid', label: 'Ödendi' },
-                        { value: 'cancelled', label: 'İptal' }
-                      ]}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tedarikçi
-                    </label>
-                    <Input
-                      type="text"
-                      value={filters.supplierName || ''}
-                      onChange={(e) => setFilters({ ...filters, supplierName: e.target.value || undefined })}
-                      placeholder="Tedarikçi adı..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Başlangıç Tarihi
-                    </label>
-                    <Input
-                      type="date"
-                      value={filters.dateFrom || ''}
-                      onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value || undefined })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Bitiş Tarihi
-                    </label>
-                    <Input
-                      type="date"
-                      value={filters.dateTo || ''}
-                      onChange={(e) => setFilters({ ...filters, dateTo: e.target.value || undefined })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tedarikçi
+                  </label>
+                  <Input
+                    type="text"
+                    value={filters.supplierName || ''}
+                    onChange={(e) => setFilters({ ...filters, supplierName: e.target.value || undefined })}
+                    placeholder="Tedarikçi adı..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Başlangıç Tarihi
+                  </label>
+                  <Input
+                    type="date"
+                    value={filters.dateFrom || ''}
+                    onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value || undefined })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Bitiş Tarihi
+                  </label>
+                  <Input
+                    type="date"
+                    value={filters.dateTo || ''}
+                    onChange={(e) => setFilters({ ...filters, dateTo: e.target.value || undefined })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}
@@ -220,9 +217,29 @@ export function PurchasesPage() {
           />
         )}
       </div>
+      <UniversalImporter
+        isOpen={isImporterOpen}
+        onClose={() => setIsImporterOpen(false)}
+        entityFields={invoiceFields}
+        zodSchema={invoicesSchema}
+        uploadEndpoint={'/api/invoices/bulk_upload'}
+        modalTitle={'Toplu Fatura Yükleme'}
+        sampleDownloadUrl={'/import_samples/invoices_sample.csv'}
+        onComplete={(res) => {
+          const { success: showSuccess, error: showError } = useToastHelpers();
+          if (res.errors && res.errors.length > 0) {
+            showError(`Alış import tamamlandı — Hatalı satır: ${res.errors.length}`);
+          } else {
+            showSuccess(`Alış import tamamlandı — Oluşturulan: ${res.created}`);
+          }
+          setIsImporterOpen(false);
+        }}
+      />
     </div>
   );
 }
+
+// Purchases page importer
 
 // Purchase Details Component
 interface PurchaseDetailsProps {

@@ -1,7 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Input, Select, Button, Checkbox, Badge } from '@x-ear/ui-web';
+import BrandAutocomplete from './BrandAutocomplete';
 import { ChevronDown, ChevronUp, X } from 'lucide-react';
 import { InventoryFilters as IInventoryFilters } from '../../../types/inventory';
+
+// Human-friendly category labels (keep in sync with InventoryList)
+const CATEGORY_LABELS: Record<string, string> = {
+  hearing_aid: 'İşitme Cihazı',
+  battery: 'Pil',
+  accessory: 'Aksesuar',
+  ear_mold: 'Kulak Kalıbı',
+  cleaning_supplies: 'Temizlik Malzemesi',
+  amplifiers: 'Amplifikatör'
+};
+
+interface CategoryAutocompleteProps {
+  categories: string[];
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({ categories, value, onChange }) => {
+  const [inputValue, setInputValue] = React.useState('');
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  // map key -> label
+  const items = useMemo(() => (categories || []).map(key => ({ key, label: CATEGORY_LABELS[key] || key })), [categories]);
+
+  React.useEffect(() => {
+    const matched = items.find(i => i.key === value);
+    setInputValue(matched ? matched.label : (value || ''));
+  }, [value, items]);
+
+  const normalized = (s: string) => s?.toLowerCase().replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c') || '';
+
+  const suggestions = useMemo(() => {
+    const q = normalized(inputValue);
+    if (!q) return items.slice(0, 10);
+    return items.filter(i => normalized(i.label).includes(q) || normalized(i.key).includes(q)).slice(0, 10);
+  }, [inputValue, items]);
+
+  return (
+    <div className="relative">
+      <Input
+        value={inputValue}
+        onChange={(e) => { setInputValue(e.target.value); setIsOpen(true); }}
+        onFocus={() => setIsOpen(true)}
+        placeholder="Kategori ara"
+      />
+      {isOpen && suggestions.length > 0 && (
+        <div className="absolute z-50 mt-1 w-full bg-white border rounded-md shadow max-h-56 overflow-auto">
+          {suggestions.map(s => (
+            <div
+              key={s.key}
+              className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+              onMouseDown={(e) => { e.preventDefault(); onChange(s.key); setIsOpen(false); }}
+            >
+              {s.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface AdvancedFiltersProps {
   filters: IInventoryFilters;
@@ -278,7 +340,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
              />
             </div>
 
-            {/* Supplier Filter */}
+              {/* Supplier Filter */}
             <div className="space-y-3">
               <h4 className="font-medium text-gray-900">Tedarikçi</h4>
               <Select
@@ -290,6 +352,26 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 ]}
               />
             </div>
+
+              {/* Brand Filter (typeahead) */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-gray-900">Marka</h4>
+                <BrandAutocomplete
+                  value={filters.brand || ''}
+                  onChange={(v) => onFiltersChange({ ...filters, brand: v || undefined })}
+                  placeholder="Marka ara"
+                />
+              </div>
+
+              {/* Category Filter (typeahead showing human labels) */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-gray-900">Kategori</h4>
+                <CategoryAutocomplete
+                  categories={categories}
+                  value={filters.category || ''}
+                  onChange={(v) => onFiltersChange({ ...filters, category: v || undefined })}
+                />
+              </div>
 
             {/* Warranty Period Filter */}
             <div className="space-y-3">

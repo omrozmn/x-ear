@@ -226,6 +226,14 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
     }
   };
 
+  const formatCurrencyTR = (amount?: number) => {
+    try {
+      return (Number(amount || 0)).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TRY';
+    } catch (e) {
+      return `${Number(amount || 0).toFixed(2)} TRY`;
+    }
+  };
+
   if (loading && devices.length === 0) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -381,6 +389,22 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
                       </p>
                     </div>
                   )}
+
+                  {/* Show sale price; if bilateral, multiply by 2 and mark as (Bilateral) */}
+                  <div className="mt-3">
+                    <p className="text-sm text-gray-700">
+                      <strong>Satış Fiyatı:</strong>{' '}
+                      {device.ear === 'both'
+                        ? (
+                          <>
+                            {formatCurrencyTR((device.salePrice || device.price || 0) * 2)}{' '}
+                            <span className="text-xs text-purple-600">(Bilateral)</span>
+                          </>
+                        )
+                        : formatCurrencyTR(device.salePrice || device.price || 0)
+                      }
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex items-center space-x-2 ml-4">

@@ -2,6 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { Upload, Download, Users, Tag, MessageSquare, Trash2, FileText, AlertCircle } from 'lucide-react';
 import { Button, Modal, useModal, Input, Select, Textarea, useToastHelpers } from '@x-ear/ui-web';
 import { Patient } from '../../types/patient';
+import UniversalImporter from '../../components/importer/UniversalImporter';
+import { z } from 'zod';
 
 
 interface PatientBulkOperationsProps {
@@ -185,41 +187,17 @@ export const PatientBulkOperations: React.FC<PatientBulkOperationsProps> = ({
     }
   }, [selectedPatients, success, error, exportModal]);
 
-  const handleCSVImport = useCallback(async (file: File) => {
-    try {
-      setIsProcessing(true);
-      
-      // Önce dosyayı okuyup preview oluştur
-      const text = await file.text();
-      const lines = text.split('\n').filter(line => line.trim());
-      
-      if (lines.length < 2) {
-        throw new Error('CSV dosyası en az 2 satır içermelidir (başlık + veri)');
-      }
-      
-      const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
-      const preview = lines.slice(1, 6).map(line => {
-        const values = line.split(',').map(v => v.replace(/"/g, '').trim());
-        return headers.reduce((obj, header, index) => {
-          obj[header] = values[index] || '';
-          return obj;
-        }, {} as any);
-      });
-      
-      setCsvImport({
-        file,
-        mapping: {},
-        preview,
-        errors: []
-      });
-      
-    } catch (err: any) {
-      console.error('CSV read error:', err);
-      error('CSV dosyası okunurken hata oluştu');
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [error]);
+  const patientSchema = z.object({
+    'Ad Soyad': z.string().min(1).optional(),
+    'Telefon': z.string().optional(),
+    'E-posta': z.string().email().optional(),
+    'TC No': z.string().optional(),
+    'Doğum Tarihi': z.string().optional(),
+    'Adres': z.string().optional(),
+    'Durum': z.string().optional()
+  });
+
+  // New importer integration will be provided via UniversalImporter component
 
   const handleCSVImportSubmit = useCallback(async () => {
     if (!csvImport.file) return;
@@ -409,73 +387,21 @@ export const PatientBulkOperations: React.FC<PatientBulkOperationsProps> = ({
       </Modal>
 
       {/* CSV Import Modal */}
-      <Modal
+      <UniversalImporter
         isOpen={importModal.isOpen}
         onClose={importModal.closeModal}
-        title="CSV İçe Aktarma"
-        size="lg"
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              CSV Dosyası Seç
-            </label>
-            <input
-              type="file"
-              accept=".csv"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleCSVImport(file);
-              }}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
-          </div>
-          
-          {csvImport.preview.length > 0 && (
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">Önizleme</h4>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      {Object.keys(csvImport.preview[0]).map(header => (
-                        <th key={header} className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          {header}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {csvImport.preview.map((row, index) => (
-                      <tr key={index}>
-                        {Object.values(row).map((value: any, cellIndex) => (
-                          <td key={cellIndex} className="px-3 py-2 text-sm text-gray-900">
-                            {value}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-          
-          <div className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={importModal.closeModal}>
-              İptal
-            </Button>
-            <Button 
-              disabled={!csvImport.file}
-              loading={isProcessing}
-              onClick={handleCSVImportSubmit}
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              İçe Aktar
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        entityFields={Object.entries(CSV_FIELD_MAPPING).map(([k, v]) => ({ key: k, label: v }))}
+        zodSchema={patientSchema}
+        onComplete={(res) => {
+          if (res.errors && res.errors.length > 0) {
+            warning(`${res.created + res.updated} satır işlendi, ${res.errors.length} hata bulundu`);
+          } else {
+            success(`${res.created} yeni hasta eklendi, ${res.updated} güncellendi`);
+          }
+          importModal.closeModal();
+          onRefresh();
+        }}
+      />
 
       {/* Bulk Tag Modal */}
       <Modal

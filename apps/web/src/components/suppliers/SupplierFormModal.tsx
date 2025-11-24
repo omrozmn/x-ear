@@ -1,7 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Input } from '@x-ear/ui-web';
-import { Building2, User, Mail, Phone, MapPin, Star } from 'lucide-react';
+import { Modal, Button, Input, Autocomplete, type AutocompleteOption } from '@x-ear/ui-web';
+import { Building2, User, Mail, Phone, MapPin, Globe } from 'lucide-react';
 import type { SupplierExtended } from './supplier-search.types';
+import citiesDataRaw from '../../data/cities.json';
+import countriesData from '../../data/countries.json';
+import currenciesData from '../../data/currencies.json';
+
+// Extract cities array from the JSON structure
+const citiesData = (citiesDataRaw as any).cities || [];
+const allCurrencies = [...currenciesData.top, ...currenciesData.others];
+
+// Convert to Autocomplete options
+const countryOptions: AutocompleteOption[] = countriesData.map(c => ({
+  id: c.code,
+  label: c.name,
+  value: c.code
+}));
+
+const cityOptions: AutocompleteOption[] = citiesData.map((c: any) => ({
+  id: c.name,
+  label: c.name,
+  value: c.name
+}));
 
 interface SupplierFormModalProps {
   isOpen: boolean;
@@ -11,10 +31,10 @@ interface SupplierFormModalProps {
   isLoading?: boolean;
 }
 
-export function SupplierFormModal({ 
-  isOpen, 
-  onClose, 
-  onSave, 
+export function SupplierFormModal({
+  isOpen,
+  onClose,
+  onSave,
   supplier,
   isLoading = false
 }: SupplierFormModalProps) {
@@ -30,16 +50,18 @@ export function SupplierFormModal({
     website: '',
     address: '',
     city: '',
-    country: 'Türkiye',
+    district: '',
+    country: 'TR',
     postalCode: '',
-    paymentTerms: '',
-    currency: 'TRY',
-    rating: 0,
     notes: '',
     isActive: true
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedCity, setSelectedCity] = useState<any>(null);
+
+  const isTurkey = formData.country === 'TR';
+  const districts = selectedCity?.districts || [];
 
   useEffect(() => {
     if (supplier) {
@@ -55,14 +77,18 @@ export function SupplierFormModal({
         website: supplier.website || '',
         address: supplier.address || '',
         city: supplier.city || '',
-        country: supplier.country || 'Türkiye',
+        district: supplier.district || '',
+        country: supplier.country || 'TR',
         postalCode: supplier.postalCode || '',
-        paymentTerms: supplier.paymentTerms || '',
-        currency: supplier.currency || 'TRY',
-        rating: supplier.rating || 0,
+
         notes: supplier.notes || '',
         isActive: supplier.isActive !== false
       });
+
+      if (supplier.city) {
+        const city = citiesData.find((c: any) => c.name === supplier.city);
+        setSelectedCity(city);
+      }
     } else {
       setFormData({
         companyName: '',
@@ -76,14 +102,14 @@ export function SupplierFormModal({
         website: '',
         address: '',
         city: '',
-        country: 'Türkiye',
+        district: '',
+        country: 'TR',
         postalCode: '',
-        paymentTerms: '',
-        currency: 'TRY',
-        rating: 0,
+
         notes: '',
         isActive: true
       });
+      setSelectedCity(null);
     }
     setErrors({});
   }, [supplier, isOpen]);
@@ -105,14 +131,41 @@ export function SupplierFormModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validate()) return;
+
+    if (!validate()) {
+      return;
+    }
 
     try {
-      await onSave(formData as any);
+      await onSave(formData);
       onClose();
     } catch (error) {
       console.error('Failed to save supplier:', error);
+    }
+  };
+
+  const handleChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+
+    if (field === 'city' && isTurkey) {
+      const city = citiesData.find((c: any) => c.name === value);
+      setSelectedCity(city);
+      setFormData(prev => ({ ...prev, district: '' }));
+    }
+
+    if (field === 'country') {
+      if (value !== 'TR') {
+        setFormData(prev => ({ ...prev, city: '', district: '' }));
+        setSelectedCity(null);
+      }
     }
   };
 
@@ -120,122 +173,26 @@ export function SupplierFormModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={supplier ? 'Tedarikçi Düzenle' : 'Yeni Tedarikçi'}
+      title={supplier ? 'Tedarikçiyi Düzenle' : 'Yeni Tedarikçi'}
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Company Information */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium text-gray-900 flex items-center">
-            <Building2 className="h-4 w-4 mr-2" />
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
             Şirket Bilgileri
           </h3>
-          
           <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Şirket Adı <span className="text-red-500">*</span>
+                Şirket Adı *
               </label>
               <Input
                 value={formData.companyName}
-                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                placeholder="Şirket adı"
-                className={errors.companyName ? 'border-red-500' : ''}
-              />
-              {errors.companyName && (
-                <p className="mt-1 text-sm text-red-600">{errors.companyName}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Şirket Kodu
-              </label>
-              <Input
-                value={formData.companyCode}
-                onChange={(e) => setFormData({ ...formData, companyCode: e.target.value })}
-                placeholder="Şirket kodu"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Vergi Numarası
-              </label>
-              <Input
-                value={formData.taxNumber}
-                onChange={(e) => setFormData({ ...formData, taxNumber: e.target.value })}
-                placeholder="Vergi numarası"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Vergi Dairesi
-              </label>
-              <Input
-                value={formData.taxOffice}
-                onChange={(e) => setFormData({ ...formData, taxOffice: e.target.value })}
-                placeholder="Vergi dairesi"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Contact Information */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium text-gray-900 flex items-center">
-            <User className="h-4 w-4 mr-2" />
-            İletişim Bilgileri
-          </h3>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Yetkili Kişi
-              </label>
-              <Input
-                value={formData.contactPerson}
-                onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-                placeholder="Yetkili kişi"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="email@example.com"
-                className={errors.email ? 'border-red-500' : ''}
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Telefon
-              </label>
-              <Input
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="(555) 123-4567"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Mobil
-              </label>
-              <Input
-                value={formData.mobile}
-                onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                placeholder="(555) 123-4567"
+                onChange={(e) => handleChange('companyName', e.target.value)}
+                placeholder="Şirket adını giriniz"
+                error={errors.companyName}
               />
             </div>
 
@@ -245,161 +202,224 @@ export function SupplierFormModal({
               </label>
               <Input
                 value={formData.website}
-                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                placeholder="https://example.com"
+                onChange={(e) => handleChange('website', e.target.value)}
+                placeholder="https://www.example.com"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Vergi Numarası
+              </label>
+              <Input
+                value={formData.taxNumber}
+                onChange={(e) => handleChange('taxNumber', e.target.value)}
+                placeholder="10 haneli vergi numarası"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Şirket Kodu
+              </label>
+              <Input
+                value={formData.companyCode}
+                onChange={(e) => handleChange('companyCode', e.target.value)}
+                placeholder="Örn: SUP001"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Vergi Dairesi
+              </label>
+              <Input
+                value={formData.taxOffice}
+                onChange={(e) => handleChange('taxOffice', e.target.value)}
+                placeholder="Vergi dairesi adı"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Durum
+              </label>
+              <select
+                value={formData.isActive ? 'active' : 'inactive'}
+                onChange={(e) => handleChange('isActive', e.target.value === 'active')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="active">Aktif</option>
+                <option value="inactive">Pasif</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Information */}
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <User className="h-4 w-4" />
+            İletişim Bilgileri
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Yetkili Kişi
+              </label>
+              <Input
+                value={formData.contactPerson}
+                onChange={(e) => handleChange('contactPerson', e.target.value)}
+                placeholder="İsim soyisim"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                E-posta
+              </label>
+              <Input
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                placeholder="ornek@email.com"
+                error={errors.email}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Telefon
+              </label>
+              <Input
+                value={formData.phone}
+                onChange={(e) => handleChange('phone', e.target.value)}
+                placeholder="0212 XXX XX XX"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mobil
+              </label>
+              <Input
+                value={formData.mobile}
+                onChange={(e) => handleChange('mobile', e.target.value)}
+                placeholder="0532 XXX XX XX"
               />
             </div>
           </div>
         </div>
 
-        {/* Address */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium text-gray-900 flex items-center">
-            <MapPin className="h-4 w-4 mr-2" />
+        {/* Address Information */}
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
             Adres Bilgileri
           </h3>
-          
           <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Autocomplete
+                label="Ülke"
+                options={countryOptions}
+                value={countryOptions.find(c => c.value === formData.country) || null}
+                onChange={(option) => handleChange('country', option?.value || 'TR')}
+                placeholder="Ülke seçiniz veya arayın..."
+                minSearchLength={0}
+              />
+            </div>
+
+            <div>
+              {isTurkey ? (
+                <Autocomplete
+                  label="İl"
+                  options={cityOptions}
+                  value={cityOptions.find(c => c.value === formData.city) || null}
+                  onChange={(option) => handleChange('city', option?.value || '')}
+                  placeholder="İl seçiniz veya arayın..."
+                  minSearchLength={0}
+                />
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Şehir
+                  </label>
+                  <Input
+                    value={formData.city}
+                    onChange={(e) => handleChange('city', e.target.value)}
+                    placeholder="Şehir giriniz"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div>
+              {isTurkey ? (
+                <Autocomplete
+                  label="İlçe"
+                  options={districts.map((d: string) => ({ id: d, label: d, value: d }))}
+                  value={districts.find((d: string) => d === formData.district) ? { id: formData.district, label: formData.district, value: formData.district } : null}
+                  onChange={(option) => handleChange('district', option?.value || '')}
+                  placeholder={selectedCity ? "İlçe seçiniz veya arayın..." : "Önce il seçiniz"}
+                  disabled={!selectedCity}
+                  minSearchLength={0}
+                />
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Bölge
+                  </label>
+                  <Input
+                    value={formData.district}
+                    onChange={(e) => handleChange('district', e.target.value)}
+                    placeholder="Bölge giriniz"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Posta Kodu
+              </label>
+              <Input
+                value={formData.postalCode}
+                onChange={(e) => handleChange('postalCode', e.target.value)}
+                placeholder="34000"
+              />
+            </div>
+
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Adres
               </label>
               <textarea
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                placeholder="Tam adres"
+                onChange={(e) => handleChange('address', e.target.value)}
+                placeholder="Tam adres giriniz"
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Şehir
-              </label>
-              <Input
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                placeholder="Şehir"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ülke
-              </label>
-              <Input
-                value={formData.country}
-                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                placeholder="Ülke"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Posta Kodu
-              </label>
-              <Input
-                value={formData.postalCode}
-                onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                placeholder="Posta kodu"
               />
             </div>
           </div>
         </div>
 
-        {/* Additional Info */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium text-gray-900 flex items-center">
-            <Star className="h-4 w-4 mr-2" />
-            Ek Bilgiler
-          </h3>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ödeme Koşulları
-              </label>
-              <Input
-                value={formData.paymentTerms}
-                onChange={(e) => setFormData({ ...formData, paymentTerms: e.target.value })}
-                placeholder="Örn: Net 30"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Para Birimi
-              </label>
-              <select
-                value={formData.currency}
-                onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="TRY">TRY</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Değerlendirme
-              </label>
-              <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map((rating) => (
-                  <button
-                    key={rating}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, rating })}
-                    className="p-1"
-                  >
-                    <Star
-                      className={`h-6 w-6 ${
-                        rating <= formData.rating
-                          ? 'text-yellow-400 fill-yellow-400'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Durum
-              </label>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label className="ml-2 text-sm text-gray-700">
-                  Aktif
-                </label>
-              </div>
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Notlar
-              </label>
-              <textarea
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Ek notlar..."
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
+        {/* Notes */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Notlar
+          </label>
+          <textarea
+            value={formData.notes}
+            onChange={(e) => handleChange('notes', e.target.value)}
+            placeholder="İlave notlar..."
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
+        <div className="flex justify-end gap-3 pt-4 border-t">
           <Button
             type="button"
             variant="outline"
@@ -411,8 +431,9 @@ export function SupplierFormModal({
           <Button
             type="submit"
             disabled={isLoading}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            {isLoading ? 'Kaydediliyor...' : supplier ? 'Güncelle' : 'Oluştur'}
+            {isLoading ? 'Kaydediliyor...' : supplier ? 'Güncelle' : 'Kaydet'}
           </Button>
         </div>
       </form>

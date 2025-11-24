@@ -1,0 +1,217 @@
+import { useState, useEffect } from 'react';
+// import { useAuthStore } from '@/stores/authStore'; // Auth store needs to be ported or mocked for now
+import { adminApi } from '@/lib/api';
+import { DashboardMetrics } from '@/types';
+import {
+    Users,
+    CreditCard,
+    TrendingUp,
+    AlertTriangle,
+    Activity,
+    UserPlus,
+    UserMinus,
+    Clock
+} from 'lucide-react';
+
+export default function AdminDashboardPage() {
+    // const { user } = useAuthStore();
+    const user = { name: 'Admin User', email: 'admin@x-ear.com' }; // Mock for now
+    const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        loadDashboardData();
+    }, []);
+
+    const loadDashboardData = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await adminApi.get('/admin/dashboard/metrics');
+
+            if (response.data.success) {
+                setMetrics(response.data.data.metrics);
+            }
+        } catch (err: any) {
+            console.error('Dashboard load error:', err);
+            setError(err.response?.data?.error?.message || 'Failed to load dashboard data');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const formatNumber = (num: number) => {
+        return new Intl.NumberFormat('tr-TR').format(num);
+    };
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('tr-TR', {
+            style: 'currency',
+            currency: 'TRY'
+        }).format(amount);
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            {/* Welcome section */}
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                    Hoşgeldiniz, {user?.name || user?.email}
+                </h1>
+                <p className="text-gray-600">
+                    Admin panelinize genel bakış.
+                </p>
+            </div>
+
+            {/* Error State */}
+            {error && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                    <div className="flex">
+                        <AlertTriangle className="h-5 w-5 text-red-400" />
+                        <div className="ml-3">
+                            <h3 className="text-sm font-medium text-red-800">Veriler yüklenirken hata oluştu</h3>
+                            <p className="text-sm text-red-700 mt-1">{error}</p>
+                            <button
+                                onClick={loadDashboardData}
+                                className="mt-2 text-sm text-red-800 underline hover:text-red-900"
+                            >
+                                Tekrar Dene
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Alerts */}
+            {metrics && (metrics.alerts.expiring_soon > 0 || metrics.alerts.high_churn > 0 || metrics.alerts.low_utilization > 0) && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                    <div className="flex">
+                        <AlertTriangle className="h-5 w-5 text-yellow-400" />
+                        <div className="ml-3">
+                            <h3 className="text-sm font-medium text-yellow-800">Dikkat Gerektiren Durumlar</h3>
+                            <div className="text-sm text-yellow-700 mt-1">
+                                {metrics.alerts.expiring_soon > 0 && (
+                                    <p>{metrics.alerts.expiring_soon} üyelik yakında sona eriyor</p>
+                                )}
+                                {metrics.alerts.high_churn > 0 && (
+                                    <p>Yüksek churn oranı tespit edildi</p>
+                                )}
+                                {metrics.alerts.low_utilization > 0 && (
+                                    <p>{metrics.alerts.low_utilization} kiracıda düşük kullanım oranı</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Stats grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Active Tenants */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <div className="flex items-center">
+                        <div className="p-3 rounded-full bg-blue-100 text-blue-600">
+                            <Activity className="h-6 w-6" />
+                        </div>
+                        <div className="ml-4">
+                            <p className="text-sm font-medium text-gray-500">Aktif Kiracılar</p>
+                            <p className="text-2xl font-semibold text-gray-900">
+                                {metrics ? formatNumber(metrics.overview.active_tenants) : '-'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Active Users */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <div className="flex items-center">
+                        <div className="p-3 rounded-full bg-green-100 text-green-600">
+                            <Users className="h-6 w-6" />
+                        </div>
+                        <div className="ml-4">
+                            <p className="text-sm font-medium text-gray-500">Aktif Kullanıcılar</p>
+                            <p className="text-2xl font-semibold text-gray-900">
+                                {metrics ? formatNumber(metrics.overview.active_users) : '-'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* MRR */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <div className="flex items-center">
+                        <div className="p-3 rounded-full bg-indigo-100 text-indigo-600">
+                            <CreditCard className="h-6 w-6" />
+                        </div>
+                        <div className="ml-4">
+                            <p className="text-sm font-medium text-gray-500">Aylık Gelir (MRR)</p>
+                            <p className="text-2xl font-semibold text-gray-900">
+                                {metrics ? formatCurrency(metrics.revenue.monthly_recurring_revenue) : '-'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Churn Rate */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <div className="flex items-center">
+                        <div className="p-3 rounded-full bg-red-100 text-red-600">
+                            <TrendingUp className="h-6 w-6" />
+                        </div>
+                        <div className="ml-4">
+                            <p className="text-sm font-medium text-gray-500">Churn Oranı</p>
+                            <p className="text-2xl font-semibold text-gray-900">
+                                {metrics ? `%${metrics.health_metrics.churn_rate_percent.toFixed(1)}` : '-'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Secondary Metrics */}
+            {metrics && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                        <div className="flex items-center">
+                            <UserPlus className="h-5 w-5 text-purple-500 mr-3" />
+                            <div>
+                                <p className="text-sm text-gray-500">Yeni Kiracılar (7 gün)</p>
+                                <p className="text-lg font-semibold">{formatNumber(metrics.recent_activity.new_tenants_7d)}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                        <div className="flex items-center">
+                            <UserMinus className="h-5 w-5 text-orange-500 mr-3" />
+                            <div>
+                                <p className="text-sm text-gray-500">Sona Erecek (30 gün)</p>
+                                <p className="text-lg font-semibold">{formatNumber(metrics.recent_activity.expiring_memberships_30d)}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                        <div className="flex items-center">
+                            <Clock className="h-5 w-5 text-blue-500 mr-3" />
+                            <div>
+                                <p className="text-sm text-gray-500">Koltuk Doluluk</p>
+                                <p className="text-lg font-semibold">%{metrics.health_metrics.avg_seat_utilization_percent.toFixed(1)}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

@@ -50,6 +50,15 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
   const [availableDevices, setAvailableDevices] = useState<DeviceInventoryItem[]>([]);
   const [deviceSearch, setDeviceSearch] = useState('');
   const [selectedDevice, setSelectedDevice] = useState<DeviceInventoryItem | null>(null);
+
+  // Helper to format currency as TR locale with TRY suffix
+  const formatCurrencyTR = (amount: number) => {
+    try {
+      return (amount ?? 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TRY';
+    } catch (e) {
+      return `${Number(amount || 0).toFixed(2)} TRY`;
+    }
+  };
   
   // SGK and pricing
   const sgkAmounts = {
@@ -151,9 +160,12 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
     setErrors({});
   }, [device, open, availableDevices]);
 
-  const filteredDevices = availableDevices.filter(device =>
-    `${device.brand} ${device.model}`.toLowerCase().includes(deviceSearch.toLowerCase())
-  );
+  const filteredDevices = availableDevices.filter(d => {
+    const q = deviceSearch.trim().toLowerCase();
+    if (!q) return true;
+    const searchString = [d.brand, d.model, (d as any).name, d.type].filter(Boolean).join(' ').toLowerCase();
+    return searchString.includes(q);
+  });
 
   const handleDeviceSelect = (device: DeviceInventoryItem) => {
     setSelectedDevice(device);
@@ -335,7 +347,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                       <p className="text-sm text-gray-500 capitalize">{device.type.replace('_', ' ')}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-gray-900">{device.listPrice.toLocaleString('tr-TR')} ₺</p>
+                      <p className="font-medium text-gray-900">{formatCurrencyTR(device.listPrice)}</p>
                       <p className="text-sm text-gray-500">{device.availableSerials.length} adet mevcut</p>
                     </div>
                   </div>
@@ -356,7 +368,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 <span className="font-medium text-blue-900">Seçili Cihaz</span>
               </div>
               <p className="text-blue-800">{selectedDevice.brand} {selectedDevice.model}</p>
-              <p className="text-sm text-blue-600">{selectedDevice.listPrice.toLocaleString('tr-TR')} ₺</p>
+              <p className="text-sm text-blue-600">{formatCurrencyTR(selectedDevice.listPrice)}</p>
             </div>
           )}
           

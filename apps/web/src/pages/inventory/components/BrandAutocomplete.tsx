@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import axios from 'axios';
 import { Input } from '@x-ear/ui-web';
@@ -31,6 +32,8 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
   const [allBrands, setAllBrands] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement | null>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
   // Default hearing aid brands (fallback)
   const defaultBrands = [
@@ -154,8 +157,9 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
 
   // Check if current value is an exact match
   const brands = allBrands.length > 0 ? allBrands : defaultBrands;
-  const hasExactMatch = brands.some(brand => brand.toLowerCase() === value.toLowerCase());
-  const showCreateNew = value.trim() && !hasExactMatch && isOpen;
+  const valStr = value || '';
+  const hasExactMatch = brands.some(brand => (brand || '').toLowerCase() === valStr.toLowerCase());
+  const showCreateNew = valStr.trim() && !hasExactMatch && isOpen;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -172,6 +176,42 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    portalRef.current = document.createElement('div');
+    portalRef.current.setAttribute('data-portal', 'brand-autocomplete');
+    document.body.appendChild(portalRef.current);
+    return () => {
+      if (portalRef.current && portalRef.current.parentNode) {
+        portalRef.current.parentNode.removeChild(portalRef.current);
+      }
+      portalRef.current = null;
+    };
+  }, []);
+
+  const updateDropdownPosition = () => {
+    const inputEl = inputRef.current;
+    if (!inputEl) return;
+    const rect = inputEl.getBoundingClientRect();
+    setDropdownStyle({
+      position: 'absolute',
+      left: `${rect.left + window.scrollX}px`,
+      top: `${rect.bottom + window.scrollY}px`,
+      width: `${rect.width}px`,
+      zIndex: 9999
+    });
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    updateDropdownPosition();
+    window.addEventListener('resize', updateDropdownPosition);
+    window.addEventListener('scroll', updateDropdownPosition, true);
+    return () => {
+      window.removeEventListener('resize', updateDropdownPosition);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
+    };
+  }, [isOpen, filteredBrands.length]);
 
   const handleSelect = (brand: string) => {
     onChange(brand);
@@ -247,11 +287,12 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
           aria-controls="brand-autocomplete-list"
         />
         
-        {isOpen && (filteredBrands.length > 0 || showCreateNew) && (
+        {isOpen && (filteredBrands.length > 0 || showCreateNew) && portalRef.current && ReactDOM.createPortal(
           <div
             ref={dropdownRef}
             id="brand-autocomplete-list"
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
+            style={dropdownStyle}
+            className="bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
             role="listbox"
           >
             {filteredBrands.map((brand, index) => (
@@ -273,7 +314,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
                 </div>
               </div>
             ))}
-            
+
             {showCreateNew && (
               <div
                 role="option"
@@ -296,7 +337,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
               </div>
             )}
           </div>
-        )}
+        , portalRef.current)}
       </div>
       
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}

@@ -23,7 +23,7 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
   };
 
   const formatCurrency = (amount?: number) => {
-    if (!amount) return '-';
+    if (amount === undefined || amount === null) return '-';
     return `₺${amount.toLocaleString('tr-TR')}`;
   };
 
@@ -174,7 +174,24 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
           </div>
           <div>
             <span className="text-gray-500">Satış Fiyatı:</span>
-            <p className="font-medium text-gray-900">{formatCurrency(device.salePrice)}</p>
+            <p className="font-medium text-gray-900">
+              {(() => {
+                const dp: any = device as any;
+                // Prefer explicit patientPayment (canonical). If missing, but SGK reduction exists,
+                // compute displayed amount as salePrice - sgkReduction to match the modal's net payable.
+                if (dp.patientPayment !== undefined && dp.patientPayment !== null) {
+                  return formatCurrency(dp.patientPayment);
+                }
+
+                const sale = (dp.salePrice !== undefined && dp.salePrice !== null) ? dp.salePrice : dp.listPrice;
+                const sgk = (dp.sgkReduction !== undefined && dp.sgkReduction !== null) ? dp.sgkReduction : 0;
+                if (sale !== undefined && sale !== null) {
+                  return formatCurrency(Math.max(0, sale - sgk));
+                }
+
+                return '-';
+              })()}
+            </p>
           </div>
           {device.sgkReduction && (
             <div>

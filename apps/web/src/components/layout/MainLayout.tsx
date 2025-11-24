@@ -93,8 +93,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { key: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/' },
     { key: 'patients', label: 'Hastalar', icon: Users, href: '/patients' },
     { key: 'appointments', label: 'Randevular', icon: Calendar, href: '/appointments' },
-    { key: 'inventory', label: 'Envanter', icon: Package, href: '/inventory' },
-    { key: 'suppliers', label: 'Tedarikçiler', icon: Building2, href: '/suppliers' },
     { 
       key: 'invoices', 
       label: 'Fatura', 
@@ -106,6 +104,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         { label: 'Ödeme Takibi', href: '/invoices/payments' }
       ]
     },
+    { key: 'inventory', label: 'Envanter', icon: Package, href: '/inventory' },
+    { key: 'suppliers', label: 'Tedarikçiler', icon: Building2, href: '/suppliers' },
     { key: 'cashflow', label: 'Kasa', icon: Wallet, href: '/cashflow' },
     { key: 'campaigns', label: 'Kampanyalar', icon: Megaphone, href: '/campaigns' },
     { 

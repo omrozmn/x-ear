@@ -22,10 +22,12 @@ export const REVERSE_CATEGORY_MAPPING: Record<string, string> = {
   'Amplifikatör': 'amplifiers'
 };
 
-export function getCategoryDisplay(backendValue: string): string {
+export function getCategoryDisplay(backendValue?: string): string {
+  if (!backendValue) return '';
   return CATEGORY_MAPPING[backendValue] || backendValue;
 }
 
-export function getCategoryValue(displayLabel: string): string {
+export function getCategoryValue(displayLabel?: string): string {
+  if (!displayLabel) return '';
   return REVERSE_CATEGORY_MAPPING[displayLabel] || displayLabel;
 }

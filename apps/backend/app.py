@@ -432,6 +432,20 @@ app.register_blueprint(registration_bp)
 # Register auth blueprint (login/OTP endpoints)
 app.register_blueprint(auth_bp, url_prefix='/api')
 
+# ===== ADMIN PANEL ENDPOINTS =====
+from routes.admin import admin_bp
+app.register_blueprint(admin_bp)  # admin_bp already has url_prefix='/api/admin'
+
+from routes.admin_plans import admin_plans_bp
+app.register_blueprint(admin_plans_bp)  # admin_plans_bp already has url_prefix='/api/admin/plans'
+
+from routes.admin_tenants import admin_tenants_bp
+app.register_blueprint(admin_tenants_bp)  # admin_tenants_bp already has url_prefix='/api/admin/tenants'
+
+from routes.admin_dashboard import admin_dashboard_bp
+app.register_blueprint(admin_dashboard_bp)  # admin_dashboard_bp already has url_prefix='/api/admin/dashboard'
+
+
 # Global error handler to capture unexpected exceptions and return JSON during development
 import traceback
 @app.errorhandler(Exception)

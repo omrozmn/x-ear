@@ -44,3 +44,15 @@ class BirfaturaClient:
 
     def send_basic_invoice(self, payload: dict) -> dict:
         return self.post('/api/outEBelgeV2/SendBasicInvoiceFromModel', payload)
+    
+    def get_inbox_documents(self, payload: dict) -> dict:
+        """Get incoming documents (invoices from suppliers)"""
+        return self.post('/api/OutEBelgeV2/GetInBoxDocuments', payload)
+    
+    def get_outbox_documents(self, payload: dict) -> dict:
+        """Get outgoing documents (return/correction invoices to suppliers)"""
+        return self.post('/api/OutEBelgeV2/GetOutBoxDocuments', payload)
+    
+    def get_inbox_documents_with_detail(self, payload: dict) -> dict:
+        """Get incoming documents with detailed XML content"""
+        return self.post('/api/OutEBelgeV2/GetInBoxDocumentsWithDetail', payload)

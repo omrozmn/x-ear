@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
-import { Modal, Button, Select, Input, Textarea, Alert } from '@x-ear/ui-web';
+import { Modal, Button, Input, Alert } from '@x-ear/ui-web';
+import { Trash2, Box, Folder, RefreshCw, DollarSign, Tag, Truck, Star } from 'lucide-react';
 import { InventoryCategory, InventoryStatus } from '../../../types/inventory';
+import { SupplierAutocomplete } from './SupplierAutocomplete';
+import CategoryAutocomplete from './CategoryAutocomplete';
+import BrandAutocomplete from './BrandAutocomplete';
 
 interface BulkOperationsModalProps {
   isOpen: boolean;
@@ -11,29 +15,27 @@ interface BulkOperationsModalProps {
 }
 
 export interface BulkOperation {
-  type: 'delete' | 'update_stock' | 'change_category' | 'change_status' | 'update_price' | 'export' | 'update_supplier' | 'add_features';
+  type: 'delete' | 'update_stock' | 'change_category' | 'change_status' | 'update_price' | 'update_supplier' | 'add_features' | 'change_brand';
   data?: {
     stock?: number;
     category?: InventoryCategory;
     status?: InventoryStatus;
     price?: number;
-    reason?: string;
+    kdv?: number;
     supplier?: string;
+    brand?: string;
     features?: string[];
-    exportFormat?: 'csv' | 'excel' | 'pdf';
   };
 }
 
-const OPERATION_TYPES = [
-  { value: 'delete', label: 'Seçili Ürünleri Sil', icon: '🗑️', color: 'red' },
-  { value: 'update_stock', label: 'Stok Güncelle', icon: '📦', color: 'blue' },
-  { value: 'change_category', label: 'Kategori Değiştir', icon: '📂', color: 'green' },
-  { value: 'change_status', label: 'Durum Değiştir', icon: '🔄', color: 'yellow' },
-  { value: 'update_price', label: 'Fiyat Güncelle', icon: '💰', color: 'purple' },
-  { value: 'export', label: 'Seçili Ürünleri Dışa Aktar', icon: '📤', color: 'blue' },
-  { value: 'update_supplier', label: 'Tedarikçi Güncelle', icon: '🏢', color: 'green' },
-  { value: 'add_features', label: 'Özellik Ekle', icon: '⭐', color: 'purple' }
-];
+    const OPERATION_TYPES = [
+      { value: 'update_stock', label: 'Stok Güncelle', icon: <Box className="w-5 h-5" />, color: 'blue' },
+      { value: 'change_category', label: 'Kategori Değiştir', icon: <Folder className="w-5 h-5" />, color: 'green' },
+      { value: 'update_price', label: 'Fiyat/KDV Güncelle', icon: <DollarSign className="w-5 h-5" />, color: 'purple' },
+      { value: 'change_brand', label: 'Marka Değiştir', icon: <Tag className="w-5 h-5" />, color: 'green' },
+      { value: 'update_supplier', label: 'Tedarikçi Güncelle', icon: <Truck className="w-5 h-5" />, color: 'green' },
+      { value: 'add_features', label: 'Özellik Ekle', icon: <Star className="w-5 h-5" />, color: 'purple' }
+    ];
 
 const CATEGORIES = [
   { value: 'hearing_aid', label: 'İşitme Cihazı' },
@@ -44,12 +46,7 @@ const CATEGORIES = [
   { value: 'amplifiers', label: 'Amplifikatör' }
 ];
 
-const STATUSES = [
-  { value: 'active', label: 'Aktif' },
-  { value: 'inactive', label: 'Pasif' },
-  { value: 'discontinued', label: 'Üretimi Durduruldu' },
-  { value: 'out_of_stock', label: 'Stokta Yok' }
-];
+// status changes are not available via bulk operations in this UI
 
 export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
   isOpen,
@@ -64,28 +61,50 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
     category: '',
     status: '',
     price: '',
-    reason: '',
+    kdv: '',
     supplier: '',
+    brand: '',
     features: [] as string[],
-    exportFormat: 'csv' as 'csv' | 'excel' | 'pdf',
     newFeature: ''
   });
 
   const handleSubmit = async () => {
     if (!operationType) return;
 
+    // Build operation payload only with relevant fields for the selected operation
+    const data: any = {};
+      switch (operationType) {
+      case 'delete':
+        break;
+      case 'update_stock':
+        data.stock = (formData.stock !== undefined && formData.stock !== '') ? parseInt(formData.stock) : undefined;
+        break;
+      case 'change_category':
+        data.category = formData.category as InventoryCategory || undefined;
+        break;
+      
+      case 'update_price':
+        data.price = (formData.price !== undefined && formData.price !== '') ? parseFloat(formData.price) : undefined;
+        if (formData.kdv !== undefined && formData.kdv !== '') {
+          data.kdv = parseFloat(formData.kdv);
+        }
+        break;
+      case 'update_supplier':
+        data.supplier = formData.supplier || undefined;
+        break;
+      case 'change_brand':
+        data.brand = formData.brand || undefined;
+        break;
+      case 'add_features':
+        data.features = formData.features.length > 0 ? formData.features : undefined;
+        break;
+      default:
+        break;
+    }
+
     const operation: BulkOperation = {
       type: operationType as BulkOperation['type'],
-      data: {
-        stock: formData.stock ? parseInt(formData.stock) : undefined,
-        category: formData.category as InventoryCategory || undefined,
-        status: formData.status as InventoryStatus || undefined,
-        price: formData.price ? parseFloat(formData.price) : undefined,
-        reason: formData.reason || undefined,
-        supplier: formData.supplier || undefined,
-        features: formData.features.length > 0 ? formData.features : undefined,
-        exportFormat: formData.exportFormat || undefined
-      }
+      data: Object.keys(data).length ? data : undefined
     };
 
     await onBulkOperation(operation);
@@ -99,11 +118,11 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
       category: '',
       status: '',
       price: '',
-      reason: '',
       supplier: '',
+      brand: '',
       features: [],
-      exportFormat: 'csv',
       newFeature: ''
+      ,reason: ''
     });
     onClose();
   };
@@ -123,17 +142,21 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
         </Alert>
 
         <div>
-          <Select
-            label="İşlem Türü"
-            value={operationType}
-            onChange={(e) => setOperationType(e.target.value)}
-            options={OPERATION_TYPES.map(op => ({
-              value: op.value,
-              label: `${op.icon} ${op.label}`
-            }))}
-            placeholder="İşlem seçin..."
-            required
-          />
+          <label className="block text-sm font-medium text-gray-700 mb-2">İşlem Türü</label>
+          <div className="grid grid-cols-3 gap-2">
+            {OPERATION_TYPES.map(op => (
+              <button
+                key={op.value}
+                type="button"
+                onClick={() => setOperationType(op.value)}
+                aria-pressed={operationType === op.value}
+                className={`flex items-center space-x-2 p-3 border rounded-md text-sm focus:outline-none transition-colors ${operationType === op.value ? 'bg-blue-50 border-blue-300' : 'bg-white hover:bg-gray-50'}`}
+              >
+                <span className="text-gray-700">{op.icon}</span>
+                <span className="text-left text-sm text-gray-800">{op.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {operationType === 'update_stock' && (
@@ -144,36 +167,22 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
               value={formData.stock}
               onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
               placeholder="Stok miktarını girin..."
-              required
+              
             />
           </div>
         )}
 
         {operationType === 'change_category' && (
           <div>
-            <Select
-              label="Yeni Kategori"
+            <CategoryAutocomplete
               value={formData.category}
-              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-              options={CATEGORIES}
-              placeholder="Kategori seçin..."
+              onChange={(val) => setFormData(prev => ({ ...prev, category: val }))}
+              placeholder="Kategori seçin veya yazın"
               required
             />
           </div>
         )}
 
-        {operationType === 'change_status' && (
-          <div>
-            <Select
-              label="Yeni Durum"
-              value={formData.status}
-              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-              options={STATUSES}
-              placeholder="Durum seçin..."
-              required
-            />
-          </div>
-        )}
 
         {operationType === 'update_price' && (
           <div>
@@ -183,35 +192,44 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
               step="0.01"
               value={formData.price}
               onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-              placeholder="Fiyat girin..."
-              required
+              placeholder="Fiyat girin... (boş bırakılırsa değiştirilmez)"
             />
+            <div className="mt-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">KDV Oranı (%)</label>
+              <select
+                value={formData.kdv}
+                onChange={(e) => setFormData(prev => ({ ...prev, kdv: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">(Aynı bırak)</option>
+                <option value="0">0%</option>
+                <option value="1">1%</option>
+                <option value="8">8%</option>
+                <option value="18">18%</option>
+              </select>
+            </div>
           </div>
         )}
 
-        {operationType === 'export' && (
-          <div>
-            <Select
-              label="Dışa Aktarma Formatı"
-              value={formData.exportFormat}
-              onChange={(e) => setFormData(prev => ({ ...prev, exportFormat: e.target.value as 'csv' | 'excel' | 'pdf' }))}
-              options={[
-                { value: 'csv', label: '📊 CSV Dosyası' },
-                { value: 'excel', label: '📈 Excel Dosyası' },
-                { value: 'pdf', label: '📄 PDF Raporu' }
-              ]}
-              required
-            />
-          </div>
-        )}
+        
 
         {operationType === 'update_supplier' && (
           <div>
-            <Input
-              label="Yeni Tedarikçi"
+            <SupplierAutocomplete
               value={formData.supplier}
-              onChange={(e) => setFormData(prev => ({ ...prev, supplier: e.target.value }))}
-              placeholder="Tedarikçi adını girin..."
+              onChange={(val) => setFormData(prev => ({ ...prev, supplier: val }))}
+              placeholder="Tedarikçi adını girin veya seçin"
+              required
+            />
+          </div>
+        )}
+
+        {operationType === 'change_brand' && (
+          <div>
+            <BrandAutocomplete
+              value={formData.brand}
+              onChange={(val) => setFormData(prev => ({ ...prev, brand: val }))}
+              placeholder="Marka seçin veya yazın"
               required
             />
           </div>
@@ -277,23 +295,14 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
           </div>
         )}
 
-        {operationType && (
-          <div>
-            <Textarea
-              label="İşlem Nedeni (Opsiyonel)"
-              value={formData.reason}
-              onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
-              placeholder="Bu işlemi neden yapıyorsunuz?"
-              rows={3}
-            />
-          </div>
-        )}
+        
 
         <div className="flex justify-end space-x-3 pt-4 border-t">
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={handleClose}
             disabled={isLoading}
+            className="text-gray-600 hover:bg-gray-50"
           >
             İptal
           </Button>
@@ -301,9 +310,17 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
             onClick={handleSubmit}
             disabled={!operationType || isLoading}
             loading={isLoading}
-            variant={selectedOperation?.color === 'red' ? 'danger' : 'primary'}
+            className={`inline-flex items-center px-4 py-2 rounded-md ${
+              selectedOperation?.color === 'red' ? 'bg-red-600 hover:bg-red-700 text-white' :
+              selectedOperation?.color === 'blue' ? 'bg-blue-600 hover:bg-blue-700 text-white' :
+              selectedOperation?.color === 'green' ? 'bg-green-600 hover:bg-green-700 text-white' :
+              selectedOperation?.color === 'yellow' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' :
+              selectedOperation?.color === 'purple' ? 'bg-purple-600 hover:bg-purple-700 text-white' :
+              'bg-blue-600 hover:bg-blue-700 text-white'
+            }`}
           >
-            {selectedOperation?.icon} {selectedOperation?.label}
+            <span className="mr-2">{selectedOperation?.icon}</span>
+            <span className="font-medium">{selectedOperation?.label}</span>
           </Button>
         </div>
       </div>

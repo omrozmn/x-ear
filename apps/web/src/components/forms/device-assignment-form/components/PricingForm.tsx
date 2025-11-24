@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Input, Select } from '@x-ear/ui-web';
 import { CreditCard, Calculator, Percent, DollarSign } from 'lucide-react';
 
@@ -7,6 +7,7 @@ export interface DeviceAssignment {
   salePrice?: number;
   sgkSupportType?: string;
   sgkReduction?: number;
+  kdvRate?: number;
   discountType?: 'none' | 'percentage' | 'amount';
   discountValue?: number;
   patientPayment?: number;
@@ -56,6 +57,89 @@ export const PricingForm: React.FC<PricingFormProps> = ({
     { value: 'over18_working', label: '18+ Yaş (Çalışan)' },
     { value: 'over18_retired', label: '18+ Yaş (Emekli)' }
   ];
+
+  // Map select values to settings scheme keys (settings may use PascalCase)
+  const selectToSettingsKey: Record<string, string> = {
+    '': '',
+    'no_coverage': 'NoCoverage',
+    'under4_parent_working': 'Under4_ParentWorking',
+    'under4_parent_retired': 'Under4_ParentRetired',
+    'age5_12_parent_working': 'Age5_12_ParentWorking',
+    'age5_12_parent_retired': 'Age5_12_ParentRetired',
+    'age13_18_parent_working': 'Age13_18_ParentWorking',
+    'age13_18_parent_retired': 'Age13_18_ParentRetired',
+    'over18_working': 'Over18_Working',
+    'over18_retired': 'Over18_Retired'
+  };
+
+  const [settingsSchemes, setSettingsSchemes] = useState<Record<string, any>>({});
+  const [schemeAmount, setSchemeAmount] = useState<number>(0);
+
+  useEffect(() => {
+    let mounted = true;
+    // Fetch settings once to get SGK schemes data (defensive - some backends embed under different keys)
+    fetch('/api/settings')
+      .then(r => r.ok ? r.json() : Promise.resolve({}))
+      .then(j => {
+        if (!mounted) return;
+        const schemes = (j && (j.schemes || j.sgk?.schemes || j.sgkSchemes)) || {};
+        setSettingsSchemes(schemes);
+      }).catch(() => {
+        // ignore errors - leave schemes empty
+      });
+
+    return () => { mounted = false; };
+  }, []);
+
+  // Recompute scheme amount when selection or list price changes
+  useEffect(() => {
+    const selected = formData.sgkSupportType || '';
+    const key = selectToSettingsKey[selected] || selected;
+    const schemeDef = settingsSchemes[key] || settingsSchemes[selected] || null;
+
+    let amount = 0;
+    const list = Number(formData.listPrice || 0);
+
+    if (schemeDef !== null && schemeDef !== undefined) {
+      // schemeDef may be a number (absolute amount) or object { amount } or { coveragePercent, maxAmount }
+      if (typeof schemeDef === 'number') {
+        amount = schemeDef;
+      } else if (typeof schemeDef === 'object') {
+        if ('amount' in schemeDef && typeof schemeDef.amount === 'number') {
+          amount = schemeDef.amount;
+        } else if ('maxAmount' in schemeDef || 'coveragePercent' in schemeDef) {
+          const percent = Number(schemeDef.coveragePercent || schemeDef.coverage || 0);
+          const maxAmt = Number(schemeDef.maxAmount || schemeDef.max || Infinity);
+          amount = Math.min(list * (percent / 100), maxAmt || Infinity);
+        }
+      }
+    }
+
+    // Fallback: if no schemes defined in settings, use legacy amounts mapping
+    if ((!schemeDef || Object.keys(settingsSchemes).length === 0) && amount === 0) {
+      const fallback: Record<string, number> = {
+        'no_coverage': 0,
+        'under4_parent_working': 6104.44,
+        'under4_parent_retired': 7630.56,
+        'age5_12_parent_working': 5426.17,
+        'age5_12_parent_retired': 6782.72,
+        'age13_18_parent_working': 5087.04,
+        'age13_18_parent_retired': 6358.88,
+        'over18_working': 3391.36,
+        'over18_retired': 4239.20
+      };
+
+      if (fallback[selected]) {
+        amount = Math.min(fallback[selected], list);
+      }
+    }
+
+    setSchemeAmount(isFinite(amount) ? amount : 0);
+    // Do NOT write back to parent formData here to avoid conflicting updates.
+    // The canonical source of truth for sgkReduction is the `useDeviceAssignment` hook
+    // which computes pricing. We only show the computed scheme amount in this component.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.sgkSupportType, formData.listPrice, settingsSchemes]);
 
   return (
     <div className="space-y-6">
@@ -191,10 +275,19 @@ export const PricingForm: React.FC<PricingFormProps> = ({
                 <span className="text-gray-600">Liste Fiyatı:</span>
                 <span className="font-medium">{formatCurrency(formData.listPrice)}</span>
               </div>
+              {/* NOTE: we intentionally do not duplicate a separate 'Seçilen SGK Desteği' row here.
+                  The canonical SGK reduction is shown via `SGK Desteği` (from formData.sgkReduction)
+                  and the scheme amount is only used for display elsewhere. */}
               {formData.sgkReduction && formData.sgkReduction > 0 && (
                 <div className="flex justify-between text-green-600">
                   <span>SGK Desteği:</span>
                   <span>-{formatCurrency(formData.sgkReduction)}</span>
+                </div>
+              )}
+              {typeof formData.kdvRate !== 'undefined' && formData.kdvRate !== null && (
+                <div className="flex justify-between text-gray-700">
+                  <span>KDV Oranı:</span>
+                  <span className="font-medium">{`${formData.kdvRate}%`}</span>
                 </div>
               )}
               {formData.discountValue && formData.discountValue > 0 && (
@@ -207,14 +300,13 @@ export const PricingForm: React.FC<PricingFormProps> = ({
               )}
               <div className="flex justify-between font-medium text-lg border-t pt-2">
                 <span>Satış Fiyatı:</span>
-                <span>{formatCurrency(formData.salePrice || formData.listPrice)}</span>
+                <span>
+                  {formatCurrency((formData.salePrice || formData.listPrice) * (formData.ear === 'both' ? 2 : 1))}
+                  {formData.ear === 'both' && (
+                    <span className="text-sm text-purple-600">{' '}(Bilateral)</span>
+                  )}
+                </span>
               </div>
-              {formData.ear === 'both' && (
-                <div className="flex justify-between text-purple-600 text-sm">
-                  <span>Bilateral (x2):</span>
-                  <span>{formatCurrency((formData.salePrice || formData.listPrice) * 2)}</span>
-                </div>
-              )}
             </div>
           </div>
         )}

@@ -35,7 +35,8 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
     handleDeviceSelect,
     errors,
     validateForm,
-    resetForm
+    resetForm,
+    calculatedPricing
   } = useDeviceAssignment({
     patientId,
     assignment,
@@ -50,7 +51,9 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
     }
 
     try {
-      const assignmentData = formData as DeviceAssignment;
+      // Merge canonical calculated pricing into submission payload to ensure saved records
+      // include the SGK reduction, salePrice and patient payment values.
+      const assignmentData = ({ ...formData, ...calculatedPricing } as DeviceAssignment);
 
       if (assignment?.id) {
         // Update existing assignment

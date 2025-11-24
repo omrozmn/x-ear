@@ -15,6 +15,9 @@ import { useUpdatePatient } from '../hooks/usePatients';
 import { PatientFilters } from '../components/patients/PatientFilters';
 import { PatientList } from '../components/patients/PatientList';
 import { PatientCSVUpload } from '../components/patients/csv/PatientCSVUpload';
+import UniversalImporter from '../components/importer/UniversalImporter';
+import { useToastHelpers, Card } from '@x-ear/ui-web';
+import patientsSchema from '../components/importer/schemas/patients';
 import { PatientFilters as PatientFiltersType } from '../types/patient/patient-search.types';
 import { PatientStatus, PatientSegment, PatientLabel } from '../types/patient/patient-base.types';
 import { PatientTagUpdateModal } from '../components/patients/PatientTagUpdateModal';
@@ -441,17 +444,53 @@ export function PatientsPage() {
         onUpdate={handleTagUpdate}
       />
 
-      {/* CSV Upload Modal */}
-      <Modal
+      {/* CSV Upload Modal (now shared UniversalImporter with mapping + preview) */}
+      <UniversalImporter
         isOpen={showCSVModal}
         onClose={() => setShowCSVModal(false)}
-        title="Toplu Hasta Yükleme"
-        size="lg"
-      >
-        <PatientCSVUpload
-          onUpload={handleCSVUpload}
-        />
-      </Modal>
+        entityFields={[
+          { key: 'firstName', label: 'Ad' },
+          { key: 'lastName', label: 'Soyad' },
+          { key: 'tcNumber', label: 'TC Kimlik No' },
+          { key: 'phone', label: 'Telefon' },
+          { key: 'email', label: 'E-posta' },
+          { key: 'birthDate', label: 'Doğum Tarihi' },
+          { key: 'gender', label: 'Cinsiyet' }
+        ]}
+        zodSchema={patientsSchema}
+        uploadEndpoint={'/api/patients/bulk_upload'}
+        modalTitle={'Toplu Hasta Yükleme'}
+        sampleDownloadUrl={'/import_samples/patients_sample.csv'}
+        onComplete={(res) => {
+          const { success: showSuccess, error: showError } = useToastHelpers();
+          if (res.errors && res.errors.length > 0) {
+            showError(`Hasta import tamamlandı — Hatalı satır: ${res.errors.length}`);
+          } else {
+            showSuccess(`Hasta import tamamlandı — Oluşturulan: ${res.created}`);
+          }
+          // refresh page data simply
+          handleRefresh();
+          setShowCSVModal(false);
+        }}
+      />
+      {/* Import result card */}
+      {/* Note: show a small summary card after import */}
+      {false && (
+        <div className="mt-4">
+          <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm">Oluşturulan: <strong>0</strong></div>
+                <div className="text-sm">Güncellenen: <strong>0</strong></div>
+                <div className="text-sm">Hatalı satır: <strong>0</strong></div>
+              </div>
+              <div>
+                <Button variant="outline">Kapat</Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       <Modal

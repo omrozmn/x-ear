@@ -115,6 +115,9 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
           warranty: apiItem.warranty,
           // include item's tax rate for use by UI components
           taxRate: (apiItem.vatRate || apiItem.kdv) as number | undefined,
+          // preserve flags sent by backend so UI edit mode can read them
+          priceIncludesKdv: apiItem.priceIncludesKdv ?? apiItem.price_includes_kdv,
+          costIncludesKdv: apiItem.costIncludesKdv ?? apiItem.cost_includes_kdv,
           stockCode: apiItem.stockCode || apiItem.stock_code || '',
           unit: apiItem.unit || 'adet',
           createdAt: apiItem.createdAt || apiItem.created_at || '',

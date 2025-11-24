@@ -140,6 +140,14 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
     return new Date(dateString).toLocaleDateString('tr-TR');
   };
 
+  const formatGender = (g?: string) => {
+    if (!g) return 'Belirtilmemiş';
+    const v = String(g).toUpperCase();
+    if (v === 'F' || v === 'K' || v.includes('KAD') || v.includes('FEMALE')) return 'Kadın';
+    if (v === 'M' || v.includes('MALE')) return 'Erkek';
+    return g;
+  };
+
   const formatPhone = (phone?: string) => {
     if (!phone) return 'Belirtilmemiş';
     return phone.replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '($1) $2 $3 $4');
@@ -183,6 +191,11 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
               <div className="flex items-center space-x-2">
                 <User className="w-4 h-4 text-gray-400" />
                 <span>TC: {patient.tcNumber || 'Belirtilmemiş'}</span>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <User className="w-4 h-4 text-gray-400" />
+                <span>Cinsiyet: {formatGender(patient.gender)}</span>
               </div>
 
               <div className="flex items-center space-x-2">

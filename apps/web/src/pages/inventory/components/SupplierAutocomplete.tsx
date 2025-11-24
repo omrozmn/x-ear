@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import axios from 'axios';
 import { Input, Button } from '@x-ear/ui-web';
@@ -31,6 +32,8 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
   const [allSuppliers, setAllSuppliers] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement | null>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
   // Default suppliers (fallback)
   const defaultSuppliers = [
@@ -152,7 +155,8 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
 
   // Check if current value is an exact match
   const suppliers = allSuppliers.length > 0 ? allSuppliers : defaultSuppliers;
-  const hasExactMatch = suppliers.some(sup => sup.toLowerCase() === value.toLowerCase());
+  const valStr = value || '';
+  const hasExactMatch = suppliers.some(sup => (sup || '').toLowerCase() === valStr.toLowerCase());
   const showCreateNew = value.trim() && !hasExactMatch && isOpen;
 
   useEffect(() => {
@@ -172,6 +176,42 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    portalRef.current = document.createElement('div');
+    portalRef.current.setAttribute('data-portal', 'supplier-autocomplete');
+    document.body.appendChild(portalRef.current);
+    return () => {
+      if (portalRef.current && portalRef.current.parentNode) {
+        portalRef.current.parentNode.removeChild(portalRef.current);
+      }
+      portalRef.current = null;
+    };
+  }, []);
+
+  const updateDropdownPosition = () => {
+    const inputEl = inputRef.current;
+    if (!inputEl) return;
+    const rect = inputEl.getBoundingClientRect();
+    setDropdownStyle({
+      position: 'absolute',
+      left: `${rect.left + window.scrollX}px`,
+      top: `${rect.bottom + window.scrollY}px`,
+      width: `${rect.width}px`,
+      zIndex: 9999
+    });
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    updateDropdownPosition();
+    window.addEventListener('resize', updateDropdownPosition);
+    window.addEventListener('scroll', updateDropdownPosition, true);
+    return () => {
+      window.removeEventListener('resize', updateDropdownPosition);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
+    };
+  }, [isOpen, filteredSuppliers.length]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -264,10 +304,11 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
       </div>
 
       {/* Dropdown */}
-      {isOpen && (filteredSuppliers.length > 0 || showCreateNew) && (
+      {isOpen && (filteredSuppliers.length > 0 || showCreateNew) && portalRef.current && ReactDOM.createPortal(
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          style={dropdownStyle}
+          className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
         >
           {filteredSuppliers.map((supplier, index) => (
             <Button
@@ -296,7 +337,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
               </div>
             </Button>
           ))}
-          
+
           {/* Create new supplier option */}
           {showCreateNew && (
             <div
@@ -320,7 +361,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
             </div>
           )}
         </div>
-      )}
+      , portalRef.current)}
     </div>
   );
 };

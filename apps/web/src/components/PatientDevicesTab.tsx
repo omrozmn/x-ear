@@ -402,6 +402,11 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
           ear_side: assignmentData.ear,
           reason: assignmentData.reason || 'sale',
           base_price: assignmentData.listPrice || 0,
+          // include canonical computed pricing so backend stores correct SGK/discount results
+          sale_price: assignmentData.salePrice || 0,
+          sgk_reduction: assignmentData.sgkReduction || 0,
+          patient_payment: assignmentData.patientPayment || 0,
+          kdv_rate: assignmentData.kdvRate ?? 0,
           discount_type: assignmentData.discountType || 'none',
           discount_value: assignmentData.discountValue || 0,
           payment_method: assignmentData.paymentMethod || 'cash',
@@ -476,6 +481,11 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
             ear_side: assignmentData.ear,
             reason: assignmentData.reason || 'sale',
             base_price: assignmentData.listPrice || 0,
+            // pass calculated pricing per-assignment
+            sale_price: assignmentData.salePrice || 0,
+            sgk_reduction: assignmentData.sgkReduction || 0,
+            patient_payment: assignmentData.patientPayment || 0,
+            kdv_rate: assignmentData.kdvRate ?? 0,
             discount_type: assignmentData.discountType || 'none',
             discount_value: assignmentData.discountValue || 0,
             payment_method: assignmentData.paymentMethod || 'cash',
@@ -636,19 +646,22 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
             
             // For bilateral, show two cards side by side (Right on left, Left on right - audiological view)
             if (isBilateral) {
+              // For bilateral devices, show two cards but pass per-unit values to each card
+              const perUnitSalePrice = (device.salePrice !== undefined && device.salePrice !== null) ? device.salePrice : device.listPrice;
+              const perUnitSgk = (device.sgkReduction !== undefined && device.sgkReduction !== null) ? (device.sgkReduction / 2) : undefined;
+              const perUnitPatientPayment = (device.patientPayment !== undefined && device.patientPayment !== null) ? (device.patientPayment / 2) : undefined;
+
               return (
                 <div key={device.id} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Right Ear Card - Red, on the left side */}
                   <PatientDeviceCard
-                    device={{...device, ear: 'right', earSide: 'RIGHT', side: 'right'} as any}
+                    device={{...device, ear: 'right', earSide: 'RIGHT', side: 'right', salePrice: perUnitSalePrice, sgkReduction: perUnitSgk, patientPayment: perUnitPatientPayment} as any}
                     onEdit={handleEditDevice}
                     onReplace={(d) => handleReplaceDevice(d.id)}
                     onCancel={(d) => handleCancelDevice(d.id)}
                     isCancelled={(device as any).status === 'cancelled'}
                   />
-                  {/* Left Ear Card - Blue, on the right side */}
                   <PatientDeviceCard
-                    device={{...device, ear: 'left', earSide: 'LEFT', side: 'left'} as any}
+                    device={{...device, ear: 'left', earSide: 'LEFT', side: 'left', salePrice: perUnitSalePrice, sgkReduction: perUnitSgk, patientPayment: perUnitPatientPayment} as any}
                     onEdit={handleEditDevice}
                     onReplace={(d) => handleReplaceDevice(d.id)}
                     onCancel={(d) => handleCancelDevice(d.id)}

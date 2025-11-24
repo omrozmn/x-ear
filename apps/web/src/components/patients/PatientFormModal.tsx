@@ -17,6 +17,7 @@ interface PatientFormData {
   lastName?: string;
   phone: string;
   tcNumber?: string;
+  gender?: string;
   birthDate?: string;
   email?: string;
   address?: string;
@@ -101,6 +102,7 @@ export function PatientFormModal({
         lastName: initialData.lastName || '',
         phone: initialData.phone || '',
         tcNumber: initialData.tcNumber || '',
+        gender: initialData.gender || '',
         birthDate: initialData.birthDate || '',
         email: initialData.email || '',
         address: typeof initialData.address === 'string' ? initialData.address : initialData.addressFull || '',
@@ -119,6 +121,7 @@ export function PatientFormModal({
         lastName: '',
         phone: '',
         tcNumber: '',
+        gender: '',
         birthDate: '',
         email: '',
         address: '',
@@ -159,6 +162,11 @@ export function PatientFormModal({
       if (!isValid) {
         newErrors.tcNumber = 'Geçerli bir TC Kimlik numarası giriniz (11 haneli)';
       }
+    }
+
+    // gender is optional; if provided, normalize
+    if (formData.gender && !['M','F','m','f','male','female','erkek','kadın'].includes(String(formData.gender))) {
+      // allow free-form but no hard validation
     }
 
     // Email validation (optional)
@@ -216,6 +224,7 @@ export function PatientFormModal({
       const cleanedData = {
         ...formData,
         tcNumber: formData.tcNumber?.trim() || undefined,
+        gender: formData.gender?.trim() || undefined,
         email: formData.email?.trim() || undefined,
         birthDate: formData.birthDate?.trim() || undefined,
         addressFull: formData.address?.trim() || undefined,
@@ -323,8 +332,50 @@ export function PatientFormModal({
             <div>
               <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Kişisel Bilgiler</h3>
               
-              {/* Row 1: Ad, Soyad */}
+              {/* Row 1: TC Kimlik No (left) + Cinsiyet (right) - align with other two-column rows */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    TC Kimlik No
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.tcNumber}
+                    onChange={(e) => handleInputChange('tcNumber', e.target.value)}
+                    placeholder="12345678901"
+                    maxLength={11}
+                    className="h-10 w-full"
+                  />
+                  {errors.tcNumber && (
+                    <p className="mt-1 text-sm text-red-600">{errors.tcNumber}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cinsiyet</label>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <Button
+                      type="button"
+                      variant={formData.gender && String(formData.gender).toUpperCase() === 'M' ? 'primary' : 'outline'}
+                      onClick={() => handleInputChange('gender', 'M')}
+                      className="h-9"
+                    >
+                      Erkek
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={formData.gender && String(formData.gender).toUpperCase() === 'F' ? 'primary' : 'outline'}
+                      onClick={() => handleInputChange('gender', 'F')}
+                      className="h-9"
+                    >
+                      Kadın
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Row 2: Ad, Soyad */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Ad <span className="text-red-500">*</span>
@@ -334,7 +385,7 @@ export function PatientFormModal({
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
                     placeholder="Hasta adı"
-                    className="h-10"
+                    className="h-10 w-full"
                   />
                   {errors.firstName && (
                     <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
@@ -350,7 +401,7 @@ export function PatientFormModal({
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
                     placeholder="Hasta soyadı"
-                    className="h-10"
+                    className="h-10 w-full"
                   />
                   {errors.lastName && (
                     <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
@@ -358,7 +409,7 @@ export function PatientFormModal({
                 </div>
               </div>
 
-              {/* Row 2: Telefon, E-posta */}
+              {/* Row 2: Telefon + Doğum Tarihi (swapped) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -369,46 +420,10 @@ export function PatientFormModal({
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     placeholder="0555 123 45 67"
-                    className="h-10"
+                    className="h-10 w-full"
                   />
                   {errors.phone && (
                     <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    E-posta
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="ornek@email.com"
-                    className="h-10"
-                  />
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Row 3: TC, Doğum Tarihi */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    TC Kimlik No
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.tcNumber}
-                    onChange={(e) => handleInputChange('tcNumber', e.target.value)}
-                    placeholder="12345678901"
-                    maxLength={11}
-                    className="h-10"
-                  />
-                  {errors.tcNumber && (
-                    <p className="mt-1 text-sm text-red-600">{errors.tcNumber}</p>
                   )}
                 </div>
 
@@ -424,7 +439,7 @@ export function PatientFormModal({
                 </div>
               </div>
 
-              {/* Row 4: İl, İlçe */}
+              {/* Row 3: İl, İlçe (moved above address and email) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                   <Autocomplete
@@ -459,9 +474,9 @@ export function PatientFormModal({
                 </div>
               </div>
 
-              {/* Row 5: Adres (2 columns width) - Extra margin to prevent label overlap */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                <div className="md:col-span-2">
+              {/* Row 4: Adres (left) + E-posta (right) (email moved under address) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Adres
                   </label>
@@ -470,10 +485,31 @@ export function PatientFormModal({
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     placeholder="Mahalle, sokak, bina no"
                     rows={2}
-                    className="resize-none"
+                    className="resize-none w-full"
                   />
+                  {errors.address && (
+                    <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    E-posta
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    placeholder="ornek@email.com"
+                    className="h-10 w-full"
+                  />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  )}
                 </div>
               </div>
+
+              {/* (moved) Address field consolidated above with Doğum Tarihi */}
 
               {/* Row 6: Durum, Segment */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">

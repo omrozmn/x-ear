@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import axios from 'axios';
 import { Input } from '@x-ear/ui-web';
@@ -33,6 +34,8 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
   const [displayValue, setDisplayValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement | null>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   
   // Update display value when value changes
   useEffect(() => {
@@ -139,8 +142,9 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
 
   // Check if current value is an exact match
   const categories = allCategories.length > 0 ? allCategories : defaultCategories;
-  const hasExactMatch = categories.some(cat => cat.toLowerCase() === displayValue.toLowerCase());
-  const showCreateNew = displayValue.trim() && !hasExactMatch && isOpen;
+  const dv = displayValue || '';
+  const hasExactMatch = categories.some(cat => (cat || '').toLowerCase() === dv.toLowerCase());
+  const showCreateNew = dv.trim() && !hasExactMatch && isOpen;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -157,6 +161,43 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // create portal container for dropdown and update position while open
+  useEffect(() => {
+    portalRef.current = document.createElement('div');
+    portalRef.current.setAttribute('data-portal', 'category-autocomplete');
+    document.body.appendChild(portalRef.current);
+    return () => {
+      if (portalRef.current && portalRef.current.parentNode) {
+        portalRef.current.parentNode.removeChild(portalRef.current);
+      }
+      portalRef.current = null;
+    };
+  }, []);
+
+  const updateDropdownPosition = () => {
+    const inputEl = inputRef.current;
+    if (!inputEl) return;
+    const rect = inputEl.getBoundingClientRect();
+    setDropdownStyle({
+      position: 'absolute',
+      left: `${rect.left + window.scrollX}px`,
+      top: `${rect.bottom + window.scrollY}px`,
+      width: `${rect.width}px`,
+      zIndex: 9999
+    });
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    updateDropdownPosition();
+    window.addEventListener('resize', updateDropdownPosition);
+    window.addEventListener('scroll', updateDropdownPosition, true);
+    return () => {
+      window.removeEventListener('resize', updateDropdownPosition);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
+    };
+  }, [isOpen, filteredCategories.length]);
 
   const handleSelect = (category: string) => {
     // Convert display label to backend value
@@ -238,11 +279,12 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
           aria-controls="category-autocomplete-list"
         />
         
-        {isOpen && (filteredCategories.length > 0 || showCreateNew) && (
+        {isOpen && (filteredCategories.length > 0 || showCreateNew) && portalRef.current && ReactDOM.createPortal(
           <div
             ref={dropdownRef}
             id="category-autocomplete-list"
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
+            style={dropdownStyle}
+            className="bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
             role="listbox"
           >
             {filteredCategories.map((category, index) => (
@@ -264,7 +306,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
                 </div>
               </div>
             ))}
-            
+
             {showCreateNew && (
               <div
                 role="option"
@@ -287,7 +329,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
               </div>
             )}
           </div>
-        )}
+        , portalRef.current)}
       </div>
       
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}

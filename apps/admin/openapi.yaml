@@ -1,0 +1,1130 @@
+openapi: 3.0.0
+info:
+  title: X-Ear Admin API
+  version: 1.0.0
+  description: API for X-Ear Admin Panel
+servers:
+  - url: http://localhost:5003
+paths:
+  /api/admin/features:
+    get:
+      summary: Get system feature flags
+      operationId: admin_get_features
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  features:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        mode:
+                          type: string
+                        plans:
+                          type: array
+                          items:
+                            type: string
+    patch:
+      summary: Update system feature flags
+      operationId: admin_update_features
+      tags:
+      - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                features:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    properties:
+                      mode:
+                        type: string
+                      plans:
+                        type: array
+                        items:
+                          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  features:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        mode:
+                          type: string
+                        plans:
+                          type: array
+                          items:
+                            type: string
+  /admin/auth/login:
+    post:
+      summary: Admin Login
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                mfa_token:
+                  type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      user:
+                        $ref: '#/components/schemas/AdminUser'
+                      requires_mfa:
+                        type: boolean
+
+  /admin/users:
+    get:
+      summary: List Admin Users
+      tags: [Users]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: role
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AdminUser'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+
+  /admin/invoices:
+    get:
+      summary: List Invoices
+      tags: [Billing]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      invoices:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Invoice'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+    post:
+      summary: Create Invoice
+      tags: [Billing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceInput'
+      responses:
+        '201':
+          description: Created
+
+  /admin/invoices/{id}:
+    get:
+      summary: Get Invoice Details
+      tags: [Billing]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      invoice:
+                        $ref: '#/components/schemas/Invoice'
+
+  /admin/invoices/{id}/payment:
+    post:
+      summary: Record Payment
+      tags: [Billing]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+      responses:
+        '200':
+          description: Success
+
+  /admin/invoices/{id}/pdf:
+    get:
+      summary: Download Invoice PDF
+      tags: [Billing]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /admin/plans:
+    get:
+      summary: List Plans
+      tags: [Plans]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: type
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      plans:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Plan'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+    post:
+      summary: Create Plan
+      tags: [Plans]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanInput'
+      responses:
+        '201':
+          description: Created
+
+  /admin/plans/{id}:
+    get:
+      summary: Get Plan
+      tags: [Plans]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update Plan
+      tags: [Plans]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanInput'
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete Plan
+      tags: [Plans]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+
+  /admin/tenants:
+    get:
+      summary: List Tenants
+      tags: [Tenants]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      tenants:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Tenant'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+    post:
+      summary: Create Tenant
+      tags: [Tenants]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantInput'
+      responses:
+        '201':
+          description: Created
+
+  /admin/tenants/{id}:
+    get:
+      summary: Get Tenant
+      tags: [Tenants]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update Tenant
+      tags: [Tenants]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantInput'
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete Tenant
+      tags: [Tenants]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+
+  /admin/tenants/{id}/status:
+    put:
+      summary: Update Tenant Status
+      tags: [Tenants]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [active, trial, suspended, cancelled]
+      responses:
+        '200':
+          description: Success
+
+  /admin/users/{id}/status:
+    put:
+      summary: Update User Status
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_active:
+                  type: boolean
+      responses:
+        '200':
+          description: Success
+
+  /admin/dashboard/metrics:
+    get:
+      summary: Get Dashboard Metrics
+      tags: [Dashboard]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      metrics:
+                          type: object
+
+  /admin/analytics:
+    get:
+      summary: Get Analytics Data
+      tags: [Analytics]
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: metric
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      overview:
+                        $ref: '#/components/schemas/AnalyticsOverview'
+                      revenue_trend:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/RevenueTrend'
+                      user_engagement:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UserEngagement'
+                      plan_distribution:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PlanDistribution'
+                      top_tenants:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TopTenant'
+
+  /admin/settings:
+    get:
+      summary: Get System Settings
+      tags: [Settings]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      settings:
+                        $ref: '#/components/schemas/SystemSettings'
+    post:
+      summary: Update System Settings
+      tags: [Settings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SystemSettings'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      settings:
+                        $ref: '#/components/schemas/SystemSettings'
+
+  /admin/tickets:
+    get:
+      summary: List Support Tickets
+      tags: [Support]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: priority
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      tickets:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SupportTicket'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+    post:
+      summary: Create Support Ticket
+      tags: [Support]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupportTicketInput'
+      responses:
+        '201':
+          description: Created
+
+  /admin/tickets/{id}:
+    put:
+      summary: Update Support Ticket
+      tags: [Support]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                assigned_to:
+                  type: string
+      responses:
+        '200':
+          description: Success
+
+components:
+  schemas:
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        role:
+          type: string
+          enum: [super_admin, support, finance, content]
+        is_active:
+          type: boolean
+        last_login:
+          type: string
+        created_at:
+          type: string
+
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        tenant_name:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [paid, pending, overdue, cancelled]
+        due_date:
+          type: string
+        created_at:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              amount:
+                type: number
+
+    InvoiceInput:
+      type: object
+      required: [tenant_id, due_date, items]
+      properties:
+        tenant_id:
+          type: string
+        due_date:
+          type: string
+        currency:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              description:
+                type: string
+              quantity:
+                type: number
+              unit_price:
+                type: number
+
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        plan_type:
+          type: string
+          enum: [BASIC, PRO, ENTERPRISE, CUSTOM]
+        price:
+          type: number
+        billing_interval:
+          type: string
+          enum: [MONTHLY, YEARLY, QUARTERLY]
+        max_users:
+          type: integer
+        max_storage_gb:
+          type: integer
+        features:
+          type: object
+        is_active:
+          type: boolean
+        is_public:
+          type: boolean
+        monthly_price:
+          type: number
+        yearly_price:
+          type: number
+        created_at:
+          type: string
+        updated_at:
+          type: string
+
+    PlanInput:
+      type: object
+      required: [name, price]
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        plan_type:
+          type: string
+        price:
+          type: number
+        billing_interval:
+          type: string
+        max_users:
+          type: integer
+        max_storage_gb:
+          type: integer
+        features:
+          type: object
+        is_active:
+          type: boolean
+        is_public:
+          type: boolean
+
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        owner_email:
+          type: string
+        billing_email:
+          type: string
+        status:
+          type: string
+          enum: [active, trial, suspended, cancelled]
+        current_plan:
+          type: string
+        max_users:
+          type: integer
+        current_users:
+          type: integer
+        company_info:
+          type: object
+        settings:
+          type: object
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+        updated_at:
+          type: string
+
+    TenantInput:
+      type: object
+      required: [name, owner_email]
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        owner_email:
+          type: string
+        billing_email:
+          type: string
+        status:
+          type: string
+        current_plan:
+          type: string
+        max_users:
+          type: integer
+        current_users:
+          type: integer
+        company_info:
+          type: object
+        settings:
+          type: object
+
+    SupportTicket:
+      type: object
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        tenant_name:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [open, in_progress, resolved, closed]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        assigned_to:
+          type: string
+        assigned_admin_name:
+          type: string
+        created_by:
+          type: string
+        created_at:
+          type: string
+        sla_due_date:
+          type: string
+
+    SupportTicketInput:
+      type: object
+      required: [subject, priority, category, description]
+      properties:
+        subject:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        category:
+          type: string
+          enum: [technical, billing, feature_request, general]
+        description:
+          type: string
+        tenant_id:
+          type: string
+
+    DashboardMetrics:
+      type: object
+      properties:
+        overview:
+          type: object
+          properties:
+            total_tenants:
+              type: number
+            active_tenants:
+              type: number
+            total_users:
+              type: number
+            active_users:
+              type: number
+            total_memberships:
+              type: number
+            active_memberships:
+              type: number
+            total_plans:
+              type: number
+        recent_activity:
+          type: object
+          properties:
+            new_tenants_7d:
+              type: number
+            new_users_7d:
+              type: number
+            new_memberships_7d:
+              type: number
+            expiring_memberships_30d:
+              type: number
+        revenue:
+          type: object
+          properties:
+            monthly_recurring_revenue:
+              type: number
+            annual_recurring_revenue:
+              type: number
+        health_metrics:
+          type: object
+          properties:
+            churn_rate_percent:
+              type: number
+            avg_seat_utilization_percent:
+              type: number
+            tenant_growth_rate:
+              type: number
+            user_growth_rate:
+              type: number
+        alerts:
+          type: object
+          properties:
+            expiring_soon:
+              type: number
+            high_churn:
+              type: number
+            low_utilization:
+              type: number
+
+    AnalyticsOverview:
+      type: object
+      properties:
+        total_revenue:
+          type: number
+        revenue_growth:
+          type: number
+        active_tenants:
+          type: number
+        tenants_growth:
+          type: number
+        monthly_active_users:
+          type: number
+        mau_growth:
+          type: number
+        churn_rate:
+          type: number
+        churn_growth:
+          type: number
+
+    RevenueTrend:
+      type: object
+      properties:
+        month:
+          type: string
+        revenue:
+          type: number
+        growth:
+          type: number
+
+    UserEngagement:
+      type: object
+      properties:
+        date:
+          type: string
+        dau:
+          type: number
+        wau:
+          type: number
+        mau:
+          type: number
+
+    PlanDistribution:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: number
+        color:
+          type: string
+
+    TopTenant:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        revenue:
+          type: number
+        growth:
+          type: number
+        users:
+          type: number
+
+    SystemSettings:
+      type: object
+      properties:
+        siteName:
+          type: string
+        siteDescription:
+          type: string
+        timezone:
+          type: string
+        language:
+          type: string
+        currency:
+          type: string
+        maintenanceMode:
+          type: boolean
+        registrationEnabled:
+          type: boolean
+        emailNotifications:
+          type: boolean
+        autoBackup:
+          type: boolean
+        smtpHost:
+          type: string
+        smtpPort:
+          type: string
+        smtpUsername:
+          type: string
+        smtpPassword:
+          type: string
+        fromEmail:
+          type: string
+        fromName:
+          type: string
+        smtpSecure:
+          type: boolean
+        sessionTimeout:
+          type: string
+        maxLoginAttempts:
+          type: string
+        passwordMinLength:
+          type: string
+        jwtExpiry:
+          type: string
+        twoFactorAuth:
+          type: boolean
+        forcePasswordChange:
+          type: boolean
+        ipWhitelist:
+          type: boolean
+        auditLogging:
+          type: boolean
+        backupSchedule:
+          type: string
+        backupRetention:
+          type: string
+        backupLocation:
+          type: string
+        backupCompression:
+          type: boolean
+        backupEncryptionKey:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer

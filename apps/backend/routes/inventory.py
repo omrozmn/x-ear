@@ -7,6 +7,12 @@ import sys
 from pathlib import Path
 from datetime import datetime, timezone
 from utils.idempotency import idempotent
+import csv
+import io
+try:
+    from openpyxl import load_workbook
+except Exception:
+    load_workbook = None
 
 def now_utc():
     """Return current UTC timestamp"""
@@ -108,6 +114,190 @@ def get_all_inventory():
             'success': False,
             'error': str(e)
         }), 500
+
+
+@inventory_bp.route('/bulk_upload', methods=['POST'])
+@idempotent(methods=['POST'])
+def bulk_upload_inventory():
+    """Bulk upload inventory items from CSV/XLSX. Returns {created, updated, errors}."""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'error': 'No file part named "file" in request'}), 400
+
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'error': 'No selected file'}), 400
+
+        filename = (file.filename or '').lower()
+        raw = file.read()
+
+        def _sanitize_cell(v):
+            if v is None:
+                return None
+            if not isinstance(v, str):
+                return v
+            v = v.strip()
+            if v.startswith(('=', '+', '-', '@')):
+                return "'" + v
+            return v
+
+        if filename.endswith('.xlsx') or filename.endswith('.xls'):
+            if load_workbook is None:
+                return jsonify({'success': False, 'error': 'Server missing openpyxl dependency; please install openpyxl to accept XLSX uploads'}), 500
+            try:
+                from io import BytesIO
+                wb = load_workbook(filename=BytesIO(raw), read_only=True, data_only=True)
+                sheet = wb[wb.sheetnames[0]] if wb.sheetnames else None
+                if sheet is None:
+                    return jsonify({'success': False, 'error': 'XLSX contains no sheets'}), 400
+                it = sheet.iter_rows(values_only=True)
+                headers_row = next(it, None)
+                if not headers_row:
+                    return jsonify({'success': False, 'error': 'XLSX first row empty'}), 400
+                headers = [str(h).strip() if h is not None else '' for h in headers_row]
+                rows = []
+                for r in it:
+                    obj = {}
+                    for idx, h in enumerate(headers):
+                        val = r[idx] if idx < len(r) else None
+                        obj[h] = _sanitize_cell(val)
+                    if any(v not in (None, '') for v in obj.values()):
+                        rows.append(obj)
+                iterable = rows
+            except Exception as e:
+                return jsonify({'success': False, 'error': 'Failed to parse XLSX: ' + str(e)}), 500
+        else:
+            try:
+                text = raw.decode('utf-8-sig')
+            except Exception:
+                text = raw.decode('utf-8', errors='replace')
+
+            try:
+                sample = text[:4096]
+                dialect = csv.Sniffer().sniff(sample)
+                delimiter = dialect.delimiter
+            except Exception:
+                delimiter = ','
+
+            reader_obj = csv.DictReader(io.StringIO(text), delimiter=delimiter)
+            try:
+                fns = reader_obj.fieldnames or []
+                if len(fns) == 1:
+                    single = fns[0]
+                    if ';' in single and delimiter != ';':
+                        reader_obj = csv.DictReader(io.StringIO(text), delimiter=';')
+                    elif '\t' in single and delimiter != '\t':
+                        reader_obj = csv.DictReader(io.StringIO(text), delimiter='\t')
+            except Exception:
+                pass
+
+            try:
+                iterable = list(reader_obj)
+            except Exception as e:
+                return jsonify({'success': False, 'error': 'CSV parsing failed: ' + str(e)}), 400
+
+        created = 0
+        updated = 0
+        errors = []
+        row_num = 0
+
+        for row in iterable:
+            row_num += 1
+            try:
+                if isinstance(row, dict):
+                    normalized_row = {k: _sanitize_cell(v) for k, v in row.items()}
+                else:
+                    normalized_row = row
+
+                # Map common headers to Inventory fields
+                payload = {}
+                # Prefer camelCase and snake_case mappings
+                payload['name'] = normalized_row.get('name') or normalized_row.get('productName') or normalized_row.get('Ürün Adı') or normalized_row.get('product_name')
+                payload['brand'] = normalized_row.get('brand') or normalized_row.get('Marka')
+                payload['model'] = normalized_row.get('model') or normalized_row.get('Model')
+                payload['category'] = normalized_row.get('category') or normalized_row.get('Kategori')
+                payload['availableInventory'] = normalized_row.get('availableInventory') or normalized_row.get('available_inventory') or normalized_row.get('stock') or normalized_row.get('Stok')
+                payload['price'] = normalized_row.get('price') or normalized_row.get('Fiyat')
+                payload['barcode'] = normalized_row.get('barcode') or normalized_row.get('Barkod')
+                payload['supplier'] = normalized_row.get('supplier') or normalized_row.get('Tedarikçi')
+                payload['stockCode'] = normalized_row.get('stockCode') or normalized_row.get('stock_code')
+
+                if not payload.get('name') and not payload.get('barcode'):
+                    errors.append({'row': row_num, 'error': 'Missing name and barcode'})
+                    continue
+
+                # Try to find existing item by barcode first, then by name
+                existing = None
+                if payload.get('barcode'):
+                    existing = Inventory.query.filter_by(barcode=payload.get('barcode')).one_or_none()
+                if not existing and payload.get('name'):
+                    existing = Inventory.query.filter(Inventory.name.ilike(payload.get('name'))).one_or_none()
+
+                if existing:
+                    # map fields onto existing
+                    for k, v in payload.items():
+                        if v is None:
+                            continue
+                        # convert inventory model expected fields
+                        if k == 'availableInventory':
+                            try:
+                                existing.available_inventory = int(v)
+                            except Exception:
+                                pass
+                        elif k == 'price':
+                            try:
+                                existing.price = float(v)
+                            except Exception:
+                                pass
+                        elif k == 'stockCode':
+                            existing.stock_code = v
+                        else:
+                            setattr(existing, k, v)
+                    db.session.add(existing)
+                    updated += 1
+                else:
+                    try:
+                        # Convert keys expected by Inventory.from_dict
+                        create_payload = {
+                            'name': payload.get('name'),
+                            'brand': payload.get('brand'),
+                            'model': payload.get('model'),
+                            'category': payload.get('category'),
+                            'availableInventory': int(payload.get('availableInventory')) if payload.get('availableInventory') not in (None, '') else 0,
+                            'price': float(payload.get('price')) if payload.get('price') not in (None, '') else 0,
+                            'barcode': payload.get('barcode'),
+                            'supplier': payload.get('supplier'),
+                            'stockCode': payload.get('stockCode')
+                        }
+                        item = Inventory.from_dict(create_payload)
+                        db.session.add(item)
+                        created += 1
+                    except Exception as e:
+                        errors.append({'row': row_num, 'error': str(e)})
+                        db.session.rollback()
+                        continue
+
+                try:
+                    db.session.flush()
+                except Exception as e:
+                    db.session.rollback()
+                    errors.append({'row': row_num, 'error': str(e)})
+                    continue
+
+            except Exception as e:
+                errors.append({'row': row_num, 'error': str(e)})
+                continue
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': 'Commit failed: ' + str(e)}), 500
+
+        return jsonify({'success': True, 'created': created, 'updated': updated, 'errors': errors}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
     # Advanced search endpoint moved here: preserve original advanced_search behavior
 @inventory_bp.route('/search', methods=['GET'])
 def advanced_search():
@@ -618,9 +808,28 @@ def update_inventory_item(item_id):
         item.cost = float(data.get('cost', item.cost)) if 'cost' in data else item.cost
         # VAT/KDV handling (support both vatRate and kdv payload fields)
         if 'vatRate' in data:
-            item.vat_rate = float(data.get('vatRate') or data.get('kdv', item.vat_rate or 18))
+            # Treat empty strings/null as "no change" unless explicit kdv provided
+            v = data.get('vatRate')
+            if v is None or (isinstance(v, str) and str(v).strip() == ''):
+                if 'kdv' in data:
+                    try:
+                        item.vat_rate = float(data.get('kdv'))
+                    except Exception:
+                        pass
+                else:
+                    # leave existing vat_rate untouched
+                    pass
+            else:
+                try:
+                    item.vat_rate = float(v)
+                except Exception:
+                    # fallback to previous value
+                    pass
         elif 'kdv' in data:
-            item.vat_rate = float(data.get('kdv'))
+            try:
+                item.vat_rate = float(data.get('kdv'))
+            except Exception:
+                pass
         # Price/cost include flags (frontend toggles) — support camelCase and snake_case
         if 'priceIncludesKdv' in data:
             item.price_includes_kdv = bool(data.get('priceIncludesKdv'))

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useState, useEffect, useCallback } from 'react';
-import { PatientApiService } from '../../services/patient/patient-api.service';
+import { patientApiService } from '../../services/patient/patient-api.service';
 
 export interface PatientNote {
   id: string;
@@ -25,15 +25,13 @@ export function usePatientNotes(patientId?: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | string | null>(null);
 
-  const apiService = new PatientApiService();
-
   // Fetch notes for a patient
   const fetchNotes = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
 
     try {
-      const result = await apiService.getNotes(id);
+      const result = await patientApiService.getNotes(id);
       setNotes(result?.data || []);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
@@ -41,7 +39,7 @@ export function usePatientNotes(patientId?: string) {
     } finally {
       setLoading(false);
     }
-  }, [apiService]);
+  }, []);
 
   // Load notes on mount or when patientId changes
   useEffect(() => {

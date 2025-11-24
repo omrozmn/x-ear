@@ -5,13 +5,17 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { Button, Input, Modal, Pagination } from '@x-ear/ui-web';
+import { Button, Input, Modal, Pagination, Tabs, TabsList, TabsTrigger, TabsContent, Badge, useToastHelpers, Card } from '@x-ear/ui-web';
+import UniversalImporter, { FieldDef } from '../components/importer/UniversalImporter';
+import suppliersSchema from '../components/importer/schemas/suppliers';
 import { useNavigate, Outlet, useParams } from '@tanstack/react-router';
 import { useSuppliers, useCreateSupplier, useDeleteSupplier, useUpdateSupplier } from '../hooks/useSuppliers';
+import { useSuggestedSuppliers } from '../hooks/useSupplierInvoices';
 import { Users, CheckCircle, Flame, Filter, Search, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { SupplierFormModal } from '../components/suppliers/SupplierFormModal';
 import { SupplierFilters } from '../components/suppliers/SupplierFilters';
 import { SupplierList } from '../components/suppliers/SupplierList';
+import { SuggestedSuppliersList } from '../components/suppliers/SuggestedSuppliersList';
 import { SupplierFilters as SupplierFiltersType, SupplierExtended } from '../components/suppliers/supplier-search.types';
 
 export function SuppliersPage() {
@@ -39,6 +43,9 @@ export function SuppliersPage() {
     per_page: itemsPerPage,
   });
 
+  const { data: suggestedData, isLoading: suggestedLoading } = useSuggestedSuppliers();
+  const suggestedSuppliers = (suggestedData as any)?.data?.suggestedSuppliers || [];
+
   // Safely extract data from response
   const suppliers = React.useMemo(() => {
     if (!data) {
@@ -64,13 +71,29 @@ export function SuppliersPage() {
   const pagination = React.useMemo(() => {
     if (!data?.data) return undefined;
 
-    // Check for meta in different locations
-    const meta = data.data.meta || data.data;
-
-    if (meta.total !== undefined) {
+    // Case 1: Standard paginated response with meta
+    if (data.data.meta && typeof data.data.meta.total === 'number') {
       return {
-        total: meta.total || 0,
-        totalPages: meta.totalPages || meta.pages || 1,
+        total: data.data.meta.total,
+        totalPages: data.data.meta.totalPages || 1,
+      };
+    }
+
+    // Case 2: Response is directly the array (no pagination)
+    if (Array.isArray(data.data)) {
+      return {
+        total: data.data.length,
+        totalPages: 1,
+      };
+    }
+
+    // Case 3: Response data is nested but no meta (e.g. data.data.data is array)
+    if (data.data.data && Array.isArray(data.data.data)) {
+      // Check if there are sibling properties that look like meta
+      const total = data.data.total || data.data.data.length;
+      return {
+        total: total,
+        totalPages: data.data.totalPages || 1
       };
     }
 
@@ -111,13 +134,18 @@ export function SuppliersPage() {
   };
 
   const handleSupplierClick = (supplier: SupplierExtended) => {
-    if (supplier.id) {
+    console.log('Row clicked (handleSupplierClick called):', supplier);
+    // Fallback for ID if standard id is missing (e.g. using _id or similar)
+    const id = supplier.id || (supplier as any)._id;
+
+    if (id) {
+      console.log('Navigating to:', `/suppliers/${id}`);
       navigate({
         to: '/suppliers/$supplierId',
-        params: { supplierId: String(supplier.id) }
+        params: { supplierId: String(id) }
       });
     } else {
-      console.error('Supplier ID is missing!');
+      console.error('Supplier ID is missing!', supplier);
     }
   };
 
@@ -150,6 +178,19 @@ export function SuppliersPage() {
     }
   };
 
+  const [isImporterOpen, setIsImporterOpen] = useState(false);
+
+  const supplierFields: FieldDef[] = [
+    { key: 'companyName', label: 'Şirket Adı' },
+    { key: 'companyCode', label: 'Firma Kodu' },
+    { key: 'contactPerson', label: 'İrtibat Kişisi' },
+    { key: 'phone', label: 'Telefon' },
+    { key: 'email', label: 'E-posta' },
+    { key: 'city', label: 'Şehir' },
+    { key: 'country', label: 'Ülke' },
+    { key: 'isActive', label: 'Aktif' }
+  ];
+
   const handleSaveSupplier = async (supplierData: Omit<SupplierExtended, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
       if (editingSupplier && editingSupplier.id) {
@@ -163,232 +204,319 @@ export function SuppliersPage() {
         await createSupplierMutation.mutateAsync(supplierData as any);
         setShowNewSupplierModal(false);
       }
-      refetch();
+      await refetch();
+      const { success: showSuccess } = useToastHelpers();
+      showSuccess('Tedarikçi kaydedildi');
     } catch (error) {
       console.error('Failed to save supplier:', error);
     }
   };
 
+  const [importResult, setImportResult] = useState<null | { created: number; updated: number; errors: any[] }>(null);
+
   const filteredSuppliers = useMemo(() => {
-    // Filtering is now done on the server side
-    return suppliers;
-  }, [suppliers]);
+    let result = suppliers;
+
+    // Client-side filtering for city if API doesn't support it or for immediate feedback
+    if (filters.city) {
+      const cityLower = filters.city.toLowerCase();
+      result = result.filter(s => s.city?.toLowerCase().includes(cityLower));
+    }
+
+    return result;
+  }, [suppliers, filters.city]);
 
   const sortedSuppliers = useMemo(() => {
-    // Sorting is now done on the server side
+    // Client-side sorting if needed (though API should handle it)
+    // For now, we rely on API but if we wanted client side:
+    /*
+    return [...filteredSuppliers].sort((a, b) => {
+      const aVal = a[sortBy as keyof SupplierExtended];
+      const bVal = b[sortBy as keyof SupplierExtended];
+      if (aVal === bVal) return 0;
+      const comparison = aVal > bVal ? 1 : -1;
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+    */
     return filteredSuppliers;
-  }, [filteredSuppliers]);
+  }, [filteredSuppliers, sortBy, sortOrder]);
 
   const paginatedSuppliers = useMemo(() => {
     return sortedSuppliers;
   }, [sortedSuppliers]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      {supplierId ? (
-        <Outlet />
-      ) : (
-        <>
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Tedarikçiler</h1>
-                <p className="text-sm text-gray-500 mt-2">Tedarikçi kayıtlarını yönetin ve takip edin</p>
-              </div>
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={handleRefresh}>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Yenile
-                </Button>
-                <Button onClick={handleNewSupplier} className="bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Yeni Tedarikçi
-                </Button>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gray-50/50 p-6">
+      <div className="max-w-full mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Tedarikçiler</h1>
+            <p className="text-sm text-gray-500 mt-1">Tedarikçi kayıtlarını yönetin ve takip edin</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={handleRefresh} className="bg-white">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Yenile
+            </Button>
+            <Button onClick={() => setIsImporterOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+              Toplu Yükle
+            </Button>
+            <Button onClick={handleNewSupplier} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Yeni Tedarikçi
+            </Button>
+          </div>
+        </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl shadow-sm border border-blue-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-blue-600 mb-1">Toplam Tedarikçi</p>
-                    <p className="text-3xl font-bold text-blue-900">{stats.total}</p>
-                  </div>
-                  <div className="bg-blue-500 p-3 rounded-lg">
-                    <Users className="h-8 w-8 text-white" />
-                  </div>
-                </div>
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">Toplam Tedarikçi</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
               </div>
-              <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl shadow-sm border border-green-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-green-600 mb-1">Aktif</p>
-                    <p className="text-3xl font-bold text-green-900">{stats.active}</p>
-                  </div>
-                  <div className="bg-green-500 p-3 rounded-lg">
-                    <CheckCircle className="h-8 w-8 text-white" />
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl shadow-sm border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Pasif</p>
-                    <p className="text-3xl font-bold text-gray-900">{stats.inactive}</p>
-                  </div>
-                  <div className="bg-gray-400 p-3 rounded-lg">
-                    <Flame className="h-8 w-8 text-white" />
-                  </div>
-                </div>
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <Users className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </div>
-
-          {/* Search & Filters */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Şirket adı, yetkili kişi, telefon veya email ile ara..."
-                    value={searchValue}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">Aktif Tedarikçiler</p>
+                <p className="text-3xl font-bold text-green-600">{stats.active}</p>
               </div>
-              <Button
-                variant={showFilters ? "default" : "outline"}
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Filtreler
-              </Button>
+              <div className="bg-green-50 p-3 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
             </div>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">Pasif Tedarikçiler</p>
+                <p className="text-3xl font-bold text-gray-600">{stats.inactive}</p>
+              </div>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <Flame className="h-6 w-6 text-gray-600" />
+              </div>
+            </div>
+          </div>
+        </div>
 
-            {showFilters && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
+        {/* Search & Filters */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Şirket adı, yetkili kişi, telefon veya email ile ara..."
+                  value={searchValue}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="pl-10 w-full"
+                />
+              </div>
+            </div>
+            <Button
+              variant={showFilters ? "default" : "outline"}
+              onClick={() => setShowFilters(!showFilters)}
+              className={showFilters ? "bg-gray-900 text-white" : ""}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Filtreler
+            </Button>
+          </div>
+
+          {
+            showFilters && (
+              <div className="mt-4 pt-4 border-t border-gray-100 animate-in fade-in slide-in-from-top-2">
                 <SupplierFilters
                   filters={filters}
                   onFiltersChange={setFilters}
                   onClearFilters={handleClearFilters}
                 />
               </div>
-            )}
-          </div>
+            )
+          }
+        </div>
 
-          {/* Supplier List */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <RefreshCw className="h-8 w-8 animate-spin text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">Yükleniyor...</p>
-                </div>
-              </div>
-            ) : error ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <p className="text-sm text-red-600">Bir hata oluştu</p>
-                  <Button variant="outline" size="sm" onClick={handleRefresh} className="mt-2">
-                    Tekrar Dene
-                  </Button>
-                </div>
-              </div>
-            ) : sortedSuppliers.length === 0 ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <Users className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">Tedarikçi bulunamadı</p>
-                  <Button variant="outline" size="sm" onClick={handleNewSupplier} className="mt-2">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Yeni Tedarikçi Ekle
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <SupplierList
-                  suppliers={paginatedSuppliers}
-                  isLoading={isLoading}
-                  error={error as Error | null}
-                  onSupplierClick={handleSupplierClick}
-                  onEditSupplier={handleEditSupplier}
-                  onDeleteSupplier={handleDeleteSupplier}
-                  onSort={handleSort}
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
-                />
-                {pagination && (
-                  <div className="border-t border-gray-200 p-4">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={pagination.totalPages}
-                      onPageChange={setCurrentPage}
-                      itemsPerPage={itemsPerPage}
-                      onItemsPerPageChange={(newSize) => {
-                        setItemsPerPage(newSize);
-                        setCurrentPage(1);
-                      }}
-                      totalItems={pagination.total}
-                    />
-                  </div>
+        <Tabs defaultValue="all" className="space-y-6">
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <TabsList>
+              <TabsTrigger value="all">Tedarikçiler</TabsTrigger>
+              <TabsTrigger value="suggested">
+                Önerilen Tedarikçiler
+                {suggestedSuppliers.length > 0 && (
+                  <Badge variant="default" className="ml-2">
+                    {suggestedSuppliers.length}
+                  </Badge>
                 )}
-              </>
-            )}
+              </TabsTrigger>
+            </TabsList>
           </div>
 
-          {/* Modals */}
-          <SupplierFormModal
-            isOpen={showNewSupplierModal || isEditModalOpen}
-            onClose={() => {
-              setShowNewSupplierModal(false);
-              setIsEditModalOpen(false);
-              setEditingSupplier(null);
-            }}
-            onSave={handleSaveSupplier}
-            supplier={editingSupplier}
-            isLoading={createSupplierMutation.isPending || updateSupplierMutation.isPending}
-          />
-
-          <Modal
-            isOpen={!!supplierToDelete}
-            onClose={() => setSupplierToDelete(null)}
-            title="Tedarikçiyi Sil"
-            size="md"
-          >
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <div className="flex-shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                    <Trash2 className="h-5 w-5 text-red-600" />
+          <TabsContent value="all">
+            {/* Supplier List */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              {
+                isLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-center">
+                      <RefreshCw className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-3" />
+                      <p className="text-sm text-gray-600 font-medium">Tedarikçiler yükleniyor...</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-sm font-medium text-red-900">
-                    Bu tedarikçiyi silmek istediğinizden emin misiniz?
-                  </h3>
-                  <p className="mt-1 text-sm text-red-700">
-                    {supplierToDelete?.companyName}
-                  </p>
+                ) : error ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-center">
+                      <div className="bg-red-50 p-3 rounded-full w-fit mx-auto mb-3">
+                        <Flame className="h-6 w-6 text-red-500" />
+                      </div>
+                      <p className="text-sm text-red-600 font-medium mb-2">Veriler yüklenirken bir hata oluştu</p>
+                      <Button variant="outline" size="sm" onClick={handleRefresh}>
+                        Tekrar Dene
+                      </Button>
+                    </div>
+                  </div>
+                ) : sortedSuppliers.length === 0 ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-center">
+                      <div className="bg-gray-50 p-4 rounded-full w-fit mx-auto mb-3">
+                        <Users className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900">Tedarikçi Bulunamadı</h3>
+                      <p className="text-sm text-gray-500 mt-1 mb-4">Arama kriterlerinize uygun kayıt bulunmuyor.</p>
+                      <Button onClick={handleNewSupplier} className="bg-blue-600 hover:bg-blue-700 text-white">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Yeni Tedarikçi Ekle
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <SupplierList
+                    suppliers={paginatedSuppliers}
+                    isLoading={isLoading}
+                    error={error as Error | null}
+                    onSupplierClick={handleSupplierClick}
+                    onEditSupplier={handleEditSupplier}
+                    onDeleteSupplier={handleDeleteSupplier}
+                    onSort={handleSort}
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    pagination={pagination ? {
+                      current: currentPage,
+                      pageSize: itemsPerPage,
+                      total: pagination.total,
+                      onChange: (page, size) => {
+                        setCurrentPage(page);
+                        setItemsPerPage(size);
+                      }
+                    } : undefined}
+                  />
+                )
+              }
+            </div>
+          </TabsContent>
+
+          <TabsContent value="suggested">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6">
+              <SuggestedSuppliersList
+                suppliers={suggestedSuppliers}
+                isLoading={suggestedLoading}
+                onSupplierAccepted={() => {
+                  refetch();
+                }}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Modals */}
+        <SupplierFormModal
+          isOpen={showNewSupplierModal || isEditModalOpen}
+          onClose={() => {
+            setShowNewSupplierModal(false);
+            setIsEditModalOpen(false);
+            setEditingSupplier(null);
+          }}
+          onSave={handleSaveSupplier}
+          supplier={editingSupplier}
+          isLoading={createSupplierMutation.isPending || updateSupplierMutation.isPending}
+        />
+
+        <Modal
+          isOpen={!!supplierToDelete}
+          onClose={() => setSupplierToDelete(null)}
+          title="Tedarikçiyi Sil"
+          size="md"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex-shrink-0">
+                <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                  <Trash2 className="h-5 w-5 text-red-600" />
                 </div>
               </div>
-              <p className="text-sm text-gray-600">
-                Bu işlem geri alınamaz. Tedarikçi kaydı ve tüm ilişkili veriler silinecektir.
-              </p>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setSupplierToDelete(null)}>İptal</Button>
-                <Button variant="danger" onClick={confirmDelete} disabled={deleteSupplierMutation.isPending}>
-                  {deleteSupplierMutation.isPending ? 'Siliniyor...' : 'Sil'}
-                </Button>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-red-900">
+                  Bu tedarikçiyi silmek istediğinizden emin misiniz?
+                </h3>
+                <p className="mt-1 text-sm text-red-700">
+                  {supplierToDelete?.companyName}
+                </p>
               </div>
             </div>
-          </Modal>
-        </>
-      )}
+            <p className="text-sm text-gray-600">
+              Bu işlem geri alınamaz. Tedarikçi kaydı ve tüm ilişkili veriler silinecektir.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setSupplierToDelete(null)}>İptal</Button>
+              <Button variant="danger" onClick={confirmDelete} disabled={deleteSupplierMutation.isPending}>
+                {deleteSupplierMutation.isPending ? 'Siliniyor...' : 'Sil'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+        <UniversalImporter
+          isOpen={isImporterOpen}
+          onClose={() => setIsImporterOpen(false)}
+          entityFields={supplierFields}
+          zodSchema={suppliersSchema}
+          uploadEndpoint={'/api/suppliers/bulk_upload'}
+          modalTitle="Toplu Tedarikçi Yükleme"
+          sampleDownloadUrl={'/import_samples/suppliers_sample.csv'}
+          onComplete={(res) => {
+            const { success: showSuccess, error: showError } = useToastHelpers();
+            if (res.errors && res.errors.length > 0) {
+              showError(`Toplu yükleme tamamlandı — Hata satırı: ${res.errors.length}`);
+            } else {
+              showSuccess(`Toplu yükleme tamamlandı — Oluşturulan: ${res.created}`);
+            }
+            setImportResult(res);
+            refetch();
+            setIsImporterOpen(false);
+          }}
+        />
+        {importResult && (
+          <div className="mt-4">
+            <Card>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm">Oluşturulan: <strong>{importResult.created}</strong></div>
+                  <div className="text-sm">Güncellenen: <strong>{importResult.updated}</strong></div>
+                  <div className="text-sm">Hatalı satır: <strong>{importResult.errors?.length || 0}</strong></div>
+                </div>
+                <div>
+                  <Button variant="outline" onClick={() => setImportResult(null)}>Kapat</Button>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

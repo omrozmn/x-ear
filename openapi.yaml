@@ -3148,6 +3148,43 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
       description: Remove a supplier from the system
+    put:
+      summary: Update supplier details
+      operationId: suppliers_update_supplier
+      tags:
+      - Suppliers
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuppliersCreateSupplierBody'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Update an existing supplier's information
   /api/suppliers/{supplier_id}/products:
     get:
       summary: Get all products for a specific supplier
@@ -3453,6 +3490,307 @@ paths:
       responses:
         '200':
           description: Success
+  /api/suppliers/{supplier_id}/invoices:
+    get:
+      summary: Get supplier purchase invoices (incoming and outgoing)
+      operationId: suppliers_get_supplier_invoices
+      tags:
+      - Suppliers
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 200
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [incoming, outgoing, all]
+          default: all
+      - name: start_date
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: end_date
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        '200':
+          description: Supplier invoices retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoices:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PurchaseInvoice'
+                      pagination:
+                        type: object
+                        properties:
+                          page:
+                            type: integer
+                          perPage:
+                            type: integer
+                          total:
+                            type: integer
+                          totalPages:
+                            type: integer
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Supplier not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve purchase invoices for the specified supplier
+  /api/suppliers/suggested:
+    get:
+      summary: Get suggested suppliers (pending approval)
+      operationId: suppliers_get_suggested_suppliers
+      tags:
+      - Suppliers
+      responses:
+        '200':
+          description: Suggested suppliers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      suggestedSuppliers:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SuggestedSupplier'
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve a list of suggested suppliers based on incoming invoices
+  /api/suppliers/suggested/{suggested_id}/accept:
+    post:
+      summary: Accept suggested supplier and create/link supplier record
+      operationId: suppliers_accept_suggested_supplier
+      tags:
+      - Suppliers
+      parameters:
+      - name: suggested_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '201':
+          description: Suggested supplier accepted and supplier created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      supplier:
+                        $ref: '#/components/schemas/Supplier'
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '200':
+          description: Suggested supplier linked to existing supplier
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      supplier:
+                        $ref: '#/components/schemas/Supplier'
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Accept a suggested supplier and create or link to a supplier by tax number
+  /api/suppliers/suggested/{suggested_id}:
+    delete:
+      summary: Reject a suggested supplier
+      operationId: suppliers_reject_suggested_supplier
+      tags:
+      - Suppliers
+      parameters:
+      - name: suggested_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Suggested supplier rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Suggested supplier not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Reject and mark a suggested supplier as rejected
+  /api/birfatura/sync-invoices:
+    post:
+      summary: Sync invoices from BirFatura provider
+      operationId: birfatura_sync_invoices
+      tags:
+      - BirFatura
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                start_date:
+                  type: string
+                  format: date-time
+                end_date:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Sync completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      imported:
+                        type: object
+                        properties:
+                          incoming:
+                            type: integer
+                          outgoing:
+                            type: integer
+                          duplicates:
+                            type: integer
+                          errors:
+                            type: integer
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Trigger invoice synchronization from integrator to local database
 components:
   schemas:
     Patient:
@@ -4489,3 +4827,102 @@ components:
         isActive:
           type: boolean
           description: Whether template is active
+    PurchaseInvoice:
+      type: object
+      properties:
+        id:
+          type: integer
+        birfaturaUuid:
+          type: string
+        invoiceNumber:
+          type: string
+        invoiceDate:
+          type: string
+          format: date-time
+        invoiceType:
+          type: string
+          enum: [INCOMING, OUTGOING]
+        senderName:
+          type: string
+        senderTaxNumber:
+          type: string
+        senderTaxOffice:
+          type: string
+        senderAddress:
+          type: string
+        senderCity:
+          type: string
+        supplierId:
+          type: integer
+          nullable: true
+        currency:
+          type: string
+        subtotal:
+          type: number
+        taxAmount:
+          type: number
+        totalAmount:
+          type: number
+        status:
+          type: string
+        isMatched:
+          type: boolean
+        notes:
+          type: string
+          nullable: true
+        itemsCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    SuggestedSupplier:
+      type: object
+      properties:
+        id:
+          type: integer
+        companyName:
+          type: string
+        taxNumber:
+          type: string
+        taxOffice:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        invoiceCount:
+          type: integer
+        totalAmount:
+          type: number
+        firstInvoiceDate:
+          type: string
+          format: date-time
+          nullable: true
+        lastInvoiceDate:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED, REJECTED]
+        acceptedAt:
+          type: string
+          format: date-time
+          nullable: true
+        acceptedBy:
+          type: string
+          nullable: true
+        supplierId:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true

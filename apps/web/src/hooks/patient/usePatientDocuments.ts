@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { PatientApiService } from '../../services/patient/patient-api.service';
+import { patientApiService } from '../../services/patient/patient-api.service';
 
 export interface PatientDocument {
   id: string;
@@ -30,16 +30,13 @@ export function usePatientDocuments(patientId?: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | string | null>(null);
 
-  // Memoize the API service to prevent recreation on every render
-  const apiService = useMemo(() => new PatientApiService(), []);
-
   // Fetch documents for a patient
   const fetchDocuments = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
 
     try {
-      const result = await apiService.getDocuments(id);
+      const result = await patientApiService.getDocuments(id);
       setDocuments(result?.data || []);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
@@ -47,7 +44,7 @@ export function usePatientDocuments(patientId?: string) {
     } finally {
       setLoading(false);
     }
-  }, [apiService]);
+  }, []);
 
   // Load documents on mount or when patientId changes
   useEffect(() => {

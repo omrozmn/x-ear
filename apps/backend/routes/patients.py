@@ -8,6 +8,10 @@ import sqlite3
 import csv
 import io
 import os
+try:
+    from openpyxl import load_workbook
+except Exception:
+    load_workbook = None
 from flask import Response
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.user import User
@@ -48,33 +52,136 @@ def bulk_upload_patients():
             return jsonify({'success': False, 'error': 'No selected file'}), 400
 
         # Read CSV content (support UTF-8 BOM)
+        filename = (file.filename or '').lower()
         raw = file.read()
-        try:
-            text = raw.decode('utf-8-sig')
-        except Exception:
-            text = raw.decode('utf-8', errors='replace')
 
-        reader = csv.DictReader(io.StringIO(text))
+        # Quick debug endpoint to inspect incoming file metadata
+        if request.args.get('debug') == '1':
+            try:
+                return jsonify({'filename': file.filename, 'size': len(raw), 'content_type': file.content_type}), 200
+            except Exception:
+                return jsonify({'filename': file.filename, 'size': None, 'content_type': file.content_type}), 200
+
+        def _sanitize_cell(v):
+            if v is None:
+                return None
+            if not isinstance(v, str):
+                return v
+            v = v.strip()
+            # Prevent CSV/Excel formula injection
+            if v.startswith(('=', '+', '-', '@')):
+                return "'" + v
+            return v
+
+        rows_iter = None
+        # If XLSX provided, parse using openpyxl into list of dicts
+        if filename.endswith('.xlsx') or filename.endswith('.xls'):
+            if load_workbook is None:
+                return jsonify({'success': False, 'error': 'Server missing openpyxl dependency; please install openpyxl to accept XLSX uploads'}), 500
+            try:
+                # load_workbook accepts a file-like object via BytesIO
+                from io import BytesIO
+                wb = load_workbook(filename=BytesIO(raw), read_only=True, data_only=True)
+                sheet = wb[wb.sheetnames[0]] if wb.sheetnames else None
+                if sheet is None:
+                    return jsonify({'success': False, 'error': 'XLSX contains no sheets'}), 400
+                it = sheet.iter_rows(values_only=True)
+                headers_row = next(it, None)
+                if not headers_row:
+                    return jsonify({'success': False, 'error': 'XLSX first row empty'}), 400
+                headers = [str(h).strip() if h is not None else '' for h in headers_row]
+                # Basic header sanity: ensure at least one non-empty header
+                if not any(h for h in headers):
+                    return jsonify({'success': False, 'error': 'XLSX appears to have no headers; please provide a file with header row or use the importer mapping UI.'}), 400
+
+                rows = []
+                for r in it:
+                    obj = {}
+                    for idx, h in enumerate(headers):
+                        key = h
+                        val = r[idx] if idx < len(r) else None
+                        obj[key] = _sanitize_cell(val)
+                    # skip empty rows
+                    if any(v not in (None, '') for v in obj.values()):
+                        rows.append(obj)
+                reader = rows
+            except Exception as e:
+                logger.exception('Failed to parse XLSX: %s', e)
+                return jsonify({'success': False, 'error': 'Failed to parse XLSX file: ' + str(e)}), 500
+        else:
+            # treat as CSV/text; decode with utf-8-sig fallback
+            try:
+                text = raw.decode('utf-8-sig')
+            except Exception:
+                text = raw.decode('utf-8', errors='replace')
+
+            # Try to detect delimiter using Sniffer; fallback to comma
+            try:
+                sample = text[:4096]
+                dialect = csv.Sniffer().sniff(sample)
+                delimiter = dialect.delimiter
+            except Exception:
+                delimiter = ','
+
+            # Use DictReader with detected delimiter
+            reader_obj = csv.DictReader(io.StringIO(text), delimiter=delimiter)
+            # Heuristic fallback: if fieldnames look like a single joined header, try common separators
+            try:
+                fns = reader_obj.fieldnames or []
+                if len(fns) == 1:
+                    single = fns[0]
+                    if ';' in single and delimiter != ';':
+                        reader_obj = csv.DictReader(io.StringIO(text), delimiter=';')
+                    elif '\t' in single and delimiter != '\t':
+                        reader_obj = csv.DictReader(io.StringIO(text), delimiter='\t')
+            except Exception:
+                pass
+
+            # Materialize rows (list) for safer inspection and later iteration
+            try:
+                rows_from_csv = list(reader_obj)
+            except Exception as e:
+                logger.exception('CSV parsing failed: %s', e)
+                return jsonify({'success': False, 'error': 'CSV parsing failed: ' + str(e)}), 400
+
+            # For downstream logic, use a list of dicts
+            reader = rows_from_csv
+            # expose detected fieldnames for debug if requested
+            detected_fieldnames = reader_obj.fieldnames
         created = 0
         updated = 0
         errors = []
         row_num = 0
 
-        for row in reader:
+        # If reader is a list (from CSV materialization or XLSX parsing) iterate directly
+        iterable = reader if isinstance(reader, list) else list(reader)
+
+        # If debugging requested, return detected fieldnames and a sample
+        if request.args.get('debug') == '1':
+            sample = iterable[0] if len(iterable) > 0 else None
+            return jsonify({'success': True, 'detected_fieldnames': (detected_fieldnames if 'detected_fieldnames' in locals() else headers if 'headers' in locals() else None), 'sample_first_row': sample}), 200
+
+        for row in iterable:
             row_num += 1
             try:
+                # If row came from csv.DictReader keys/values are strings; sanitize
+                if isinstance(row, dict):
+                    normalized_row = {k: _sanitize_cell(v) for k, v in row.items()}
+                else:
+                    normalized_row = row
+
                 # Normalize row to expected API-style keys
                 payload = {
-                    'tcNumber': row.get('tcNumber') or row.get('tc_number') or row.get('tc'),
-                    'identityNumber': row.get('identityNumber') or row.get('identity_number'),
-                    'firstName': row.get('firstName') or row.get('first_name') or row.get('first'),
-                    'lastName': row.get('lastName') or row.get('last_name') or row.get('last'),
-                    'phone': row.get('phone') or row.get('phone_number') or row.get('tel'),
-                    'email': row.get('email'),
-                    'birthDate': row.get('birthDate') or row.get('dob'),
-                    'gender': row.get('gender'),
-                    'status': row.get('status'),
-                    'segment': row.get('segment')
+                    'tcNumber': (normalized_row.get('tcNumber') if isinstance(normalized_row, dict) else None) or (normalized_row.get('tc_number') if isinstance(normalized_row, dict) else None) or (normalized_row.get('tc') if isinstance(normalized_row, dict) else None),
+                    'identityNumber': (normalized_row.get('identityNumber') if isinstance(normalized_row, dict) else None) or (normalized_row.get('identity_number') if isinstance(normalized_row, dict) else None),
+                    'firstName': (normalized_row.get('firstName') if isinstance(normalized_row, dict) else None) or (normalized_row.get('first_name') if isinstance(normalized_row, dict) else None) or (normalized_row.get('first') if isinstance(normalized_row, dict) else None),
+                    'lastName': (normalized_row.get('lastName') if isinstance(normalized_row, dict) else None) or (normalized_row.get('last_name') if isinstance(normalized_row, dict) else None) or (normalized_row.get('last') if isinstance(normalized_row, dict) else None),
+                    'phone': (normalized_row.get('phone') if isinstance(normalized_row, dict) else None) or (normalized_row.get('phone_number') if isinstance(normalized_row, dict) else None) or (normalized_row.get('tel') if isinstance(normalized_row, dict) else None),
+                    'email': (normalized_row.get('email') if isinstance(normalized_row, dict) else None),
+                    'birthDate': (normalized_row.get('birthDate') if isinstance(normalized_row, dict) else None) or (normalized_row.get('dob') if isinstance(normalized_row, dict) else None),
+                    'gender': (normalized_row.get('gender') if isinstance(normalized_row, dict) else None),
+                    'status': (normalized_row.get('status') if isinstance(normalized_row, dict) else None),
+                    'segment': (normalized_row.get('segment') if isinstance(normalized_row, dict) else None)
                 }
 
                 # Address fields support flat CSV columns
@@ -99,6 +206,11 @@ def bulk_upload_patients():
                 existing = None
                 if payload.get('tcNumber'):
                     existing = Patient.query.filter_by(tc_number=payload['tcNumber']).one_or_none()
+
+                # Basic required-field guard: avoid DB integrity errors by validating
+                if not payload.get('firstName') and not payload.get('phone') and not payload.get('tcNumber'):
+                    errors.append({'row': row_num, 'error': 'Missing required identifying fields (tcNumber, firstName or phone)'} )
+                    continue
 
                 if existing:
                     # apply updatable fields similar to update endpoint
@@ -702,6 +814,22 @@ def get_patient_devices(patient_id):
             device_dict['earSide'] = assignment.ear
             device_dict['assignedDate'] = assignment.created_at.isoformat() if assignment.created_at else None
             device_dict['status'] = 'assigned'  # Default status
+            # Provide SGK and patient payment fields for frontend cards/tables
+            try:
+                device_dict['sgkReduction'] = float(assignment.sgk_support) if getattr(assignment, 'sgk_support', None) is not None else None
+            except Exception:
+                device_dict['sgkReduction'] = None
+
+            try:
+                # net_payable is used for patient responsibility in other places
+                if hasattr(assignment, 'net_payable') and assignment.net_payable is not None:
+                    device_dict['patientPayment'] = float(assignment.net_payable)
+                elif getattr(assignment, 'sale_price', None) is not None:
+                    device_dict['patientPayment'] = float(assignment.sale_price)
+                else:
+                    device_dict['patientPayment'] = None
+            except Exception:
+                device_dict['patientPayment'] = None
             
             # Serial numbers are already in device_dict from to_dict()
             # No need to override - to_dict() already includes:

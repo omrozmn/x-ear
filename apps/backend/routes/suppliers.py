@@ -17,8 +17,199 @@ from utils.optimistic_locking import optimistic_lock, with_transaction
 # Import models from new structure
 from models.suppliers import Supplier, ProductSupplier
 from models.inventory import Inventory
+from models.purchase_invoice import PurchaseInvoice, PurchaseInvoiceItem, SuggestedSupplier
+import csv
+import io
+import json
+import sqlite3
+try:
+    from openpyxl import load_workbook
+except Exception:
+    load_workbook = None
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.idempotency import idempotent
 
 suppliers_bp = Blueprint('suppliers', __name__)
+
+
+@suppliers_bp.route('/api/suppliers/bulk_upload', methods=['POST'])
+@jwt_required(optional=True)
+@idempotent(methods=['POST'])
+def bulk_upload_suppliers():
+    """Bulk upload suppliers via CSV/XLSX file. Returns summary {created, updated, errors}."""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'error': 'No file part named "file" in request'}), 400
+
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'error': 'No selected file'}), 400
+
+        filename = (file.filename or '').lower()
+        raw = file.read()
+
+        def _sanitize_cell(v):
+            if v is None:
+                return None
+            if not isinstance(v, str):
+                return v
+            v = v.strip()
+            if v.startswith(('=', '+', '-', '@')):
+                return "'" + v
+            return v
+
+        # Parse XLSX or CSV
+        if filename.endswith('.xlsx') or filename.endswith('.xls'):
+            if load_workbook is None:
+                return jsonify({'success': False, 'error': 'Server missing openpyxl dependency; please install openpyxl to accept XLSX uploads'}), 500
+            try:
+                from io import BytesIO
+                wb = load_workbook(filename=BytesIO(raw), read_only=True, data_only=True)
+                sheet = wb[wb.sheetnames[0]] if wb.sheetnames else None
+                if sheet is None:
+                    return jsonify({'success': False, 'error': 'XLSX contains no sheets'}), 400
+                it = sheet.iter_rows(values_only=True)
+                headers_row = next(it, None)
+                if not headers_row:
+                    return jsonify({'success': False, 'error': 'XLSX first row empty'}), 400
+                headers = [str(h).strip() if h is not None else '' for h in headers_row]
+                rows = []
+                for r in it:
+                    obj = {}
+                    for idx, h in enumerate(headers):
+                        val = r[idx] if idx < len(r) else None
+                        obj[h] = _sanitize_cell(val)
+                    if any(v not in (None, '') for v in obj.values()):
+                        rows.append(obj)
+                iterable = rows
+            except Exception as e:
+                return jsonify({'success': False, 'error': 'Failed to parse XLSX: ' + str(e)}), 500
+        else:
+            try:
+                text = raw.decode('utf-8-sig')
+            except Exception:
+                text = raw.decode('utf-8', errors='replace')
+
+            try:
+                sample = text[:4096]
+                dialect = csv.Sniffer().sniff(sample)
+                delimiter = dialect.delimiter
+            except Exception:
+                delimiter = ','
+
+            reader_obj = csv.DictReader(io.StringIO(text), delimiter=delimiter)
+            try:
+                fns = reader_obj.fieldnames or []
+                if len(fns) == 1:
+                    single = fns[0]
+                    if ';' in single and delimiter != ';':
+                        reader_obj = csv.DictReader(io.StringIO(text), delimiter=';')
+                    elif '\t' in single and delimiter != '\t':
+                        reader_obj = csv.DictReader(io.StringIO(text), delimiter='\t')
+            except Exception:
+                pass
+
+            try:
+                iterable = list(reader_obj)
+            except Exception as e:
+                return jsonify({'success': False, 'error': 'CSV parsing failed: ' + str(e)}), 400
+
+        created = 0
+        updated = 0
+        errors = []
+        row_num = 0
+
+        for row in iterable:
+            row_num += 1
+            try:
+                if isinstance(row, dict):
+                    normalized_row = {k: _sanitize_cell(v) for k, v in row.items()}
+                else:
+                    normalized_row = row
+
+                # Normalize keys to supplier model
+                company_name = normalized_row.get('companyName') or normalized_row.get('company_name') or normalized_row.get('company')
+                company_code = normalized_row.get('companyCode') or normalized_row.get('company_code')
+                contact_person = normalized_row.get('contactPerson') or normalized_row.get('contact_person')
+                phone = normalized_row.get('phone')
+                email = normalized_row.get('email')
+                city = normalized_row.get('city')
+                country = normalized_row.get('country')
+                is_active = normalized_row.get('isActive')
+
+                if not company_name:
+                    errors.append({'row': row_num, 'error': 'Missing companyName'})
+                    continue
+
+                # Find existing by company_code or company_name
+                existing = None
+                if company_code:
+                    existing = Supplier.query.filter_by(company_code=company_code).one_or_none()
+                if not existing:
+                    existing = Supplier.query.filter_by(company_name=company_name).one_or_none()
+
+                if existing:
+                    # update allowed fields
+                    updatable = {
+                        'company_code': company_code,
+                        'contact_person': contact_person,
+                        'phone': phone,
+                        'email': email,
+                        'city': city,
+                        'country': country,
+                        'is_active': (is_active in (True, 'true', 'True', '1', 1)) if is_active is not None else None
+                    }
+                    for attr, val in updatable.items():
+                        if val is not None:
+                            setattr(existing, attr, val)
+                    db.session.add(existing)
+                    updated += 1
+                else:
+                    sup = Supplier(
+                        company_name=company_name,
+                        company_code=company_code,
+                        contact_person=contact_person,
+                        phone=phone,
+                        email=email,
+                        city=city,
+                        country=country,
+                        is_active=(is_active in (True, 'true', 'True', '1', 1)) if is_active is not None else True
+                    )
+                    db.session.add(sup)
+                    created += 1
+
+                try:
+                    db.session.flush()
+                except Exception as e:
+                    db.session.rollback()
+                    errors.append({'row': row_num, 'error': str(e)})
+                    continue
+
+            except Exception as e:
+                errors.append({'row': row_num, 'error': str(e)})
+                continue
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': 'Commit failed: ' + str(e)}), 500
+
+        # Log activity
+        try:
+            actor = get_jwt_identity()
+        except Exception:
+            actor = None
+        from app import log_activity
+        log_activity(actor or 'anonymous', 'bulk_upload', 'supplier', None, {'created': created, 'updated': updated, 'errors': errors}, request)
+
+        return jsonify({'success': True, 'created': created, 'updated': updated, 'errors': errors}), 200
+    except sqlite3.OperationalError as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Database write failed: ' + str(e)}), 503
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 # ============================================================================
@@ -472,3 +663,221 @@ def get_supplier_stats():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# ============================================================================
+# SUPPLIER INVOICE OPERATIONS
+# ============================================================================
+
+@suppliers_bp.route('/api/suppliers/<int:supplier_id>/invoices', methods=['GET'])
+def get_supplier_invoices(supplier_id):
+    try:
+        supplier = Supplier.query.get_or_404(supplier_id)
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        invoice_type = request.args.get('type', 'all')
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+
+        query = PurchaseInvoice.query.filter_by(supplier_id=supplier_id)
+
+        if invoice_type != 'all':
+            query = query.filter(PurchaseInvoice.invoice_type == invoice_type.upper())
+
+        if start_date:
+            try:
+                from datetime import datetime
+                start = datetime.fromisoformat(start_date)
+                query = query.filter(PurchaseInvoice.invoice_date >= start)
+            except (ValueError, TypeError):
+                pass
+
+        if end_date:
+            try:
+                from datetime import datetime
+                end = datetime.fromisoformat(end_date)
+                query = query.filter(PurchaseInvoice.invoice_date <= end)
+            except (ValueError, TypeError):
+                pass
+
+        query = query.order_by(PurchaseInvoice.invoice_date.desc())
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        from datetime import datetime
+        request_id = request.headers.get('X-Request-ID')
+        return jsonify({
+            'success': True,
+            'data': {
+                'invoices': [inv.to_dict() for inv in pagination.items],
+                'pagination': {
+                    'page': page,
+                    'perPage': per_page,
+                    'total': pagination.total,
+                    'totalPages': pagination.pages
+                }
+            },
+            'requestId': request_id,
+            'timestamp': datetime.utcnow().isoformat()
+        }), 200
+    except Exception as e:
+        from datetime import datetime
+        request_id = request.headers.get('X-Request-ID')
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': request_id,
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
+
+
+# ============================================================================
+# SUGGESTED SUPPLIERS OPERATIONS
+# ============================================================================
+
+@suppliers_bp.route('/api/suppliers/suggested', methods=['GET'])
+def get_suggested_suppliers():
+    try:
+        suggested = SuggestedSupplier.query.filter_by(status='PENDING').order_by(
+            SuggestedSupplier.last_invoice_date.desc()
+        ).all()
+
+        from datetime import datetime
+        request_id = request.headers.get('X-Request-ID')
+        return jsonify({
+            'success': True,
+            'data': {
+                'suggestedSuppliers': [s.to_dict() for s in suggested]
+            },
+            'requestId': request_id,
+            'timestamp': datetime.utcnow().isoformat()
+        }), 200
+    except Exception as e:
+        from datetime import datetime
+        request_id = request.headers.get('X-Request-ID')
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': request_id,
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
+
+
+@suppliers_bp.route('/api/suppliers/suggested/<int:suggested_id>/accept', methods=['POST'])
+@idempotent(methods=['POST'])
+@with_transaction
+def accept_suggested_supplier(suggested_id):
+    try:
+        suggested = SuggestedSupplier.query.get_or_404(suggested_id)
+
+        if suggested.status == 'ACCEPTED':
+            from datetime import datetime
+            request_id = request.headers.get('X-Request-ID')
+            return jsonify({
+                'success': False,
+                'error': 'Supplier already accepted',
+                'data': {
+                    'supplier': suggested.supplier.to_dict() if suggested.supplier else None
+                },
+                'requestId': request_id,
+                'timestamp': datetime.utcnow().isoformat()
+            }), 400
+
+        existing = Supplier.query.filter_by(tax_number=suggested.tax_number).first()
+        if existing:
+            suggested.status = 'ACCEPTED'
+            suggested.supplier_id = existing.id
+            suggested.accepted_at = datetime.utcnow()
+
+            PurchaseInvoice.query.filter_by(
+                sender_tax_number=suggested.tax_number
+            ).update({
+                'supplier_id': existing.id,
+                'is_matched': True
+            })
+
+            db.session.commit()
+
+            from datetime import datetime
+            request_id = request.headers.get('X-Request-ID')
+            return jsonify({
+                'success': True,
+                'data': {
+                    'supplier': existing.to_dict(),
+                    'note': 'Linked to existing supplier'
+                },
+                'requestId': request_id,
+                'timestamp': datetime.utcnow().isoformat()
+            }), 200
+
+        supplier = Supplier(
+            company_name=suggested.company_name,
+            tax_number=suggested.tax_number,
+            tax_office=suggested.tax_office,
+            address=suggested.address,
+            city=suggested.city,
+            is_active=True
+        )
+        db.session.add(supplier)
+        db.session.flush()
+
+        suggested.status = 'ACCEPTED'
+        suggested.supplier_id = supplier.id
+        suggested.accepted_at = datetime.utcnow()
+
+        PurchaseInvoice.query.filter_by(
+            sender_tax_number=suggested.tax_number
+        ).update({
+            'supplier_id': supplier.id,
+            'is_matched': True
+        })
+
+        db.session.commit()
+
+        from datetime import datetime
+        request_id = request.headers.get('X-Request-ID')
+        return jsonify({
+            'success': True,
+            'data': {
+                'supplier': supplier.to_dict()
+            },
+            'requestId': request_id,
+            'timestamp': datetime.utcnow().isoformat()
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        from datetime import datetime
+        request_id = request.headers.get('X-Request-ID')
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': request_id,
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
+
+
+@suppliers_bp.route('/api/suppliers/suggested/<int:suggested_id>', methods=['DELETE'])
+def reject_suggested_supplier(suggested_id):
+    try:
+        suggested = SuggestedSupplier.query.get_or_404(suggested_id)
+        suggested.status = 'REJECTED'
+        db.session.commit()
+
+        from datetime import datetime
+        request_id = request.headers.get('X-Request-ID')
+        return jsonify({
+            'success': True,
+            'data': {
+                'message': 'Suggested supplier rejected'
+            },
+            'requestId': request_id,
+            'timestamp': datetime.utcnow().isoformat()
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        from datetime import datetime
+        request_id = request.headers.get('X-Request-ID')
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'requestId': request_id,
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500

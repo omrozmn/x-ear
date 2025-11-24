@@ -1,0 +1,3 @@
+id,name,brand,model,category,availableInventory,price,barcode,supplier
+1001,Hearing Aid A,Acme,HA-A,hearing_aid,10,1250.00,1234567890123,Acme Teknoloji
+1002,Battery Pack,Beta,BP-1,battery,50,25.00,9876543210987,Beta Medikal

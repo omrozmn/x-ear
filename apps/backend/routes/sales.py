@@ -716,14 +716,22 @@ def _create_single_device_assignment(assignment_data, patient_id, sale_id, sgk_s
     discount_type = assignment_data.get('discount_type')
     discount_value = float(assignment_data.get('discount_value', 0) or 0)
 
-    if discount_type == 'percentage':
-        discount_amount = base_price * (discount_value / 100.0)
-    else:
-        discount_amount = discount_value
-    net_price = base_price - discount_amount
-
+    # Use pricing_calculation per-item SGK support when available; fallback to 0
     sgk_support = pricing_calculation.get('sgk_coverage_amount_per_item', 0)
-    net_payable = max(0, net_price - sgk_support)
+
+    # Apply SGK first (coverage reduces the price) then apply discount on the remaining amount
+    price_after_sgk = max(0.0, base_price - float(sgk_support))
+
+    if discount_type == 'percentage':
+        discount_amount = price_after_sgk * (discount_value / 100.0)
+    else:
+        discount_amount = float(discount_value or 0)
+
+    # Final per-item sale price (after SGK and discount)
+    final_sale_price = max(0.0, price_after_sgk - discount_amount)
+
+    # For backward compatibility keep net_payable as the per-item amount
+    net_payable = final_sale_price
 
     assignment = DeviceAssignment(
         patient_id=patient_id,
@@ -734,7 +742,7 @@ def _create_single_device_assignment(assignment_data, patient_id, sale_id, sgk_s
         from_inventory=True,
         inventory_id=inventory_id,
         list_price=base_price,
-        sale_price=net_price,
+        sale_price=final_sale_price,
         sgk_scheme=sgk_scheme,
         sgk_support=sgk_support,
         discount_type=discount_type,
@@ -1267,7 +1275,10 @@ def _build_device_info(assignment):
         'listPrice': float(assignment.list_price) if assignment.list_price else None,
         'salePrice': float(assignment.sale_price) if assignment.sale_price else None,
         'sgk_coverage_amount': float(assignment.sgk_support) if assignment.sgk_support else None,
-        'patient_responsible_amount': float(assignment.net_payable) if hasattr(assignment, 'net_payable') and assignment.net_payable is not None else None
+        'patient_responsible_amount': float(assignment.net_payable) if hasattr(assignment, 'net_payable') and assignment.net_payable is not None else None,
+        # Backwards-compatible keys used by frontend components
+        'sgkReduction': float(assignment.sgk_support) if assignment.sgk_support else None,
+        'patientPayment': float(assignment.net_payable) if hasattr(assignment, 'net_payable') and assignment.net_payable is not None else None
     }
 
 

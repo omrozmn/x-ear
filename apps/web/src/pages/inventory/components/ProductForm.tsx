@@ -282,13 +282,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <Select
-                  label="Marka"
+                <BrandAutocomplete
                   value={formData.brand}
-                  onChange={(e) => handleInputChange('brand', e.target.value)}
-                  options={[{ value: '', label: 'Marka seçin' }, ...BRANDS.map(brand => ({ value: brand, label: brand }))]}
+                  onChange={(v) => handleInputChange('brand', v)}
+                  placeholder="Marka seçin veya yazın"
+                  label="Marka"
                   required
-                  className="w-full"
                 />
               </div>
 

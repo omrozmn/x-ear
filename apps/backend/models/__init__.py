@@ -23,6 +23,7 @@ from .inventory import Inventory
 from .suppliers import Supplier, ProductSupplier
 from .device_replacement import DeviceReplacement, ReturnInvoice
 from .invoice import Invoice, Proforma
+from .purchase_invoice import PurchaseInvoice, PurchaseInvoiceItem, SuggestedSupplier
 
 # Maintain backward compatibility - all existing imports should work
 __all__ = [
@@ -37,5 +38,6 @@ __all__ = [
     'Inventory', 'Supplier', 'ProductSupplier',
     'DeviceReplacement', 'ReturnInvoice',
     'Invoice', 'Proforma',
+    'PurchaseInvoice', 'PurchaseInvoiceItem', 'SuggestedSupplier',
     'App', 'Role', 'Permission', 'UserAppRole', 'role_permissions'
 ]
