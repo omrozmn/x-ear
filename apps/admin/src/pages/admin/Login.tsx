@@ -3,13 +3,9 @@ import { useNavigate, useLocation, Navigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Eye as EyeIcon, EyeOff as EyeSlashIcon, Lock, Mail, Loader2 } from 'lucide-react';
+import { Eye as EyeIcon, EyeOff as EyeSlashIcon, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-import { adminApi, tokenManager } from '@/lib/api';
-import { useAuthStore } from '@/stores/authStore';
 import { useAuth } from '@/contexts/AuthContext';
-import type { LoginCredentials } from '@/types';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -53,15 +49,13 @@ const Login: React.FC = () => {
         setRequiresMFA(true);
         toast.success('Please enter your MFA code');
       } else if (result.tokens) {
-        // Login successful, redirect will happen automatically
-        // const from = (location.state as any)?.from?.pathname || '/dashboard';
-        window.location.href = '/'; // Redirect to dashboard/home
+        // Login successful, redirect will happen automatically via isAuthenticated change
+        window.location.href = '/';
       }
     } catch (error: any) {
       const apiError = error.response?.data?.error;
 
       if (apiError?.fields) {
-        // Handle field-specific errors
         Object.entries(apiError.fields).forEach(([field, message]) => {
           setError(field as keyof LoginFormData, {
             type: 'server',
@@ -69,7 +63,6 @@ const Login: React.FC = () => {
           });
         });
       } else {
-        // Handle general errors
         toast.error(apiError?.message || 'Login failed');
       }
     } finally {
@@ -80,18 +73,18 @@ const Login: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="loading-spinner-lg"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
         <div>
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary-100">
+          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
             <svg
-              className="h-8 w-8 text-primary-600"
+              className="h-8 w-8 text-blue-600"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -105,42 +98,46 @@ const Login: React.FC = () => {
             </svg>
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            X-Ear Admin Panel
+            X-Ear Admin
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your admin account
+            Sign in to manage the platform
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="label">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>
-              <input
-                {...register('email')}
-                type="email"
-                autoComplete="email"
-                className={errors.email ? 'input-error' : 'input'}
-                placeholder="Enter your email"
-              />
+              <div className="mt-1">
+                <input
+                  {...register('email')}
+                  type="email"
+                  autoComplete="email"
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.email ? 'border-red-300' : 'border-gray-300'
+                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  placeholder="admin@example.com"
+                />
+              </div>
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
               )}
             </div>
 
             <div>
-              <label htmlFor="password" className="label">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <div className="relative">
+              <div className="mt-1 relative">
                 <input
                   {...register('password')}
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  className={errors.password ? 'input-error pr-10' : 'input pr-10'}
-                  placeholder="Enter your password"
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.password ? 'border-red-300' : 'border-gray-300'
+                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10`}
+                  placeholder="••••••••"
                 />
                 <button
                   type="button"
@@ -160,24 +157,24 @@ const Login: React.FC = () => {
             </div>
 
             {requiresMFA && (
-              <div className="animate-slide-in">
-                <label htmlFor="mfa_token" className="label">
+              <div className="animate-fade-in">
+                <label htmlFor="mfa_token" className="block text-sm font-medium text-gray-700">
                   MFA Code
                 </label>
-                <input
-                  {...register('mfa_token')}
-                  type="text"
-                  autoComplete="one-time-code"
-                  className={errors.mfa_token ? 'input-error' : 'input'}
-                  placeholder="Enter 6-digit code"
-                  maxLength={6}
-                />
+                <div className="mt-1">
+                  <input
+                    {...register('mfa_token')}
+                    type="text"
+                    autoComplete="one-time-code"
+                    className={`appearance-none block w-full px-3 py-2 border ${errors.mfa_token ? 'border-red-300' : 'border-gray-300'
+                      } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                    placeholder="123456"
+                    maxLength={6}
+                  />
+                </div>
                 {errors.mfa_token && (
                   <p className="mt-1 text-sm text-red-600">{errors.mfa_token.message}</p>
                 )}
-                <p className="mt-1 text-sm text-gray-500">
-                  Enter the 6-digit code from your authenticator app
-                </p>
               </div>
             )}
           </div>
@@ -186,11 +183,11 @@ const Login: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed transition-colors shadow-sm"
             >
               {isSubmitting ? (
                 <>
-                  <div className="loading-spinner mr-2"></div>
+                  <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" />
                   Signing in...
                 </>
               ) : (
@@ -204,7 +201,7 @@ const Login: React.FC = () => {
               Need help?{' '}
               <a
                 href="mailto:support@x-ear.com"
-                className="font-medium text-primary-600 hover:text-primary-500"
+                className="font-medium text-blue-600 hover:text-blue-500"
               >
                 Contact support
               </a>

@@ -79,6 +79,47 @@ def get_me():
     return jsonify({'success': True, 'data': payload}), 200
 
 
+@users_bp.route('/users/me', methods=['PUT'])
+@jwt_required()
+def update_me():
+    user_id = get_jwt_identity()
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'success': False, 'error': 'Not found'}), 404
+
+    data = request.get_json() or {}
+    
+    if 'firstName' in data: user.first_name = data['firstName']
+    if 'lastName' in data: user.last_name = data['lastName']
+    # Email update usually requires verification, skipping for now or allow if simple
+    
+    db.session.commit()
+    return jsonify({'success': True, 'data': user.to_dict()})
+
+
+@users_bp.route('/users/me/password', methods=['POST'])
+@jwt_required()
+def change_password():
+    user_id = get_jwt_identity()
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'success': False, 'error': 'Not found'}), 404
+
+    data = request.get_json() or {}
+    current_password = data.get('currentPassword')
+    new_password = data.get('newPassword')
+
+    if not current_password or not new_password:
+        return jsonify({'success': False, 'error': 'Missing fields'}), 400
+
+    if not user.check_password(current_password):
+        return jsonify({'success': False, 'error': 'Invalid current password'}), 401
+
+    user.set_password(new_password)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Password updated'})
+
+
 @users_bp.route('/users/<user_id>', methods=['PUT'])
 @jwt_required()
 @idempotent(methods=['PUT'])

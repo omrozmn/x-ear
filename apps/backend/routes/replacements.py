@@ -10,7 +10,8 @@ from models.efatura_outbox import EFaturaOutbox
 from utils.efatura import build_return_invoice_xml, write_outbox_file
 from models.inventory import Inventory
 from models.patient import Patient
-from models.user import ActivityLog
+from models.user import ActivityLog, User
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +20,16 @@ replacements_bp = Blueprint('replacements', __name__, url_prefix='/api')
 
 
 @replacements_bp.route('/patients/<patient_id>/replacements', methods=['GET'])
+@jwt_required()
 def get_patient_replacements(patient_id):
     """Get replacement history for a patient"""
     try:
-        reps = Replacement.query.filter_by(patient_id=patient_id).order_by(Replacement.created_at.desc()).all()
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
+        reps = Replacement.query.filter_by(patient_id=patient_id, tenant_id=user.tenant_id).order_by(Replacement.created_at.desc()).all()
         return jsonify({'success': True, 'data': [r.to_dict() for r in reps], 'count': len(reps), 'timestamp': datetime.now().isoformat()})
     except Exception as e:
         logger.exception('Get patient replacements failed')
@@ -30,9 +37,15 @@ def get_patient_replacements(patient_id):
 
 
 @replacements_bp.route('/patients/<patient_id>/replacements', methods=['POST'])
+@jwt_required()
 def create_patient_replacement(patient_id):
     """Create a replacement for a patient. Request body mirrors legacy fields."""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json() or {}
         # Minimal validation (legacy allows flexible payloads)
         replacement_id = data.get('id') or f"REPL-{int(time.time() * 1000)}"
@@ -53,6 +66,7 @@ def create_patient_replacement(patient_id):
 
         r = Replacement(
             id=replacement_id,
+            tenant_id=user.tenant_id,
             patient_id=patient_id,
             sale_id=data.get('saleId') or data.get('sale_id'),
             old_device_id=data.get('oldDeviceId') or data.get('old_device_id'),
@@ -75,20 +89,32 @@ def create_patient_replacement(patient_id):
 
 
 @replacements_bp.route('/replacements/<replacement_id>', methods=['GET'])
+@jwt_required()
 def get_replacement(replacement_id):
+    current_user_id = get_jwt_identity()
+    user = db.session.get(User, current_user_id)
+    if not user:
+        return jsonify({'success': False, 'error': 'User not found'}), 401
+
     r = db.session.get(Replacement, replacement_id)
-    if not r:
+    if not r or r.tenant_id != user.tenant_id:
         return jsonify({'success': False, 'error': 'Replacement not found'}), 404
     return jsonify({'success': True, 'data': r.to_dict()})
 
 
 @replacements_bp.route('/replacements/<replacement_id>/status', methods=['PATCH'])
+@jwt_required()
 def patch_replacement_status(replacement_id):
+    current_user_id = get_jwt_identity()
+    user = db.session.get(User, current_user_id)
+    if not user:
+        return jsonify({'success': False, 'error': 'User not found'}), 401
+
     data = request.get_json() or {}
     new_status = data.get('status')
     notes = data.get('notes')
     r = db.session.get(Replacement, replacement_id)
-    if not r:
+    if not r or r.tenant_id != user.tenant_id:
         return jsonify({'success': False, 'error': 'Replacement not found'}), 404
     r.status = new_status or r.status
     if notes:
@@ -99,14 +125,20 @@ def patch_replacement_status(replacement_id):
 
 
 @replacements_bp.route('/replacements/<replacement_id>/invoice', methods=['POST'])
+@jwt_required()
 def create_return_invoice(replacement_id):
     """Create a supplier return invoice record linked to a replacement.
     This implementation stores invoice metadata on the Replacement row (legacy-compatible).
     """
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json() or {}
         r = db.session.get(Replacement, replacement_id)
-        if not r:
+        if not r or r.tenant_id != user.tenant_id:
             return jsonify({'success': False, 'error': 'Replacement not found'}), 404
 
         if r.return_invoice_id:
@@ -133,14 +165,20 @@ def create_return_invoice(replacement_id):
 
 
 @replacements_bp.route('/return-invoices/<invoice_id>/send-to-gib', methods=['POST'])
+@jwt_required()
 def send_invoice_to_gib(invoice_id):
     """Mark return invoice as sent to GIB. In legacy flow GİB send triggers replacement completion and stock effects.
     Here we mark gib_sent and update replacement status. Actual EFatura/GİB integration should be added server-side.
     """
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Locate replacement by invoice_id
         r = Replacement.query.filter_by(return_invoice_id=invoice_id).first()
-        if not r:
+        if not r or r.tenant_id != user.tenant_id:
             return jsonify({'success': False, 'error': 'Invoice or replacement not found'}), 404
 
         if r.gib_sent:
@@ -232,7 +270,7 @@ def send_invoice_to_gib(invoice_id):
 
                     # Activity log entry
                     try:
-                        log = ActivityLog(user_id='system', action='return_invoice_sent', entity_type='patient', entity_id=patient.id)
+                        log = ActivityLog(user_id=user.id, action='return_invoice_sent', entity_type='patient', entity_id=patient.id, tenant_id=user.tenant_id)
                         log.details_json = {'invoiceId': invoice_id, 'replacementId': r.id}
                         db.session.add(log)
                     except Exception as _e:

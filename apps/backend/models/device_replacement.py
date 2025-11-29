@@ -9,6 +9,7 @@ class DeviceReplacement(db.Model):
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
     old_device_id = db.Column(db.String(50), db.ForeignKey('devices.id'), nullable=False)
     new_inventory_id = db.Column(db.String(50), nullable=False)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     old_device_info = db.Column(db.Text)
     new_device_info = db.Column(db.Text)
     status = db.Column(db.String(50), default='pending_invoice')  # pending_invoice, invoice_created, completed
@@ -51,6 +52,7 @@ class ReturnInvoice(db.Model):
     
     id = db.Column(db.String(50), primary_key=True)
     replacement_id = db.Column(db.String(50), db.ForeignKey('device_replacements.id'), nullable=False)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     invoice_number = db.Column(db.String(100), nullable=False)
     supplier_name = db.Column(db.String(255))
     supplier_invoice_id = db.Column(db.String(50))

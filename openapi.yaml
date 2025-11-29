@@ -3372,6 +3372,141 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       description: Get current authenticated user information
+    put:
+      summary: Update current user profile
+      operationId: users_update_me
+      tags:
+      - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /api/users/me/password:
+    post:
+      summary: Change current user password
+      operationId: users_change_password
+      tags:
+      - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+              required:
+              - currentPassword
+              - newPassword
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+  /api/tenant/users:
+    get:
+      summary: List tenant users
+      operationId: tenant_users_list
+      tags:
+      - Tenant Users
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+    post:
+      summary: Invite/Create tenant user
+      operationId: tenant_users_invite
+      tags:
+      - Tenant Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                role:
+                  type: string
+              required:
+              - email
+              - firstName
+              - lastName
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+  /api/tenant/users/{user_id}:
+    delete:
+      summary: Delete tenant user
+      operationId: tenant_users_delete
+      tags:
+      - Tenant Users
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
   /entities:
     post:
       summary: Extract entities from image using OCR

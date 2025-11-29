@@ -9,6 +9,7 @@ const api = axios.create({
   baseURL: 'http://localhost:5003'
 });
 
+
 interface CategoryAutocompleteProps {
   value: string;
   onChange: (value: string) => void;

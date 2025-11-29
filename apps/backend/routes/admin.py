@@ -3,7 +3,7 @@ Admin routes for admin panel
 """
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from datetime import datetime
+from datetime import datetime, timedelta
 from models.base import db
 from models.admin_user import AdminUser
 import logging
@@ -117,7 +117,6 @@ def get_admin_users():
                 }
             }
         }), 200
-        
     except Exception as e:
         logger.error(f"Get admin users error: {e}")
         return jsonify({
@@ -125,50 +124,209 @@ def get_admin_users():
             'error': {'message': 'Internal server error'}
         }), 500
 
-@admin_bp.route('/invoices', methods=['GET'])
+@admin_bp.route('/users/all', methods=['GET'])
 @jwt_required()
-def get_admin_invoices():
-    """Get invoices (placeholder)"""
-    return jsonify({
-        'success': True,
-        'data': {
-            'invoices': [],
-            'pagination': {'page': 1, 'limit': 10, 'total': 0, 'totalPages': 0}
-        }
-    }), 200
+def get_all_tenant_users():
+    """Get list of ALL users from ALL tenants"""
+    try:
+        # Verify admin access
+        # current_user_id = get_jwt_identity()
+        # Check if user is super admin etc. (Skipping for now as per current auth model)
+        
+        page = request.args.get('page', 1, type=int)
+        limit = request.args.get('limit', 10, type=int)
+        search = request.args.get('search', '')
+        
+        from models.user import User
+        from models.tenant import Tenant
+        
+        query = User.query
+        
+        if search:
+            query = query.filter(
+                (User.email.ilike(f'%{search}%')) |
+                (User.first_name.ilike(f'%{search}%')) |
+                (User.last_name.ilike(f'%{search}%')) |
+                (User.username.ilike(f'%{search}%'))
+            )
+            
+        # Join with Tenant to get tenant name if needed, or just return tenant_id
+        # query = query.join(Tenant) 
+        
+        total = query.count()
+        users = query.order_by(User.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+        
+        users_list = []
+        for u in users:
+            u_dict = u.to_dict()
+            # Fetch tenant name
+            if u.tenant_id:
+                tenant = db.session.get(Tenant, u.tenant_id)
+                if tenant:
+                    u_dict['tenant_name'] = tenant.name
+            users_list.append(u_dict)
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'users': users_list,
+                'pagination': {
+                    'page': page,
+                    'limit': limit,
+                    'total': total,
+                    'totalPages': (total + limit - 1) // limit
+                }
+            }
+        }), 200
+    except Exception as e:
+        logger.error(f"Get all tenant users error: {e}")
+        return jsonify({
+            'success': False,
+            'error': {'message': 'Internal server error'}
+        }), 500
 
-@admin_bp.route('/plans', methods=['GET'])
+@admin_bp.route('/users/all/<user_id>', methods=['PUT'])
 @jwt_required()
-def get_admin_plans():
-    """Get plans (placeholder)"""
-    return jsonify({
-        'success': True,
-        'data': {'plans': []}
-    }), 200
+def update_any_tenant_user(user_id):
+    """Update any tenant user (Admin Panel)"""
+    try:
+        # Verify admin access (TODO: Check role)
+        
+        data = request.get_json()
+        from models.user import User
+        
+        user = db.session.get(User, user_id)
+        if not user:
+             return jsonify({
+                'success': False,
+                'error': {'message': 'User not found'}
+            }), 404
+            
+        if 'isActive' in data:
+            user.is_active = data['isActive']
+            
+        # Add other fields if needed
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'data': user.to_dict()
+        }), 200
+    except Exception as e:
+        logger.error(f"Update any tenant user error: {e}")
+        return jsonify({
+            'success': False,
+            'error': {'message': 'Internal server error'}
+        }), 500
 
-@admin_bp.route('/tenants', methods=['GET'])
-@jwt_required()
-def get_admin_tenants():
-    """Get tenants (placeholder)"""
-    return jsonify({
-        'success': True,
-        'data': {'tenants': []}
-    }), 200
+# In-memory store for tickets (placeholder until model is created)
+MOCK_TICKETS = []
 
 @admin_bp.route('/tickets', methods=['GET'])
 @jwt_required()
 def get_admin_tickets():
     """Get support tickets (placeholder)"""
+    page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', 10, type=int)
+    
+    total = len(MOCK_TICKETS)
+    start = (page - 1) * limit
+    end = start + limit
+    tickets = MOCK_TICKETS[start:end]
+    
     return jsonify({
         'success': True,
         'data': {
-            'tickets': [],
-            'pagination': {'page': 1, 'limit': 10, 'total': 0, 'totalPages': 0}
+            'tickets': tickets,
+            'pagination': {
+                'page': page,
+                'limit': limit,
+                'total': total,
+                'totalPages': (total + limit - 1) // limit if limit > 0 else 0
+            }
         }
     }), 200
+
+@admin_bp.route('/tickets', methods=['POST'])
+@jwt_required()
+def create_admin_ticket():
+    """Create support ticket (placeholder)"""
+    try:
+        data = request.get_json()
+        logger.info(f"Creating ticket with data: {data}")
+        
+        # Basic validation
+        if not data.get('subject') or not data.get('description'):
+            logger.error("Missing subject or description")
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Subject and description are required'}
+            }), 400
+            
+        current_user_id = get_jwt_identity()
+        logger.info(f"Current user ID: {current_user_id}")
+        
+        ticket = {
+            'id': str(uuid.uuid4()),
+            'title': data['subject'], # Map subject to title for response
+            'description': data['description'],
+            'status': 'open',
+            'priority': data.get('priority', 'medium'),
+            'category': data.get('category', 'general'),
+            'tenant_id': data.get('tenant_id'),
+            'tenant_name': 'Demo Tenant', # Placeholder
+            'created_by': current_user_id,
+            'created_at': datetime.utcnow().isoformat(),
+            'sla_due_date': (datetime.utcnow() + timedelta(days=1)).isoformat()
+        }
+        
+        MOCK_TICKETS.insert(0, ticket) # Add to beginning
+        logger.info(f"Ticket created: {ticket['id']}")
+        
+        return jsonify({
+            'success': True,
+            'data': {'ticket': ticket}
+        }), 201
+        
+    except Exception as e:
+        logger.error(f"Create ticket error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': {'message': f'Internal server error: {str(e)}'}
+        }), 500
 
 @admin_bp.route('/tickets/<ticket_id>', methods=['PUT'])
 @jwt_required()
 def update_admin_ticket(ticket_id):
     """Update support ticket (placeholder)"""
-    return jsonify({'success': True}), 200
+    try:
+        data = request.get_json()
+        
+        # Find ticket in mock store
+        ticket = next((t for t in MOCK_TICKETS if t['id'] == ticket_id), None)
+        
+        if not ticket:
+             return jsonify({
+                'success': False,
+                'error': {'message': 'Ticket not found'}
+            }), 404
+            
+        # Update fields
+        if 'status' in data:
+            ticket['status'] = data['status']
+        if 'assigned_to' in data:
+            ticket['assigned_to'] = data['assigned_to']
+            # Mock assigned admin name
+            ticket['assigned_admin_name'] = 'Admin User' 
+            
+        return jsonify({'success': True, 'data': {'ticket': ticket}}), 200
+        
+    except Exception as e:
+        logger.error(f"Update ticket error: {e}")
+        return jsonify({
+            'success': False,
+            'error': {'message': 'Internal server error'}
+        }), 500

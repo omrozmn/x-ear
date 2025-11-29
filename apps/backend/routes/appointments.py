@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify, make_response
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.base import db
 from models.appointment import Appointment
 from models.device import Device
+from models.user import User
 from datetime import datetime, timedelta
 from sqlalchemy.orm import load_only
 import logging
@@ -14,8 +16,14 @@ logger = logging.getLogger(__name__)
 appointments_bp = Blueprint('appointments', __name__)
 
 @appointments_bp.route('/appointments', methods=['GET'])
+@jwt_required()
 def get_appointments():
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
         patient_id = request.args.get('patient_id')
@@ -24,7 +32,7 @@ def get_appointments():
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 20))
 
-        query = Appointment.query
+        query = Appointment.query.filter_by(tenant_id=user.tenant_id)
 
         if start_date:
             # Interpret date-only strings as start of day (inclusive)
@@ -76,9 +84,15 @@ def get_appointments():
 
 
 @appointments_bp.route('/appointments', methods=['POST'])
+@jwt_required()
 @idempotent(methods=['POST'])
 def create_appointment():
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json()
         if not data:
             return jsonify({"success": False, "error": "No data provided", "timestamp": datetime.now().isoformat()}), 400
@@ -96,6 +110,7 @@ def create_appointment():
         appointment.patient_id = data['patientId']
         appointment.clinician_id = data.get('clinicianId')
         appointment.branch_id = data.get('branchId')
+        appointment.tenant_id = user.tenant_id
         # Parse date without timezone conversion to avoid day shift
         date_str = data['date']
         if 'T' in date_str:
@@ -138,17 +153,23 @@ def create_appointment():
             # If it's a duplicate appointment, try to find and return existing one
             appointment_id = data.get('id')
             if appointment_id:
-                existing_appointment = Appointment.query.filter_by(id=appointment_id).first()
+                existing_appointment = Appointment.query.filter_by(id=appointment_id, tenant_id=user.tenant_id).first()
                 if existing_appointment:
                     return jsonify({"success": True, "data": existing_appointment.to_dict(), "message": "Appointment already exists", "timestamp": datetime.now().isoformat()}), 200
         return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
 
 
 @appointments_bp.route('/appointments/<appointment_id>', methods=['GET'])
+@jwt_required()
 def get_appointment(appointment_id):
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         appointment = db.session.get(Appointment, appointment_id)
-        if not appointment:
+        if not appointment or appointment.tenant_id != user.tenant_id:
             return jsonify({"success": False, "error": "Appointment not found", "timestamp": datetime.now().isoformat()}), 404
         return jsonify({"success": True, "data": appointment.to_dict(), "timestamp": datetime.now().isoformat()})
     except Exception as e:
@@ -157,18 +178,24 @@ def get_appointment(appointment_id):
 
 
 @appointments_bp.route('/appointments/<appointment_id>', methods=['PUT','PATCH'])
+@jwt_required()
 @idempotent(methods=['PUT', 'PATCH'])
 @optimistic_lock(Appointment, id_param='appointment_id')
 @with_transaction
 def update_appointment(appointment_id):
     """Update appointment (PUT full update or PATCH partial update)"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json()
         if not data:
             return jsonify({"success": False, "error": "No data provided", "timestamp": datetime.now().isoformat()}), 400
 
         appointment = db.session.get(Appointment, appointment_id)
-        if not appointment:
+        if not appointment or appointment.tenant_id != user.tenant_id:
             return jsonify({"success": False, "error": "Appointment not found", "timestamp": datetime.now().isoformat()}), 404
 
         if 'date' in data:
@@ -202,10 +229,16 @@ def update_appointment(appointment_id):
 
 
 @appointments_bp.route('/appointments/<appointment_id>', methods=['DELETE'])
+@jwt_required()
 def delete_appointment(appointment_id):
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         appt = db.session.get(Appointment, appointment_id)
-        if not appt:
+        if not appt or appt.tenant_id != user.tenant_id:
             return jsonify({'success': False, 'error': 'Appointment not found'}), 404
         db.session.delete(appt)
         db.session.commit()
@@ -217,14 +250,20 @@ def delete_appointment(appointment_id):
 
 
 @appointments_bp.route('/appointments/<appointment_id>/reschedule', methods=['POST'])
+@jwt_required()
 def reschedule_appointment(appointment_id):
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json()
         if not data or 'date' not in data or 'time' not in data:
             return jsonify({"success": False, "error": "New date and time required", "timestamp": datetime.now().isoformat()}), 400
 
         appointment = db.session.get(Appointment, appointment_id)
-        if not appointment:
+        if not appointment or appointment.tenant_id != user.tenant_id:
             return jsonify({"success": False, "error": "Appointment not found", "timestamp": datetime.now().isoformat()}), 404
 
         # Parse date without timezone conversion to avoid day shift
@@ -245,10 +284,16 @@ def reschedule_appointment(appointment_id):
 
 
 @appointments_bp.route('/appointments/<appointment_id>/cancel', methods=['POST'])
+@jwt_required()
 def cancel_appointment(appointment_id):
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         appointment = db.session.get(Appointment, appointment_id)
-        if not appointment:
+        if not appointment or appointment.tenant_id != user.tenant_id:
             return jsonify({"success": False, "error": "Appointment not found", "timestamp": datetime.now().isoformat()}), 404
 
         appointment.status = 'cancelled'
@@ -262,10 +307,16 @@ def cancel_appointment(appointment_id):
 
 
 @appointments_bp.route('/appointments/<appointment_id>/complete', methods=['POST'])
+@jwt_required()
 def complete_appointment(appointment_id):
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         appointment = db.session.get(Appointment, appointment_id)
-        if not appointment:
+        if not appointment or appointment.tenant_id != user.tenant_id:
             return jsonify({"success": False, "error": "Appointment not found", "timestamp": datetime.now().isoformat()}), 404
 
         from models.enums import AppointmentStatus
@@ -280,8 +331,14 @@ def complete_appointment(appointment_id):
 
 
 @appointments_bp.route('/appointments/availability', methods=['GET'])
+@jwt_required()
 def get_availability():
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         date = request.args.get('date')
         duration = int(request.args.get('duration', 30))
 
@@ -291,7 +348,8 @@ def get_availability():
         target_date = datetime.fromisoformat(date).date()
         appointments = Appointment.query.filter(
             db.func.date(Appointment.date) == target_date,
-            Appointment.status.in_(['scheduled', 'confirmed'])
+            Appointment.status.in_(['scheduled', 'confirmed']),
+            Appointment.tenant_id == user.tenant_id
         ).all()
 
         time_slots = []
@@ -332,11 +390,17 @@ def get_availability():
         return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
 
 @appointments_bp.route('/appointments/list', methods=['GET'])
+@jwt_required()
 def list_appointments():
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 20))
-        query = Appointment.query
+        query = Appointment.query.filter_by(tenant_id=user.tenant_id)
 
         # Apply filters based on query parameters
         patient_id = request.args.get('patient_id')

@@ -13,9 +13,11 @@ import { Route as UsersRouteImport } from './routes/users'
 import { Route as TenantsRouteImport } from './routes/tenants'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as PlansRouteImport } from './routes/plans'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as BillingRouteImport } from './routes/billing'
+import { Route as AddonsRouteImport } from './routes/addons'
 import { Route as IndexRouteImport } from './routes/index'
 
 const UsersRoute = UsersRouteImport.update({
@@ -38,6 +40,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlansRoute = PlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -53,6 +60,11 @@ const BillingRoute = BillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AddonsRoute = AddonsRouteImport.update({
+  id: '/addons',
+  path: '/addons',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -61,9 +73,11 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/addons': typeof AddonsRoute
   '/billing': typeof BillingRoute
   '/features': typeof FeaturesRoute
   '/login': typeof LoginRoute
+  '/plans': typeof PlansRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/tenants': typeof TenantsRoute
@@ -71,9 +85,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/addons': typeof AddonsRoute
   '/billing': typeof BillingRoute
   '/features': typeof FeaturesRoute
   '/login': typeof LoginRoute
+  '/plans': typeof PlansRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/tenants': typeof TenantsRoute
@@ -82,9 +98,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/addons': typeof AddonsRoute
   '/billing': typeof BillingRoute
   '/features': typeof FeaturesRoute
   '/login': typeof LoginRoute
+  '/plans': typeof PlansRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/tenants': typeof TenantsRoute
@@ -94,9 +112,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/addons'
     | '/billing'
     | '/features'
     | '/login'
+    | '/plans'
     | '/settings'
     | '/support'
     | '/tenants'
@@ -104,9 +124,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/addons'
     | '/billing'
     | '/features'
     | '/login'
+    | '/plans'
     | '/settings'
     | '/support'
     | '/tenants'
@@ -114,9 +136,11 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/addons'
     | '/billing'
     | '/features'
     | '/login'
+    | '/plans'
     | '/settings'
     | '/support'
     | '/tenants'
@@ -125,9 +149,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AddonsRoute: typeof AddonsRoute
   BillingRoute: typeof BillingRoute
   FeaturesRoute: typeof FeaturesRoute
   LoginRoute: typeof LoginRoute
+  PlansRoute: typeof PlansRoute
   SettingsRoute: typeof SettingsRoute
   SupportRoute: typeof SupportRoute
   TenantsRoute: typeof TenantsRoute
@@ -164,6 +190,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/plans': {
+      id: '/plans'
+      path: '/plans'
+      fullPath: '/plans'
+      preLoaderRoute: typeof PlansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -185,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BillingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/addons': {
+      id: '/addons'
+      path: '/addons'
+      fullPath: '/addons'
+      preLoaderRoute: typeof AddonsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -197,9 +237,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AddonsRoute: AddonsRoute,
   BillingRoute: BillingRoute,
   FeaturesRoute: FeaturesRoute,
   LoginRoute: LoginRoute,
+  PlansRoute: PlansRoute,
   SettingsRoute: SettingsRoute,
   SupportRoute: SupportRoute,
   TenantsRoute: TenantsRoute,

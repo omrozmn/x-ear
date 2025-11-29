@@ -1,0 +1,37 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-7.4.3, pluggy-1.0.0
+rootdir: /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend
+plugins: asyncio-0.21.1, Faker-37.11.0, anyio-3.7.1
+asyncio: mode=Mode.STRICT
+collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+___________________ ERROR collecting tests/test_branches.py ____________________
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+/opt/homebrew/anaconda3/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:935: in _load_unlocked
+    ???
+/opt/homebrew/anaconda3/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:186: in exec_module
+    exec(co, module.__dict__)
+tests/test_branches.py:8: in <module>
+    from app import app as flask_app
+app.py:253: in <module>
+    from routes.patients import patients_bp
+E     File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/routes/patients.py", line 578
+E       if phone:
+E       ^^
+E   IndentationError: expected an indented block after 'if' statement on line 577
+=========================== short test summary info ============================
+ERROR tests/test_branches.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.34s ===============================

@@ -2,7 +2,9 @@
 # RESTful API endpoints for inventory management
 
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.base import db
+from models.user import User
 import sys
 from pathlib import Path
 from datetime import datetime, timezone
@@ -28,9 +30,15 @@ inventory_bp = Blueprint('inventory', __name__, url_prefix='/api/inventory')
 
 
 @inventory_bp.route('', methods=['GET'])
+@jwt_required()
 def get_all_inventory():
     """Get all inventory items with optional filtering and pagination"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Query parameters for filtering
         category = request.args.get('category')
         brand = request.args.get('brand')
@@ -50,7 +58,24 @@ def get_all_inventory():
             per_page = 20
         
         # Build query
-        query = Inventory.query
+        query = Inventory.query.filter_by(tenant_id=user.tenant_id)
+
+        # If user is admin (branch admin), filter by assigned branches
+        if user.role == 'admin':
+            user_branch_ids = [b.id for b in user.branches]
+            if user_branch_ids:
+                query = query.filter(Inventory.branch_id.in_(user_branch_ids))
+            else:
+                return jsonify({
+                    'success': True,
+                    'data': [],
+                    'meta': {
+                        'page': page,
+                        'perPage': per_page,
+                        'total': 0,
+                        'totalPages': 0
+                    }
+                }), 200
         
         if category:
             query = query.filter_by(category=category)
@@ -117,10 +142,16 @@ def get_all_inventory():
 
 
 @inventory_bp.route('/bulk_upload', methods=['POST'])
+@jwt_required()
 @idempotent(methods=['POST'])
 def bulk_upload_inventory():
     """Bulk upload inventory items from CSV/XLSX. Returns {created, updated, errors}."""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         if 'file' not in request.files:
             return jsonify({'success': False, 'error': 'No file part named "file" in request'}), 400
 
@@ -226,12 +257,12 @@ def bulk_upload_inventory():
                     errors.append({'row': row_num, 'error': 'Missing name and barcode'})
                     continue
 
-                # Try to find existing item by barcode first, then by name
+                # Try to find existing item by barcode first, then by name within tenant
                 existing = None
                 if payload.get('barcode'):
-                    existing = Inventory.query.filter_by(barcode=payload.get('barcode')).one_or_none()
+                    existing = Inventory.query.filter_by(barcode=payload.get('barcode'), tenant_id=user.tenant_id).one_or_none()
                 if not existing and payload.get('name'):
-                    existing = Inventory.query.filter(Inventory.name.ilike(payload.get('name'))).one_or_none()
+                    existing = Inventory.query.filter(Inventory.name.ilike(payload.get('name')), Inventory.tenant_id == user.tenant_id).one_or_none()
 
                 if existing:
                     # map fields onto existing
@@ -270,6 +301,7 @@ def bulk_upload_inventory():
                             'stockCode': payload.get('stockCode')
                         }
                         item = Inventory.from_dict(create_payload)
+                        item.tenant_id = user.tenant_id
                         db.session.add(item)
                         created += 1
                     except Exception as e:
@@ -300,9 +332,15 @@ def bulk_upload_inventory():
         return jsonify({'success': False, 'error': str(e)}), 500
     # Advanced search endpoint moved here: preserve original advanced_search behavior
 @inventory_bp.route('/search', methods=['GET'])
+@jwt_required()
 def advanced_search():
     """Advanced product search with comprehensive filtering"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Search parameters
         q = request.args.get('q', '').strip()
         category = request.args.get('category')
@@ -337,7 +375,29 @@ def advanced_search():
             sort_order = 'asc'
         
         # Build query
-        query = Inventory.query
+        query = Inventory.query.filter_by(tenant_id=user.tenant_id)
+
+        # If user is admin (branch admin), filter by assigned branches
+        if user.role == 'admin':
+            user_branch_ids = [b.id for b in user.branches]
+            if user_branch_ids:
+                query = query.filter(Inventory.branch_id.in_(user_branch_ids))
+            else:
+                return jsonify({
+                    'success': True,
+                    'data': {
+                        'items': [],
+                        'pagination': {
+                            'page': page,
+                            'limit': limit,
+                            'total': 0,
+                            'totalPages': 0
+                        },
+                        'filters': {}
+                    },
+                    'requestId': str(uuid4()),
+                    'timestamp': now_utc().isoformat()
+                }), 200
         
         # Text search across multiple fields
         if q:
@@ -406,13 +466,13 @@ def advanced_search():
         total_pages = (total_count + limit - 1) // limit
         
         # Get filter options for frontend
-        categories = db.session.query(Inventory.category).distinct().filter(
+        categories = db.session.query(Inventory.category).filter_by(tenant_id=user.tenant_id).distinct().filter(
             Inventory.category.isnot(None)
         ).all()
-        brands = db.session.query(Inventory.brand).distinct().filter(
+        brands = db.session.query(Inventory.brand).filter_by(tenant_id=user.tenant_id).distinct().filter(
             Inventory.brand.isnot(None)
         ).all()
-        suppliers = db.session.query(Inventory.supplier).distinct().filter(
+        suppliers = db.session.query(Inventory.supplier).filter_by(tenant_id=user.tenant_id).distinct().filter(
             Inventory.supplier.isnot(None)
         ).all()
         
@@ -420,7 +480,7 @@ def advanced_search():
         price_stats = db.session.query(
             db.func.min(Inventory.price),
             db.func.max(Inventory.price)
-        ).first()
+        ).filter_by(tenant_id=user.tenant_id).first()
         
         # Safely serialize items for the response
         safe_items = []
@@ -465,15 +525,22 @@ def advanced_search():
 
 
 @inventory_bp.route('/categories_old', methods=['GET'])
+@jwt_required()
 def get_categories_old():
     """Get all available product categories with counts"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Get categories with item counts
         categories = db.session.query(
             Inventory.category,
             db.func.count(Inventory.id).label('count')
         ).filter(
-            Inventory.category.isnot(None)
+            Inventory.category.isnot(None),
+            Inventory.tenant_id == user.tenant_id
         ).group_by(Inventory.category).all()
         
         category_list = []
@@ -503,16 +570,23 @@ def get_categories_old():
 
 
 @inventory_bp.route('/brands_old', methods=['GET'])
+@jwt_required()
 def get_brands_old():
     """Get all available product brands with counts and categories"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Get brands with item counts and associated categories
         brands_data = db.session.query(
             Inventory.brand,
             Inventory.category,
             db.func.count(Inventory.id).label('count')
         ).filter(
-            Inventory.brand.isnot(None)
+            Inventory.brand.isnot(None),
+            Inventory.tenant_id == user.tenant_id
         ).group_by(Inventory.brand, Inventory.category).all()
         
         # Organize brands with their categories
@@ -548,12 +622,19 @@ def get_brands_old():
 
 
 @inventory_bp.route('/features', methods=['GET'])
+@jwt_required()
 def get_features():
     """Get all available product features with counts"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Get all items with features
         items_with_features = db.session.query(Inventory.features, Inventory.category).filter(
-            Inventory.features.isnot(None)
+            Inventory.features.isnot(None),
+            Inventory.tenant_id == user.tenant_id
         ).all()
         
         features_dict = {}
@@ -598,15 +679,21 @@ def get_features():
 
 
 @inventory_bp.route('/brands', methods=['GET'])
+@jwt_required()
 def get_brands():
     """Get available brands from both brands table and inventory"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Get brands from brands table
         brand_objects = Brand.query.all()
         brands_from_table = [b.name for b in brand_objects]
         
         # Get distinct brands from inventory (for backwards compatibility)
-        inventory_brands = db.session.query(Inventory.brand).distinct().filter(Inventory.brand.isnot(None)).all()
+        inventory_brands = db.session.query(Inventory.brand).filter_by(tenant_id=user.tenant_id).distinct().filter(Inventory.brand.isnot(None)).all()
         brands_from_inventory = [str(brand[0]) for brand in inventory_brands if brand[0] and str(brand[0]).strip()]
         
         # Combine and deduplicate
@@ -691,12 +778,18 @@ def create_brand():
 
 
 @inventory_bp.route('/<item_id>', methods=['GET'])
+@jwt_required()
 def get_inventory_item(item_id):
     """Get a single inventory item by ID"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         item = db.session.get(Inventory, item_id)
         
-        if not item:
+        if not item or item.tenant_id != user.tenant_id:
             return jsonify({
                 'success': False,
                 'error': 'Inventory item not found'
@@ -715,10 +808,16 @@ def get_inventory_item(item_id):
 
 
 @inventory_bp.route('', methods=['POST'])
+@jwt_required()
 @idempotent(methods=['POST'])
 def create_inventory_item():
     """Create a new inventory item"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json()
         
         if not data:
@@ -747,7 +846,12 @@ def create_inventory_item():
         
         # Create inventory item
         item = Inventory.from_dict(data)
+        item.tenant_id = user.tenant_id
         
+        # Assign branch_id if provided
+        if data.get('branchId'):
+            item.branch_id = data.get('branchId')
+
         db.session.add(item)
         db.session.commit()
         
@@ -766,12 +870,18 @@ def create_inventory_item():
 
 
 @inventory_bp.route('/<item_id>', methods=['PUT', 'PATCH'])
+@jwt_required()
 def update_inventory_item(item_id):
     """Update an existing inventory item"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         item = db.session.get(Inventory, item_id)
         
-        if not item:
+        if not item or item.tenant_id != user.tenant_id:
             return jsonify({
                 'success': False,
                 'error': 'Inventory item not found'
@@ -882,12 +992,18 @@ def update_inventory_item(item_id):
 
 
 @inventory_bp.route('/<item_id>', methods=['DELETE'])
+@jwt_required()
 def delete_inventory_item(item_id):
     """Delete an inventory item"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         item = db.session.get(Inventory, item_id)
         
-        if not item:
+        if not item or item.tenant_id != user.tenant_id:
             return jsonify({
                 'success': False,
                 'error': 'Inventory item not found'
@@ -919,12 +1035,18 @@ def delete_inventory_item(item_id):
 
 
 @inventory_bp.route('/<item_id>/activity', methods=['POST'])
+@jwt_required()
 def log_inventory_activity(item_id):
     """Log an activity for an inventory item"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         item = db.session.get(Inventory, item_id)
         
-        if not item:
+        if not item or item.tenant_id != user.tenant_id:
             return jsonify({
                 'success': False,
                 'error': 'Inventory item not found'
@@ -977,12 +1099,18 @@ def log_inventory_activity(item_id):
 
 
 @inventory_bp.route('/<item_id>/activity', methods=['GET'])
+@jwt_required()
 def get_inventory_activities(item_id):
     """Get activity log for an inventory item"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         item = db.session.get(Inventory, item_id)
         
-        if not item:
+        if not item or item.tenant_id != user.tenant_id:
             return jsonify({
                 'success': False,
                 'error': 'Inventory item not found'
@@ -1004,13 +1132,19 @@ def get_inventory_activities(item_id):
 
 
 @inventory_bp.route('/<item_id>/serials', methods=['POST'])
+@jwt_required()
 @idempotent(methods=['POST'])
 def add_serial_numbers(item_id):
     """Add serial numbers to an inventory item"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         item = db.session.get(Inventory, item_id)
         
-        if not item:
+        if not item or item.tenant_id != user.tenant_id:
             return jsonify({
                 'success': False,
                 'error': 'Inventory item not found'
@@ -1048,13 +1182,19 @@ def add_serial_numbers(item_id):
 
 
 @inventory_bp.route('/<item_id>/assign', methods=['POST'])
+@jwt_required()
 @idempotent(methods=['POST'])
 def assign_to_patient(item_id):
     """Assign inventory item to a patient (reduces stock)"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         item = db.session.get(Inventory, item_id)
         
-        if not item:
+        if not item or item.tenant_id != user.tenant_id:
             return jsonify({
                 'success': False,
                 'error': 'Inventory item not found'
@@ -1104,11 +1244,18 @@ def assign_to_patient(item_id):
 
 
 @inventory_bp.route('/low-stock', methods=['GET'])
+@jwt_required()
 def get_low_stock_items():
     """Get all items with low stock levels"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         items = Inventory.query.filter(
-            Inventory.available_inventory <= Inventory.reorder_level
+            Inventory.available_inventory <= Inventory.reorder_level,
+            Inventory.tenant_id == user.tenant_id
         ).order_by(Inventory.available_inventory).all()
         
         safe_items = []
@@ -1133,19 +1280,27 @@ def get_low_stock_items():
 
 
 @inventory_bp.route('/stats', methods=['GET'])
+@jwt_required()
 def get_inventory_stats():
     """Get inventory statistics"""
     try:
-        total_items = Inventory.query.count()
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
+        total_items = Inventory.query.filter_by(tenant_id=user.tenant_id).count()
         low_stock_count = Inventory.query.filter(
-            Inventory.available_inventory <= Inventory.reorder_level
+            Inventory.available_inventory <= Inventory.reorder_level,
+            Inventory.tenant_id == user.tenant_id
         ).count()
         out_of_stock_count = Inventory.query.filter(
-            Inventory.available_inventory == 0
+            Inventory.available_inventory == 0,
+            Inventory.tenant_id == user.tenant_id
         ).count()
         # Total stock across all inventory items
         try:
-            total_stock = int(db.session.query(db.func.coalesce(db.func.sum(Inventory.available_inventory), 0)).scalar() or 0)
+            total_stock = int(db.session.query(db.func.coalesce(db.func.sum(Inventory.available_inventory), 0)).filter_by(tenant_id=user.tenant_id).scalar() or 0)
         except Exception:
             total_stock = 0
         
@@ -1158,12 +1313,12 @@ def get_inventory_stats():
                 (Inventory.price_includes_kdv == True, Inventory.price),
                 else_=Inventory.price * (1 + (Inventory.kdv_rate / 100.0))
             )
-            total_value = db.session.query(db.func.sum(total_value_expr)).scalar() or 0
+            total_value = db.session.query(db.func.sum(total_value_expr)).filter_by(tenant_id=user.tenant_id).scalar() or 0
         except Exception:
             # Fallback to simple multiplication if DB backend can't handle the case expression
             total_value = db.session.query(
                 db.func.sum(Inventory.available_inventory * Inventory.price)
-            ).scalar() or 0
+            ).filter_by(tenant_id=user.tenant_id).scalar() or 0
         
         # Category breakdown
         try:
@@ -1176,7 +1331,7 @@ def get_inventory_stats():
                 Inventory.category,
                 db.func.count(Inventory.id).label('count'),
                 db.func.sum(category_value_expr).label('value')
-            ).group_by(Inventory.category).all()
+            ).filter_by(tenant_id=user.tenant_id).group_by(Inventory.category).all()
             
             category_breakdown = {}
             for category, count, value in category_stats:
@@ -1198,7 +1353,7 @@ def get_inventory_stats():
                 Inventory.brand,
                 db.func.count(Inventory.id).label('count'),
                 db.func.sum(brand_value_expr).label('value')
-            ).group_by(Inventory.brand).order_by(db.func.count(Inventory.id).desc()).limit(10).all()
+            ).filter_by(tenant_id=user.tenant_id).group_by(Inventory.brand).order_by(db.func.count(Inventory.id).desc()).limit(10).all()
             
             brand_breakdown = {}
             for brand, count, value in brand_stats:
@@ -1222,8 +1377,8 @@ def get_inventory_stats():
                 'totalStock': total_stock,
                 # Hearing aid specific KPIs
                 'hearingAid': {
-                    'count': Inventory.query.filter(Inventory.category == 'hearing_aid').count(),
-                    'stock': int(db.session.query(db.func.coalesce(db.func.sum(Inventory.available_inventory), 0)).filter(Inventory.category == 'hearing_aid').scalar() or 0)
+                    'count': Inventory.query.filter(Inventory.category == 'hearing_aid', Inventory.tenant_id == user.tenant_id).count(),
+                    'stock': int(db.session.query(db.func.coalesce(db.func.sum(Inventory.available_inventory), 0)).filter(Inventory.category == 'hearing_aid', Inventory.tenant_id == user.tenant_id).scalar() or 0)
                 },
                 'categoryBreakdown': category_breakdown,
                 'brandBreakdown': brand_breakdown
@@ -1242,15 +1397,21 @@ def get_inventory_stats():
 
 
 @inventory_bp.route('/categories', methods=['GET'])
+@jwt_required()
 def get_categories():
     """Get all unique inventory categories from both categories table and inventory"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Get categories from categories table
         category_objects = Category.query.all()
         categories_from_table = [c.name for c in category_objects]
         
         # Get distinct categories from inventory items (for backwards compatibility)
-        inventory_categories = db.session.query(Inventory.category).distinct().filter(
+        inventory_categories = db.session.query(Inventory.category).filter_by(tenant_id=user.tenant_id).distinct().filter(
             Inventory.category.isnot(None),
             Inventory.category != ''
         ).all()
@@ -1282,6 +1443,7 @@ def get_categories():
 
 
 @inventory_bp.route('/categories', methods=['POST'])
+@jwt_required()
 @idempotent(methods=['POST'])
 def create_category():
     """Create a new inventory category"""
@@ -1343,6 +1505,7 @@ def create_category():
 
 
 @inventory_bp.route('/units', methods=['GET'])
+@jwt_required()
 def get_units():
     """Get all available unit types for inventory items"""
     try:

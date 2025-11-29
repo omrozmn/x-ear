@@ -16,6 +16,7 @@ class Device(BaseModel):
             self.id = gen_id("dev")
     
     # Foreign keys
+    tenant_id = db.Column(db.String(50), db.ForeignKey('users.tenant_id'), nullable=True)
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=True)
     inventory_id = db.Column(db.String(50))
     
@@ -56,6 +57,7 @@ class Device(BaseModel):
         base_dict = self.to_dict_base()
         device_dict = {
             'id': self.id,
+            'tenantId': self.tenant_id,
             'patientId': self.patient_id,
             'inventoryId': self.inventory_id,
             'serialNumber': self.serial_number,

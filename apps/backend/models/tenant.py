@@ -37,7 +37,12 @@ class Tenant(db.Model):
     status = Column(String(20), default=TenantStatus.TRIAL.value, nullable=False, index=True)
     
     # Plan and limits
-    current_plan = Column(String(50), nullable=True)  # Plan name/slug
+    current_plan = Column(String(50), nullable=True)  # Plan name/slug (Legacy, keep for backward compat)
+    current_plan_id = Column(String(36), nullable=True) # ID of the Plan
+    subscription_start_date = Column(DateTime, nullable=True)
+    subscription_end_date = Column(DateTime, nullable=True)
+    feature_usage = Column(JSON, nullable=True, default={}) # Track usage of limited features
+    
     max_users = Column(db.Integer, default=5)
     current_users = Column(db.Integer, default=0)
     
@@ -81,6 +86,10 @@ class Tenant(db.Model):
             'billing_email': self.billing_email,
             'status': self.status,
             'current_plan': self.current_plan,
+            'current_plan_id': self.current_plan_id,
+            'subscription_start_date': self.subscription_start_date.isoformat() if self.subscription_start_date else None,
+            'subscription_end_date': self.subscription_end_date.isoformat() if self.subscription_end_date else None,
+            'feature_usage': self.feature_usage,
             'max_users': self.max_users,
             'current_users': self.current_users,
             'company_info': self.company_info,

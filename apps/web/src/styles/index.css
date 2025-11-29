@@ -57,3 +57,21 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Ensure toast notifications appear above modals/backdrops */
+.Toastify__toast-container {
+  z-index: 60000 !important;
+}
+
+/* Ensure invoice modal and other high-level modals are above nested modals */
+.InvoiceModal,
+.invoice-modal,
+.quick-invoice-modal {
+  z-index: 55000 !important;
+}
+
+/* Bring ProductSearch replace buttons above modal stacking contexts */
+.product-search-replace-button {
+  position: relative;
+  z-index: 61000 !important;
+}

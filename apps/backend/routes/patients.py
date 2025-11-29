@@ -35,15 +35,19 @@ def _is_admin_user(user_id):
 
 
 @patients_bp.route('/patients/bulk_upload', methods=['POST'])
-@jwt_required(optional=True)
+@jwt_required()
 @idempotent(methods=['POST'])
 def bulk_upload_patients():
     """Accept a multipart/form-data CSV file containing patients and upsert them into the DB.
     This endpoint is intentionally forgiving: it returns a summary of created/updated rows
     and reports per-row errors without aborting the entire batch.
-    Authentication is optional for uploads in many workflows; we still log the actor when present.
     """
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         if 'file' not in request.files:
             return jsonify({'success': False, 'error': 'No file part named "file" in request'}), 400
 
@@ -202,10 +206,10 @@ def bulk_upload_patients():
                     split_tags = [t.strip() for t in csv.reader([tags_value]).__next__() if t.strip()]
                     payload['tags'] = split_tags
 
-                # Attempt to find existing patient by tc_number (strong identifier)
+                # Attempt to find existing patient by tc_number (strong identifier) within tenant
                 existing = None
                 if payload.get('tcNumber'):
-                    existing = Patient.query.filter_by(tc_number=payload['tcNumber']).one_or_none()
+                    existing = Patient.query.filter_by(tc_number=payload['tcNumber'], tenant_id=user.tenant_id).one_or_none()
 
                 # Basic required-field guard: avoid DB integrity errors by validating
                 if not payload.get('firstName') and not payload.get('phone') and not payload.get('tcNumber'):
@@ -231,6 +235,7 @@ def bulk_upload_patients():
                 else:
                     # create new patient
                     patient = Patient.from_dict(payload)
+                    patient.tenant_id = user.tenant_id
                     db.session.add(patient)
                     created += 1
 
@@ -254,14 +259,9 @@ def bulk_upload_patients():
             db.session.rollback()
             return jsonify({'success': False, 'error': 'Commit failed: ' + str(e)}), 500
 
-        # Log activity with the calling user if available
-        user_id = None
-        try:
-            user_id = get_jwt_identity()
-        except Exception:
-            user_id = None
+        # Log activity
         from app import log_activity
-        actor = user_id or 'anonymous'
+        actor = current_user_id
         log_activity(actor, 'bulk_upload', 'patient', None, {'created': created, 'updated': updated, 'errors': errors}, request)
 
         return jsonify({'success': True, 'created': created, 'updated': updated, 'errors': errors}), 200
@@ -276,19 +276,20 @@ def bulk_upload_patients():
 @patients_bp.route('/patients/export', methods=['GET'])
 @jwt_required()
 def export_patients_csv():
-    """Export patients as CSV. Only admin users are allowed to perform exports.
+    """Export patients as CSV.
     Supports optional query params: status, segment, q (search term).
     """
     try:
-        user_id = get_jwt_identity()
-        if not _is_admin_user(user_id):
-            return jsonify({'success': False, 'error': 'Forbidden: admin access required'}), 403
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
 
         status = request.args.get('status')
         segment = request.args.get('segment')
         q = request.args.get('q')
 
-        query = Patient.query
+        query = Patient.query.filter_by(tenant_id=user.tenant_id)
         if status:
             query = query.filter_by(status=status)
         if segment:
@@ -343,8 +344,14 @@ def export_patients_csv():
 
 
 @patients_bp.route('/patients', methods=['GET'])
+@jwt_required()
 def list_patients():
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Support both offset-based and cursor-based pagination
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 20))
@@ -354,7 +361,27 @@ def list_patients():
         city = request.args.get('city', '')
         district = request.args.get('district', '')
         
-        query = Patient.query
+        query = Patient.query.filter_by(tenant_id=user.tenant_id)
+
+        # If user is admin (branch admin), filter by assigned branches
+        if user.role == 'admin':
+            user_branch_ids = [b.id for b in user.branches]
+            if user_branch_ids:
+                query = query.filter(Patient.branch_id.in_(user_branch_ids))
+            else:
+                # If admin has no branches assigned, they see nothing
+                return jsonify({
+                    'success': True,
+                    'data': [],
+                    'pagination': {
+                        'page': page,
+                        'perPage': per_page,
+                        'total': 0,
+                        'totalPages': 0,
+                        'hasNext': False,
+                        'nextCursor': None
+                    }
+                })
         
         # Apply search filter if provided
         if search:
@@ -415,7 +442,7 @@ def list_patients():
         # For backward compatibility, also support offset-based pagination
         if not cursor:
             # Traditional pagination for UI compatibility
-            total_query = Patient.query
+            total_query = Patient.query.filter_by(tenant_id=user.tenant_id)
             if search:
                 search_term = f"%{search}%"
                 total_query = total_query.filter(
@@ -467,10 +494,16 @@ def list_patients():
 
 
 @patients_bp.route('/patients/<patient_id>', methods=['GET'])
+@jwt_required()
 def get_patient(patient_id):
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         patient = db.session.get(Patient, patient_id)
-        if not patient:
+        if not patient or patient.tenant_id != user.tenant_id:
             return jsonify({'success': False, 'error': 'Patient not found'}), 404
         return jsonify({'success': True, 'data': patient.to_dict()})
     except Exception as e:
@@ -478,9 +511,15 @@ def get_patient(patient_id):
 
 
 @patients_bp.route('/patients', methods=['POST'])
+@jwt_required()
 @idempotent(methods=['POST'])
 def create_patient():
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json()
         if not data:
             return jsonify({'success': False, 'error': 'No data provided'}), 400
@@ -519,8 +558,8 @@ def create_patient():
             if not is_valid:
                 return jsonify({'success': False, 'error': error_msg}), 400
             
-            # Check if TC number already exists
-            existing_tc = Patient.query.filter_by(tc_number=tc_number).first()
+            # Check if TC number already exists within tenant
+            existing_tc = Patient.query.filter_by(tc_number=tc_number, tenant_id=user.tenant_id).first()
             if existing_tc:
                 return jsonify({
                     'success': False, 
@@ -536,7 +575,7 @@ def create_patient():
         # Check if patient with same phone number already exists
         phone = data.get('phone')
         if phone:
-            existing_patient = Patient.query.filter_by(phone=phone).first()
+            existing_patient = Patient.query.filter_by(phone=phone, tenant_id=user.tenant_id).first()
             if existing_patient:
                 return jsonify({
                     'success': False, 
@@ -550,6 +589,7 @@ def create_patient():
                 }), 409
 
         patient = Patient.from_dict(data)
+        patient.tenant_id = user.tenant_id
         
         logger.info('🔍 CREATE PATIENT - After from_dict:')
         logger.info('🔍   address_full: %s', patient.address_full)
@@ -586,11 +626,17 @@ def create_patient():
 
 
 @patients_bp.route('/patients/<patient_id>', methods=['PUT','PATCH'])
+@jwt_required()
 @idempotent(methods=['PUT', 'PATCH'])
 @optimistic_lock(Patient, id_param='patient_id')
 @with_transaction
 def update_patient(patient_id):
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json()
         if not data:
             return jsonify({'success': False, 'error': 'No data provided'}), 400
@@ -600,7 +646,7 @@ def update_patient(patient_id):
         logger.info(f'🔍 UPDATE PATIENT - branchId in data: {data.get("branchId")}')
 
         patient = db.session.get(Patient, patient_id)
-        if not patient:
+        if not patient or patient.tenant_id != user.tenant_id:
             return jsonify({'success': False, 'error': 'Patient not found'}), 404
 
         logger.info(f'🔍 UPDATE PATIENT - Current branch_id: {patient.branch_id}')
@@ -713,10 +759,16 @@ def update_patient(patient_id):
 
 
 @patients_bp.route('/patients/<patient_id>', methods=['DELETE'])
+@jwt_required()
 def delete_patient(patient_id):
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         patient = db.session.get(Patient, patient_id)
-        if not patient:
+        if not patient or patient.tenant_id != user.tenant_id:
             return jsonify({'success': False, 'error': 'Patient not found'}), 404
         db.session.delete(patient)
         db.session.commit()
@@ -729,15 +781,38 @@ def delete_patient(patient_id):
 
 
 @patients_bp.route('/patients/search', methods=['GET'])
+@jwt_required()
 def search_patients():
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         search_term = request.args.get('q', '')
         status = request.args.get('status')
         segment = request.args.get('segment')
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 20))
 
-        query = Patient.query
+        query = Patient.query.filter_by(tenant_id=user.tenant_id)
+
+        # If user is admin (branch admin), filter by assigned branches
+        if user.role == 'admin':
+            user_branch_ids = [b.id for b in user.branches]
+            if user_branch_ids:
+                query = query.filter(Patient.branch_id.in_(user_branch_ids))
+            else:
+                return jsonify({
+                    'success': True,
+                    'data': [],
+                    'pagination': {
+                        'page': page,
+                        'perPage': per_page,
+                        'total': 0,
+                        'totalPages': 0
+                    }
+                })
         if search_term:
             search_filter = f"%{search_term}%"
             query = query.filter(
@@ -773,15 +848,21 @@ def search_patients():
 
 
 @patients_bp.route('/patients/<patient_id>/devices', methods=['GET'])
+@jwt_required()
 def get_patient_devices(patient_id):
     """Get all devices assigned to a specific patient"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         from models.sales import DeviceAssignment
         from models.inventory import Inventory
         
         # Get patient to verify existence
         patient = db.session.get(Patient, patient_id)
-        if not patient:
+        if not patient or patient.tenant_id != user.tenant_id:
             return jsonify({
                 'success': False,
                 'error': 'Patient not found',

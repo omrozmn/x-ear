@@ -13,6 +13,7 @@ class EmailLog(BaseModel, JSONMixin):
     campaign_id = db.Column(db.String(50), db.ForeignKey('campaigns.id'), nullable=True)
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=True)
     template_id = db.Column(db.String(50), db.ForeignKey('communication_templates.id'), nullable=True)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Email details
     to_email = db.Column(db.String(255), nullable=False)
@@ -134,6 +135,7 @@ class CommunicationTemplate(BaseModel, JSONMixin):
     description = db.Column(db.Text)
     template_type = db.Column(db.String(20), nullable=False)  # sms, email
     category = db.Column(db.String(50))  # appointment_reminder, payment_due, welcome, etc.
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Content
     subject = db.Column(db.String(500))  # For email templates
@@ -204,6 +206,7 @@ class CommunicationHistory(BaseModel, JSONMixin):
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
     campaign_id = db.Column(db.String(50), db.ForeignKey('campaigns.id'), nullable=True)
     template_id = db.Column(db.String(50), db.ForeignKey('communication_templates.id'), nullable=True)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Reference to specific communication log
     sms_log_id = db.Column(db.String(50), db.ForeignKey('sms_logs.id'), nullable=True)

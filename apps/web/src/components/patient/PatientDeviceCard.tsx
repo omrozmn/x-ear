@@ -105,6 +105,28 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
 
   const earStyle = getEarStyle((device as any).earSide || device.ear || device.side || '');
 
+  // DEBUG: log incoming device payload and the values we will display
+  try {
+    const dp: any = device as any;
+    const debugDisplay = {
+      patientPayment: dp.patientPayment ?? dp.patientPayment,
+      salePrice: dp.salePrice ?? dp.salePrice,
+      netPayable: dp.netPayable ?? dp.netPayable,
+      listPrice: dp.listPrice ?? dp.listPrice,
+      serials: {
+        serialNumber: dp.serialNumber || dp.serial_number,
+        left: dp.serialNumberLeft || dp.serial_number_left,
+        right: dp.serialNumberRight || dp.serial_number_right
+      },
+      ear: dp.ear || dp.earSide || dp.side,
+      raw: dp
+    };
+    // use debug to avoid noise in production logs; frontend dev tooling shows console.debug
+    console.debug('[PatientDeviceCard] debugDisplay:', debugDisplay);
+  } catch (e) {
+    console.debug('[PatientDeviceCard] debug logging failed', e);
+  }
+
   return (
     <div className={`relative bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow ${earStyle.border} ${isCancelled ? 'opacity-50' : ''}`}>
       {/* Cancelled Overlay */}
@@ -175,36 +197,74 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
           <div>
             <span className="text-gray-500">Satış Fiyatı:</span>
             <p className="font-medium text-gray-900">
-              {(() => {
-                const dp: any = device as any;
-                // Prefer explicit patientPayment (canonical). If missing, but SGK reduction exists,
-                // compute displayed amount as salePrice - sgkReduction to match the modal's net payable.
-                if (dp.patientPayment !== undefined && dp.patientPayment !== null) {
-                  return formatCurrency(dp.patientPayment);
-                }
+                {(() => {
+                  const dp: any = device as any;
 
-                const sale = (dp.salePrice !== undefined && dp.salePrice !== null) ? dp.salePrice : dp.listPrice;
-                const sgk = (dp.sgkReduction !== undefined && dp.sgkReduction !== null) ? dp.sgkReduction : 0;
-                if (sale !== undefined && sale !== null) {
-                  return formatCurrency(Math.max(0, sale - sgk));
-                }
 
-                return '-';
-              })()}
+                  // Prefer showing per-unit sale price for the card.
+                  // Order: 1) explicit per-item salePricePerItem, 2) salePrice / qty, 3) netPayable / qty, 4) listPrice
+                  const earVal = (dp.ear || dp.earSide || dp.ear_side || '').toString().toLowerCase();
+                  const qty = (earVal.startsWith('b') || earVal === 'both' || earVal === 'bilateral') ? 2 : 1;
+
+                  const explicitPerItem = dp.salePricePerItem ?? dp.sale_price_per_item ?? dp.perItem?.sale_price ?? null;
+                  if (explicitPerItem !== null && explicitPerItem !== undefined) {
+                    console.debug('[PatientDeviceCard] display -> salePricePerItem', explicitPerItem);
+                    return formatCurrency(explicitPerItem);
+                  }
+
+                  // Treat `salePrice` stored on the assignment as the per-item sale price.
+                  if (dp.salePrice !== undefined && dp.salePrice !== null) {
+                    console.debug('[PatientDeviceCard] display -> salePrice (per-item assumed)', dp.salePrice);
+                    return formatCurrency(Number(dp.salePrice));
+                  }
+
+                  // If only netPayable is available, and quantity>1, derive per-item from netPayable/qty.
+                  if (dp.netPayable !== undefined && dp.netPayable !== null) {
+                    const perUnitNet = Number(dp.netPayable) / Math.max(1, qty);
+                    console.debug('[PatientDeviceCard] display -> netPayable(perUnit)', perUnitNet, 'qty=', qty);
+                    return formatCurrency(perUnitNet);
+                  }
+
+                  if (dp.listPrice !== undefined && dp.listPrice !== null) {
+                    return formatCurrency(dp.listPrice);
+                  }
+
+                  return '-';
+                })()}
             </p>
           </div>
-          {device.sgkReduction && (
-            <div>
-              <span className="text-gray-500">SGK Desteği:</span>
-              <p className="font-medium text-green-600">{formatCurrency(device.sgkReduction)}</p>
-            </div>
-          )}
-          {device.patientPayment && (
-            <div>
-              <span className="text-gray-500">Hasta Ödemesi:</span>
-              <p className="font-medium text-blue-600">{formatCurrency(device.patientPayment)}</p>
-            </div>
-          )}
+          {(() => {
+            const dp: any = device as any;
+            // Determine quantity from ear
+            const earVal = (dp.ear || dp.earSide || dp.ear_side || '').toString().toLowerCase();
+            const qty = (earVal.startsWith('b') || earVal === 'both' || earVal === 'bilateral') ? 2 : 1;
+
+            // Prefer explicit per-item SGK if present
+            const explicitPerItemSgk = dp.sgkSupportPerItem ?? dp.sgk_support_per_item ?? dp.perItem?.sgk_support ?? null;
+            if (explicitPerItemSgk !== null && explicitPerItemSgk !== undefined) {
+              return (
+                <div>
+                  <span className="text-gray-500">SGK Desteği:</span>
+                  <p className="font-medium text-green-600">{formatCurrency(explicitPerItemSgk)}</p>
+                </div>
+              );
+            }
+
+            // Fallback: take available SGK fields and divide by qty for per-unit display
+            const rawSgk = dp.sgkSupport ?? dp.sgk_support ?? dp.sgkReduction ?? dp.sgk_coverage_amount ?? null;
+            if (rawSgk !== null && rawSgk !== undefined) {
+              const perUnit = Number(rawSgk) / Math.max(1, qty);
+              return (
+                <div>
+                  <span className="text-gray-500">SGK Desteği:</span>
+                  <p className="font-medium text-green-600">{formatCurrency(perUnit)}</p>
+                </div>
+              );
+            }
+
+            return null;
+          })()}
+          {/* removed separate Hasta Ödemesi card field to avoid showing total patient payment (we show per-unit sale price instead) */}
           <div>
             <span className="text-gray-500">Ödeme Yöntemi:</span>
             <p className="font-medium text-gray-900">{getPaymentMethodText(device.paymentMethod)}</p>

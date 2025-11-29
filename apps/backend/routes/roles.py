@@ -1,5 +1,7 @@
 from flask import Blueprint, request, jsonify
 from models.base import db
+from models.role import Role
+from models.permission import Permission
 from utils.authorization import admin_required
 from utils.validation import is_valid_role_name
 
@@ -30,6 +32,46 @@ def create_role():
     db.session.add(r)
     db.session.commit()
     return jsonify({'success': True, 'data': r.to_dict()}), 201
+
+
+@roles_bp.route('/roles/<role_id>', methods=['PUT'])
+@admin_required
+def update_role(role_id):
+    role = db.session.get(Role, role_id)
+    if not role:
+        return jsonify({'success': False, 'error': 'role not found'}), 404
+    
+    data = request.get_json() or {}
+    if 'name' in data:
+        if not is_valid_role_name(data['name']):
+            return jsonify({'success': False, 'error': 'invalid role name'}), 400
+        # Check if another role with this name exists
+        existing = Role.query.filter_by(name=data['name']).first()
+        if existing and existing.id != role_id:
+            return jsonify({'success': False, 'error': 'role name already exists'}), 409
+        role.name = data['name']
+    
+    if 'description' in data:
+        role.description = data['description']
+    
+    db.session.add(role)
+    db.session.commit()
+    return jsonify({'success': True, 'data': role.to_dict()})
+
+
+@roles_bp.route('/roles/<role_id>', methods=['DELETE'])
+@admin_required
+def delete_role(role_id):
+    role = db.session.get(Role, role_id)
+    if not role:
+        return jsonify({'success': False, 'error': 'role not found'}), 404
+    
+    if role.is_system:
+        return jsonify({'success': False, 'error': 'cannot delete system role'}), 403
+    
+    db.session.delete(role)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'role deleted'})
 
 
 @roles_bp.route('/roles/<role_id>/permissions', methods=['POST'])

@@ -18,6 +18,7 @@ class Appointment(BaseModel):
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
     clinician_id = db.Column(db.String(50))
     branch_id = db.Column(db.String(50))
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # DateTime fields (will be consolidated to start_at in future)
     date = db.Column(db.DateTime, nullable=False)

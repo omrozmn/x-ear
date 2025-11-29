@@ -1,0 +1,285 @@
+/**
+ * Dark Mode Styles
+ * X-Ear CRM uygulaması için dark mode stilleri
+ */
+
+:root {
+  --light-bg: #f9fafb;
+  --light-card-bg: #ffffff;
+  --light-text: #111827;
+  --light-text-secondary: #4b5563;
+  --light-border: #e5e7eb;
+  --light-input-bg: #ffffff;
+  --light-hover: #f3f4f6;
+  
+  --dark-bg: #111827;
+  --dark-card-bg: #1f2937;
+  --dark-text: #f9fafb;
+  --dark-text-secondary: #d1d5db;
+  --dark-border: #374151;
+  --dark-input-bg: #374151;
+  --dark-hover: #2d3748;
+  
+  /* Gradient ve özel renkler */
+  --dark-gradient-start: #1a202c;
+  --dark-gradient-end: #2d3748;
+}
+
+/* Default (Light) Theme */
+body {
+  background-color: var(--light-bg);
+  color: var(--light-text);
+}
+
+.card, .bg-white, .bg-gray-50, .bg-gray-100 {
+  background-color: var(--light-card-bg);
+}
+
+.text-gray-500, .text-gray-600, .text-gray-700, .text-gray-800, .text-gray-900, .text-black {
+  color: var(--light-text);
+}
+
+.border, .border-gray-200, .border-gray-300, .border-gray-100 {
+  border-color: var(--light-border);
+}
+
+input, select, textarea {
+  background-color: var(--light-input-bg);
+  color: var(--light-text);
+}
+
+.hover\:bg-gray-50:hover, .hover\:bg-gray-100:hover {
+  background-color: var(--light-hover);
+}
+
+/* Dark Mode Theme */
+.dark-mode body {
+  background-color: var(--dark-bg);
+  color: var(--dark-text) !important;
+}
+
+.dark-mode .card,
+.dark-mode .bg-white,
+.dark-mode .bg-gray-50,
+.dark-mode .bg-gray-100,
+.dark-mode div[class*="bg-white"],
+.dark-mode div[class*="bg-gray-50"],
+.dark-mode div[class*="bg-gray-100"] {
+  background-color: var(--dark-card-bg) !important;
+}
+
+.dark-mode .text-gray-500,
+.dark-mode .text-gray-600,
+.dark-mode .text-gray-700,
+.dark-mode .text-gray-800,
+.dark-mode .text-gray-900,
+.dark-mode .text-black,
+.dark-mode p,
+.dark-mode h1,
+.dark-mode h2,
+.dark-mode h3,
+.dark-mode h4,
+.dark-mode h5,
+.dark-mode h6,
+.dark-mode span,
+.dark-mode div {
+  color: var(--dark-text) !important;
+}
+
+.dark-mode .text-gray-400,
+.dark-mode .text-gray-500 {
+  color: var(--dark-text-secondary) !important;
+}
+
+.dark-mode .border,
+.dark-mode .border-gray-200,
+.dark-mode .border-gray-300,
+.dark-mode .border-gray-100,
+.dark-mode *[class*="border-gray"] {
+  border-color: var(--dark-border) !important;
+}
+
+.dark-mode input,
+.dark-mode select,
+.dark-mode textarea,
+.dark-mode .form-input,
+.dark-mode .form-select,
+.dark-mode .form-textarea {
+  background-color: var(--dark-input-bg) !important;
+  color: var(--dark-text) !important;
+  border-color: var(--dark-border) !important;
+}
+
+.dark-mode .hover\:bg-gray-50:hover,
+.dark-mode .hover\:bg-gray-100:hover,
+.dark-mode *[class*="hover\:bg-gray"]:hover {
+  background-color: var(--dark-hover) !important;
+}
+
+/* Sidebar ve Header için dark mode stilleri */
+.dark-mode #sidebar,
+.dark-mode .sidebar,
+.dark-mode [id*="sidebar"],
+.dark-mode [class*="sidebar"] {
+  background-color: var(--dark-card-bg) !important;
+  border-color: var(--dark-border) !important;
+  color: var(--dark-text) !important;
+}
+
+.dark-mode #header,
+.dark-mode .header,
+.dark-mode [id*="header"],
+.dark-mode [class*="header"] {
+  background-color: var(--dark-card-bg) !important;
+  border-color: var(--dark-border) !important;
+}
+
+.dark-mode .sidebar-link,
+.dark-mode .nav-link,
+.dark-mode [class*="sidebar"] a,
+.dark-mode [class*="nav"] a {
+  color: var(--dark-text) !important;
+}
+
+.dark-mode .sidebar-link:hover,
+.dark-mode .nav-link:hover,
+.dark-mode [class*="sidebar"] a:hover,
+.dark-mode [class*="nav"] a:hover {
+  background-color: var(--dark-hover) !important;
+}
+
+.dark-mode .sidebar-link.active,
+.dark-mode .nav-link.active,
+.dark-mode [class*="sidebar"] a.active,
+.dark-mode [class*="nav"] a.active {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  color: #3b82f6 !important;
+}
+
+/* Kartlar için dark mode stilleri */
+.dark-mode .card,
+.dark-mode [class*="card"],
+.dark-mode .shadow,
+.dark-mode [class*="shadow"],
+.dark-mode .rounded,
+.dark-mode [class*="rounded"] {
+  background-color: var(--dark-card-bg) !important;
+  border-color: var(--dark-border) !important;
+  color: var(--dark-text) !important;
+}
+
+/* Gradient kartlar için dark mode stilleri */
+.dark-mode .gradient-bg,
+.dark-mode [class*="gradient"],
+.dark-mode [style*="background-image"],
+.dark-mode [style*="linear-gradient"],
+.dark-mode [style*="radial-gradient"] {
+  background: linear-gradient(to bottom right, var(--dark-gradient-start), var(--dark-gradient-end)) !important;
+  color: var(--dark-text) !important;
+}
+
+/* Dashboard kartları için özel stiller */
+.dark-mode .stats-card,
+.dark-mode [class*="stats"],
+.dark-mode [class*="dashboard-card"] {
+  background-color: var(--dark-card-bg) !important;
+  border-color: var(--dark-border) !important;
+  color: var(--dark-text) !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Butonlar için dark mode stilleri */
+.dark-mode .btn-primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.dark-mode .btn-secondary {
+  background-color: var(--dark-input-bg);
+  color: var(--dark-text);
+}
+
+/* Tablolar için dark mode stilleri */
+.dark-mode table {
+  color: var(--dark-text);
+}
+
+.dark-mode table th {
+  background-color: var(--dark-card-bg);
+}
+
+.dark-mode table tr:nth-child(even) {
+  background-color: rgba(55, 65, 81, 0.5);
+}
+
+.dark-mode table tr:hover {
+  background-color: var(--dark-hover);
+}
+
+/* Dark mode toggle butonu stilleri */
+.dark-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+}
+
+.dark-mode-toggle:hover {
+  background-color: var(--light-hover);
+}
+
+.dark-mode .dark-mode-toggle:hover {
+  background-color: var(--dark-hover);
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+  margin-left: 8px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 20px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #3b82f6;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+.dark-mode-icon {
+  width: 16px;
+  height: 16px;
+}

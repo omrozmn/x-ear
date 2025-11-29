@@ -88,39 +88,7 @@ export function InvoiceScenarioSection({ scenarioData, onChange, disableSubScena
                     </div>
                 )}
 
-                {scenarioData?.scenario && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <div className="flex items-start">
-                            <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
-                            <div>
-                                <h4 className="text-sm font-medium text-blue-800 mb-1">
-                                    {scenarioData.scenarioName}
-                                    {scenarioData.currentScenarioType && ` - ${scenarioData.currentScenarioType === '2' ? 'Temel' : 'Ticari'}`}
-                                </h4>
-                                <p className="text-sm text-blue-700">
-                                    {scenarioData.scenarioDescription}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* E-Arşiv Uyarısı */}
-                {scenarioData?.scenario === 'other' && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                        <div className="flex items-start">
-                            <AlertTriangle className="text-amber-400 mr-2 flex-shrink-0" size={18} />
-                            <div>
-                                <h4 className="text-sm font-medium text-amber-800 mb-1">
-                                    E-Arşiv Fatura Bilgilendirmesi
-                                </h4>
-                                <p className="text-sm text-amber-700">
-                                    Alıcı E-Fatura mükellefi değilse, fatura otomatik olarak E-Arşiv fatura olarak düzenlenir.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                            {/* informational cards moved to form to appear under Invoice Type */}
         </div>
     );
 }

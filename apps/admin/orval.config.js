@@ -6,7 +6,7 @@ export default defineConfig({
         output: {
             target: './src/lib/api-client.ts',
             client: 'react-query',
-            baseUrl: '/api',
+            client: 'react-query',
             override: {
                 mutator: {
                     path: './src/lib/apiMutator.ts',

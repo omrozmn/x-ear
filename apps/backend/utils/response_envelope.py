@@ -123,3 +123,11 @@ def register_response_envelope(app):
             # Do not break response path on instrumentation errors
             app.logger.debug('response_envelope error: %s', e)
         return response
+
+def success_response(data=None, status_code=200):
+    """Helper to return a success response that respects the envelope structure."""
+    return jsonify({'success': True, 'data': data}), status_code
+
+def error_response(message, status_code=400):
+    """Helper to return an error response that respects the envelope structure."""
+    return jsonify({'success': False, 'error': {'message': message}}), status_code

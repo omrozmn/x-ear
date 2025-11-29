@@ -83,6 +83,8 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
     return dateB - dateA; // Newest first
   });
 
+  // Note: don't perform pricing calculations here — prefer backend-provided canonical fields.
+
   // Helper function to convert PatientDevice to DeviceAssignment
   // Memoized to prevent unnecessary re-renders
   const convertToDeviceAssignment = React.useMemo(() => {
@@ -646,22 +648,54 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
             
             // For bilateral, show two cards side by side (Right on left, Left on right - audiological view)
             if (isBilateral) {
-              // For bilateral devices, show two cards but pass per-unit values to each card
-              const perUnitSalePrice = (device.salePrice !== undefined && device.salePrice !== null) ? device.salePrice : device.listPrice;
-              const perUnitSgk = (device.sgkReduction !== undefined && device.sgkReduction !== null) ? (device.sgkReduction / 2) : undefined;
-              const perUnitPatientPayment = (device.patientPayment !== undefined && device.patientPayment !== null) ? (device.patientPayment / 2) : undefined;
+              // For bilateral devices: compute per-item helpers (if backend didn't provide them)
+              // and pass them into each duplicated card so UI shows per-ear values.
+              const dp: any = device as any;
+              // Prefer explicit per-item helpers when present, otherwise divide totals by 2
+              const totalSgk = Number(dp.sgkSupport ?? dp.sgk_support ?? dp.sgkReduction ?? dp.sgk_coverage_amount ?? 0);
+              // salePrice returned by backend may already be per-item (common) while netPayable/patientPayment is the total.
+              // Determine per-item sale robustly:
+              // 1) prefer explicit per-item helpers, 2) if net total exists use net/qty, 3) detect if salePrice is already per-item by comparing sale*qty === netTotal
+              const qty = 2;
+              const explicitPerItemSgk = dp.sgkSupportPerItem ?? dp.sgk_support_per_item ?? dp.perItem?.sgk_support ?? null;
+              const explicitPerItemSale = dp.salePricePerItem ?? dp.sale_price_per_item ?? dp.perItem?.sale_price ?? null;
+
+              const totalSaleRaw = Number(dp.netPayable ?? dp.net_payable ?? dp.patientPayment ?? dp.patient_payment ?? 0);
+              const saleRaw = Number(dp.salePrice ?? dp.sale_price ?? 0);
+
+              const perItemSgk = explicitPerItemSgk !== null && explicitPerItemSgk !== undefined
+                ? Number(explicitPerItemSgk)
+                : (totalSgk > 0 ? totalSgk / qty : 0);
+
+              let perItemSale: number;
+              if (explicitPerItemSale !== null && explicitPerItemSale !== undefined) {
+                perItemSale = Number(explicitPerItemSale);
+              } else if (totalSaleRaw > 0) {
+                // If saleRaw * qty approximately equals totalSaleRaw, saleRaw is already per-item.
+                if (Math.abs(saleRaw * qty - totalSaleRaw) < 0.01) {
+                  perItemSale = saleRaw;
+                } else {
+                  perItemSale = totalSaleRaw / qty;
+                }
+              } else {
+                // No total available — fall back to saleRaw (may be per-item or total); assume saleRaw is per-item
+                perItemSale = saleRaw;
+              }
+
+              const rightCard = { ...device, ear: 'right', earSide: 'RIGHT', side: 'right', salePricePerItem: perItemSale, sgkSupportPerItem: perItemSgk } as any;
+              const leftCard = { ...device, ear: 'left', earSide: 'LEFT', side: 'left', salePricePerItem: perItemSale, sgkSupportPerItem: perItemSgk } as any;
 
               return (
                 <div key={device.id} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <PatientDeviceCard
-                    device={{...device, ear: 'right', earSide: 'RIGHT', side: 'right', salePrice: perUnitSalePrice, sgkReduction: perUnitSgk, patientPayment: perUnitPatientPayment} as any}
+                    device={rightCard}
                     onEdit={handleEditDevice}
                     onReplace={(d) => handleReplaceDevice(d.id)}
                     onCancel={(d) => handleCancelDevice(d.id)}
                     isCancelled={(device as any).status === 'cancelled'}
                   />
                   <PatientDeviceCard
-                    device={{...device, ear: 'left', earSide: 'LEFT', side: 'left', salePrice: perUnitSalePrice, sgkReduction: perUnitSgk, patientPayment: perUnitPatientPayment} as any}
+                    device={leftCard}
                     onEdit={handleEditDevice}
                     onReplace={(d) => handleReplaceDevice(d.id)}
                     onCancel={(d) => handleCancelDevice(d.id)}
@@ -671,6 +705,8 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
               );
             }
             
+            // For single-ear devices, do not recompute pricing here — rely on backend-provided fields.
+
             // For single ear, position card based on ear (audiological view)
             const isRight = device.ear === 'right' || device.ear === 'R' || (device as any).earSide === 'RIGHT';
             const isLeft = device.ear === 'left' || device.ear === 'L' || (device as any).earSide === 'LEFT';

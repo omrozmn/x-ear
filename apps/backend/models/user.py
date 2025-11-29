@@ -3,6 +3,12 @@ from .base import db, BaseModel, gen_id, JSONMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
 
+# Association table for User-Branch many-to-many relationship
+user_branches = db.Table('user_branches',
+    db.Column('user_id', db.String(50), db.ForeignKey('users.id'), primary_key=True),
+    db.Column('branch_id', db.String(50), db.ForeignKey('branches.id'), primary_key=True)
+)
+
 class User(BaseModel):
     __tablename__ = 'users'
 
@@ -13,6 +19,7 @@ class User(BaseModel):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone = db.Column(db.String(20), unique=True, nullable=True)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=True, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     
     # User details
@@ -20,6 +27,10 @@ class User(BaseModel):
     last_name = db.Column(db.String(100))
     role = db.Column(db.String(20), default='user')
     is_active = db.Column(db.Boolean, default=True)
+    
+    # Relationships
+    branches = db.relationship('Branch', secondary=user_branches, lazy='subquery',
+        backref=db.backref('users', lazy=True))
     
     # Future fields for enhancement
     last_login = db.Column(db.DateTime)
@@ -46,6 +57,7 @@ class User(BaseModel):
             'role': self.role,
             'phone': self.phone,
             'isActive': self.is_active,
+            'branches': [branch.to_dict() for branch in self.branches],
             'lastLogin': self.last_login.isoformat() if self.last_login else None
         }
         user_dict.update(base_dict)

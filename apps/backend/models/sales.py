@@ -15,6 +15,8 @@ class PaymentRecord(BaseModel):
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=True)
     sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'))  # Optional: link to sale
     promissory_note_id = db.Column(db.String(50))  # Link to promissory note if applicable
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # Payment details
     amount = db.Column(sa.Numeric(12, 2), nullable=False)
@@ -37,6 +39,7 @@ class PaymentRecord(BaseModel):
             'patientId': self.patient_id,
             'saleId': self.sale_id,
             'promissoryNoteId': self.promissory_note_id,
+            'branchId': self.branch_id,
             'amount': float(self.amount) if self.amount else None,
             'paymentDate': self.payment_date.isoformat() if self.payment_date else None,
             'dueDate': self.due_date.isoformat() if self.due_date else None,
@@ -60,6 +63,8 @@ class DeviceAssignment(BaseModel):
     device_id = db.Column(db.String(50), nullable=True)  # Can be inventory_id or actual device_id
     sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'), nullable=True)  # Link to sale
     inventory_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=True)  # Link to inventory item
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # Assignment details
     ear = db.Column(db.String(1))  # L, R, B for Left, Right, Both/Bilateral
@@ -95,6 +100,7 @@ class DeviceAssignment(BaseModel):
             'deviceId': self.device_id,
             'saleId': self.sale_id,
             'inventoryId': self.inventory_id,
+            'branchId': self.branch_id,
             'ear': self.ear,
             'reason': self.reason,
             'fromInventory': self.from_inventory,
@@ -123,6 +129,8 @@ class Sale(BaseModel):
     # Foreign keys
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
     product_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=True)  # Link to inventory product
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # Sale details
     sale_date = db.Column(db.DateTime, nullable=False)
@@ -156,6 +164,7 @@ class Sale(BaseModel):
             'id': self.id,
             'patientId': self.patient_id,
             'productId': self.product_id,
+            'branchId': self.branch_id,
             'saleDate': self.sale_date.isoformat() if self.sale_date else None,
             'listPriceTotal': float(self.list_price_total) if self.list_price_total else None,
             'totalAmount': float(self.total_amount) if self.total_amount else None,
@@ -181,6 +190,8 @@ class PaymentPlan(BaseModel):
     
     # Foreign keys
     sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'), nullable=False)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # Plan details
     plan_name = db.Column(db.String(100), nullable=False)
@@ -214,6 +225,7 @@ class PaymentPlan(BaseModel):
         plan_dict = {
             'id': self.id,
             'saleId': self.sale_id,
+            'branchId': self.branch_id,
             'planName': self.plan_name,
             'totalAmount': float(self.total_amount) if self.total_amount else None,
             'installmentCount': self.installment_count,

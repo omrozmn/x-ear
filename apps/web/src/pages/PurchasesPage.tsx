@@ -1,5 +1,5 @@
 import { Button, Input, Select } from '@x-ear/ui-web';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UniversalImporter, { FieldDef } from '../components/importer/UniversalImporter';
 import { useToastHelpers } from '@x-ear/ui-web';
 import invoicesSchema from '../components/importer/schemas/invoices';
@@ -23,6 +23,19 @@ export function PurchasesPage() {
   };
 
   const [isImporterOpen, setIsImporterOpen] = useState(false);
+
+  // Pre-fill filters from URL query params (e.g. from SupplierDetail navigation)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const supplierId = params.get('supplierId');
+      const supplierName = params.get('supplierName');
+      if (supplierId) setFilters(prev => ({ ...prev, supplierId }));
+      if (supplierName) setFilters(prev => ({ ...prev, supplierName }));
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   const invoiceFields: FieldDef[] = [
     // include both legacy and integrator names for robust mapping
@@ -238,6 +251,20 @@ export function PurchasesPage() {
     </div>
   );
 }
+
+// Read URL params to prefill filters when navigating from supplier detail
+(() => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const supplierId = params.get('supplierId');
+    if (supplierId) {
+      // NOTE: this runs at module import time; ensure UI components read location again
+      // The PurchasesPage also reads params on mount via useEffect below if needed.
+    }
+  } catch (e) {
+    // ignore
+  }
+})();
 
 // Purchases page importer
 

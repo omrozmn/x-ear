@@ -66,7 +66,7 @@ def create_plan():
         data = request.get_json()
         
         # Validate required fields
-        if not data.get('name') or not data.get('price'):
+        if not data.get('name') or data.get('price') is None:
             return jsonify({
                 'success': False,
                 'error': {'message': 'Name and price are required'}

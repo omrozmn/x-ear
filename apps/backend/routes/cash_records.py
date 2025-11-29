@@ -4,6 +4,9 @@ from models.base import db
 from models.patient import Patient
 from models.sales import PaymentRecord
 import logging
+from models.tenant import Tenant
+from flask_jwt_extended import get_jwt_identity
+from models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -151,6 +154,33 @@ def create_cash_record():
         # For cash records without a specific patient, we'll allow null patient_id
         # but ensure the database schema allows this
         payment.patient_id = patient_id
+
+        # Determine tenant_id: prefer payload, otherwise derive from JWT user, otherwise first tenant
+        tenant_id = data.get('tenantId')
+        if not tenant_id:
+            try:
+                # Try to read tenant from JWT-authenticated user
+                try:
+                    current_user_id = get_jwt_identity()
+                except Exception:
+                    current_user_id = None
+
+                if current_user_id:
+                    try:
+                        user = db.session.get(User, current_user_id)
+                        if user and getattr(user, 'tenant_id', None):
+                            tenant_id = user.tenant_id
+                    except Exception:
+                        tenant_id = None
+
+                # Fallback to first tenant in DB
+                if not tenant_id:
+                    first_tenant = db.session.query(Tenant).first()
+                    tenant_id = first_tenant.id if first_tenant else None
+            except Exception:
+                tenant_id = None
+
+        payment.tenant_id = tenant_id
 
         # Set amount (negative for expenses)
         amount = float(data['amount'])

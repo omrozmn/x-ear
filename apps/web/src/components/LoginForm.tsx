@@ -20,6 +20,9 @@ export function LoginForm() {
     
     try {
       await login({ username: username.trim(), password });
+      // RouterProvider is mounted inside AuthProvider, so use a full-page redirect
+      // to ensure RouterProvider initializes with the authenticated state.
+      window.location.replace('/');
     } catch (error) {
       // Error is handled by the store
       console.error('Login failed:', error);

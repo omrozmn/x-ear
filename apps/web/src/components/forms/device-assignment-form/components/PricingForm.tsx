@@ -301,12 +301,19 @@ export const PricingForm: React.FC<PricingFormProps> = ({
               <div className="flex justify-between font-medium text-lg border-t pt-2">
                 <span>Satış Fiyatı:</span>
                 <span>
-                  {formatCurrency((formData.salePrice || formData.listPrice) * (formData.ear === 'both' ? 2 : 1))}
+                  {formatCurrency((formData.salePrice ?? formData.listPrice) * (formData.ear === 'both' ? 2 : 1))}
                   {formData.ear === 'both' && (
                     <span className="text-sm text-purple-600">{' '}(Bilateral)</span>
                   )}
                 </span>
               </div>
+              {/* Show per-device (per-item) sale price when bilateral so user sees per-ear cost */}
+              {formData.ear === 'both' && (
+                <div className="flex justify-between text-sm text-gray-700 mt-1">
+                  <span>Bilateral x 2</span>
+                  <span className="font-medium">{formatCurrency(formData.salePrice ?? formData.listPrice)}</span>
+                </div>
+              )}
             </div>
           </div>
         )}

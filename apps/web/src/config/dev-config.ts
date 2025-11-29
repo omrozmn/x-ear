@@ -1,7 +1,8 @@
 // Development configuration for auto-login
 export const DEV_CONFIG = {
   // Auto-login için geliştirme ortamında kullanılacak varsayılan credentials
-  AUTO_LOGIN_ENABLED: process.env.NODE_ENV === 'development',
+  // Disable automatic auto-login to allow manual login during debugging
+  AUTO_LOGIN_ENABLED: false,
   DEFAULT_CREDENTIALS: {
     username: 'seed-admin',
     password: 'AdminPass123!',

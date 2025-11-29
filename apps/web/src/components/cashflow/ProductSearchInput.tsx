@@ -27,6 +27,11 @@ interface ProductSearchInputProps {
   onSelectProduct: (product: InventoryItem | null) => void;
   onPriceSelect?: (price: number) => void;
   onAmountClear?: () => void;
+  // If true, render a small action button next to each search result
+  showReplaceButton?: boolean;
+  // Handler for the replace button when rendered per-item
+  onReplaceClick?: (product: InventoryItem) => void;
+  className?: string;
 }
 
 export function ProductSearchInput({
@@ -34,6 +39,9 @@ export function ProductSearchInput({
   onSelectProduct,
   onPriceSelect,
   onAmountClear,
+  showReplaceButton = false,
+  onReplaceClick,
+  className = '',
 }: ProductSearchInputProps) {
   const [search, setSearch] = useState('');
   const [showResults, setShowResults] = useState(false);
@@ -157,9 +165,10 @@ export function ProductSearchInput({
   }
 
   return (
-    <div ref={searchRef} className="relative">
+    <div ref={searchRef} className={`relative ${className}`}>
       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
       <Input
+        fullWidth
         placeholder="Ürün adı veya SKU ile ara..."
         value={search}
         onChange={(e) => {
@@ -175,18 +184,17 @@ export function ProductSearchInput({
             items.map((item) => (
               <div
                 key={item.id}
-                onClick={() => {
-                  onSelectProduct(item);
-                  setSearch('');
-                  setShowResults(false);
-                  if (item.price && onPriceSelect) {
-                    onPriceSelect(item.price);
-                  }
-                }}
                 className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
               >
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
+                  <div className="flex-1" onClick={() => {
+                    onSelectProduct(item);
+                    setSearch('');
+                    setShowResults(false);
+                    if (item.price && onPriceSelect) {
+                      onPriceSelect(item.price);
+                    }
+                  }}>
                     <p className="font-medium text-gray-900">{item.name}</p>
                     <p className="text-sm text-gray-500">
                       {[
@@ -198,14 +206,29 @@ export function ProductSearchInput({
                         .join(' • ')}
                     </p>
                   </div>
-                  {item.price && (
-                    <div className="ml-3 text-right">
-                      <p className="text-sm font-medium text-gray-900">{item.price} ₺</p>
-                      {item.vatIncludedPrice && (
-                        <p className="text-xs text-gray-500">KDV: {item.vatIncludedPrice} ₺</p>
-                      )}
-                    </div>
-                  )}
+
+                  <div className="ml-3 text-right flex items-center gap-2">
+                    {item.price && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{item.price} ₺</p>
+                        {item.vatIncludedPrice && (
+                          <p className="text-xs text-gray-500">KDV: {item.vatIncludedPrice} ₺</p>
+                        )}
+                      </div>
+                    )}
+                    {showReplaceButton && onReplaceClick && (
+                      <button
+                        type="button"
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          onReplaceClick(item);
+                        }}
+                        className="product-search-replace-button inline-flex items-center px-3 py-1 text-sm bg-blue-600 text-white rounded"
+                      >
+                        Değiştir
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))

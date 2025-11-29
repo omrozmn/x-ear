@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-// import { useAuthStore } from '@/stores/authStore'; // Auth store needs to be ported or mocked for now
-import { adminApi } from '@/lib/api';
+import { useNavigate } from '@tanstack/react-router';
+import { useAuth } from '@/contexts/AuthContext';
+import { adminApiInstance as adminApi } from '@/lib/api';
 import { DashboardMetrics } from '@/types';
 import {
     Users,
@@ -14,15 +15,21 @@ import {
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
-    // const { user } = useAuthStore();
-    const user = { name: 'Admin User', email: 'admin@x-ear.com' }; // Mock for now
+    const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+    const navigate = useNavigate();
     const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        loadDashboardData();
-    }, []);
+        if (!authLoading) {
+            if (!isAuthenticated) {
+                navigate({ to: '/login' });
+                return;
+            }
+            loadDashboardData();
+        }
+    }, [authLoading, isAuthenticated, navigate]);
 
     const loadDashboardData = async () => {
         try {
@@ -36,6 +43,11 @@ export default function AdminDashboardPage() {
             }
         } catch (err: any) {
             console.error('Dashboard load error:', err);
+            if (err.response) {
+                console.error('Error Status:', err.response.status);
+                console.error('Error Data:', err.response.data);
+                console.error('Error Headers:', err.response.headers);
+            }
             setError(err.response?.data?.error?.message || 'Failed to load dashboard data');
         } finally {
             setLoading(false);
@@ -53,7 +65,7 @@ export default function AdminDashboardPage() {
         }).format(amount);
     };
 
-    if (loading) {
+    if (authLoading || (loading && !metrics && !error)) {
         return (
             <div className="flex items-center justify-center h-96">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -66,7 +78,7 @@ export default function AdminDashboardPage() {
             {/* Welcome section */}
             <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                    Hoşgeldiniz, {user?.name || user?.email}
+                    Hoşgeldiniz, {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : (user?.email || 'Admin')}
                 </h1>
                 <p className="text-gray-600">
                     Admin panelinize genel bakış.

@@ -1,5 +1,6 @@
+/// <reference types="vite/client" />
 // API Client for X-Ear Web Application
-const API_BASE_URL = 'http://localhost:5003/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003/api';
 
 export interface LoginCredentials {
   username: string;
@@ -80,7 +81,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const token = localStorage.getItem('auth_token');
-    
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string> || {}),
@@ -132,7 +133,7 @@ class ApiClient {
     search?: string;
   } = {}): Promise<ApiResponse<PatientsResponse>> {
     const searchParams = new URLSearchParams();
-    
+
     if (params.page) searchParams.append('page', params.page.toString());
     if (params.limit) searchParams.append('limit', params.limit.toString());
     if (params.search) searchParams.append('search', params.search);
@@ -164,6 +165,31 @@ class ApiClient {
   async deletePatient(id: string): Promise<ApiResponse<{ success: boolean }>> {
     return this.request<{ success: boolean }>(`/patients/${id}`, {
       method: 'DELETE',
+    });
+  }
+
+  // Tenant User Management
+  async getTenantUsers(): Promise<ApiResponse<{ data: any[] }>> {
+    return this.request<{ data: any[] }>('/tenant/users');
+  }
+
+  async inviteTenantUser(data: { email: string; firstName: string; lastName: string; role: string }): Promise<ApiResponse<{ data: any; tempPassword?: string }>> {
+    return this.request<{ data: any; tempPassword?: string }>('/tenant/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteTenantUser(userId: string): Promise<ApiResponse<{ success: boolean }>> {
+    return this.request<{ success: boolean }>(`/tenant/users/${userId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async updateTenantUser(userId: string, data: any): Promise<ApiResponse<{ data: any }>> {
+    return this.request<{ data: any }>(`/tenant/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
     });
   }
 }

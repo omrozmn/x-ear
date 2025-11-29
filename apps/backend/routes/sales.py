@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask import make_response
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.base import db, gen_sale_id
 from models.patient import Patient
 from models.device import Device
@@ -385,14 +386,38 @@ def get_sale_payment_plan(sale_id):
 # ============= ORIGINAL SALES ENDPOINTS =============
 
 @sales_bp.route('/sales', methods=['GET'])
+@jwt_required()
 def get_sales():
     """Get all sales with pagination and filtering"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         page = int(request.args.get('page', 1))
         per_page = min(int(request.args.get('per_page', 50)), 100)
         search = request.args.get('search', '').strip()
         
-        query = Sale.query
+        query = Sale.query.filter_by(tenant_id=user.tenant_id)
+
+        # If user is admin (branch admin), filter by assigned branches
+        if user.role == 'admin':
+            user_branch_ids = [b.id for b in user.branches]
+            if user_branch_ids:
+                query = query.filter(Sale.branch_id.in_(user_branch_ids))
+            else:
+                return jsonify({
+                    'success': True,
+                    'data': [],
+                    'meta': {
+                        'page': page,
+                        'perPage': per_page,
+                        'total': 0,
+                        'totalPages': 0
+                    },
+                    'timestamp': datetime.now().isoformat()
+                }), 200
         
         # Search functionality
         if search:
@@ -499,12 +524,82 @@ def update_device_assignment(assignment_id):
         if 'sgk_scheme' in data:
             assignment.sgk_scheme = data['sgk_scheme']
         
-        # Recalculate pricing if any pricing field changed
+        # Recalculate pricing only if pricing fields actually changed (avoid overwrite on save-without-edit)
         pricing_fields = ['base_price', 'discount_type', 'discount_value', 'sgk_scheme']
-        should_recalculate = any(key in data for key in pricing_fields)
+        should_recalculate = False
+        try:
+            for key in pricing_fields:
+                if key in data:
+                    new_val = data.get(key)
+                    # Map request key names to assignment attributes
+                    if key == 'base_price':
+                        current = float(assignment.list_price or 0)
+                        try:
+                            incoming = float(new_val)
+                        except Exception:
+                            incoming = None
+                        if incoming is not None and abs(current - incoming) > 0.005:
+                            should_recalculate = True
+                            break
+                    elif key == 'discount_value':
+                        current = float(assignment.discount_value or 0)
+                        try:
+                            incoming = float(new_val or 0)
+                        except Exception:
+                            incoming = None
+                        if incoming is not None and abs(current - incoming) > 0.0001:
+                            should_recalculate = True
+                            break
+                    else:
+                        # discount_type or sgk_scheme string comparison
+                        current = getattr(assignment, 'discount_type', None) if key == 'discount_type' else getattr(assignment, 'sgk_scheme', None)
+                        if (new_val or None) != (current or None):
+                            should_recalculate = True
+                            break
+        except Exception:
+            # Fallback to previous behavior if any unexpected error occurs
+            should_recalculate = any(key in data for key in pricing_fields)
+
         logger.info(f"🔢 Pricing recalculation check: {should_recalculate}, data keys: {list(data.keys())}")
-        
-        if should_recalculate:
+        # If client provided explicit sale_price or patient_payment, prefer those
+        explicit_sale_price = None
+        explicit_patient_payment = None
+        explicit_sgk = None
+        if 'sale_price' in data:
+            try:
+                explicit_sale_price = float(data.get('sale_price'))
+            except Exception:
+                explicit_sale_price = None
+        if 'patient_payment' in data:
+            try:
+                explicit_patient_payment = float(data.get('patient_payment'))
+            except Exception:
+                explicit_patient_payment = None
+        # Accept sgk_reduction or sgk_support keys from client if present
+        if 'sgk_reduction' in data:
+            try:
+                explicit_sgk = float(data.get('sgk_reduction'))
+            except Exception:
+                explicit_sgk = None
+
+        # If explicit pricing provided, apply selectively and avoid overwriting patient-facing amounts
+        if explicit_sale_price is not None or explicit_patient_payment is not None or explicit_sgk is not None:
+            from decimal import Decimal
+            # Only update sgk_support when an explicit sgk value is provided
+            if explicit_sgk is not None:
+                assignment.sgk_support = Decimal(str(explicit_sgk))
+
+            # Prefer explicit patient_payment as net_payable when provided
+            if explicit_patient_payment is not None:
+                assignment.net_payable = Decimal(str(explicit_patient_payment))
+
+            # If only sale_price is provided (e.g., form posts unchanged fields), update per-item sale_price
+            # but do NOT overwrite net_payable or sgk_support unless corresponding explicit fields are present.
+            if explicit_sale_price is not None:
+                assignment.sale_price = Decimal(str(explicit_sale_price))
+
+            logger.info(f"✅ Selectively applied explicit pricing from request: sale_price={explicit_sale_price}, patient_payment={explicit_patient_payment}, sgk={explicit_sgk}")
+        elif should_recalculate:
             from decimal import Decimal
             import json
             import os
@@ -646,9 +741,11 @@ def _load_settings_and_patient(patient_id):
     return patient, settings, None, None
 
 
-def _create_sale_record(patient_id, pricing_calculation, paid_amount, payment_plan_type):
+def _create_sale_record(patient_id, pricing_calculation, paid_amount, payment_plan_type, tenant_id, branch_id=None):
     """Create sale record with pricing data."""
     sale = Sale(
+        tenant_id=tenant_id,
+        branch_id=branch_id,
         patient_id=patient_id,
         list_price_total=pricing_calculation['total_amount'],
         total_amount=pricing_calculation['total_amount'],
@@ -671,11 +768,12 @@ def _create_sale_record(patient_id, pricing_calculation, paid_amount, payment_pl
         try:
             sale_id = sale.id or gen_sale_id()
             insert_stmt = text(
-                "INSERT INTO sales (id, patient_id, product_id, sale_date, list_price_total, total_amount, discount_amount, final_amount, paid_amount, payment_method, status, sgk_coverage, patient_payment, notes, created_at, updated_at) VALUES (:id, :patient_id, :product_id, :sale_date, :list_price_total, :total_amount, :discount_amount, :final_amount, :paid_amount, :payment_method, :status, :sgk_coverage, :patient_payment, :notes, :created_at, :updated_at)"
+                "INSERT INTO sales (id, tenant_id, patient_id, product_id, sale_date, list_price_total, total_amount, discount_amount, final_amount, paid_amount, payment_method, status, sgk_coverage, patient_payment, notes, created_at, updated_at) VALUES (:id, :tenant_id, :patient_id, :product_id, :sale_date, :list_price_total, :total_amount, :discount_amount, :final_amount, :paid_amount, :payment_method, :status, :sgk_coverage, :patient_payment, :notes, :created_at, :updated_at)"
             )
             now = datetime.now()
             params = {
                 'id': sale_id,
+                'tenant_id': tenant_id,
                 'patient_id': patient_id,
                 'product_id': None,
                 'sale_date': now,
@@ -701,7 +799,7 @@ def _create_sale_record(patient_id, pricing_calculation, paid_amount, payment_pl
             return None, jsonify({"success": False, "error": str(raw_err)}), 500
 
 
-def _create_single_device_assignment(assignment_data, patient_id, sale_id, sgk_scheme, pricing_calculation):
+def _create_single_device_assignment(assignment_data, patient_id, sale_id, sgk_scheme, pricing_calculation, index=0, tenant_id=None, branch_id=None):
     """Create a single device assignment."""
     inventory_id = assignment_data.get('inventoryId')
     if not inventory_id:
@@ -712,28 +810,92 @@ def _create_single_device_assignment(assignment_data, patient_id, sale_id, sgk_s
     if not inventory_item:
         return None, f"Inventory item not found: {inventory_id}"
 
-    base_price = float(assignment_data.get('base_price', inventory_item.price or 0))
-    discount_type = assignment_data.get('discount_type')
-    discount_value = float(assignment_data.get('discount_value', 0) or 0)
+    # Accept both snake_case and camelCase keys from clients
+    base_price = float(
+        assignment_data.get('base_price')
+        if 'base_price' in assignment_data
+        else assignment_data.get('basePrice', inventory_item.price or 0)
+    )
+    discount_type = assignment_data.get('discount_type') if 'discount_type' in assignment_data else assignment_data.get('discountType')
+    discount_value = float(
+        assignment_data.get('discount_value')
+        if 'discount_value' in assignment_data
+        else assignment_data.get('discountValue', 0) or 0
+    )
 
-    # Use pricing_calculation per-item SGK support when available; fallback to 0
-    sgk_support = pricing_calculation.get('sgk_coverage_amount_per_item', 0)
+    # Allow client to specify explicit pricing values. Accept camelCase and snake_case.
+    explicit_sale_price = None
+    if 'sale_price' in assignment_data:
+        explicit_sale_price = assignment_data.get('sale_price')
+    elif 'salePrice' in assignment_data:
+        explicit_sale_price = assignment_data.get('salePrice')
 
-    # Apply SGK first (coverage reduces the price) then apply discount on the remaining amount
-    price_after_sgk = max(0.0, base_price - float(sgk_support))
+    explicit_patient_payment = None
+    if 'patient_payment' in assignment_data:
+        explicit_patient_payment = assignment_data.get('patient_payment')
+    elif 'patientPayment' in assignment_data:
+        explicit_patient_payment = assignment_data.get('patientPayment')
 
-    if discount_type == 'percentage':
-        discount_amount = price_after_sgk * (discount_value / 100.0)
+    explicit_sgk = None
+    if 'sgk_reduction' in assignment_data:
+        explicit_sgk = assignment_data.get('sgk_reduction')
+    elif 'sgk_support' in assignment_data:
+        explicit_sgk = assignment_data.get('sgk_support')
+    elif 'sgkSupport' in assignment_data:
+        explicit_sgk = assignment_data.get('sgkSupport')
+
+    # Prefer per-item details from pricing_calculation if available (contains per-unit sale_price and sgk_support)
+    per_item_list = pricing_calculation.get('per_item', []) if isinstance(pricing_calculation, dict) else []
+    sgk_support = None
+    final_sale_price = None
+    if per_item_list and index < len(per_item_list):
+        try:
+            per = per_item_list[index]
+            if per.get('sgk_support') is not None:
+                sgk_support = float(per.get('sgk_support'))
+            if per.get('sale_price') is not None:
+                final_sale_price = float(per.get('sale_price'))
+        except Exception:
+            sgk_support = None
+            final_sale_price = None
+
+    # Use pricing_calculation per-item SGK support average as fallback
+    if sgk_support is None:
+        try:
+            sgk_support = float(pricing_calculation.get('sgk_coverage_amount_per_item', 0))
+        except Exception:
+            sgk_support = 0
+
+    # If explicit sale_price provided, prefer it (client override) otherwise compute if missing
+    if explicit_sale_price is not None:
+        try:
+            final_sale_price = float(explicit_sale_price)
+        except Exception:
+            final_sale_price = final_sale_price
+    if final_sale_price is None:
+        # Apply SGK first (coverage reduces the price) then apply discount on the remaining amount
+        price_after_sgk = max(0.0, base_price - float(sgk_support or 0))
+
+        if discount_type == 'percentage':
+            discount_amount = price_after_sgk * (discount_value / 100.0)
+        else:
+            discount_amount = float(discount_value or 0)
+
+        # Final per-item sale price (after SGK and discount)
+        final_sale_price = max(0.0, price_after_sgk - discount_amount)
+
+    # For net_payable: prefer explicit_patient_payment if provided, otherwise final_sale_price
+    if explicit_patient_payment is not None:
+        try:
+            net_payable = float(explicit_patient_payment)
+        except Exception:
+            net_payable = final_sale_price
     else:
-        discount_amount = float(discount_value or 0)
-
-    # Final per-item sale price (after SGK and discount)
-    final_sale_price = max(0.0, price_after_sgk - discount_amount)
-
-    # For backward compatibility keep net_payable as the per-item amount
-    net_payable = final_sale_price
+        net_payable = final_sale_price
 
     assignment = DeviceAssignment(
+        tenant_id=tenant_id,
+        branch_id=branch_id,
         patient_id=patient_id,
         device_id=inventory_id,
         sale_id=sale_id,
@@ -757,12 +919,12 @@ def _create_single_device_assignment(assignment_data, patient_id, sale_id, sgk_s
     return assignment, None
 
 
-def _create_device_assignments(device_assignments, patient_id, sale, sgk_scheme, pricing_calculation):
+def _create_device_assignments(device_assignments, patient_id, sale, sgk_scheme, pricing_calculation, tenant_id, branch_id=None):
     """Create all device assignments for a sale."""
     created_assignment_ids = []
 
     for i, assignment_data in enumerate(device_assignments):
-        assignment, error = _create_single_device_assignment(assignment_data, patient_id, sale.id, sgk_scheme, pricing_calculation)
+        assignment, error = _create_single_device_assignment(assignment_data, patient_id, sale.id, sgk_scheme, pricing_calculation, i, tenant_id, branch_id)
         if error:
             db.session.rollback()
             return None, jsonify({"success": False, "error": error, "timestamp": datetime.now().isoformat()}), 400
@@ -784,10 +946,10 @@ def _create_device_assignments(device_assignments, patient_id, sale, sgk_scheme,
     return created_assignment_ids, None, None
 
 
-def _setup_payment_plan(payment_plan_type, sale_id, pricing_calculation, settings):
+def _setup_payment_plan(payment_plan_type, sale_id, pricing_calculation, settings, tenant_id, branch_id=None):
     """Create payment plan if needed."""
     if payment_plan_type != 'cash':
-        payment_plan = create_payment_plan(sale_id, payment_plan_type, pricing_calculation['patient_responsible_amount'], settings)
+        payment_plan = create_payment_plan(sale_id, payment_plan_type, pricing_calculation['patient_responsible_amount'], settings, tenant_id, branch_id)
         db.session.add(payment_plan)
         return payment_plan
     return None
@@ -821,41 +983,226 @@ def _assign_devices_extended_impl(patient_id, data):
             return error_response, status_code
 
         # Load settings and validate patient
-        _, settings, error_response, status_code = _load_settings_and_patient(patient_id)
+        patient, settings, error_response, status_code = _load_settings_and_patient(patient_id)
         if error_response:
             return error_response, status_code
 
         device_assignments = data.get('device_assignments', [])
         sgk_scheme = data.get('sgk_scheme', settings.get('sgk', {}).get('default_scheme', 'standard'))
         payment_plan_type = data.get('payment_plan', 'cash')
+        branch_id = data.get('branchId')
         accessories = data.get('accessories', [])
         services = data.get('services', [])
 
-        # Calculate pricing
-        pricing_calculation = calculate_device_pricing(
-            device_assignments=device_assignments,
+        # Build a sanitized assignments payload for server-side calculation (ignore client explicit sale_price/patient_payment)
+        sanitized_assignments = []
+        for a in device_assignments:
+            sanitized_assignments.append({
+                'inventoryId': a.get('inventoryId'),
+                'base_price': a.get('base_price') if 'base_price' in a else a.get('basePrice'),
+                'discount_type': a.get('discount_type') if 'discount_type' in a else a.get('discountType'),
+                'discount_value': a.get('discount_value') if 'discount_value' in a else a.get('discountValue'),
+                'sgk_scheme': a.get('sgk_scheme') if 'sgk_scheme' in a else a.get('sgkScheme'),
+                # Preserve ear/ear_side so pricing can account for bilateral (quantity)
+                'ear': a.get('ear') if 'ear' in a else a.get('ear_side') if 'ear_side' in a else a.get('earSide')
+            })
+
+        # Server computes canonical pricing based on sanitized inputs
+        server_pricing = calculate_device_pricing(
+            device_assignments=sanitized_assignments,
             accessories=accessories,
             services=services,
             sgk_scheme=sgk_scheme,
             settings=settings
         )
 
+        # Validate client-submitted explicit pricing if any
+        # Tolerance (allow small rounding differences)
+        EPSILON = float(settings.get('pricing', {}).get('tolerance', 0.01))
+
+        mismatches = []
+        # Build base_total to distribute discounts proportionally (same logic as calculate_device_pricing)
+        base_total = 0.0
+        per_item_list = []
+        for a in sanitized_assignments:
+            lp = float(a.get('base_price') or 0)
+            per_item_list.append(lp)
+            base_total += lp
+
+        total_discount = float(server_pricing.get('total_discount', 0.0))
+        per_item_sgk_list = server_pricing.get('sgk_coverage_amount_per_item_list', [])
+
+        for idx, a in enumerate(device_assignments):
+            # client provided values (if any)
+            client_sp = None
+            client_pp = None
+            if 'sale_price' in a:
+                try:
+                    client_sp = float(a.get('sale_price'))
+                except Exception:
+                    client_sp = None
+            elif 'salePrice' in a:
+                try:
+                    client_sp = float(a.get('salePrice'))
+                except Exception:
+                    client_sp = None
+
+            if 'patient_payment' in a:
+                try:
+                    client_pp = float(a.get('patient_payment'))
+                except Exception:
+                    client_pp = None
+            elif 'patientPayment' in a:
+                try:
+                    client_pp = float(a.get('patientPayment'))
+                except Exception:
+                    client_pp = None
+
+            # Compute expected per-assignment sale price and patient payment according to server rules
+            list_price = float(per_item_list[idx] if idx < len(per_item_list) else 0.0)
+            proportional_share = (list_price / base_total) if base_total > 0 else 0.0
+            assignment_discount_share = total_discount * proportional_share
+            expected_sale_price = max(0.0, list_price - assignment_discount_share)
+
+            expected_sgk = float(per_item_sgk_list[idx]) if (per_item_sgk_list and idx < len(per_item_sgk_list)) else float(server_pricing.get('sgk_coverage_amount_per_item', 0.0))
+            # SGK cannot exceed expected_sale_price
+            expected_sgk = min(expected_sgk, expected_sale_price)
+
+            expected_patient_payment = round(max(expected_sale_price - expected_sgk, 0.0), 2)
+            expected_sale_price = round(expected_sale_price, 2)
+
+            # Build alternate plausible calculations so backend accepts any correct variant
+            alternate_expected_values = []
+
+            # 1) Server canonical (already computed)
+            alternate_expected_values.append({
+                'label': 'server_canonical',
+                'sale_price': expected_sale_price,
+                'patient_payment': expected_patient_payment
+            })
+
+            # 2) No discount (apply only SGK)
+            no_discount_sale = round(max(0.0, list_price - expected_sgk), 2)
+            alternate_expected_values.append({
+                'label': 'no_discount',
+                'sale_price': no_discount_sale,
+                'patient_payment': round(max(0.0, no_discount_sale - expected_sgk), 2)
+            })
+
+            # 3) No SGK (apply only discount)
+            if assignment_discount_share:
+                no_sgk_sale = round(max(0.0, list_price - assignment_discount_share), 2)
+            else:
+                no_sgk_sale = round(list_price, 2)
+            alternate_expected_values.append({
+                'label': 'no_sgk',
+                'sale_price': no_sgk_sale,
+                'patient_payment': round(max(0.0, no_sgk_sale - 0.0), 2)
+            })
+
+            # 4) Discount before SGK (discount reduces base price first, then SGK applied to remaining)
+            if assignment_discount_share:
+                price_after_discount = max(0.0, list_price - assignment_discount_share)
+                # SGK limited to remaining amount
+                sgk_after_discount = min(expected_sgk, price_after_discount)
+                discount_before_sgk_sale = round(max(0.0, price_after_discount - 0.0), 2)
+                discount_before_sgk_patient = round(max(0.0, discount_before_sgk_sale - sgk_after_discount), 2)
+                alternate_expected_values.append({
+                    'label': 'discount_before_sgk',
+                    'sale_price': discount_before_sgk_sale,
+                    'patient_payment': discount_before_sgk_patient
+                })
+
+            # 5) Per-item fallback values from server_pricing detail (if present)
+            per_item_detail = server_pricing.get('per_item', []) if isinstance(server_pricing, dict) else []
+            if per_item_detail and idx < len(per_item_detail):
+                try:
+                    detail = per_item_detail[idx]
+                    detail_sp = round(float(detail.get('sale_price', detail.get('salePrice', expected_sale_price))), 2)
+                    detail_pp = round(float(detail.get('patient_payment', detail.get('patientPayment', expected_patient_payment))), 2)
+                    alternate_expected_values.append({
+                        'label': 'per_item_detail',
+                        'sale_price': detail_sp,
+                        'patient_payment': detail_pp
+                    })
+                except Exception:
+                    pass
+
+            # Determine assignment quantity (bilateral handling)
+            ear_val = (a.get('ear') or a.get('ear_side') or a.get('earSide') or '').lower()
+            quantity = 2 if (str(ear_val).startswith('b') or ear_val in ('both', 'bilateral')) else 1
+
+            # Now check whether client values match any of the alternate expected values within EPSILON
+            def matches_any(client_val, key):
+                for alt in alternate_expected_values:
+                    if client_val is None:
+                        return True
+                    try:
+                        expected = float(alt.get(key, 0.0))
+                        # Direct match
+                        if abs(client_val - expected) <= EPSILON:
+                            return True
+                        # If client provided per-unit value but server expects total for bilateral,
+                        # accept if client_val * quantity matches expected
+                        if quantity > 1 and abs((client_val * quantity) - expected) <= EPSILON:
+                            return True
+                    except Exception:
+                        continue
+                return False
+
+            if client_sp is not None and not matches_any(client_sp, 'sale_price'):
+                mismatches.append({
+                    'index': idx,
+                    'inventoryId': a.get('inventoryId'),
+                    'field': 'sale_price',
+                    'client': client_sp,
+                    'server_suggestions': alternate_expected_values
+                })
+            if client_pp is not None and not matches_any(client_pp, 'patient_payment'):
+                mismatches.append({
+                    'index': idx,
+                    'inventoryId': a.get('inventoryId'),
+                    'field': 'patient_payment',
+                    'client': client_pp,
+                    'server_suggestions': alternate_expected_values
+                })
+
+        force_accept = bool(data.get('force_accept', False))
+        if mismatches and not force_accept:
+            # Return 400 with server-suggested values and a clear reason so UI can show toast
+            return jsonify({
+                'success': False,
+                'error': 'price_mismatch',
+                'reason': 'submitted_values_do_not_match_any_valid_calculation',
+                'message': 'Submitted pricing could not be reconciled with server calculations. See mismatches for details.',
+                'mismatches': mismatches,
+                'server_pricing': server_pricing,
+                'timestamp': datetime.now().isoformat()
+            }), 400
+
+        # If force_accept, continue but add audit note
+        if mismatches and force_accept:
+            logger.warning(f"Price mismatches accepted via force_accept by user {data.get('user_id')}: %s", mismatches)
+
+        # By default, use server_pricing for sale-level fields unless force_accept intended to override per-assignment values
+        pricing_calculation = server_pricing
+
         paid_amount = float(data.get('paidAmount', data.get('downPayment', 0)))
 
         # Create sale record
-        sale, error_response = _create_sale_record(patient_id, pricing_calculation, paid_amount, payment_plan_type)
+        sale, error_response = _create_sale_record(patient_id, pricing_calculation, paid_amount, payment_plan_type, patient.tenant_id, branch_id)
         if error_response:
             return error_response
 
         # Create device assignments
         created_assignment_ids, error_response, status_code = _create_device_assignments(
-            device_assignments, patient_id, sale, sgk_scheme, pricing_calculation
+            device_assignments, patient_id, sale, sgk_scheme, pricing_calculation, patient.tenant_id, branch_id
         )
         if error_response:
             return error_response, status_code
 
         # Setup payment plan
-        payment_plan = _setup_payment_plan(payment_plan_type, sale.id, pricing_calculation, settings)
+        payment_plan = _setup_payment_plan(payment_plan_type, sale.id, pricing_calculation, settings, patient.tenant_id, branch_id)
 
         db.session.commit()
 
@@ -867,6 +1214,20 @@ def _assign_devices_extended_impl(patient_id, data):
 
         # Build response
         assignments_resp = [db.session.get(DeviceAssignment, aid).to_dict() for aid in created_assignment_ids]
+
+        # If server pricing contains per_item details, attach per-item fields to each assignment response
+        try:
+            per_item = pricing_calculation.get('per_item', []) if isinstance(pricing_calculation, dict) else []
+            for idx, a in enumerate(assignments_resp):
+                if idx < len(per_item):
+                    p = per_item[idx]
+                    # attach camelCase and snake_case helpers for frontend compatibility
+                    a['sgkSupportPerItem'] = p.get('sgk_support') if p.get('sgk_support') is not None else p.get('sgkSupport')
+                    a['sgk_support_per_item'] = p.get('sgk_support') if p.get('sgk_support') is not None else p.get('sgkSupport')
+                    a['salePricePerItem'] = p.get('sale_price') if p.get('sale_price') is not None else p.get('salePrice')
+                    a['sale_price_per_item'] = p.get('sale_price') if p.get('sale_price') is not None else p.get('salePrice')
+        except Exception:
+            pass
 
         return jsonify({
             "success": True,
@@ -885,14 +1246,20 @@ def _assign_devices_extended_impl(patient_id, data):
 
 
 @sales_bp.route('/sales/<sale_id>/payment-plan', methods=['POST'])
+@jwt_required()
 def create_sale_payment_plan(sale_id):
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json()
         if not data:
             return jsonify({"success": False, "error": ERROR_NO_DATA_PROVIDED, "timestamp": datetime.now().isoformat()}), 400
 
         sale = db.session.get(Sale, sale_id)
-        if not sale:
+        if not sale or sale.tenant_id != user.tenant_id:
             return jsonify({"success": False, "error": ERROR_SALE_NOT_FOUND, "timestamp": datetime.now().isoformat()}), 404
 
         from app import get_settings
@@ -905,10 +1272,10 @@ def create_sale_payment_plan(sale_id):
 
         if custom_installments:
             payment_plan = create_custom_payment_plan(
-                sale_id, custom_installments, custom_interest_rate or 0.0, sale.patient_payment
+                sale_id, custom_installments, custom_interest_rate or 0.0, sale.patient_payment, user.tenant_id
             )
         else:
-            payment_plan = create_payment_plan(sale_id, plan_type, sale.patient_payment, settings)
+            payment_plan = create_payment_plan(sale_id, plan_type, sale.patient_payment, settings, user.tenant_id)
 
         sale.payment_method = plan_type
         db.session.add(payment_plan)
@@ -992,9 +1359,10 @@ def _calculate_product_pricing(product, data):
     return base_price, discount, final_price
 
 
-def _create_product_sale_record(patient_id, product_id, base_price, discount, final_price, data):
+def _create_product_sale_record(patient_id, product_id, base_price, discount, final_price, data, tenant_id):
     """Create product sale record with ORM fallback."""
     sale = Sale(
+        tenant_id=tenant_id,
         patient_id=patient_id,
         list_price_total=base_price,
         total_amount=base_price,
@@ -1017,11 +1385,12 @@ def _create_product_sale_record(patient_id, product_id, base_price, discount, fi
         try:
             sale_id = sale.id or gen_sale_id()
             insert_stmt = text(
-                "INSERT INTO sales (id, patient_id, product_id, sale_date, list_price_total, total_amount, discount_amount, final_amount, paid_amount, payment_method, status, sgk_coverage, patient_payment, notes, created_at, updated_at) VALUES (:id, :patient_id, :product_id, :sale_date, :list_price_total, :total_amount, :discount_amount, :final_amount, :paid_amount, :payment_method, :status, :sgk_coverage, :patient_payment, :notes, :created_at, :updated_at)"
+                "INSERT INTO sales (id, tenant_id, patient_id, product_id, sale_date, list_price_total, total_amount, discount_amount, final_amount, paid_amount, payment_method, status, sgk_coverage, patient_payment, notes, created_at, updated_at) VALUES (:id, :tenant_id, :patient_id, :product_id, :sale_date, :list_price_total, :total_amount, :discount_amount, :final_amount, :paid_amount, :payment_method, :status, :sgk_coverage, :patient_payment, :notes, :created_at, :updated_at)"
             )
             now = datetime.now()
             params = {
                 'id': sale_id,
+                'tenant_id': tenant_id,
                 'patient_id': patient_id,
                 'product_id': product_id,
                 'sale_date': now,
@@ -1047,9 +1416,10 @@ def _create_product_sale_record(patient_id, product_id, base_price, discount, fi
             return None, jsonify({"success": False, "error": str(raw_err)}), 500
 
 
-def _create_product_device_assignment(patient_id, product_id, sale_id, base_price, final_price, product, data):
+def _create_product_device_assignment(patient_id, product_id, sale_id, base_price, final_price, product, data, tenant_id):
     """Create device assignment for product sale."""
     device_assignment = DeviceAssignment(
+        tenant_id=tenant_id,
         patient_id=patient_id,
         device_id=product_id,
         sale_id=sale_id,
@@ -1089,10 +1459,16 @@ def _handle_product_sale_idempotency(e, patient_id, data, idempotency_key):
 
 
 @sales_bp.route('/patients/<patient_id>/product-sales', methods=['POST'])
+@jwt_required()
 @idempotent(methods=['POST'])
 def create_product_sale(patient_id):
     """Create a new product sale from inventory"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Validate input
         data, error_response, status_code = _validate_product_sale_input(request.get_json())
         if error_response:
@@ -1100,7 +1476,7 @@ def create_product_sale(patient_id):
 
         # Validate patient
         patient = db.session.get(Patient, patient_id)
-        if not patient:
+        if not patient or patient.tenant_id != user.tenant_id:
             return jsonify({"success": False, "error": ERROR_PATIENT_NOT_FOUND}), 404
 
         # Setup logging
@@ -1118,12 +1494,12 @@ def create_product_sale(patient_id):
         base_price, discount, final_price = _calculate_product_pricing(product, data)
 
         # Create sale record
-        sale, error_response = _create_product_sale_record(patient_id, product.id, base_price, discount, final_price, data)
+        sale, error_response = _create_product_sale_record(patient_id, product.id, base_price, discount, final_price, data, user.tenant_id)
         if error_response:
             return error_response
 
         # Create device assignment
-        _create_product_device_assignment(patient_id, product.id, sale.id, base_price, final_price, product, data)
+        _create_product_device_assignment(patient_id, product.id, sale.id, base_price, final_price, product, data, user.tenant_id)
 
         # Update inventory
         _update_product_inventory(product)
@@ -1151,9 +1527,15 @@ def create_product_sale(patient_id):
 
 
 @sales_bp.route('/sales/logs', methods=['POST'])
+@jwt_required()
 def create_sales_log():
     """Create a sales log entry for cashflow.html page"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json()
         if not data:
             return jsonify({"success": False, "error": ERROR_NO_DATA_PROVIDED}), 400
@@ -1165,6 +1547,7 @@ def create_sales_log():
         # Create ActivityLog entry for backend tracking
         
         log_entry = ActivityLog(
+            tenant_id=user.tenant_id,
             user_id=data.get('user_name', 'system'),
             action='product_sale',
             entity_type='sale',

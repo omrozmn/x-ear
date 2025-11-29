@@ -96,6 +96,7 @@ export interface AdminUser {
     is_active: boolean;
     status?: 'active' | 'inactive'; // Keep for backward compatibility
     last_login?: string;
+    tenant_id?: string;
     created_at: string;
 }
 

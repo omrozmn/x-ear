@@ -1,27 +1,27 @@
 import { Button } from '@x-ear/ui-web';
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from '@tanstack/react-router';
-import { 
-  BarChart3, 
-  Users, 
-  Calendar, 
-  Package, 
-  Building2, 
-  FileText, 
-  Wallet, 
-  Megaphone, 
-  Building, 
-  PieChart, 
-  Bot, 
-  Settings, 
-  ChevronRight, 
-  Menu, 
-  Sun, 
-  Moon, 
-  Bell, 
-  User, 
-  UserCircle, 
+import { Link, useNavigate, useLocation } from '@tanstack/react-router';
+import {
+  BarChart3,
+  Users,
+  Calendar,
+  Package,
+  Building2,
+  FileText,
+  Wallet,
+  Megaphone,
+  Building,
+  PieChart,
+  Bot,
+  Settings,
+  ChevronRight,
+  Menu,
+  Sun,
+  Moon,
+  Bell,
+  User,
+  UserCircle,
   LogOut,
   ChevronDown
 } from 'lucide-react';
@@ -39,11 +39,21 @@ interface MainLayoutProps {
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const { user } = useAuthStore();
+  const { user, subscription } = useAuthStore();
   console.log('MainLayout render - user:', user);
-  
+
   const navigate = useNavigate();
-  
+  const location = useLocation();
+
+  useEffect(() => {
+    if (subscription?.is_expired) {
+      if (location.pathname !== '/settings/subscription') {
+        navigate({ to: '/settings/subscription' });
+      }
+    }
+  }, [subscription, location.pathname, navigate]);
+
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
     return saved ? JSON.parse(saved) : false;
@@ -55,7 +65,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   });
 
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [expandedMenus, setExpandedMenus] = useState<{[key: string]: boolean}>({});
+  const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed));
@@ -93,10 +103,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { key: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/' },
     { key: 'patients', label: 'Hastalar', icon: Users, href: '/patients' },
     { key: 'appointments', label: 'Randevular', icon: Calendar, href: '/appointments' },
-    { 
-      key: 'invoices', 
-      label: 'Fatura', 
-      icon: FileText, 
+    {
+      key: 'invoices',
+      label: 'Fatura',
+      icon: FileText,
       submenu: [
         { label: 'Satışlar', href: '/invoices' },
         { label: 'Alışlar', href: '/invoices/purchases' },
@@ -108,10 +118,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { key: 'suppliers', label: 'Tedarikçiler', icon: Building2, href: '/suppliers' },
     { key: 'cashflow', label: 'Kasa', icon: Wallet, href: '/cashflow' },
     { key: 'campaigns', label: 'Kampanyalar', icon: Megaphone, href: '/campaigns' },
-    { 
-      key: 'sgk', 
-      label: 'SGK', 
-      icon: Building, 
+    {
+      key: 'sgk',
+      label: 'SGK',
+      icon: Building,
       submenu: [
         { label: 'SGK Raporları', href: '/sgk' },
         { label: 'Hasta Eşleştirme', href: '/sgk/matching' },
@@ -119,10 +129,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         { label: 'Belge İndirme', href: '/sgk/downloads' }
       ]
     },
-    { 
-      key: 'reports', 
-      label: 'Raporlar', 
-      icon: PieChart, 
+    {
+      key: 'reports',
+      label: 'Raporlar',
+      icon: PieChart,
       submenu: [
         { label: 'Genel Raporlar', href: '/reports' },
         { label: 'Satış Raporları', href: '/reports/sales' },
@@ -130,7 +140,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       ]
     },
     { key: 'automation', label: 'Otomasyon', icon: Bot, href: '/automation' },
-    { key: 'settings', label: 'Ayarlar', icon: Settings, href: '/settings' }
+    {
+      key: 'settings',
+      label: 'Ayarlar',
+      icon: Settings,
+      submenu: [
+        { label: 'Genel', href: '/settings' },
+        { label: 'Ekip Yönetimi', href: '/settings/team' },
+        { label: 'Abonelik', href: '/settings/subscription' }
+      ]
+    }
   ];
 
   const renderMenuItem = (item: any) => {
@@ -174,7 +193,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <>
               <span style={{ flex: 1 }}>{item.label}</span>
               {hasSubmenu && (
-                <span style={{ 
+                <span style={{
                   transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
                   transition: 'transform 0.2s ease'
                 }}>
@@ -184,11 +203,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </>
           )}
         </div>
-        
+
         {hasSubmenu && !sidebarCollapsed && isExpanded && (
-          <ul style={{ 
-            listStyle: 'none', 
-            padding: 0, 
+          <ul style={{
+            listStyle: 'none',
+            padding: 0,
             margin: '0.25rem 0 0 2rem',
             borderLeft: `2px solid ${darkMode ? '#374151' : '#e5e7eb'}`
           }}>
@@ -233,8 +252,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }, []);
 
   return (
-    <div style={{ 
-      display: 'flex', 
+    <div style={{
+      display: 'flex',
       minHeight: '100vh',
       backgroundColor: darkMode ? '#111827' : '#ffffff',
       color: darkMode ? '#ffffff' : '#000000'
@@ -250,7 +269,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         overflowY: 'auto',
         zIndex: 1000
       }}>
-        <div style={{ 
+        <div style={{
           padding: '1rem',
           borderBottom: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
           display: 'flex',
@@ -274,8 +293,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <Menu size={20} />
           </Button>
           {!sidebarCollapsed && (
-            <h2 style={{ 
-              margin: 0, 
+            <h2 style={{
+              margin: 0,
               fontSize: '1.25rem',
               fontWeight: 'bold',
               color: darkMode ? '#ffffff' : '#1f2937'
@@ -284,19 +303,19 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </h2>
           )}
         </div>
-        
-        <ul style={{ 
-          listStyle: 'none', 
-          padding: '1rem 0.5rem', 
-          margin: 0 
+
+        <ul style={{
+          listStyle: 'none',
+          padding: '1rem 0.5rem',
+          margin: 0
         }}>
           {menuItems.map(renderMenuItem)}
         </ul>
       </nav>
       {/* Main Content */}
-      <div style={{ 
-        flex: 1, 
-        display: 'flex', 
+      <div style={{
+        flex: 1,
+        display: 'flex',
         flexDirection: 'column',
         marginLeft: sidebarCollapsed ? '80px' : '240px',
         transition: 'margin-left 0.3s ease'
@@ -311,24 +330,24 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           top: 0,
           zIndex: 999
         }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center' 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
           }}>
-            <h1 style={{ 
-              margin: 0, 
+            <h1 style={{
+              margin: 0,
               fontSize: '1.5rem',
               color: darkMode ? '#ffffff' : '#1f2937',
               fontWeight: '600'
             }}>
               Dashboard
             </h1>
-            
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '1rem' 
+
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem'
             }}>
               {/* Dark Mode Toggle */}
               <Button
@@ -407,7 +426,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   }}>
                     <User size={16} />
                   </div>
-                  <div style={{ 
+                  <div style={{
                     textAlign: 'left',
                     color: darkMode ? '#ffffff' : '#1f2937'
                   }}>
@@ -418,7 +437,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       {user?.role || 'Guest'}
                     </div>
                   </div>
-                  <ChevronDown size={12} style={{ 
+                  <ChevronDown size={12} style={{
                     color: darkMode ? '#ffffff' : '#1f2937'
                   }} />
                 </Button>
@@ -486,9 +505,21 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       </a>
                       <Button
                         onClick={() => {
-                          localStorage.removeItem('token');
-                          localStorage.removeItem('refreshToken');
-                          window.location.href = '/login';
+                          const { logout } = useAuthStore.getState();
+                          try {
+                            logout();
+                          } catch (e) {
+                            // fallback: clear common keys
+                            try {
+                              localStorage.removeItem('token');
+                              localStorage.removeItem('refreshToken');
+                              localStorage.removeItem('auth_token');
+                              localStorage.removeItem('refresh_token');
+                              localStorage.removeItem('x-ear.auth.token@v1');
+                              delete (window as any).__AUTH_TOKEN__;
+                            } catch (err) {}
+                          }
+                          navigate({ to: '/login' });
                         }}
                         style={{
                           display: 'flex',
@@ -523,8 +554,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </header>
 
         {/* Content */}
-        <main style={{ 
-          flex: 1, 
+        <main style={{
+          flex: 1,
           padding: '2rem',
           backgroundColor: darkMode ? '#111827' : '#f9fafb',
           minHeight: 'calc(100vh - 80px)'

@@ -5,13 +5,16 @@ import {
     Users,
     CreditCard,
     LifeBuoy,
-    Settings
+    Settings,
+    PlusCircle
 } from 'lucide-react'
 
 const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'Kiracılar', href: '/tenants', icon: Building2 },
     { name: 'Kullanıcılar', href: '/users', icon: Users },
+    { name: 'Planlar', href: '/plans', icon: CreditCard },
+    { name: 'Eklentiler', href: '/addons', icon: PlusCircle },
     { name: 'Faturalar', href: '/billing', icon: CreditCard },
     { name: 'Destek', href: '/support', icon: LifeBuoy },
     { name: 'Ayarlar', href: '/settings', icon: Settings },

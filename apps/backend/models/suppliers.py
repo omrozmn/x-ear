@@ -14,6 +14,7 @@ class Supplier(db.Model):
     __table_args__ = {'extend_existing': True}
     
     id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Company Information
     company_name = db.Column(db.String(200), nullable=False, unique=True, index=True)
@@ -60,6 +61,7 @@ class Supplier(db.Model):
         """Convert supplier to dictionary"""
         return {
             'id': self.id,
+            'tenantId': self.tenant_id,
             'companyName': self.company_name,
             'companyCode': self.company_code,
             'taxNumber': self.tax_number,
@@ -97,6 +99,7 @@ class ProductSupplier(db.Model):
     # Foreign Keys
     product_id = db.Column(db.String(100), db.ForeignKey('inventory.id'), nullable=False, index=True)
     supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=False, index=True)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Supplier-specific product info
     supplier_product_code = db.Column(db.String(100))  # Supplier's code for this product
@@ -142,6 +145,7 @@ class ProductSupplier(db.Model):
         """Convert to dictionary"""
         result = {
             'id': self.id,
+            'tenantId': self.tenant_id,
             'product_id': self.product_id,
             'supplier_id': self.supplier_id,
             'supplier_product_code': self.supplier_product_code,

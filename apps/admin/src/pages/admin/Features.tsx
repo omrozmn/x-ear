@@ -9,7 +9,7 @@ const Features: React.FC = () => {
     const { data: plansData } = useGetAdminPlans();
     const { mutateAsync: updateFeatures } = useAdminUpdateFeatures();
 
-    const features = featuresData?.data?.features || {};
+    const features = featuresData?.features || {};
     const plans = plansData?.data?.plans || [];
 
     const canToggle = Boolean(user && ["SUPER_ADMIN", "OWNER", "ADMIN"].includes(user.role));

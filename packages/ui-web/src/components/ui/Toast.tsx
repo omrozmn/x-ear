@@ -89,7 +89,7 @@ const ToastContainer: React.FC = () => {
   const { toasts } = useToast();
 
   return (
-    <div className="fixed top-20 right-4 z-50 space-y-2 max-w-sm w-full">
+    <div className="fixed top-20 right-4 space-y-2 max-w-sm w-full" style={{ zIndex: 70000 }}>
       {toasts.map(toast => (
         <ToastItem key={toast.id} toast={toast} />
       ))}

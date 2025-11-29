@@ -163,7 +163,7 @@ def _sanitize_for_json(obj):
     except Exception:
         return None
 
-def log_activity(user_id, action, entity_type, entity_id=None, details=None, request=None):
+def log_activity(user_id, action, entity_type, entity_id=None, details=None, request=None, tenant_id=None):
     """Log user activity for audit purposes"""
     try:
         # Use a UUID and microsecond timestamp to ensure unique IDs even under
@@ -171,6 +171,7 @@ def log_activity(user_id, action, entity_type, entity_id=None, details=None, req
         # resolution timestamps.
         log_entry = ActivityLog(
             id=f"log_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}_{uuid4().hex[:8]}",
+            tenant_id=tenant_id,
             user_id=user_id,
             action=action,
             entity_type=entity_type,
@@ -342,31 +343,14 @@ from routes.communications import communications_bp
 app.register_blueprint(communications_bp, url_prefix='/api')
 
 # ===== PATIENT SUBRESOURCES ENDPOINTS =====
-from routes.patient_subresources import patient_subresources_bp
-app.register_blueprint(patient_subresources_bp, url_prefix='/api')
 
-# ===== DOCUMENTS & TIMELINE ENDPOINTS =====
-# Document management and timeline/activity logging
-from routes.documents import documents_bp
-from routes.timeline import timeline_bp
-app.register_blueprint(documents_bp, url_prefix='/api')
-app.register_blueprint(timeline_bp, url_prefix='/api')
 
-# ===== USERS ENDPOINTS =====
-from routes.users import users_bp
-app.register_blueprint(users_bp, url_prefix='/api')
+from routes.plans import plans_bp
+app.register_blueprint(plans_bp, url_prefix='/api/plans')
 
-# RBAC management endpoints: apps, roles, permissions
-from routes.apps import apps_bp
-from routes.roles import roles_bp
-from routes.permissions import permissions_bp
-app.register_blueprint(apps_bp, url_prefix='/api')
-app.register_blueprint(roles_bp, url_prefix='/api')
-app.register_blueprint(permissions_bp, url_prefix='/api')
+from routes.subscriptions import subscriptions_bp
+app.register_blueprint(subscriptions_bp, url_prefix='/api/subscriptions')
 
-# AUDIT / ACTIVITY LOGS
-from routes.audit import audit_bp
-app.register_blueprint(audit_bp, url_prefix='/api')
 from routes.config import config_bp
 app.register_blueprint(config_bp, url_prefix='/api')
 
@@ -442,8 +426,23 @@ app.register_blueprint(admin_plans_bp)  # admin_plans_bp already has url_prefix=
 from routes.admin_tenants import admin_tenants_bp
 app.register_blueprint(admin_tenants_bp)  # admin_tenants_bp already has url_prefix='/api/admin/tenants'
 
+from routes.admin_addons import admin_addons_bp
+app.register_blueprint(admin_addons_bp)  # admin_addons_bp already has url_prefix='/api/admin/addons'
+
 from routes.admin_dashboard import admin_dashboard_bp
 app.register_blueprint(admin_dashboard_bp)  # admin_dashboard_bp already has url_prefix='/api/admin/dashboard'
+
+# ===== CHECKOUT / COMMERCE ENDPOINTS =====
+from routes.checkout import checkout_bp
+app.register_blueprint(checkout_bp)
+
+# ===== TENANT USER MANAGEMENT ENDPOINTS =====
+from routes.tenant_users import tenant_users_bp
+app.register_blueprint(tenant_users_bp, url_prefix='/api')
+
+# ===== BRANCH MANAGEMENT ENDPOINTS =====
+from routes.branches import branches_bp
+app.register_blueprint(branches_bp, url_prefix='/api')
 
 
 # Global error handler to capture unexpected exceptions and return JSON during development

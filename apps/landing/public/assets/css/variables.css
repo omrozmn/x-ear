@@ -1,0 +1,31 @@
+/* Project-wide CSS custom properties (fallbacks and sane defaults)
+   This file defines commonly-used variables referenced across the codebase
+   (eg. --input-bg, --text, --card-border, --color-1, --color-2, ...).
+   Keep this file small and stable; use scripts/color-mapping.json to keep mapping
+   in sync where possible.
+*/
+:root {
+  /* Basic semantic tokens */
+  --input-bg: #ffffff;
+  --text: #111827; /* default body text */
+  --light-gray: #F9FAFB; /* already defined in base.css but keep fallback */
+  --card-border: #E5E7EB;
+
+  /* App brand colors */
+  --primary-blue: #2563EB;
+
+  /* Numeric color variables used across legacy CSS. Provide conservative defaults. */
+  --color-1: #F3F4F6;
+  --color-2: var(--primary-blue);
+  --color-5: #F9FAFB;
+  --color-16: #D1D5DB;
+  --color-103: #9CA3AF;
+  --color-129: #374151;
+  --color-130: #1F2937;
+
+  /* Accessibility / status */
+  --success: #16A34A;
+  --warning: #F59E0B;
+  --danger: #DC2626;
+  --info: #0EA5E9;
+}

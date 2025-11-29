@@ -1,0 +1,88 @@
+/* Table Styles */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-gray);
+}
+
+.table th {
+  background-color: var(--light-gray);
+  font-weight: 600;
+  color: var(--dark-gray);
+}
+
+.table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.table-widget {
+  background: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.table-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.table-pagination {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  padding: 1rem;
+  border-top: 1px solid var(--border-gray);
+}
+
+.table-info {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+}
+
+.table-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.table-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-gray);
+}
+
+.table-loading {
+  text-align: center;
+  padding: 2rem;
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable:hover {
+  background-color: #f3f4f6;
+}
+
+.sort-icon {
+  display: inline-block;
+  margin-left: 0.5rem;
+  opacity: 0.5;
+}
+
+.sort-icon.active {
+  opacity: 1;
+}

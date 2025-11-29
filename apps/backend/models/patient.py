@@ -40,7 +40,8 @@ class Patient(BaseModel, JSONMixin):
     conversion_step = db.Column(db.String(50))
     referred_by = db.Column(db.String(100))
     priority_score = db.Column(db.Integer, default=0)
-    branch_id = db.Column(db.String(50))  # Branch assignment for patient
+    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # JSON fields (stored as Text, accessed via properties)
     tags = db.Column(db.Text)  # JSON string

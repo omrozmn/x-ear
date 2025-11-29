@@ -1,0 +1,346 @@
+/* Override margin-left for flexbox layout in modular version */
+.patient-details-content {
+    margin-left: 0 !important;
+}
+
+/* Ensure flexbox layout works properly */
+#patient-list-sidebar-container {
+    transition: width 0.3s ease;
+    width: 250px; /* Default width */
+    flex-shrink: 0;
+    overflow: hidden;
+    background-color: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    position: fixed;
+    left: 240px; /* Position after main sidebar (240px when expanded) */
+    top: 0;
+    height: 100vh;
+    z-index: 60; /* Keep above header */
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+#patient-list-sidebar-container.collapsed {
+    width: 0;
+    overflow: hidden;
+}
+
+/* Position patient list sidebar correctly when main sidebar is collapsed */
+#patient-list-sidebar-container.main-sidebar-collapsed {
+    left: 80px; /* Position after collapsed main sidebar (80px) */
+}
+
+/* Ensure all content is hidden when collapsed */
+#patient-list-sidebar-container.collapsed #patient-list-sidebar {
+    display: none;
+}
+
+/* Patient List Sidebar */
+.patient-list-sidebar {
+    width: 250px;
+    height: 100%;
+    background-color: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Patient List Container */
+.patient-list-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+/* Patient List Item */
+.patient-list-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    text-decoration: none;
+    color: #374151;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.patient-list-item:hover {
+    background-color: #f9fafb;
+}
+
+.patient-list-item.active {
+    background-color: #eff6ff;
+    border-right: 3px solid #2563eb;
+}
+
+.patient-list-item.active .patient-name {
+    color: #2563eb;
+    font-weight: 600;
+}
+
+/* Patient Avatar */
+.patient-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #374151;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+/* Patient Info */
+.patient-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.patient-name {
+    font-weight: 500;
+    color: #111827;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+
+.patient-phone {
+    font-size: 12px;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Patient Status */
+.patient-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.patient-status.active {
+    background-color: #10b981;
+}
+
+.patient-status.inactive {
+    background-color: #ef4444;
+}
+
+.patient-status.pending {
+    background-color: #f59e0b;
+}
+
+/* Collapsed Toggle Button */
+#patient-list-toggle-collapsed {
+    position: fixed;
+    top: 50%;
+    left: 90px; /* Default position when main sidebar is expanded */
+    transform: translateY(-50%);
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0 4px 4px 0;
+    padding: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10000; /* raised above header */
+    display: none;
+    transition: left 0.3s ease;
+}
+
+#patient-list-toggle-collapsed:hover {
+    background-color: #f9fafb;
+}
+
+#patient-list-toggle-collapsed svg {
+    width: 16px;
+    height: 16px;
+    color: #6b7280;
+}
+
+/* Main sidebar collapsed toggle (visible when main sidebar is collapsed) */
+#main-sidebar-toggle-collapsed {
+    position: fixed;
+    top: 18px; /* align with header */
+    left: 24px; /* approx centered within collapsed 80px sidebar */
+    z-index: 10001; /* ensure it's above header */
+    display: none;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #patient-list-sidebar-container {
+        width: 200px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    #patient-list-sidebar-container:not(.collapsed) {
+        transform: translateX(0);
+    }
+
+    .patient-list-sidebar {
+        width: 200px;
+    }
+
+    .patient-list-item {
+        padding: 10px 12px;
+    }
+
+    .patient-avatar {
+        width: 36px;
+        height: 36px;
+        margin-right: 10px;
+    }
+
+    .patient-name {
+        font-size: 13px;
+    }
+
+    .patient-phone {
+        font-size: 11px;
+    }
+
+    /* Mobile overlay */
+    #patient-list-sidebar-container::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    #patient-list-sidebar-container:not(.collapsed)::before {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 640px) {
+    #patient-list-sidebar-container {
+        width: 280px;
+    }
+
+    .patient-list-sidebar {
+        width: 280px;
+    }
+
+    .patient-list-item {
+        padding: 12px 16px;
+    }
+
+    .patient-avatar {
+        width: 40px;
+        height: 40px;
+        margin-right: 12px;
+    }
+
+    .patient-name {
+        font-size: 14px;
+    }
+
+    .patient-phone {
+        font-size: 12px;
+    }
+}
+
+/* Hide collapsed toggle button on mobile */
+@media (max-width: 768px) {
+    #patient-list-toggle-collapsed {
+        display: none !important;
+    }
+
+    /* Add mobile toggle button */
+    #mobile-patient-list-toggle {
+        display: block !important;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1001;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    #patient-list-sidebar-container {
+        width: 220px;
+    }
+
+    .patient-list-sidebar {
+        width: 220px;
+    }
+}
+
+/* Large desktop adjustments */
+@media (min-width: 1440px) {
+    #patient-list-sidebar-container {
+        width: 280px;
+    }
+
+    .patient-list-sidebar {
+        width: 280px;
+    }
+
+    .patient-list-item {
+        padding: 14px 18px;
+    }
+
+    .patient-avatar {
+        width: 44px;
+        height: 44px;
+        margin-right: 14px;
+    }
+
+    .patient-name {
+        font-size: 15px;
+    }
+
+    .patient-phone {
+        font-size: 13px;
+    }
+}
+
+/* Scrollbar Styling */
+.patient-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.patient-list-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.patient-list-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.patient-list-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

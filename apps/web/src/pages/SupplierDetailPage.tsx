@@ -115,6 +115,9 @@ export function SupplierDetailPage() {
               <Edit className="h-4 w-4 mr-2" />
               Düzenle
             </Button>
+            <Button variant="default" onClick={() => navigate({ to: '/purchases', search: `?supplierId=${encodeURIComponent(supplierId)}` })}>
+              Alışlarda Görüntüle
+            </Button>
             <Button variant="danger" onClick={handleDelete}>
               <Trash2 className="h-4 w-4 mr-2" />
               Sil

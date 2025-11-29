@@ -20,14 +20,18 @@ def calculate_device_pricing(device_assignments, accessories, services, sgk_sche
         total_discount = 0.0
         sale_price_total = 0.0  # İndirim sonrası toplam (Sale Price)
 
+        # Compute per-assignment final sale prices using frontend-aligned logic:
+        # For each assignment: apply SGK first (coverage reduces price), then apply discount
+        # (percentage on remaining amount or fixed amount). Honor bilateral quantity by
+        # multiplying net_payable by 2 when applicable. Aggregate totals accordingly.
+        per_item_details = []
         for assignment in device_assignments:
             inventory_id = assignment.get('inventoryId')
             inventory_item = None
             if inventory_id:
                 from models.inventory import Inventory
                 inventory_item = db.session.get(Inventory, inventory_id)
-            
-            list_price = None
+
             if assignment.get('base_price') is not None:
                 list_price = float(assignment.get('base_price') or 0)
             elif inventory_item and getattr(inventory_item, 'price', None) is not None:
@@ -35,14 +39,62 @@ def calculate_device_pricing(device_assignments, accessories, services, sgk_sche
             else:
                 list_price = 0.0
 
-            base_total += list_price
+            # Determine if this assignment is bilateral / both ears
+            ear_val = (assignment.get('ear') or assignment.get('ear_side') or '').lower()
+            is_bilateral = True if (str(ear_val).startswith('b') or ear_val in ('both', 'bilateral')) else False
+            quantity = 2 if is_bilateral else 1
 
-            # For now collect per-item list prices (discounts applied at sale-level below)
-            try:
-                sale_price = list_price
-                sale_price_total += sale_price
-            except Exception:
-                sale_price_total += list_price
+            # Determine SGK support for this assignment (use scheme-specific config if available)
+            assignment_sgk_scheme = assignment.get('sgk_scheme', sgk_scheme)
+            if not assignment_sgk_scheme:
+                assignment_sgk_scheme = sgk_scheme
+
+            sgk_conf = settings.get('sgk', {}).get('schemes', {}).get(assignment_sgk_scheme, {})
+            assignment_sgk_amount = 0.0
+            if sgk_conf:
+                if 'coverage_amount' in sgk_conf:
+                    assignment_sgk_amount = float(sgk_conf.get('coverage_amount') or 0)
+                    max_amount = float(sgk_conf.get('max_amount') or 0)
+                    if max_amount and assignment_sgk_amount > max_amount:
+                        assignment_sgk_amount = max_amount
+                elif 'coverage_percentage' in sgk_conf:
+                    pct = float(sgk_conf.get('coverage_percentage', 0) or 0) / 100.0
+                    assignment_sgk_amount = list_price * pct
+                    max_amount = float(sgk_conf.get('max_amount') or 0)
+                    if max_amount and assignment_sgk_amount > max_amount:
+                        assignment_sgk_amount = max_amount
+
+            # SGK can't exceed the list price for this assignment
+            assignment_sgk_amount = min(assignment_sgk_amount, list_price)
+
+            # Apply SGK first, then compute discount on remaining amount
+            price_after_sgk = max(0.0, list_price - assignment_sgk_amount)
+
+            discount_type = assignment.get('discount_type')
+            discount_value = float(assignment.get('discount_value', 0) or 0)
+            if discount_type == 'percentage' and discount_value:
+                discount_amount = (price_after_sgk * (discount_value / 100.0))
+            else:
+                discount_amount = float(discount_value or 0)
+
+            final_sale_price_per_item = max(0.0, price_after_sgk - discount_amount)
+
+            # Net payable considers quantity (bilateral = x2)
+            net_payable_for_assignment = final_sale_price_per_item * quantity
+
+            # Aggregate
+            base_total += list_price
+            sale_price_total += final_sale_price_per_item
+            total_discount += discount_amount
+
+            per_item_details.append({
+                'inventoryId': inventory_id,
+                'list_price': list_price,
+                'sgk_support': round(assignment_sgk_amount, 2),
+                'sale_price_per_item': round(final_sale_price_per_item, 2),
+                'net_payable': round(net_payable_for_assignment, 2),
+                'quantity': quantity
+            })
 
         pricing_accessories = settings.get('pricing', {}).get('accessories', {})
         pricing_services = settings.get('pricing', {}).get('services', {})
@@ -67,127 +119,36 @@ def calculate_device_pricing(device_assignments, accessories, services, sgk_sche
             else:
                 service_total += float(pricing_services.get(svc, 0) or 0)
 
-        # Frontend mantığına uygun hesaplama:
-        # 1. Total amount = List price + accessories + services (indirim öncesi)
-        # 2. Sale price total = İndirim sonrası cihaz fiyatları + accessories + services
-        total_amount = round(base_total + accessory_total + service_total, 2)
-        sale_price_with_extras = round(sale_price_total + accessory_total + service_total, 2)
+        # Recompute totals using per-item details (quantity-aware)
+        sale_items_total = round(sum(d['sale_price_per_item'] * d['quantity'] for d in per_item_details), 2)
+        sgk_coverage_amount = round(sum(d['sgk_support'] * d['quantity'] for d in per_item_details), 2)
+        total_amount = round(sum(d['list_price'] * d['quantity'] for d in per_item_details) + accessory_total + service_total, 2)
+        sale_price_with_extras = round(sale_items_total + accessory_total + service_total, 2)
 
-        # Compute total_amount and sale_price_with_extras first (discounts applied at sale-level)
-        total_amount = round(base_total + accessory_total + service_total, 2)
+        # Total discount is (list_price - sgk - sale_price_per_item) per unit, times quantity
+        total_discount = round(sum(((d['list_price'] - d['sgk_support']) - d['sale_price_per_item']) * d['quantity'] for d in per_item_details), 2)
 
-        # Calculate total discount based on assignment-level inputs but applied on sale total
-        # If an assignment has percentage discount, it should apply to the whole sale price (sale_price_total + extras)
-        total_discount = 0.0
-        for assignment in device_assignments:
-            discount_type = assignment.get('discount_type')
-            discount_value = float(assignment.get('discount_value', 0) or 0)
-            if discount_type == 'percentage' and discount_value:
-                # Calculate percentage on the whole sale price (before discounts)
-                pct_target = round(sale_price_total + accessory_total + service_total, 2)
-                discount_amount = pct_target * (discount_value / 100.0)
-            else:
-                # Fixed amount is treated as-is per assignment
-                discount_amount = discount_value
-            total_discount += float(discount_amount or 0)
-
-        # Ensure we don't over-discount beyond sale price
-        sale_price_with_extras = round(max((sale_price_total + accessory_total + service_total) - total_discount, 0.0), 2)
-
-        # SGK desteği hesaplama - Her assignment'ın kendi sgk_scheme'ini kullan
-        sgk_coverage_amount = 0.0
-        
-        # Her device assignment için ayrı SGK hesaplama yap
-        for assignment in device_assignments:
-            assignment_sgk_scheme = assignment.get('sgk_scheme', sgk_scheme)
-            if not assignment_sgk_scheme:
-                assignment_sgk_scheme = sgk_scheme
-                
-            sgk_conf = settings.get('sgk', {}).get('schemes', {}).get(assignment_sgk_scheme, {})
-            assignment_sgk_amount = 0.0
-            
-            if sgk_conf:
-                # Bu assignment için list price al
-                inventory_id = assignment.get('inventoryId')
-                inventory_item = None
-                if inventory_id:
-                    from models.inventory import Inventory
-                    inventory_item = db.session.get(Inventory, inventory_id)
-                    
-                assignment_list_price = None
-                if assignment.get('base_price') is not None:
-                    assignment_list_price = float(assignment.get('base_price') or 0)
-                elif inventory_item and getattr(inventory_item, 'price', None) is not None:
-                    assignment_list_price = float(inventory_item.price)
-                else:
-                    assignment_list_price = 0.0
-                
-                if 'coverage_amount' in sgk_conf:
-                    # Sabit miktar - bu assignment için
-                    assignment_sgk_amount = float(sgk_conf.get('coverage_amount') or 0)
-                    
-                    # Maksimum limit kontrolü
-                    max_amount = float(sgk_conf.get('max_amount') or 0)
-                    if max_amount and assignment_sgk_amount > max_amount:
-                        assignment_sgk_amount = max_amount
-                elif 'coverage_percentage' in sgk_conf:
-                    # Yüzde hesaplama - bu assignment'ın list price'ı üzerinden
-                    pct = float(sgk_conf.get('coverage_percentage', 0) or 0) / 100.0
-                    assignment_sgk_amount = assignment_list_price * pct
-                    max_amount = float(sgk_conf.get('max_amount') or 0)
-                    if max_amount and assignment_sgk_amount > max_amount:
-                        assignment_sgk_amount = max_amount
-                
-                # Determine discount share for this assignment (we applied discounts at sale level)
-                try:
-                    # Proportional share of total discount based on list price
-                    proportional_share = 0.0
-                    if base_total > 0:
-                        proportional_share = assignment_list_price / base_total
-
-                    assignment_discount_share = total_discount * proportional_share
-                    assignment_sale_price = max(0.0, assignment_list_price - assignment_discount_share)
-
-                    # SGK cannot exceed the assignment's sale price
-                    assignment_sgk_amount = min(assignment_sgk_amount, assignment_sale_price)
-
-                except Exception:
-                    assignment_sgk_amount = min(assignment_sgk_amount, assignment_list_price)
-            
-            # Toplam SGK kapsamına ekle
-            sgk_coverage_amount += assignment_sgk_amount
-
-        # Toplam SGK tutarı toplam sale price'ı geçemez
+        # Ensure SGK doesn't exceed sale total
         sgk_coverage_amount = round(min(sgk_coverage_amount, sale_price_with_extras), 2)
 
-        # Frontend mantığına uygun hasta sorumluluğu = Sale Price - SGK desteği
+        # Patient responsibility is sale total minus SGK support
         patient_responsible_amount = round(max(sale_price_with_extras - sgk_coverage_amount, 0.0), 2)
 
-        # Cihaz başına SGK desteği hesaplama (distribute proportionally)
-        per_item_sgk = []
-        if base_total > 0:
-            for assignment in device_assignments:
-                inventory_id = assignment.get('inventoryId')
-                # get list price again
-                inv = None
-                if inventory_id:
-                    from models.inventory import Inventory
-                    inv = db.session.get(Inventory, inventory_id)
-                alist = None
-                if assignment.get('base_price') is not None:
-                    alist = float(assignment.get('base_price') or 0)
-                elif inv and getattr(inv, 'price', None) is not None:
-                    alist = float(inv.price)
-                else:
-                    alist = 0.0
+        # Per-item SGK list (include quantity effect for clarity)
+        per_item_sgk = [round(d['sgk_support'] * d['quantity'], 2) for d in per_item_details] if per_item_details else [0.0 for _ in device_assignments]
 
-                proportional_share = (alist / base_total) if base_total > 0 else 0
-                per_item_sgk.append(round(sgk_coverage_amount * proportional_share, 2))
-        else:
-            per_item_sgk = [0.0 for _ in device_assignments]
-
-        # For backward compat return single per-item average too
         per_item_avg = round(sum(per_item_sgk) / max(1, len(per_item_sgk)), 2)
+
+        # Build per_item return structure for compatibility with callers
+        per_item_return = []
+        for d in per_item_details:
+            per_item_return.append({
+                'sale_price': d['sale_price_per_item'],
+                'patient_payment': d['net_payable'],
+                'list_price': d['list_price'],
+                'quantity': d['quantity'],
+                'sgk_support': d['sgk_support']
+            })
 
         return {
             'total_amount': total_amount,  # List price + extras (indirim öncesi)
@@ -196,7 +157,8 @@ def calculate_device_pricing(device_assignments, accessories, services, sgk_sche
             'patient_responsible_amount': patient_responsible_amount,
             'sgk_coverage_amount_per_item': per_item_avg,
             'sgk_coverage_amount_per_item_list': per_item_sgk,
-            'total_discount': round(total_discount, 2)
+            'total_discount': round(total_discount, 2),
+            'per_item': per_item_return
         }
 
     except Exception as e:
@@ -227,7 +189,7 @@ def calculate_payment_plan(principal, installments, interest_rate):
         raise
 
 
-def create_payment_plan(sale_id, plan_type, amount, settings):
+def create_payment_plan(sale_id, plan_type, amount, settings, tenant_id, branch_id=None):
     try:
         plans = settings.get('payment', {}).get('plans', {})
         plan_conf = plans.get(plan_type, {}) if plans else {}
@@ -239,6 +201,8 @@ def create_payment_plan(sale_id, plan_type, amount, settings):
         plan_id = f"pp_{uuid4().hex[:8]}_{now_utc().strftime('%d%m%Y%H%M%S') }"
         payment_plan = PaymentPlan(
             id=plan_id,
+            tenant_id=tenant_id,
+            branch_id=branch_id,
             sale_id=sale_id,
             plan_name=plan_type,
             installment_count=preview['installments'],
@@ -269,12 +233,14 @@ def create_payment_plan(sale_id, plan_type, amount, settings):
         raise
 
 
-def create_custom_payment_plan(sale_id, custom_installments, custom_interest_rate, principal_amount):
+def create_custom_payment_plan(sale_id, custom_installments, custom_interest_rate, principal_amount, tenant_id, branch_id=None):
     try:
         preview = calculate_payment_plan(principal_amount, custom_installments, custom_interest_rate)
         plan_id = f"pp_{uuid4().hex[:8]}_{now_utc().strftime('%d%m%Y%H%M%S') }"
         payment_plan = PaymentPlan(
             id=plan_id,
+            tenant_id=tenant_id,
+            branch_id=branch_id,
             sale_id=sale_id,
             plan_name='custom',
             installment_count=preview['installments'],

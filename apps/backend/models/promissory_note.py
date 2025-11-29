@@ -12,6 +12,7 @@ class PromissoryNote(BaseModel):
     # Foreign keys
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
     sale_id = db.Column(db.String(50), db.ForeignKey('sales.id'))  # Optional: link to sale
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Note details
     note_number = db.Column(db.Integer, nullable=False)  # Note number in series (1, 2, 3...)

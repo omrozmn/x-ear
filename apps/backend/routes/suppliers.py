@@ -18,6 +18,7 @@ from utils.optimistic_locking import optimistic_lock, with_transaction
 from models.suppliers import Supplier, ProductSupplier
 from models.inventory import Inventory
 from models.purchase_invoice import PurchaseInvoice, PurchaseInvoiceItem, SuggestedSupplier
+from models.user import User
 import csv
 import io
 import json
@@ -33,11 +34,16 @@ suppliers_bp = Blueprint('suppliers', __name__)
 
 
 @suppliers_bp.route('/api/suppliers/bulk_upload', methods=['POST'])
-@jwt_required(optional=True)
+@jwt_required()
 @idempotent(methods=['POST'])
 def bulk_upload_suppliers():
     """Bulk upload suppliers via CSV/XLSX file. Returns summary {created, updated, errors}."""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         if 'file' not in request.files:
             return jsonify({'success': False, 'error': 'No file part named "file" in request'}), 400
 
@@ -144,9 +150,9 @@ def bulk_upload_suppliers():
                 # Find existing by company_code or company_name
                 existing = None
                 if company_code:
-                    existing = Supplier.query.filter_by(company_code=company_code).one_or_none()
+                    existing = Supplier.query.filter_by(company_code=company_code, tenant_id=user.tenant_id).one_or_none()
                 if not existing:
-                    existing = Supplier.query.filter_by(company_name=company_name).one_or_none()
+                    existing = Supplier.query.filter_by(company_name=company_name, tenant_id=user.tenant_id).one_or_none()
 
                 if existing:
                     # update allowed fields
@@ -168,6 +174,7 @@ def bulk_upload_suppliers():
                     sup = Supplier(
                         company_name=company_name,
                         company_code=company_code,
+                        tenant_id=user.tenant_id,
                         contact_person=contact_person,
                         phone=phone,
                         email=email,
@@ -196,12 +203,8 @@ def bulk_upload_suppliers():
             return jsonify({'success': False, 'error': 'Commit failed: ' + str(e)}), 500
 
         # Log activity
-        try:
-            actor = get_jwt_identity()
-        except Exception:
-            actor = None
         from app import log_activity
-        log_activity(actor or 'anonymous', 'bulk_upload', 'supplier', None, {'created': created, 'updated': updated, 'errors': errors}, request)
+        log_activity(user.id, 'bulk_upload', 'supplier', None, {'created': created, 'updated': updated, 'errors': errors}, request, tenant_id=user.tenant_id)
 
         return jsonify({'success': True, 'created': created, 'updated': updated, 'errors': errors}), 200
     except sqlite3.OperationalError as e:
@@ -217,9 +220,15 @@ def bulk_upload_suppliers():
 # ============================================================================
 
 @suppliers_bp.route('/api/suppliers', methods=['GET'])
+@jwt_required()
 def get_suppliers():
     """Get all suppliers with optional filtering and pagination"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Query parameters
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
@@ -230,7 +239,7 @@ def get_suppliers():
         sort_order = request.args.get('sort_order', 'asc')
         
         # Base query
-        query = Supplier.query
+        query = Supplier.query.filter_by(tenant_id=user.tenant_id)
         
         # Filter by active status (only if specified)
         if is_active_param is not None:
@@ -284,9 +293,15 @@ def get_suppliers():
 
 
 @suppliers_bp.route('/api/suppliers/search', methods=['GET'])
+@jwt_required()
 def search_suppliers():
     """Fast supplier search for autocomplete"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         query_param = request.args.get('q', '').strip()
         limit = request.args.get('limit', 10, type=int)
         
@@ -296,6 +311,7 @@ def search_suppliers():
         # Fast search query - simplified for debugging
         search_term = f'%{query_param}%'
         suppliers = Supplier.query.filter(
+            Supplier.tenant_id == user.tenant_id,
             Supplier.is_active == True,
             or_(
                 Supplier.company_name.ilike(search_term),
@@ -314,10 +330,19 @@ def search_suppliers():
 
 
 @suppliers_bp.route('/api/suppliers/<int:supplier_id>', methods=['GET'])
+@jwt_required()
 def get_supplier(supplier_id):
     """Get a single supplier by ID"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         supplier = Supplier.query.get_or_404(supplier_id)
+        
+        if supplier.tenant_id != user.tenant_id:
+            return jsonify({'error': 'Supplier not found'}), 404
         
         # Include product relationships
         supplier_dict = supplier.to_dict()
@@ -334,41 +359,92 @@ def get_supplier(supplier_id):
 
 
 @suppliers_bp.route('/api/suppliers', methods=['POST'])
+@jwt_required()
 def create_supplier():
     """Create a new supplier"""
     try:
-        data = request.get_json()
-        
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
+        data = request.get_json() or {}
+        # Debug: log incoming payload keys for diagnosis
+        try:
+            print(f"DEBUG create_supplier payload keys: {list(data.keys())}")
+        except Exception:
+            print("DEBUG create_supplier: unable to read payload keys")
+
+        # Accept both snake_case and camelCase keys from clients
+        def _get(d, snake, camel=None, default=None):
+            if snake in d and d[snake] is not None:
+                return d[snake]
+            if camel and camel in d and d[camel] is not None:
+                return d[camel]
+            return default
+
+        company_name = _get(data, 'company_name', 'companyName')
+        company_code = _get(data, 'company_code', 'companyCode')
+        # Normalize empty company_code to None to avoid UNIQUE '' collisions
+        if company_code is not None:
+            company_code = company_code.strip() if isinstance(company_code, str) else company_code
+            if company_code == '':
+                company_code = None
+        tax_number = _get(data, 'tax_number', 'taxNumber')
+        tax_office = _get(data, 'tax_office', 'taxOffice')
+        contact_person = _get(data, 'contact_person', 'contactPerson')
+        email = _get(data, 'email')
+        phone = _get(data, 'phone')
+        mobile = _get(data, 'mobile')
+        fax = _get(data, 'fax')
+        website = _get(data, 'website')
+        address = _get(data, 'address')
+        # Normalize address to a single word (take first token)
+        if address:
+            try:
+                address = str(address).strip().split()[0]
+            except Exception:
+                address = str(address).strip()
+        city = _get(data, 'city')
+        country = _get(data, 'country')
+        postal_code = _get(data, 'postal_code', 'postalCode')
+        payment_terms = _get(data, 'payment_terms', 'paymentTerms')
+        currency = _get(data, 'currency')
+        rating = _get(data, 'rating')
+        notes = _get(data, 'notes')
+        is_active = _get(data, 'is_active', 'isActive', True)
+
         # Validate required fields
-        if not data.get('company_name'):
+        if not company_name:
             return jsonify({'error': 'Company name is required'}), 400
-        
+
         # Check for duplicate company name
-        existing = Supplier.query.filter_by(company_name=data['company_name']).first()
+        existing = Supplier.query.filter_by(company_name=company_name, tenant_id=user.tenant_id).first()
         if existing:
             return jsonify({'error': 'Supplier with this company name already exists'}), 409
         
         # Create supplier
         supplier = Supplier(
-            company_name=data['company_name'],
-            company_code=data.get('company_code'),
-            tax_number=data.get('tax_number'),
-            tax_office=data.get('tax_office'),
-            contact_person=data.get('contact_person'),
-            email=data.get('email'),
-            phone=data.get('phone'),
-            mobile=data.get('mobile'),
-            fax=data.get('fax'),
-            website=data.get('website'),
-            address=data.get('address'),
-            city=data.get('city'),
-            country=data.get('country', 'Türkiye'),
-            postal_code=data.get('postal_code'),
-            payment_terms=data.get('payment_terms'),
-            currency=data.get('currency', 'TRY'),
-            rating=data.get('rating'),
-            notes=data.get('notes'),
-            is_active=data.get('is_active', True)
+            tenant_id=user.tenant_id,
+            company_name=company_name,
+            company_code=company_code,
+            tax_number=tax_number,
+            tax_office=tax_office,
+            contact_person=contact_person,
+            email=email,
+            phone=phone,
+            mobile=mobile,
+            fax=fax,
+            website=website,
+            address=address,
+            city=city,
+            country=country or 'Türkiye',
+            postal_code=postal_code,
+            payment_terms=payment_terms,
+            currency=currency or 'TRY',
+            rating=rating,
+            notes=notes,
+            is_active=is_active
         )
         
         db.session.add(supplier)
@@ -382,32 +458,57 @@ def create_supplier():
 
 
 @suppliers_bp.route('/api/suppliers/<int:supplier_id>', methods=['PUT'])
+@jwt_required()
 @idempotent(methods=['PUT'])
 @optimistic_lock(Supplier, id_param='supplier_id')
 @with_transaction
 def update_supplier(supplier_id):
     """Update an existing supplier"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         supplier = Supplier.query.get_or_404(supplier_id)
-        data = request.get_json()
         
-        # Check for duplicate company name (excluding current supplier)
-        if 'company_name' in data and data['company_name'] != supplier.company_name:
-            existing = Supplier.query.filter_by(company_name=data['company_name']).first()
+        if supplier.tenant_id != user.tenant_id:
+            return jsonify({'error': 'Supplier not found'}), 404
+
+        data = request.get_json() or {}
+
+        # Normalize incoming camelCase/snake_case keys
+        def _get(d, snake, camel=None, default=None):
+            if snake in d and d[snake] is not None:
+                return d[snake]
+            if camel and camel in d and d[camel] is not None:
+                return d[camel]
+            return default
+
+        new_company_name = _get(data, 'company_name', 'companyName', supplier.company_name)
+        if new_company_name != supplier.company_name:
+            existing = Supplier.query.filter_by(company_name=new_company_name, tenant_id=user.tenant_id).first()
             if existing:
                 return jsonify({'error': 'Supplier with this company name already exists'}), 409
-        
-        # Update fields
+
+        # Update fields (map common camelCase keys)
         updatable_fields = [
-            'company_name', 'company_code', 'tax_number', 'tax_office',
-            'contact_person', 'email', 'phone', 'mobile', 'fax', 'website',
-            'address', 'city', 'country', 'postal_code', 'payment_terms',
-            'currency', 'rating', 'notes', 'is_active'
+            ('company_name', 'companyName'), ('company_code', 'companyCode'), ('tax_number', 'taxNumber'), ('tax_office', 'taxOffice'),
+            ('contact_person', 'contactPerson'), ('email', None), ('phone', None), ('mobile', None), ('fax', None), ('website', None),
+            ('address', None), ('city', None), ('country', None), ('postal_code', 'postalCode'), ('payment_terms', 'paymentTerms'),
+            ('currency', None), ('rating', None), ('notes', None), ('is_active', 'isActive')
         ]
-        
-        for field in updatable_fields:
-            if field in data:
-                setattr(supplier, field, data[field])
+
+        for snake, camel in updatable_fields:
+            val = _get(data, snake, camel)
+            if val is not None:
+                # If updating address, ensure single-word constraint
+                if snake == 'address' and val:
+                    try:
+                        val = str(val).strip().split()[0]
+                    except Exception:
+                        val = str(val).strip()
+                setattr(supplier, snake, val)
         
         db.session.commit()
         
@@ -419,10 +520,19 @@ def update_supplier(supplier_id):
 
 
 @suppliers_bp.route('/api/suppliers/<int:supplier_id>', methods=['DELETE'])
+@jwt_required()
 def delete_supplier(supplier_id):
     """Delete a supplier (soft delete by setting is_active=False)"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         supplier = Supplier.query.get_or_404(supplier_id)
+        
+        if supplier.tenant_id != user.tenant_id:
+            return jsonify({'error': 'Supplier not found'}), 404
         
         # Soft delete
         supplier.is_active = False
@@ -445,15 +555,25 @@ def delete_supplier(supplier_id):
 # ============================================================================
 
 @suppliers_bp.route('/api/products/<product_id>/suppliers', methods=['GET'])
+@jwt_required()
 def get_product_suppliers(product_id):
     """Get all suppliers for a specific product"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Verify product exists
         product = Inventory.query.get_or_404(product_id)
+        
+        if product.tenant_id != user.tenant_id:
+            return jsonify({'error': 'Product not found'}), 404
         
         # Get product-supplier relationships
         product_suppliers = ProductSupplier.query.filter_by(
             product_id=product_id,
+            tenant_id=user.tenant_id,
             is_active=True
         ).order_by(ProductSupplier.priority.asc()).all()
         
@@ -468,15 +588,25 @@ def get_product_suppliers(product_id):
 
 
 @suppliers_bp.route('/api/suppliers/<int:supplier_id>/products', methods=['GET'])
+@jwt_required()
 def get_supplier_products(supplier_id):
     """Get all products for a specific supplier"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Verify supplier exists
         supplier = Supplier.query.get_or_404(supplier_id)
+        
+        if supplier.tenant_id != user.tenant_id:
+            return jsonify({'error': 'Supplier not found'}), 404
         
         # Get product-supplier relationships
         product_suppliers = ProductSupplier.query.filter_by(
             supplier_id=supplier_id,
+            tenant_id=user.tenant_id,
             is_active=True
         ).all()
         
@@ -491,9 +621,15 @@ def get_supplier_products(supplier_id):
 
 
 @suppliers_bp.route('/api/products/<product_id>/suppliers', methods=['POST'])
+@jwt_required()
 def add_product_supplier(product_id):
     """Add a supplier to a product"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json()
         
         # Validate required fields
@@ -504,12 +640,18 @@ def add_product_supplier(product_id):
         
         # Verify product and supplier exist
         product = Inventory.query.get_or_404(product_id)
+        if product.tenant_id != user.tenant_id:
+            return jsonify({'error': 'Product not found'}), 404
+
         supplier = Supplier.query.get_or_404(supplier_id)
+        if supplier.tenant_id != user.tenant_id:
+            return jsonify({'error': 'Supplier not found'}), 404
         
         # Check if relationship already exists
         existing = ProductSupplier.query.filter_by(
             product_id=product_id,
-            supplier_id=supplier_id
+            supplier_id=supplier_id,
+            tenant_id=user.tenant_id
         ).first()
         
         if existing:
@@ -523,7 +665,8 @@ def add_product_supplier(product_id):
             # Create new relationship
             ps = ProductSupplier(
                 product_id=product_id,
-                supplier_id=supplier_id
+                supplier_id=supplier_id,
+                tenant_id=user.tenant_id
             )
             db.session.add(ps)
         
@@ -542,6 +685,7 @@ def add_product_supplier(product_id):
         if ps.is_primary:
             ProductSupplier.query.filter_by(
                 product_id=product_id,
+                tenant_id=user.tenant_id,
                 is_primary=True
             ).filter(ProductSupplier.id != ps.id).update({'is_primary': False})
         
@@ -555,13 +699,23 @@ def add_product_supplier(product_id):
 
 
 @suppliers_bp.route('/api/product-suppliers/<int:ps_id>', methods=['PUT'])
+@jwt_required()
 @idempotent(methods=['PUT'])
 @optimistic_lock(ProductSupplier, id_param='ps_id')
 @with_transaction
 def update_product_supplier(ps_id):
     """Update a product-supplier relationship"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         ps = ProductSupplier.query.get_or_404(ps_id)
+        
+        if ps.tenant_id != user.tenant_id:
+            return jsonify({'error': 'Product-supplier relationship not found'}), 404
+
         data = request.get_json()
         
         # Update fields
@@ -579,6 +733,7 @@ def update_product_supplier(ps_id):
         if data.get('is_primary') and ps.is_primary:
             ProductSupplier.query.filter_by(
                 product_id=ps.product_id,
+                tenant_id=user.tenant_id,
                 is_primary=True
             ).filter(ProductSupplier.id != ps.id).update({'is_primary': False})
         
@@ -592,10 +747,19 @@ def update_product_supplier(ps_id):
 
 
 @suppliers_bp.route('/api/product-suppliers/<int:ps_id>', methods=['DELETE'])
+@jwt_required()
 def delete_product_supplier(ps_id):
     """Delete a product-supplier relationship"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         ps = ProductSupplier.query.get_or_404(ps_id)
+        
+        if ps.tenant_id != user.tenant_id:
+            return jsonify({'error': 'Product-supplier relationship not found'}), 404
         
         # Soft delete
         ps.is_active = False
@@ -614,15 +778,21 @@ def delete_product_supplier(ps_id):
 # ============================================================================
 
 @suppliers_bp.route('/api/suppliers/stats', methods=['GET'])
+@jwt_required()
 def get_supplier_stats():
     """Get supplier statistics"""
     try:
-        total_suppliers = Supplier.query.count()
-        active_suppliers = Supplier.query.filter_by(is_active=True).count()
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
+        total_suppliers = Supplier.query.filter_by(tenant_id=user.tenant_id).count()
+        active_suppliers = Supplier.query.filter_by(is_active=True, tenant_id=user.tenant_id).count()
         inactive_suppliers = total_suppliers - active_suppliers
         
         # Total product relationships
-        total_relationships = ProductSupplier.query.filter_by(is_active=True).count()
+        total_relationships = ProductSupplier.query.filter_by(is_active=True, tenant_id=user.tenant_id).count()
         
         # Top suppliers by product count
         top_suppliers = db.session.query(
@@ -630,6 +800,7 @@ def get_supplier_stats():
             Supplier.company_name,
             func.count(ProductSupplier.id).label('product_count')
         ).join(ProductSupplier).filter(
+            Supplier.tenant_id == user.tenant_id,
             Supplier.is_active == True,
             ProductSupplier.is_active == True
         ).group_by(Supplier.id).order_by(
@@ -640,6 +811,7 @@ def get_supplier_stats():
         avg_rating_result = db.session.query(
             func.avg(Supplier.rating)
         ).filter(
+            Supplier.tenant_id == user.tenant_id,
             Supplier.is_active == True,
             Supplier.rating.isnot(None)
         ).scalar()
@@ -669,16 +841,35 @@ def get_supplier_stats():
 # ============================================================================
 
 @suppliers_bp.route('/api/suppliers/<int:supplier_id>/invoices', methods=['GET'])
+@jwt_required()
 def get_supplier_invoices(supplier_id):
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         supplier = Supplier.query.get_or_404(supplier_id)
+        if supplier.tenant_id != user.tenant_id:
+            return jsonify({'error': 'Supplier not found'}), 404
+
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
         invoice_type = request.args.get('type', 'all')
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
 
-        query = PurchaseInvoice.query.filter_by(supplier_id=supplier_id)
+        # Include invoices explicitly linked to supplier OR whose sender_tax_number matches supplier.tax_number
+        if supplier.tax_number:
+            query = PurchaseInvoice.query.filter(
+                PurchaseInvoice.tenant_id == user.tenant_id,
+                or_(
+                    PurchaseInvoice.supplier_id == supplier_id,
+                    PurchaseInvoice.sender_tax_number == supplier.tax_number
+                )
+            )
+        else:
+            query = PurchaseInvoice.query.filter_by(supplier_id=supplier_id, tenant_id=user.tenant_id)
 
         if invoice_type != 'all':
             query = query.filter(PurchaseInvoice.invoice_type == invoice_type.upper())
@@ -734,9 +925,15 @@ def get_supplier_invoices(supplier_id):
 # ============================================================================
 
 @suppliers_bp.route('/api/suppliers/suggested', methods=['GET'])
+@jwt_required()
 def get_suggested_suppliers():
     try:
-        suggested = SuggestedSupplier.query.filter_by(status='PENDING').order_by(
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
+        suggested = SuggestedSupplier.query.filter_by(status='PENDING', tenant_id=user.tenant_id).order_by(
             SuggestedSupplier.last_invoice_date.desc()
         ).all()
 
@@ -762,11 +959,20 @@ def get_suggested_suppliers():
 
 
 @suppliers_bp.route('/api/suppliers/suggested/<int:suggested_id>/accept', methods=['POST'])
+@jwt_required()
 @idempotent(methods=['POST'])
 @with_transaction
 def accept_suggested_supplier(suggested_id):
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         suggested = SuggestedSupplier.query.get_or_404(suggested_id)
+        
+        if suggested.tenant_id != user.tenant_id:
+            return jsonify({'success': False, 'error': 'Suggested supplier not found'}), 404
 
         if suggested.status == 'ACCEPTED':
             from datetime import datetime
@@ -781,14 +987,15 @@ def accept_suggested_supplier(suggested_id):
                 'timestamp': datetime.utcnow().isoformat()
             }), 400
 
-        existing = Supplier.query.filter_by(tax_number=suggested.tax_number).first()
+        existing = Supplier.query.filter_by(tax_number=suggested.tax_number, tenant_id=user.tenant_id).first()
         if existing:
             suggested.status = 'ACCEPTED'
             suggested.supplier_id = existing.id
             suggested.accepted_at = datetime.utcnow()
 
             PurchaseInvoice.query.filter_by(
-                sender_tax_number=suggested.tax_number
+                sender_tax_number=suggested.tax_number,
+                tenant_id=user.tenant_id
             ).update({
                 'supplier_id': existing.id,
                 'is_matched': True

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
-import { adminApi, tokenManager } from '@/lib/api';
+import { adminApiInstance as adminApi, tokenManager } from '@/lib/api';
 import { LoginCredentials, AdminUser } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -15,19 +15,45 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user, token, setAuth, clearAuth, isAuthenticated } = useAuthStore();
+    const { user, token, setAuth, clearAuth, isAuthenticated, _hasHydrated } = useAuthStore();
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        // Wait for store hydration
+        if (!_hasHydrated) {
+            return;
+        }
+
         // Check if token exists and is valid
         const initAuth = async () => {
-            if (token) {
+            let currentToken = token;
+
+            // Fallback to localStorage if store is empty (e.g. before hydration or if persist failed)
+            if (!currentToken) {
+                const storedToken = localStorage.getItem('admin_token');
+                if (storedToken) {
+                    currentToken = storedToken;
+                    // We don't have user object here, but we can set token
+                    // Ideally we should fetch profile here
+                }
+            }
+
+            if (currentToken) {
                 try {
-                    // Verify token or fetch user profile
-                    // const response = await adminApi.get('/admin/profile');
-                    // updateUser(response.data.data);
-                    tokenManager.setToken(token);
+                    tokenManager.setToken(currentToken);
+
+                    // If we recovered token from localStorage but store was empty, update store
+                    if (!token && currentToken) {
+                        // We set user to null initially, ideally we should fetch profile here
+                        // But this ensures isAuthenticated becomes true
+                        setAuth(user || { id: 'rehydrated', email: '', role: 'ADMIN' } as any, currentToken);
+
+                        // Optional: Fetch profile to get real user data
+                        // const response = await adminApi.get('/admin/auth/me');
+                        // if (response.data.user) setAuth(response.data.user, currentToken);
+                    }
                 } catch (error) {
+                    console.error('Auth recovery error:', error);
                     clearAuth();
                     tokenManager.clearToken();
                 }
@@ -36,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
 
         initAuth();
-    }, [token, clearAuth]);
+    }, [token, clearAuth, _hasHydrated]);
 
     const login = async (credentials: LoginCredentials & { mfa_token?: string }) => {
         try {

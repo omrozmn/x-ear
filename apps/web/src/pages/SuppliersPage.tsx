@@ -13,6 +13,7 @@ import { useSuppliers, useCreateSupplier, useDeleteSupplier, useUpdateSupplier }
 import { useSuggestedSuppliers } from '../hooks/useSupplierInvoices';
 import { Users, CheckCircle, Flame, Filter, Search, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { SupplierFormModal } from '../components/suppliers/SupplierFormModal';
+import { InboxModal } from '../components/invoices/InboxModal';
 import { SupplierFilters } from '../components/suppliers/SupplierFilters';
 import { SupplierList } from '../components/suppliers/SupplierList';
 import { SuggestedSuppliersList } from '../components/suppliers/SuggestedSuppliersList';
@@ -179,6 +180,7 @@ export function SuppliersPage() {
   };
 
   const [isImporterOpen, setIsImporterOpen] = useState(false);
+  const [inboxOpen, setInboxOpen] = useState(false);
 
   const supplierFields: FieldDef[] = [
     { key: 'companyName', label: 'Şirket Adı' },
@@ -262,12 +264,18 @@ export function SuppliersPage() {
             <Button onClick={() => setIsImporterOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
               Toplu Yükle
             </Button>
+            <Button onClick={() => setInboxOpen(true)} className="bg-gray-700 hover:bg-gray-800 text-white shadow-sm">
+              Gelen Faturalar
+            </Button>
             <Button onClick={handleNewSupplier} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
               <Plus className="h-4 w-4 mr-2" />
               Yeni Tedarikçi
             </Button>
           </div>
         </div>
+
+        {/* Inbox Modal */}
+        <InboxModal isOpen={inboxOpen} onClose={() => setInboxOpen(false)} />
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

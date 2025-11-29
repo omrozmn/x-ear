@@ -14,6 +14,7 @@ class Notification(BaseModel, JSONMixin):
     
     # Target user
     user_id = db.Column(db.String(50), nullable=False)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Notification content
     title = db.Column(db.String(200), nullable=False)

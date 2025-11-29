@@ -1,0 +1,459 @@
+/* SGK Management Specific Styles */
+
+/* Simple Document Viewer */
+.simple-document-viewer {
+    max-height: 80vh;
+    overflow: auto;
+}
+
+.simple-document-viewer img {
+    transition: transform 0.3s ease;
+    cursor: zoom-in;
+}
+
+.simple-document-viewer img:hover {
+    cursor: zoom-in;
+}
+
+/* Patient Search Results */
+.patient-search-results {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.patient-search-item:hover {
+    background-color: #f3f4f6;
+}
+
+/* SGK Status Indicators */
+.sgk-status-pending {
+    background-color: #fef9c3;
+    color: #854d0e;
+    border: 1px solid #fef08a;
+}
+
+.sgk-status-approved {
+    @apply bg-green-100 text-green-800 border border-green-200;
+}
+
+.sgk-status-rejected {
+    @apply bg-red-100 text-red-800 border border-red-200;
+}
+
+/* SGK Report Cards */
+.sgk-report-card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200;
+}
+
+.sgk-report-card:hover {
+    @apply border-primary;
+}
+
+/* SGK Form Enhancements */
+.sgk-form-section {
+    @apply bg-gray-50 rounded-lg p-4 mb-6;
+}
+
+.sgk-form-section h3 {
+    @apply text-lg font-semibold text-gray-900 mb-4;
+}
+
+.sgk-form-group {
+    @apply mb-4;
+}
+
+.sgk-form-label {
+    @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+.sgk-form-input {
+    @apply w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-colors;
+}
+
+.sgk-form-input:focus {
+    @apply outline-none;
+}
+
+.sgk-form-textarea {
+    @apply w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent resize-vertical min-h-[100px];
+}
+
+.sgk-form-select {
+    @apply w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent bg-white;
+}
+
+/* SGK Table Enhancements */
+.sgk-table {
+    @apply w-full border-collapse;
+}
+
+.sgk-table th {
+    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200;
+}
+
+.sgk-table td {
+    @apply px-6 py-4 whitespace-nowrap border-b border-gray-200;
+}
+
+.sgk-table tr:hover {
+    @apply bg-gray-50;
+}
+
+/* SGK Action Buttons */
+.sgk-btn-primary {
+    @apply bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2;
+}
+
+.sgk-btn-secondary {
+    @apply bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors duration-200 flex items-center space-x-2;
+}
+
+.sgk-btn-success {
+    @apply bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2;
+}
+
+.sgk-btn-danger {
+    @apply bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2;
+}
+
+.sgk-btn-warning {
+    @apply bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors duration-200 flex items-center space-x-2;
+}
+
+/* SGK Stats Cards */
+.sgk-stat-card {
+    @apply bg-white rounded-lg shadow p-6 border border-gray-200;
+}
+
+.sgk-stat-icon {
+    @apply p-2 rounded-lg;
+}
+
+.sgk-stat-icon.pending {
+    @apply bg-yellow-100 text-yellow-600;
+}
+
+.sgk-stat-icon.approved {
+    @apply bg-green-100 text-green-600;
+}
+
+.sgk-stat-icon.rejected {
+    @apply bg-red-100 text-red-600;
+}
+
+.sgk-stat-icon.total {
+    @apply bg-blue-100 text-blue-600;
+}
+
+.sgk-stat-number {
+    @apply text-2xl font-bold text-gray-900;
+}
+
+.sgk-stat-label {
+    @apply text-sm font-medium text-gray-600;
+}
+
+/* SGK Filter Section */
+.sgk-filter-section {
+    @apply bg-white rounded-lg shadow mb-6 border border-gray-200;
+}
+
+.sgk-filter-header {
+    @apply p-6 border-b border-gray-200;
+}
+
+.sgk-filter-content {
+    @apply p-6;
+}
+
+.sgk-filter-grid {
+    @apply grid grid-cols-1 md:grid-cols-4 gap-4;
+}
+
+/* SGK Modal Enhancements */
+.sgk-modal {
+    @apply fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4;
+}
+
+.sgk-modal-content {
+    @apply bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto;
+}
+
+.sgk-modal-header {
+    @apply p-6 border-b border-gray-200 flex items-center justify-between;
+}
+
+.sgk-modal-title {
+    @apply text-lg font-semibold text-gray-900;
+}
+
+.sgk-modal-close {
+    @apply text-gray-400 hover:text-gray-600 transition-colors;
+}
+
+.sgk-modal-body {
+    @apply p-6;
+}
+
+.sgk-modal-footer {
+    @apply p-6 border-t border-gray-200 flex justify-end space-x-4;
+}
+
+/* SGK Progress Indicators */
+.sgk-progress {
+    @apply w-full bg-gray-200 rounded-full h-2;
+}
+
+.sgk-progress-bar {
+    @apply h-2 rounded-full transition-all duration-300;
+}
+
+.sgk-progress-bar.pending {
+    @apply bg-yellow-500;
+}
+
+.sgk-progress-bar.approved {
+    @apply bg-green-500;
+}
+
+.sgk-progress-bar.rejected {
+    @apply bg-red-500;
+}
+
+/* SGK Timeline */
+.sgk-timeline {
+    @apply relative;
+}
+
+.sgk-timeline::before {
+    content: '';
+    @apply absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300;
+}
+
+.sgk-timeline-item {
+    @apply relative pl-10 pb-6;
+}
+
+.sgk-timeline-marker {
+    @apply absolute left-0 top-1 w-8 h-8 rounded-full border-2 border-white shadow flex items-center justify-center;
+}
+
+.sgk-timeline-marker.pending {
+    @apply bg-yellow-500;
+}
+
+.sgk-timeline-marker.approved {
+    @apply bg-green-500;
+}
+
+.sgk-timeline-marker.rejected {
+    @apply bg-red-500;
+}
+
+.sgk-timeline-content {
+    @apply bg-white rounded-lg shadow p-4 border border-gray-200;
+}
+
+.sgk-timeline-date {
+    @apply text-xs text-gray-500 mb-1;
+}
+
+.sgk-timeline-title {
+    @apply font-semibold text-gray-900 mb-2;
+}
+
+.sgk-timeline-description {
+    @apply text-sm text-gray-600;
+}
+
+/* SGK Document Upload */
+.sgk-upload-area {
+    @apply border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors;
+}
+
+.sgk-upload-area.dragover {
+    @apply border-primary bg-blue-50;
+}
+
+.sgk-upload-icon {
+    @apply w-12 h-12 text-gray-400 mx-auto mb-4;
+}
+
+.sgk-upload-text {
+    @apply text-sm text-gray-600 mb-2;
+}
+
+.sgk-upload-hint {
+    @apply text-xs text-gray-500;
+}
+
+/* SGK Search Enhancements */
+.sgk-search-container {
+    @apply relative;
+}
+
+.sgk-search-input {
+    @apply w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent;
+}
+
+.sgk-search-icon {
+    @apply absolute left-3 top-2.5 w-5 h-5 text-gray-400;
+}
+
+.sgk-search-results {
+    @apply absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto z-10;
+}
+
+.sgk-search-result {
+    @apply px-4 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0;
+}
+
+/* SGK Responsive Adjustments */
+@media (max-width: 768px) {
+    .sgk-filter-grid {
+        @apply grid-cols-1 gap-3;
+    }
+    
+    .sgk-modal-content {
+        @apply m-4;
+    }
+    
+    .sgk-table {
+        @apply text-sm;
+    }
+    
+    .sgk-table th,
+    .sgk-table td {
+        @apply px-3 py-2;
+    }
+    
+    .sgk-btn-primary,
+    .sgk-btn-secondary,
+    .sgk-btn-success,
+    .sgk-btn-danger,
+    .sgk-btn-warning {
+        @apply px-3 py-1.5 text-sm;
+    }
+}
+
+/* SGK Print Styles */
+@media print {
+    .sgk-no-print {
+        display: none !important;
+    }
+    
+    .sgk-print-only {
+        display: block !important;
+    }
+    
+    .sgk-modal {
+        position: static !important;
+        background: transparent !important;
+    }
+    
+    .sgk-modal-content {
+        box-shadow: none !important;
+        max-width: none !important;
+        max-height: none !important;
+    }
+}
+
+/* SGK Animation Utilities */
+.sgk-fade-in {
+    animation: sgkFadeIn 0.3s ease-in-out;
+}
+
+.sgk-slide-up {
+    animation: sgkSlideUp 0.3s ease-in-out;
+}
+
+.sgk-bounce {
+    animation: sgkBounce 0.6s ease-in-out;
+}
+
+@keyframes sgkFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes sgkSlideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes sgkBounce {
+    0%, 20%, 53%, 80%, 100% {
+        transform: translate3d(0, 0, 0);
+    }
+    40%, 43% {
+        transform: translate3d(0, -8px, 0);
+    }
+    70% {
+        transform: translate3d(0, -4px, 0);
+    }
+    90% {
+        transform: translate3d(0, -2px, 0);
+    }
+}
+
+/* SGK Loading States */
+.sgk-loading {
+    @apply relative overflow-hidden;
+}
+
+.sgk-loading::after {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-50;
+    animation: sgkShimmer 1.5s infinite;
+}
+
+@keyframes sgkShimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* SGK Accessibility Enhancements */
+.sgk-sr-only {
+    @apply sr-only;
+}
+
+.sgk-focus-visible:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+}
+
+/* SGK Dark Mode Support (if needed) */
+@media (prefers-color-scheme: dark) {
+    .sgk-dark-mode .sgk-report-card {
+        @apply bg-gray-800 border-gray-700;
+    }
+    
+    .sgk-dark-mode .sgk-form-input,
+    .sgk-dark-mode .sgk-form-textarea,
+    .sgk-dark-mode .sgk-form-select {
+        @apply bg-gray-800 border-gray-600 text-white;
+    }
+    
+    .sgk-dark-mode .sgk-table th {
+        @apply bg-gray-800 text-gray-300;
+    }
+    
+    .sgk-dark-mode .sgk-table tr:hover {
+        @apply bg-gray-700;
+    }
+}

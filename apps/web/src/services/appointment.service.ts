@@ -35,7 +35,18 @@ class AppointmentService {
   // Try to load appointments from backend and populate local storage
   private async bootstrapFromServer(): Promise<void> {
     try {
-      const resp = await fetch('/api/appointments/list?page=1&per_page=1000', { credentials: 'same-origin' });
+      // Include Authorization header when available to avoid 401s from protected endpoints
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      try {
+        const token = (window as any).__AUTH_TOKEN__ || localStorage.getItem('x-ear.auth.token@v1') || localStorage.getItem('auth_token');
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+      } catch (err) {
+        // ignore access errors to localStorage
+      }
+
+      const resp = await fetch('/api/appointments/list?page=1&per_page=1000', { credentials: 'same-origin', headers });
       if (!resp.ok) return;
       const json = await resp.json();
       const items = (json && json.data) || [];

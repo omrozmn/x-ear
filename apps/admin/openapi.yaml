@@ -6,7 +6,7 @@ info:
 servers:
   - url: http://localhost:5003
 paths:
-  /api/admin/features:
+  /admin/features:
     get:
       summary: Get system feature flags
       operationId: admin_get_features
@@ -107,6 +107,32 @@ paths:
                         $ref: '#/components/schemas/AdminUser'
                       requires_mfa:
                         type: boolean
+
+  /admin/tenants/{id}/users:
+    get:
+      summary: List Tenant Users
+      tags: [Tenants]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/User'
 
   /admin/users:
     get:
@@ -354,6 +380,106 @@ paths:
         '200':
           description: Success
 
+  /admin/addons:
+    get:
+      summary: List Add-ons
+      tags: [AddOns]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: type
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      addons:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AddOn'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+    post:
+      summary: Create Add-on
+      tags: [AddOns]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddOnInput'
+      responses:
+        '201':
+          description: Created
+
+  /admin/addons/{id}:
+    get:
+      summary: Get Add-on
+      tags: [AddOns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      addon:
+                        $ref: '#/components/schemas/AddOn'
+    put:
+      summary: Update Add-on
+      tags: [AddOns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddOnInput'
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete Add-on
+      tags: [AddOns]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+
   /admin/tenants:
     get:
       summary: List Tenants
@@ -495,9 +621,10 @@ paths:
         '200':
           description: Success
 
-  /admin/dashboard/metrics:
+  /admin/dashboard:
     get:
       summary: Get Dashboard Metrics
+      operationId: get_admin_dashboard_metrics
       tags: [Dashboard]
       responses:
         '200':
@@ -513,7 +640,7 @@ paths:
                     type: object
                     properties:
                       metrics:
-                          type: object
+                          $ref: '#/components/schemas/DashboardMetrics'
 
   /admin/analytics:
     get:
@@ -685,6 +812,32 @@ paths:
 
 components:
   schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        role:
+          type: string
+        is_active:
+          type: boolean
+        last_login:
+          type: string
+        tenant_id:
+          type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
+
     AdminUser:
       type: object
       properties:
@@ -703,6 +856,8 @@ components:
           type: boolean
         last_login:
           type: string
+        tenant_id:
+          type: string
         created_at:
           type: string
 
@@ -715,14 +870,26 @@ components:
           type: string
         tenant_name:
           type: string
+        invoice_number:
+          type: string
         amount:
+          type: number
+        subtotal:
+          type: number
+        tax_total:
+          type: number
+        total:
+          type: number
+        paid_amount:
           type: number
         currency:
           type: string
         status:
           type: string
-          enum: [paid, pending, overdue, cancelled]
+          enum: [paid, pending, overdue, cancelled, open]
         due_date:
+          type: string
+        issue_date:
           type: string
         created_at:
           type: string
@@ -731,7 +898,17 @@ components:
           items:
             type: object
             properties:
+              id:
+                type: string
+              description:
+                type: string
+              quantity:
+                type: number
+              unit_price:
+                type: number
               amount:
+                type: number
+              total:
                 type: number
 
     InvoiceInput:
@@ -772,6 +949,8 @@ components:
           enum: [BASIC, PRO, ENTERPRISE, CUSTOM]
         price:
           type: number
+        currency:
+          type: string
         billing_interval:
           type: string
           enum: [MONTHLY, YEARLY, QUARTERLY]
@@ -780,7 +959,9 @@ components:
         max_storage_gb:
           type: integer
         features:
-          type: object
+          type: array
+          items:
+            type: string
         is_active:
           type: boolean
         is_public:
@@ -906,6 +1087,12 @@ components:
           type: string
         assigned_admin_name:
           type: string
+        csat_score:
+          type: integer
+          nullable: true
+        csat_feedback:
+          type: string
+          nullable: true
         created_by:
           type: string
         created_at:
@@ -966,8 +1153,15 @@ components:
           properties:
             monthly_recurring_revenue:
               type: number
-            annual_recurring_revenue:
-              type: number
+        alerts:
+          type: object
+          properties:
+            expiring_soon:
+              type: integer
+            high_churn:
+              type: integer
+            low_utilization:
+              type: integer
         health_metrics:
           type: object
           properties:
@@ -975,19 +1169,9 @@ components:
               type: number
             avg_seat_utilization_percent:
               type: number
-            tenant_growth_rate:
+            annual_recurring_revenue:
               type: number
-            user_growth_rate:
-              type: number
-        alerts:
-          type: object
-          properties:
-            expiring_soon:
-              type: number
-            high_churn:
-              type: number
-            low_utilization:
-              type: number
+
 
     AnalyticsOverview:
       type: object
@@ -1128,3 +1312,56 @@ components:
           type: integer
         totalPages:
           type: integer
+
+    AddOn:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        addon_type:
+          type: string
+          enum: [PER_USER, FLAT_FEE, USAGE_BASED]
+        price:
+          type: number
+        currency:
+          type: string
+        unit_name:
+          type: string
+        limit_amount:
+          type: integer
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+        updated_at:
+          type: string
+
+    AddOnInput:
+      type: object
+      required: [name, price]
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        addon_type:
+          type: string
+          enum: [PER_USER, FLAT_FEE, USAGE_BASED]
+        price:
+          type: number
+        currency:
+          type: string
+        unit_name:
+          type: string
+        limit_amount:
+          type: integer
+        is_active:
+          type: boolean

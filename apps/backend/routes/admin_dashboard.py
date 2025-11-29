@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required
 from models.base import db
 from models.admin_user import AdminUser
+from models.user import User
 from models.tenant import Tenant
 from models.plan import Plan
 from sqlalchemy import func
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 admin_dashboard_bp = Blueprint('admin_dashboard', __name__, url_prefix='/api/admin/dashboard')
 
-@admin_dashboard_bp.route('', methods=['GET'])
+@admin_dashboard_bp.route('/metrics', methods=['GET'])
 @jwt_required()
 def get_dashboard_metrics():
     """Get dashboard metrics"""
@@ -25,8 +26,8 @@ def get_dashboard_metrics():
             Tenant.status == 'active'
         ).count()
         
-        # Total users
-        total_users = AdminUser.query.filter_by(is_active=True).count()
+        # Total users (Tenant Users)
+        total_users = User.query.filter_by(is_active=True).count()
         
         # Total plans
         total_plans = Plan.query.filter_by(is_active=True).count()
@@ -46,16 +47,36 @@ def get_dashboard_metrics():
             Tenant.deleted_at.is_(None)
         ).order_by(Tenant.created_at.desc()).limit(5).all()
         
+        # Calculate mock revenue and other metrics for now
+        # In a real app, these would come from actual data
+        
         return jsonify({
             'success': True,
             'data': {
                 'metrics': {
-                    'total_tenants': total_tenants,
-                    'total_users': total_users,
-                    'total_plans': total_plans,
-                    'active_tenants': status_breakdown.get('active', 0),
-                    'trial_tenants': status_breakdown.get('trial', 0),
-                    'suspended_tenants': status_breakdown.get('suspended', 0)
+                    'overview': {
+                        'total_tenants': total_tenants,
+                        'active_tenants': status_breakdown.get('active', 0),
+                        'total_users': total_users, # This is currently AdminUser count, should be Tenant User count ideally
+                        'active_users': total_users, # Placeholder
+                        'total_plans': total_plans
+                    },
+                    'revenue': {
+                        'monthly_recurring_revenue': 0 # Placeholder
+                    },
+                    'alerts': {
+                        'expiring_soon': 0,
+                        'high_churn': 0,
+                        'low_utilization': 0
+                    },
+                    'health_metrics': {
+                        'churn_rate_percent': 0,
+                        'avg_seat_utilization_percent': 0
+                    },
+                    'recent_activity': {
+                        'new_tenants_7d': 0,
+                        'expiring_memberships_30d': 0
+                    }
                 },
                 'recent_tenants': [
                     {

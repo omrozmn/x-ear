@@ -1,24 +1,103 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Eye, Edit, Ban, CheckCircle } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Ban, CheckCircle, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
+import * as Dialog from '@radix-ui/react-dialog';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import {
     useGetAdminTenants,
     usePutAdminTenantsIdStatus,
+    useGetAdminTenantsIdUsers,
     Tenant,
-    TenantStatus
+    TenantStatus,
+    User
 } from '@/lib/api-client';
 
 // Map our local TenantStatus enum to the API's expected string values if needed, 
 // or just use the strings directly if the API types match.
 // Based on OpenAPI, status is enum: [active, trial, suspended, cancelled]
 
+const TenantUsersModal = ({ tenantId, isOpen, onClose }: { tenantId: string | null, isOpen: boolean, onClose: () => void }) => {
+    const { data: usersData, isLoading, error } = useGetAdminTenantsIdUsers(tenantId!, {
+        query: { enabled: !!tenantId && isOpen }
+    });
 
+    const users = usersData?.data?.users || [];
+
+    return (
+        <Dialog.Root open={isOpen} onOpenChange={onClose}>
+            <Dialog.Portal>
+                <Dialog.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-overlayShow" />
+                <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[800px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none data-[state=open]:animate-contentShow overflow-y-auto">
+                    <div className="flex justify-between items-center mb-4">
+                        <Dialog.Title className="text-xl font-medium text-gray-900">
+                            Kiracı Kullanıcıları
+                        </Dialog.Title>
+                        <Dialog.Close asChild>
+                            <button
+                                className="inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none hover:bg-gray-100"
+                                aria-label="Close"
+                            >
+                                <XMarkIcon className="h-5 w-5 text-gray-500" />
+                            </button>
+                        </Dialog.Close>
+                    </div>
+
+                    {isLoading ? (
+                        <div className="p-6 text-center">Yükleniyor...</div>
+                    ) : error ? (
+                        <div className="p-6 text-center text-red-600">Kullanıcılar yüklenirken hata oluştu</div>
+                    ) : users.length === 0 ? (
+                        <div className="p-6 text-center text-gray-500">Bu kiracıya ait kullanıcı bulunamadı.</div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı Adı</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Son Giriş</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {users.map((user: User) => (
+                                        <tr key={user.id}>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {user.username}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {user.email}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {user.role}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                    {user.is_active ? 'Aktif' : 'Pasif'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {user.last_login ? new Date(user.last_login).toLocaleString('tr-TR') : '-'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </Dialog.Content>
+            </Dialog.Portal>
+        </Dialog.Root>
+    );
+};
 
 export default function TenantsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [page, setPage] = useState(1);
+    const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
     const queryClient = useQueryClient();
 
     // Fetch tenants
@@ -204,6 +283,13 @@ export default function TenantsPage() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <div className="flex justify-end space-x-2">
+                                                    <button
+                                                        onClick={() => setSelectedTenantId(tenant.id!)}
+                                                        className="text-purple-600 hover:text-purple-900"
+                                                        title="Kullanıcılar"
+                                                    >
+                                                        <Users className="h-5 w-5" />
+                                                    </button>
                                                     <button className="text-blue-600 hover:text-blue-900" title="Görüntüle">
                                                         <Eye className="h-5 w-5" />
                                                     </button>
@@ -237,7 +323,7 @@ export default function TenantsPage() {
                         </div>
 
                         {/* Pagination */}
-                        {pagination && pagination.totalPages > 1 && (
+                        {pagination && (pagination.totalPages || 0) > 1 && (
                             <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                                 <div className="flex-1 flex justify-between sm:hidden">
                                     <button
@@ -285,6 +371,12 @@ export default function TenantsPage() {
                     </>
                 )}
             </div>
+
+            <TenantUsersModal
+                tenantId={selectedTenantId}
+                isOpen={!!selectedTenantId}
+                onClose={() => setSelectedTenantId(null)}
+            />
         </div>
     );
 }

@@ -173,10 +173,47 @@ function handleResourceError(error: any, config: AxiosRequestConfig): Error {
 // Request interceptor for authentication and idempotency
 apiClient.interceptors.request.use(
   (config) => {
-    // Add auth token if available
-    const token = localStorage.getItem(AUTH_TOKEN);
+    // Add auth token if available. Support global window token, persisted zustand storage, new key, and legacy key.
+    let token: string | null = null;
+    try {
+      const tryParse = (raw: string | null) => {
+        if (!raw) return null;
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            if (typeof parsed.token === 'string') return parsed.token;
+            if (parsed.state && typeof parsed.state === 'object' && typeof parsed.state.token === 'string') return parsed.state.token;
+          }
+        } catch (e) {
+          // not JSON
+        }
+        return null;
+      };
+
+      const persistedKeys = ['auth-storage', 'persist:auth-storage', 'auth-store', 'persist:auth-store'];
+      let persistedToken: string | null = null;
+      for (const key of persistedKeys) {
+        try {
+          const raw = (typeof window !== 'undefined') ? localStorage.getItem(key) : null;
+          const t = tryParse(raw);
+          if (t) { persistedToken = t; break; }
+        } catch (e) { /* ignore */ }
+      }
+
+      token = (typeof window !== 'undefined' ? (window as any).__AUTH_TOKEN__ : null) || persistedToken || localStorage.getItem(AUTH_TOKEN) || (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null);
+    } catch (e) {
+      // ignore storage access or JSON parse errors
+    }
     if (token) {
+      try {
+        // Mask token for logs
+        const masked = token.slice(0, 8) + '...' + token.slice(-8);
+        console.debug('[orval-mutator] Attaching auth token to request', { url: config.url, token: masked });
+      } catch (e) {}
+      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      console.debug('[orval-mutator] No auth token found for request', { url: config.url });
     }
 
     // Add idempotency key for non-GET requests
@@ -239,10 +276,46 @@ axios.defaults.maxRedirects = CONNECTION_CONFIG.maxRedirects;
 // Apply our interceptors to the global axios instance
 axios.interceptors.request.use(
   (config) => {
-    // Add auth token if available
-    const token = localStorage.getItem(AUTH_TOKEN);
+    // Add auth token if available. Support global window token, persisted zustand storage, new key, and legacy key.
+    let token: string | null = null;
+    try {
+      const tryParse = (raw: string | null) => {
+        if (!raw) return null;
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            if (typeof parsed.token === 'string') return parsed.token;
+            if (parsed.state && typeof parsed.state === 'object' && typeof parsed.state.token === 'string') return parsed.state.token;
+          }
+        } catch (e) {
+          // not JSON
+        }
+        return null;
+      };
+
+      const persistedKeys = ['auth-storage', 'persist:auth-storage', 'auth-store', 'persist:auth-store'];
+      let persistedToken: string | null = null;
+      for (const key of persistedKeys) {
+        try {
+          const raw = (typeof window !== 'undefined') ? localStorage.getItem(key) : null;
+          const t = tryParse(raw);
+          if (t) { persistedToken = t; break; }
+        } catch (e) { /* ignore */ }
+      }
+
+      token = (typeof window !== 'undefined' ? (window as any).__AUTH_TOKEN__ : null) || persistedToken || localStorage.getItem(AUTH_TOKEN) || (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null);
+    } catch (e) {
+      // ignore storage access or JSON parse errors
+    }
     if (token) {
+      try {
+        const masked = token.slice(0, 8) + '...' + token.slice(-8);
+        console.debug('[orval-mutator.global] Attaching auth token to global axios request', { url: config.url, token: masked });
+      } catch (e) {}
+      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      console.debug('[orval-mutator.global] No auth token found for global axios request', { url: config.url });
     }
 
     // Add idempotency key for non-GET requests

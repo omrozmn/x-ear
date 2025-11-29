@@ -13,6 +13,7 @@ from services.pricing import (
     create_payment_plan,
     create_custom_payment_plan
 )
+from models.user import User
 from models.inventory import Inventory
 from models.enums import DeviceStatus, DeviceSide, DeviceCategory
 from uuid import uuid4
@@ -44,9 +45,15 @@ def now_utc():
 # ============= ENHANCED INVOICE ENDPOINTS =============
 
 @invoices_bp.route('/invoices/batch-generate', methods=['POST'])
+@jwt_required()
 def batch_generate_invoices():
     """Generate multiple invoices at once"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json()
         
         if not data.get('saleIds') or not isinstance(data['saleIds'], list):
@@ -67,7 +74,7 @@ def batch_generate_invoices():
             try:
                 # Get sale
                 sale = db.session.get(Sale, sale_id)
-                if not sale:
+                if not sale or sale.tenant_id != user.tenant_id:
                     errors.append(f"Sale {sale_id} not found")
                     continue
                 
@@ -93,6 +100,8 @@ def batch_generate_invoices():
                 
                 # Create invoice
                 invoice = Invoice(
+                    tenant_id=user.tenant_id,
+                    branch_id=sale.branch_id,
                     invoice_number=invoice_number,
                     patient_id=sale.patient_id,
                     sale_id=sale_id,
@@ -153,6 +162,7 @@ def batch_generate_invoices():
 
 
 @invoices_bp.route('/invoices/templates', methods=['GET'])
+@jwt_required()
 def get_invoice_templates():
     """Get available invoice templates"""
     try:
@@ -206,6 +216,7 @@ def get_invoice_templates():
 
 
 @invoices_bp.route('/invoices/templates', methods=['POST'])
+@jwt_required()
 def create_invoice_template():
     """Create a custom invoice template"""
     try:
@@ -246,12 +257,18 @@ def create_invoice_template():
 
 
 @invoices_bp.route('/invoices/print-queue', methods=['GET'])
+@jwt_required()
 def get_print_queue():
     """Get invoices in print queue"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # In a real implementation, this would query a print queue table
         # For now, return invoices with 'queued_for_print' status
-        queued_invoices = Invoice.query.filter_by(status='queued_for_print').all()
+        queued_invoices = Invoice.query.filter_by(status='queued_for_print', tenant_id=user.tenant_id).all()
         
         queue_items = []
         for invoice in queued_invoices:
@@ -286,11 +303,15 @@ def get_print_queue():
 
 
 @invoices_bp.route('/invoices/bulk_upload', methods=['POST'])
-@jwt_required(optional=True)
+@jwt_required()
 @idempotent(methods=['POST'])
 def bulk_upload_invoices():
     """Bulk upload invoices from CSV/XLSX. Returns {created, updated, errors}."""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
         if 'file' not in request.files:
             return jsonify({'success': False, 'error': 'No file part named "file" in request'}), 400
 
@@ -395,7 +416,7 @@ def bulk_upload_invoices():
 
                 existing = None
                 if invoice_number:
-                    existing = Invoice.query.filter_by(invoice_number=invoice_number).one_or_none()
+                    existing = Invoice.query.filter_by(invoice_number=invoice_number, tenant_id=user.tenant_id).one_or_none()
 
                 if existing:
                     # update simple fields
@@ -420,6 +441,7 @@ def bulk_upload_invoices():
                     updated += 1
                 else:
                     inv = Invoice(
+                        tenant_id=user.tenant_id,
                         invoice_number=invoice_number,
                         patient_name=patient_name,
                         patient_tc=patient_tc,
@@ -451,12 +473,8 @@ def bulk_upload_invoices():
             db.session.rollback()
             return jsonify({'success': False, 'error': 'Commit failed: ' + str(e)}), 500
 
-        try:
-            actor = get_jwt_identity()
-        except Exception:
-            actor = None
         from app import log_activity
-        log_activity(actor or 'anonymous', 'bulk_upload', 'invoice', None, {'created': created, 'updated': updated, 'errors': errors}, request)
+        log_activity(user.id, 'bulk_upload', 'invoice', None, {'created': created, 'updated': updated, 'errors': errors}, request, tenant_id=user.tenant_id)
 
         return jsonify({'success': True, 'created': created, 'updated': updated, 'errors': errors}), 200
     except sqlite3.OperationalError as e:
@@ -468,9 +486,15 @@ def bulk_upload_invoices():
 
 
 @invoices_bp.route('/invoices/print-queue', methods=['POST'])
+@jwt_required()
 def add_to_print_queue():
     """Add invoices to print queue"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json()
         
         if not data.get('invoiceIds') or not isinstance(data['invoiceIds'], list):
@@ -489,7 +513,7 @@ def add_to_print_queue():
         for invoice_id in invoice_ids:
             try:
                 invoice = db.session.get(Invoice, invoice_id)
-                if not invoice:
+                if not invoice or invoice.tenant_id != user.tenant_id:
                     errors.append(f"Invoice {invoice_id} not found")
                     continue
                 
@@ -538,14 +562,38 @@ def add_to_print_queue():
 # ============= ORIGINAL INVOICE ENDPOINTS =============
 
 @invoices_bp.route('/invoices', methods=['GET'])
+@jwt_required()
 def get_invoices():
     """Get all invoices with pagination"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
         
         # Query invoices with pagination; hide soft-deleted invoices
-        invoices_query = Invoice.query.filter(Invoice.status != 'deleted').order_by(desc(Invoice.created_at))
+        invoices_query = Invoice.query.filter(Invoice.status != 'deleted', Invoice.tenant_id == user.tenant_id).order_by(desc(Invoice.created_at))
+
+        # If user is admin (branch admin), filter by assigned branches
+        if user.role == 'admin':
+            user_branch_ids = [b.id for b in user.branches]
+            if user_branch_ids:
+                invoices_query = invoices_query.filter(Invoice.branch_id.in_(user_branch_ids))
+            else:
+                return jsonify({
+                    'success': True,
+                    'data': [],
+                    'meta': {
+                        'page': page,
+                        'perPage': per_page,
+                        'total': 0,
+                        'totalPages': 0
+                    },
+                    'timestamp': datetime.now().isoformat()
+                })
         
         # Apply filters if provided
         status = request.args.get('status')
@@ -577,9 +625,15 @@ def get_invoices():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @invoices_bp.route('/invoices', methods=['POST'])
+@jwt_required()
 def create_invoice():
     """Create a new invoice"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json()
         
         # Validate required fields
@@ -612,6 +666,8 @@ def create_invoice():
         
         # Create invoice
         invoice = Invoice(
+            tenant_id=user.tenant_id,
+            branch_id=data.get('branchId'),
             invoice_number=invoice_number,
             patient_id=data['patientId'],
             device_id=data.get('deviceId'),
@@ -629,6 +685,7 @@ def create_invoice():
         
         # Add activity log
         activity = ActivityLog(
+            tenant_id=user.tenant_id,
             user_id=data.get('createdBy', 'system'),
             action='invoice_created',
             entity_type='invoice',
@@ -669,11 +726,17 @@ def create_invoice():
 
 
 @invoices_bp.route('/invoices/<int:invoice_id>', methods=['GET'])
+@jwt_required()
 def get_invoice(invoice_id):
     """Get a specific invoice"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         invoice = db.session.get(Invoice, invoice_id)
-        if not invoice or getattr(invoice, 'status', None) == 'deleted':
+        if not invoice or getattr(invoice, 'status', None) == 'deleted' or invoice.tenant_id != user.tenant_id:
             return jsonify({'success': False, 'message': 'Invoice not found'}), 404
         
         return jsonify({
@@ -686,11 +749,18 @@ def get_invoice(invoice_id):
 
 
 @invoices_bp.route('/patients/<patient_id>/invoices', methods=['GET'])
+@jwt_required()
 def get_patient_invoices(patient_id):
     """Get all invoices for a patient"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         invoices = Invoice.query.filter_by(
-            patient_id=patient_id
+            patient_id=patient_id,
+            tenant_id=user.tenant_id
         ).order_by(desc(Invoice.created_at)).all()
         
         return jsonify({
@@ -705,12 +775,18 @@ def get_patient_invoices(patient_id):
 # ============= SALE INVOICE ENDPOINTS =============
 
 @invoices_bp.route('/sales/<sale_id>/invoice', methods=['POST', 'OPTIONS'])
+@jwt_required()
 def create_sale_invoice(sale_id):
     """Create invoice for a sale"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         # Get the sale
         sale = db.session.get(Sale, sale_id)
-        if not sale:
+        if not sale or sale.tenant_id != user.tenant_id:
             return jsonify({'success': False, 'error': 'Sale not found'}), 404
 
         # Check if invoice already exists for this sale
@@ -743,6 +819,7 @@ def create_sale_invoice(sale_id):
 
         # Create invoice
         invoice = Invoice(
+            tenant_id=user.tenant_id,
             invoice_number=invoice_number,
             sale_id=sale_id,
             patient_id=sale.patient_id,
@@ -1343,13 +1420,19 @@ def delete_invoice(invoice_id):
 # ============= PROFORMA ENDPOINTS =============
 
 @proformas_bp.route('/proformas', methods=['GET'])
+@jwt_required()
 def get_proformas():
     """Get all proformas with pagination"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         page = request.args.get('page', 1, type=int)
         per_page = min(request.args.get('per_page', 20, type=int), 100)
         
-        proformas_query = Proforma.query.order_by(desc(Proforma.created_at))
+        proformas_query = Proforma.query.filter_by(tenant_id=user.tenant_id).order_by(desc(Proforma.created_at))
         proformas = proformas_query.paginate(
             page=page, per_page=per_page, error_out=False
         )
@@ -1368,9 +1451,15 @@ def get_proformas():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @proformas_bp.route('/proformas', methods=['POST'])
+@jwt_required()
 def create_proforma():
     """Create a new proforma"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json()
         
         # Validate required fields
@@ -1401,6 +1490,7 @@ def create_proforma():
         
         # Create proforma
         proforma = Proforma(
+            tenant_id=user.tenant_id,
             proforma_number=proforma_number,
             patient_id=data['patientId'],
             company_name=data.get('companyName'),
@@ -1419,6 +1509,7 @@ def create_proforma():
         
         # Add activity log
         activity = ActivityLog(
+            tenant_id=user.tenant_id,
             user_id=data.get('createdBy', 'system'),
             action='proforma_created',
             entity_type='proforma',
@@ -1441,11 +1532,17 @@ def create_proforma():
 
 
 @proformas_bp.route('/proformas/<int:proforma_id>', methods=['GET'])
+@jwt_required()
 def get_proforma(proforma_id):
     """Get a specific proforma"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         proforma = db.session.get(Proforma, proforma_id)
-        if not proforma:
+        if not proforma or proforma.tenant_id != user.tenant_id:
             return jsonify({'success': False, 'message': 'Proforma not found'}), 404
         
         return jsonify({
@@ -1458,11 +1555,18 @@ def get_proforma(proforma_id):
 
 
 @proformas_bp.route('/patients/<patient_id>/proformas', methods=['GET'])
+@jwt_required()
 def get_patient_proformas(patient_id):
     """Get all proformas for a patient"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         proformas = Proforma.query.filter_by(
-            patient_id=patient_id
+            patient_id=patient_id,
+            tenant_id=user.tenant_id
         ).order_by(desc(Proforma.created_at)).all()
         
         return jsonify({
@@ -1475,13 +1579,19 @@ def get_patient_proformas(patient_id):
 
 
 @proformas_bp.route('/proformas/<int:proforma_id>/convert', methods=['POST'])
+@jwt_required()
 def convert_proforma_to_sale(proforma_id):
     """Convert a proforma into a sale: create Sale and DeviceAssignment records and mark proforma converted."""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
         data = request.get_json() or {}
 
         proforma = db.session.get(Proforma, proforma_id)
-        if not proforma:
+        if not proforma or proforma.tenant_id != user.tenant_id:
             print(f"Proforma not found: {proforma_id}")
             return jsonify({'success': False, 'error': 'Proforma not found'}), 404
 
@@ -1517,6 +1627,7 @@ def convert_proforma_to_sale(proforma_id):
 
         sale = Sale(
             id=f"sale_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}",
+            tenant_id=user.tenant_id,
             patient_id=proforma.patient_id,
             total_amount=pricing_calculation['total_amount'],
             discount_amount=pricing_calculation.get('total_discount', 0.0),
@@ -1582,6 +1693,7 @@ def convert_proforma_to_sale(proforma_id):
 
                 # Create a Device record linked to inventory and patient
                 new_device = Device()
+                new_device.tenant_id = user.tenant_id
                 new_device.patient_id = proforma.patient_id
                 new_device.inventory_id = inv.id
                 new_device.serial_number = serial
@@ -1601,6 +1713,7 @@ def convert_proforma_to_sale(proforma_id):
 
             # Build assignment pointing to created_device.id
             assignment = DeviceAssignment(
+                tenant_id=user.tenant_id,
                 id=f"assign_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}_{i}",
                 patient_id=proforma.patient_id,
                 device_id=created_device.id,
@@ -1683,7 +1796,7 @@ def convert_proforma_to_sale(proforma_id):
 
         from app import log_activity
         log_activity(
-            request.headers.get('X-User-ID', 'system'),
+            user.id,
             'proforma_converted',
             'proforma',
             str(proforma.id),
@@ -1693,7 +1806,8 @@ def convert_proforma_to_sale(proforma_id):
                 'device_count': len(device_assignments),
                 'total_amount': pricing_calculation['total_amount']
             },
-            request
+            request,
+            tenant_id=user.tenant_id
         )
 
         assignments_resp = [db.session.get(DeviceAssignment, aid).to_dict() for aid in created_assignment_ids]

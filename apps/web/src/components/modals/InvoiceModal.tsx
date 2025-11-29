@@ -1,5 +1,6 @@
 import { Button } from '@x-ear/ui-web';
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { InvoiceModalContent } from './InvoiceModalContent';
 import { InvoiceFormData } from '../../types/invoice-schema';
 
@@ -37,10 +38,10 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  const modal = (
     <div
       className="fixed inset-0 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
-      style={{ zIndex: 9999 }}
+      style={{ zIndex: 50000 }}
       onClick={handleBackdropClick}
     >
       <InvoiceModalContent
@@ -57,6 +58,9 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
       />
     </div>
   );
+
+  // Render modal into document.body to escape any parent stacking contexts
+  return typeof document !== 'undefined' ? createPortal(modal, document.body) : modal;
 };
 
 // Quick Invoice Modal - Simplified version for quick invoice creation

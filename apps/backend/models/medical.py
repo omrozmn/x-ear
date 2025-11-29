@@ -12,6 +12,7 @@ class PatientNote(BaseModel, JSONMixin):
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
     author_id = db.Column(db.String(50), nullable=False)
     appointment_id = db.Column(db.String(50))
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Note details
     note_type = db.Column(db.String(20), default='clinical')
@@ -44,6 +45,7 @@ class EReceipt(BaseModel, JSONMixin):
     
     # Foreign keys
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Receipt details
     receipt_number = db.Column(db.String(50), unique=True, nullable=False)
@@ -102,6 +104,7 @@ class HearingTest(BaseModel, JSONMixin):
     
     # Foreign keys
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Test details
     test_date = db.Column(db.DateTime, nullable=False)

@@ -10,9 +10,10 @@ import {
   CreditCardIcon,
   BuildingOfficeIcon,
 } from '@heroicons/react/24/outline';
+import * as Dialog from '@radix-ui/react-dialog';
 import toast from 'react-hot-toast';
 
-import Layout from '@/components/Layout';
+
 import {
   useGetAdminInvoices,
   useGetAdminPlans,
@@ -24,7 +25,11 @@ import {
   Invoice,
   Plan,
   InvoiceInput,
-  InvoiceStatus
+  InvoiceStatus,
+  usePostAdminPlans,
+  usePutAdminPlansId,
+  useDeleteAdminPlansId,
+  PlanInput
 } from '@/lib/api-client';
 
 // Helper interfaces for component state if not fully covered by generated types
@@ -38,7 +43,27 @@ const Billing: React.FC = () => {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showPlansModal, setShowPlansModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentInvoiceId, setPaymentInvoiceId] = useState<string | null>(null);
+  const [paymentMaxAmount, setPaymentMaxAmount] = useState<number>(0);
+  const [paymentAmount, setPaymentAmount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<'invoices' | 'plans'>('invoices');
+
+  // Plan Management State
+  const [planModalView, setPlanModalView] = useState<'list' | 'form'>('list');
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+  const [planFormData, setPlanFormData] = useState({
+    name: '',
+    description: '',
+    price: 0,
+    currency: 'TRY',
+    billing_interval: 'MONTHLY',
+    features: {} as Record<string, string>,
+    is_active: true
+  });
+  const [planFeaturesList, setPlanFeaturesList] = useState<string[]>([]);
+  const [newFeature, setNewFeature] = useState('');
+
   const queryClient = useQueryClient();
 
   // Fetch invoices
@@ -72,22 +97,38 @@ const Billing: React.FC = () => {
   // Create invoice mutation
   const { mutateAsync: createInvoice, isPending: isCreatingInvoice } = usePostAdminInvoices();
 
-  const handlePaymentRecord = async (invoiceId: string, totalAmount: number) => {
-    const amountStr = prompt(`Ödeme tutarını girin (Maksimum: ${totalAmount} TL):`);
-    if (amountStr && !isNaN(Number(amountStr))) {
-      const paymentAmount = Number(amountStr);
-      if (paymentAmount > 0 && paymentAmount <= totalAmount) {
-        try {
-          await recordPayment({ id: invoiceId, data: { amount: paymentAmount } });
-          queryClient.invalidateQueries({ queryKey: ['getAdminInvoices'] });
-          queryClient.invalidateQueries({ queryKey: ['getAdminInvoicesId', invoiceId] });
-          toast.success('Ödeme başarıyla kaydedildi');
-        } catch (error: any) {
-          toast.error(error.response?.data?.error?.message || 'Ödeme kaydedilirken hata oluştu');
+  // Plan mutations
+  const { mutateAsync: createPlan } = usePostAdminPlans();
+  const { mutateAsync: updatePlan } = usePutAdminPlansId();
+  const { mutateAsync: deletePlan } = useDeleteAdminPlansId();
+
+  const handlePaymentRecordClick = (invoiceId: string, totalAmount: number) => {
+    setPaymentInvoiceId(invoiceId);
+    setPaymentMaxAmount(totalAmount);
+    setPaymentAmount(totalAmount); // Default to full remaining amount
+    setShowPaymentModal(true);
+  };
+
+  const handleConfirmPayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!paymentInvoiceId) return;
+
+    if (paymentAmount > 0 && paymentAmount <= paymentMaxAmount) {
+      try {
+        await recordPayment({ id: paymentInvoiceId, data: { amount: paymentAmount } });
+        queryClient.invalidateQueries({ queryKey: ['getAdminInvoices'] });
+        queryClient.invalidateQueries({ queryKey: ['getAdminInvoicesId', paymentInvoiceId] });
+        toast.success('Ödeme başarıyla kaydedildi');
+        setShowPaymentModal(false);
+        // Also close invoice detail modal if open and it's the same invoice
+        if (showInvoiceModal && selectedInvoiceId === paymentInvoiceId) {
+          // Optionally keep it open but it will refresh due to query invalidation
         }
-      } else {
-        toast.error('Geçersiz ödeme tutarı');
+      } catch (error: any) {
+        toast.error(error.response?.data?.error?.message || 'Ödeme kaydedilirken hata oluştu');
       }
+    } else {
+      toast.error('Geçersiz ödeme tutarı');
     }
   };
 
@@ -143,6 +184,96 @@ const Billing: React.FC = () => {
     }
   };
 
+  // Plan Management Handlers
+  const handleAddPlanClick = () => {
+    setEditingPlan(null);
+    setPlanFormData({
+      name: '',
+      description: '',
+      price: 0,
+      currency: 'TRY',
+      billing_interval: 'MONTHLY',
+      features: {},
+      is_active: true
+    });
+    setPlanFeaturesList([]);
+    setPlanModalView('form');
+  };
+
+  const handleEditPlanClick = (plan: Plan) => {
+    setEditingPlan(plan);
+    // Convert features object to array for UI
+    const featuresArray = plan.features ? Object.values(plan.features) : [];
+    setPlanFeaturesList(featuresArray as string[]);
+
+    setPlanFormData({
+      name: plan.name || '',
+      description: plan.description || '',
+      price: plan.price || 0,
+      currency: plan.currency || 'TRY',
+      billing_interval: plan.billing_interval || 'MONTHLY',
+      features: (plan.features || {}) as Record<string, string>,
+      is_active: plan.is_active ?? true
+    });
+    setPlanModalView('form');
+  };
+
+  const handleDeletePlanClick = async (id: string) => {
+    if (window.confirm('Bu planı silmek istediğinize emin misiniz?')) {
+      try {
+        await deletePlan({ id });
+        queryClient.invalidateQueries({ queryKey: ['getAdminPlans'] });
+        toast.success('Plan silindi');
+      } catch (error: any) {
+        toast.error('Plan silinemedi');
+      }
+    }
+  };
+
+  const handleAddFeature = () => {
+    if (newFeature.trim()) {
+      setPlanFeaturesList([...planFeaturesList, newFeature.trim()]);
+      setNewFeature('');
+    }
+  };
+
+  const handleRemoveFeature = (index: number) => {
+    setPlanFeaturesList(planFeaturesList.filter((_, i) => i !== index));
+  };
+
+  const handleSavePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Convert features array back to object/map for API
+    const featuresMap: Record<string, string> = {};
+    planFeaturesList.forEach((f, i) => {
+      featuresMap[`feature_${i}`] = f;
+    });
+
+    const dataToSave: PlanInput = {
+      name: planFormData.name,
+      description: planFormData.description,
+      price: planFormData.price,
+      billing_interval: planFormData.billing_interval,
+      features: featuresMap as any, // Cast to any or PlanInputFeatures
+      is_active: planFormData.is_active
+    };
+
+    try {
+      if (editingPlan?.id) {
+        await updatePlan({ id: editingPlan.id, data: dataToSave });
+        toast.success('Plan güncellendi');
+      } else {
+        await createPlan({ data: dataToSave });
+        toast.success('Plan oluşturuldu');
+      }
+      queryClient.invalidateQueries({ queryKey: ['getAdminPlans'] });
+      setPlanModalView('list');
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || 'İşlem başarısız');
+    }
+  };
+
   const getStatusBadge = (status: string | undefined) => {
     if (!status) return null;
     const statusClasses: Record<string, string> = {
@@ -180,7 +311,7 @@ const Billing: React.FC = () => {
   };
 
   return (
-    <Layout>
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -465,7 +596,7 @@ const Billing: React.FC = () => {
                               </button>
                               {invoice.status === 'open' && (
                                 <button
-                                  onClick={() => handlePaymentRecord(invoice.id!, (invoice.total || 0) - (invoice.paid_amount || 0))}
+                                  onClick={() => handlePaymentRecordClick(invoice.id!, (invoice.total || 0) - (invoice.paid_amount || 0))}
                                   className="text-green-600 hover:text-green-900 text-xs px-2 py-1 border border-green-300 rounded"
                                 >
                                   Ödeme Kaydet
@@ -479,7 +610,7 @@ const Billing: React.FC = () => {
                   </table>
 
                   {/* Pagination */}
-                  {pagination && pagination.totalPages > 1 && (
+                  {pagination && (pagination.totalPages || 0) > 1 && (
                     <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                       <div className="flex-1 flex justify-between sm:hidden">
                         <button
@@ -558,7 +689,7 @@ const Billing: React.FC = () => {
                       {formatCurrency(plan.price || 0, plan.currency)}
                     </span>
                     <span className="text-gray-500 text-sm">
-                      /{plan.billing_cycle === 'monthly' ? 'ay' : 'yıl'}
+                      /{plan.billing_interval === 'MONTHLY' ? 'ay' : 'yıl'}
                     </span>
                   </div>
                   {plan.features && plan.features.length > 0 && (
@@ -706,8 +837,11 @@ const Billing: React.FC = () => {
                   {selectedInvoice.status === 'open' && (
                     <button
                       onClick={() => {
-                        handlePaymentRecord(selectedInvoice.id!, (selectedInvoice.total || 0) - (selectedInvoice.paid_amount || 0));
-                        setShowInvoiceModal(false);
+                        handlePaymentRecordClick(selectedInvoice.id!, (selectedInvoice.total || 0) - (selectedInvoice.paid_amount || 0));
+                        // Don't close invoice modal, let them stack or handle appropriately. 
+                        // Actually, maybe better to close invoice modal or keep it? 
+                        // Let's keep it open, the payment modal will be on top (z-50 vs z-50 might be tricky, let's ensure payment modal has higher z-index or is nested properly)
+                        // Radix Dialog Portal handles z-index well usually.
                       }}
                       className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
                     >
@@ -732,31 +866,251 @@ const Billing: React.FC = () => {
           />
         )}
 
-        {/* Plans Modal */}
+        {/* Plans Management Modal */}
         {showPlansModal && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Plan Yönetimi</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  {planModalView === 'list' ? 'Plan Yönetimi' : (editingPlan ? 'Plan Düzenle' : 'Yeni Plan Ekle')}
+                </h3>
                 <button
-                  onClick={() => setShowPlansModal(false)}
+                  onClick={() => {
+                    if (planModalView === 'form') {
+                      setPlanModalView('list');
+                    } else {
+                      setShowPlansModal(false);
+                    }
+                  }}
                   className="text-gray-400 hover:text-gray-600"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
               </div>
-              <div className="text-center py-8">
-                <BuildingOfficeIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Plan yönetimi</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Plan oluşturma ve düzenleme özellikleri yakında eklenecek.
-                </p>
-              </div>
+
+              {planModalView === 'list' ? (
+                <div className="space-y-4">
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleAddPlanClick}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
+                    >
+                      <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
+                      Yeni Plan Ekle
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan Adı</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fiyat</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periyot</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {plans.map((plan) => (
+                          <tr key={plan.id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{plan.name}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatCurrency(plan.price || 0, plan.currency)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{plan.billing_interval === 'MONTHLY' ? 'Aylık' : 'Yıllık'}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${plan.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                {plan.is_active ? 'Aktif' : 'Pasif'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <button onClick={() => handleEditPlanClick(plan)} className="text-indigo-600 hover:text-indigo-900 mr-4">Düzenle</button>
+                              <button onClick={() => handleDeletePlanClick(plan.id!)} className="text-red-600 hover:text-red-900">Sil</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleSavePlan} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Plan Adı</label>
+                      <input
+                        type="text"
+                        required
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        value={planFormData.name}
+                        onChange={(e) => setPlanFormData({ ...planFormData, name: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Fiyat</label>
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        step="0.01"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        value={planFormData.price}
+                        onChange={(e) => setPlanFormData({ ...planFormData, price: Number(e.target.value) })}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Para Birimi</label>
+                      <select
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        value={planFormData.currency}
+                        onChange={(e) => setPlanFormData({ ...planFormData, currency: e.target.value })}
+                      >
+                        <option value="TRY">TRY</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Fatura Aralığı</label>
+                      <select
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        value={planFormData.billing_interval}
+                        onChange={(e) => setPlanFormData({ ...planFormData, billing_interval: e.target.value as 'MONTHLY' | 'YEARLY' })}
+                      >
+                        <option value="MONTHLY">Aylık</option>
+                        <option value="YEARLY">Yıllık</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Açıklama</label>
+                    <textarea
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                      rows={3}
+                      value={planFormData.description}
+                      onChange={(e) => setPlanFormData({ ...planFormData, description: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Özellikler</label>
+                    <div className="flex space-x-2 mt-1 mb-2">
+                      <input
+                        type="text"
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        placeholder="Özellik ekle..."
+                        value={newFeature}
+                        onChange={(e) => setNewFeature(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddFeature())}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddFeature}
+                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                      >
+                        Ekle
+                      </button>
+                    </div>
+                    <ul className="space-y-2">
+                      {planFeaturesList.map((feature, index) => (
+                        <li key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                          <span className="text-sm text-gray-700">{feature}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFeature(index)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <XMarkIcon className="h-4 w-4" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id="plan-active"
+                      type="checkbox"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      checked={planFormData.is_active}
+                      onChange={(e) => setPlanFormData({ ...planFormData, is_active: e.target.checked })}
+                    />
+                    <label htmlFor="plan-active" className="ml-2 block text-sm text-gray-900">
+                      Plan Aktif
+                    </label>
+                  </div>
+                  <div className="flex justify-end space-x-3 pt-4 border-t">
+                    <button
+                      type="button"
+                      onClick={() => setPlanModalView('list')}
+                      className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    >
+                      İptal
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                    >
+                      {editingPlan ? 'Güncelle' : 'Oluştur'}
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         )}
-      </div>
-    </Layout>
+
+        {/* Payment Modal */}
+        <Dialog.Root open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+          <Dialog.Portal>
+            <Dialog.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-overlayShow z-[60]" />
+            <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none data-[state=open]:animate-contentShow z-[70]">
+              <Dialog.Title className="text-xl font-medium text-gray-900 mb-4">
+                Ödeme Kaydet
+              </Dialog.Title>
+              <form onSubmit={handleConfirmPayment} className="space-y-4">
+                <div>
+                  <label htmlFor="payment-amount" className="block text-sm font-medium text-gray-700">Tutar (Maks: {formatCurrency(paymentMaxAmount)})</label>
+                  <input
+                    id="payment-amount"
+                    type="number"
+                    required
+                    min="0.01"
+                    step="0.01"
+                    max={paymentMaxAmount}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(Number(e.target.value))}
+                  />
+                </div>
+                <div className="mt-6 flex justify-end space-x-3">
+                  <Dialog.Close asChild>
+                    <button
+                      type="button"
+                      className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                    >
+                      İptal
+                    </button>
+                  </Dialog.Close>
+                  <button
+                    type="submit"
+                    className="inline-flex justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                  >
+                    Kaydet
+                  </button>
+                </div>
+              </form>
+              <Dialog.Close asChild>
+                <button
+                  className="absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
+                  aria-label="Close"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+              </Dialog.Close>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+      </div >
+    </>
   );
 };
 

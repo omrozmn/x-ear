@@ -14,6 +14,8 @@ class Invoice(db.Model):
     sale_id = Column(String(50), ForeignKey('sales.id'), nullable=True, index=True)  # Link to sale
     patient_id = Column(String(50), ForeignKey('patients.id'), nullable=False, index=True)
     device_id = Column(String(50), ForeignKey('devices.id'), nullable=True)
+    tenant_id = Column(String(36), ForeignKey('tenants.id'), nullable=False, index=True)
+    branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     
     # Invoice details
     device_name = Column(String(200))
@@ -43,6 +45,7 @@ class Invoice(db.Model):
             'id': self.id,
             'invoiceNumber': self.invoice_number,
             'saleId': self.sale_id,
+            'branchId': self.branch_id,
             'patientId': self.patient_id,
             'deviceId': self.device_id,
             'deviceName': self.device_name,
@@ -67,6 +70,8 @@ class Proforma(db.Model):
     id = Column(Integer, primary_key=True)
     proforma_number = Column(String(50), unique=True, nullable=False, index=True)
     patient_id = Column(String(50), ForeignKey('patients.id'), nullable=False, index=True)
+    tenant_id = Column(String(36), ForeignKey('tenants.id'), nullable=False, index=True)
+    branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     
     # Proforma details
     company_name = Column(String(200))
@@ -104,6 +109,7 @@ class Proforma(db.Model):
         return {
             'id': self.id,
             'proformaNumber': self.proforma_number,
+            'branchId': self.branch_id,
             'patientId': self.patient_id,
             'companyName': self.company_name,
             'deviceName': self.device_name,

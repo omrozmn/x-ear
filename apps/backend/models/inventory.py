@@ -78,6 +78,8 @@ class Inventory(db.Model):
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.String(50), primary_key=True)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     name = db.Column(db.String(200), nullable=False)
     brand = db.Column(db.String(100), nullable=False)
     model = db.Column(db.String(100))
@@ -144,6 +146,8 @@ class Inventory(db.Model):
 
         return {
             'id': self.id,
+            'tenantId': self.tenant_id,
+            'branchId': self.branch_id,
             'name': self.name,
             'brand': self.brand,
             'model': self.model,

@@ -9,6 +9,7 @@ class Replacement(BaseModel):
     __tablename__ = 'replacements'
 
     id = Column(String, primary_key=True)
+    tenant_id = Column(String, nullable=True, index=True)
     patient_id = Column(String, nullable=False, index=True)
     sale_id = Column(String, nullable=True, index=True)
     old_device_id = Column(String, nullable=True)
@@ -38,6 +39,7 @@ class Replacement(BaseModel):
 
         return {
             'id': self.id,
+            'tenantId': self.tenant_id,
             'patientId': self.patient_id,
             'saleId': self.sale_id,
             'oldDeviceId': self.old_device_id,

@@ -231,6 +231,7 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
 
           <InvoiceFormExtended
             invoice={initialData as any}
+            initialData={initialData}
             onSubmit={handleSubmit}
             onCancel={onClose}
             isLoading={isSubmitting}

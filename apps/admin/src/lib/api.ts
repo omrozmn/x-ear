@@ -1,8 +1,8 @@
 import axios from 'axios';
-// import { useAuthStore } from '../stores/authStore';
+import { useAuthStore } from '../stores/authStore';
 
 // Create axios instance for admin routes
-export const adminApi = axios.create({
+export const adminApiInstance = axios.create({
     baseURL: '/api', // Assuming the same base URL, but routes will be /admin/...
     timeout: 30000,
     headers: {
@@ -10,23 +10,33 @@ export const adminApi = axios.create({
     },
 });
 
+// Generic wrapper for Orval
+export const adminApi = <T>(config: any): Promise<T> => {
+    return adminApiInstance(config).then(response => response.data);
+};
+
+
 // Request interceptor to add auth token from the main app's store
-adminApi.interceptors.request.use(
+adminApiInstance.interceptors.request.use(
     (config) => {
-        // const token = useAuthStore.getState().token;
-        const token = localStorage.getItem('admin_token'); // Temporary fix
+        const storeToken = useAuthStore.getState().token;
+        const localToken = localStorage.getItem('admin_token');
+        const token = storeToken || localToken;
+
+        console.log('API Request:', config.url, 'Token:', token ? 'Present' : 'Missing', '(Store:', !!storeToken, 'Local:', !!localToken, ')');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },
     (error) => {
+        console.error('API Request Error:', error);
         return Promise.reject(error);
     }
 );
 
 // Response interceptor
-adminApi.interceptors.response.use(
+adminApiInstance.interceptors.response.use(
     (response) => response,
     (error) => {
         // Handle 401s or other specific admin errors here

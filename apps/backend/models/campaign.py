@@ -12,6 +12,7 @@ class Campaign(BaseModel, JSONMixin):
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
     campaign_type = db.Column(db.String(50), default='sms')  # sms, email, notification
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # Target audience
     target_segment = db.Column(db.String(50))  # lead, customer, trial, etc.
@@ -75,6 +76,7 @@ class SMSLog(BaseModel, JSONMixin):
     # Foreign keys
     campaign_id = db.Column(db.String(50), db.ForeignKey('campaigns.id'), nullable=True)
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=True)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
     
     # SMS details
     phone_number = db.Column(db.String(20), nullable=False)

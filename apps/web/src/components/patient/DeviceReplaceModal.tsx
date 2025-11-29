@@ -6,6 +6,7 @@ import { InvoiceModal } from '../../components/modals/InvoiceModal';
 import { invoiceService } from '../../services/invoice.service';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { CheckCircle } from 'lucide-react';
+import { ProductSearchInput } from '../cashflow/ProductSearchInput';
 import { PatientDevice } from '../../types/patient';
 
 interface InventoryItem {
@@ -16,6 +17,7 @@ interface InventoryItem {
   availableInventory?: number;
   availableSerials?: string[];
   category?: string;
+  supplier?: string | null;
 }
 
 interface DeviceReplaceModalProps {
@@ -38,8 +40,6 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [results, setResults] = useState<InventoryItem[]>([]);
   const [selectedInventory, setSelectedInventory] = useState<InventoryItem | null>(null);
   const [replacements, setReplacements] = useState<any[]>([]);
   const [loadingReplacements, setLoadingReplacements] = useState(false);
@@ -48,43 +48,23 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
   const [previewOpen, setPreviewOpen] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [invoiceInitialData, setInvoiceInitialData] = useState<any | undefined>(undefined);
-  const [invoiceModalMode, setInvoiceModalMode] = useState<'create' | 'edit'>('create');
+  const [invoiceModalMode, setInvoiceModalMode] = useState<'create' | 'edit' | 'quick'>('create');
   const [currentReplacementForInvoice, setCurrentReplacementForInvoice] = useState<string | null>(null);
+  const [invoiceDeviceId, setInvoiceDeviceId] = useState<string | null>(null);
   const [sendLoadingMap, setSendLoadingMap] = useState<Record<string, boolean>>({});
   const { success: showSuccess, error: showError } = useToastHelpers();
 
   useEffect(() => {
     // Reset selection when modal opens
     if (!isOpen) {
-      setSearchTerm('');
       setResults([]);
       setSelectedInventory(null);
       setError(null);
       setIsSubmitting(false);
     }
-    // When modal opens, load a default inventory list of hearing aids so user sees options immediately
+    // When modal opens, load existing replacements for this patient
     if (isOpen) {
       (async () => {
-        try {
-          const res = await fetch(`http://localhost:5003/api/inventory?category=hearing_aid&per_page=50`);
-          if (res.ok) {
-            const json = await res.json();
-            const items = json.data || [];
-            setResults(items.map((it: any) => ({
-              id: it.id || it.itemId || it.inventoryId,
-              name: it.name || it.brand || `${it.brand || ''} ${it.model || ''}`,
-              brand: it.brand,
-              model: it.model,
-              availableInventory: it.availableInventory || it.quantity || 0,
-              availableSerials: it.availableSerials || it.serials || []
-            })));
-          }
-        } catch (e) {
-          // ignore - search still available
-        }
-      })();
-      (async () => {
-        // load existing replacements for this patient
         try {
           await refreshReplacements();
         } catch (e) {
@@ -94,26 +74,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
     }
   }, [isOpen]);
 
-  const doSearch = async (q: string) => {
-    try {
-      const res = await fetch(`http://localhost:5003/api/inventory?search=${encodeURIComponent(q)}&per_page=20`);
-      if (!res.ok) throw new Error('Envanter araması başarısız');
-      const json = await res.json();
-      // OpenAPI returns { data: [...] }
-      const items = json.data || [];
-      setResults(items.map((it: any) => ({
-        id: it.id || it.itemId || it.inventoryId,
-        name: it.name || it.brand || `${it.brand || ''} ${it.model || ''}`,
-        brand: it.brand,
-        model: it.model,
-        availableInventory: it.availableInventory || it.quantity || 0,
-        availableSerials: it.availableSerials || it.serials || []
-      })));
-    } catch (e: any) {
-      console.error('Inventory search failed', e);
-      setError(e.message || 'Envanter arama hatası');
-    }
-  };
+  // Inventory search is handled by shared ProductSearchInput component
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,7 +92,9 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
       setActionMessage('Cihaz değişimi kaydedildi');
       showSuccess('Cihaz değişimi kaydedildi');
     } catch (err: any) {
-      setError(err.message || 'Cihaz değiştirilemedi');
+      const msg = err.message || 'Cihaz değiştirilemedi';
+      setError(msg);
+      showError(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -172,12 +135,14 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
       setActionMessage(null);
       // Prepare initial data for invoice modal
       const rep = replacements.find(r => r.id === replacementId) || {};
+      const supplierName = rep.supplier || rep.new_device_info_parsed?.supplier || rep.new_device_info_parsed?.supplier_name || null;
       const initial: any = {
-        invoiceType: 'corporate',
+        invoiceType: '50', // İade
         invoice_details: {
           invoice_date: new Date().toISOString().split('T')[0],
           supplierInvoiceNumber: ''
         },
+        customerName: supplierName || undefined,
         items: [
           {
             description: rep.old_device_info_parsed?.brand ? `${rep.old_device_info_parsed.brand} ${rep.old_device_info_parsed.model || ''}`.trim() : (rep.old_device_info_parsed || rep.old_device_info || 'Cihaz'),
@@ -186,18 +151,23 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             taxRate: 18
           }
         ],
-        notes: `Değişim - Yeni cihaz: ${rep.new_device_info_parsed?.brand || rep.new_device_info_parsed || ''}`
+        notes: `Değişim: ${rep.new_device_info_parsed?.brand || rep.new_device_info_parsed || ''}`
       };
 
       setInvoiceInitialData(initial);
       setCurrentReplacementForInvoice(replacementId);
-      setInvoiceModalMode('create');
+      // try to infer device id from replacement if present
+      setInvoiceDeviceId(rep.old_device_id || rep.oldDeviceId || rep.deviceId || device.id || null);
+      // open quick invoice modal so user can edit all fields (pre-filled)
+      setInvoiceModalMode('quick');
       // open modal on next tick to avoid the originating click event
       setTimeout(() => setShowInvoiceModal(true), 0);
       // keep replacementId in actionMessage so we can reference when invoice is created
       setActionMessage(`Yeni iade faturası için form açıldı (replacement ${replacementId})`);
     } catch (e: any) {
-      setActionMessage(e.message || 'Fatura oluşturma modalı açılamadı');
+      const msg = e.message || 'Fatura oluşturma modalı açılamadı';
+      setActionMessage(msg);
+      showError(msg);
     }
   };
 
@@ -261,7 +231,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
       const isLoading = !!sendLoadingMap[invoiceId];
       return (
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" className="px-3 py-1 text-sm" onClick={async () => {
+          <Button type="button" size="sm" variant="outline" className="px-3 py-1 text-sm" onClick={async () => {
             try {
               const inv = await invoiceService.getInvoice(invoiceId);
               if (!inv) throw new Error('Fatura bulunamadı');
@@ -275,7 +245,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             Fatura Önizle
           </Button>
 
-          <Button size="sm" variant="ghost" className="px-3 py-1 text-sm" onClick={async () => {
+          <Button type="button" size="sm" variant="ghost" className="px-3 py-1 text-sm" onClick={async () => {
             try {
               const inv = await invoiceService.getInvoice(invoiceId);
               if (!inv) throw new Error('Fatura bulunamadı');
@@ -302,7 +272,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             Fatura Düzenle
           </Button>
 
-          <Button size="sm" variant="secondary" className="px-3 py-1 text-sm" onClick={async () => {
+          <Button type="button" size="sm" variant="secondary" className="px-3 py-1 text-sm" onClick={async () => {
             try {
               setSendLoadingMap(prev => ({ ...prev, [invoiceId]: true }));
               await handleSendToGib(invoiceId);
@@ -317,7 +287,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
     }
 
     return (
-      <Button size="sm" variant="secondary" className="px-3 py-1 text-sm" onClick={async () => {
+      <Button type="button" size="sm" variant="secondary" className="px-3 py-1 text-sm" onClick={async () => {
         try {
           await handleCreateReturnInvoice(rep.id);
         } catch (err: any) {
@@ -396,36 +366,28 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
           <div className="bg-gray-50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-900 mb-2">Talep Edilen Yeni Cihaz (Tedarikten alınacak)</h4>
             <p className="text-xs text-gray-600 mb-2">Tedarikten temin etmek istediğiniz modeli seçin. Seri takip edilen ürünler için seri seçimi yapın.</p>
-            <div className="flex gap-2">
-              <input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Cihaz ara (marka, model, barkod)"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+            <div className="mt-3">
+              <ProductSearchInput
+                className="w-full"
+                selectedProduct={selectedInventory}
+                onSelectProduct={(p) => { setSelectedInventory(p); }}
+                showReplaceButton={true}
+                onReplaceClick={async (item) => {
+                  try {
+                    setIsSubmitting(true);
+                    setError(null);
+                    await onReplace(device.id, reason, notes, item.id, item ? { id: item.id, brand: item.brand, model: item.model, supplier: item.supplier, category: item.category } : undefined);
+                    showSuccess('Cihaz değişimi kaydedildi');
+                    await refreshReplacements();
+                  } catch (err: any) {
+                    const msg = err?.message || 'Cihaz değiştirilemedi';
+                    setError(msg);
+                    showError(msg);
+                  } finally {
+                    setIsSubmitting(false);
+                  }
+                }}
               />
-              <Button type="button" variant="outline" onClick={() => doSearch(searchTerm)}>
-                Ara
-              </Button>
-            </div>
-
-            <div className="mt-3 max-h-48 overflow-auto">
-              {results.length === 0 ? (
-                <p className="text-xs text-gray-500">Lütfen arama yapın veya listeden seçim yapın.</p>
-              ) : (
-                <ul>
-                  {results.map(item => (
-                    <li key={item.id} className={`p-2 rounded hover:bg-gray-100 cursor-pointer ${selectedInventory?.id === item.id ? 'bg-blue-50 border border-blue-200' : ''}`} onClick={() => { setSelectedInventory(item); }}>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-sm font-medium">{item.brand} {item.model}</div>
-                          <div className="text-xs text-gray-500">{item.category || ''} • Stok: {item.availableInventory ?? 0}</div>
-                        </div>
-                        <div className="text-xs text-gray-600">{item.availableInventory ?? 0} adet</div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
             </div>
 
             {/* Removed serial selection — serial number is not known before procurement */}
@@ -489,10 +451,11 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
         mode={invoiceModalMode}
         enableIncomingSelection={true}
         patientId={patientId}
+        deviceId={invoiceDeviceId || undefined}
         onSuccess={(inv) => {
-          if (invoiceModalMode === 'create') {
-            handleInvoiceCreatedAndLinked(inv, currentReplacementForInvoice || undefined);
-          } else {
+            if (invoiceModalMode === 'create' || invoiceModalMode === 'quick') {
+              handleInvoiceCreatedAndLinked(inv, currentReplacementForInvoice || undefined);
+            } else {
             // edit: refresh replacements and close modal
             showSuccess('Fatura güncellendi');
             refreshReplacements();
@@ -503,6 +466,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
         }}
         onError={(err) => { setActionMessage(err); showError(err); }}
       />
+      
     </>
   );
 };

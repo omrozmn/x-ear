@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Force Logout — X-EAR (dev)</title>
+</head>
+<body>
+  <script>
+    try {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('auth_token_timestamp');
+      localStorage.removeItem('x-ear.auth.token@v1');
+      localStorage.removeItem('x-ear.auth.refresh@v1');
+    } catch(e) {}
+    try { delete window.__AUTH_TOKEN__; } catch(e) {}
+
+    // Give a small delay so the storage removals apply in other tabs
+    setTimeout(() => {
+      // Redirect to app root which will show the login screen if unauthenticated
+      location.href = '/';
+    }, 100);
+  </script>
+  <p>Logging out — redirecting...</p>
+</body>
+</html>

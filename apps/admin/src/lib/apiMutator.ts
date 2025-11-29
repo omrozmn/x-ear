@@ -1,9 +1,9 @@
-import { adminApi as axiosInstance } from './api';
+import { adminApiInstance } from './api';
 
 /**
  * Orval mutator function that forwards the request configuration to the axios instance.
- * This matches the signature expected by Orval: (requestConfig) => Promise<any>
+ * This matches the signature expected by Orval: <T>(requestConfig) => Promise<T>
  */
-export const adminApi = (requestConfig) => {
-    return axiosInstance(requestConfig);
+export const adminApi = <T>(requestConfig: any): Promise<T> => {
+    return adminApiInstance(requestConfig).then(response => response.data);
 };

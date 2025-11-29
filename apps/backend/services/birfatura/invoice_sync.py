@@ -24,7 +24,7 @@ class InvoiceSyncService:
     def __init__(self):
         self.client = BirfaturaClient()
     
-    def sync_invoices(self, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> Dict[str, int]:
+    def sync_invoices(self, tenant_id: str, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> Dict[str, int]:
         """
         Sync invoices from BirFatura API
         
@@ -49,7 +49,7 @@ class InvoiceSyncService:
         
         # Sync incoming invoices (from suppliers)
         try:
-            incoming_count = self._sync_incoming_invoices(start_date, end_date)
+            incoming_count = self._sync_incoming_invoices(tenant_id, start_date, end_date)
             stats['incoming'] = incoming_count
         except Exception as e:
             print(f"Error syncing incoming invoices: {e}")
@@ -57,7 +57,7 @@ class InvoiceSyncService:
         
         # Sync outgoing invoices (returns/corrections to suppliers)
         try:
-            outgoing_count = self._sync_outgoing_invoices(start_date, end_date)
+            outgoing_count = self._sync_outgoing_invoices(tenant_id, start_date, end_date)
             stats['outgoing'] = outgoing_count
         except Exception as e:
             print(f"Error syncing outgoing invoices: {e}")
@@ -65,7 +65,7 @@ class InvoiceSyncService:
         
         return stats
     
-    def _sync_incoming_invoices(self, start_date: datetime, end_date: datetime) -> int:
+    def _sync_incoming_invoices(self, tenant_id: str, start_date: datetime, end_date: datetime) -> int:
         """Sync incoming invoices from suppliers"""
         count = 0
         page = 1
@@ -99,7 +99,7 @@ class InvoiceSyncService:
             # Process each invoice
             for invoice_data in invoices:
                 try:
-                    if self._process_incoming_invoice(invoice_data):
+                    if self._process_incoming_invoice(tenant_id, invoice_data):
                         count += 1
                 except Exception as e:
                     print(f"Error processing invoice: {e}")
@@ -115,7 +115,7 @@ class InvoiceSyncService:
         db.session.commit()
         return count
     
-    def _sync_outgoing_invoices(self, start_date: datetime, end_date: datetime) -> int:
+    def _sync_outgoing_invoices(self, tenant_id: str, start_date: datetime, end_date: datetime) -> int:
         """Sync outgoing invoices (returns/corrections) to suppliers"""
         count = 0
         page = 1
@@ -149,7 +149,7 @@ class InvoiceSyncService:
             # Process each invoice
             for invoice_data in invoices:
                 try:
-                    if self._process_outgoing_invoice(invoice_data):
+                    if self._process_outgoing_invoice(tenant_id, invoice_data):
                         count += 1
                 except Exception as e:
                     print(f"Error processing outgoing invoice: {e}")
@@ -165,7 +165,7 @@ class InvoiceSyncService:
         db.session.commit()
         return count
     
-    def _process_incoming_invoice(self, invoice_data: Dict[str, Any]) -> bool:
+    def _process_incoming_invoice(self, tenant_id: str, invoice_data: Dict[str, Any]) -> bool:
         """Process a single incoming invoice"""
         # Extract UUID (unique identifier)
         birfatura_uuid = invoice_data.get('uuid', invoice_data.get('documentUUID'))
@@ -174,7 +174,7 @@ class InvoiceSyncService:
             return False
         
         # Check for duplicates
-        existing = PurchaseInvoice.query.filter_by(birfatura_uuid=birfatura_uuid).first()
+        existing = PurchaseInvoice.query.filter_by(birfatura_uuid=birfatura_uuid, tenant_id=tenant_id).first()
         if existing:
             return False  # Already processed
         
@@ -185,17 +185,18 @@ class InvoiceSyncService:
             return False
         
         # Try to match with existing supplier
-        supplier = Supplier.query.filter_by(tax_number=sender_info['tax_number']).first()
+        supplier = Supplier.query.filter_by(tax_number=sender_info['tax_number'], tenant_id=tenant_id).first()
         
         # If no supplier match, add/update suggested supplier
         if not supplier:
-            self._handle_suggested_supplier(sender_info, invoice_data)
+            self._handle_suggested_supplier(tenant_id, sender_info, invoice_data)
         
         # Extract amounts
         amounts = extract_invoice_amounts(invoice_data)
         
         # Create purchase invoice
         purchase_invoice = PurchaseInvoice(
+            tenant_id=tenant_id,
             birfatura_uuid=birfatura_uuid,
             invoice_number=invoice_data.get('invoiceId', invoice_data.get('invoiceNumber')),
             invoice_date=parse_date(invoice_data.get('issueDate', invoice_data.get('invoiceDate'))),
@@ -222,6 +223,7 @@ class InvoiceSyncService:
         items = extract_invoice_items(invoice_data)
         for item_data in items:
             item = PurchaseInvoiceItem(
+                tenant_id=tenant_id,
                 purchase_invoice_id=purchase_invoice.id,
                 product_code=item_data['product_code'],
                 product_name=item_data['product_name'],
@@ -237,7 +239,7 @@ class InvoiceSyncService:
         
         return True
     
-    def _process_outgoing_invoice(self, invoice_data: Dict[str, Any]) -> bool:
+    def _process_outgoing_invoice(self, tenant_id: str, invoice_data: Dict[str, Any]) -> bool:
         """Process a single outgoing invoice (return/correction to supplier)"""
         # Similar to incoming but with invoice_type='OUTGOING'
         # Extract UUID
@@ -246,7 +248,7 @@ class InvoiceSyncService:
             return False
         
         # Check for duplicates
-        existing = PurchaseInvoice.query.filter_by(birfatura_uuid=birfatura_uuid).first()
+        existing = PurchaseInvoice.query.filter_by(birfatura_uuid=birfatura_uuid, tenant_id=tenant_id).first()
         if existing:
             return False
         
@@ -256,11 +258,12 @@ class InvoiceSyncService:
         if not receiver_tax_number:
             return False
         
-        supplier = Supplier.query.filter_by(tax_number=receiver_tax_number).first()
+        supplier = Supplier.query.filter_by(tax_number=receiver_tax_number, tenant_id=tenant_id).first()
         
         amounts = extract_invoice_amounts(invoice_data)
         
         purchase_invoice = PurchaseInvoice(
+            tenant_id=tenant_id,
             birfatura_uuid=birfatura_uuid,
             invoice_number=invoice_data.get('invoiceId', invoice_data.get('invoiceNumber')),
             invoice_date=parse_date(invoice_data.get('issueDate', invoice_data.get('invoiceDate'))),
@@ -284,6 +287,7 @@ class InvoiceSyncService:
         items = extract_invoice_items(invoice_data)
         for item_data in items:
             item = PurchaseInvoiceItem(
+                tenant_id=tenant_id,
                 purchase_invoice_id=purchase_invoice.id,
                 product_code=item_data['product_code'],
                 product_name=item_data['product_name'],
@@ -298,11 +302,11 @@ class InvoiceSyncService:
         
         return True
     
-    def _handle_suggested_supplier(self, sender_info: Dict[str, str], invoice_data: Dict[str, Any]):
+    def _handle_suggested_supplier(self, tenant_id: str, sender_info: Dict[str, str], invoice_data: Dict[str, Any]):
         """Add or update suggested supplier"""
         tax_number = sender_info['tax_number']
         
-        suggested = SuggestedSupplier.query.filter_by(tax_number=tax_number).first()
+        suggested = SuggestedSupplier.query.filter_by(tax_number=tax_number, tenant_id=tenant_id).first()
         
         invoice_date = parse_date(invoice_data.get('issueDate', invoice_data.get('invoiceDate')))
         amounts = extract_invoice_amounts(invoice_data)
@@ -310,6 +314,7 @@ class InvoiceSyncService:
         if not suggested:
             # Create new suggested supplier
             suggested = SuggestedSupplier(
+                tenant_id=tenant_id,
                 company_name=sender_info['name'],
                 tax_number=tax_number,
                 tax_office=sender_info['tax_office'],

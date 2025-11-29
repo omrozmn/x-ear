@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UtsRouteImport } from './routes/uts'
 import { Route as TestRouteImport } from './routes/test'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as CashflowRouteImport } from './routes/cashflow'
@@ -24,6 +25,9 @@ import { Route as InvoicesIndexRouteImport } from './routes/invoices/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory/index'
 import { Route as SuppliersSupplierIdRouteImport } from './routes/suppliers/$supplierId'
 import { Route as SgkDownloadsRouteImport } from './routes/sgk/downloads'
+import { Route as SettingsTeamRouteImport } from './routes/settings/team'
+import { Route as SettingsSubscriptionRouteImport } from './routes/settings/subscription'
+import { Route as SettingsRolesRouteImport } from './routes/settings/roles'
 import { Route as PatientsPatientIdRouteImport } from './routes/patients/$patientId'
 import { Route as InvoicesPurchasesRouteImport } from './routes/invoices/purchases'
 import { Route as InvoicesNewRouteImport } from './routes/invoices/new'
@@ -42,6 +46,11 @@ const TestRoute = TestRouteImport.update({
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InvoicesRoute = InvoicesRouteImport.update({
@@ -104,6 +113,21 @@ const SgkDownloadsRoute = SgkDownloadsRouteImport.update({
   path: '/sgk/downloads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsTeamRoute = SettingsTeamRouteImport.update({
+  id: '/settings/team',
+  path: '/settings/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsSubscriptionRoute = SettingsSubscriptionRouteImport.update({
+  id: '/settings/subscription',
+  path: '/settings/subscription',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRolesRoute = SettingsRolesRouteImport.update({
+  id: '/settings/roles',
+  path: '/settings/roles',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PatientsPatientIdRoute = PatientsPatientIdRouteImport.update({
   id: '/patients/$patientId',
   path: '/patients/$patientId',
@@ -131,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/cashflow': typeof CashflowRoute
   '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
+  '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
@@ -138,6 +163,9 @@ export interface FileRoutesByFullPath {
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
+  '/settings/roles': typeof SettingsRolesRoute
+  '/settings/subscription': typeof SettingsSubscriptionRoute
+  '/settings/team': typeof SettingsTeamRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
   '/inventory/': typeof InventoryIndexRoute
@@ -150,6 +178,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/cashflow': typeof CashflowRoute
+  '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
@@ -157,6 +186,9 @@ export interface FileRoutesByTo {
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
+  '/settings/roles': typeof SettingsRolesRoute
+  '/settings/subscription': typeof SettingsSubscriptionRoute
+  '/settings/team': typeof SettingsTeamRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
   '/inventory': typeof InventoryIndexRoute
@@ -172,6 +204,7 @@ export interface FileRoutesById {
   '/cashflow': typeof CashflowRoute
   '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
+  '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
@@ -179,6 +212,9 @@ export interface FileRoutesById {
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
+  '/settings/roles': typeof SettingsRolesRoute
+  '/settings/subscription': typeof SettingsSubscriptionRoute
+  '/settings/team': typeof SettingsTeamRoute
   '/sgk/downloads': typeof SgkDownloadsRoute
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
   '/inventory/': typeof InventoryIndexRoute
@@ -195,6 +231,7 @@ export interface FileRouteTypes {
     | '/cashflow'
     | '/inventory'
     | '/invoices'
+    | '/profile'
     | '/reports'
     | '/test'
     | '/uts'
@@ -202,6 +239,9 @@ export interface FileRouteTypes {
     | '/invoices/new'
     | '/invoices/purchases'
     | '/patients/$patientId'
+    | '/settings/roles'
+    | '/settings/subscription'
+    | '/settings/team'
     | '/sgk/downloads'
     | '/suppliers/$supplierId'
     | '/inventory/'
@@ -214,6 +254,7 @@ export interface FileRouteTypes {
     | '/'
     | '/appointments'
     | '/cashflow'
+    | '/profile'
     | '/reports'
     | '/test'
     | '/uts'
@@ -221,6 +262,9 @@ export interface FileRouteTypes {
     | '/invoices/new'
     | '/invoices/purchases'
     | '/patients/$patientId'
+    | '/settings/roles'
+    | '/settings/subscription'
+    | '/settings/team'
     | '/sgk/downloads'
     | '/suppliers/$supplierId'
     | '/inventory'
@@ -235,6 +279,7 @@ export interface FileRouteTypes {
     | '/cashflow'
     | '/inventory'
     | '/invoices'
+    | '/profile'
     | '/reports'
     | '/test'
     | '/uts'
@@ -242,6 +287,9 @@ export interface FileRouteTypes {
     | '/invoices/new'
     | '/invoices/purchases'
     | '/patients/$patientId'
+    | '/settings/roles'
+    | '/settings/subscription'
+    | '/settings/team'
     | '/sgk/downloads'
     | '/suppliers/$supplierId'
     | '/inventory/'
@@ -257,10 +305,14 @@ export interface RootRouteChildren {
   CashflowRoute: typeof CashflowRoute
   InventoryRoute: typeof InventoryRouteWithChildren
   InvoicesRoute: typeof InvoicesRouteWithChildren
+  ProfileRoute: typeof ProfileRoute
   ReportsRoute: typeof ReportsRoute
   TestRoute: typeof TestRoute
   UtsRoute: typeof UtsRoute
   PatientsPatientIdRoute: typeof PatientsPatientIdRoute
+  SettingsRolesRoute: typeof SettingsRolesRoute
+  SettingsSubscriptionRoute: typeof SettingsSubscriptionRoute
+  SettingsTeamRoute: typeof SettingsTeamRoute
   SgkDownloadsRoute: typeof SgkDownloadsRoute
   SuppliersSupplierIdRoute: typeof SuppliersSupplierIdRoute
   PatientsIndexRoute: typeof PatientsIndexRoute
@@ -289,6 +341,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/invoices': {
@@ -375,6 +434,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SgkDownloadsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/team': {
+      id: '/settings/team'
+      path: '/settings/team'
+      fullPath: '/settings/team'
+      preLoaderRoute: typeof SettingsTeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/subscription': {
+      id: '/settings/subscription'
+      path: '/settings/subscription'
+      fullPath: '/settings/subscription'
+      preLoaderRoute: typeof SettingsSubscriptionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/roles': {
+      id: '/settings/roles'
+      path: '/settings/roles'
+      fullPath: '/settings/roles'
+      preLoaderRoute: typeof SettingsRolesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/patients/$patientId': {
       id: '/patients/$patientId'
       path: '/patients/$patientId'
@@ -442,10 +522,14 @@ const rootRouteChildren: RootRouteChildren = {
   CashflowRoute: CashflowRoute,
   InventoryRoute: InventoryRouteWithChildren,
   InvoicesRoute: InvoicesRouteWithChildren,
+  ProfileRoute: ProfileRoute,
   ReportsRoute: ReportsRoute,
   TestRoute: TestRoute,
   UtsRoute: UtsRoute,
   PatientsPatientIdRoute: PatientsPatientIdRoute,
+  SettingsRolesRoute: SettingsRolesRoute,
+  SettingsSubscriptionRoute: SettingsSubscriptionRoute,
+  SettingsTeamRoute: SettingsTeamRoute,
   SgkDownloadsRoute: SgkDownloadsRoute,
   SuppliersSupplierIdRoute: SuppliersSupplierIdRoute,
   PatientsIndexRoute: PatientsIndexRoute,

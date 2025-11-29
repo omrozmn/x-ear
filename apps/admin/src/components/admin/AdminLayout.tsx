@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+import { useRouterState } from '@tanstack/react-router'
 import { AdminSidebar } from './AdminSidebar'
 
 interface AdminLayoutProps {
@@ -6,6 +7,17 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
+    const router = useRouterState()
+    const isLoginPage = router.location.pathname === '/login'
+
+    if (isLoginPage) {
+        return (
+            <div className="min-h-screen bg-gray-50">
+                {children}
+            </div>
+        )
+    }
+
     return (
         <div className="flex h-screen bg-gray-100">
             <AdminSidebar />

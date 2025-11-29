@@ -15,6 +15,8 @@ class PurchaseInvoice(db.Model):
     __table_args__ = {'extend_existing': True}
     
     id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # BirFatura API information
     birfatura_uuid = db.Column(db.String(100), unique=True, nullable=False, index=True)
@@ -60,6 +62,8 @@ class PurchaseInvoice(db.Model):
         """Convert purchase invoice to dictionary"""
         return {
             'id': self.id,
+            'tenantId': self.tenant_id,
+            'branchId': self.branch_id,
             'birfaturaUuid': self.birfatura_uuid,
             'invoiceNumber': self.invoice_number,
             'invoiceDate': self.invoice_date.isoformat() if self.invoice_date else None,
@@ -92,6 +96,8 @@ class PurchaseInvoiceItem(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     purchase_invoice_id = db.Column(db.Integer, db.ForeignKey('purchase_invoices.id'), nullable=False, index=True)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # Product information
     product_code = db.Column(db.String(100))  # Supplier's product code
@@ -124,6 +130,8 @@ class PurchaseInvoiceItem(db.Model):
         """Convert item to dictionary"""
         return {
             'id': self.id,
+            'tenantId': self.tenant_id,
+            'branchId': self.branch_id,
             'purchaseInvoiceId': self.purchase_invoice_id,
             'productCode': self.product_code,
             'productName': self.product_name,
@@ -147,6 +155,8 @@ class SuggestedSupplier(db.Model):
     __table_args__ = {'extend_existing': True}
     
     id = db.Column(db.Integer, primary_key=True)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)
+    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True, index=True)
     
     # Basic information (extracted from invoices)
     company_name = db.Column(db.String(200), nullable=False)
@@ -181,6 +191,8 @@ class SuggestedSupplier(db.Model):
         """Convert suggested supplier to dictionary"""
         return {
             'id': self.id,
+            'tenantId': self.tenant_id,
+            'branchId': self.branch_id,
             'companyName': self.company_name,
             'taxNumber': self.tax_number,
             'taxOffice': self.tax_office,

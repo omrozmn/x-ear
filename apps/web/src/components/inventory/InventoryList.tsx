@@ -4,13 +4,12 @@ import BulkOperationsModal, { BulkOperation } from '../../pages/inventory/compon
 import WarningModal from '../../pages/inventory/components/WarningModal';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from '@tanstack/react-router';
-import axios from 'axios';
+// Use shared axios instance configured in orval-mutator so auth interceptors apply
+import { customInstance as api } from '../../api/orval-mutator';
 import { AlertTriangle, Eye, Edit, Trash2 } from 'lucide-react';
 import { InventoryItem, InventoryFilters, InventoryStatus } from '../../types/inventory';
 
-const api = axios.create({
-  baseURL: 'http://localhost:5003'
-});
+// `api` is the shared axios instance with auth interceptors and retry logic
 
 // Human-friendly category labels (keep in sync with ProductForm CATEGORIES)
 const CATEGORY_LABELS: Record<string, string> = {
