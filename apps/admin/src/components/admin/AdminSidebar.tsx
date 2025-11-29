@@ -25,7 +25,8 @@ export function AdminSidebar() {
 
     return (
         <div className="flex flex-col w-64 bg-gray-900 border-r border-gray-800 min-h-screen">
-            <div className="flex items-center justify-center h-16 bg-gray-900 border-b border-gray-800">
+            <div className="flex items-center justify-center h-16 bg-gray-900 border-b border-gray-800 gap-2">
+                <img src="/logo/x.svg" alt="X-Ear Logo" className="w-8 h-8" />
                 <span className="text-xl font-bold text-white">X-Ear Admin</span>
             </div>
             <div className="flex-1 flex flex-col overflow-y-auto">

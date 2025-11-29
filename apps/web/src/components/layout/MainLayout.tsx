@@ -293,14 +293,17 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <Menu size={20} />
           </Button>
           {!sidebarCollapsed && (
-            <h2 style={{
-              margin: 0,
-              fontSize: '1.25rem',
-              fontWeight: 'bold',
-              color: darkMode ? '#ffffff' : '#1f2937'
-            }}>
-              X-EAR CRM
-            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <img src="/logo/x.svg" alt="X-Ear Logo" style={{ width: '24px', height: '24px' }} />
+              <h2 style={{
+                margin: 0,
+                fontSize: '1.25rem',
+                fontWeight: 'bold',
+                color: darkMode ? '#ffffff' : '#1f2937'
+              }}>
+                X-EAR CRM
+              </h2>
+            </div>
           )}
         </div>
 
@@ -517,7 +520,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                               localStorage.removeItem('refresh_token');
                               localStorage.removeItem('x-ear.auth.token@v1');
                               delete (window as any).__AUTH_TOKEN__;
-                            } catch (err) {}
+                            } catch (err) { }
                           }
                           navigate({ to: '/login' });
                         }}
