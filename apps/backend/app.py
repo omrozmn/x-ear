@@ -58,6 +58,11 @@ CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "PUT", "
 # Configure logging early so validation and startup messages are visible
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+# Add file handler
+file_handler = logging.FileHandler(os.path.join(os.path.dirname(__file__), 'server.log'))
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logging.getLogger().addHandler(file_handler)
 
 # Database configuration
 # Flask convention: use instance folder for database files

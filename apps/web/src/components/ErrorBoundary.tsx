@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { isDev } from '../utils/env';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
 
@@ -28,7 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({ error, errorInfo });
     
     // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
+    if (isDev()) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
 
@@ -69,7 +70,7 @@ export class ErrorBoundary extends Component<Props, State> {
               Üzgünüz, beklenmeyen bir hata oluştu. Lütfen sayfayı yenilemeyi deneyin.
             </p>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {isDev() && this.state.error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-left">
                 <h3 className="text-sm font-medium text-red-800 mb-2">Hata Detayları:</h3>
                 <pre className="text-xs text-red-700 whitespace-pre-wrap overflow-auto max-h-32">

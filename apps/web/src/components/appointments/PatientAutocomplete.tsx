@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Input } from '@x-ear/ui-web';
-import { Search } from 'lucide-react';
+import { Input, Button } from '@x-ear/ui-web';
+import { Search, User, Plus } from 'lucide-react';
 import { usePatients } from '../../hooks/usePatients';
-import { Patient } from '../../types/patient/patient-base.types';
+import { Patient } from '../../types/patient';
 
 interface PatientAutocompleteProps {
   value?: string;
   patientId?: string;
   onSelect: (patient: Patient) => void;
+  onAddNew?: (name: string) => void;
   placeholder?: string;
   className?: string;
   error?: string;
@@ -17,6 +18,7 @@ export function PatientAutocomplete({
   value = '',
   patientId = '',
   onSelect,
+  onAddNew,
   placeholder = 'Hasta Seçin',
   className = '',
   error
@@ -25,11 +27,18 @@ export function PatientAutocomplete({
   const [isOpen, setIsOpen] = useState(false);
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
-  
+
   const { data, isLoading } = usePatients();
   const patients = data?.patients || [];
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Update searchQuery when value prop changes
+  useEffect(() => {
+    if (value !== searchQuery && !isOpen) {
+      setSearchQuery(value);
+    }
+  }, [value]);
 
   // Filter patients based on search query
   useEffect(() => {
@@ -43,10 +52,10 @@ export function PatientAutocomplete({
       const fullName = `${patient.firstName} ${patient.lastName}`.toLowerCase();
       const tcNumber = patient.tcNumber?.toLowerCase() || '';
       const phone = patient.phone?.toLowerCase() || '';
-      
-      return fullName.includes(query) || 
-             tcNumber.includes(query) || 
-             phone.includes(query);
+
+      return fullName.includes(query) ||
+        tcNumber.includes(query) ||
+        phone.includes(query);
     });
 
     setFilteredPatients(filtered.slice(0, 10)); // Limit to 10 results
@@ -64,7 +73,7 @@ export function PatientAutocomplete({
 
     // Debounce search
     const timeout = setTimeout(() => {
-      if (query.length >= 2) {
+      if (query.length >= 1) {
         setIsOpen(true);
       } else {
         setIsOpen(false);
@@ -87,7 +96,7 @@ export function PatientAutocomplete({
     if (searchQuery.length === 0 && patients && patients.length > 0) {
       setFilteredPatients(patients.slice(0, 10));
       setIsOpen(true);
-    } else if (searchQuery.length >= 2) {
+    } else if (searchQuery.length >= 1) {
       setIsOpen(true);
     }
   };
@@ -145,35 +154,67 @@ export function PatientAutocomplete({
           {isLoading ? (
             <div className="p-3 text-sm text-gray-500">Hasta verisi yükleniyor...</div>
           ) : filteredPatients.length === 0 ? (
-            searchQuery.length >= 2 ? (
-              <div className="p-3 text-sm text-gray-500">Hasta bulunamadı</div>
-            ) : (
-              <div className="p-3 text-sm text-gray-500">Hasta aramak için yazın...</div>
-            )
-          ) : (
-            filteredPatients.map((patient) => (
-              <div
-                key={patient.id}
-                className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 flex items-center space-x-3"
-                onClick={() => handlePatientSelect(patient)}
-              >
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <User className="h-4 w-4 text-blue-600" />
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 truncate">
-                    {patient.firstName} {patient.lastName}
-                  </div>
-                  <div className="text-sm text-gray-500 truncate">
-                    {patient.tcNumber && `TC: ${patient.tcNumber}`}
-                    {patient.tcNumber && patient.phone && ' • '}
-                    {patient.phone && `Tel: ${patient.phone}`}
-                  </div>
-                </div>
+            <div className="p-2">
+              <div className="p-2 text-sm text-gray-500 text-center mb-2">
+                "{searchQuery}" için sonuç bulunamadı
               </div>
-            ))
+              {onAddNew && searchQuery.length > 2 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full flex items-center justify-center text-blue-600 border-blue-200 hover:bg-blue-50"
+                  onClick={() => {
+                    onAddNew(searchQuery);
+                    setIsOpen(false);
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Yeni Hasta Ekle
+                </Button>
+              )}
+            </div>
+          ) : (
+            <>
+              {filteredPatients.map((patient) => (
+                <div
+                  key={patient.id}
+                  className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 flex items-center space-x-3"
+                  onClick={() => handlePatientSelect(patient)}
+                >
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4 text-blue-600" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900 truncate">
+                      {patient.firstName} {patient.lastName}
+                    </div>
+                    <div className="text-sm text-gray-500 truncate">
+                      {patient.tcNumber && `TC: ${patient.tcNumber}`}
+                      {patient.tcNumber && patient.phone && ' • '}
+                      {patient.phone && `Tel: ${patient.phone}`}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {onAddNew && (
+                <div className="p-2 border-t border-gray-100 sticky bottom-0 bg-white">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full flex items-center justify-center text-sm text-blue-600 hover:bg-blue-50"
+                    onClick={() => {
+                      onAddNew(searchQuery);
+                      setIsOpen(false);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Yeni Hasta Ekle
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

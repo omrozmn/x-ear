@@ -1,8 +1,9 @@
 /**
  * Cashflow API Hooks
+ * Using Orval axios for consistent auth handling
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../services/apiClient';
+import { customInstance } from '../api/orval-mutator';
 import type { CashRecord, CashRecordFormData, CashflowFilters } from '../types/cashflow';
 
 const CASHFLOW_QUERY_KEY = 'cashflow';
@@ -27,17 +28,18 @@ export function useCashRecords(filters?: CashflowFilters) {
     queryKey: [CASHFLOW_QUERY_KEY, 'records', filters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      
+
       if (filters?.startDate) params.append('start_date', filters.startDate);
       if (filters?.endDate) params.append('end_date', filters.endDate);
       if (filters?.transactionType) params.append('transaction_type', filters.transactionType);
       if (filters?.recordType) params.append('record_type', filters.recordType);
       if (filters?.search) params.append('search', filters.search);
-      
-      const response = await apiClient.get<CashRecordsResponse>(
-        `/cash-records?${params.toString()}`
-      );
-      
+
+      const response = await customInstance<CashRecordsResponse>({
+        url: `/api/cash-records?${params.toString()}`,
+        method: 'GET',
+      });
+
       return response.data;
     },
   });
@@ -48,10 +50,14 @@ export function useCashRecords(filters?: CashflowFilters) {
  */
 export function useCreateCashRecord() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: CashRecordFormData) => {
-      const response = await apiClient.post<CashRecordResponse>('/cash-records', data);
+      const response = await customInstance<CashRecordResponse>({
+        url: '/api/cash-records',
+        method: 'POST',
+        data,
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -65,10 +71,14 @@ export function useCreateCashRecord() {
  */
 export function useUpdateCashRecord() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<CashRecord> }) => {
-      const response = await apiClient.post<CashRecordResponse>(`/cash-records/${id}`, data);
+      const response = await customInstance<CashRecordResponse>({
+        url: `/api/cash-records/${id}`,
+        method: 'PUT',
+        data,
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -82,11 +92,13 @@ export function useUpdateCashRecord() {
  */
 export function useDeleteCashRecord() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (recordId: string) => {
-      const response = await apiClient.delete(`/cash-records/${recordId}`);
-      return response.data;
+      await customInstance({
+        url: `/api/cash-records/${recordId}`,
+        method: 'DELETE',
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [CASHFLOW_QUERY_KEY] });

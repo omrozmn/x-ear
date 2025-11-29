@@ -1,4 +1,5 @@
 import React, { Component, ReactNode } from 'react';
+import { isDev } from '../../utils/env';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
 
@@ -28,7 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({ error, errorInfo });
     
     // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
+    if (isDev()) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
 
@@ -67,7 +68,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </p>
             </div>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {isDev() && this.state.error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-left">
                 <h3 className="font-medium text-red-800 mb-2">Hata Detayları:</h3>
                 <pre className="text-xs text-red-700 overflow-auto max-h-32">

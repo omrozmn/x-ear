@@ -192,7 +192,23 @@ export const useOutbox = () => {
 
       for (const item of itemsToProcess) {
         try {
-          const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5003/api'}${item.endpoint}`, {
+          // resolve API base safely (Vite uses import.meta.env)
+          const API_BASE = ((): string => {
+            try {
+              // import meta / Vite
+              if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
+                return (import.meta as any).env.VITE_API_URL || (import.meta as any).env.REACT_APP_API_URL || 'http://localhost:5003/api';
+              }
+            } catch (e) {}
+            try {
+              if (typeof process !== 'undefined' && (process as any).env) {
+                return (process as any).env.REACT_APP_API_URL || 'http://localhost:5003/api';
+              }
+            } catch (e) {}
+            return 'http://localhost:5003/api';
+          })();
+
+          const response = await fetch(`${API_BASE}${item.endpoint}`, {
             method: item.method,
             headers: {
               'Content-Type': 'application/json',

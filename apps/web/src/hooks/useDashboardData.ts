@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getEnvVar } from '../utils/env';
 
 interface DashboardStats {
   totalPatients: number;
@@ -25,6 +26,7 @@ interface DashboardData {
   stats: DashboardStats;
   lastTransaction?: LastTransaction;
   lastCalculation?: LastCalculation;
+  recentActivity?: any[];
   loading: boolean;
   error: string | null;
 }
@@ -48,37 +50,30 @@ export const useDashboardData = (): DashboardData => {
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        // TODO: Replace with actual API calls when backend is ready
-        // For now, using mock data similar to legacy implementation
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const mockStats: DashboardStats = {
-          totalPatients: 156,
-          todayAppointments: 8,
-          monthlyRevenue: 485000,
-          activeTrials: 23,
-          activePatients: 142,
-          dailyRevenue: 12500,
-          pendingAppointments: 5,
-          endingTrials: 3,
+        const API_BASE = getEnvVar('REACT_APP_API_URL') || getEnvVar('VITE_API_URL') || 'http://localhost:5003/api';
+
+        const resp = await fetch(`${API_BASE}/dashboard`);
+        if (!resp.ok) throw new Error(`API error: ${resp.status} ${resp.statusText}`);
+        const json: any = await resp.json();
+
+        const kpis = json?.data?.kpis || {};
+
+        const mappedStats: DashboardStats = {
+          totalPatients: Number(kpis.totalPatients || 0),
+          todayAppointments: Number(kpis.todayAppointments || 0),
+          monthlyRevenue: Number(kpis.estimatedRevenue || kpis.monthlyRevenue || 0),
+          activeTrials: Number(kpis.activeTrials || 0),
+          activePatients: Number(kpis.activePatients || 0),
+          dailyRevenue: Number(kpis.dailyRevenue || 0),
+          pendingAppointments: Number(kpis.pendingAppointments || 0),
+          endingTrials: Number(kpis.endingTrials || 0),
         };
 
-        const mockLastTransaction: LastTransaction = {
-          amount: '₺2,500',
-          date: '2 saat önce'
-        };
-
-        const mockLastCalculation: LastCalculation = {
-          amount: '₺8,750',
-          date: '1 gün önce'
-        };
+        const recentActivity = json?.data?.recentActivity || json?.data?.recentActivity || json?.data?.recent_activity || [];
 
         setData({
-          stats: mockStats,
-          lastTransaction: mockLastTransaction,
-          lastCalculation: mockLastCalculation,
+          stats: mappedStats,
+          recentActivity,
           loading: false,
           error: null,
         });

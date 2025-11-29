@@ -223,7 +223,7 @@ export function usePatients(options: UsePatientsOptions = {}) {
       // Validate patient data
       const validation = patientValidationService.validatePatient(patientData);
       if (!validation.isValid) {
-        throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
+        throw new Error(`Validation failed: ${validation.errors.map(e => e.message).join(', ')}`);
       }
 
       // Create patient using service

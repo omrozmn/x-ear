@@ -138,49 +138,49 @@ class AppointmentService {
 
   // CRUD Operations
   async createAppointment(data: CreateAppointmentData): Promise<Appointment> {
-    const appointment: Appointment = {
-      id: data.id || `apt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      patientId: data.patientId,
-      patientName: data.patientName,
-      date: data.date,
-      time: data.time,
-      startTime: data.startTime || `${data.date}T${data.time}:00.000Z`,
-      endTime: data.endTime || this.calculateEndTime(data.date, data.time, data.duration),
-      duration: data.duration || 30,
-      title: data.title || this.generateTitle(data.type),
-      type: data.type,
-      status: data.status || 'scheduled',
-      notes: data.notes,
-      clinician: data.clinician,
-      clinicianId: data.clinicianId,
-      location: data.location,
-      branchId: data.branchId,
-      reminderSent: false,
-      createdBy: data.createdBy,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+    console.log('📝 Creating appointment:', data);
 
-    // Validate appointment
-    const validation = this.validateAppointment(appointment);
-    if (!validation.isValid) {
-      throw new Error(`Appointment validation failed: ${validation.errors.join(', ')}`);
+    try {
+      // Call backend API directly instead of using outbox
+      const { appointmentsApi } = await import('../api/appointments');
+      const idempotencyKey = `appt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      const backendAppointment = await appointmentsApi.createAppointment(data, idempotencyKey);
+      console.log('✅ Backend created appointment:', backendAppointment);
+
+      // Also save to localStorage for offline access
+      const appointment: Appointment = {
+        id: backendAppointment.id,
+        patientId: backendAppointment.patientId,
+        patientName: backendAppointment.patientName,
+        date: backendAppointment.date,
+        time: backendAppointment.time,
+        startTime: backendAppointment.startTime || `${backendAppointment.date}T${backendAppointment.time}:00.000Z`,
+        endTime: backendAppointment.endTime || this.calculateEndTime(backendAppointment.date, backendAppointment.time, backendAppointment.duration),
+        duration: backendAppointment.duration || 30,
+        title: backendAppointment.title || this.generateTitle(backendAppointment.type),
+        type: backendAppointment.type,
+        status: backendAppointment.status || 'scheduled',
+        notes: backendAppointment.notes,
+        clinician: backendAppointment.clinician,
+        clinicianId: backendAppointment.clinicianId,
+        location: backendAppointment.location,
+        branchId: backendAppointment.branchId,
+        reminderSent: false,
+        createdBy: backendAppointment.createdBy,
+        createdAt: backendAppointment.createdAt || new Date().toISOString(),
+        updatedAt: backendAppointment.updatedAt || new Date().toISOString()
+      };
+
+      this.appointments.push(appointment);
+      this.saveAppointments();
+      this.notify();
+
+      return appointment;
+    } catch (error) {
+      console.error('❌ Failed to create appointment:', error);
+      throw error;
     }
-
-    // Add to local storage
-    this.appointments.push(appointment);
-    this.saveAppointments();
-
-    // Queue for sync
-    await outbox.addOperation({
-      method: 'POST',
-      endpoint: '/api/appointments',
-      data: appointment,
-      priority: 'normal'
-    });
-
-    this.notify();
-    return appointment;
   }
 
   async updateAppointment(id: string, data: Partial<UpdateAppointmentData>): Promise<Appointment> {
@@ -270,7 +270,7 @@ class AppointmentService {
       }
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
-        filtered = filtered.filter(a => 
+        filtered = filtered.filter(a =>
           a.patientName?.toLowerCase().includes(searchTerm) ||
           a.title?.toLowerCase().includes(searchTerm) ||
           a.notes?.toLowerCase().includes(searchTerm) ||
@@ -307,7 +307,7 @@ class AppointmentService {
     const today = new Date();
     const endDate = new Date(today);
     endDate.setDate(today.getDate() + days);
-    
+
     return this.getAppointmentsByDateRange(
       today.toISOString().split('T')[0],
       endDate.toISOString().split('T')[0]
@@ -317,7 +317,7 @@ class AppointmentService {
   // Statistics
   getAppointmentStats(filters?: AppointmentFilters): AppointmentStats {
     const appointments = this.getAppointments(filters);
-    
+
     const stats: AppointmentStats = {
       total: appointments.length,
       scheduled: 0,
@@ -364,7 +364,7 @@ class AppointmentService {
   // Search functionality
   searchAppointments(query: string, limit: number = 50): AppointmentSearchResult {
     const appointments = this.getAppointments({ search: query });
-    
+
     return {
       appointments: appointments.slice(0, limit),
       total: appointments.length,
@@ -375,15 +375,15 @@ class AppointmentService {
   // Availability checking
   async checkAvailability(request: AvailabilityRequest): Promise<AvailabilityResponse> {
     const { date, duration = 30, clinicianId, branchId } = request;
-    
+
     // Get appointments for the date
     let dayAppointments = this.getAppointmentsByDate(date);
-    
+
     // Filter by clinician if specified
     if (clinicianId) {
       dayAppointments = dayAppointments.filter(a => a.clinicianId === clinicianId);
     }
-    
+
     // Filter by branch if specified
     if (branchId) {
       dayAppointments = dayAppointments.filter(a => a.branchId === branchId);
@@ -394,22 +394,22 @@ class AppointmentService {
     for (let hour = 9; hour < 18; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        
+
         // Check if this slot conflicts with existing appointments
         const hasConflict = dayAppointments.some(appointment => {
           const appointmentStart = this.timeToMinutes(appointment.time);
           const appointmentEnd = appointmentStart + appointment.duration;
           const slotStart = this.timeToMinutes(time);
           const slotEnd = slotStart + duration;
-          
+
           return (slotStart < appointmentEnd && slotEnd > appointmentStart);
         });
 
         timeSlots.push({
           time,
           available: !hasConflict,
-          appointmentId: hasConflict ? dayAppointments.find(a => 
-            this.timeToMinutes(a.time) <= this.timeToMinutes(time) && 
+          appointmentId: hasConflict ? dayAppointments.find(a =>
+            this.timeToMinutes(a.time) <= this.timeToMinutes(time) &&
             this.timeToMinutes(a.time) + a.duration > this.timeToMinutes(time)
           )?.id : undefined
         });
@@ -429,7 +429,7 @@ class AppointmentService {
   // Appointment operations
   async rescheduleAppointment(request: RescheduleRequest): Promise<Appointment> {
     const { appointmentId, newDate, newTime, reason } = request;
-    
+
     const appointment = this.getAppointment(appointmentId);
     if (!appointment) {
       throw new Error(`Appointment with id ${appointmentId} not found`);
@@ -554,7 +554,7 @@ class AppointmentService {
       const appointmentDate = new Date(appointment.date);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       if (appointmentDate < today) {
         validation.warnings.push('Appointment is scheduled in the past');
       }
@@ -583,9 +583,9 @@ class AppointmentService {
 
   private findConflicts(appointment: Appointment): AppointmentConflict[] {
     const conflicts: AppointmentConflict[] = [];
-    
+
     // Find overlapping appointments
-    const overlapping = this.appointments.filter(existing => 
+    const overlapping = this.appointments.filter(existing =>
       existing.id !== appointment.id &&
       existing.date === appointment.date &&
       existing.status !== 'cancelled' &&
@@ -639,7 +639,7 @@ class AppointmentService {
     const end1 = start1 + duration1;
     const start2 = this.timeToMinutes(time2);
     const end2 = start2 + duration2;
-    
+
     return start1 < end2 && end1 > start2;
   }
 }

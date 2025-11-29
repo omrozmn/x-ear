@@ -15,6 +15,10 @@ try:
     from openpyxl import load_workbook
 except Exception:
     load_workbook = None
+import logging
+import traceback
+
+logger = logging.getLogger(__name__)
 
 def now_utc():
     """Return current UTC timestamp"""
@@ -863,6 +867,8 @@ def create_inventory_item():
         
     except Exception as e:
         db.session.rollback()
+        logger.error(f"Create inventory item error: {str(e)}")
+        traceback.print_exc()
         return jsonify({
             'success': False,
             'error': str(e)

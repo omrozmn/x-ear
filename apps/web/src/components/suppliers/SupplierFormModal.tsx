@@ -137,7 +137,9 @@ export function SupplierFormModal({
     }
 
     try {
-      await onSave(formData);
+      // Remove district field (not supported by backend)
+      const { district, ...dataToSend } = formData;
+      await onSave(dataToSend);
       onClose();
     } catch (error) {
       console.error('Failed to save supplier:', error);

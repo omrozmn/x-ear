@@ -6,7 +6,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Input } from '@x-ear/ui-web';
 import { Search, X, Package, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../../services/apiClient';
+import { customInstance } from '../../api/orval-mutator';
 
 interface InventoryItem {
   id: string;
@@ -51,9 +51,10 @@ export function ProductSearchInput({
     queryKey: ['inventory-items', search],
     queryFn: async () => {
       if (search.length < 2) return { data: [] };
-      const response = await apiClient.get<{ data: InventoryItem[] }>(
-        `/inventory?search=${search}&per_page=10`
-      );
+      const response = await customInstance<{ data: InventoryItem[] }>({
+        url: `/api/inventory?search=${search}&per_page=10`,
+        method: 'GET',
+      });
       return response.data;
     },
     enabled: search.length >= 2,
@@ -138,9 +139,8 @@ export function ProductSearchInput({
               <Package className="h-4 w-4 text-gray-500 mt-0.5" />
               <div>
                 <p className="text-xs text-gray-500">Stok</p>
-                <p className={`text-sm font-medium ${
-                  selectedProduct.availableInventory > 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
+                <p className={`text-sm font-medium ${selectedProduct.availableInventory > 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
                   {selectedProduct.availableInventory} adet
                 </p>
               </div>

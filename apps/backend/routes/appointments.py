@@ -11,6 +11,9 @@ from utils.idempotency import idempotent
 from utils.optimistic_locking import optimistic_lock, with_transaction
 from models.enums import AppointmentStatus
 
+import logging
+import traceback
+
 logger = logging.getLogger(__name__)
 
 appointments_bp = Blueprint('appointments', __name__)
@@ -147,6 +150,7 @@ def create_appointment():
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create appointment error: {str(e)}")
+        traceback.print_exc()
         # Handle integrity errors for idempotency
         from sqlalchemy.exc import IntegrityError
         if isinstance(e, IntegrityError):

@@ -134,7 +134,8 @@ export class PatientValidationService {
   }
 
   private validateRequiredFields(patient: Partial<OrvalPatient>, errors: ValidationError[]): void {
-    // Phone is required
+    // Phone is optional now for quick creation
+    /*
     if (!patient.phone || !patient.phone.trim()) {
       errors.push({
         field: 'phone',
@@ -143,6 +144,7 @@ export class PatientValidationService {
         severity: 'error'
       });
     }
+    */
 
     // Name is required (firstName and lastName)
     if (!patient.firstName || !patient.firstName.trim()) {

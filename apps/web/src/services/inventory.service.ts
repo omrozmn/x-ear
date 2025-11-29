@@ -85,23 +85,16 @@ export class InventoryService {
         availableSerials: data.availableSerials,
         serialsCount: data.availableSerials?.length
       });
-      
-      // Use backend API instead of localStorage
-      const response = await fetch('http://localhost:5003/api/inventory', {
+
+      // Use Orval axios for auth handling
+      const { customInstance } = await import('../api/orval-mutator');
+      const response = await customInstance<{ data: InventoryItem }>({
+        url: '/api/inventory',
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        data,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create inventory item');
-      }
-
-      const result = await response.json();
-      const newItem = result.data;
+      const newItem = response.data.data;
 
       // Clear localStorage cache to force refresh from API
       localStorage.removeItem(this.storageKey);
@@ -122,23 +115,16 @@ export class InventoryService {
         availableSerials: data.availableSerials,
         serialsCount: data.availableSerials?.length
       });
-      
-      // Use backend API instead of localStorage
-      const response = await fetch(`http://localhost:5003/api/inventory/${id}`, {
+
+      // Use Orval axios for auth handling
+      const { customInstance } = await import('../api/orval-mutator');
+      const response = await customInstance<{ data: InventoryItem }>({
+        url: `/api/inventory/${id}`,
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        data,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update inventory item');
-      }
-
-      const result = await response.json();
-      const updatedItem = result.data;
+      const updatedItem = response.data.data;
 
       // Clear localStorage cache to force refresh from API
       localStorage.removeItem(this.storageKey);
@@ -154,7 +140,7 @@ export class InventoryService {
   async updateItemLegacy(id: string, data: UpdateInventoryData): Promise<InventoryItem> {
     const items = this.loadInventory();
     const index = items.findIndex(item => item.id === id);
-    
+
     if (index === -1) {
       throw new Error('Inventory item not found');
     }
@@ -202,7 +188,7 @@ export class InventoryService {
   async deleteItem(id: string): Promise<void> {
     const items = this.loadInventory();
     const index = items.findIndex(item => item.id === id);
-    
+
     if (index === -1) {
       throw new Error('Inventory item not found');
     }
@@ -242,10 +228,10 @@ export class InventoryService {
             barcode: 0.1
           }
         });
-        
+
         // Extract items from fuzzy search results and maintain order by relevance
         filteredItems = fuzzyResults.map(result => result.item as InventoryItem);
-        
+
         // Track search analytics
         const executionTime = performance.now() - startTime;
         searchAnalytics.trackSearch({
@@ -265,7 +251,7 @@ export class InventoryService {
           item.supplier?.toLowerCase().includes(searchTerm) ||
           item.barcode?.toLowerCase().includes(searchTerm)
         );
-        
+
         // Track search analytics
         const executionTime = performance.now() - startTime;
         searchAnalytics.trackSearch({
@@ -291,7 +277,7 @@ export class InventoryService {
     }
 
     if (filters.lowStock) {
-      filteredItems = filteredItems.filter(item => 
+      filteredItems = filteredItems.filter(item =>
         item.availableInventory <= item.reorderLevel
       );
     }
@@ -313,15 +299,15 @@ export class InventoryService {
     }
 
     if (filters.hasSerials !== undefined) {
-      filteredItems = filteredItems.filter(item => 
-        filters.hasSerials ? 
+      filteredItems = filteredItems.filter(item =>
+        filters.hasSerials ?
           (item.availableSerials && item.availableSerials.length > 0) :
           (!item.availableSerials || item.availableSerials.length === 0)
       );
     }
 
     if (filters.isMinistryTracked !== undefined) {
-      filteredItems = filteredItems.filter(item => 
+      filteredItems = filteredItems.filter(item =>
         item.isMinistryTracked === filters.isMinistryTracked
       );
     }
@@ -340,7 +326,7 @@ export class InventoryService {
   async updateStock(update: StockUpdate): Promise<InventoryItem> {
     const items = this.loadInventory();
     const index = items.findIndex(item => item.id === update.itemId);
-    
+
     if (index === -1) {
       throw new Error('Inventory item not found');
     }
@@ -514,7 +500,7 @@ export class InventoryService {
   async assignSerialNumber(itemId: string, serialNumber: string, patientId?: string): Promise<SerialNumberAssignment> {
     const items = this.loadInventory();
     const item = items.find(i => i.id === itemId);
-    
+
     if (!item) {
       throw new Error('Inventory item not found');
     }
@@ -526,7 +512,7 @@ export class InventoryService {
     // Remove from available serials
     const serialIndex = item.availableSerials.indexOf(serialNumber);
     item.availableSerials.splice(serialIndex, 1);
-    
+
     // Decrease available inventory
     item.availableInventory--;
     item.usedInventory = (item.usedInventory || 0) + 1;
@@ -563,12 +549,12 @@ export class InventoryService {
       const stored = localStorage.getItem(movementsKey);
       const movements: InventoryMovement[] = stored ? JSON.parse(stored) : [];
       movements.push(movement);
-      
+
       // Keep only last 1000 movements
       if (movements.length > 1000) {
         movements.splice(0, movements.length - 1000);
       }
-      
+
       localStorage.setItem(movementsKey, JSON.stringify(movements));
     } catch (error) {
       console.error('Failed to log inventory movement:', error);
@@ -580,11 +566,11 @@ export class InventoryService {
     try {
       const stored = localStorage.getItem(movementsKey);
       const movements: InventoryMovement[] = stored ? JSON.parse(stored) : [];
-      
+
       if (itemId) {
         return movements.filter(m => m.itemId === itemId);
       }
-      
+
       return movements;
     } catch (error) {
       console.error('Failed to load inventory movements:', error);
@@ -622,7 +608,7 @@ export class InventoryService {
               result.created++;
             }
             break;
-          
+
           case 'update':
             if (!item.id) {
               throw new Error('Item ID required for update');
@@ -630,14 +616,14 @@ export class InventoryService {
             await this.updateItem(item.id, item as UpdateInventoryData);
             result.updated++;
             break;
-          
+
           case 'delete':
             if (!item.id) {
               throw new Error('Item ID required for delete');
             }
             await this.deleteItem(item.id);
             break;
-          
+
           default:
             throw new Error('Unsupported operation type');
         }

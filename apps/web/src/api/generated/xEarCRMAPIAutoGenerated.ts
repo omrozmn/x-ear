@@ -7,8 +7,19 @@
  */
 import {
   useMutation,
-  useQuery
+  useQuery as __useQuery_orig
 } from '@tanstack/react-query';
+
+// Compatibility wrapper: older generated code calls `useQuery(queryOptions, queryClient)`.
+// TanStack Query v5 uses single-object signature. Wrap original hook so existing call
+// sites keep working without mass edits.
+const useQuery = (options: any, queryClient?: any) => {
+  if (queryClient) {
+    // prefer query client from options if provided
+    return __useQuery_orig({ ...options, queryClient } as any);
+  }
+  return __useQuery_orig(options as any);
+};
 import type {
   DataTag,
   DefinedInitialDataOptions,

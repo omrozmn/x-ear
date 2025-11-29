@@ -1,8 +1,9 @@
-import { Button, Input, Textarea, Select } from '@x-ear/ui-web';
-import React, { useState, useEffect } from 'react';
+import { Button, Input, Textarea, Select, useToastHelpers, DatePicker, Autocomplete, AutocompleteOption } from '@x-ear/ui-web';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Appointment, CreateAppointmentData, UpdateAppointmentData, AppointmentType, AppointmentStatus } from '../../types/appointment';
 import { useAppointments } from '../../hooks/useAppointments';
 import { usePatients } from '../../hooks/usePatients';
+import { PatientAutocomplete } from './PatientAutocomplete';
 
 interface AppointmentFormProps {
   appointment?: Appointment;
@@ -47,8 +48,9 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   className = ''
 }) => {
   const { createAppointment, updateAppointment, creating, updating, error } = useAppointments();
-  const { data: patientsData } = usePatients();
+  const { data: patientsData, createPatient } = usePatients();
   const { patients = [] } = patientsData || {};
+  const { success: showSuccess, error: showError } = useToastHelpers();
 
   const [formData, setFormData] = useState<FormData>({
     patientId: patientId || appointment?.patientId || '',
@@ -69,15 +71,28 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Time options (09:00 - 19:00, 15 min intervals)
+  const timeOptions = useMemo<AutocompleteOption[]>(() => {
+    const options: AutocompleteOption[] = [];
+    for (let i = 9; i < 19; i++) {
+      const hour = i.toString().padStart(2, '0');
+      ['00', '15', '30', '45'].forEach(minute => {
+        const time = `${hour}:${minute}`;
+        options.push({ id: time, value: time, label: time });
+      });
+    }
+    return options;
+  }, []);
+
   // Update patient name when patient is selected
   useEffect(() => {
     if (formData.patientId && patients.length > 0) {
       const selectedPatient = patients.find(p => p.id === formData.patientId);
       if (selectedPatient) {
-        const patientName = selectedPatient.firstName && selectedPatient.lastName 
+        const patientName = selectedPatient.firstName && selectedPatient.lastName
           ? `${selectedPatient.firstName} ${selectedPatient.lastName}`
           : `${selectedPatient.firstName || selectedPatient.lastName || 'İsimsiz Hasta'}`;
-        
+
         setFormData(prev => ({ ...prev, patientName }));
       }
     }
@@ -118,7 +133,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
       const appointmentDate = new Date(formData.date);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       if (appointmentDate < today) {
         newErrors.date = 'Geçmiş tarih seçilemez';
       }
@@ -150,16 +165,49 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
 
   const handleInputChange = (field: keyof FormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     // Clear error when user starts typing
     if (errors[field as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
   };
 
+  const handleAddNewPatient = async (name: string) => {
+    try {
+      setIsSubmitting(true);
+      // Split name into first and last name
+      const parts = name.trim().split(' ');
+      const lastName = parts.length > 1 ? parts.pop() || '' : '';
+      const firstName = parts.join(' ');
+
+      const newPatient = await createPatient({
+        firstName: firstName || name,
+        lastName: lastName || '',
+        phone: '',
+        email: '',
+        gender: 'OTHER' as any, // Cast to any to avoid strict enum check for now, or use correct enum
+        status: 'ACTIVE' as any,
+        segment: 'NEW' as any
+      });
+
+      setFormData(prev => ({
+        ...prev,
+        patientId: newPatient.id || '',
+        patientName: `${newPatient.firstName} ${newPatient.lastName}`.trim()
+      }));
+
+      showSuccess('Yeni hasta oluşturuldu');
+    } catch (error) {
+      console.error('Failed to create patient:', error);
+      showError('Hasta oluşturulamadı');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -186,6 +234,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
         };
 
         const newAppointment = await createAppointment(appointmentData);
+        showSuccess('Randevu başarıyla oluşturuldu');
         onSave?.(newAppointment);
       } else if (appointment) {
         const updateData: Partial<UpdateAppointmentData> = {
@@ -205,10 +254,12 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
         };
 
         const updatedAppointment = await updateAppointment(appointment.id, updateData);
+        showSuccess('Randevu başarıyla güncellendi');
         onSave?.(updatedAppointment);
       }
     } catch (error) {
       console.error('Failed to save appointment:', error);
+      showError('Randevu kaydedilemedi');
     } finally {
       setIsSubmitting(false);
     }
@@ -217,217 +268,204 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   const isLoading = creating || updating || isSubmitting;
 
   return (
-    <div className={`appointment-form ${className}`}>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
+    <div className={`appointment-form flex flex-col h-full ${className}`}>
+      <form id="appointment-form" onSubmit={handleSubmit} className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto px-1">
+          <div className="space-y-6 pb-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">Hata</h3>
+                    <div className="mt-2 text-sm text-red-700">{error}</div>
+                  </div>
+                </div>
               </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Hata</h3>
-                <div className="mt-2 text-sm text-red-700">{error}</div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Patient Selection */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Hasta *
+                </label>
+                <PatientAutocomplete
+                  value={formData.patientName}
+                  patientId={formData.patientId}
+                  onSelect={(patient) => {
+                    handleInputChange('patientId', patient.id || '');
+                    handleInputChange('patientName', `${patient.firstName} ${patient.lastName}`);
+                  }}
+                  onAddNew={handleAddNewPatient}
+                  placeholder="Hasta adı veya TC ile arayın..."
+                  error={errors.patientId}
+                />
+              </div>
+
+              {/* Date */}
+              <div>
+                <DatePicker
+                  label="Tarih *"
+                  value={formData.date ? new Date(formData.date) : undefined}
+                  onChange={(date) => handleInputChange('date', date ? date.toISOString().split('T')[0] : '')}
+                  placeholder="GG/AA/YYYY"
+                  className={`w-full ${errors.date ? 'border-red-300' : ''}`}
+                  error={errors.date}
+                />
+              </div>
+
+              {/* Time */}
+              <div>
+                <Autocomplete
+                  label="Saat *"
+                  options={timeOptions}
+                  value={timeOptions.find(t => t.value === formData.time) || (formData.time ? { id: formData.time, value: formData.time, label: formData.time } : null)}
+                  onChange={(option) => handleInputChange('time', option?.value || '')}
+                  placeholder="09:00"
+                  allowClear
+                  className={`w-full ${errors.time ? 'border-red-300' : ''}`}
+                />
+                {errors.time && (
+                  <p className="mt-1 text-sm text-red-600">{errors.time}</p>
+                )}
+              </div>
+
+              {/* Duration */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Süre (dakika) *
+                </label>
+                <Input
+                  type="number"
+                  min="15"
+                  max="480"
+                  step="15"
+                  value={formData.duration}
+                  onChange={(e) => handleInputChange('duration', parseInt(e.target.value) || 0)}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.duration ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                />
+                {errors.duration && (
+                  <p className="mt-1 text-sm text-red-600">{errors.duration}</p>
+                )}
+              </div>
+
+              {/* Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Randevu Türü *
+                </label>
+                <Select
+                  value={formData.type}
+                  onChange={(e) => handleInputChange('type', e.target.value as AppointmentType)}
+                  options={[
+                    { value: 'consultation', label: 'Konsültasyon' },
+                    { value: 'follow_up', label: 'Kontrol Muayenesi' },
+                    { value: 'trial', label: 'Deneme Başlangıç' },
+                    { value: 'delivery', label: 'Cihaz Teslimi' },
+                    { value: 'control_visit', label: 'Kontrol Ziyareti' },
+                    { value: 'battery_renewal', label: 'Pil Yenileme' },
+                    { value: 'repair', label: 'Tamir' },
+                    { value: 'fitting', label: 'Cihaz Ayarı' },
+                    { value: 'assessment', label: 'Değerlendirme' }
+                  ]}
+                  className={`w-full ${errors.type ? 'border-red-300' : ''}`}
+                />
+                {errors.type && (
+                  <p className="mt-1 text-sm text-red-600">{errors.type}</p>
+                )}
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Durum
+                </label>
+                <Select
+                  value={formData.status}
+                  onChange={(e) => handleInputChange('status', e.target.value as AppointmentStatus)}
+                  options={[
+                    { value: 'scheduled', label: 'Planlandı' },
+                    { value: 'confirmed', label: 'Onaylandı' },
+                    { value: 'completed', label: 'Tamamlandı' },
+                    { value: 'cancelled', label: 'İptal Edildi' },
+                    { value: 'no_show', label: 'Gelmedi' },
+                    { value: 'rescheduled', label: 'Ertelendi' }
+                  ]}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Başlık *
+                </label>
+                <Input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  placeholder="Randevu başlığı"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                />
+                {errors.title && (
+                  <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                )}
+              </div>
+
+              {/* Clinician */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Doktor
+                </label>
+                <Input
+                  type="text"
+                  value={formData.clinician}
+                  onChange={(e) => handleInputChange('clinician', e.target.value)}
+                  placeholder="Doktor adı"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Lokasyon
+                </label>
+                <Input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) => handleInputChange('location', e.target.value)}
+                  placeholder="Muayene odası, şube vb."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Notes */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Notlar
+                </label>
+                <Textarea
+                  value={formData.notes}
+                  onChange={(e) => handleInputChange('notes', e.target.value)}
+                  placeholder="Randevu ile ilgili notlar..."
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
             </div>
           </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Patient Selection */}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Hasta *
-            </label>
-            <Select
-              value={formData.patientId}
-              onChange={(e) => handleInputChange('patientId', e.target.value)}
-              options={[
-                { value: '', label: 'Hasta seçiniz' },
-                ...patients.map(patient => ({
-                  value: patient.id,
-                  label: patient.firstName && patient.lastName 
-                    ? `${patient.firstName} ${patient.lastName}` 
-                    : `${patient.firstName || patient.lastName || 'İsimsiz Hasta'}`
-                }))
-              ]}
-              className={`w-full ${errors.patientId ? 'border-red-300' : ''}`}
-              disabled={!!patientId} // Disable if patientId is provided as prop
-            />
-            {errors.patientId && (
-              <p className="mt-1 text-sm text-red-600">{errors.patientId}</p>
-            )}
-          </div>
-
-          {/* Date */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tarih *
-            </label>
-            <Input
-              type="date"
-              value={formData.date}
-              onChange={(e) => handleInputChange('date', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.date ? 'border-red-300' : 'border-gray-300'
-              }`}
-            />
-            {errors.date && (
-              <p className="mt-1 text-sm text-red-600">{errors.date}</p>
-            )}
-          </div>
-
-          {/* Time */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Saat *
-            </label>
-            <Input
-              type="time"
-              value={formData.time}
-              onChange={(e) => handleInputChange('time', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.time ? 'border-red-300' : 'border-gray-300'
-              }`}
-            />
-            {errors.time && (
-              <p className="mt-1 text-sm text-red-600">{errors.time}</p>
-            )}
-          </div>
-
-          {/* Duration */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Süre (dakika) *
-            </label>
-            <Input
-              type="number"
-              min="15"
-              max="480"
-              step="15"
-              value={formData.duration}
-              onChange={(e) => handleInputChange('duration', parseInt(e.target.value) || 0)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.duration ? 'border-red-300' : 'border-gray-300'
-              }`}
-            />
-            {errors.duration && (
-              <p className="mt-1 text-sm text-red-600">{errors.duration}</p>
-            )}
-          </div>
-
-          {/* Type */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Randevu Türü *
-            </label>
-            <Select
-              value={formData.type}
-              onChange={(e) => handleInputChange('type', e.target.value as AppointmentType)}
-              options={[
-                { value: 'consultation', label: 'Konsültasyon' },
-                { value: 'follow_up', label: 'Kontrol Muayenesi' },
-                { value: 'trial', label: 'Deneme Başlangıç' },
-                { value: 'delivery', label: 'Cihaz Teslimi' },
-                { value: 'control_visit', label: 'Kontrol Ziyareti' },
-                { value: 'battery_renewal', label: 'Pil Yenileme' },
-                { value: 'repair', label: 'Tamir' },
-                { value: 'fitting', label: 'Cihaz Ayarı' },
-                { value: 'assessment', label: 'Değerlendirme' }
-              ]}
-              className={`w-full ${errors.type ? 'border-red-300' : ''}`}
-            />
-            {errors.type && (
-              <p className="mt-1 text-sm text-red-600">{errors.type}</p>
-            )}
-          </div>
-
-          {/* Status */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Durum
-            </label>
-            <Select
-              value={formData.status}
-              onChange={(e) => handleInputChange('status', e.target.value as AppointmentStatus)}
-              options={[
-                { value: 'scheduled', label: 'Planlandı' },
-                { value: 'confirmed', label: 'Onaylandı' },
-                { value: 'completed', label: 'Tamamlandı' },
-                { value: 'cancelled', label: 'İptal Edildi' },
-                { value: 'no_show', label: 'Gelmedi' },
-                { value: 'rescheduled', label: 'Ertelendi' }
-              ]}
-              className="w-full"
-            />
-          </div>
-
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Başlık *
-            </label>
-            <Input
-              type="text"
-              value={formData.title}
-              onChange={(e) => handleInputChange('title', e.target.value)}
-              placeholder="Randevu başlığı"
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.title ? 'border-red-300' : 'border-gray-300'
-              }`}
-            />
-            {errors.title && (
-              <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-            )}
-          </div>
-
-          {/* Clinician */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Doktor
-            </label>
-            <Input
-              type="text"
-              value={formData.clinician}
-              onChange={(e) => handleInputChange('clinician', e.target.value)}
-              placeholder="Doktor adı"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Location */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Lokasyon
-            </label>
-            <Input
-              type="text"
-              value={formData.location}
-              onChange={(e) => handleInputChange('location', e.target.value)}
-              placeholder="Muayene odası, şube vb."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Notes */}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notlar
-            </label>
-            <Textarea
-              value={formData.notes}
-              onChange={(e) => handleInputChange('notes', e.target.value)}
-              placeholder="Randevu ile ilgili notlar..."
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
         </div>
 
-        {/* Form Actions */}
-        <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+        {/* Form Actions - Sticky Footer */}
+        <div className="flex items-center justify-end space-x-4 pt-4 pb-2 border-t border-gray-200 bg-white sticky bottom-0 z-10 mt-auto">
           {onCancel && (
             <Button
               type="button"

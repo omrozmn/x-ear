@@ -1,6 +1,6 @@
 import { Button, Select } from '@x-ear/ui-web';
 import { createFileRoute } from '@tanstack/react-router'
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { DashboardStats } from '../components/dashboard/DashboardStats';
 import { QuickStatsCard } from '../components/dashboard/QuickStatsCard';
@@ -9,13 +9,18 @@ import { PricingCalculatorCard } from '../components/dashboard/PricingCalculator
 import { CashRegisterModal } from '../components/dashboard/CashRegisterModal';
 import { PricingCalculatorModal } from '../components/dashboard/PricingCalculatorModal';
 import { useDashboardData } from '../hooks/useDashboardData';
+import { getEnvVar } from '../utils/env';
+import PieChartSimple from '../components/charts/PieChartSimple';
+import { usePatientDistribution } from '../api/dashboard';
+import { formatActivitySentence } from '../utils/activity';
+
 
 export const Route = createFileRoute('/')({
   component: Dashboard,
 })
 
 function Dashboard() {
-  const { stats, lastTransaction, lastCalculation, loading, error } = useDashboardData();
+  const { stats, lastTransaction, lastCalculation, recentActivity, loading, error } = useDashboardData();
   const [dateRange, setDateRange] = useState('week');
   const [isCashRegisterModalOpen, setIsCashRegisterModalOpen] = useState(false);
   const [isPricingCalculatorModalOpen, setIsPricingCalculatorModalOpen] = useState(false);
@@ -137,34 +142,30 @@ function Dashboard() {
           }}
         />
       </div>
-      {/* Charts and Analytics Placeholder */}
+      {/* Patient distribution + Recent activity (keeps only these two) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Trend Analizi</h3>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-            <p className="text-gray-500">Chart component will be implemented here</p>
-          </div>
-        </div>
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Hasta Dağılımı</h3>
           <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-            <p className="text-gray-500">Chart component will be implemented here</p>
+            <PatientDistribution />
           </div>
         </div>
-      </div>
-      {/* Secondary Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Cihaz Dağılımı</h3>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-            <p className="text-gray-500">Device distribution chart</p>
-          </div>
-        </div>
+
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Son Aktiviteler</h3>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-            <p className="text-gray-500">Recent activities list</p>
-          </div>
+            <div className="h-64 bg-gray-50 rounded-lg overflow-auto">
+              {(!recentActivity || recentActivity.length === 0) ? (
+                <div className="h-full flex items-center justify-center text-gray-500">No recent activity</div>
+              ) : (
+                <ul className="p-4 space-y-3">
+                  {recentActivity.map((act: any, idx: number) => (
+                    <li key={idx} className="text-sm text-gray-700">
+                      <div className="text-sm text-gray-800">{formatActivitySentence(act)}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
         </div>
       </div>
       {/* Modals */}
@@ -179,5 +180,27 @@ function Dashboard() {
         onCalculate={handlePricingCalculatorSubmit}
       />
     </div>
+  );
+}
+
+function PatientDistribution() {
+  const { data, isLoading, isError } = usePatientDistribution();
+  const raw = data?.data || [];
+  const list = Array.isArray(raw) ? raw : [];
+
+  // Convert to pie slices by summing breakdowns per branch (use status counts as primary)
+  const patientTrends = list.map((b: any) => {
+    const status = b?.breakdown?.status || {};
+    // sum status counts as branch total
+    const total = Object.values(status).reduce((s: number, v: any) => s + Number(v || 0), 0);
+    return { label: b.branch || b.branchId, value: total };
+  });
+
+  if (isLoading) return <div className="text-gray-500">Yükleniyor...</div>;
+  if (isError) return <div className="text-red-500">Hata yüklenirken</div>;
+
+  const slices = patientTrends.filter(p => Number(p.value) > 0).slice(0, 6);
+  return (
+    <PieChartSimple data={slices.length ? slices : patientTrends.slice(0,6).map(d => ({ label: d.label, value: d.value }))} />
   );
 }

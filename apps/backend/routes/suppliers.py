@@ -6,6 +6,10 @@ from flask import Blueprint, request, jsonify
 from sqlalchemy import or_, func, case
 import sys
 from pathlib import Path
+import logging
+import traceback
+
+logger = logging.getLogger(__name__)
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -390,32 +394,33 @@ def create_supplier():
             company_code = company_code.strip() if isinstance(company_code, str) else company_code
             if company_code == '':
                 company_code = None
-        tax_number = _get(data, 'tax_number', 'taxNumber')
-        tax_office = _get(data, 'tax_office', 'taxOffice')
-        contact_person = _get(data, 'contact_person', 'contactPerson')
-        email = _get(data, 'email')
-        phone = _get(data, 'phone')
-        mobile = _get(data, 'mobile')
-        fax = _get(data, 'fax')
-        website = _get(data, 'website')
-        address = _get(data, 'address')
+        tax_number = data.get('taxNumber')
+        tax_office = data.get('taxOffice')
+        contact_person = data.get('contactPerson')
+        email = data.get('email')
+        phone = data.get('phone')
+        mobile = data.get('mobile')
+        fax = data.get('fax')
+        website = data.get('website')
+        address = data.get('address')
         # Normalize address to a single word (take first token)
         if address:
             try:
                 address = str(address).strip().split()[0]
             except Exception:
                 address = str(address).strip()
-        city = _get(data, 'city')
-        country = _get(data, 'country')
-        postal_code = _get(data, 'postal_code', 'postalCode')
-        payment_terms = _get(data, 'payment_terms', 'paymentTerms')
-        currency = _get(data, 'currency')
-        rating = _get(data, 'rating')
-        notes = _get(data, 'notes')
-        is_active = _get(data, 'is_active', 'isActive', True)
+        city = data.get('city')
+        country = data.get('country')
+        postal_code = data.get('postalCode')
+        payment_terms = data.get('paymentTerms')
+        currency = data.get('currency')
+        rating = data.get('rating')
+        notes = data.get('notes')
+        is_active = data.get('isActive', True)
 
         # Validate required fields
         if not company_name:
+            logger.error("❌ Company name is missing!")
             return jsonify({'error': 'Company name is required'}), 400
 
         # Check for duplicate company name
@@ -452,9 +457,22 @@ def create_supplier():
         
         return jsonify(supplier.to_dict()), 201
         
+    except db.exc.IntegrityError as e:
+        db.session.rollback()
+        error_msg = str(e.orig) if hasattr(e, 'orig') else str(e)
+        if 'UNIQUE constraint failed: suppliers.company_name' in error_msg:
+            logger.warning(f"Duplicate supplier company_name attempt: {company_name}")
+            return jsonify({
+                'success': False,
+                'error': 'Bu şirket adı zaten kullanılıyor. Lütfen farklı bir ad deneyin.'
+            }), 409
+        logger.error(f"Database integrity error: {error_msg}")
+        return jsonify({'success': False, 'error': 'Veritabanı kısıtlaması hatası'}), 500
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"Create supplier error: {str(e)}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @suppliers_bp.route('/api/suppliers/<int:supplier_id>', methods=['PUT'])

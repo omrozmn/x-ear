@@ -1,4 +1,4 @@
-import { apiClient } from './apiClient';
+import { customInstance } from '../api/orval-mutator';
 
 export interface SubscriptionInfo {
     tenant: any;
@@ -9,7 +9,10 @@ export interface SubscriptionInfo {
 
 export const subscriptionService = {
     getCurrentSubscription: async (): Promise<SubscriptionInfo> => {
-        const response = await apiClient.get<any>('/subscriptions/current');
+        const response = await customInstance<{ data: SubscriptionInfo }>({
+            url: '/api/subscriptions/current',
+            method: 'GET',
+        });
         return response.data.data;
     }
 };

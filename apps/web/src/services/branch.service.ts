@@ -1,4 +1,4 @@
-import { apiClient } from './apiClient';
+import { customInstance } from '../api/orval-mutator';
 
 export interface Branch {
     id: string;
@@ -11,21 +11,35 @@ export interface Branch {
 
 export const branchService = {
     getBranches: async (): Promise<Branch[]> => {
-        const response = await apiClient.get<any>('/branches');
+        const response = await customInstance<{ data: Branch[] }>({
+            url: '/api/branches',
+            method: 'GET',
+        });
         return response.data.data;
     },
 
     createBranch: async (data: Partial<Branch>): Promise<Branch> => {
-        const response = await apiClient.post<any>('/branches', data);
+        const response = await customInstance<{ data: Branch }>({
+            url: '/api/branches',
+            method: 'POST',
+            data,
+        });
         return response.data.data;
     },
 
     updateBranch: async (id: string, data: Partial<Branch>): Promise<Branch> => {
-        const response = await apiClient.put<any>(`/branches/${id}`, data);
+        const response = await customInstance<{ data: Branch }>({
+            url: `/api/branches/${id}`,
+            method: 'PUT',
+            data,
+        });
         return response.data.data;
     },
 
     deleteBranch: async (id: string): Promise<void> => {
-        await apiClient.delete(`/branches/${id}`);
+        await customInstance({
+            url: `/api/branches/${id}`,
+            method: 'DELETE',
+        });
     }
 };

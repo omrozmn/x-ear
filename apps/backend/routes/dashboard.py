@@ -153,3 +153,50 @@ def recent_activity():
     except Exception as e:
         logger.error(f"Recent activity error: {str(e)}")
         return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
+
+
+@dashboard_bp.route('/dashboard/charts/patient-distribution', methods=['GET'])
+def patient_distribution():
+    try:
+        # Get list of branches
+        from models.branch import Branch
+        branch_objs = Branch.query.all()
+
+        results = []
+        for br in branch_objs:
+            b_id = br.id
+            # status breakdown
+            try:
+                status_counts = db.session.query(Patient.status, db.func.count(Patient.id)).filter(Patient.branch_id == b_id).group_by(Patient.status).all()
+                status_map = {s.value if hasattr(s, 'value') else str(s): int(c) for s, c in status_counts}
+            except Exception:
+                status_map = {}
+
+            # segment breakdown
+            try:
+                seg_counts = db.session.query(Patient.segment, db.func.count(Patient.id)).filter(Patient.branch_id == b_id).group_by(Patient.segment).all()
+                seg_map = {s: int(c) for s, c in seg_counts}
+            except Exception:
+                seg_map = {}
+
+            # acquisition_type breakdown
+            try:
+                acq_counts = db.session.query(Patient.acquisition_type, db.func.count(Patient.id)).filter(Patient.branch_id == b_id).group_by(Patient.acquisition_type).all()
+                acq_map = {s: int(c) for s, c in acq_counts}
+            except Exception:
+                acq_map = {}
+
+            results.append({
+                'branchId': b_id,
+                'branch': br.name,
+                'breakdown': {
+                    'status': status_map,
+                    'segment': seg_map,
+                    'acquisitionType': acq_map
+                }
+            })
+
+        return jsonify({"success": True, "data": results, "timestamp": datetime.now().isoformat()})
+    except Exception as e:
+        logger.error(f"Patient distribution error: {str(e)}")
+        return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
