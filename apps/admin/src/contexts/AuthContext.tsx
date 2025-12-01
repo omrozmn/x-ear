@@ -67,17 +67,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const login = async (credentials: LoginCredentials & { mfa_token?: string }) => {
         try {
             const response = await adminApi.post('/admin/auth/login', credentials);
-            const data = response.data.data;
+            const responseData = response.data;
+
+            // Handle different response structures
+            const data = responseData.data || responseData;
+            const token = responseData.access_token || responseData.token || data.token;
+            const refreshToken = responseData.refreshToken || responseData.refresh_token || data.refreshToken || data.refresh_token;
+            const user = responseData.data || responseData.user || data.user;
 
             if (data.requires_mfa) {
                 return { requires_mfa: true };
             }
 
-            if (data.token && data.user) {
-                setAuth(data.user, data.token);
-                tokenManager.setToken(data.token);
-                toast.success('Login successful');
-                return { user: data.user, token: data.token, tokens: { access_token: data.token } };
+            if (token && user) {
+                setAuth(user, token);
+                tokenManager.setToken(token);
+                if (refreshToken) {
+                    tokenManager.setRefreshToken(refreshToken);
+                }
+                toast.success('Giriş başarılı');
+                return { user, token, tokens: { access_token: token, refresh_token: refreshToken } };
             }
 
             return data;
@@ -90,7 +99,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const logout = () => {
         clearAuth();
         tokenManager.clearToken();
-        toast.success('Logged out successfully');
+        tokenManager.clearRefreshToken();
+        toast.success('Çıkış yapıldı');
         window.location.href = '/login';
     };
 

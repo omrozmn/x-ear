@@ -66,32 +66,23 @@ const Users: React.FC = () => {
     setConfirmModalOpen(true);
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const confirmStatusToggle = async () => {
     if (!userToToggle) return;
 
     const newStatus = !userToToggle.status;
-
-    // Optimistic update
-    const previousData = queryClient.getQueryData(['getAllUsers', page, searchTerm]);
-    queryClient.setQueryData(['getAllUsers', page, searchTerm], (old: any) => {
-      if (!old?.users) return old;
-      return {
-        ...old,
-        users: old.users.map((u: any) =>
-          u.id === userToToggle.id ? { ...u, isActive: newStatus } : u
-        )
-      };
-    });
+    setIsSubmitting(true);
 
     try {
       await apiClient.put(`/admin/users/all/${userToToggle.id}`, { isActive: newStatus });
-      queryClient.invalidateQueries({ queryKey: ['getAllUsers'] });
+      await queryClient.invalidateQueries({ queryKey: ['getAllUsers'] });
       toast.success('Kullanıcı durumu başarıyla güncellendi');
       setConfirmModalOpen(false);
     } catch (error: any) {
-      // Rollback
-      queryClient.setQueryData(['getAllUsers', page, searchTerm], previousData);
       toast.error(error.response?.data?.error?.message || 'Durum güncellenirken hata oluştu');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -125,19 +116,23 @@ const Users: React.FC = () => {
 
   const handleCreateUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       await apiClient.post('/admin/users', formData);
       toast.success('Kullanıcı oluşturuldu');
       setIsAddModalOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['getAdminUsers'] });
+      await queryClient.invalidateQueries({ queryKey: ['getAllUsers'] });
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || 'Kullanıcı oluşturulamadı');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleUpdateUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser?.id) return;
+    setIsSubmitting(true);
     try {
       const updateData: any = {
         email: formData.email,
@@ -151,9 +146,11 @@ const Users: React.FC = () => {
       await apiClient.put(`/admin/users/${selectedUser.id}`, updateData);
       toast.success('Kullanıcı güncellendi');
       setIsEditModalOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['getAdminUsers'] });
+      await queryClient.invalidateQueries({ queryKey: ['getAllUsers'] });
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || 'Kullanıcı güncellenemedi');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -455,9 +452,10 @@ const Users: React.FC = () => {
               </Dialog.Close>
               <button
                 onClick={confirmStatusToggle}
-                className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${userToToggle?.status ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'}`}
+                disabled={isSubmitting}
+                className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${userToToggle?.status ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'}`}
               >
-                {userToToggle?.status ? 'Pasifleştir' : 'Aktifleştir'}
+                {isSubmitting ? 'Güncelleniyor...' : (userToToggle?.status ? 'Pasifleştir' : 'Aktifleştir')}
               </button>
             </div>
             <Dialog.Close asChild>
@@ -553,9 +551,10 @@ const Users: React.FC = () => {
                 </Dialog.Close>
                 <button
                   type="submit"
-                  className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  disabled={isSubmitting}
+                  className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Oluştur
+                  {isSubmitting ? 'Oluşturuluyor...' : 'Oluştur'}
                 </button>
               </div>
             </form>
@@ -644,9 +643,10 @@ const Users: React.FC = () => {
                 </Dialog.Close>
                 <button
                   type="submit"
-                  className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  disabled={isSubmitting}
+                  className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Güncelle
+                  {isSubmitting ? 'Güncelleniyor...' : 'Güncelle'}
                 </button>
               </div>
             </form>

@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { AUTH_TOKEN } from '../constants/storage-keys';
+import { AUTH_TOKEN, REFRESH_TOKEN } from '../constants/storage-keys';
+import { apiClient } from '../api/client';
 import { outbox, OutboxOperation } from '../utils/outbox';
 
 // API Configuration
@@ -241,7 +242,63 @@ apiClient.interceptors.response.use(
   },
   async (error) => {
     const config = error.config;
-    
+
+    // Handle 401 by attempting a silent refresh and replaying the original request
+    try {
+      if (error.response?.status === 401 && config && !config.__isRetryRequest) {
+        if (!(apiClient as any)._refreshing) {
+          (apiClient as any)._refreshing = true;
+          (apiClient as any)._refreshSubscribers = [] as Array<(token: string | null) => void>;
+          try {
+            const refreshResp = await apiClient.request({ url: '/auth/refresh', method: 'POST', data: JSON.stringify({ refreshToken: localStorage.getItem('refresh_token') }) } as any);
+            if (refreshResp.status === 200 && refreshResp.data) {
+              const newToken = (refreshResp.data as any).access_token || (refreshResp.data as any).accessToken || null;
+              if (newToken) {
+                try {
+                  localStorage.setItem('auth_token', newToken);
+                  localStorage.setItem(AUTH_TOKEN, newToken);
+                } catch (e) {}
+                (window as any).__AUTH_TOKEN__ = newToken;
+                axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+                (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(newToken));
+              } else {
+                (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+              }
+            } else {
+              (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+            }
+          } catch (e) {
+            (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+          } finally {
+            (apiClient as any)._refreshing = false;
+            (apiClient as any)._refreshSubscribers = [];
+          }
+        }
+
+        return new Promise((resolve, reject) => {
+          (apiClient as any)._refreshSubscribers.push((token: string | null) => {
+            if (token) {
+              config.__isRetryRequest = true;
+              config.headers = config.headers || {};
+              config.headers['Authorization'] = `Bearer ${token}`;
+              resolve(apiClient(config));
+            } else {
+              try {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem(AUTH_TOKEN);
+                localStorage.removeItem(REFRESH_TOKEN);
+              } catch (e) {}
+              delete (window as any).__AUTH_TOKEN__;
+              reject(error);
+            }
+          });
+        });
+      }
+    } catch (e) {
+      console.warn('[orval-mutator] error during refresh handling', e);
+    }
+
     // Handle resource constraint errors (ERR_INSUFFICIENT_RESOURCES, connection limits, etc.)
     if (error.code === 'ERR_INSUFFICIENT_RESOURCES' || 
         error.code === 'ECONNRESET' || 
@@ -342,7 +399,70 @@ axios.interceptors.response.use(
   },
   async (error) => {
     const config = error.config;
-    
+
+    // Handle 401 by attempting a silent refresh and replaying the original request
+    try {
+      if (error.response?.status === 401 && config && !config.__isRetryRequest) {
+        // Use a centralized refresh lock to avoid concurrent refreshes
+        if (!(axios as any)._refreshing) {
+          (axios as any)._refreshing = true;
+          (axios as any)._refreshSubscribers = [] as Array<(token: string | null) => void>;
+
+          try {
+            const refreshResp = await apiClient.refreshToken();
+            if (refreshResp.status === 200 && refreshResp.data) {
+              const newToken = (refreshResp.data as any).access_token || (refreshResp.data as any).accessToken || null;
+              if (newToken) {
+                try {
+                  localStorage.setItem('auth_token', newToken);
+                  localStorage.setItem(AUTH_TOKEN, newToken);
+                } catch (e) {}
+                (window as any).__AUTH_TOKEN__ = newToken;
+                axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+                // notify subscribers
+                (axios as any)._refreshSubscribers.forEach((cb: any) => cb(newToken));
+              } else {
+                // notify failure
+                (axios as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+              }
+            } else {
+              (axios as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+            }
+          } catch (e) {
+            (axios as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+          } finally {
+            (axios as any)._refreshing = false;
+            (axios as any)._refreshSubscribers = [];
+          }
+        }
+
+        // Return a promise that will retry the original request when refresh completes
+        return new Promise((resolve, reject) => {
+          (axios as any)._refreshSubscribers.push((token: string | null) => {
+            if (token) {
+              config.__isRetryRequest = true;
+              config.headers = config.headers || {};
+              config.headers['Authorization'] = `Bearer ${token}`;
+              resolve(axios(config));
+            } else {
+              // Clear local tokens on refresh failure
+              try {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem(AUTH_TOKEN);
+                localStorage.removeItem(REFRESH_TOKEN);
+              } catch (e) {}
+              delete (window as any).__AUTH_TOKEN__;
+              reject(error);
+            }
+          });
+        });
+      }
+    } catch (e) {
+      // swallow refresh logic errors and continue to other handlers
+      console.warn('[orval-mutator] error during refresh handling', e);
+    }
+
     // Handle resource constraint errors
     if (error.code === 'ERR_INSUFFICIENT_RESOURCES' || 
         error.code === 'ECONNRESET' || 

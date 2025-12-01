@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Building2, Mail, Phone, CreditCard, CheckCircle2, AlertCircle, Lock } from "lucide-react";
+import { ArrowLeft, Building2, Mail, Phone, CreditCard, CheckCircle2, AlertCircle, Lock, Plus } from "lucide-react";
 import { useState, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -245,29 +245,43 @@ function CheckoutContent() {
                             <div className="mb-6 pb-6 border-b border-white/10">
                                 <h3 className="font-semibold text-white mb-3">Ek Özellikler</h3>
                                 <div className="space-y-3">
-                                    {addons.map((addon) => (
-                                        <div key={addon.id} className="flex items-center justify-between">
-                                            <div className="flex items-center">
-                                                <input
-                                                    type="checkbox"
-                                                    id={`addon-${addon.id}`}
-                                                    checked={selectedAddons.includes(addon.id)}
-                                                    onChange={(e) => {
-                                                        if (e.target.checked) {
-                                                            setSelectedAddons([...selectedAddons, addon.id]);
-                                                        } else {
+                                    {addons.map((addon) => {
+                                        const isSelected = selectedAddons.includes(addon.id);
+                                        return (
+                                            <div key={addon.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 hover:border-white/10 transition-colors">
+                                                <div>
+                                                    <h4 className="font-medium text-white text-sm">{addon.name}</h4>
+                                                    <p className="text-xs text-gray-400">₺{addon.price}</p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (isSelected) {
                                                             setSelectedAddons(selectedAddons.filter(id => id !== addon.id));
+                                                        } else {
+                                                            setSelectedAddons([...selectedAddons, addon.id]);
                                                         }
                                                     }}
-                                                    className="h-4 w-4 rounded border-gray-700 bg-[#101010] text-indigo-600 focus:ring-indigo-500"
-                                                />
-                                                <label htmlFor={`addon-${addon.id}`} className="ml-2 text-sm text-gray-300 select-none cursor-pointer">
-                                                    {addon.name}
-                                                </label>
+                                                    className={`p-1.5 rounded-lg transition-all flex items-center gap-1 text-xs font-medium ${isSelected
+                                                        ? "bg-green-500/20 text-green-400 hover:bg-green-500/30 border border-green-500/20"
+                                                        : "bg-white/10 hover:bg-white/20 text-white border border-white/10"
+                                                        }`}
+                                                >
+                                                    {isSelected ? (
+                                                        <>
+                                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                                            Eklendi
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Plus className="w-3.5 h-3.5" />
+                                                            Ekle
+                                                        </>
+                                                    )}
+                                                </button>
                                             </div>
-                                            <span className="text-sm text-gray-400">₺{addon.price}</span>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}

@@ -20,6 +20,8 @@ interface InventoryItem {
   totalInventory?: number;
   brand?: string;
   model?: string;
+  barcode?: string;
+  availableSerials?: string[];
 }
 
 interface ProductSearchInputProps {

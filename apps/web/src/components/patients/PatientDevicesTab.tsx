@@ -168,15 +168,67 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
     }
   };
 
-  const handleReplaceDevice = async (oldDeviceId: string, newDeviceData: Record<string, unknown>) => {
+  const handleReplaceDevice = async (oldDeviceId: string, reasonOrData: any, maybeNotes?: string, maybeNewInventoryId?: string, maybeNewDeviceInfo?: any) => {
     try {
       setLoading(true);
+
+      // Normalize parameters (support both old and new signatures)
+      let reason = 'other';
+      let notes: string | undefined = undefined;
+      let newInventoryId: string | undefined = undefined;
+      let newDeviceInfo: any = undefined;
+      if (typeof reasonOrData === 'object') {
+        // legacy call used single object
+        const obj = reasonOrData || {};
+        reason = obj.reason || obj.replacementReason || 'other';
+        notes = obj.notes || undefined;
+        newInventoryId = obj.inventoryId as string | undefined;
+        newDeviceInfo = obj;
+      } else {
+        reason = reasonOrData || 'other';
+        notes = maybeNotes;
+        newInventoryId = maybeNewInventoryId;
+        newDeviceInfo = maybeNewDeviceInfo;
+      }
+
+      // Create replacement record on server before mutating devices
+      try {
+        const oldDevice = (devices || []).find((d: any) => d.id === oldDeviceId) || { id: oldDeviceId };
+        const payload: any = {
+          oldDeviceId,
+          oldDeviceInfo: {
+            id: oldDevice.id,
+            brand: oldDevice.brand,
+            model: oldDevice.model,
+            serialNumber: oldDevice.serialNumber || oldDevice.serialNumberLeft || oldDevice.serialNumberRight || undefined
+          },
+          newInventoryId: newInventoryId,
+          newDeviceInfo: newDeviceInfo,
+          replacementReason: reason,
+          notes: notes
+        };
+
+        const resp = await authFetch(`/api/patients/${patient.id}/replacements`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        // Read server response for improved error messages (e.g. Missing Authorization Header)
+        const j = await resp.json().catch(() => null);
+        if (!resp.ok) {
+          const errMsg = (j && (j.error || j.msg || j.message)) || `Server ${resp.status}`;
+          throw new Error(errMsg);
+        }
+      } catch (e) {
+        // Surface backend error to user and abort replace flow
+        console.error('Error creating replacement on server:', e);
+        throw e;
+      }
 
       // Remove old device
       await handleRemoveDevice(oldDeviceId);
 
-      // Add new device
-      await handleAssignDevice(newDeviceData);
+      // Add new device (from inventory or manual)
+      await handleAssignDevice({ inventoryId: newInventoryId, reason, ...newDeviceInfo });
 
       setError(null);
     } catch (err) {
@@ -185,6 +237,29 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper: perform authenticated fetch against backend proxy so Authorization header is included
+  const authFetch = async (path: string, opts: RequestInit = {}) => {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...(opts.headers || {}),
+    };
+
+    let token: string | null = null;
+    try {
+      if (typeof window !== 'undefined') {
+        token = (window as any).__AUTH_TOKEN__ || localStorage.getItem('x-ear.auth.token@v1') || localStorage.getItem('auth_token');
+      }
+    } catch (e) {
+      token = null;
+    }
+    if (token) {
+      (headers as any).Authorization = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${path}`, { credentials: 'same-origin', ...opts, headers });
+    return res;
   };
 
   // Calculate quick stats from loaded data
@@ -402,6 +477,36 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
                       }
                     </p>
                   </div>
+                  {/* SGK Desteği: per-ear hesaplama (uyumlu hale getirildi) */}
+                  {(() => {
+                    try {
+                      const dp: any = device as any;
+                      const earVal = (dp.ear || dp.earSide || dp.ear_side || '').toString().toLowerCase();
+                      const qty = (earVal.startsWith('b') || earVal === 'both' || earVal === 'bilateral') ? 2 : 1;
+
+                      const rawSgk = dp.sgkSupport ?? dp.sgk_support ?? dp.sgkReduction ?? dp.sgk_reduction ?? dp.sgk_coverage_amount ?? null;
+                      if (rawSgk !== null && rawSgk !== undefined) {
+                        console.log('[PatientDevicesTab] deviceId=', dp.id || dp.deviceId || dp.assignmentId, 'ear=', earVal, 'rawSgk=', rawSgkNum, 'qty=', qty, 'compareBase=', compareBase);
+                        const rawSgkNum = Number(rawSgk);
+                        let perUnit = rawSgkNum;
+                        const compareBase = Number(dp.salePrice ?? dp.sale_price ?? dp.listPrice ?? dp.list_price ?? dp.netPayable ?? dp.net_payable ?? 0);
+                        if (qty > 1 && compareBase > 0 && rawSgkNum > compareBase * 1.1) {
+                          perUnit = rawSgkNum / qty;
+                        }
+
+                        console.log('[PatientDevicesTab] computed perUnit=', perUnit);
+
+                        return (
+                          <div className="mt-2">
+                            <p className="text-sm text-green-600"><strong>SGK Desteği:</strong> {formatCurrencyTR(perUnit)}</p>
+                          </div>
+                        );
+                      }
+                    } catch (e) {
+                      // ignore
+                    }
+                    return null;
+                  })()}
                 </div>
 
                 <div className="flex items-center space-x-2 ml-4">

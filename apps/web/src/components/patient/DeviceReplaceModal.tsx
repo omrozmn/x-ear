@@ -7,6 +7,7 @@ import { invoiceService } from '../../services/invoice.service';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { CheckCircle } from 'lucide-react';
 import { ProductSearchInput } from '../cashflow/ProductSearchInput';
+import { apiClient } from '../../api/client';
 import { PatientDevice } from '../../types/patient';
 
 interface InventoryItem {
@@ -26,7 +27,7 @@ interface DeviceReplaceModalProps {
   isOpen: boolean;
   onClose: () => void;
   // newInventoryId and newDeviceInfo are optional; when provided backend will link replacement to requested new device
-  onReplace: (deviceId: string, reason: string, notes: string, newInventoryId?: string, newDeviceInfo?: any) => Promise<void>;
+  onReplace: (deviceId: string, reason: string, notes: string, newInventoryId?: string, newDeviceInfo?: any, selectedSerial?: string) => Promise<void>;
 }
 
 export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
@@ -41,6 +42,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedInventory, setSelectedInventory] = useState<InventoryItem | null>(null);
+  const [selectedSerial, setSelectedSerial] = useState<string | null>(null);
   const [replacements, setReplacements] = useState<any[]>([]);
   const [loadingReplacements, setLoadingReplacements] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
@@ -87,7 +89,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
     try {
       setIsSubmitting(true);
       setError(null);
-      await onReplace(device.id, reason, notes, selectedInventory?.id, selectedInventory ? { id: selectedInventory.id, brand: selectedInventory.brand, model: selectedInventory.model, category: selectedInventory.category, availableInventory: selectedInventory.availableInventory } : undefined);
+      await onReplace(device.id, reason, notes, selectedInventory?.id, selectedInventory ? { id: selectedInventory.id, brand: selectedInventory.brand, model: selectedInventory.model, category: selectedInventory.category, availableInventory: selectedInventory.availableInventory } : undefined, selectedSerial || undefined);
       // Keep the modal open after successful replace per UX requirement
       setActionMessage('Cihaz değişimi kaydedildi');
       showSuccess('Cihaz değişimi kaydedildi');
@@ -103,24 +105,27 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
   const refreshReplacements = async () => {
     try {
       setLoadingReplacements(true);
-      const r = await fetch(`http://localhost:5003/api/patients/${patientId}/replacements`);
-      if (r.ok) {
-        const j = await r.json();
-        const items = (j.data || []).map((rep: any) => {
-          const normalize = (field: any) => {
-            if (!field) return null;
-            if (typeof field === 'string') {
-              try { return JSON.parse(field); } catch (e) { return field; }
-            }
-            return field;
-          };
-          return {
-            ...rep,
-            old_device_info_parsed: normalize(rep.old_device_info || rep.oldDeviceInfo),
-            new_device_info_parsed: normalize(rep.new_device_info || rep.newDeviceInfo),
-          };
-        });
-        setReplacements(items);
+      try {
+        const { status, data: j } = await apiClient.request<any>(`/patients/${patientId}/replacements`);
+        if (status < 400) {
+          const items = (j.data || []).map((rep: any) => {
+            const normalize = (field: any) => {
+              if (!field) return null;
+              if (typeof field === 'string') {
+                try { return JSON.parse(field); } catch (e) { return field; }
+              }
+              return field;
+            };
+            return {
+              ...rep,
+              old_device_info_parsed: normalize(rep.old_device_info || rep.oldDeviceInfo),
+              new_device_info_parsed: normalize(rep.new_device_info || rep.newDeviceInfo),
+            };
+          });
+          setReplacements(items);
+        }
+      } catch (e) {
+        console.warn('Could not refresh replacements', e);
       }
     } catch (e) {
       console.warn('Could not refresh replacements', e);
@@ -180,11 +185,15 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
         invoiceNumber: createdInvoice.invoiceNumber || createdInvoice.id,
         supplierInvoiceNumber: createdInvoice.supplierInvoiceNumber || createdInvoice.invoiceNumber
       };
-      const res = await fetch(`http://localhost:5003/api/replacements/${replacementId}/invoice`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-      });
-      const j = await res.json();
-      if (!res.ok || !j.success) throw new Error(j.error || 'Linkleme başarısız');
+      try {
+        const { status, data: j } = await apiClient.request<any>(`/replacements/${replacementId}/invoice`, {
+          method: 'POST',
+          body: JSON.stringify(body)
+        });
+        if (status >= 400 || !j?.success) throw new Error(j?.error || 'Linkleme başarısız');
+      } catch (e: any) {
+        throw e;
+      }
       showSuccess('İade faturası oluşturuldu ve kayda bağlandı');
       // refresh replacement list
       await refreshReplacements();
@@ -199,9 +208,14 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
   const handleSendToGib = async (invoiceId: string) => {
     try {
       setActionMessage(null);
-      const res = await fetch(`http://localhost:5003/api/return-invoices/${invoiceId}/send-to-gib`, { method: 'POST' });
-      const j = await res.json();
-      if (!res.ok || !j.success) throw new Error(j.error || 'GİB gönderimi başarısız');
+      try {
+        const { status, data: j } = await apiClient.request<any>(`/return-invoices/${invoiceId}/send-to-gib`, {
+          method: 'POST'
+        });
+        if (status >= 400 || !j?.success) throw new Error(j?.error || 'GİB gönderimi başarısız');
+      } catch (e) {
+        throw e;
+      }
       setActionMessage('Fatura GİB outbox içine yazıldı ve işlem tamamlandı');
       showSuccess("Fatura GİB'e gönderildi");
       await refreshReplacements();
@@ -389,6 +403,24 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
                 }}
               />
             </div>
+
+            {/* Show barcode and serial selector if available */}
+            {selectedInventory && (
+              <div className="mt-3 grid grid-cols-1 gap-2">
+                <div className="text-sm text-gray-700">Barkod: <strong>{(selectedInventory as any).barcode || (selectedInventory as any).sku || '-'}</strong></div>
+                {((selectedInventory as any).availableSerials && (selectedInventory as any).availableSerials.length > 0) && (
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Seri No Seçimi (mevcut)</label>
+                    <select value={selectedSerial || ''} onChange={(e) => setSelectedSerial(e.target.value)} className="w-full px-3 py-2 border rounded">
+                      <option value="">-- Seri seçin --</option>
+                      {((selectedInventory as any).availableSerials || []).map((s: string) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Removed serial selection — serial number is not known before procurement */}
           </div>

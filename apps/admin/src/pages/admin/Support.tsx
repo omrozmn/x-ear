@@ -53,24 +53,32 @@ const Support: React.FC = () => {
   const { mutateAsync: updateTicket } = usePutAdminTicketsId();
   const { mutateAsync: createTicket } = usePostAdminTickets();
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleUpdateTicket = async (id: string, data: any) => {
+    setIsSubmitting(true);
     try {
       await updateTicket({ id, data });
-      queryClient.invalidateQueries({ queryKey: ['getAdminTickets'] });
+      await queryClient.invalidateQueries({ queryKey: ['/admin/tickets'] });
       toast.success('Ticket başarıyla güncellendi');
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || 'Ticket güncellenirken hata oluştu');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleCreateTicket = async (data: any) => {
+    setIsSubmitting(true);
     try {
       await createTicket({ data });
-      queryClient.invalidateQueries({ queryKey: ['getAdminTickets'] });
+      await queryClient.invalidateQueries({ queryKey: ['/admin/tickets'] });
       toast.success('Ticket başarıyla oluşturuldu');
       setShowCreateModal(false);
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || 'Ticket oluşturulurken hata oluştu');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -365,6 +373,7 @@ const Support: React.FC = () => {
           onClose={() => setShowTicketModal(false)}
           onUpdate={(data) => handleUpdateTicket(selectedTicket.id!, data)}
           adminUsers={adminUsers}
+          isLoading={isSubmitting}
         />
       )}
 
@@ -374,6 +383,7 @@ const Support: React.FC = () => {
           onClose={() => setShowCreateModal(false)}
           onCreate={handleCreateTicket}
           adminUsers={adminUsers}
+          isLoading={isSubmitting}
         />
       )}
     </div>
@@ -685,15 +695,18 @@ interface TicketDetailModalProps {
   onClose: () => void;
   onUpdate: (data: Partial<SupportTicket>) => void;
   adminUsers: AdminUser[];
+  isLoading: boolean;
 }
 
 const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   ticket,
   onClose,
   onUpdate,
-  adminUsers
+  adminUsers,
+  isLoading
 }) => {
   const [response, setResponse] = useState('');
+  const [isSending, setIsSending] = useState(false);
   const [csatScore, setCsatScore] = useState(ticket.csat_score || 0); // Assuming csat_score is in type
   const [csatFeedback, setCsatFeedback] = useState(ticket.csat_feedback || ''); // Assuming csat_feedback is in type
 
@@ -774,6 +787,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                 <button
                   onClick={async () => {
                     if (!response.trim()) return;
+                    setIsSending(true);
                     try {
                       // Try to send response via API
                       await adminApiInstance.post(`/admin/tickets/${ticket.id}/responses`, { message: response });
@@ -784,12 +798,14 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                       // Fallback or just show success if it's a mock
                       toast.success('Yanıt gönderildi (Simülasyon)');
                       setResponse('');
+                    } finally {
+                      setIsSending(false);
                     }
                   }}
-                  disabled={!response.trim()}
+                  disabled={!response.trim() || isSending}
                   className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Yanıt Gönder
+                  {isSending ? 'Gönderiliyor...' : 'Yanıt Gönder'}
                 </button>
               </div>
             </div>
@@ -807,7 +823,8 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                   <select
                     value={ticket.status}
                     onChange={(e) => handleStatusUpdate(e.target.value)}
-                    className="block w-full text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isLoading}
+                    className="block w-full text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="open">Açık</option>
                     <option value="in_progress">İşlemde</option>
@@ -831,7 +848,8 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                   <select
                     value={ticket.assigned_to || ''}
                     onChange={(e) => handleAssignmentUpdate(e.target.value)}
-                    className="block w-full text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isLoading}
+                    className="block w-full text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="">Atanmamış</option>
                     {adminUsers.map((admin) => (
@@ -885,12 +903,14 @@ interface CreateTicketModalProps {
   onClose: () => void;
   onCreate: (data: any) => void;
   adminUsers: AdminUser[];
+  isLoading: boolean;
 }
 
 const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
   onClose,
   onCreate,
-  adminUsers
+  adminUsers,
+  isLoading
 }) => {
   const [formData, setFormData] = useState({
     subject: '',
@@ -986,9 +1006,10 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              disabled={isLoading}
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Oluştur
+              {isLoading ? 'Oluşturuluyor...' : 'Oluştur'}
             </button>
           </div>
         </form>

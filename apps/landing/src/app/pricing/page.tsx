@@ -48,11 +48,11 @@ export default function Pricing() {
                             </Link>
                         </nav>
                         <div className="hidden md:flex items-center space-x-4">
-                            <a href={`${process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:8080'}/login`} className="text-gray-400 hover:text-white transition">
+                            <a href={`${process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:8082'}/login`} className="text-gray-400 hover:text-white transition">
                                 Giriş Yap
                             </a>
                             <Link
-                                href="/pricing"
+                                href="/register"
                                 className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition"
                             >
                                 Kayıt Ol

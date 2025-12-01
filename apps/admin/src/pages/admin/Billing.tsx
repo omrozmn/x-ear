@@ -109,15 +109,18 @@ const Billing: React.FC = () => {
     setShowPaymentModal(true);
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleConfirmPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!paymentInvoiceId) return;
 
     if (paymentAmount > 0 && paymentAmount <= paymentMaxAmount) {
+      setIsSubmitting(true);
       try {
         await recordPayment({ id: paymentInvoiceId, data: { amount: paymentAmount } });
-        queryClient.invalidateQueries({ queryKey: ['getAdminInvoices'] });
-        queryClient.invalidateQueries({ queryKey: ['getAdminInvoicesId', paymentInvoiceId] });
+        await queryClient.invalidateQueries({ queryKey: ['/admin/invoices'] });
+        await queryClient.invalidateQueries({ queryKey: ['getAdminInvoicesId', paymentInvoiceId] });
         toast.success('Ödeme başarıyla kaydedildi');
         setShowPaymentModal(false);
         // Also close invoice detail modal if open and it's the same invoice
@@ -126,6 +129,8 @@ const Billing: React.FC = () => {
         }
       } catch (error: any) {
         toast.error(error.response?.data?.error?.message || 'Ödeme kaydedilirken hata oluştu');
+      } finally {
+        setIsSubmitting(false);
       }
     } else {
       toast.error('Geçersiz ödeme tutarı');
@@ -174,13 +179,16 @@ const Billing: React.FC = () => {
   };
 
   const handleCreateInvoice = async (data: CreateInvoiceData) => {
+    setIsSubmitting(true);
     try {
       await createInvoice({ data });
-      queryClient.invalidateQueries({ queryKey: ['getAdminInvoices'] });
+      await queryClient.invalidateQueries({ queryKey: ['/admin/invoices'] });
       setShowCreateModal(false);
       toast.success('Fatura başarıyla oluşturuldu');
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || 'Fatura oluşturulurken hata oluştu');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -222,7 +230,7 @@ const Billing: React.FC = () => {
     if (window.confirm('Bu planı silmek istediğinize emin misiniz?')) {
       try {
         await deletePlan({ id });
-        queryClient.invalidateQueries({ queryKey: ['getAdminPlans'] });
+        await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] });
         toast.success('Plan silindi');
       } catch (error: any) {
         toast.error('Plan silinemedi');
@@ -243,6 +251,7 @@ const Billing: React.FC = () => {
 
   const handleSavePlan = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     // Convert features array back to object/map for API
     const featuresMap: Record<string, string> = {};
@@ -267,10 +276,12 @@ const Billing: React.FC = () => {
         await createPlan({ data: dataToSave });
         toast.success('Plan oluşturuldu');
       }
-      queryClient.invalidateQueries({ queryKey: ['getAdminPlans'] });
+      await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] });
       setPlanModalView('list');
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || 'İşlem başarısız');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -331,7 +342,7 @@ const Billing: React.FC = () => {
             </button>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
               Fatura Oluştur
@@ -862,7 +873,7 @@ const Billing: React.FC = () => {
             onClose={() => setShowCreateModal(false)}
             onSubmit={handleCreateInvoice}
             tenants={tenants}
-            isLoading={isCreatingInvoice}
+            isLoading={isSubmitting}
           />
         )}
 
@@ -1047,9 +1058,10 @@ const Billing: React.FC = () => {
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                      disabled={isSubmitting}
+                      className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {editingPlan ? 'Güncelle' : 'Oluştur'}
+                      {isSubmitting ? 'İşleniyor...' : (editingPlan ? 'Güncelle' : 'Oluştur')}
                     </button>
                   </div>
                 </form>
@@ -1092,9 +1104,10 @@ const Billing: React.FC = () => {
                   </Dialog.Close>
                   <button
                     type="submit"
-                    className="inline-flex justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                    disabled={isSubmitting}
+                    className="inline-flex justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Kaydet
+                    {isSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
                   </button>
                 </div>
               </form>

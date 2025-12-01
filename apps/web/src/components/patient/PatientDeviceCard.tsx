@@ -250,10 +250,35 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
               );
             }
 
-            // Fallback: take available SGK fields and divide by qty for per-unit display
+            // Fallback: take available SGK fields. The backend sometimes returns either
+            //  - total SGK for the assignment (for bilateral assignments), or
+            //  - per-item SGK already. We must detect which one we have and avoid
+            //  dividing a per-item value by the quantity (causing half values).
             const rawSgk = dp.sgkSupport ?? dp.sgk_support ?? dp.sgkReduction ?? dp.sgk_coverage_amount ?? null;
             if (rawSgk !== null && rawSgk !== undefined) {
-              const perUnit = Number(rawSgk) / Math.max(1, qty);
+              const rawSgkNum = Number(rawSgk);
+              console.log('[PatientDeviceCard] deviceId=', dp.id || dp.assignmentId || dp.deviceId, 'ear=', earVal, 'rawSgk=', rawSgkNum, 'qty=', qty);
+              let perUnit: number;
+
+              if (qty > 1) {
+                // Try to detect whether rawSgk is a total (needs division) or already per-item.
+                // Heuristic: if rawSgk is larger than the per-item sale/list price, it's likely a total.
+                const compareBase = Number(dp.salePrice ?? dp.sale_price ?? dp.listPrice ?? dp.list_price ?? dp.netPayable ?? dp.net_payable ?? 0);
+                console.log('[PatientDeviceCard] compareBase=', compareBase);
+                if (compareBase > 0 && rawSgkNum > compareBase * 1.1) {
+                  // rawSgk appears to be a total across both ears -> divide
+                  perUnit = rawSgkNum / qty;
+                  console.log('[PatientDeviceCard] rawSgk looks like total; dividing -> perUnit=', perUnit);
+                } else {
+                  // rawSgk looks like it's already a per-item amount -> use as-is
+                  perUnit = rawSgkNum;
+                  console.log('[PatientDeviceCard] rawSgk looks like per-item; using as-is -> perUnit=', perUnit);
+                }
+              } else {
+                perUnit = rawSgkNum;
+                console.log('[PatientDeviceCard] qty=1; perUnit=', perUnit);
+              }
+
               return (
                 <div>
                   <span className="text-gray-500">SGK Desteği:</span>

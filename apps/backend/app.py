@@ -353,6 +353,9 @@ app.register_blueprint(communications_bp, url_prefix='/api')
 from routes.plans import plans_bp
 app.register_blueprint(plans_bp, url_prefix='/api/plans')
 
+from routes.addons import addons_bp
+app.register_blueprint(addons_bp, url_prefix='/api/addons')
+
 from routes.subscriptions import subscriptions_bp
 app.register_blueprint(subscriptions_bp, url_prefix='/api/subscriptions')
 

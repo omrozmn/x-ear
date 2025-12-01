@@ -80,7 +80,14 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    const token = localStorage.getItem('auth_token');
+    let token: string | null = null;
+    try {
+      if (typeof window !== 'undefined') {
+        token = (window as any).__AUTH_TOKEN__ || localStorage.getItem('x-ear.auth.token@v1') || localStorage.getItem('auth_token');
+      }
+    } catch (e) {
+      token = localStorage.getItem('auth_token');
+    }
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -92,6 +99,7 @@ class ApiClient {
     }
 
     const response = await fetch(`${this.baseURL}${endpoint}`, {
+      credentials: 'same-origin',
       ...options,
       headers,
     });

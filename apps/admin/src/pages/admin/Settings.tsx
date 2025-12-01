@@ -66,35 +66,35 @@ const Settings: React.FC = () => {
   const onSubmit = async (data: SystemSettings) => {
     try {
       await updateSettings({ data });
-      toast.success('Settings saved successfully');
+      toast.success('Ayarlar başarıyla kaydedildi');
     } catch (error: any) {
       console.error('Error saving settings:', error);
-      toast.error(error.response?.data?.error?.message || 'Failed to save settings');
+      toast.error(error.response?.data?.error?.message || 'Ayarlar kaydedilemedi');
     }
   };
 
   const tabs: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
-    { id: 'general', label: 'General', icon: Globe },
-    { id: 'email', label: 'Email', icon: Mail },
-    { id: 'security', label: 'Security', icon: Shield },
-    { id: 'backup', label: 'Backup', icon: Database },
+    { id: 'general', label: 'Genel', icon: Globe },
+    { id: 'email', label: 'E-posta', icon: Mail },
+    { id: 'security', label: 'Güvenlik', icon: Shield },
+    { id: 'backup', label: 'Yedekleme', icon: Database },
   ];
 
   if (isLoadingSettings) {
-    return <div className="p-6 text-center">Loading settings...</div>;
+    return <div className="p-6 text-center">Ayarlar yükleniyor...</div>;
   }
 
   return (
     <>
       <Helmet>
-        <title>Settings - Admin Panel</title>
+        <title>Ayarlar - Admin Paneli</title>
       </Helmet>
 
       <div className="p-6 max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">System Settings</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Sistem Ayarları</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Configure system-wide settings and preferences
+            Sistem genelindeki ayarları ve tercihleri yapılandırın
           </p>
         </div>
 
@@ -128,7 +128,7 @@ const Settings: React.FC = () => {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Site Name</label>
+                      <label className="block text-sm font-medium text-gray-700">Site Adı</label>
                       <input
                         type="text"
                         {...register('siteName', { required: true })}
@@ -137,12 +137,13 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Default Timezone</label>
+                      <label className="block text-sm font-medium text-gray-700">Varsayılan Saat Dilimi</label>
                       <select
                         {...register('timezone')}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
                         <option value="UTC">UTC</option>
+                        <option value="Europe/Istanbul">İstanbul</option>
                         <option value="America/New_York">Eastern Time</option>
                         <option value="America/Los_Angeles">Pacific Time</option>
                         <option value="Europe/London">London</option>
@@ -151,34 +152,34 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Default Language</label>
+                      <label className="block text-sm font-medium text-gray-700">Varsayılan Dil</label>
                       <select
                         {...register('language')}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
-                        <option value="en">English</option>
-                        <option value="es">Spanish</option>
-                        <option value="fr">French</option>
-                        <option value="de">German</option>
-                        <option value="tr">Turkish</option>
+                        <option value="tr">Türkçe</option>
+                        <option value="en">İngilizce</option>
+                        <option value="es">İspanyolca</option>
+                        <option value="fr">Fransızca</option>
+                        <option value="de">Almanca</option>
                       </select>
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Currency</label>
+                      <label className="block text-sm font-medium text-gray-700">Para Birimi</label>
                       <select
                         {...register('currency')}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
-                        <option value="USD">USD - US Dollar</option>
+                        <option value="TRY">TRY - Türk Lirası</option>
+                        <option value="USD">USD - Amerikan Doları</option>
                         <option value="EUR">EUR - Euro</option>
-                        <option value="GBP">GBP - British Pound</option>
-                        <option value="TRY">TRY - Turkish Lira</option>
+                        <option value="GBP">GBP - İngiliz Sterlini</option>
                       </select>
                     </div>
 
                     <div className="sm:col-span-6">
-                      <label className="block text-sm font-medium text-gray-700">Site Description</label>
+                      <label className="block text-sm font-medium text-gray-700">Site Açıklaması</label>
                       <textarea
                         {...register('siteDescription')}
                         rows={3}
@@ -198,8 +199,8 @@ const Settings: React.FC = () => {
                           />
                         </div>
                         <div className="ml-3 text-sm">
-                          <label className="font-medium text-gray-700">Maintenance Mode</label>
-                          <p className="text-gray-500">Put the site in maintenance mode. Only admins can access.</p>
+                          <label className="font-medium text-gray-700">Bakım Modu</label>
+                          <p className="text-gray-500">Siteyi bakım moduna alır. Sadece yöneticiler erişebilir.</p>
                         </div>
                       </div>
 
@@ -212,8 +213,8 @@ const Settings: React.FC = () => {
                           />
                         </div>
                         <div className="ml-3 text-sm">
-                          <label className="font-medium text-gray-700">User Registration</label>
-                          <p className="text-gray-500">Allow new users to register.</p>
+                          <label className="font-medium text-gray-700">Kullanıcı Kaydı</label>
+                          <p className="text-gray-500">Yeni kullanıcıların kayıt olmasına izin ver.</p>
                         </div>
                       </div>
                     </div>
@@ -225,7 +226,7 @@ const Settings: React.FC = () => {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <div className="sm:col-span-4">
-                      <label className="block text-sm font-medium text-gray-700">SMTP Host</label>
+                      <label className="block text-sm font-medium text-gray-700">SMTP Sunucusu</label>
                       <input
                         type="text"
                         {...register('smtpHost')}
@@ -235,7 +236,7 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700">SMTP Port</label>
+                      <label className="block text-sm font-medium text-gray-700">SMTP Portu</label>
                       <input
                         type="text"
                         {...register('smtpPort')}
@@ -245,7 +246,7 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">SMTP Username</label>
+                      <label className="block text-sm font-medium text-gray-700">SMTP Kullanıcı Adı</label>
                       <input
                         type="text"
                         {...register('smtpUsername')}
@@ -254,7 +255,7 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">SMTP Password</label>
+                      <label className="block text-sm font-medium text-gray-700">SMTP Şifresi</label>
                       <input
                         type="password"
                         {...register('smtpPassword')}
@@ -263,7 +264,7 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">From Email</label>
+                      <label className="block text-sm font-medium text-gray-700">Gönderen E-posta</label>
                       <input
                         type="email"
                         {...register('fromEmail')}
@@ -272,7 +273,7 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">From Name</label>
+                      <label className="block text-sm font-medium text-gray-700">Gönderen Adı</label>
                       <input
                         type="text"
                         {...register('fromName')}
@@ -290,7 +291,7 @@ const Settings: React.FC = () => {
                       />
                     </div>
                     <div className="ml-3 text-sm">
-                      <label className="font-medium text-gray-700">Use SSL/TLS</label>
+                      <label className="font-medium text-gray-700">SSL/TLS Kullan</label>
                     </div>
                   </div>
                 </div>
@@ -300,7 +301,7 @@ const Settings: React.FC = () => {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Session Timeout (minutes)</label>
+                      <label className="block text-sm font-medium text-gray-700">Oturum Zaman Aşımı (dakika)</label>
                       <input
                         type="number"
                         {...register('sessionTimeout')}
@@ -309,7 +310,7 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Max Login Attempts</label>
+                      <label className="block text-sm font-medium text-gray-700">Maksimum Giriş Denemesi</label>
                       <input
                         type="number"
                         {...register('maxLoginAttempts')}
@@ -318,7 +319,7 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Password Min Length</label>
+                      <label className="block text-sm font-medium text-gray-700">Minimum Şifre Uzunluğu</label>
                       <input
                         type="number"
                         {...register('passwordMinLength')}
@@ -327,7 +328,7 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">JWT Expiry (hours)</label>
+                      <label className="block text-sm font-medium text-gray-700">JWT Süresi (saat)</label>
                       <input
                         type="number"
                         {...register('jwtExpiry')}
@@ -347,8 +348,8 @@ const Settings: React.FC = () => {
                           />
                         </div>
                         <div className="ml-3 text-sm">
-                          <label className="font-medium text-gray-700">Two-Factor Authentication</label>
-                          <p className="text-gray-500">Enforce 2FA for all admin users.</p>
+                          <label className="font-medium text-gray-700">İki Faktörlü Kimlik Doğrulama (2FA)</label>
+                          <p className="text-gray-500">Tüm yönetici kullanıcıları için 2FA zorunlu kıl.</p>
                         </div>
                       </div>
 
@@ -361,8 +362,8 @@ const Settings: React.FC = () => {
                           />
                         </div>
                         <div className="ml-3 text-sm">
-                          <label className="font-medium text-gray-700">IP Whitelist</label>
-                          <p className="text-gray-500">Restrict admin access to whitelisted IPs.</p>
+                          <label className="font-medium text-gray-700">IP Beyaz Listesi</label>
+                          <p className="text-gray-500">Yönetici erişimini beyaz listedeki IP'lerle sınırla.</p>
                         </div>
                       </div>
                     </div>
@@ -374,19 +375,19 @@ const Settings: React.FC = () => {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Backup Schedule</label>
+                      <label className="block text-sm font-medium text-gray-700">Yedekleme Zamanlaması</label>
                       <select
                         {...register('backupSchedule')}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
+                        <option value="daily">Günlük</option>
+                        <option value="weekly">Haftalık</option>
+                        <option value="monthly">Aylık</option>
                       </select>
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Backup Retention (days)</label>
+                      <label className="block text-sm font-medium text-gray-700">Yedek Saklama Süresi (gün)</label>
                       <input
                         type="number"
                         {...register('backupRetention')}
@@ -395,19 +396,19 @@ const Settings: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Backup Location</label>
+                      <label className="block text-sm font-medium text-gray-700">Yedekleme Konumu</label>
                       <select
                         {...register('backupLocation')}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
-                        <option value="local">Local Storage</option>
+                        <option value="local">Yerel Depolama</option>
                         <option value="s3">Amazon S3</option>
                         <option value="gcs">Google Cloud Storage</option>
                       </select>
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">Encryption Key</label>
+                      <label className="block text-sm font-medium text-gray-700">Şifreleme Anahtarı</label>
                       <input
                         type="password"
                         {...register('backupEncryptionKey')}
@@ -425,14 +426,14 @@ const Settings: React.FC = () => {
                     onClick={() => reset()}
                     className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                   >
-                    Cancel
+                    İptal
                   </button>
                   <button
                     type="submit"
                     disabled={isUpdating}
                     className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
                   >
-                    {isUpdating ? 'Saving...' : 'Save Settings'}
+                    {isUpdating ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
                   </button>
                 </div>
               </div>

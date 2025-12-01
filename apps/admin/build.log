@@ -1,0 +1,36 @@
+
+> @x-ear/admin@0.1.0 build
+> tsc && vite build
+
+vite v4.5.14 building for production...
+transforming...
+✓ 1982 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/registerSW.js                0.13 kB
+dist/manifest.webmanifest         0.89 kB
+dist/index.html                   4.26 kB │ gzip:   1.17 kB
+dist/assets/index-9fe4eba6.css   50.65 kB │ gzip:   8.69 kB
+dist/assets/index-757b41f9.js   654.85 kB │ gzip: 180.61 kB │ map: 2,366.59 kB
+
+(!) Some chunks are larger than 500 kBs after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+error during build:
+Error: 
+  Configure "workbox.maximumFileSizeToCacheInBytes" to change the limit: the default value is 2 MiB.
+  Check https://vite-pwa-org.netlify.app/guide/faq.html#missing-assets-from-sw-precache-manifest for more information.
+  Assets exceeding the limit:
+  - logo/saydam.png is 2.66 MB, and won't be precached.
+  - logo/transparant büyük.png is 2.62 MB, and won't be precached.
+  - logo/x.svg is 3.61 MB, and won't be precached.
+
+    at logWorkboxResult (file:///Users/omerozmen/Desktop/x-ear%20web%20app/x-ear/node_modules/.pnpm/vite-plugin-pwa@1.1.0_vite@4.5.14_@types+node@20.19.22_lightningcss@1.30.2_terser@5.44._e565f67d12f2a9c0329949cdb5dedfba/node_modules/vite-plugin-pwa/dist/chunk-G4TAN34B.js:44:13)
+    at generateServiceWorker (file:///Users/omerozmen/Desktop/x-ear%20web%20app/x-ear/node_modules/.pnpm/vite-plugin-pwa@1.1.0_vite@4.5.14_@types+node@20.19.22_lightningcss@1.30.2_terser@5.44._e565f67d12f2a9c0329949cdb5dedfba/node_modules/vite-plugin-pwa/dist/index.js:209:3)
+    at async _generateSW (file:///Users/omerozmen/Desktop/x-ear%20web%20app/x-ear/node_modules/.pnpm/vite-plugin-pwa@1.1.0_vite@4.5.14_@types+node@20.19.22_lightningcss@1.30.2_terser@5.44._e565f67d12f2a9c0329949cdb5dedfba/node_modules/vite-plugin-pwa/dist/index.js:234:5)
+    at async Object.handler (file:///Users/omerozmen/Desktop/x-ear%20web%20app/x-ear/node_modules/.pnpm/vite-plugin-pwa@1.1.0_vite@4.5.14_@types+node@20.19.22_lightningcss@1.30.2_terser@5.44._e565f67d12f2a9c0329949cdb5dedfba/node_modules/vite-plugin-pwa/dist/index.js:427:13)
+    at async PluginDriver.hookParallel (file:///Users/omerozmen/Desktop/x-ear%20web%20app/x-ear/node_modules/.pnpm/rollup@3.29.5/node_modules/rollup/dist/es/shared/node-entry.js:25466:17)
+    at async Object.close (file:///Users/omerozmen/Desktop/x-ear%20web%20app/x-ear/node_modules/.pnpm/rollup@3.29.5/node_modules/rollup/dist/es/shared/node-entry.js:26726:13)
+    at async build (file:///Users/omerozmen/Desktop/x-ear%20web%20app/x-ear/node_modules/.pnpm/vite@4.5.14_@types+node@20.19.22_lightningcss@1.30.2_terser@5.44.0/node_modules/vite/dist/node/chunks/dep-827b23df.js:48151:13)
+    at async CAC.<anonymous> (file:///Users/omerozmen/Desktop/x-ear%20web%20app/x-ear/node_modules/.pnpm/vite@4.5.14_@types+node@20.19.22_lightningcss@1.30.2_terser@5.44.0/node_modules/vite/dist/node/cli.js:843:9)

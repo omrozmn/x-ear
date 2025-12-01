@@ -6,11 +6,13 @@ import {
     CreditCard,
     LifeBuoy,
     Settings,
-    PlusCircle
+    PlusCircle,
+    BarChart3
 } from 'lucide-react'
 
 const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
+    { name: 'Raporlar', href: '/analytics', icon: BarChart3 },
     { name: 'Kiracılar', href: '/tenants', icon: Building2 },
     { name: 'Kullanıcılar', href: '/users', icon: Users },
     { name: 'Planlar', href: '/plans', icon: CreditCard },

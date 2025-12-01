@@ -26,7 +26,7 @@ export default function Home() {
               </Link>
             </nav>
             <div className="hidden md:flex items-center space-x-4">
-              <a href="http://localhost:8080/login" className="text-gray-300 hover:text-white transition">
+              <a href="http://localhost:8082/login" className="text-gray-300 hover:text-white transition">
                 Giriş Yap
               </a>
               <Link
@@ -129,40 +129,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Add-ons Section */}
-        <section id="addons" className="py-20 bg-white/5">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white">
-                Ek Özellikler (Add-ons)
-              </h2>
-              <p className="mt-4 text-lg md:text-xl text-slate-400 max-w-3xl mx-auto">
-                İhtiyacınıza göre paketinizi özelleştirin.
-              </p>
-            </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              <AddonCard
-                title="SMS Paketi (1000)"
-                price="150 ₺"
-                description="Müşterilerinize kampanya ve bilgilendirme mesajları gönderin."
-                features={["1000 SMS Hakkı", "Başlıklı Gönderim", "Raporlama"]}
-              />
-              <AddonCard
-                title="Ekstra Depolama (50GB)"
-                price="100 ₺"
-                description="Belgeleriniz ve hasta dosyalarınız için daha fazla alan."
-                features={["50GB Ek Alan", "Yedekleme", "Güvenli Saklama"]}
-              />
-              <AddonCard
-                title="Premium Destek"
-                price="500 ₺"
-                description="İşleriniz aksamasın, 7/24 öncelikli destek alın."
-                features={["7/24 Canlı Destek", "Öncelikli Yanıt", "Uzak Bağlantı"]}
-              />
-            </div>
-          </div>
-        </section>
 
         {/* Call to Action Section */}
         <section className="py-20">

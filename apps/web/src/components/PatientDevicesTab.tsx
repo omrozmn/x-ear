@@ -13,6 +13,7 @@ import { ConfirmDialog } from './ui/ConfirmDialog';
 import { Smartphone, AlertCircle, Plus, Edit, Trash2, RefreshCw, Settings } from 'lucide-react';
 import { Button } from './ui/Button';
 import { PatientDevice } from '../types/patient';
+import { apiClient } from '../api/client';
 
 interface DeviceAssignment {
   id?: string;
@@ -195,16 +196,14 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
       setActionError(null);
       
       // Update device status to cancelled
-      const response = await fetch(`http://localhost:5003/api/device-assignments/${deviceToCancel}`, {
+      const { status, data: cancelResult } = await apiClient.request<any>(`/device-assignments/${deviceToCancel}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ status: 'cancelled' })
       });
 
-      if (!response.ok) {
-        throw new Error('Cihaz iptal edilemedi');
+      if (status >= 400 || !cancelResult?.success) {
+        const err = cancelResult?.error || cancelResult?.message || `Backend error: ${status}`;
+        throw new Error(err);
       }
 
       setSuccessMessage('Cihaz ataması iptal edildi');
@@ -268,26 +267,25 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
 
       console.log('📤 Creating replacement with payload:', payload);
 
-      const resp = await fetch(`http://localhost:5003/api/patients/${patientId}/replacements`, {
+      const { status: createStatus, data: createResult } = await apiClient.request<any>(`/patients/${patientId}/replacements`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify(payload)
       });
 
-      const result = await resp.json();
-      console.log('📥 Replacement create response:', result);
+      console.log('📥 Replacement create response:', createResult);
 
-      if (!resp.ok || !result.success) {
-        const err = result.error || result.message || `Backend error: ${resp.status}`;
+      if (createStatus >= 400 || !createResult?.success) {
+        let err: any = createResult?.error || createResult?.message || `Backend error: ${createStatus}`;
+        if (typeof err === 'object') {
+          try { err = JSON.stringify(err); } catch (e) { err = String(err); }
+        }
         throw new Error(err);
       }
 
       setSuccessMessage('Değişim bildirimi oluşturuldu');
 
       // Notify other parts of the app (Sales tab, lists) to refresh
-      window.dispatchEvent(new CustomEvent('replacement:created', { detail: result.data }));
+      window.dispatchEvent(new CustomEvent('replacement:created', { detail: createResult?.data || createResult }));
 
       // Refresh devices list to reflect any changes
       await refetch();
@@ -323,8 +321,9 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
       // from the Sales card when stock actually arrives. If you want an explicit quick-assign action,
       // we can add a button on the replacement card to open the assignment form manually.
     } catch (error) {
-      console.error('Error removing device:', error);
-      setActionError((error as any)?.message || 'Cihaz değiştirirken bir hata oluştu');
+      console.error('Error creating replacement:', error);
+      const msg = (error as any)?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+      setActionError(msg || 'Cihaz değiştirirken bir hata oluştu');
     }
   };
 
@@ -428,15 +427,10 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
         console.log('📤 Editing device:', editingDevice);
         
         // Call API to update device assignment
-        const response = await fetch(`http://localhost:5003/api/device-assignments/${editingDevice.id}`, {
+        const { status: updateStatus, data: result } = await apiClient.request<any>(`/device-assignments/${editingDevice.id}`, {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
           body: JSON.stringify(updateData)
         });
-        
-        const result = await response.json();
         
         console.log('📥 Backend response:', result);
         console.log('📥 Backend response FULL:', JSON.stringify(result, null, 2));
@@ -449,9 +443,9 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
           serial_number_right: result.data?.serial_number_right
         });
         
-        if (!response.ok || !result.success) {
+        if (updateStatus >= 400 || !result?.success) {
           console.error('❌ Backend error details:', JSON.stringify(result, null, 2));
-          const errorMsg = result.error || result.message || `Backend error: ${response.status}`;
+          const errorMsg = result?.error || result?.message || `Backend error: ${updateStatus}`;
           throw new Error(errorMsg);
         }
         
@@ -508,23 +502,19 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
         console.log('📤 Sending device assignment data:', apiData);
         
         // Call API to create device assignment and sale record
-        const response = await fetch(`http://localhost:5003/api/patients/${patientId}/assign-devices-extended`, {
+        const { status: assignStatus, data: result } = await apiClient.request<any>(`/patients/${patientId}/assign-devices-extended`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
           body: JSON.stringify(apiData)
         });
         
-        const result = await response.json();
         
         console.log('📥 Backend response:', result);
-        console.log('📥 Response status:', response.status);
-        console.log('📥 Response OK:', response.ok);
+        console.log('📥 Response status:', assignStatus);
+        console.log('📥 Response success flag:', !!result?.success);
         
-        if (!response.ok || !result.success) {
+        if (assignStatus >= 400 || !result?.success) {
           console.error('❌ Backend error details:', JSON.stringify(result, null, 2));
-          const errorMsg = result.error || result.message || `Backend error: ${response.status}`;
+          const errorMsg = result?.error || result?.message || `Backend error: ${assignStatus}`;
           throw new Error(errorMsg);
         }
         
@@ -663,9 +653,26 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
               const totalSaleRaw = Number(dp.netPayable ?? dp.net_payable ?? dp.patientPayment ?? dp.patient_payment ?? 0);
               const saleRaw = Number(dp.salePrice ?? dp.sale_price ?? 0);
 
-              const perItemSgk = explicitPerItemSgk !== null && explicitPerItemSgk !== undefined
-                ? Number(explicitPerItemSgk)
-                : (totalSgk > 0 ? totalSgk / qty : 0);
+              // Decide per-item SGK: prefer explicit per-item field, otherwise
+              // detect whether `totalSgk` is actually a total (needs division)
+              // or already a per-item amount. Use same heuristic as PatientDeviceCard.
+              let perItemSgk: number = 0;
+              const rawSgkNum = Number(dp.sgkSupport ?? dp.sgk_support ?? dp.sgkReduction ?? dp.sgk_coverage_amount ?? 0);
+              if (explicitPerItemSgk !== null && explicitPerItemSgk !== undefined) {
+                perItemSgk = Number(explicitPerItemSgk);
+              } else if (rawSgkNum > 0) {
+                const compareBase = Number(dp.salePrice ?? dp.sale_price ?? dp.listPrice ?? dp.list_price ?? dp.netPayable ?? dp.net_payable ?? 0);
+                console.log('[PatientDevicesTab] split sgk raw=', rawSgkNum, 'compareBase=', compareBase, 'qty=', qty, 'deviceId=', dp.id);
+                if (qty > 1 && compareBase > 0 && rawSgkNum > compareBase * 1.1) {
+                  perItemSgk = rawSgkNum / qty;
+                  console.log('[PatientDevicesTab] detected total sgk; dividing ->', perItemSgk);
+                } else {
+                  perItemSgk = rawSgkNum;
+                  console.log('[PatientDevicesTab] using raw sgk as per-item ->', perItemSgk);
+                }
+              } else {
+                perItemSgk = 0;
+              }
 
               let perItemSale: number;
               if (explicitPerItemSale !== null && explicitPerItemSale !== undefined) {

@@ -250,7 +250,17 @@ def get_tenant_users(tenant_id):
         return jsonify({
             'success': True,
             'data': {
-                'users': [u.to_dict() for u in users]
+                'users': [{
+                    'id': u.id,
+                    'username': u.username,
+                    'email': u.email,
+                    'first_name': u.first_name,
+                    'last_name': u.last_name,
+                    'role': u.role,
+                    'is_active': u.is_active,
+                    'last_login': u.last_login.isoformat() if u.last_login else None,
+                    'tenant_id': u.tenant_id
+                } for u in users]
             }
         }), 200
         
@@ -259,4 +269,303 @@ def get_tenant_users(tenant_id):
         return jsonify({
             'success': False,
             'error': {'message': 'Internal server error'}
+        }), 500
+@admin_tenants_bp.route('/<tenant_id>/subscribe', methods=['POST'])
+@jwt_required()
+def subscribe_tenant(tenant_id):
+    """Subscribe tenant to a plan (Admin override)"""
+    try:
+        from models.plan import Plan
+        from datetime import timedelta
+        
+        tenant = Tenant.query.get(tenant_id)
+        if not tenant or tenant.deleted_at:
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Tenant not found'}
+            }), 404
+            
+        data = request.get_json()
+        plan_id = data.get('plan_id')
+        billing_interval = data.get('billing_interval', 'YEARLY')
+        
+        if not plan_id:
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Plan ID is required'}
+            }), 400
+            
+        plan = Plan.query.get(plan_id)
+        if not plan:
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Plan not found'}
+            }), 404
+            
+        # Calculate subscription dates
+        start_date = datetime.utcnow()
+        if billing_interval == 'YEARLY':
+            end_date = start_date + timedelta(days=365)
+        elif billing_interval == 'MONTHLY':
+            end_date = start_date + timedelta(days=30)
+        else:
+            end_date = start_date + timedelta(days=365)
+            
+        tenant.current_plan_id = plan.id
+        tenant.current_plan = plan.slug
+        tenant.subscription_start_date = start_date
+        tenant.subscription_end_date = end_date
+        tenant.status = TenantStatus.ACTIVE.value
+        
+        # Initialize feature usage
+        feature_usage = {}
+        if plan.features:
+            if isinstance(plan.features, list):
+                for feature in plan.features:
+                    key = feature.get('key')
+                    limit = feature.get('limit', 0)
+                    if key:
+                        feature_usage[key] = {
+                            'limit': limit,
+                            'used': 0,
+                            'last_reset': start_date.isoformat()
+                        }
+            elif isinstance(plan.features, dict):
+                for key, value in plan.features.items():
+                    limit = 0
+                    if isinstance(value, dict):
+                        limit = value.get('limit', 0)
+                    elif isinstance(value, (int, float)):
+                        limit = value
+                    
+                    feature_usage[key] = {
+                        'limit': limit,
+                        'used': 0,
+                        'last_reset': start_date.isoformat()
+                    }
+        
+        tenant.feature_usage = feature_usage
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Subscription updated successfully',
+            'data': {'tenant': tenant.to_dict()}
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Subscribe tenant error: {e}")
+        return jsonify({
+            'success': False,
+            'error': {'message': str(e)}
+        }), 500
+
+@admin_tenants_bp.route('/<tenant_id>/users', methods=['POST'])
+@jwt_required()
+def create_tenant_user(tenant_id):
+    """Create a user for a specific tenant"""
+    try:
+        from models.user import User
+        
+        tenant = Tenant.query.get(tenant_id)
+        if not tenant or tenant.deleted_at:
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Tenant not found'}
+            }), 404
+            
+        data = request.get_json()
+        
+        if not data.get('email') or not data.get('password'):
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Email and password are required'}
+            }), 400
+            
+        if User.query.filter_by(email=data['email']).first():
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Email already exists'}
+            }), 400
+            
+        user = User(
+            email=data['email'],
+            username=data.get('username', data['email'].split('@')[0]),
+            first_name=data.get('first_name'),
+            last_name=data.get('last_name'),
+            role=data.get('role', 'tenant_user'),
+            tenant_id=tenant_id,
+            is_active=data.get('is_active', True)
+        )
+        user.set_password(data['password'])
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'data': {'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': user.role,
+                'is_active': user.is_active,
+                'last_login': user.last_login.isoformat() if user.last_login else None,
+                'tenant_id': user.tenant_id
+            }}
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Create tenant user error: {e}")
+        return jsonify({
+            'success': False,
+            'error': {'message': str(e)}
+        }), 500
+
+@admin_tenants_bp.route('/<tenant_id>/users/<user_id>', methods=['PUT'])
+@jwt_required()
+def update_tenant_user(tenant_id, user_id):
+    """Update a tenant user"""
+    try:
+        from models.user import User
+        
+        tenant = Tenant.query.get(tenant_id)
+        if not tenant or tenant.deleted_at:
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Tenant not found'}
+            }), 404
+            
+        user = User.query.filter_by(id=user_id, tenant_id=tenant_id).first()
+        if not user:
+            return jsonify({
+                'success': False,
+                'error': {'message': 'User not found in this tenant'}
+            }), 404
+            
+        data = request.get_json()
+        
+        if 'email' in data:
+            # Check if email is taken by another user
+            existing = User.query.filter(User.email == data['email'], User.id != user_id).first()
+            if existing:
+                return jsonify({
+                    'success': False,
+                    'error': {'message': 'Email already in use'}
+                }), 400
+            user.email = data['email']
+            
+        if 'username' in data:
+            # Check if username is taken by another user
+            existing = User.query.filter(User.username == data['username'], User.id != user_id).first()
+            if existing:
+                return jsonify({
+                    'success': False,
+                    'error': {'message': 'Username already in use'}
+                }), 400
+            user.username = data['username']
+            
+        if 'first_name' in data:
+            user.first_name = data['first_name']
+        if 'last_name' in data:
+            user.last_name = data['last_name']
+        if 'role' in data:
+            user.role = data['role']
+        if 'is_active' in data:
+            user.is_active = data['is_active']
+        if 'password' in data and data['password']:
+            user.set_password(data['password'])
+            
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'data': {'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': user.role,
+                'is_active': user.is_active,
+                'last_login': user.last_login.isoformat() if user.last_login else None,
+                'tenant_id': user.tenant_id
+            }}
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Update tenant user error: {e}")
+        return jsonify({
+            'success': False,
+            'error': {'message': str(e)}
+        }), 500
+
+@admin_tenants_bp.route('/<tenant_id>/addons', methods=['POST'])
+@jwt_required()
+def add_tenant_addon(tenant_id):
+    """Add addon to tenant (Admin override)"""
+    try:
+        from models.addon import AddOn
+        
+        tenant = Tenant.query.get(tenant_id)
+        if not tenant or tenant.deleted_at:
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Tenant not found'}
+            }), 404
+            
+        data = request.get_json()
+        addon_id = data.get('addon_id')
+        
+        if not addon_id:
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Addon ID is required'}
+            }), 400
+            
+        addon = AddOn.query.get(addon_id)
+        if not addon:
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Addon not found'}
+            }), 404
+            
+        # Update feature usage based on addon
+        key = addon.unit_name or addon.slug
+        
+        if not tenant.feature_usage:
+            tenant.feature_usage = {}
+            
+        usage = dict(tenant.feature_usage)
+        
+        if key in usage:
+            current_limit = usage[key].get('limit', 0)
+            usage[key]['limit'] = current_limit + (addon.limit_amount or 0)
+        else:
+            usage[key] = {
+                'limit': addon.limit_amount or 0,
+                'used': 0,
+                'last_reset': datetime.utcnow().isoformat()
+            }
+            
+        tenant.feature_usage = usage
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Addon added successfully',
+            'data': {'tenant': tenant.to_dict()}
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Add tenant addon error: {e}")
+        return jsonify({
+            'success': False,
+            'error': {'message': str(e)}
         }), 500

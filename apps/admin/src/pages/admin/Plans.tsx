@@ -97,8 +97,11 @@ const Plans: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       // Convert features array back to object for API
       const featuresObject = formData.features.reduce((acc, feature) => {
@@ -124,10 +127,12 @@ const Plans: React.FC = () => {
         await createPlan({ data: apiData });
         toast.success('Plan oluşturuldu');
       }
-      queryClient.invalidateQueries({ queryKey: ['getAdminPlans'] });
+      await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] });
       setIsModalOpen(false);
     } catch (e: any) {
       toast.error(e.response?.data?.error?.message || 'İşlem başarısız');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -138,21 +143,7 @@ const Plans: React.FC = () => {
 
   const handleConfirmToggle = async () => {
     if (!togglingPlan || !togglingPlan.id) return;
-
-    // Optimistic update
-    const previousPlans = queryClient.getQueryData(['getAdminPlans']);
-    queryClient.setQueryData(['getAdminPlans'], (old: any) => {
-      if (!old?.data?.plans) return old;
-      return {
-        ...old,
-        data: {
-          ...old.data,
-          plans: old.data.plans.map((p: Plan) =>
-            p.id === togglingPlan.id ? { ...p, is_active: !togglingPlan.is_active } : p
-          )
-        }
-      };
-    });
+    setIsSubmitting(true);
 
     try {
       await updatePlan({
@@ -164,14 +155,14 @@ const Plans: React.FC = () => {
         }
       });
       // Invalidate to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['getAdminPlans'] });
+      await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] });
       toast.success('Plan durumu güncellendi');
       setIsToggleModalOpen(false);
     } catch (e: any) {
       console.error('Toggle active error:', e);
-      // Rollback
-      queryClient.setQueryData(['getAdminPlans'], previousPlans);
       toast.error(e.response?.data?.error?.message || 'Güncelleme başarısız');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -182,14 +173,17 @@ const Plans: React.FC = () => {
 
   const handleConfirmDelete = async () => {
     if (!deletingPlanId) return;
+    setIsSubmitting(true);
     try {
       await deletePlan({ id: deletingPlanId });
-      queryClient.invalidateQueries({ queryKey: ['getAdminPlans'] });
+      await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] });
       toast.success('Plan silindi');
       setIsDeleteModalOpen(false);
     } catch (e: any) {
       console.error('Delete plan error:', e);
       toast.error(e.response?.data?.error?.message || 'Silme başarısız');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -496,9 +490,10 @@ const Plans: React.FC = () => {
                   </Dialog.Close>
                   <button
                     type="submit"
-                    className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    disabled={isSubmitting}
+                    className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {editingPlan ? 'Güncelle' : 'Oluştur'}
+                    {isSubmitting ? 'İşleniyor...' : (editingPlan ? 'Güncelle' : 'Oluştur')}
                   </button>
                 </div>
               </form>
@@ -539,9 +534,10 @@ const Plans: React.FC = () => {
                 </Dialog.Close>
                 <button
                   onClick={handleConfirmDelete}
-                  className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                  disabled={isSubmitting}
+                  className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Sil
+                  {isSubmitting ? 'Siliniyor...' : 'Sil'}
                 </button>
               </div>
               <Dialog.Close asChild>
@@ -581,9 +577,10 @@ const Plans: React.FC = () => {
                 </Dialog.Close>
                 <button
                   onClick={handleConfirmToggle}
-                  className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${togglingPlan?.is_active ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'}`}
+                  disabled={isSubmitting}
+                  className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${togglingPlan?.is_active ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'}`}
                 >
-                  {togglingPlan?.is_active ? 'Pasifleştir' : 'Aktifleştir'}
+                  {isSubmitting ? 'Güncelleniyor...' : (togglingPlan?.is_active ? 'Pasifleştir' : 'Aktifleştir')}
                 </button>
               </div>
               <Dialog.Close asChild>

@@ -61,8 +61,11 @@ const AddOns: React.FC = () => {
         setIsModalOpen(true);
     };
 
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (editingAddon) {
                 await updateAddon({
@@ -76,10 +79,12 @@ const AddOns: React.FC = () => {
                 });
                 toast.success('Eklenti oluşturuldu');
             }
-            queryClient.invalidateQueries({ queryKey: ['getAdminAddons'] });
+            await queryClient.invalidateQueries({ queryKey: ['/admin/addons'] });
             setIsModalOpen(false);
         } catch (e: any) {
             toast.error(e.response?.data?.error?.message || 'İşlem başarısız');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -90,13 +95,16 @@ const AddOns: React.FC = () => {
 
     const handleConfirmDelete = async () => {
         if (!deletingAddonId) return;
+        setIsSubmitting(true);
         try {
             await deleteAddon({ id: deletingAddonId });
-            queryClient.invalidateQueries({ queryKey: ['getAdminAddons'] });
+            await queryClient.invalidateQueries({ queryKey: ['/admin/addons'] });
             toast.success('Eklenti silindi');
             setIsDeleteModalOpen(false);
         } catch (e: any) {
             toast.error(e.response?.data?.error?.message || 'Silme başarısız');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -107,6 +115,7 @@ const AddOns: React.FC = () => {
 
     const confirmStatusChange = async () => {
         if (!statusAddon?.id) return;
+        setIsSubmitting(true);
         try {
             await updateAddon({
                 id: statusAddon.id,
@@ -116,11 +125,13 @@ const AddOns: React.FC = () => {
                     is_active: !statusAddon.is_active
                 }
             });
-            queryClient.invalidateQueries({ queryKey: ['getAdminAddons'] });
+            await queryClient.invalidateQueries({ queryKey: ['/admin/addons'] });
             toast.success('Eklenti durumu güncellendi');
             setIsStatusModalOpen(false);
         } catch (e: any) {
             toast.error(e.response?.data?.error?.message || 'Güncelleme başarısız');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -134,7 +145,7 @@ const AddOns: React.FC = () => {
                     </div>
                     <button
                         onClick={() => handleOpenModal()}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
                         <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
                         Eklenti Ekle
@@ -176,8 +187,8 @@ const AddOns: React.FC = () => {
                                                 <button
                                                     onClick={() => handleStatusChangeClick(addon)}
                                                     className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 ${addon.is_active
-                                                            ? 'text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500'
-                                                            : 'text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500'
+                                                        ? 'text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500'
+                                                        : 'text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500'
                                                         }`}
                                                     title={addon.is_active ? 'Pasif Yap' : 'Aktif Yap'}
                                                 >
@@ -263,9 +274,10 @@ const AddOns: React.FC = () => {
                                 </Dialog.Close>
                                 <button
                                     type="submit"
-                                    className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                                    disabled={isSubmitting}
+                                    className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {editingAddon ? 'Güncelle' : 'Oluştur'}
+                                    {isSubmitting ? 'İşleniyor...' : (editingAddon ? 'Güncelle' : 'Oluştur')}
                                 </button>
                             </div>
                         </form>
@@ -303,9 +315,10 @@ const AddOns: React.FC = () => {
                             </Dialog.Close>
                             <button
                                 onClick={handleConfirmDelete}
-                                className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                disabled={isSubmitting}
+                                className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Sil
+                                {isSubmitting ? 'Siliniyor...' : 'Sil'}
                             </button>
                         </div>
                         <Dialog.Close asChild>
@@ -345,9 +358,10 @@ const AddOns: React.FC = () => {
                             </Dialog.Close>
                             <button
                                 onClick={confirmStatusChange}
-                                className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                                disabled={isSubmitting}
+                                className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Onayla
+                                {isSubmitting ? 'Güncelleniyor...' : 'Onayla'}
                             </button>
                         </div>
                         <Dialog.Close asChild>

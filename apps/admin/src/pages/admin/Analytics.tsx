@@ -46,16 +46,16 @@ const Analytics: React.FC = () => {
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'TRY',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
   };
 
   const formatNumber = (value: number) => {
-    return new Intl.NumberFormat('en-US').format(value);
+    return new Intl.NumberFormat('tr-TR').format(value);
   };
 
   if (isLoading) {
@@ -69,16 +69,16 @@ const Analytics: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Analytics - Admin Panel</title>
+        <title>Raporlar - Admin Paneli</title>
       </Helmet>
 
       <div className="p-6 max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Analytics & Reporting</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Raporlar ve Analizler</h1>
             <p className="mt-1 text-sm text-gray-500">
-              Comprehensive analytics and insights for your SaaS platform
+              SaaS platformunuz için kapsamlı analizler ve içgörüler
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -99,16 +99,16 @@ const Analytics: React.FC = () => {
               onChange={(e) => setSelectedMetric(e.target.value)}
               className="block rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
             >
-              <option value="revenue">Revenue</option>
-              <option value="users">Users</option>
-              <option value="engagement">Engagement</option>
+              <option value="revenue">Gelir</option>
+              <option value="users">Kullanıcılar</option>
+              <option value="engagement">Etkileşim</option>
             </select>
             <button
               onClick={handleExport}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <ArrowDownTrayIcon className="-ml-1 mr-2 h-5 w-5" />
-              Export
+              Dışa Aktar
             </button>
           </div>
         </div>
@@ -123,7 +123,7 @@ const Analytics: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Toplam Gelir</dt>
                   <dd className="flex items-baseline">
                     <div className="text-2xl font-semibold text-gray-900">
                       {formatCurrency(data?.overview?.total_revenue || 0)}
@@ -135,7 +135,7 @@ const Analytics: React.FC = () => {
                         <ArrowTrendingDownIcon className="self-center flex-shrink-0 h-4 w-4 text-red-500" aria-hidden="true" />
                       )}
                       <span className="sr-only">
-                        {(data?.overview?.revenue_growth || 0) >= 0 ? 'Increased' : 'Decreased'} by
+                        {(data?.overview?.revenue_growth || 0) >= 0 ? 'Arttı' : 'Azaldı'}
                       </span>
                       {Math.abs(data?.overview?.revenue_growth || 0)}%
                     </div>
@@ -153,7 +153,7 @@ const Analytics: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Active Tenants</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Aktif Kiracılar</dt>
                   <dd className="flex items-baseline">
                     <div className="text-2xl font-semibold text-gray-900">
                       {formatNumber(data?.overview?.active_tenants || 0)}
@@ -165,7 +165,7 @@ const Analytics: React.FC = () => {
                         <ArrowTrendingDownIcon className="self-center flex-shrink-0 h-4 w-4 text-red-500" aria-hidden="true" />
                       )}
                       <span className="sr-only">
-                        {(data?.overview?.tenants_growth || 0) >= 0 ? 'Increased' : 'Decreased'} by
+                        {(data?.overview?.tenants_growth || 0) >= 0 ? 'Arttı' : 'Azaldı'}
                       </span>
                       {Math.abs(data?.overview?.tenants_growth || 0)}%
                     </div>
@@ -183,7 +183,7 @@ const Analytics: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Monthly Active Users</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Aylık Aktif Kullanıcılar</dt>
                   <dd className="flex items-baseline">
                     <div className="text-2xl font-semibold text-gray-900">
                       {formatNumber(data?.overview?.monthly_active_users || 0)}
@@ -195,7 +195,7 @@ const Analytics: React.FC = () => {
                         <ArrowTrendingDownIcon className="self-center flex-shrink-0 h-4 w-4 text-red-500" aria-hidden="true" />
                       )}
                       <span className="sr-only">
-                        {(data?.overview?.mau_growth || 0) >= 0 ? 'Increased' : 'Decreased'} by
+                        {(data?.overview?.mau_growth || 0) >= 0 ? 'Arttı' : 'Azaldı'}
                       </span>
                       {Math.abs(data?.overview?.mau_growth || 0)}%
                     </div>
@@ -213,7 +213,7 @@ const Analytics: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Churn Rate</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Kayıp Oranı (Churn)</dt>
                   <dd className="flex items-baseline">
                     <div className="text-2xl font-semibold text-gray-900">
                       {data?.overview?.churn_rate || 0}%
@@ -225,7 +225,7 @@ const Analytics: React.FC = () => {
                         <ArrowTrendingUpIcon className="self-center flex-shrink-0 h-4 w-4 text-red-500" aria-hidden="true" />
                       )}
                       <span className="sr-only">
-                        {(data?.overview?.churn_growth || 0) <= 0 ? 'Decreased' : 'Increased'} by
+                        {(data?.overview?.churn_growth || 0) <= 0 ? 'Azaldı' : 'Arttı'}
                       </span>
                       {Math.abs(data?.overview?.churn_growth || 0)}%
                     </div>
@@ -240,14 +240,14 @@ const Analytics: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Revenue Trend */}
           <div className="bg-white shadow rounded-lg p-6 lg:col-span-2">
-            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Revenue Trend</h3>
-            <div className="h-80">
+            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Gelir Trendi</h3>
+            <div className="h-80 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data?.revenue_trend || []}>
+                <AreaChart data={(data?.revenue_trend || []) as any[]}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" />
                   <YAxis />
-                  <Tooltip formatter={(value: number) => [formatCurrency(value), 'Revenue']} />
+                  <Tooltip formatter={(value: number) => [formatCurrency(value), 'Gelir']} />
                   <Area
                     type="monotone"
                     dataKey="revenue"
@@ -262,12 +262,12 @@ const Analytics: React.FC = () => {
 
           {/* Plan Distribution */}
           <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Plan Distribution</h3>
-            <div className="h-80">
+            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Plan Dağılımı</h3>
+            <div className="h-80 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={data?.plan_distribution || []}
+                    data={(data?.plan_distribution || []) as any[]}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -291,18 +291,18 @@ const Analytics: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* User Engagement */}
           <div className="bg-white shadow rounded-lg p-6 lg:col-span-2">
-            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">User Engagement</h3>
-            <div className="h-80">
+            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Kullanıcı Etkileşimi</h3>
+            <div className="h-80 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data?.user_engagement || []}>
+                <LineChart data={(data?.user_engagement || []) as any[]}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="date" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="dau" stroke="#8b5cf6" name="DAU" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="wau" stroke="#10b981" name="WAU" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="mau" stroke="#f59e0b" name="MAU" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="dau" stroke="#8b5cf6" name="GAK" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="wau" stroke="#10b981" name="HAK" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="mau" stroke="#f59e0b" name="AAK" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -310,14 +310,14 @@ const Analytics: React.FC = () => {
 
           {/* Revenue Growth */}
           <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Revenue Growth</h3>
-            <div className="h-80">
+            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Gelir Büyümesi</h3>
+            <div className="h-80 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data?.revenue_trend || []}>
+                <BarChart data={(data?.revenue_trend || []) as any[]}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" />
                   <YAxis />
-                  <Tooltip formatter={(value: number) => [`${value}%`, 'Growth']} />
+                  <Tooltip formatter={(value: number) => [`${value}%`, 'Büyüme']} />
                   <Bar dataKey="growth" fill="#22c55e" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -328,23 +328,23 @@ const Analytics: React.FC = () => {
         {/* Top Tenants Table */}
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-200">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">Top Performing Tenants</h3>
+            <h3 className="text-lg font-medium leading-6 text-gray-900">En İyi Performans Gösteren Kiracılar</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tenant
+                    Kiracı
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Revenue
+                    Gelir
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Growth
+                    Büyüme
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Users
+                    Kullanıcılar
                   </th>
                 </tr>
               </thead>
