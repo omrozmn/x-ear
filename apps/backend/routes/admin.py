@@ -8,6 +8,7 @@ from models.base import db
 from models.admin_user import AdminUser
 import logging
 import uuid
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +76,95 @@ def admin_login():
         return jsonify({
             'success': False,
             'error': {'message': 'Internal server error'}
+        }), 500
+
+@admin_bp.route('/users', methods=['POST'])
+@jwt_required()
+def create_admin_user():
+    """Create admin user or tenant user"""
+    try:
+        data = request.get_json()
+        
+        # Validation
+        if not data.get('email') or not data.get('password'):
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Email and password are required'}
+            }), 400
+            
+        tenant_id = data.get('tenant_id')
+        
+        if tenant_id:
+            # Create Tenant User (User model)
+            from models.user import User
+            
+            # Check if user exists in User model
+            if User.query.filter_by(email=data['email']).first():
+                return jsonify({
+                    'success': False,
+                    'error': {'message': 'User already exists'}
+                }), 400
+                
+            # Generate username from email if not provided
+            username = data.get('username') or data['email'].split('@')[0]
+            # Ensure username is unique
+            base_username = username
+            counter = 1
+            while User.query.filter_by(username=username).first():
+                username = f"{base_username}{counter}"
+                counter += 1
+                
+            user = User(
+                id=str(uuid.uuid4()),
+                email=data['email'],
+                username=username,
+                first_name=data.get('first_name'),
+                last_name=data.get('last_name'),
+                tenant_id=tenant_id,
+                role=data.get('role', 'user'),
+                is_active=True
+            )
+            user.set_password(data['password'])
+            db.session.add(user)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'data': {'user': user.to_dict()}
+            }), 201
+            
+        else:
+            # Create Admin User (AdminUser model)
+            # Check if user exists
+            if AdminUser.query.filter_by(email=data['email']).first():
+                return jsonify({
+                    'success': False,
+                    'error': {'message': 'User already exists'}
+                }), 400
+
+            user = AdminUser(
+                id=str(uuid.uuid4()),
+                email=data['email'],
+                first_name=data.get('first_name'),
+                last_name=data.get('last_name'),
+                role=data.get('role', 'support'),
+                is_active=True
+            )
+            user.set_password(data['password'])
+            db.session.add(user)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'data': {'user': user.to_dict()}
+            }), 201
+            
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Create user error: {e}")
+        return jsonify({
+            'success': False,
+            'error': {'message': str(e), 'traceback': traceback.format_exc()}
         }), 500
 
 @admin_bp.route('/users', methods=['GET'])

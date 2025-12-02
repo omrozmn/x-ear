@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 
 import { adminApiInstance as apiClient } from '@/lib/api';
 import type { Tenant } from '@/lib/api-client';
+import Pagination from '@/components/ui/Pagination';
 
 interface TenantsResponse {
   tenants: Tenant[];
@@ -22,6 +23,7 @@ const Tenants: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -50,12 +52,12 @@ const Tenants: React.FC = () => {
     queryFn: async (): Promise<TenantsResponse> => {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '10',
+        limit: limit.toString(),
         ...(searchTerm && { search: searchTerm }),
         ...(statusFilter !== 'all' && { status: statusFilter })
       });
 
-      const response = await apiClient.get<{ data: TenantsResponse }>(`/admin/tenants?${params}`);
+      const response = await apiClient.get<{ data: TenantsResponse }>(`/api/admin/tenants?${params}`);
       return response.data.data!;
     },
   });
@@ -63,7 +65,7 @@ const Tenants: React.FC = () => {
   // Status update mutation
   const statusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      await apiClient.put(`/admin/tenants/${id}`, { status });
+      await apiClient.put(`/api/admin/tenants/${id}`, { status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
@@ -89,7 +91,7 @@ const Tenants: React.FC = () => {
   const handleCreateTenant = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await apiClient.post('/admin/tenants', createFormData);
+      await apiClient.post('/api/admin/tenants', createFormData);
       toast.success('Kiracı oluşturuldu');
       setIsCreateModalOpen(false);
       setCreateFormData({ name: '', slug: '', owner_email: '', password: '' });
@@ -120,7 +122,7 @@ const Tenants: React.FC = () => {
 
     try {
       // Using apiClient directly as per file convention
-      await apiClient.put(`/admin/tenants/${editingTenant.id}`, {
+      await apiClient.put(`/api/admin/tenants/${editingTenant.id}`, {
         name: editFormData.name,
         slug: editFormData.slug,
         owner_email: editFormData.owner_email
@@ -210,7 +212,7 @@ const Tenants: React.FC = () => {
             <div className="flex items-center text-sm text-gray-500">
               {data && (
                 <span>
-                  {data.pagination.total} sonuçtan {((page - 1) * 10) + 1}-{Math.min(page * 10, data.pagination.total)} arası gösteriliyor
+                  {data.pagination.total} sonuçtan {((page - 1) * limit) + 1}-{Math.min(page * limit, data.pagination.total)} arası gösteriliyor
                 </span>
               )}
             </div>
@@ -326,52 +328,14 @@ const Tenants: React.FC = () => {
               </table>
 
               {/* Pagination */}
-              {data && data.pagination.totalPages > 1 && (
-                <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                  <div className="flex-1 flex justify-between sm:hidden">
-                    <button
-                      onClick={() => setPage(page - 1)}
-                      disabled={page === 1}
-                      className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      onClick={() => setPage(page + 1)}
-                      disabled={page === data.pagination.totalPages}
-                      className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Next
-                    </button>
-                  </div>
-                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-sm text-gray-700">
-                        Showing page <span className="font-medium">{page}</span> of{' '}
-                        <span className="font-medium">{data.pagination.totalPages}</span>
-                      </p>
-                    </div>
-                    <div>
-                      <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                        <button
-                          onClick={() => setPage(page - 1)}
-                          disabled={page === 1}
-                          className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Previous
-                        </button>
-                        <button
-                          onClick={() => setPage(page + 1)}
-                          disabled={page === data.pagination.totalPages}
-                          className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Next
-                        </button>
-                      </nav>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <Pagination
+                currentPage={page}
+                totalPages={data?.pagination?.totalPages || 1}
+                totalItems={data?.pagination.total || 0}
+                itemsPerPage={limit}
+                onPageChange={setPage}
+                onItemsPerPageChange={setLimit}
+              />
             </>
           )}
         </div>

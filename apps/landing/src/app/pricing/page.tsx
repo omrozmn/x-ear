@@ -139,6 +139,19 @@ export default function Pricing() {
                         </div>
                         <AddOnsList />
                     </div>
+
+                    {/* SMS Packages Section */}
+                    <div className="mt-24">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                                SMS Paketleri
+                            </h2>
+                            <p className="text-gray-400 max-w-2xl mx-auto">
+                                İhtiyacınıza uygun SMS paketini seçin.
+                            </p>
+                        </div>
+                        <SmsPackagesList />
+                    </div>
                 </div>
             </main>
         </div>
@@ -258,6 +271,56 @@ function AddOnsList() {
                     <div className="mt-auto pt-4 border-t border-white/10 text-sm text-gray-400">
                         Paketinize ek olarak satın alabilirsiniz.
                     </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function SmsPackagesList() {
+    const [packages, setPackages] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPackages = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5003/api'}/sms/packages`);
+                const data = await res.json();
+                if (data.success) {
+                    setPackages(data.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch SMS packages:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPackages();
+    }, []);
+
+    if (loading) return <div className="text-center text-gray-500">SMS Paketleri yükleniyor...</div>;
+    if (packages.length === 0) return null;
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {packages.map((pkg) => (
+                <div key={pkg.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6 flex flex-col relative overflow-hidden group hover:border-indigo-500/50 transition-colors">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-500"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    </div>
+                    <div className="mb-4">
+                        <h3 className="text-xl font-bold text-white">{pkg.name}</h3>
+                        <div className="text-indigo-400 font-medium text-sm mt-1">{(pkg.sms_count || pkg.smsCount || 0).toLocaleString()} SMS</div>
+                    </div>
+                    <div className="text-3xl font-bold text-white mb-6">
+                        {(pkg.price || 0).toLocaleString('tr-TR', { style: 'currency', currency: pkg.currency || 'TRY' })}
+                    </div>
+                    <Link
+                        href={`/register?package=${pkg.id}`}
+                        className="mt-auto w-full block text-center bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        Satın Al
+                    </Link>
                 </div>
             ))}
         </div>

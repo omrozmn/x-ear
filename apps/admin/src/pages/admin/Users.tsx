@@ -12,17 +12,19 @@ import toast from 'react-hot-toast';
 
 import {
   useGetAdminUsers,
-  usePutAdminUsersIdStatus,
   AdminUserRole,
   AdminUser
 } from '@/lib/api-client';
 import { adminApiInstance as apiClient } from '@/lib/api';
+import Pagination from '@/components/ui/Pagination';
+import { TenantAutocomplete } from '@/components/ui/TenantAutocomplete';
 
 const Users: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [userToToggle, setUserToToggle] = useState<{ id: string, status: boolean } | null>(null);
 
@@ -35,7 +37,9 @@ const Users: React.FC = () => {
     first_name: '',
     last_name: '',
     role: 'support',
-    password: ''
+    password: '',
+    user_type: 'admin',
+    tenant_id: ''
   });
 
   const queryClient = useQueryClient();
@@ -47,10 +51,10 @@ const Users: React.FC = () => {
     queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '10',
+        limit: limit.toString(),
         ...(searchTerm && { search: searchTerm })
       });
-      const response = await apiClient.get(`/admin/users/all?${params}`);
+      const response = await apiClient.get(`/api/admin/users/all?${params}`);
       return response.data.data;
     }
   });
@@ -59,7 +63,7 @@ const Users: React.FC = () => {
   const pagination = usersData?.pagination;
 
   // Status update mutation
-  const { mutateAsync: updateStatus } = usePutAdminUsersIdStatus();
+  // const { mutateAsync: updateStatus } = usePutAdminUsersIdStatus();
 
   const handleStatusToggleClick = (userId: string, currentStatus: boolean | undefined) => {
     setUserToToggle({ id: userId, status: !!currentStatus });
@@ -75,7 +79,7 @@ const Users: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await apiClient.put(`/admin/users/all/${userToToggle.id}`, { isActive: newStatus });
+      await apiClient.put(`/api/admin/users/all/${userToToggle.id}`, { isActive: newStatus });
       await queryClient.invalidateQueries({ queryKey: ['getAllUsers'] });
       toast.success('Kullanıcı durumu başarıyla güncellendi');
       setConfirmModalOpen(false);
@@ -92,7 +96,9 @@ const Users: React.FC = () => {
       first_name: '',
       last_name: '',
       role: 'support',
-      password: ''
+      password: '',
+      user_type: 'admin',
+      tenant_id: ''
     });
     setIsAddModalOpen(true);
   };
@@ -104,7 +110,9 @@ const Users: React.FC = () => {
       first_name: user.first_name || '',
       last_name: user.last_name || '',
       role: user.role || 'support',
-      password: ''
+      password: '',
+      user_type: (user as any).tenant_id ? 'tenant' : 'admin',
+      tenant_id: (user as any).tenant_id || ''
     });
     setIsEditModalOpen(true);
   };
@@ -117,8 +125,18 @@ const Users: React.FC = () => {
   const handleCreateUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    if (formData.user_type === 'tenant' && !formData.tenant_id) {
+      toast.error('Lütfen bir kiracı seçin');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      await apiClient.post('/admin/users', formData);
+      const payload = {
+        ...formData,
+        tenant_id: formData.user_type === 'tenant' ? formData.tenant_id : undefined
+      };
+      await apiClient.post('/api/admin/users', payload);
       toast.success('Kullanıcı oluşturuldu');
       setIsAddModalOpen(false);
       await queryClient.invalidateQueries({ queryKey: ['getAllUsers'] });
@@ -143,7 +161,7 @@ const Users: React.FC = () => {
       if (formData.password) {
         updateData.password = formData.password;
       }
-      await apiClient.put(`/admin/users/${selectedUser.id}`, updateData);
+      await apiClient.put(`/api/admin/users/${selectedUser.id}`, updateData);
       toast.success('Kullanıcı güncellendi');
       setIsEditModalOpen(false);
       await queryClient.invalidateQueries({ queryKey: ['getAllUsers'] });
@@ -377,52 +395,14 @@ const Users: React.FC = () => {
             </table>
 
             {/* Pagination */}
-            {pagination && (pagination.totalPages || 0) > 1 && (
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                <div className="flex-1 flex justify-between sm:hidden">
-                  <button
-                    onClick={() => setPage(page - 1)}
-                    disabled={page === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Önceki
-                  </button>
-                  <button
-                    onClick={() => setPage(page + 1)}
-                    disabled={page === pagination.totalPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Sonraki
-                  </button>
-                </div>
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Sayfa <span className="font-medium">{page}</span> / {' '}
-                      <span className="font-medium">{pagination.totalPages}</span>
-                    </p>
-                  </div>
-                  <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                      <button
-                        onClick={() => setPage(page - 1)}
-                        disabled={page === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Önceki
-                      </button>
-                      <button
-                        onClick={() => setPage(page + 1)}
-                        disabled={page === pagination.totalPages}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Sonraki
-                      </button>
-                    </nav>
-                  </div>
-                </div>
-              </div>
-            )}
+            <Pagination
+              currentPage={page}
+              totalPages={pagination?.totalPages || 1}
+              totalItems={pagination?.total || 0}
+              itemsPerPage={limit}
+              onPageChange={setPage}
+              onItemsPerPageChange={setLimit}
+            />
           </>
         )}
       </div>
@@ -486,6 +466,45 @@ const Users: React.FC = () => {
               </Dialog.Close>
             </div>
             <form onSubmit={handleCreateUserSubmit} className="space-y-4">
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Kullanıcı Tipi</label>
+                <div className="flex space-x-4">
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      className="form-radio text-blue-600"
+                      name="user_type"
+                      value="admin"
+                      checked={formData.user_type === 'admin'}
+                      onChange={(e) => setFormData({ ...formData, user_type: e.target.value })}
+                    />
+                    <span className="ml-2">Admin Personeli</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      className="form-radio text-blue-600"
+                      name="user_type"
+                      value="tenant"
+                      checked={formData.user_type === 'tenant'}
+                      onChange={(e) => setFormData({ ...formData, user_type: e.target.value })}
+                    />
+                    <span className="ml-2">Kiracı Kullanıcısı</span>
+                  </label>
+                </div>
+              </div>
+
+              {formData.user_type === 'tenant' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Kiracı Seçimi</label>
+                  <TenantAutocomplete
+                    onSelect={(tenant) => setFormData({ ...formData, tenant_id: tenant.id })}
+                    error={(!formData.tenant_id && isSubmitting) ? 'Kiracı seçimi zorunludur' : undefined}
+                  />
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">İsim</label>
