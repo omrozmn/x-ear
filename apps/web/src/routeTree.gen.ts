@@ -16,6 +16,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as CashflowRouteImport } from './routes/cashflow'
+import { Route as CampaignsRouteImport } from './routes/campaigns'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuppliersIndexRouteImport } from './routes/suppliers/index'
@@ -28,6 +29,8 @@ import { Route as SgkDownloadsRouteImport } from './routes/sgk/downloads'
 import { Route as SettingsTeamRouteImport } from './routes/settings/team'
 import { Route as SettingsSubscriptionRouteImport } from './routes/settings/subscription'
 import { Route as SettingsRolesRouteImport } from './routes/settings/roles'
+import { Route as SettingsIntegrationRouteImport } from './routes/settings/integration'
+import { Route as SettingsCompanyRouteImport } from './routes/settings/company'
 import { Route as PatientsPatientIdRouteImport } from './routes/patients/$patientId'
 import { Route as InvoicesPurchasesRouteImport } from './routes/invoices/purchases'
 import { Route as InvoicesNewRouteImport } from './routes/invoices/new'
@@ -66,6 +69,11 @@ const InventoryRoute = InventoryRouteImport.update({
 const CashflowRoute = CashflowRouteImport.update({
   id: '/cashflow',
   path: '/cashflow',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampaignsRoute = CampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppointmentsRoute = AppointmentsRouteImport.update({
@@ -128,6 +136,16 @@ const SettingsRolesRoute = SettingsRolesRouteImport.update({
   path: '/settings/roles',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsIntegrationRoute = SettingsIntegrationRouteImport.update({
+  id: '/settings/integration',
+  path: '/settings/integration',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsCompanyRoute = SettingsCompanyRouteImport.update({
+  id: '/settings/company',
+  path: '/settings/company',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PatientsPatientIdRoute = PatientsPatientIdRouteImport.update({
   id: '/patients/$patientId',
   path: '/patients/$patientId',
@@ -152,6 +170,7 @@ const InventoryIdRoute = InventoryIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
+  '/campaigns': typeof CampaignsRoute
   '/cashflow': typeof CashflowRoute
   '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
@@ -163,6 +182,8 @@ export interface FileRoutesByFullPath {
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
+  '/settings/company': typeof SettingsCompanyRoute
+  '/settings/integration': typeof SettingsIntegrationRoute
   '/settings/roles': typeof SettingsRolesRoute
   '/settings/subscription': typeof SettingsSubscriptionRoute
   '/settings/team': typeof SettingsTeamRoute
@@ -177,6 +198,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
+  '/campaigns': typeof CampaignsRoute
   '/cashflow': typeof CashflowRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
@@ -186,6 +208,8 @@ export interface FileRoutesByTo {
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
+  '/settings/company': typeof SettingsCompanyRoute
+  '/settings/integration': typeof SettingsIntegrationRoute
   '/settings/roles': typeof SettingsRolesRoute
   '/settings/subscription': typeof SettingsSubscriptionRoute
   '/settings/team': typeof SettingsTeamRoute
@@ -201,6 +225,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
+  '/campaigns': typeof CampaignsRoute
   '/cashflow': typeof CashflowRoute
   '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
@@ -212,6 +237,8 @@ export interface FileRoutesById {
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
+  '/settings/company': typeof SettingsCompanyRoute
+  '/settings/integration': typeof SettingsIntegrationRoute
   '/settings/roles': typeof SettingsRolesRoute
   '/settings/subscription': typeof SettingsSubscriptionRoute
   '/settings/team': typeof SettingsTeamRoute
@@ -228,6 +255,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/appointments'
+    | '/campaigns'
     | '/cashflow'
     | '/inventory'
     | '/invoices'
@@ -239,6 +267,8 @@ export interface FileRouteTypes {
     | '/invoices/new'
     | '/invoices/purchases'
     | '/patients/$patientId'
+    | '/settings/company'
+    | '/settings/integration'
     | '/settings/roles'
     | '/settings/subscription'
     | '/settings/team'
@@ -253,6 +283,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/appointments'
+    | '/campaigns'
     | '/cashflow'
     | '/profile'
     | '/reports'
@@ -262,6 +293,8 @@ export interface FileRouteTypes {
     | '/invoices/new'
     | '/invoices/purchases'
     | '/patients/$patientId'
+    | '/settings/company'
+    | '/settings/integration'
     | '/settings/roles'
     | '/settings/subscription'
     | '/settings/team'
@@ -276,6 +309,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/appointments'
+    | '/campaigns'
     | '/cashflow'
     | '/inventory'
     | '/invoices'
@@ -287,6 +321,8 @@ export interface FileRouteTypes {
     | '/invoices/new'
     | '/invoices/purchases'
     | '/patients/$patientId'
+    | '/settings/company'
+    | '/settings/integration'
     | '/settings/roles'
     | '/settings/subscription'
     | '/settings/team'
@@ -302,6 +338,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppointmentsRoute: typeof AppointmentsRoute
+  CampaignsRoute: typeof CampaignsRoute
   CashflowRoute: typeof CashflowRoute
   InventoryRoute: typeof InventoryRouteWithChildren
   InvoicesRoute: typeof InvoicesRouteWithChildren
@@ -310,6 +347,8 @@ export interface RootRouteChildren {
   TestRoute: typeof TestRoute
   UtsRoute: typeof UtsRoute
   PatientsPatientIdRoute: typeof PatientsPatientIdRoute
+  SettingsCompanyRoute: typeof SettingsCompanyRoute
+  SettingsIntegrationRoute: typeof SettingsIntegrationRoute
   SettingsRolesRoute: typeof SettingsRolesRoute
   SettingsSubscriptionRoute: typeof SettingsSubscriptionRoute
   SettingsTeamRoute: typeof SettingsTeamRoute
@@ -369,6 +408,13 @@ declare module '@tanstack/react-router' {
       path: '/cashflow'
       fullPath: '/cashflow'
       preLoaderRoute: typeof CashflowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/campaigns': {
+      id: '/campaigns'
+      path: '/campaigns'
+      fullPath: '/campaigns'
+      preLoaderRoute: typeof CampaignsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/appointments': {
@@ -455,6 +501,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRolesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/integration': {
+      id: '/settings/integration'
+      path: '/settings/integration'
+      fullPath: '/settings/integration'
+      preLoaderRoute: typeof SettingsIntegrationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/company': {
+      id: '/settings/company'
+      path: '/settings/company'
+      fullPath: '/settings/company'
+      preLoaderRoute: typeof SettingsCompanyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/patients/$patientId': {
       id: '/patients/$patientId'
       path: '/patients/$patientId'
@@ -519,6 +579,7 @@ const InvoicesRouteWithChildren = InvoicesRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppointmentsRoute: AppointmentsRoute,
+  CampaignsRoute: CampaignsRoute,
   CashflowRoute: CashflowRoute,
   InventoryRoute: InventoryRouteWithChildren,
   InvoicesRoute: InvoicesRouteWithChildren,
@@ -527,6 +588,8 @@ const rootRouteChildren: RootRouteChildren = {
   TestRoute: TestRoute,
   UtsRoute: UtsRoute,
   PatientsPatientIdRoute: PatientsPatientIdRoute,
+  SettingsCompanyRoute: SettingsCompanyRoute,
+  SettingsIntegrationRoute: SettingsIntegrationRoute,
   SettingsRolesRoute: SettingsRolesRoute,
   SettingsSubscriptionRoute: SettingsSubscriptionRoute,
   SettingsTeamRoute: SettingsTeamRoute,

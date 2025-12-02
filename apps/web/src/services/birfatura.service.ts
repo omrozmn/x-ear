@@ -33,8 +33,229 @@ export interface XMLResponse {
   encoding: string;
 }
 
+/**
+ * Gelen fatura (InBox) tipi - Birfatura API'den gelen yapı
+ */
+export interface InBoxInvoice {
+  uuid: string;
+  invoiceNo: string;
+  invoiceDate: string;
+  invoiceTypeCode: string;
+  profileId: string;
+  senderName: string;
+  senderTaxNo: string;
+  receiverName: string;
+  receiverTaxNo: string;
+  totalAmount: number;
+  taxAmount: number;
+  currency: string;
+  isRead: boolean;
+  createTime: string;
+  filename?: string;
+  lineCount?: number;
+  notes?: string[];
+  accountingCost?: string;
+  jsonData?: string; // Base64 encoded XML (only in WithDetail response)
+}
+
+/**
+ * Gelen fatura listesi yanıtı
+ */
+export interface InBoxDocumentsResponse {
+  Success: boolean;
+  Message?: string;
+  Result?: {
+    InBoxInvoices?: {
+      total: number;
+      limit: number;
+      page: number;
+      objects: InBoxInvoice[];
+    };
+    InBoxReceiptAdvice?: {
+      total: number;
+      limit: number;
+      page: number;
+      objects: any[];
+    };
+  };
+}
+
+/**
+ * Gelen fatura sorgulama parametreleri
+ */
+export interface InBoxDocumentsRequest {
+  systemType: 'EFATURA' | 'EARSIV' | 'EIRSALIYE';
+  startDateTime: string;
+  endDateTime: string;
+  documentType: 'INVOICE' | 'DESPATCHADVICE' | 'RECEIPTADVICE' | 'DOCUMENT';
+  readUnReadStatus?: 'UNREADED' | 'READED' | 'ALL';
+  pageNumber: number;
+}
+
 class BirFaturaService {
   private baseURL = '/api/EFatura';
+
+  // ============================================
+  // GELEN FATURALAR (INBOX) - Alış Faturaları
+  // ============================================
+
+  /**
+   * Gelen faturaları listele (XML olmadan)
+   */
+  async getInBoxDocuments(params: InBoxDocumentsRequest): Promise<InBoxDocumentsResponse> {
+    try {
+      const api = getOutEBelgeV2API();
+      const resp = await api.postApiOutEBelgeV2GetInBoxDocuments(params as any);
+      return resp?.data as InBoxDocumentsResponse || { Success: false };
+    } catch (error) {
+      console.error('BirFatura getInBoxDocuments error:', error);
+      return { Success: false, Message: error instanceof Error ? error.message : 'Bilinmeyen hata' };
+    }
+  }
+
+  /**
+   * Gelen faturaları detaylı listele (XML içerikli)
+   */
+  async getInBoxDocumentsWithDetail(params: InBoxDocumentsRequest): Promise<InBoxDocumentsResponse> {
+    try {
+      const api = getOutEBelgeV2API();
+      const resp = await api.postApiOutEBelgeV2GetInBoxDocumentsWithDetail(params as any);
+      return resp?.data as InBoxDocumentsResponse || { Success: false };
+    } catch (error) {
+      console.error('BirFatura getInBoxDocumentsWithDetail error:', error);
+      return { Success: false, Message: error instanceof Error ? error.message : 'Bilinmeyen hata' };
+    }
+  }
+
+  /**
+   * Gelen fatura PDF'ini indir
+   */
+  async getInBoxInvoicePDF(uuid: string): Promise<Blob | null> {
+    try {
+      const api = getOutEBelgeV2API();
+      const resp = await api.postApiOutEBelgeV2DocumentDownloadByUUID({
+        documentUUID: uuid,
+        inOutCode: 'IN',
+        systemTypeCodes: 'EFATURA',
+        fileExtension: 'XML'
+      } as any);
+      
+      const content = resp?.data?.Result?.content;
+      if (!content) return null;
+      
+      // Decode base64 and decompress if needed
+      const binary = atob(content);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      
+      // Try to decompress (gzip)
+      try {
+        const ds = new DecompressionStream('gzip');
+        const decompressed = new Response(new Blob([bytes]).stream().pipeThrough(ds));
+        return await decompressed.blob();
+      } catch {
+        // If not compressed, return as-is
+        return new Blob([bytes], { type: 'application/pdf' });
+      }
+    } catch (error) {
+      console.error('BirFatura getInBoxInvoicePDF error:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Gelen fatura XML'ini indir
+   */
+  async getInBoxInvoiceXML(uuid: string): Promise<string | null> {
+    try {
+      const api = getOutEBelgeV2API();
+      const resp = await api.postApiOutEBelgeV2DocumentDownloadByUUID({
+        documentUUID: uuid,
+        inOutCode: 'IN',
+        systemTypeCodes: 'EFATURA',
+        fileExtension: 'XML'
+      } as any);
+      
+      const content = resp?.data?.Result?.content;
+      if (!content) return null;
+      
+      // Decode base64 and decompress
+      const binary = atob(content);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      
+      // Try to decompress (gzip)
+      try {
+        const ds = new DecompressionStream('gzip');
+        const decompressed = new Response(new Blob([bytes]).stream().pipeThrough(ds));
+        return await decompressed.text();
+      } catch {
+        // If not compressed, decode as text
+        return new TextDecoder().decode(bytes);
+      }
+    } catch (error) {
+      console.error('BirFatura getInBoxInvoiceXML error:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Gelen faturayı okundu olarak işaretle
+   */
+  async markInBoxInvoiceAsRead(uuid: string): Promise<boolean> {
+    try {
+      const api = getOutEBelgeV2API();
+      const resp = await api.postApiOutEBelgeV2UpdateUnreadedStatus({
+        uuid,
+        systemType: 'EFATURA',
+        documentType: 'INVOICE',
+        inOutCode: 'IN'
+      } as any);
+      return resp?.data?.Success || false;
+    } catch (error) {
+      console.error('BirFatura markInBoxInvoiceAsRead error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Gelen faturaya yanıt gönder (KABUL/RED/IPTAL)
+   */
+  async sendInBoxInvoiceAnswer(
+    uuid: string, 
+    answer: 'KABUL' | 'RED' | 'IPTAL', 
+    reason?: string
+  ): Promise<BirFaturaResponse> {
+    try {
+      const api = getOutEBelgeV2API();
+      const resp = await api.postApiOutEBelgeV2SendDocumentAnswer({
+        documentUUID: uuid,
+        acceptOrRejectCode: answer,
+        acceptOrRejectReason: reason,
+        systemTypeCodes: 'EFATURA'
+      } as any);
+      
+      const data = resp?.data || {};
+      return {
+        success: !!data?.Success,
+        message: data?.Message || data?.Result?.Description,
+      };
+    } catch (error) {
+      console.error('BirFatura sendInBoxInvoiceAnswer error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata'
+      };
+    }
+  }
+
+  // ============================================
+  // GİDEN FATURALAR (OUTBOX) - Satış Faturaları
+  // ============================================
 
   /**
    * Fatura oluştur ve BirFatura'ya gönder

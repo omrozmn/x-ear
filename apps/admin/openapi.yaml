@@ -1300,6 +1300,24 @@ components:
           type: boolean
         backupEncryptionKey:
           type: string
+        birFaturaApiKey:
+          type: string
+        birFaturaApiSecret:
+          type: string
+        smsProvider:
+          type: string
+        smsUsername:
+          type: string
+        smsPassword:
+          type: string
+        smsHeader:
+          type: string
+        paymentProvider:
+          type: string
+        paymentApiKey:
+          type: string
+        paymentSecretKey:
+          type: string
 
     Pagination:
       type: object

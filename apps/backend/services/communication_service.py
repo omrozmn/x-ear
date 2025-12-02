@@ -70,19 +70,40 @@ class VatanSMSProvider(SMSProvider):
     """VatanSMS provider implementation"""
     
     def __init__(self):
-        self.username = os.getenv('VATANSMS_USERNAME')
-        self.password = os.getenv('VATANSMS_PASSWORD')
-        self.sender = os.getenv('VATANSMS_SENDER', 'XEAR')
-        self.api_url = 'https://api.vatansms.net/api/v1/1toN'
+        self.api_url = 'https://api.vatansms.net/api/v1/1toN' # Keep this for general SMS if needed, but we'll use specific endpoints
+        self.otp_url = 'https://api.vatansms.net/api/v1/otp'
+        
+    def _get_credentials(self):
+        """Get credentials from DB settings or environment"""
+        try:
+            from models.system import Settings
+            settings = Settings.get_system_settings()
+            
+            username = settings.get_setting('smsUsername') or os.getenv('VATANSMS_USERNAME', '4ab531b6fd26fd9ba6010b0d')
+            password = settings.get_setting('smsPassword') or os.getenv('VATANSMS_PASSWORD', '49b2001edbb1789e4e62f935')
+            sender = settings.get_setting('smsHeader') or os.getenv('VATANSMS_SENDER', 'OZMN TIBCHZ')
+            
+            return username, password, sender
+        except Exception as e:
+            logger.warning(f"Could not fetch settings from DB: {e}")
+            # Fallback to env with hardcoded defaults from legacy script
+            return (
+                os.getenv('VATANSMS_USERNAME', '4ab531b6fd26fd9ba6010b0d'),
+                os.getenv('VATANSMS_PASSWORD', '49b2001edbb1789e4e62f935'),
+                os.getenv('VATANSMS_SENDER', 'OZMN TIBCHZ')
+            )
     
     def is_configured(self) -> bool:
         """Check if VatanSMS is properly configured"""
-        return bool(self.username and self.password)
+        username, password, _ = self._get_credentials()
+        return bool(username and password)
     
     def send_sms(self, phone_number: str, message: str, **kwargs) -> Dict[str, Any]:
         """Send SMS via VatanSMS"""
         try:
-            if not self.is_configured():
+            username, password, sender = self._get_credentials()
+            
+            if not username or not password:
                 return {
                     'success': False,
                     'error': 'VatanSMS not configured',
@@ -92,25 +113,25 @@ class VatanSMSProvider(SMSProvider):
             # Clean phone number
             clean_phone = self._clean_phone_number(phone_number)
             
+            # Use OTP endpoint structure which is proven to work
             payload = {
-                'username': self.username,
-                'password': self.password,
-                'numbers': clean_phone,
-                'message': message,
-                'sender': self.sender,
-                'senddate': '',  # Send immediately
-                'iys': '1'  # IYS compliance
+                "api_id": username,
+                "api_key": password,
+                "sender": sender,
+                "message_type": "turkce",
+                "message": message,
+                "phones": [clean_phone]
             }
             
             response = requests.post(
-                self.api_url,
-                data=payload,
+                self.otp_url,
+                json=payload, # Use json parameter for automatic Content-Type header
                 timeout=30
             )
             
             if response.status_code == 200:
                 result = response.json()
-                if result.get('status') == 'success':
+                if result.get('status') == 'success' or result.get('success'):
                     return {
                         'success': True,
                         'message_id': result.get('id'),

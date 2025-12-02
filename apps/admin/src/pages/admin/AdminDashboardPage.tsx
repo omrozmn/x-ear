@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '@/contexts/AuthContext';
-import { adminApiInstance as adminApi } from '@/lib/api';
+import { useGetAdminDashboardMetrics } from '@/lib/api-client';
 import { DashboardMetrics } from '@/types';
 import {
     Users,
@@ -17,41 +17,27 @@ import {
 export default function AdminDashboardPage() {
     const { user, isAuthenticated, isLoading: authLoading } = useAuth();
     const navigate = useNavigate();
-    const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!authLoading) {
-            if (!isAuthenticated) {
-                navigate({ to: '/login' });
-                return;
-            }
-            loadDashboardData();
+        if (!authLoading && !isAuthenticated) {
+            navigate({ to: '/login' });
         }
     }, [authLoading, isAuthenticated, navigate]);
 
-    const loadDashboardData = async () => {
-        try {
-            setLoading(true);
-            setError(null);
+    const { data: dashboardData, isLoading: metricsLoading, error: metricsError, refetch } = useGetAdminDashboardMetrics();
 
-            const response = await adminApi.get('/admin/dashboard/metrics');
+    const metrics = dashboardData?.data?.metrics;
+    const loading = metricsLoading;
+    const error = metricsError ? (metricsError as any).response?.data?.error?.message || 'Failed to load dashboard data' : null;
 
-            if (response.data.success) {
-                setMetrics(response.data.data.metrics);
-            }
-        } catch (err: any) {
-            console.error('Dashboard load error:', err);
-            if (err.response) {
-                console.error('Error Status:', err.response.status);
-                console.error('Error Data:', err.response.data);
-                console.error('Error Headers:', err.response.headers);
-            }
-            setError(err.response?.data?.error?.message || 'Failed to load dashboard data');
-        } finally {
-            setLoading(false);
-        }
+    const alerts = metrics?.alerts;
+    const overview = metrics?.overview;
+    const revenue = metrics?.revenue;
+    const health = metrics?.health_metrics;
+    const activity = metrics?.recent_activity;
+
+    const loadDashboardData = () => {
+        refetch();
     };
 
     const formatNumber = (num: number) => {
@@ -68,7 +54,7 @@ export default function AdminDashboardPage() {
     if (authLoading || (loading && !metrics && !error)) {
         return (
             <div className="flex items-center justify-center h-96">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
             </div>
         );
     }
@@ -105,27 +91,27 @@ export default function AdminDashboardPage() {
             )}
 
             {/* Alerts */}
-            {metrics && (metrics.alerts.expiring_soon > 0 || metrics.alerts.high_churn > 0 || metrics.alerts.low_utilization > 0) && (
+            {alerts && ((alerts.expiring_soon || 0) > 0 || (alerts.high_churn || 0) > 0 || (alerts.low_utilization || 0) > 0) ? (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
                     <div className="flex">
                         <AlertTriangle className="h-5 w-5 text-yellow-400" />
                         <div className="ml-3">
                             <h3 className="text-sm font-medium text-yellow-800">Dikkat Gerektiren Durumlar</h3>
                             <div className="text-sm text-yellow-700 mt-1">
-                                {metrics.alerts.expiring_soon > 0 && (
-                                    <p>{metrics.alerts.expiring_soon} üyelik yakında sona eriyor</p>
+                                {(alerts.expiring_soon || 0) > 0 && (
+                                    <p>{alerts.expiring_soon} üyelik yakında sona eriyor</p>
                                 )}
-                                {metrics.alerts.high_churn > 0 && (
+                                {(alerts.high_churn || 0) > 0 && (
                                     <p>Yüksek churn oranı tespit edildi</p>
                                 )}
-                                {metrics.alerts.low_utilization > 0 && (
-                                    <p>{metrics.alerts.low_utilization} kiracıda düşük kullanım oranı</p>
+                                {(alerts.low_utilization || 0) > 0 && (
+                                    <p>{alerts.low_utilization} kiracıda düşük kullanım oranı</p>
                                 )}
                             </div>
                         </div>
                     </div>
                 </div>
-            )}
+            ) : null}
 
             {/* Stats grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -138,7 +124,7 @@ export default function AdminDashboardPage() {
                         <div className="ml-4">
                             <p className="text-sm font-medium text-gray-500">Aktif Kiracılar</p>
                             <p className="text-2xl font-semibold text-gray-900">
-                                {metrics ? formatNumber(metrics.overview.active_tenants) : '-'}
+                                {overview ? formatNumber(overview.active_tenants || 0) : '-'}
                             </p>
                         </div>
                     </div>
@@ -153,7 +139,7 @@ export default function AdminDashboardPage() {
                         <div className="ml-4">
                             <p className="text-sm font-medium text-gray-500">Aktif Kullanıcılar</p>
                             <p className="text-2xl font-semibold text-gray-900">
-                                {metrics ? formatNumber(metrics.overview.active_users) : '-'}
+                                {overview ? formatNumber(overview.active_users || 0) : '-'}
                             </p>
                         </div>
                     </div>
@@ -168,7 +154,7 @@ export default function AdminDashboardPage() {
                         <div className="ml-4">
                             <p className="text-sm font-medium text-gray-500">Aylık Gelir (MRR)</p>
                             <p className="text-2xl font-semibold text-gray-900">
-                                {metrics ? formatCurrency(metrics.revenue.monthly_recurring_revenue) : '-'}
+                                {revenue ? formatCurrency(revenue.monthly_recurring_revenue || 0) : '-'}
                             </p>
                         </div>
                     </div>
@@ -183,7 +169,7 @@ export default function AdminDashboardPage() {
                         <div className="ml-4">
                             <p className="text-sm font-medium text-gray-500">Churn Oranı</p>
                             <p className="text-2xl font-semibold text-gray-900">
-                                {metrics ? `%${metrics.health_metrics.churn_rate_percent.toFixed(1)}` : '-'}
+                                {health ? `%${(health.churn_rate_percent || 0).toFixed(1)}` : '-'}
                             </p>
                         </div>
                     </div>
@@ -191,14 +177,14 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Secondary Metrics */}
-            {metrics && (
+            {activity && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                         <div className="flex items-center">
                             <UserPlus className="h-5 w-5 text-purple-500 mr-3" />
                             <div>
                                 <p className="text-sm text-gray-500">Yeni Kiracılar (7 gün)</p>
-                                <p className="text-lg font-semibold">{formatNumber(metrics.recent_activity.new_tenants_7d)}</p>
+                                <p className="text-lg font-semibold">{formatNumber(activity.new_tenants_7d || 0)}</p>
                             </div>
                         </div>
                     </div>
@@ -208,7 +194,7 @@ export default function AdminDashboardPage() {
                             <UserMinus className="h-5 w-5 text-orange-500 mr-3" />
                             <div>
                                 <p className="text-sm text-gray-500">Sona Erecek (30 gün)</p>
-                                <p className="text-lg font-semibold">{formatNumber(metrics.recent_activity.expiring_memberships_30d)}</p>
+                                <p className="text-lg font-semibold">{formatNumber(activity.expiring_memberships_30d || 0)}</p>
                             </div>
                         </div>
                     </div>
@@ -218,7 +204,7 @@ export default function AdminDashboardPage() {
                             <Clock className="h-5 w-5 text-blue-500 mr-3" />
                             <div>
                                 <p className="text-sm text-gray-500">Koltuk Doluluk</p>
-                                <p className="text-lg font-semibold">%{metrics.health_metrics.avg_seat_utilization_percent.toFixed(1)}</p>
+                                <p className="text-lg font-semibold">%{(health?.avg_seat_utilization_percent || 0).toFixed(1)}</p>
                             </div>
                         </div>
                     </div>

@@ -1,0 +1,29 @@
+
+> @x-ear/web@0.1.0 gen:api /Users/omerozmen/Desktop/x-ear web app/x-ear/apps/web
+> orval
+
+🍻 orval v7.15.0 - A swagger client generator for typescript
+🛑 x-ear-api - Error: Duplicate schema names detected:
+  2x AppointmentsUpdateAppointmentBody
+  2x DevicesUpdateDeviceBody
+  2x PatientsUpdatePatientBody
+    at writeSchemas (/Users/omerozmen/Desktop/x-ear web app/x-ear/node_modules/.pnpm/@orval+core@7.15.0_openapi-types@12.1.3_typescript@5.9.3/node_modules/@orval/core/dist/index.js:3245:41)
+    at async Promise.all (index 0)
+    at async writeSpecs (/Users/omerozmen/Desktop/x-ear web app/x-ear/node_modules/.pnpm/orval@7.15.0_openapi-types@12.1.3_typescript@5.9.3/node_modules/orval/dist/generate-BRYifonC.js:1170:3)
+    at async generateSpec (/Users/omerozmen/Desktop/x-ear web app/x-ear/node_modules/.pnpm/orval@7.15.0_openapi-types@12.1.3_typescript@5.9.3/node_modules/orval/dist/generate-BRYifonC.js:1287:2)
+    at async generateSpecs (/Users/omerozmen/Desktop/x-ear web app/x-ear/node_modules/.pnpm/orval@7.15.0_openapi-types@12.1.3_typescript@5.9.3/node_modules/orval/dist/generate-BRYifonC.js:1309:4)
+    at async Object.generateConfig (/Users/omerozmen/Desktop/x-ear web app/x-ear/node_modules/.pnpm/orval@7.15.0_openapi-types@12.1.3_typescript@5.9.3/node_modules/orval/dist/generate-BRYifonC.js:1352:2)
+    at async Command.<anonymous> (/Users/omerozmen/Desktop/x-ear web app/x-ear/node_modules/.pnpm/orval@7.15.0_openapi-types@12.1.3_typescript@5.9.3/node_modules/orval/dist/bin/orval.js:46:9)
+    at async Command.parseAsync (/Users/omerozmen/Desktop/x-ear web app/x-ear/node_modules/.pnpm/commander@14.0.2/node_modules/commander/lib/command.js:1122:5)
+/Users/omerozmen/Desktop/x-ear web app/x-ear/node_modules/.pnpm/orval@7.15.0_openapi-types@12.1.3_typescript@5.9.3/node_modules/orval/dist/generate-BRYifonC.js:1315
+	if (hasErrors) throw new Error("One or more project failed, see above for details");
+	                     ^
+
+Error: One or more project failed, see above for details
+    at generateSpecs (/Users/omerozmen/Desktop/x-ear web app/x-ear/node_modules/.pnpm/orval@7.15.0_openapi-types@12.1.3_typescript@5.9.3/node_modules/orval/dist/generate-BRYifonC.js:1315:23)
+    at async Object.generateConfig (/Users/omerozmen/Desktop/x-ear web app/x-ear/node_modules/.pnpm/orval@7.15.0_openapi-types@12.1.3_typescript@5.9.3/node_modules/orval/dist/generate-BRYifonC.js:1352:2)
+    at async Command.<anonymous> (/Users/omerozmen/Desktop/x-ear web app/x-ear/node_modules/.pnpm/orval@7.15.0_openapi-types@12.1.3_typescript@5.9.3/node_modules/orval/dist/bin/orval.js:46:9)
+    at async Command.parseAsync (/Users/omerozmen/Desktop/x-ear web app/x-ear/node_modules/.pnpm/commander@14.0.2/node_modules/commander/lib/command.js:1122:5)
+
+Node.js v20.19.0
+ ELIFECYCLE  Command failed with exit code 1.

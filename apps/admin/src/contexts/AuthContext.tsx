@@ -1,14 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
-import { adminApiInstance as adminApi, tokenManager } from '@/lib/api';
-import { LoginCredentials, AdminUser } from '@/types';
+import { useAdminLogin } from '@/lib/api-client';
+import { tokenManager } from '@/lib/api';
+import { LoginCredentials, AdminUser as TypeAdminUser } from '@/types';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
-    user: AdminUser | null;
+    user: TypeAdminUser | null;
     isAuthenticated: boolean;
     isLoading: boolean;
-    login: (credentials: LoginCredentials & { mfa_token?: string }) => Promise<{ user?: AdminUser; token?: string; requires_mfa?: boolean; tokens?: any }>;
+    login: (credentials: LoginCredentials & { mfa_token?: string }) => Promise<{ user?: TypeAdminUser; token?: string; requires_mfa?: boolean; tokens?: any }>;
     logout: () => void;
 }
 
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user, token, setAuth, clearAuth, isAuthenticated, _hasHydrated } = useAuthStore();
     const [isLoading, setIsLoading] = useState(true);
+    const { mutateAsync: adminLogin } = useAdminLogin();
 
     useEffect(() => {
         // Wait for store hydration
@@ -66,30 +68,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const login = async (credentials: LoginCredentials & { mfa_token?: string }) => {
         try {
-            const response = await adminApi.post('/admin/auth/login', credentials);
-            const responseData = response.data;
+            const response = await adminLogin({ data: credentials });
 
-            // Handle different response structures
-            const data = responseData.data || responseData;
-            const token = responseData.access_token || responseData.token || data.token;
-            const refreshToken = responseData.refreshToken || responseData.refresh_token || data.refreshToken || data.refresh_token;
-            const user = responseData.data || responseData.user || data.user;
-
-            if (data.requires_mfa) {
+            if (response.requires_mfa) {
                 return { requires_mfa: true };
             }
 
-            if (token && user) {
-                setAuth(user, token);
+            if (response.token && response.user) {
+                const { user, token } = response;
+                // Cast to TypeAdminUser because generated type might differ slightly (e.g. optional id)
+                setAuth(user as unknown as TypeAdminUser, token);
                 tokenManager.setToken(token);
-                if (refreshToken) {
-                    tokenManager.setRefreshToken(refreshToken);
-                }
                 toast.success('Giriş başarılı');
-                return { user, token, tokens: { access_token: token, refresh_token: refreshToken } };
+                return { user: user as unknown as TypeAdminUser, token };
             }
 
-            return data;
+            return response as any;
         } catch (error: any) {
             console.error('Login error:', error);
             throw error;

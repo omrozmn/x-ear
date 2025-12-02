@@ -217,8 +217,8 @@ export class PatientSyncService {
       const batchSize = options.batchSize || this.BATCH_SIZE;
 
       // Use Orval generated API for fetching patients
-      const response = await patientsGetPatients({ per_page: batchSize });
-      const patients = response.data?.data;
+      const response = await patientsGetPatients({ params: { per_page: batchSize } });
+      const patients = (response.data as any)?.data;
 
       if (patients && patients.length > 0) {
         for (const remotePatient of patients) {

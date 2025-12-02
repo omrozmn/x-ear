@@ -26,24 +26,6 @@ tags:
   description: Device management operations
 - name: Health
   description: Health check operations
-- name: Inventory
-  description: Inventory management operations
-- name: Invoices
-  description: Invoice management operations
-- name: Notifications
-  description: Notification operations
-- name: Ocr
-  description: OCR and document processing operations
-- name: Patients
-  description: Patient management operations
-- name: Timeline
-  description: Patient timeline operations
-- name: Products
-  description: Product management operations
-- name: Promissory-notes
-  description: Promissory note management operations
-- name: Reports
-  description: Reporting operations
 - name: Sales
   description: Sales management operations
 - name: Settings
@@ -58,9 +40,7 @@ tags:
   description: Entity extraction operations
 - name: Extract_patient
   description: Patient extraction from documents
-- name: Init-db
-  description: Database initialization operations
-- name: Initialize
+- name: Init_db
   description: Service initialization operations
 - name: Process
   description: Document processing operations
@@ -692,7 +672,70 @@ paths:
         '200':
           description: Success
       description: Retrieve status information
+  /api/branches:
+    get:
+      summary: Get all branches for current tenant
+      operationId: branches_get_branches
+      tags:
+      - Branches
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        address:
+                          type: string
+                        phone:
+                          type: string
+                        email:
+                          type: string
+      description: Retrieve list of branches for the current tenant
   /api/campaigns:
+    get:
+      summary: List all campaigns
+      operationId: campaigns_get_campaigns
+      tags:
+      - Campaigns
+      parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          default: 20
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  campaigns:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Campaign'
+                  meta:
+                    $ref: '#/components/schemas/PaginationInfo'
+      description: Retrieve a list of marketing campaigns
     post:
       summary: POST /api/campaigns
       operationId: campaigns_create_campaign
@@ -1935,6 +1978,50 @@ paths:
                 $ref: '#/components/schemas/Patient'
       description: Register a new patient with personal and medical information
   /api/patients/{patient_id}:
+    get:
+      summary: Get a specific patient by ID
+      operationId: patients_get_patient
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+      description: Retrieve detailed information about a specific patient
+    put:
+      summary: Update a patient
+      operationId: patients_update_patient
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+      description: Update an existing patient's information
     delete:
       summary: DELETE /api/patients/{patient_id}
       operationId: patients_delete_patient
@@ -2451,6 +2538,238 @@ paths:
       responses:
         '201':
           description: Success
+  /api/patients/count:
+    get:
+      summary: Count patients with optional filters for SMS campaigns
+      description: |
+        Count patients matching the given filters. Only counts patients with valid phone numbers.
+        Useful for SMS campaign target audience estimation.
+      operationId: patients_count_patients
+      tags:
+      - Patients
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [active, passive]
+        description: Patient status filter
+      - name: segment
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Patient segment filter (lead, potential, won, etc.)
+      - name: acquisitionType
+        in: query
+        required: false
+        schema:
+          type: string
+        description: How the patient was acquired (advertisement, referral, walk-in, etc.)
+      - name: branchId
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by specific branch ID
+      - name: dateStart
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+        description: Filter by acquisition date start (ISO format)
+      - name: dateEnd
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+        description: Filter by acquisition date end (ISO format)
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Number of matching patients
+  /api/subscriptions/current:
+    get:
+      summary: Get current tenant subscription
+      description: Retrieve the authenticated tenant's subscription status, plan, and expiry info.
+      operationId: subscriptions_get_current
+      tags:
+      - Subscriptions
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      tenant:
+                        type: object
+                        description: Basic tenant subscription context
+                        properties:
+                          id:
+                            type: string
+                          name:
+                            type: string
+                          slug:
+                            type: string
+                          ownerEmail:
+                            type: string
+                          billingEmail:
+                            type: string
+                          status:
+                            type: string
+                          currentPlan:
+                            type: string
+                            nullable: true
+                          currentPlanId:
+                            type: string
+                            nullable: true
+                          subscriptionStartDate:
+                            type: string
+                            format: date-time
+                            nullable: true
+                          subscriptionEndDate:
+                            type: string
+                            format: date-time
+                            nullable: true
+                          featureUsage:
+                            type: object
+                            additionalProperties: true
+                          maxUsers:
+                            type: integer
+                          currentUsers:
+                            type: integer
+                      plan:
+                        type: object
+                        nullable: true
+                        description: Subscribed plan details when available
+                        properties:
+                          id:
+                            type: string
+                          name:
+                            type: string
+                          slug:
+                            type: string
+                          description:
+                            type: string
+                            nullable: true
+                          planType:
+                            type: string
+                          price:
+                            type: number
+                            format: float
+                          billingInterval:
+                            type: string
+                          features:
+                            type: object
+                            additionalProperties: true
+                          maxUsers:
+                            type: integer
+                            nullable: true
+                          maxStorageGb:
+                            type: integer
+                            nullable: true
+                          isActive:
+                            type: boolean
+                          isPublic:
+                            type: boolean
+                          monthlyPrice:
+                            type: number
+                            format: float
+                          yearlyPrice:
+                            type: number
+                            format: float
+                      isExpired:
+                        type: boolean
+                        description: Indicates if the subscription has expired
+                      daysRemaining:
+                        type: integer
+                        description: Days remaining until subscription expiration
+                  timestamp:
+                    type: string
+                    format: date-time
+                  requestId:
+                    type: string
+  /api/addons:
+    get:
+      summary: List active public add-ons
+      description: Retrieve active add-ons that tenants can purchase as optional features.
+      operationId: addons_list_active
+      tags:
+      - Addons
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        slug:
+                          type: string
+                        description:
+                          type: string
+                          nullable: true
+                        addonType:
+                          type: string
+                          enum: [PER_USER, FLAT_FEE, USAGE_BASED]
+                        price:
+                          type: number
+                          format: float
+                        currency:
+                          type: string
+                          example: TRY
+                        unitName:
+                          type: string
+                          nullable: true
+                        limitAmount:
+                          type: integer
+                          nullable: true
+                        isActive:
+                          type: boolean
+                        createdAt:
+                          type: string
+                          format: date-time
+                        updatedAt:
+                          type: string
+                          format: date-time
+                  timestamp:
+                    type: string
+                    format: date-time
+                  requestId:
+                    type: string
   /api/patients/export:
     get:
       summary: Export patients as CSV. Only admin users are allowed to perform exports.
@@ -3029,6 +3348,269 @@ paths:
         '204':
           description: Success
       description: Delete {document_id}
+  /api/sms/headers:
+    get:
+      summary: Get SMS headers
+      operationId: sms_get_headers
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  headers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        status:
+                          type: string
+      description: Retrieve list of SMS headers
+    post:
+      summary: Create SMS header
+      operationId: sms_create_header
+      tags:
+      - Sms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Success
+      description: Create a new SMS header
+  /api/sms/audiences:
+    get:
+      summary: Get SMS audiences
+      operationId: sms_get_audiences
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  audiences:
+                    type: array
+                    items:
+                      type: object
+      description: Retrieve list of SMS audiences
+    post:
+      summary: Create SMS audience
+      operationId: sms_create_audience
+      tags:
+      - Sms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create a new SMS audience
+  /api/sms/audiences/upload:
+    post:
+      summary: Upload SMS audience file
+      operationId: sms_upload_audience
+      tags:
+      - Sms
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Success
+      description: Upload a file to create SMS audience
+  /api/sms/config:
+    get:
+      summary: Get SMS configuration
+      operationId: sms_get_config
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      description: Retrieve SMS configuration settings
+    put:
+      summary: Update SMS configuration
+      operationId: sms_update_config
+      tags:
+      - Sms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+      description: Update SMS configuration settings
+  /api/sms/packages:
+    get:
+      summary: Get SMS packages
+      operationId: sms_get_packages
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        description:
+                          type: string
+                          nullable: true
+                        smsCount:
+                          type: integer
+                        price:
+                          type: number
+                        currency:
+                          type: string
+                        isActive:
+                          type: boolean
+                  timestamp:
+                    type: string
+                    format: date-time
+                  requestId:
+                    type: string
+      description: Retrieve available SMS packages
+  /api/sms/credit:
+    get:
+      summary: Get SMS credit balance
+      operationId: sms_get_credit
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      tenantId:
+                        type: string
+                      balance:
+                        type: integer
+                      totalPurchased:
+                        type: integer
+                      totalUsed:
+                        type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+                  requestId:
+                    type: string
+      description: Retrieve current SMS credit balance
+  /api/sms/upload:
+    post:
+      summary: Upload SMS document
+      operationId: sms_upload_document
+      tags:
+      - Sms
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Success
+      description: Upload SMS-related document
+  /api/sms/documents/{documentType}/download:
+    get:
+      summary: Download SMS document
+      operationId: sms_download_document
+      tags:
+      - Sms
+      parameters:
+      - name: documentType
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Document type identifier
+      responses:
+        '200':
+          description: Success
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+      description: Download SMS-related document
+  /api/sms/documents/{documentType}:
+    delete:
+      summary: Delete SMS document
+      operationId: sms_delete_document
+      tags:
+      - Sms
+      parameters:
+      - name: documentType
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Document type identifier
+      responses:
+        '200':
+          description: Success
+      description: Delete SMS-related document
   /api/sms/monitoring:
     get:
       summary: GET /api/sms/monitoring

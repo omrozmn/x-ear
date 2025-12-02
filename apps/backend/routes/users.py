@@ -14,9 +14,32 @@ users_bp = Blueprint('users', __name__)
 def list_users():
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', 50))
-    pagination = User.query.order_by(User.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
-    users = [u.to_dict() for u in pagination.items]
-    return jsonify({'success': True, 'data': users, 'meta': {'total': pagination.total, 'page': page, 'perPage': per_page, 'totalPages': pagination.pages}})
+    
+    # Get current user's tenant_id to filter users
+    user_id = get_jwt_identity()
+    current_user = db.session.get(User, user_id)
+    if not current_user:
+        return jsonify({'success': False, 'error': 'User not found'}), 401
+    
+    # Build query - filter by tenant first, then paginate
+    # Use select() for SQLAlchemy 2.x style
+    from sqlalchemy import select, func
+    
+    # Base filter for tenant
+    base_filter = User.tenant_id == current_user.tenant_id if current_user.tenant_id else True
+    
+    # Get total count
+    count_stmt = select(func.count()).select_from(User).where(base_filter)
+    total = db.session.execute(count_stmt).scalar()
+    
+    # Get paginated results
+    offset = (page - 1) * per_page
+    stmt = select(User).where(base_filter).order_by(User.created_at.desc()).limit(per_page).offset(offset)
+    users_list = db.session.execute(stmt).scalars().all()
+    users = [u.to_dict() for u in users_list]
+    
+    total_pages = (total + per_page - 1) // per_page
+    return jsonify({'success': True, 'data': users, 'meta': {'total': total, 'page': page, 'perPage': per_page, 'totalPages': total_pages}})
 
 
 @users_bp.route('/users', methods=['POST'])
@@ -91,7 +114,8 @@ def update_me():
     
     if 'firstName' in data: user.first_name = data['firstName']
     if 'lastName' in data: user.last_name = data['lastName']
-    # Email update usually requires verification, skipping for now or allow if simple
+    if 'email' in data: user.email = data['email']
+    if 'username' in data: user.username = data['username']
     
     db.session.commit()
     return jsonify({'success': True, 'data': user.to_dict()})

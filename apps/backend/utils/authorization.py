@@ -3,6 +3,8 @@ from flask import jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from models.base import db
 from models.user import User
+from models.permission import Permission
+from models.user_app_role import UserAppRole
 
 
 def role_required(role):
@@ -19,7 +21,9 @@ def role_required(role):
                 pass
             if not user:
                 return jsonify({'success': False, 'error': 'Unauthorized'}), 401
-            if user.role != role:
+            # Allow multiple roles if role is a tuple/list
+            allowed_roles = role if isinstance(role, (list, tuple)) else [role]
+            if user.role not in allowed_roles:
                 return jsonify({'success': False, 'error': 'Forbidden - insufficient role'}), 403
             return fn(*args, **kwargs)
         return wrapper
@@ -27,7 +31,8 @@ def role_required(role):
 
 
 def admin_required(fn):
-    return role_required('admin')(fn)
+    """Allow both 'admin' and 'tenant_admin' roles to access admin endpoints."""
+    return role_required(['admin', 'tenant_admin'])(fn)
 
 
 # New: permission system helpers

@@ -3,7 +3,7 @@
 
 from datetime import datetime, timezone
 import json
-from .base import db
+from .base import db, BaseModel
 
 def now_utc():
     """Return current UTC timestamp"""
@@ -69,7 +69,7 @@ UNIT_TYPES = [
 ]
 
 
-class Inventory(db.Model):
+class Inventory(BaseModel):
     """
     Inventory model represents products in stock.
     Supports both serial-numbered items (hearing aids) and bulk items (batteries, accessories).
@@ -120,8 +120,7 @@ class Inventory(db.Model):
     # Warranty
     warranty = db.Column(db.Integer, default=0)  # warranty in months
     
-    created_at = db.Column(db.DateTime, default=now_utc, nullable=False)
-    updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc, nullable=False)
+    # Timestamps inherited from BaseModel
 
     def to_dict(self):
         """Convert inventory item to dictionary for API responses"""

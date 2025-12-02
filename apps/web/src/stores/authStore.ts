@@ -15,15 +15,18 @@ declare global {
 
 interface User {
   id: string;
+  username?: string;
   email: string;
   name: string;
   role?: string;
+  phone?: string;
+  isPhoneVerified?: boolean;
 }
 
 interface SubscriptionStatus {
-  is_expired: boolean;
-  days_remaining: number;
-  plan_name: string;
+  isExpired: boolean;
+  daysRemaining: number;
+  planName: string;
 }
 
 interface AuthState {
@@ -34,6 +37,9 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   subscription: SubscriptionStatus | null;
+  requiresOtp: boolean;
+  requiresPhone: boolean;
+  maskedPhone: string | null;
 }
 
 interface AuthActions {
@@ -43,6 +49,8 @@ interface AuthActions {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   login: (credentials: LoginCredentials) => Promise<void>;
+  verifyOtp: (otp: string) => Promise<void>;
+  sendOtp: (phone: string) => Promise<void>;
   logout: () => void;
   refreshAuth: () => Promise<void>;
   initializeAuth: () => Promise<void>;
@@ -67,6 +75,9 @@ export const useAuthStore = create<AuthStore>()(
       isLoading: false,
       error: null,
       subscription: null,
+      requiresOtp: false,
+      requiresPhone: false,
+      maskedPhone: null,
 
       // Actions
       setAuth: (user: User, token: string) => {
@@ -93,7 +104,7 @@ export const useAuthStore = create<AuthStore>()(
         // Ensure global axios will send Authorization header for generated clients
         try {
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        } catch (e) {}
+        } catch (e) { }
 
         // Check subscription after auth set
         get().checkSubscription();
@@ -132,7 +143,7 @@ export const useAuthStore = create<AuthStore>()(
         // Remove global axios Authorization header
         try {
           delete axios.defaults.headers.common['Authorization'];
-        } catch (e) {}
+        } catch (e) { }
       },
 
       setLoading: (loading: boolean) => {
@@ -149,9 +160,9 @@ export const useAuthStore = create<AuthStore>()(
           if (subInfo) {
             set({
               subscription: {
-                is_expired: subInfo.is_expired,
-                days_remaining: subInfo.days_remaining,
-                plan_name: subInfo.plan?.name || 'Unknown'
+                isExpired: Boolean(subInfo.isExpired),
+                daysRemaining: subInfo.daysRemaining ?? 0,
+                planName: subInfo.plan?.name || 'Unknown'
               }
             });
           }
@@ -176,41 +187,41 @@ export const useAuthStore = create<AuthStore>()(
           console.log('Response data:', response.data); // Debug log
 
           if (response.status === 200 && response.data) {
-            // response.data is the backend response: { access_token, data: user, success, requestId, timestamp }
             const responseData = response.data;
-            const { access_token: token, data: userData, success, refreshToken } = responseData;
 
-            console.log('Parsed token:', token); // Debug log
-            console.log('Parsed userData:', userData); // Debug log
-            console.log('Success:', success); // Debug log
-            console.log('RefreshToken:', refreshToken); // Debug log
-            console.log('Full response data:', responseData); // Debug log
+            // Even if phone is not verified, we proceed with login
+            // The UI will handle the unverified state via a modal
 
-            if (success && token && userData) {
-              // Transform user data to match expected format
-              const transformedUser = {
+            if (responseData.access_token && responseData.data) {
+              const userData = responseData.data;
+              const user: User = {
                 id: userData.id,
                 email: userData.email,
-                name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.username,
-                role: userData.role
+                name: userData.fullName || userData.firstName || userData.username,
+                role: userData.role || 'user',
+                phone: userData.phone,
+                isPhoneVerified: userData.isPhoneVerified
               };
 
               // Store tokens (now includes refresh token from backend)
               set({
-                user: transformedUser,
-                token,
-                refreshToken: refreshToken || null,
+                user,
+                token: responseData.access_token,
+                refreshToken: responseData.refreshToken || null,
                 isAuthenticated: true,
                 error: null,
+                requiresOtp: false,
+                requiresPhone: false,
+                maskedPhone: null,
               });
 
               // Persist tokens under both legacy and new keys
               try {
-                localStorage.setItem('auth_token', token);
-                localStorage.setItem(AUTH_TOKEN, token);
-                if (refreshToken) {
-                  localStorage.setItem('refresh_token', refreshToken);
-                  localStorage.setItem(REFRESH_TOKEN, refreshToken);
+                localStorage.setItem('auth_token', responseData.access_token);
+                localStorage.setItem(AUTH_TOKEN, responseData.access_token);
+                if (responseData.refreshToken) {
+                  localStorage.setItem('refresh_token', responseData.refreshToken);
+                  localStorage.setItem(REFRESH_TOKEN, responseData.refreshToken);
                 }
                 localStorage.setItem('auth_token_timestamp', Date.now().toString());
               } catch (e) {
@@ -219,34 +230,149 @@ export const useAuthStore = create<AuthStore>()(
 
               // Set global token for immediate use
               if (typeof window !== 'undefined') {
-                window.__AUTH_TOKEN__ = token;
+                window.__AUTH_TOKEN__ = responseData.access_token;
               }
 
               // Ensure global axios will send Authorization header for generated clients
               try {
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-              } catch (e) {}
+                axios.defaults.headers.common['Authorization'] = `Bearer ${responseData.access_token}`;
+              } catch (e) { }
 
               // Check subscription
               await checkSubscription();
 
               console.log('Login successful, user authenticated'); // Debug log
             } else {
-              console.error('Missing required fields:', { success, token: !!token, userData: !!userData });
-              throw new Error('Invalid response from server - missing token or user');
+              console.error('Missing required fields:', { success: responseData.success, token: !!responseData.access_token, userData: !!responseData.data });
+              throw new Error('Sunucudan geçersiz yanıt alındı - eksik token veya kullanıcı bilgisi');
             }
           } else if (response.status === 401) {
             // Handle authentication error
-            const errorMessage = (response.data as any)?.error || 'Invalid credentials';
+            const errorMessage = (response.data as any)?.error === 'Invalid credentials'
+              ? 'Geçersiz kullanıcı adı veya şifre'
+              : ((response.data as any)?.error || 'Giriş başarısız');
             console.error('Authentication failed:', errorMessage);
             throw new Error(errorMessage);
           } else {
             console.error('Invalid response structure:', { status: response.status, hasData: !!response.data });
-            throw new Error('Invalid response from server');
+            throw new Error('Sunucudan geçersiz yanıt alındı');
           }
         } catch (error) {
           console.error('Login error:', error);
-          setError(error instanceof Error ? error.message : 'Login failed');
+          setError(error instanceof Error ? error.message : 'Giriş başarısız');
+        } finally {
+          setLoading(false);
+        }
+      },
+
+      verifyOtp: async (otp: string) => {
+        const { token, setLoading, setError, checkSubscription } = get();
+        // We might be logged in but unverified, so we have a token.
+        // Or we might be in a pre-auth state (legacy).
+        // With the new flow, we are logged in, so we have a token.
+
+        if (!token) {
+          setError('Oturum süresi doldu, lütfen tekrar giriş yapın');
+          return;
+        }
+
+        try {
+          setLoading(true);
+          setError(null);
+
+          // Use axios directly to ensure we control the request
+          // The backend expects { otp: string }
+          const response = await axios.post('/api/auth/verify-otp', { otp }, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (response.status === 200 && response.data?.success) {
+            const { access_token: newToken, refreshToken, data: userData } = response.data;
+
+            // Update user with verified status
+            const user: User = {
+              id: userData.id,
+              username: userData.username,
+              email: userData.email,
+              name: userData.fullName || userData.firstName || userData.username,
+              role: userData.role || 'user',
+              phone: userData.phone,
+              isPhoneVerified: true // Explicitly set to true
+            };
+
+            set({
+              user,
+              token: newToken,
+              refreshToken: refreshToken || null,
+              isAuthenticated: true,
+              error: null,
+              requiresOtp: false,
+              requiresPhone: false,
+              maskedPhone: null
+            });
+
+            // Persist tokens
+            try {
+              localStorage.setItem('auth_token', newToken);
+              localStorage.setItem(AUTH_TOKEN, newToken);
+              if (refreshToken) {
+                localStorage.setItem('refresh_token', refreshToken);
+                localStorage.setItem(REFRESH_TOKEN, refreshToken);
+              }
+              localStorage.setItem('auth_token_timestamp', Date.now().toString());
+            } catch (e) { }
+
+            if (typeof window !== 'undefined') {
+              window.__AUTH_TOKEN__ = newToken;
+            }
+
+            try {
+              axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+            } catch (e) { }
+
+            await checkSubscription();
+          } else {
+            setError('Doğrulama başarısız');
+          }
+        } catch (error: any) {
+          console.error('OTP Verification error:', error);
+          setError(error.response?.data?.message || error.message || 'Doğrulama başarısız');
+          throw error;
+        } finally {
+          setLoading(false);
+        }
+      },
+
+      sendOtp: async (phone: string) => {
+        const { token, setLoading, setError } = get();
+        if (!token) {
+          setError('Oturum süresi doldu, lütfen tekrar giriş yapın');
+          return;
+        }
+
+        try {
+          setLoading(true);
+          setError(null);
+
+          await axios.post('/api/auth/send-verification-otp', { phone }, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          // If success, we might want to update state to show OTP input if it wasn't shown
+          // But usually we just show a success message
+          // If phone was required, now it's sent, so we can hide phone input? 
+          // Or just keep it.
+
+        } catch (error: any) {
+          console.error('Send OTP error:', error);
+          setError(error.response?.data?.error || error.message || 'OTP gönderilemedi');
+          throw error;
         } finally {
           setLoading(false);
         }
@@ -273,14 +399,14 @@ export const useAuthStore = create<AuthStore>()(
             try {
               localStorage.setItem('auth_token', newToken);
               localStorage.setItem(AUTH_TOKEN, newToken);
-            } catch (e) {}
+            } catch (e) { }
             if (typeof window !== 'undefined') {
               window.__AUTH_TOKEN__ = newToken;
             }
             // Update global axios header after refresh
             try {
               axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-            } catch (e) {}
+            } catch (e) { }
           } else {
             clearAuth();
           }
@@ -326,7 +452,9 @@ export const useAuthStore = create<AuthStore>()(
                     id: userData.id || '',
                     email: userData.email || '',
                     name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.username || '',
-                    role: userData.role || 'user'
+                    role: userData.role || 'user',
+                    phone: userData.phone,
+                    isPhoneVerified: userData.isPhoneVerified
                   };
 
                   set({

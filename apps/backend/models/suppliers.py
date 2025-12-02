@@ -3,10 +3,10 @@ Suppliers and Product-Supplier Relationship Models
 """
 from datetime import datetime, timezone
 import json
-from .base import db
+from .base import db, BaseModel
 
 
-class Supplier(db.Model):
+class Supplier(BaseModel):
     """
     Supplier model represents companies that supply products to the business.
     """
@@ -47,9 +47,7 @@ class Supplier(db.Model):
     # Status
     is_active = db.Column(db.Boolean, default=True, index=True)
     
-    # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Timestamps inherited from BaseModel
     
     # Relationships
     products = db.relationship('ProductSupplier', back_populates='supplier', cascade='all, delete-orphan')
@@ -87,7 +85,7 @@ class Supplier(db.Model):
         }
 
 
-class ProductSupplier(db.Model):
+class ProductSupplier(BaseModel):
     """
     Product-Supplier Relationship Model
     Many-to-many relationship with additional fields
@@ -123,9 +121,7 @@ class ProductSupplier(db.Model):
     # Notes
     notes = db.Column(db.Text)
     
-    # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Timestamps inherited from BaseModel
     last_order_date = db.Column(db.DateTime)
     
     # Relationships

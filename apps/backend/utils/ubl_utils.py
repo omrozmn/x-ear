@@ -488,6 +488,7 @@ def validate_ubl_xml(xml_path: str) -> (bool, list):
 def parse_ubl_xml_to_dict(xml_path: str) -> dict:
     """
     Parse a simplified UBL invoice XML into a plain dict suitable for templates.
+    Supports both standard e-fatura and SGK invoices.
     """
     tree = ET.parse(xml_path)
     root = tree.getroot()
@@ -497,80 +498,169 @@ def parse_ubl_xml_to_dict(xml_path: str) -> dict:
         t = elem.find(f"{{{NS[ns]}}}{tag}")
         return t.text if t is not None else None
 
+    def find_amount(elem, tag, ns='cbc'):
+        """Find amount and return as float"""
+        text = find_text(elem, tag, ns)
+        if text:
+            try:
+                return float(text.replace(',', '.'))
+            except (ValueError, TypeError):
+                return 0
+        return 0
+
     invoice = {}
-    invoice['invoiceNumber'] = find_text(root, 'ID')
+    
+    # Basic fields
+    invoice['invoice_number'] = find_text(root, 'ID')
     invoice['issue_date'] = find_text(root, 'IssueDate')
     invoice['uuid'] = find_text(root, 'UUID')
+    invoice['invoice_type_code'] = find_text(root, 'InvoiceTypeCode')
+    invoice['profile_id'] = find_text(root, 'ProfileID')
+    invoice['currency_code'] = find_text(root, 'DocumentCurrencyCode') or 'TRY'
+    invoice['accounting_cost'] = find_text(root, 'AccountingCost')
+    invoice['line_count'] = find_text(root, 'LineCountNumeric')
+    
+    # Notes
+    notes = []
+    for note in root.findall(f"{{{NS['cbc']}}}Note"):
+        if note.text:
+            notes.append(note.text)
+    invoice['notes'] = notes
 
-    # Supplier
+    # Supplier (for incoming invoices, this is the sender)
     sup = root.find(f"{{{NS['cac']}}}AccountingSupplierParty")
     if sup is not None:
         party = sup.find(f"{{{NS['cac']}}}Party")
         if party is not None:
+            supplier = {}
+            # Name
             pname = party.find(f"{{{NS['cac']}}}PartyName")
             if pname is not None:
-                invoice['supplier'] = {'name': find_text(pname, 'Name')}
+                supplier['name'] = find_text(pname, 'Name')
+            # Tax ID
+            for pid in party.findall(f"{{{NS['cac']}}}PartyIdentification"):
+                pid_id = pid.find(f"{{{NS['cbc']}}}ID")
+                if pid_id is not None:
+                    scheme = pid_id.get('schemeID', '')
+                    if scheme in ('VKN', 'TCKN'):
+                        supplier['tax_id'] = pid_id.text
+                        supplier['tax_id_type'] = scheme
+            # Address
+            addr = party.find(f"{{{NS['cac']}}}PostalAddress")
+            if addr is not None:
+                supplier['city'] = find_text(addr, 'CityName')
+                supplier['district'] = find_text(addr, 'CitySubdivisionName')
+                supplier['street'] = find_text(addr, 'StreetName')
+            invoice['supplier'] = supplier
+            invoice['supplier_name'] = supplier.get('name', '')
+            invoice['supplier_tax_id'] = supplier.get('tax_id', '')
 
-    # Customer
+    # Customer (for incoming invoices, this is us - the receiver)
     cust = root.find(f"{{{NS['cac']}}}AccountingCustomerParty")
     if cust is not None:
         party = cust.find(f"{{{NS['cac']}}}Party")
         if party is not None:
+            customer = {}
+            # Name
             pname = party.find(f"{{{NS['cac']}}}PartyName")
             if pname is not None:
-                invoice['customer'] = {'name': find_text(pname, 'Name')}
+                customer['name'] = find_text(pname, 'Name')
+            # Tax ID
+            for pid in party.findall(f"{{{NS['cac']}}}PartyIdentification"):
+                pid_id = pid.find(f"{{{NS['cbc']}}}ID")
+                if pid_id is not None:
+                    scheme = pid_id.get('schemeID', '')
+                    if scheme in ('VKN', 'TCKN'):
+                        customer['tax_id'] = pid_id.text
+                        customer['tax_id_type'] = scheme
+            # Address
+            addr = party.find(f"{{{NS['cac']}}}PostalAddress")
+            if addr is not None:
+                customer['city'] = find_text(addr, 'CityName')
+                customer['district'] = find_text(addr, 'CitySubdivisionName')
+                customer['street'] = find_text(addr, 'StreetName')
+            invoice['customer'] = customer
+            invoice['customer_name'] = customer.get('name', '')
+            invoice['customer_tax_id'] = customer.get('tax_id', '')
+
+    # Tax Total
+    tax_total_elem = root.find(f"{{{NS['cac']}}}TaxTotal")
+    if tax_total_elem is not None:
+        invoice['tax_total'] = find_amount(tax_total_elem, 'TaxAmount')
+
+    # Legal Monetary Total
+    lmt = root.find(f"{{{NS['cac']}}}LegalMonetaryTotal")
+    if lmt is not None:
+        invoice['line_extension_amount'] = find_amount(lmt, 'LineExtensionAmount')
+        invoice['tax_exclusive_amount'] = find_amount(lmt, 'TaxExclusiveAmount')
+        invoice['tax_inclusive_amount'] = find_amount(lmt, 'TaxInclusiveAmount')
+        invoice['allowance_total'] = find_amount(lmt, 'AllowanceTotalAmount')
+        invoice['payable_amount'] = find_amount(lmt, 'PayableAmount')
 
     # Lines
     invoice['lines'] = []
     for il in root.findall(f"{{{NS['cac']}}}InvoiceLine"):
-        desc = None
+        line = {}
+        line['id'] = find_text(il, 'ID')
+        line['quantity'] = find_text(il, 'InvoicedQuantity')
+        line['line_extension_amount'] = find_amount(il, 'LineExtensionAmount')
+        
+        # Item details
         item = il.find(f"{{{NS['cac']}}}Item")
         if item is not None:
-            desc = find_text(item, 'Name')
-        qty = find_text(il, 'InvoicedQuantity')
-        amount = find_text(il, 'LineExtensionAmount')
-        allowance = None
+            line['name'] = find_text(item, 'Name')
+            line['description'] = find_text(item, 'Description')
+            # Seller item ID (e.g., KPV10, KPV20, TAHSİLEKP for SGK)
+            seller_id = item.find(f"{{{NS['cac']}}}SellersItemIdentification")
+            if seller_id is not None:
+                line['seller_item_id'] = find_text(seller_id, 'ID')
+        
+        # Price
+        price = il.find(f"{{{NS['cac']}}}Price")
+        if price is not None:
+            line['unit_price'] = find_amount(price, 'PriceAmount')
+        
+        # Allowance/Charge
         ac = il.find(f"{{{NS['cac']}}}AllowanceCharge")
         if ac is not None:
-            allowance = find_text(ac, 'Amount')
-        # per-line tax details
-        tax_amount = None
-        tax_rate = None
-        tax_exemption_code = None
-        tax_exemption_reason = None
-        tax_type_code = None
-        calc_seq = None
+            line['allowance_amount'] = find_amount(ac, 'Amount')
+            line['is_charge'] = find_text(ac, 'ChargeIndicator') == 'true'
+        
+        # Per-line tax
         l_tax = il.find(f"{{{NS['cac']}}}TaxTotal")
         if l_tax is not None:
+            line['tax_amount'] = find_amount(l_tax, 'TaxAmount')
             lt_sub = l_tax.find(f"{{{NS['cac']}}}TaxSubtotal")
             if lt_sub is not None:
-                tax_amount = find_text(lt_sub, 'TaxAmount')
-                tax_rate = find_text(lt_sub, 'Percent')
-                calc_seq = find_text(lt_sub, 'CalculationSequenceNumeric')
+                line['tax_rate'] = find_text(lt_sub, 'Percent')
                 cat = lt_sub.find(f"{{{NS['cac']}}}TaxCategory")
                 if cat is not None:
-                    tax_exemption_code = find_text(cat, 'TaxExemptionReasonCode')
-                    tax_exemption_reason = find_text(cat, 'TaxExemptionReason')
+                    line['tax_exemption_code'] = find_text(cat, 'TaxExemptionReasonCode')
+                    line['tax_exemption_reason'] = find_text(cat, 'TaxExemptionReason')
                     ts = cat.find(f"{{{NS['cac']}}}TaxScheme")
                     if ts is not None:
-                        tax_type_code = find_text(ts, 'TaxTypeCode')
-        invoice['lines'].append({
-            'description': desc,
-            'quantity': qty,
-            'line_extension_amount': amount,
-            'allowance_charge': allowance,
-            'tax_amount': tax_amount,
-            'tax_rate': tax_rate,
-            'tax_exemption_code': tax_exemption_code,
-            'tax_exemption_reason': tax_exemption_reason,
-            'tax_type_code': tax_type_code,
-            'calculation_sequence': calc_seq
-        })
+                        line['tax_type_code'] = find_text(ts, 'TaxTypeCode')
+        
+        invoice['lines'].append(line)
 
-    # Totals
-    pay = root.find(f"{{{NS['cbc']}}}LegalMonetaryTotal")
-    if pay is not None:
-        invoice['payable_amount'] = find_text(pay, 'PayableAmount', ns='cbc')
+    # Additional Document References (for SGK: DOSYA_NO, MUKELLEF_KODU, etc.)
+    invoice['additional_references'] = []
+    for adr in root.findall(f"{{{NS['cac']}}}AdditionalDocumentReference"):
+        ref = {}
+        ref['id'] = find_text(adr, 'ID')
+        ref['type_code'] = find_text(adr, 'DocumentTypeCode')
+        ref['type'] = find_text(adr, 'DocumentType')
+        ref['description'] = find_text(adr, 'DocumentDescription')
+        invoice['additional_references'].append(ref)
+        
+        # Extract specific SGK fields
+        type_code = ref.get('type_code', '')
+        if type_code == 'DOSYA_NO':
+            invoice['dosya_no'] = ref.get('type')
+        elif type_code == 'MUKELLEF_KODU':
+            invoice['mukellef_kodu'] = ref.get('type')
+        elif type_code == 'MUKELLEF_ADI':
+            invoice['mukellef_adi'] = ref.get('type')
 
     return invoice
 
@@ -582,3 +672,405 @@ def is_ubl_file(xml_path: str) -> bool:
         return 'Invoice' in root.tag
     except Exception:
         return False
+
+
+# =============================================================================
+# SGK FATURASI XML URETICI - Birfatura ornegine birebir uyumlu
+# =============================================================================
+
+# SGK sabit alici bilgileri
+SGK_CUSTOMER = {
+    'vkn': '7750409379',
+    'name': 'Sosyal Güvenlik Kurumu',
+    'city': 'ANKARA',
+    'district': 'Çankaya',
+    'country': 'TÜRKİYE',
+    'tax_office': 'ÇANKAYA VERGİ DAİRESİ (6257)'
+}
+
+def generate_sgk_invoice_xml(invoice_data: dict, output_path: str = None) -> str:
+    """
+    SGK faturası XML'i üretir - Birfatura örneğine birebir uyumlu.
+    
+    invoice_data yapısı:
+    {
+        'invoice_number': 'EFA2025000000001',
+        'uuid': '6074eb85-1afb-4ea8-9f92-e250f3f56967',  # opsiyonel, yoksa üretilir
+        'issue_date': '2025-12-01',
+        'issue_time': '10:49:24',  # opsiyonel
+        
+        # SGK-spesifik
+        'dosya_no': '1225324',
+        'mukellef_kodu': '11111111',  # Optisyenlik Müessesesi Tesis Kodu
+        'mukellef_adi': 'TEST OPTİK CENGİZ ERDEM',
+        'period_start': '2025-12-01',
+        'period_end': '2025-12-01',
+        
+        # Tedarikçi bilgileri (faturayı kesen firma)
+        'supplier': {
+            'vkn': '1234567801',
+            'name': 'Test Firma',
+            'street': 'Kuşkavağı, Belediye Cd. No:78',
+            'district': 'Maltepe',
+            'city': 'İstanbul',
+            'country': 'Türkiye',
+            'tax_office': 'Antalya',
+            'phone': '05555555555',
+            'email': 'info@firma.com'
+        },
+        
+        # Katılım payı kalemleri
+        'kpv10_amount': 1379.00,  # %10 katılım paylı verilen tutar (KDV hariç)
+        'kpv20_amount': 2270.50,  # %20 katılım paylı verilen tutar (KDV hariç)
+        'tahsil_edilen_kp': 592.00,  # Tahsil edilen katılım payı (AllowanceCharge)
+        
+        # Opsiyonel notlar
+        'notes': []
+    }
+    """
+    
+    # UUID yoksa üret
+    inv_uuid = invoice_data.get('uuid') or str(uuid.uuid4())
+    issue_date = invoice_data.get('issue_date') or datetime.now().strftime('%Y-%m-%d')
+    issue_time = invoice_data.get('issue_time') or datetime.now().strftime('%H:%M:%S')
+    invoice_number = invoice_data.get('invoice_number') or f"EFA{datetime.now().strftime('%Y')}000000001"
+    
+    # Tutarlar
+    kpv10 = float(invoice_data.get('kpv10_amount', 0))
+    kpv20 = float(invoice_data.get('kpv20_amount', 0))
+    tahsil_kp = float(invoice_data.get('tahsil_edilen_kp', 0))
+    
+    # KDV hesaplama (%10)
+    kdv_rate = 10.0
+    kpv10_kdv = round(kpv10 * (kdv_rate / 100), 2)
+    kpv20_kdv = round(kpv20 * (kdv_rate / 100), 2)
+    
+    # Toplamlar
+    line_extension_total = kpv10 + kpv20  # Tahsil edilen KP'nin line extension'ı 0
+    tax_exclusive_amount = line_extension_total - tahsil_kp  # İndirim sonrası
+    total_tax = round(kpv10_kdv + kpv20_kdv, 2)
+    tax_inclusive_amount = round(tax_exclusive_amount + total_tax, 2)
+    
+    # Tedarikçi bilgileri
+    supplier = invoice_data.get('supplier', {})
+    
+    # XML oluştur
+    xml_content = f'''<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" xmlns:udt="urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ccts="urn:un:unece:uncefact:documentation:2" xmlns:ubltr="urn:oasis:names:specification:ubl:schema:xsd:TurkishCustomizationExtensionComponents" xmlns:qdt="urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2">
+<ext:UBLExtensions>
+<ext:UBLExtension>
+<ext:ExtensionContent>
+
+</ext:ExtensionContent>
+</ext:UBLExtension>
+</ext:UBLExtensions>
+<cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+<cbc:CustomizationID>TR1.2</cbc:CustomizationID>
+<cbc:ProfileID>TEMELFATURA</cbc:ProfileID>
+<cbc:ID>{invoice_number}</cbc:ID>
+<cbc:CopyIndicator>false</cbc:CopyIndicator>
+<cbc:UUID>{inv_uuid}</cbc:UUID>
+<cbc:IssueDate>{issue_date}</cbc:IssueDate>
+<cbc:IssueTime>{issue_time}</cbc:IssueTime>
+<cbc:InvoiceTypeCode>SGK</cbc:InvoiceTypeCode>
+<cbc:Note>Yalnız {_amount_to_words(tax_inclusive_amount)}</cbc:Note>
+<cbc:Note>E-Fatura izni kapsamında elektronik ortamda iletilmiştir.</cbc:Note>
+<cbc:Note>% 10 KATILIM PAYLI VERİLEN TUTAR : {_format_amount_tr(kpv10 + kpv10_kdv)}-TL (%10 KDV DAHİLDİR)</cbc:Note>
+<cbc:Note>% 20 KATILIM PAYLI VERİLEN TUTAR : {_format_amount_tr(kpv20 + kpv20_kdv)}-TL (%10 KDV DAHİLDİR)</cbc:Note>
+<cbc:Note>TAHSİL EDİLEN KATILIM PAYI TOPLAM : {_format_amount_tr(tahsil_kp * 1.1)}-TL (%10 KDV DAHİLDİR)</cbc:Note>
+<cbc:DocumentCurrencyCode>TRY</cbc:DocumentCurrencyCode>
+<cbc:AccountingCost>SAGLIK_OPT</cbc:AccountingCost>
+<cbc:LineCountNumeric>3</cbc:LineCountNumeric>
+<cac:InvoicePeriod>
+<cbc:StartDate>{invoice_data.get('period_start', issue_date)}</cbc:StartDate>
+<cbc:EndDate>{invoice_data.get('period_end', issue_date)}</cbc:EndDate>
+</cac:InvoicePeriod>
+<cac:AdditionalDocumentReference>
+<cbc:ID>{inv_uuid}</cbc:ID>
+<cbc:IssueDate>{issue_date}</cbc:IssueDate>
+<cbc:DocumentTypeCode>CUST_INV_ID</cbc:DocumentTypeCode>
+</cac:AdditionalDocumentReference>
+<cac:AdditionalDocumentReference>
+<cbc:ID>1</cbc:ID>
+<cbc:IssueDate>{issue_date}</cbc:IssueDate>
+<cbc:DocumentTypeCode>DOSYA_NO</cbc:DocumentTypeCode>
+<cbc:DocumentType>{invoice_data.get('dosya_no', '')}</cbc:DocumentType>
+<cbc:DocumentDescription>Evrak No</cbc:DocumentDescription>
+</cac:AdditionalDocumentReference>
+<cac:AdditionalDocumentReference>
+<cbc:ID>1</cbc:ID>
+<cbc:IssueDate>{issue_date}</cbc:IssueDate>
+<cbc:DocumentTypeCode>MUKELLEF_KODU</cbc:DocumentTypeCode>
+<cbc:DocumentType>{invoice_data.get('mukellef_kodu', '')}</cbc:DocumentType>
+<cbc:DocumentDescription>Optisyenlik Müessesesi Tesis Kodu</cbc:DocumentDescription>
+</cac:AdditionalDocumentReference>
+<cac:AdditionalDocumentReference>
+<cbc:ID>1</cbc:ID>
+<cbc:IssueDate>{issue_date}</cbc:IssueDate>
+<cbc:DocumentTypeCode>MUKELLEF_ADI</cbc:DocumentTypeCode>
+<cbc:DocumentType>{invoice_data.get('mukellef_adi', '')}</cbc:DocumentType>
+<cbc:DocumentDescription>Optisyenlik Müessesesi Adı</cbc:DocumentDescription>
+</cac:AdditionalDocumentReference>
+<cac:AdditionalDocumentReference>
+<cbc:ID>{invoice_number.replace('EFA', 'FIT')}</cbc:ID>
+<cbc:IssueDate>{issue_date}</cbc:IssueDate>
+<cbc:DocumentType>XSLT</cbc:DocumentType>
+</cac:AdditionalDocumentReference>
+<cac:AccountingSupplierParty>
+<cac:Party>
+<cbc:WebsiteURI/>
+<cac:PartyIdentification>
+<cbc:ID schemeID="VKN">{supplier.get('vkn', '')}</cbc:ID>
+</cac:PartyIdentification>
+<cac:PartyIdentification>
+<cbc:ID schemeID="TICARETSICILNO"/>
+</cac:PartyIdentification>
+<cac:PartyIdentification>
+<cbc:ID schemeID="MERSISNO"/>
+</cac:PartyIdentification>
+<cac:PartyName>
+<cbc:Name>{supplier.get('name', '')}</cbc:Name>
+</cac:PartyName>
+<cac:PostalAddress>
+<cbc:StreetName>{supplier.get('street', '')}</cbc:StreetName>
+<cbc:CitySubdivisionName>{supplier.get('district', '')}</cbc:CitySubdivisionName>
+<cbc:CityName>{supplier.get('city', '')}</cbc:CityName>
+<cac:Country>
+<cbc:Name>{supplier.get('country', 'Türkiye')}</cbc:Name>
+</cac:Country>
+</cac:PostalAddress>
+<cac:PartyTaxScheme>
+<cac:TaxScheme>
+<cbc:Name>{supplier.get('tax_office', '')}</cbc:Name>
+</cac:TaxScheme>
+</cac:PartyTaxScheme>
+<cac:Contact>
+<cbc:Telephone>{supplier.get('phone', '')}</cbc:Telephone>
+<cbc:ElectronicMail>{supplier.get('email', '')}</cbc:ElectronicMail>
+</cac:Contact>
+</cac:Party>
+</cac:AccountingSupplierParty>
+<cac:AccountingCustomerParty>
+<cac:Party>
+<cbc:WebsiteURI/>
+<cac:PartyIdentification>
+<cbc:ID schemeID="VKN">{SGK_CUSTOMER['vkn']}</cbc:ID>
+</cac:PartyIdentification>
+<cac:PartyName>
+<cbc:Name>{SGK_CUSTOMER['name']}</cbc:Name>
+</cac:PartyName>
+<cac:PostalAddress>
+<cbc:Room/>
+<cbc:StreetName/>
+<cbc:BuildingName/>
+<cbc:BuildingNumber/>
+<cbc:CitySubdivisionName>{SGK_CUSTOMER['district']}</cbc:CitySubdivisionName>
+<cbc:CityName>{SGK_CUSTOMER['city']}</cbc:CityName>
+<cbc:PostalZone/>
+<cbc:Region/>
+<cbc:District/>
+<cac:Country>
+<cbc:Name>{SGK_CUSTOMER['country']}</cbc:Name>
+</cac:Country>
+</cac:PostalAddress>
+<cac:PartyTaxScheme>
+<cac:TaxScheme>
+<cbc:Name>{SGK_CUSTOMER['tax_office']}</cbc:Name>
+<cbc:TaxTypeCode/>
+</cac:TaxScheme>
+</cac:PartyTaxScheme>
+<cac:Contact>
+<cbc:Telephone/>
+<cbc:Telefax/>
+<cbc:ElectronicMail/>
+</cac:Contact>
+</cac:Party>
+</cac:AccountingCustomerParty>
+<cac:TaxTotal>
+<cbc:TaxAmount currencyID="TRY">{fmt_amount(total_tax)}</cbc:TaxAmount>
+<cac:TaxSubtotal>
+<cbc:TaxableAmount currencyID="TRY">{fmt_amount(tax_exclusive_amount)}</cbc:TaxableAmount>
+<cbc:TaxAmount currencyID="TRY">{fmt_amount(total_tax)}</cbc:TaxAmount>
+<cbc:Percent>10</cbc:Percent>
+<cac:TaxCategory>
+<cac:TaxScheme>
+<cbc:Name>KDV</cbc:Name>
+<cbc:TaxTypeCode>0015</cbc:TaxTypeCode>
+</cac:TaxScheme>
+</cac:TaxCategory>
+</cac:TaxSubtotal>
+</cac:TaxTotal>
+<cac:LegalMonetaryTotal>
+<cbc:LineExtensionAmount currencyID="TRY">{fmt_amount(line_extension_total)}</cbc:LineExtensionAmount>
+<cbc:TaxExclusiveAmount currencyID="TRY">{fmt_amount(tax_exclusive_amount)}</cbc:TaxExclusiveAmount>
+<cbc:TaxInclusiveAmount currencyID="TRY">{fmt_amount(tax_inclusive_amount)}</cbc:TaxInclusiveAmount>
+<cbc:AllowanceTotalAmount currencyID="TRY">{fmt_amount(tahsil_kp)}</cbc:AllowanceTotalAmount>
+<cbc:PayableAmount currencyID="TRY">{fmt_amount(tax_inclusive_amount)}</cbc:PayableAmount>
+</cac:LegalMonetaryTotal>
+<cac:InvoiceLine>
+<cbc:ID>1</cbc:ID>
+<cbc:InvoicedQuantity unitCode="NIU">1.0000</cbc:InvoicedQuantity>
+<cbc:LineExtensionAmount currencyID="TRY">{fmt_amount(kpv10)}</cbc:LineExtensionAmount>
+<cac:TaxTotal>
+<cbc:TaxAmount currencyID="TRY">{fmt_amount(kpv10_kdv)}</cbc:TaxAmount>
+<cac:TaxSubtotal>
+<cbc:TaxableAmount currencyID="TRY">{fmt_amount(kpv10)}</cbc:TaxableAmount>
+<cbc:TaxAmount currencyID="TRY">{fmt_amount(kpv10_kdv)}</cbc:TaxAmount>
+<cbc:Percent>10</cbc:Percent>
+<cac:TaxCategory>
+<cac:TaxScheme>
+<cbc:Name>KDV</cbc:Name>
+<cbc:TaxTypeCode>0015</cbc:TaxTypeCode>
+</cac:TaxScheme>
+</cac:TaxCategory>
+</cac:TaxSubtotal>
+</cac:TaxTotal>
+<cac:Item>
+<cbc:Description/>
+<cbc:Name>% 10 KATILIM PAYLI VERİLEN</cbc:Name>
+<cac:BuyersItemIdentification>
+<cbc:ID/>
+</cac:BuyersItemIdentification>
+<cac:SellersItemIdentification>
+<cbc:ID>KPV10</cbc:ID>
+</cac:SellersItemIdentification>
+<cac:AdditionalItemIdentification>
+<cbc:ID/>
+</cac:AdditionalItemIdentification>
+</cac:Item>
+<cac:Price>
+<cbc:PriceAmount currencyID="TRY">{fmt_amount(kpv10, 6)}</cbc:PriceAmount>
+</cac:Price>
+</cac:InvoiceLine>
+<cac:InvoiceLine>
+<cbc:ID>2</cbc:ID>
+<cbc:InvoicedQuantity unitCode="NIU">1.0000</cbc:InvoicedQuantity>
+<cbc:LineExtensionAmount currencyID="TRY">{fmt_amount(kpv20)}</cbc:LineExtensionAmount>
+<cac:TaxTotal>
+<cbc:TaxAmount currencyID="TRY">{fmt_amount(kpv20_kdv)}</cbc:TaxAmount>
+<cac:TaxSubtotal>
+<cbc:TaxableAmount currencyID="TRY">{fmt_amount(kpv20)}</cbc:TaxableAmount>
+<cbc:TaxAmount currencyID="TRY">{fmt_amount(kpv20_kdv)}</cbc:TaxAmount>
+<cbc:Percent>10</cbc:Percent>
+<cac:TaxCategory>
+<cac:TaxScheme>
+<cbc:Name>KDV</cbc:Name>
+<cbc:TaxTypeCode>0015</cbc:TaxTypeCode>
+</cac:TaxScheme>
+</cac:TaxCategory>
+</cac:TaxSubtotal>
+</cac:TaxTotal>
+<cac:Item>
+<cbc:Description/>
+<cbc:Name>% 20 KATILIM PAYLI VERİLEN</cbc:Name>
+<cac:BuyersItemIdentification>
+<cbc:ID/>
+</cac:BuyersItemIdentification>
+<cac:SellersItemIdentification>
+<cbc:ID>KPV20</cbc:ID>
+</cac:SellersItemIdentification>
+<cac:AdditionalItemIdentification>
+<cbc:ID/>
+</cac:AdditionalItemIdentification>
+</cac:Item>
+<cac:Price>
+<cbc:PriceAmount currencyID="TRY">{fmt_amount(kpv20, 6)}</cbc:PriceAmount>
+</cac:Price>
+</cac:InvoiceLine>
+<cac:InvoiceLine>
+<cbc:ID>3</cbc:ID>
+<cbc:InvoicedQuantity unitCode="NIU">1.0000</cbc:InvoicedQuantity>
+<cbc:LineExtensionAmount currencyID="TRY">0.00</cbc:LineExtensionAmount>
+<cac:AllowanceCharge>
+<cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+<cbc:AllowanceChargeReason/>
+<cbc:Amount currencyID="TRY">{fmt_amount(tahsil_kp, 10)}</cbc:Amount>
+</cac:AllowanceCharge>
+<cac:TaxTotal>
+<cbc:TaxAmount currencyID="TRY">0.00</cbc:TaxAmount>
+<cac:TaxSubtotal>
+<cbc:TaxableAmount currencyID="TRY">0.00</cbc:TaxableAmount>
+<cbc:TaxAmount currencyID="TRY">0.00</cbc:TaxAmount>
+<cbc:Percent>10</cbc:Percent>
+<cac:TaxCategory>
+<cac:TaxScheme>
+<cbc:Name>KDV</cbc:Name>
+<cbc:TaxTypeCode>0015</cbc:TaxTypeCode>
+</cac:TaxScheme>
+</cac:TaxCategory>
+</cac:TaxSubtotal>
+</cac:TaxTotal>
+<cac:Item>
+<cbc:Description/>
+<cbc:Name>TAHSİL EDİLEN KATILIM PAYI</cbc:Name>
+<cac:BuyersItemIdentification>
+<cbc:ID/>
+</cac:BuyersItemIdentification>
+<cac:SellersItemIdentification>
+<cbc:ID>TAHSİLEKP</cbc:ID>
+</cac:SellersItemIdentification>
+<cac:AdditionalItemIdentification>
+<cbc:ID/>
+</cac:AdditionalItemIdentification>
+</cac:Item>
+<cac:Price>
+<cbc:PriceAmount currencyID="TRY">{fmt_amount(tahsil_kp, 6)}</cbc:PriceAmount>
+</cac:Price>
+</cac:InvoiceLine>
+</Invoice>'''
+
+    if output_path:
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(xml_content)
+    
+    return xml_content
+
+
+def _format_amount_tr(amount: float) -> str:
+    """Türkçe format: 1.516,90"""
+    return f"{amount:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+
+
+def _amount_to_words(amount: float) -> str:
+    """Tutarı yazıya çevirir (basit versiyon)"""
+    # Basit implementasyon - gerçek projede daha kapsamlı olmalı
+    lira = int(amount)
+    kurus = int(round((amount - lira) * 100))
+    
+    birler = ['', 'Bir', 'İki', 'Üç', 'Dört', 'Beş', 'Altı', 'Yedi', 'Sekiz', 'Dokuz']
+    onlar = ['', 'On', 'Yirmi', 'Otuz', 'Kırk', 'Elli', 'Altmış', 'Yetmiş', 'Seksen', 'Doksan']
+    
+    def iki_basamak(n):
+        if n == 0:
+            return ''
+        if n < 10:
+            return birler[n]
+        return onlar[n // 10] + birler[n % 10]
+    
+    def uc_basamak(n):
+        if n == 0:
+            return ''
+        if n < 100:
+            return iki_basamak(n)
+        yuz = n // 100
+        kalan = n % 100
+        if yuz == 1:
+            return 'Yüz' + iki_basamak(kalan)
+        return birler[yuz] + 'Yüz' + iki_basamak(kalan)
+    
+    result = ''
+    if lira >= 1000:
+        bin_kismim = lira // 1000
+        lira = lira % 1000
+        if bin_kismim == 1:
+            result += 'Bin'
+        else:
+            result += uc_basamak(bin_kismim) + 'Bin'
+    
+    result += uc_basamak(lira)
+    result += 'TürkLirası'
+    
+    if kurus > 0:
+        result += iki_basamak(kurus) + 'Kuruş'
+    
+    return result

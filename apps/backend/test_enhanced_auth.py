@@ -21,7 +21,7 @@ def test_email_otp_fallback(client):
         "captcha_token": "test-token"  # Mock token for testing
     }
 
-    rv = client.post('/api/forgot-password', json=payload)
+    rv = client.post('/api/auth/forgot-password', json=payload)
     assert rv.status_code == 200
     data = rv.get_json()
     assert 'message' in data or 'success' in data
@@ -39,7 +39,7 @@ def test_rate_limiting(client):
     # Send multiple requests quickly
     found_rate_limited = False
     for i in range(7):  # More than the 5 per hour limit
-        rv = client.post('/api/forgot-password', json=payload)
+        rv = client.post('/api/auth/forgot-password', json=payload)
         if rv.status_code == 429:  # Rate limit exceeded
             found_rate_limited = True
             break
@@ -72,7 +72,7 @@ def test_captcha_verification(client):
     }
 
     # Missing captcha token should be rejected
-    rv = client.post('/api/forgot-password', json=payload)
+    rv = client.post('/api/auth/forgot-password', json=payload)
     assert rv.status_code == 400
 
 
@@ -87,11 +87,11 @@ def test_otp_verification(client):
         "captcha_token": "test-token"
     }
 
-    rv = client.post('/api/forgot-password', json=payload)
+    rv = client.post('/api/auth/forgot-password', json=payload)
     assert rv.status_code == 200
 
     # Try verifying with invalid OTP
-    rv2 = client.post('/api/verify-otp', json={"identifier": identifier, "otp": "000000"})
+    rv2 = client.post('/api/auth/verify-otp', json={"identifier": identifier, "otp": "000000"})
     assert rv2.status_code == 400
     data = rv2.get_json()
     assert 'Invalid' in data.get('message', '') or 'error' in data

@@ -4,55 +4,642 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-      body { font-family: DejaVu Sans, Arial, Helvetica, sans-serif; font-size: 12px; color: #222; }
-      .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px }
-      .logo { max-height:60px }
-      .meta { text-align:right; font-size:11px }
-      .title { font-size:18px; font-weight:700 }
-      table { width:100%; border-collapse: collapse; margin-top:12px }
-      th, td { padding:6px 8px; border:1px solid #ddd; vertical-align:top }
-      th { background:#f6f6f6; font-weight:700; }
-      .right { text-align:right }
-      .small { font-size:10px; color:#666 }
-      .signature { margin-top:24px }
+      @page {
+        size: A4;
+        margin: 12mm 10mm 15mm 10mm;
+      }
+      
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      
+      html, body {
+        height: 100%;
+      }
+      
+      body {
+        font-family: DejaVu Sans, Arial, Helvetica, sans-serif;
+        font-size: 10px;
+        color: #000;
+        line-height: 1.2;
+      }
+      
+      .page-wrapper {
+        width: 100%;
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+      
+      .main-content {
+        flex: 1;
+      }
+      
+      /* ====== TASLAK WATERMARK ====== */
+      .draft-watermark {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 120px;
+        font-weight: bold;
+        color: rgba(180, 180, 180, 0.35);
+        z-index: 1000;
+        pointer-events: none;
+        white-space: nowrap;
+        letter-spacing: 15px;
+      }
+      
+      /* ====== HEADER ====== */
+      .header-row {
+        display: flex;
+        margin-bottom: 0;
+      }
+      
+      .sender-section {
+        width: 40%;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #000;
+      }
+      
+      .logo-section {
+        width: 25%;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding-top: 5px;
+      }
+      
+      .extra-section {
+        width: 35%;
+        text-align: right;
+        font-size: 8px;
+      }
+      
+      /* Separator line between sender and customer */
+      .header-separator {
+        border-top: 2px solid #000;
+        margin: 15px 0 10px 0;
+        width: 40%;
+      }
+      
+      .customer-row {
+        display: flex;
+        margin-bottom: 0;
+        margin-top: 25px;
+      }
+      
+      .customer-section {
+        width: 45%;
+        padding-bottom: 8px;
+      }
+      
+      .invoice-info-section {
+        width: 55%;
+      }
+      
+      /* ETTN separator */
+      .ettn-line {
+        font-size: 7px;
+        margin-top: 5px;
+        padding-top: 5px;
+        border-top: 2px solid #000;
+      }
+      
+      /* GİB Logo ve Fatura Tipi */
+      .gib-logo {
+        max-height: 50px;
+        max-width: 70px;
+        margin-bottom: 3px;
+      }
+      
+      .invoice-type-text {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        text-align: center;
+        margin-top: 2px;
+      }
+      
+      /* ====== Gönderici/Alıcı Kutuları ====== */
+      .party-box {
+        margin-bottom: 8px;
+      }
+      
+      .party-label {
+        font-weight: 700;
+        font-size: 9px;
+        margin-bottom: 2px;
+        text-transform: uppercase;
+      }
+      
+      .company-name {
+        font-size: 9px;
+        font-weight: 700;
+        margin-bottom: 2px;
+        line-height: 1.2;
+      }
+      
+      .party-details {
+        font-size: 8px;
+        line-height: 1.3;
+      }
+      
+      .party-details-row {
+        margin-bottom: 0;
+      }
+      
+      .party-details-label {
+        font-weight: normal;
+        display: inline-block;
+        min-width: 55px;
+      }
+      
+      /* ====== Fatura Bilgileri Tablosu ====== */
+      .invoice-info-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 8px;
+        border: 0.5px solid #666;
+      }
+      
+      .invoice-info-table td {
+        padding: 1px 4px;
+        border: 0.5px solid #666;
+        vertical-align: top;
+      }
+      
+      .invoice-info-table td:first-child {
+        width: 42%;
+        font-weight: normal;
+      }
+      
+      .invoice-info-table td:last-child {
+        width: 58%;
+      }
+      
+      /* ====== İADE REFERANS ====== */
+      .return-reference {
+        margin: 20px 0;
+        font-size: 9px;
+        padding: 10px;
+        border: 1px solid #000;
+        background: #fafafa;
+      }
+      
+      .return-reference-title {
+        font-weight: 700;
+        margin-bottom: 8px;
+        font-size: 10px;
+      }
+      
+      .return-reference-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9px;
+      }
+      
+      .return-reference-table th, .return-reference-table td {
+        padding: 4px 6px;
+        border: 1px solid #999;
+        text-align: left;
+      }
+      
+      .return-reference-table th {
+        background: #eee;
+        font-weight: 600;
+      }
+      
+      /* ====== SEVKİYAT BİLGİLERİ (e-İrsaliye) ====== */
+      .shipment-info {
+        margin: 20px 0;
+        padding: 12px;
+        border: 1px solid #000;
+        font-size: 9px;
+        background: #fafafa;
+      }
+      
+      .shipment-info-title {
+        font-weight: 700;
+        margin-bottom: 8px;
+        font-size: 11px;
+      }
+      
+      .shipment-grid {
+        display: flex;
+        gap: 30px;
+      }
+      
+      .shipment-col {
+        flex: 1;
+      }
+      
+      .shipment-row {
+        margin-bottom: 4px;
+      }
+      
+      .shipment-label {
+        font-weight: 600;
+        display: inline-block;
+        min-width: 100px;
+      }
+      
+      /* ====== ÜRÜN TABLOSU ====== */
+      table.items {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0 5px 0;
+        font-size: 9px;
+      }
+      
+      table.items th {
+        padding: 2px 3px;
+        text-align: left;
+        font-weight: 700;
+        font-size: 8px;
+        border: 1px solid #000;
+        background: none;
+      }
+      
+      table.items th.right {
+        text-align: right;
+      }
+      
+      table.items th.center {
+        text-align: center;
+      }
+      
+      table.items td {
+        padding: 2px 3px;
+        border: 1px solid #000;
+        vertical-align: middle;
+        font-size: 9px;
+        line-height: 1.1;
+      }
+      
+      table.items td.right {
+        text-align: right;
+      }
+      
+      table.items td.center {
+        text-align: center;
+      }
+      
+      /* ====== TOPLAMLAR ====== */
+      .totals-section {
+        display: flex;
+        justify-content: flex-end;
+        margin: 5px 0;
+      }
+      
+      .totals-table {
+        width: 240px;
+        border-collapse: collapse;
+        font-size: 8px;
+      }
+      
+      .totals-table td {
+        padding: 2px 5px;
+        border: 1.5px solid #000;
+      }
+      
+      .totals-table td:first-child {
+        text-align: right;
+        font-weight: normal;
+        width: 58%;
+      }
+      
+      .totals-table td:last-child {
+        text-align: right;
+        width: 42%;
+      }
+      
+      .totals-table tr.grand-total td {
+        font-weight: 700;
+        font-size: 9px;
+      }
+      
+      /* ====== TEVKİFAT BÖLÜMÜ ====== */
+      .withholding-section {
+        margin: 20px 0;
+        font-size: 9px;
+      }
+      
+      .section-title {
+        font-weight: 700;
+        margin-bottom: 8px;
+        font-size: 10px;
+      }
+      
+      .withholding-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      
+      .withholding-table th, .withholding-table td {
+        padding: 5px 6px;
+        border: 1px solid #000;
+        font-size: 9px;
+      }
+      
+      .withholding-table th {
+        background: #f0f0f0;
+        font-weight: 700;
+        text-align: left;
+      }
+      
+      .withholding-table td.right {
+        text-align: right;
+      }
+      
+      /* ====== YAZIYILA TUTAR ====== */
+      /* Artık footer-box içinde */
+      
+      /* ====== NOTLAR ====== */
+      /* Artık footer-box içinde */
+      
+      /* ====== FOOTER - Alt Bilgi Kutusu ====== */
+      .footer-section {
+        margin-top: 8px;
+      }
+      
+      .footer-box {
+        border: 1px solid #000;
+        padding: 6px 8px;
+        font-size: 8px;
+        line-height: 1.3;
+      }
+      
+      .footer-box .amount-line {
+        font-weight: normal;
+        margin-bottom: 2px;
+      }
+      
+      .footer-box .notes-line {
+        margin-bottom: 2px;
+      }
+      
+      .footer-box .vade-line {
+        margin-bottom: 4px;
+      }
+      
+      .footer-box .iade-line {
+        font-size: 7px;
+        margin-top: 4px;
+        padding-top: 4px;
+        border-top: 1px solid #999;
+      }
+      
+      .footer-box .iade-title {
+        font-weight: 700;
+      }
+      
+      /* ====== UTILITY ====== */
+      .small { font-size: 8px; }
+      .text-right { text-align: right; }
+      .font-bold { font-weight: 700; }
+      .mt-1 { margin-top: 5px; }
+      .mt-2 { margin-top: 10px; }
+      .mt-3 { margin-top: 15px; }
+      .mb-1 { margin-bottom: 5px; }
+      .mb-2 { margin-bottom: 10px; }
     </style>
   </head>
   <body>
-    <div class="header">
-      <div class="company">
-        {% if invoice.supplier and invoice.supplier.logo %}
-          <img class="logo" src="{{ invoice.supplier.logo }}" alt="logo" />
-        {% else %}
-          <strong>{{ invoice.supplier.name if invoice.supplier else '' }}</strong>
-        {% endif %}
-      </div>
-      <div class="meta">
-        <div class="title">{{ invoice.document_title or 'FATURA' }}</div>
-        <div class="small">UUID: {{ invoice.uuid or '' }}</div>
-        <div class="small">{{ invoice.issue_date or '' }}</div>
-      </div>
-    </div>
-
-    <div class="addresses">
-      <div style="float:left; width:48%">
-        <strong>Alıcı</strong>
-        <div>{{ invoice.customer.name if invoice.customer else '' }}</div>
-        <div class="small">{{ invoice.customer.address if invoice.customer else '' }}</div>
-      </div>
-      <div style="float:right; width:48%; text-align:right">
-        <strong>Satıcı</strong>
-        <div>{{ invoice.supplier.name if invoice.supplier else '' }}</div>
-        <div class="small">{{ invoice.supplier.address if invoice.supplier else '' }}</div>
-      </div>
-      <div style="clear:both"></div>
-    </div>
-
-    {% block content %}{% endblock %}
-
-    <div class="signature">
-      {% if invoice.signed %}
-        <div><strong>İmzalı</strong></div>
+    <div class="page-wrapper">
+      
+      <!-- ====== TASLAK WATERMARK ====== -->
+      {% if invoice.is_draft %}
+      <div class="draft-watermark">TASLAK</div>
       {% endif %}
-    </div>
+      
+      <div class="main-content">
+        <!-- ====== HEADER ÜST: Gönderici + Logo + Ek Bilgiler ====== -->
+        <div class="header-row">
+          <!-- Sol: Gönderici -->
+          <div class="sender-section">
+            <div class="party-box">
+              <div class="company-name">{{ invoice.supplier.name if invoice.supplier else '' }}</div>
+              <div class="party-details">
+                {% if invoice.supplier %}
+                  <div class="party-details-row">{{ invoice.supplier.address or '' }}</div>
+                  {% if invoice.supplier.phone %}<div class="party-details-row">Tel: {{ invoice.supplier.phone }}</div>{% endif %}
+                  {% if invoice.supplier.email %}<div class="party-details-row">E-Posta: {{ invoice.supplier.email }}</div>{% endif %}
+                  {% if invoice.supplier.tax_office %}<div class="party-details-row">Vergi Dairesi: {{ invoice.supplier.tax_office }}</div>{% endif %}
+                  {% if invoice.supplier.tax_id %}<div class="party-details-row">VKN: {{ invoice.supplier.tax_id }}</div>{% endif %}
+                  {% if invoice.supplier.identity_number %}<div class="party-details-row">TCKN: {{ invoice.supplier.identity_number }}</div>{% endif %}
+                  {% if invoice.supplier.trade_registry_no %}<div class="party-details-row">TICARETSICILNO: {{ invoice.supplier.trade_registry_no }}</div>{% endif %}
+                  {% if invoice.supplier.mersis_no %}<div class="party-details-row">MERSISNO: {{ invoice.supplier.mersis_no }}</div>{% endif %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <!-- Orta: GİB Logo + Fatura Tipi -->
+          <div class="logo-section">
+            <img class="gib-logo" src="file:///Users/omerozmen/Desktop/x-ear web app/docs/examples/gib logo.png" alt="GİB" />
+            <div class="invoice-type-text">
+              {% if invoice.document_type == 'EIRSALIYE' or invoice.profile_id == 'TEMELIRSALIYE' %}
+                e-İrsaliye
+              {% elif invoice.profile_id == 'EARSIVFATURA' or invoice.document_type == 'EARSIV' %}
+                e-Arşiv Fatura
+              {% elif invoice.document_type == 'EMM' or invoice.invoice_type_code == 'MUSTAHSILMAKBUZ' %}
+                e-Müstahsil Makbuzu
+              {% elif invoice.document_type == 'ESMM' or invoice.invoice_type_code == 'SERBESTMESLEKMAKBUZ' %}
+                e-Serbest Meslek Makbuzu
+              {% elif invoice.profile_id == 'TEMELFATURA' or invoice.profile_id == 'TICARIFATURA' %}
+                e-Fatura
+              {% else %}
+                {{ invoice.document_title or 'e-Fatura' }}
+              {% endif %}
+            </div>
+          </div>
+          
+          <!-- Sağ: Ek bilgiler (kampanya vb.) -->
+          <div class="extra-section">
+            {% if invoice.sales_channel %}
+              <div>{{ invoice.order_note or '' }}</div>
+              {% if invoice.campaign_code %}<div>Kampanya Kodu: {{ invoice.campaign_code }}</div>{% endif %}
+              {% if invoice.order_no %}<div>Sipariş No: {{ invoice.order_no }}</div>{% endif %}
+            {% endif %}
+          </div>
+        </div>
+        
+        <!-- ====== HEADER ALT: Alıcı + Fatura Bilgileri ====== -->
+        <div class="customer-row">
+          <!-- Sol: Alıcı -->
+          <div class="customer-section">
+            <div class="party-box">
+              <div class="party-label">SAYIN</div>
+              <div class="company-name">{{ invoice.customer.name if invoice.customer else '' }}</div>
+              <div class="party-details">
+                {% if invoice.customer %}
+                  <div class="party-details-row">{{ invoice.customer.address or '' }}</div>
+                  {% if invoice.customer.phone %}<div class="party-details-row">Tel: {{ invoice.customer.phone }}</div>{% endif %}
+                  {% if invoice.customer.email %}<div class="party-details-row">E-Posta: {{ invoice.customer.email }}</div>{% endif %}
+                  {% if invoice.customer.tax_office %}<div class="party-details-row">Vergi Dairesi: {{ invoice.customer.tax_office }}</div>{% endif %}
+                  {% if invoice.customer.tax_id %}<div class="party-details-row">VKN: {{ invoice.customer.tax_id }}</div>{% endif %}
+                  {% if invoice.customer.identity_number %}<div class="party-details-row">TCKN: {{ invoice.customer.identity_number }}</div>{% endif %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <!-- Sağ: Fatura Bilgileri -->
+          <div class="invoice-info-section">
+            <table class="invoice-info-table">
+              {% if invoice.customization_id %}
+              <tr><td>Özelleştirme No:</td><td>{{ invoice.customization_id }}</td></tr>
+              {% endif %}
+              {% if invoice.profile_id %}
+              <tr><td>Senaryo:</td><td>{{ invoice.profile_id }}</td></tr>
+              {% endif %}
+              <tr><td>{{ 'İrsaliye Tipi' if invoice.document_type == 'EIRSALIYE' else 'Fatura Tipi' }}:</td><td>{{ invoice.invoice_type or invoice.invoice_type_code or 'SATIS' }}</td></tr>
+              <tr><td>{{ 'İrsaliye No' if invoice.document_type == 'EIRSALIYE' else 'Fatura No' }}:</td><td>{{ invoice.invoice_id or '' }}</td></tr>
+              <tr><td>{{ 'İrsaliye Tarihi' if invoice.document_type == 'EIRSALIYE' else 'Fatura Tarihi' }}:</td><td>{{ invoice.issue_date or '' }}</td></tr>
+              {% if invoice.issue_time %}
+              <tr><td>Fatura Saati:</td><td>{{ invoice.issue_time }}</td></tr>
+              {% endif %}
+              {% if invoice.sales_channel %}
+              <tr><td>Satış Kanalı:</td><td>{{ invoice.sales_channel }}</td></tr>
+              {% endif %}
+              {% if invoice.ilave_fatura_tipi %}
+              <tr><td>İlave Fatura Tipi:</td><td>{{ invoice.ilave_fatura_tipi }}</td></tr>
+              {% endif %}
+              {% if invoice.dosya_no %}
+              <tr><td>Dosya No:</td><td>{{ invoice.dosya_no }}</td></tr>
+              {% endif %}
+              {% if invoice.mukellef_kodu %}
+              <tr><td>Mükellef Kodu:</td><td>{{ invoice.mukellef_kodu }}</td></tr>
+              {% endif %}
+              {% if invoice.mukellef_adi %}
+              <tr><td>Mükellef Adı:</td><td>{{ invoice.mukellef_adi }}</td></tr>
+              {% endif %}
+              {% if invoice.donem %}
+              <tr><td>Dönem:</td><td>{{ invoice.donem }}</td></tr>
+              {% endif %}
+            </table>
+            {% if invoice.uuid %}
+            <div class="ettn-line">ETTN: {{ invoice.uuid }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- ====== İADE REFERANS FATURALARI ====== -->
+        {% if invoice.billing_references and invoice.billing_references|length > 0 %}
+        <div class="return-reference">
+          <div class="return-reference-title">İadeye Konu Olan Fatura Bilgileri</div>
+          <table class="return-reference-table">
+            <thead>
+              <tr>
+                <th style="width:50%;">Fatura No</th>
+                <th style="width:50%;">Fatura Tarihi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ref in invoice.billing_references %}
+              <tr>
+                <td>{{ ref.invoice_id }}</td>
+                <td>{{ ref.issue_date }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+
+        <!-- ====== E-İRSALİYE SEVKİYAT BİLGİLERİ ====== -->
+        {% if invoice.document_type == 'EIRSALIYE' and invoice.shipment %}
+        <div class="shipment-info">
+          <div class="shipment-info-title">Sevkiyat Bilgileri</div>
+          <div class="shipment-grid">
+            <div class="shipment-col">
+              <div class="shipment-row"><span class="shipment-label">Plaka:</span> {{ invoice.shipment.plate_number or '-' }}</div>
+              <div class="shipment-row"><span class="shipment-label">Taşıyıcı:</span> {{ invoice.shipment.carrier_name or '-' }}</div>
+              <div class="shipment-row"><span class="shipment-label">Taşıyıcı VKN/TCKN:</span> {{ invoice.shipment.carrier_tax_id or '-' }}</div>
+            </div>
+            <div class="shipment-col">
+              <div class="shipment-row"><span class="shipment-label">Sevk Tarihi:</span> {{ invoice.shipment.despatch_date or '-' }}</div>
+              <div class="shipment-row"><span class="shipment-label">Sevk Saati:</span> {{ invoice.shipment.despatch_time or '-' }}</div>
+              <div class="shipment-row"><span class="shipment-label">Teslimat Adresi:</span> {{ invoice.shipment.delivery_address or '-' }}</div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- ====== CONTENT BLOCK (Ürün Tablosu vb.) ====== -->
+        {% block content %}{% endblock %}
+
+        <!-- ====== TEVKİFAT BİLGİLERİ ====== -->
+        {% if invoice.withholding_taxes and invoice.withholding_taxes|length > 0 %}
+        <div class="withholding-section">
+          <div class="section-title">Tevkifat Bilgileri</div>
+          <table class="withholding-table">
+            <thead>
+              <tr>
+                <th>Tevkifat Türü</th>
+                <th style="width:60px;">Kod</th>
+                <th style="width:100px;" class="right">Matrah</th>
+                <th style="width:60px;" class="right">Oran (%)</th>
+                <th style="width:100px;" class="right">Tevkifat Tutarı</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for wt in invoice.withholding_taxes %}
+              <tr>
+                <td>{{ wt.name }}</td>
+                <td>{{ wt.code }}</td>
+                <td class="right">{{ "%.2f"|format(wt.taxable_amount) }} {{ invoice.currency or 'TRY' }}</td>
+                <td class="right">{{ wt.percent }}</td>
+                <td class="right">{{ "%.2f"|format(wt.amount) }} {{ invoice.currency or 'TRY' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+
+        <!-- ====== YAZIYILA TUTAR ====== -->
+        <!-- Artık footer-box içinde -->
+
+        <!-- ====== NOTLAR ====== -->
+        <!-- Artık footer-box içinde -->
+        
+        <!-- ====== VERGİ İSTİSNA ====== -->
+        {% if invoice.tax_exemption_reason %}
+        <div style="font-size: 8px; margin: 3px 0;">
+          Vergi İstisna / Muafiyet Sebebi: {{ invoice.tax_exemption_reason }}
+        </div>
+        {% endif %}
+
+      </div><!-- /main-content -->
+
+      <!-- ====== FOOTER - Tek Çerçeve İçinde ====== -->
+      <div class="footer-section">
+        <div class="footer-box">
+          {% if invoice.amount_in_words %}
+          <div class="amount-line">Yalnız {{ invoice.amount_in_words }}</div>
+          {% endif %}
+          
+          {% if invoice.notes %}
+          <div class="notes-line">{{ invoice.notes }}</div>
+          {% endif %}
+          
+          {% if invoice.payment_due_date %}
+          <div class="vade-line">Vade Tarihi: {{ invoice.payment_due_date }}</div>
+          {% endif %}
+          
+          <div class="iade-line">
+            <span class="iade-title">İADE BÖLÜMÜ:</span> AD SOYAD -------------- | ----------------- ADRES ---------------- | ------- İMZA ------- | ------------- ÜRÜN ------------- | ------ ADET ------ | ------ FİYAT ------ | ------ TUTAR ------ | ------ TARİH ------
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-wrapper -->
   </body>
-  </html>
+</html>

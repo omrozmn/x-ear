@@ -8,11 +8,19 @@ app = getattr(app_mod, 'app')
 
 from models.base import db
 from models.user import User
+from models.app import App
+from models.role import Role
+from models.permission import Permission
+from models.user_app_role import UserAppRole
 
 CORE_ROLES = [
     {'name': 'app_owner', 'description': 'Owner of an application (can transfer ownership)', 'is_system': True},
     {'name': 'app_admin', 'description': 'Admin of an application (manage entities and users)', 'is_system': True},
     {'name': 'app_viewer', 'description': 'Read-only access to app entities', 'is_system': True},
+    # X-Ear CRM specific roles
+    {'name': 'tenant_admin', 'description': 'Tenant administrator with full control', 'is_system': True},
+    {'name': 'doctor', 'description': 'Doctor with medical access', 'is_system': True},
+    {'name': 'secretary', 'description': 'Secretary with limited access', 'is_system': True},
 ]
 
 CORE_PERMISSIONS = [
@@ -24,11 +32,97 @@ CORE_PERMISSIONS = [
     {'name': 'notifications:send', 'description': 'Send system notifications'},
 ]
 
-# Role -> permissions mapping
-ROLE_PERMISSIONS_MAP = {
-    'app_owner': [p['name'] for p in CORE_PERMISSIONS],
-    'app_admin': ['admin-panel:access', 'crm:read', 'crm:write', 'users:view', 'notifications:send'],
-    'app_viewer': ['admin-panel:access', 'crm:read', 'users:view']
+# X-Ear CRM specific permissions by category
+CRM_PERMISSIONS = [
+    # Patients
+    {'name': 'patients.view', 'description': 'Hasta listesini ve detaylarini goruntuleyebilir'},
+    {'name': 'patients.create', 'description': 'Yeni hasta kaydi olusturabilir'},
+    {'name': 'patients.edit', 'description': 'Hasta bilgilerini guncelleyebilir'},
+    {'name': 'patients.delete', 'description': 'Hasta kaydini silebilir'},
+    {'name': 'patients.notes', 'description': 'Hasta notlarina erisebilir'},
+    {'name': 'patients.history', 'description': 'Hasta gecmisini goruntuleyebilir'},
+    
+    # Sales
+    {'name': 'sales.view', 'description': 'Satis listesini goruntuleyebilir'},
+    {'name': 'sales.create', 'description': 'Yeni satis olusturabilir'},
+    {'name': 'sales.edit', 'description': 'Satis bilgilerini guncelleyebilir'},
+    {'name': 'sales.delete', 'description': 'Satis kaydini silebilir'},
+    {'name': 'sales.approve', 'description': 'Satislari onaylayabilir'},
+    
+    # Finance
+    {'name': 'finance.view', 'description': 'Finans bilgilerini goruntuleyebilir'},
+    {'name': 'finance.payments', 'description': 'Odeme islemleri yapabilir'},
+    {'name': 'finance.refunds', 'description': 'Iade islemleri yapabilir'},
+    {'name': 'finance.reports', 'description': 'Finansal raporlari goruntuleyebilir'},
+    {'name': 'finance.cash_register', 'description': 'Kasa islemlerine erisebilir'},
+    
+    # Invoices
+    {'name': 'invoices.view', 'description': 'Faturalari goruntuleyebilir'},
+    {'name': 'invoices.create', 'description': 'Fatura olusturabilir'},
+    {'name': 'invoices.send', 'description': 'Fatura gonderebilir (e-fatura/e-arsiv)'},
+    {'name': 'invoices.cancel', 'description': 'Fatura iptal edebilir'},
+    
+    # Devices
+    {'name': 'devices.view', 'description': 'Cihaz listesini goruntuleyebilir'},
+    {'name': 'devices.create', 'description': 'Yeni cihaz ekleyebilir'},
+    {'name': 'devices.edit', 'description': 'Cihaz bilgilerini guncelleyebilir'},
+    {'name': 'devices.delete', 'description': 'Cihaz kaydini silebilir'},
+    {'name': 'devices.assign', 'description': 'Cihaz atamasi yapabilir'},
+    
+    # Inventory
+    {'name': 'inventory.view', 'description': 'Stok bilgilerini goruntuleyebilir'},
+    {'name': 'inventory.manage', 'description': 'Stok giris/cikis islemleri yapabilir'},
+    
+    # Campaigns
+    {'name': 'campaigns.view', 'description': 'Kampanyalari goruntuleyebilir'},
+    {'name': 'campaigns.create', 'description': 'Kampanya olusturabilir'},
+    {'name': 'campaigns.edit', 'description': 'Kampanya duzenleyebilir'},
+    {'name': 'campaigns.delete', 'description': 'Kampanya silebilir'},
+    {'name': 'campaigns.send_sms', 'description': 'SMS gonderebilir'},
+    
+    # SGK
+    {'name': 'sgk.view', 'description': 'SGK kayitlarini goruntuleyebilir'},
+    {'name': 'sgk.create', 'description': 'SGK provizyon olusturabilir'},
+    {'name': 'sgk.upload', 'description': 'SGK basvuru yukleyebilir'},
+    
+    # Settings
+    {'name': 'settings.view', 'description': 'Ayarlari goruntuleyebilir'},
+    {'name': 'settings.edit', 'description': 'Ayarlari guncelleyebilir'},
+    {'name': 'settings.branches', 'description': 'Sube yonetimi yapabilir'},
+    {'name': 'settings.integrations', 'description': 'Entegrasyon ayarlarini yonetebilir'},
+    
+    # Team
+    {'name': 'team.view', 'description': 'Ekip uyelerini goruntuleyebilir'},
+    {'name': 'team.create', 'description': 'Yeni ekip uyesi ekleyebilir'},
+    {'name': 'team.edit', 'description': 'Ekip uyesi bilgilerini guncelleyebilir'},
+    {'name': 'team.delete', 'description': 'Ekip uyesi silebilir'},
+    {'name': 'team.permissions', 'description': 'Rol izinlerini yonetebilir'},
+    
+    # Reports
+    {'name': 'reports.view', 'description': 'Raporlari goruntuleyebilir'},
+    {'name': 'reports.export', 'description': 'Raporlari disari aktarabilir'},
+    
+    # Dashboard
+    {'name': 'dashboard.view', 'description': 'Dashboard goruntuleyebilir'},
+    {'name': 'dashboard.analytics', 'description': 'Analitik verileri goruntuleyebilir'},
+]
+
+# Role -> permissions mapping for X-Ear CRM
+CRM_ROLE_PERMISSIONS_MAP = {
+    'tenant_admin': [p['name'] for p in CRM_PERMISSIONS],  # All permissions
+    'doctor': [
+        'patients.view', 'patients.create', 'patients.edit', 'patients.notes', 'patients.history',
+        'sales.view', 'sales.create',
+        'devices.view', 'devices.assign',
+        'dashboard.view',
+        'reports.view',
+    ],
+    'secretary': [
+        'patients.view', 'patients.create', 'patients.edit', 
+        'sales.view',
+        'devices.view',
+        'dashboard.view',
+    ],
 }
 
 ADMIN_PANEL = {
@@ -72,15 +166,32 @@ def main():
         for pinfo in CORE_PERMISSIONS:
             _get_or_create_permission(db.session, pinfo['name'], description=pinfo.get('description'))
 
+        # Create CRM-specific permissions
+        for pinfo in CRM_PERMISSIONS:
+            _get_or_create_permission(db.session, pinfo['name'], description=pinfo.get('description'))
+
         db.session.commit()
 
-        # Wire up role -> permission relations
+        # Wire up role -> permission relations (CORE)
         for rname, pnames in ROLE_PERMISSIONS_MAP.items():
-            role = Role.query.filter_by(name=rname).one()
+            role = Role.query.filter_by(name=rname).one_or_none()
+            if not role:
+                continue
             for pname in pnames:
-                perm = Permission.query.filter_by(name=pname).one()
-                if perm not in role.permissions:
+                perm = Permission.query.filter_by(name=pname).one_or_none()
+                if perm and perm not in role.permissions:
                     role.permissions.append(perm)
+        
+        # Wire up role -> permission relations (CRM)
+        for rname, pnames in CRM_ROLE_PERMISSIONS_MAP.items():
+            role = Role.query.filter_by(name=rname).one_or_none()
+            if not role:
+                continue
+            for pname in pnames:
+                perm = Permission.query.filter_by(name=pname).one_or_none()
+                if perm and perm not in role.permissions:
+                    role.permissions.append(perm)
+        
         db.session.commit()
 
         # Ensure admin-panel app exists

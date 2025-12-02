@@ -27,6 +27,7 @@ class User(BaseModel):
     last_name = db.Column(db.String(100))
     role = db.Column(db.String(20), default='user')
     is_active = db.Column(db.Boolean, default=True)
+    is_phone_verified = db.Column(db.Boolean, default=False)
     
     # Relationships
     branches = db.relationship('Branch', secondary=user_branches, lazy='subquery',
@@ -56,6 +57,7 @@ class User(BaseModel):
             'fullName': f"{self.first_name} {self.last_name}" if self.first_name and self.last_name else self.username,
             'role': self.role,
             'phone': self.phone,
+            'isPhoneVerified': self.is_phone_verified,
             'isActive': self.is_active,
             'branches': [branch.to_dict() for branch in self.branches],
             'lastLogin': self.last_login.isoformat() if self.last_login else None

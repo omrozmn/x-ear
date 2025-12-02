@@ -5,12 +5,13 @@ import {
   Mail,
   Shield,
   Database,
+  Puzzle, // Icon for Integrations
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Helmet } from 'react-helmet-async';
-import { useGetAdminSettings, usePostAdminSettings, SystemSettings } from '@/lib/api-client';
+import { useGetAdminSettings, useUpdateAdminSettings, SystemSettings } from '@/lib/api-client';
 
-type SettingsTab = 'general' | 'email' | 'security' | 'backup';
+type SettingsTab = 'general' | 'email' | 'security' | 'backup' | 'integrations';
 
 const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
@@ -20,7 +21,7 @@ const Settings: React.FC = () => {
   const settings = settingsData?.data?.settings;
 
   // Update settings mutation
-  const { mutateAsync: updateSettings, isPending: isUpdating } = usePostAdminSettings();
+  const { mutateAsync: updateSettings, isPending: isUpdating } = useUpdateAdminSettings();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<SystemSettings>({
     defaultValues: {
@@ -52,7 +53,17 @@ const Settings: React.FC = () => {
       backupRetention: '30',
       backupLocation: 'local',
       backupCompression: true,
-      backupEncryptionKey: ''
+      backupEncryptionKey: '',
+      // New fields
+      birFaturaApiKey: '',
+      birFaturaApiSecret: '',
+      smsProvider: 'vatansms',
+      smsUsername: '',
+      smsPassword: '',
+      smsHeader: '',
+      paymentProvider: 'stripe',
+      paymentApiKey: '',
+      paymentSecretKey: ''
     }
   });
 
@@ -65,6 +76,7 @@ const Settings: React.FC = () => {
 
   const onSubmit = async (data: SystemSettings) => {
     try {
+      // Cast to any to bypass strict type check against generated SystemSettings
       await updateSettings({ data });
       toast.success('Ayarlar başarıyla kaydedildi');
     } catch (error: any) {
@@ -78,6 +90,7 @@ const Settings: React.FC = () => {
     { id: 'email', label: 'E-posta', icon: Mail },
     { id: 'security', label: 'Güvenlik', icon: Shield },
     { id: 'backup', label: 'Yedekleme', icon: Database },
+    { id: 'integrations', label: 'Entegrasyonlar', icon: Puzzle },
   ];
 
   if (isLoadingSettings) {
@@ -124,6 +137,7 @@ const Settings: React.FC = () => {
           {/* Main Content */}
           <div className="flex-1 bg-white shadow rounded-lg p-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* ... existing tabs ... */}
               {activeTab === 'general' && (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
@@ -414,6 +428,111 @@ const Settings: React.FC = () => {
                         {...register('backupEncryptionKey')}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'integrations' && (
+                <div className="space-y-8">
+                  {/* BirFatura Integration */}
+                  <div className="border-b border-gray-200 pb-6">
+                    <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">BirFatura Entegrasyonu</h3>
+                    <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                      <div className="sm:col-span-3">
+                        <label className="block text-sm font-medium text-gray-700">API Anahtarı (API Key)</label>
+                        <input
+                          type="text"
+                          {...register('birFaturaApiKey')}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        />
+                      </div>
+                      <div className="sm:col-span-3">
+                        <label className="block text-sm font-medium text-gray-700">API Gizli Anahtarı (Secret)</label>
+                        <input
+                          type="password"
+                          {...register('birFaturaApiSecret')}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SMS Integration */}
+                  <div className="border-b border-gray-200 pb-6">
+                    <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">SMS Entegrasyonu</h3>
+                    <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                      <div className="sm:col-span-3">
+                        <label className="block text-sm font-medium text-gray-700">SMS Sağlayıcı</label>
+                        <select
+                          {...register('smsProvider')}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        >
+                          <option value="vatansms">VatanSMS</option>
+                          <option value="netgsm">NetGSM</option>
+                          <option value="iletimerkezi">İleti Merkezi</option>
+                        </select>
+                      </div>
+                      <div className="sm:col-span-3">
+                        <label className="block text-sm font-medium text-gray-700">SMS Başlığı (Header)</label>
+                        <input
+                          type="text"
+                          {...register('smsHeader')}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        />
+                      </div>
+                      <div className="sm:col-span-3">
+                        <label className="block text-sm font-medium text-gray-700">Kullanıcı Adı</label>
+                        <input
+                          type="text"
+                          {...register('smsUsername')}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        />
+                      </div>
+                      <div className="sm:col-span-3">
+                        <label className="block text-sm font-medium text-gray-700">Şifre</label>
+                        <input
+                          type="password"
+                          {...register('smsPassword')}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Payment Infrastructure */}
+                  <div>
+                    <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Ödeme Altyapısı</h3>
+                    <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                      <div className="sm:col-span-3">
+                        <label className="block text-sm font-medium text-gray-700">Ödeme Sağlayıcı</label>
+                        <select
+                          {...register('paymentProvider')}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        >
+                          <option value="stripe">Stripe</option>
+                          <option value="iyzico">Iyzico</option>
+                          <option value="paytr">PayTR</option>
+                        </select>
+                      </div>
+                      <div className="sm:col-span-3"></div> {/* Spacer */}
+
+                      <div className="sm:col-span-3">
+                        <label className="block text-sm font-medium text-gray-700">API Anahtarı (Public Key)</label>
+                        <input
+                          type="text"
+                          {...register('paymentApiKey')}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        />
+                      </div>
+                      <div className="sm:col-span-3">
+                        <label className="block text-sm font-medium text-gray-700">Gizli Anahtar (Secret Key)</label>
+                        <input
+                          type="password"
+                          {...register('paymentSecretKey')}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

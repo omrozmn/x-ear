@@ -14,19 +14,21 @@ import {
 import toast from 'react-hot-toast';
 import {
   useGetAdminTickets,
-  usePostAdminTickets,
-  usePutAdminTicketsId,
+  useCreateAdminTicket,
+  useUpdateAdminTicket,
   useGetAdminUsers,
+  useCreateTicketResponse,
   SupportTicket,
   AdminUser
 } from '@/lib/api-client';
-import { adminApiInstance } from '@/lib/api';
+import Pagination from '@/components/ui/Pagination';
 
 const Support: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [showTicketModal, setShowTicketModal] = useState(false);
@@ -36,7 +38,7 @@ const Support: React.FC = () => {
   // Fetch tickets
   const { data: ticketsData, isLoading, error } = useGetAdminTickets({
     page,
-    limit: 10,
+    limit,
     search: searchTerm || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
     priority: priorityFilter !== 'all' ? priorityFilter : undefined
@@ -50,8 +52,8 @@ const Support: React.FC = () => {
   const adminUsers = adminUsersData?.data?.users || [];
 
   // Mutations
-  const { mutateAsync: updateTicket } = usePutAdminTicketsId();
-  const { mutateAsync: createTicket } = usePostAdminTickets();
+  const { mutateAsync: updateTicket } = useUpdateAdminTicket();
+  const { mutateAsync: createTicket } = useCreateAdminTicket();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -349,6 +351,8 @@ const Support: React.FC = () => {
           adminUsers={adminUsers}
           page={page}
           setPage={setPage}
+          limit={limit}
+          setLimit={setLimit}
           pagination={pagination}
           queryClient={queryClient}
           getPriorityBadge={getPriorityBadge}
@@ -401,6 +405,8 @@ interface TicketListViewProps {
   adminUsers: AdminUser[];
   page: number;
   setPage: (page: number) => void;
+  limit: number;
+  setLimit: (limit: number) => void;
   pagination: any;
   queryClient: any;
   getPriorityBadge: (priority: string | undefined) => React.ReactNode;
@@ -419,6 +425,8 @@ const TicketListView: React.FC<TicketListViewProps> = ({
   adminUsers,
   page,
   setPage,
+  limit,
+  setLimit,
   pagination,
   queryClient,
   getPriorityBadge,
@@ -546,52 +554,14 @@ const TicketListView: React.FC<TicketListViewProps> = ({
           </table>
 
           {/* Pagination */}
-          {pagination && pagination.totalPages > 1 && (
-            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-              <div className="flex-1 flex justify-between sm:hidden">
-                <button
-                  onClick={() => setPage(page - 1)}
-                  disabled={page === 1}
-                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Önceki
-                </button>
-                <button
-                  onClick={() => setPage(page + 1)}
-                  disabled={page === pagination.totalPages}
-                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Sonraki
-                </button>
-              </div>
-              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">
-                    Sayfa <span className="font-medium">{page}</span> / {' '}
-                    <span className="font-medium">{pagination.totalPages}</span>
-                  </p>
-                </div>
-                <div>
-                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                    <button
-                      onClick={() => setPage(page - 1)}
-                      disabled={page === 1}
-                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Önceki
-                    </button>
-                    <button
-                      onClick={() => setPage(page + 1)}
-                      disabled={page === pagination.totalPages}
-                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Sonraki
-                    </button>
-                  </nav>
-                </div>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={page}
+            totalPages={pagination?.totalPages || 1}
+            totalItems={pagination?.total || 0}
+            itemsPerPage={limit}
+            onPageChange={setPage}
+            onItemsPerPageChange={setLimit}
+          />
         </>
       )}
     </div>
@@ -707,8 +677,8 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
 }) => {
   const [response, setResponse] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [csatScore, setCsatScore] = useState(ticket.csat_score || 0); // Assuming csat_score is in type
-  const [csatFeedback, setCsatFeedback] = useState(ticket.csat_feedback || ''); // Assuming csat_feedback is in type
+  const { mutateAsync: createTicketResponse } = useCreateTicketResponse();
+  // CSAT fields removed as they are not in schema yet
 
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return '';
@@ -731,7 +701,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
       low: 'text-gray-600',
       medium: 'text-blue-600',
       high: 'text-orange-600',
-      urgent: 'text-red-600'
+      critical: 'text-red-600'
     };
     return colors[priority || ''] || 'text-gray-600';
   };
@@ -790,7 +760,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                     setIsSending(true);
                     try {
                       // Try to send response via API
-                      await adminApiInstance.post(`/admin/tickets/${ticket.id}/responses`, { message: response });
+                      await createTicketResponse({ id: ticket.id!, data: { message: response } });
                       toast.success('Yanıt gönderildi');
                       setResponse('');
                     } catch (error) {
@@ -839,7 +809,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                     {ticket.priority === 'low' && 'Düşük'}
                     {ticket.priority === 'medium' && 'Orta'}
                     {ticket.priority === 'high' && 'Yüksek'}
-                    {ticket.priority === 'urgent' && 'Acil'}
+                    {ticket.priority === 'critical' && 'Acil'}
                   </div>
                 </div>
 

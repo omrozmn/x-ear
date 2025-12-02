@@ -978,3 +978,91 @@ def get_patient_sales(patient_id):
             'error': str(e),
             'timestamp': datetime.now().isoformat()
         }), 500
+
+@patients_bp.route('/patients/count', methods=['GET'])
+@jwt_required()
+def count_patients():
+    """Count patients with optional filters for SMS campaigns.
+    
+    Query params:
+    - status: Patient status filter (active, passive)
+    - segment: Patient segment filter (lead, potential, etc.)
+    - acquisitionType: How the patient was acquired (advertisement, referral, etc.)
+    - branchId: Filter by specific branch
+    - dateStart: Filter by acquisition date start (ISO format)
+    - dateEnd: Filter by acquisition date end (ISO format)
+    
+    Returns count of matching patients with valid phone numbers.
+    """
+    try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
+        query = Patient.query.filter_by(tenant_id=user.tenant_id)
+        
+        # Only count patients with valid phone numbers (for SMS campaigns)
+        query = query.filter(Patient.phone.isnot(None))
+        query = query.filter(Patient.phone != '')
+
+        # If user is admin (branch admin), filter by assigned branches
+        if user.role == 'admin':
+            user_branch_ids = [b.id for b in user.branches]
+            if user_branch_ids:
+                query = query.filter(Patient.branch_id.in_(user_branch_ids))
+            else:
+                return jsonify({
+                    'success': True,
+                    'data': {'count': 0}
+                })
+
+        # Apply filters
+        status = request.args.get('status')
+        if status:
+            query = query.filter(Patient.status == status)
+
+        segment = request.args.get('segment')
+        if segment:
+            query = query.filter(Patient.segment == segment)
+
+        acquisition_type = request.args.get('acquisitionType')
+        if acquisition_type:
+            query = query.filter(Patient.acquisition_type == acquisition_type)
+
+        branch_id = request.args.get('branchId')
+        if branch_id:
+            query = query.filter(Patient.branch_id == branch_id)
+
+        date_start = request.args.get('dateStart')
+        if date_start:
+            try:
+                start_date = datetime.fromisoformat(date_start.replace('Z', '+00:00'))
+                query = query.filter(Patient.created_at >= start_date)
+            except ValueError:
+                pass
+
+        date_end = request.args.get('dateEnd')
+        if date_end:
+            try:
+                end_date = datetime.fromisoformat(date_end.replace('Z', '+00:00'))
+                query = query.filter(Patient.created_at <= end_date)
+            except ValueError:
+                pass
+
+        count = query.count()
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'count': count
+            }
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Count patients error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500

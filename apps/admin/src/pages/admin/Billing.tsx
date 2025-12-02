@@ -11,34 +11,34 @@ import {
   BuildingOfficeIcon,
 } from '@heroicons/react/24/outline';
 import * as Dialog from '@radix-ui/react-dialog';
+import Pagination from '@/components/ui/Pagination';
 import toast from 'react-hot-toast';
 
 
 import {
   useGetAdminInvoices,
+  useGetAdminInvoice,
+  useRecordAdminInvoicePayment,
+  useCreateAdminInvoice,
+  getAdminInvoicePdf,
   useGetAdminPlans,
   useGetAdminTenants,
-  useGetAdminInvoicesId,
-  usePostAdminInvoicesIdPayment,
-  usePostAdminInvoices,
-  getAdminInvoicesIdPdf,
   Invoice,
   Plan,
-  InvoiceInput,
-  InvoiceStatus,
-  usePostAdminPlans,
-  usePutAdminPlansId,
-  useDeleteAdminPlansId,
+  useCreatePlan,
+  useUpdatePlan,
+  useDeletePlan,
   PlanInput
 } from '@/lib/api-client';
 
 // Helper interfaces for component state if not fully covered by generated types
-interface CreateInvoiceData extends InvoiceInput { }
+interface CreateInvoiceData extends Partial<Invoice> { }
 
 const Billing: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -69,9 +69,9 @@ const Billing: React.FC = () => {
   // Fetch invoices
   const { data: invoicesData, isLoading, error } = useGetAdminInvoices({
     page,
-    limit: 10,
+    limit,
     search: searchTerm || undefined,
-    status: statusFilter !== 'all' ? (statusFilter as InvoiceStatus) : undefined
+    status: statusFilter !== 'all' ? (statusFilter as Invoice['status']) : undefined
   });
 
   const invoices = invoicesData?.data?.invoices || [];
@@ -86,21 +86,21 @@ const Billing: React.FC = () => {
   const tenants = tenantsData?.data?.tenants || [];
 
   // Fetch invoice details
-  const { data: invoiceDetailsData } = useGetAdminInvoicesId(selectedInvoiceId!, {
+  const { data: invoiceDetailsData } = useGetAdminInvoice(selectedInvoiceId!, {
     query: { enabled: !!selectedInvoiceId && showInvoiceModal }
   });
   const selectedInvoice = invoiceDetailsData?.data?.invoice;
 
   // Payment record mutation
-  const { mutateAsync: recordPayment } = usePostAdminInvoicesIdPayment();
+  const { mutateAsync: recordPayment } = useRecordAdminInvoicePayment();
 
   // Create invoice mutation
-  const { mutateAsync: createInvoice, isPending: isCreatingInvoice } = usePostAdminInvoices();
+  const { mutateAsync: createInvoice, isPending: isCreatingInvoice } = useCreateAdminInvoice();
 
   // Plan mutations
-  const { mutateAsync: createPlan } = usePostAdminPlans();
-  const { mutateAsync: updatePlan } = usePutAdminPlansId();
-  const { mutateAsync: deletePlan } = useDeleteAdminPlansId();
+  const { mutateAsync: createPlan } = useCreatePlan();
+  const { mutateAsync: updatePlan } = useUpdatePlan();
+  const { mutateAsync: deletePlan } = useDeletePlan();
 
   const handlePaymentRecordClick = (invoiceId: string, totalAmount: number) => {
     setPaymentInvoiceId(invoiceId);
@@ -144,7 +144,7 @@ const Billing: React.FC = () => {
 
   const handleDownloadPDF = async (invoiceId: string) => {
     try {
-      const response = await getAdminInvoicesIdPdf(invoiceId);
+      const response = await getAdminInvoicePdf(invoiceId);
       // response is Blob because of the way getAdminInvoicesIdPdf is generated with responseType: 'blob'
       // but we need to check if orval returns the data directly or the axios response.
       // Based on previous experience with Orval and the generated code I saw:
@@ -621,52 +621,14 @@ const Billing: React.FC = () => {
                   </table>
 
                   {/* Pagination */}
-                  {pagination && (pagination.totalPages || 0) > 1 && (
-                    <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                      <div className="flex-1 flex justify-between sm:hidden">
-                        <button
-                          onClick={() => setPage(page - 1)}
-                          disabled={page === 1}
-                          className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Önceki
-                        </button>
-                        <button
-                          onClick={() => setPage(page + 1)}
-                          disabled={page === pagination.totalPages}
-                          className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Sonraki
-                        </button>
-                      </div>
-                      <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <div>
-                          <p className="text-sm text-gray-700">
-                            Sayfa <span className="font-medium">{page}</span> / {' '}
-                            <span className="font-medium">{pagination.totalPages}</span>
-                          </p>
-                        </div>
-                        <div>
-                          <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                            <button
-                              onClick={() => setPage(page - 1)}
-                              disabled={page === 1}
-                              className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              Önceki
-                            </button>
-                            <button
-                              onClick={() => setPage(page + 1)}
-                              disabled={page === pagination.totalPages}
-                              className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              Sonraki
-                            </button>
-                          </nav>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <Pagination
+                    currentPage={page}
+                    totalPages={pagination?.totalPages || 1}
+                    totalItems={pagination?.total || 0}
+                    itemsPerPage={limit}
+                    onPageChange={setPage}
+                    onItemsPerPageChange={setLimit}
+                  />
                 </>
               )}
             </div>
@@ -703,18 +665,18 @@ const Billing: React.FC = () => {
                       /{plan.billing_interval === 'MONTHLY' ? 'ay' : 'yıl'}
                     </span>
                   </div>
-                  {plan.features && plan.features.length > 0 && (
+                  {plan.features && Object.keys(plan.features).length > 0 && (
                     <div className="mb-4">
                       <h5 className="text-sm font-medium text-gray-900 mb-2">Özellikler:</h5>
                       <ul className="text-sm text-gray-600 space-y-1">
-                        {plan.features.slice(0, 3).map((feature, index) => (
+                        {Object.values(plan.features).slice(0, 3).map((feature, index) => (
                           <li key={index} className="flex items-center">
                             <span className="w-1.5 h-1.5 bg-primary-600 rounded-full mr-2"></span>
-                            {feature}
+                            {feature as string}
                           </li>
                         ))}
-                        {plan.features.length > 3 && (
-                          <li className="text-gray-400">+{plan.features.length - 3} daha fazla</li>
+                        {Object.values(plan.features).length > 3 && (
+                          <li className="text-gray-400">+{Object.values(plan.features).length - 3} daha fazla</li>
                         )}
                       </ul>
                     </div>

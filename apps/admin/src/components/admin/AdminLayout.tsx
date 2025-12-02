@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import { useRouterState } from '@tanstack/react-router'
 import { AdminSidebar } from './AdminSidebar'
+import { NotificationCenter } from './NotificationCenter'
 
 interface AdminLayoutProps {
     children: ReactNode
@@ -26,6 +27,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     <h1 className="text-lg font-semibold text-gray-900">Super Admin Panel</h1>
                     <div className="flex items-center space-x-4">
                         {/* Add header items like profile dropdown here if needed */}
+                        <NotificationCenter />
                         <div className="text-sm text-gray-500">Admin User</div>
                     </div>
                 </header>

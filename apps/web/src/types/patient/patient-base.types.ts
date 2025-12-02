@@ -12,33 +12,33 @@ export type { PatientStatus, PatientGender, SaleStatus } from '../../generated/o
 
 // Keep only essential types that are still needed
 export type PatientSegment = 'NEW' | 'TRIAL' | 'PURCHASED' | 'CONTROL' | 'RENEWAL' | 'EXISTING' | 'VIP';
-export type PatientLabel = 
-  | 'yeni' 
-  | 'arama-bekliyor' 
-  | 'randevu-verildi' 
-  | 'deneme-yapildi' 
-  | 'kontrol-hastasi' 
+export type PatientLabel =
+  | 'yeni'
+  | 'arama-bekliyor'
+  | 'randevu-verildi'
+  | 'deneme-yapildi'
+  | 'kontrol-hastasi'
   | 'satis-tamamlandi';
-export type PatientAcquisitionType = 
-  | 'tabela' 
-  | 'sosyal-medya' 
-  | 'tanitim' 
-  | 'referans' 
+export type PatientAcquisitionType =
+  | 'tabela'
+  | 'sosyal-medya'
+  | 'tanitim'
+  | 'referans'
   | 'diger';
-export type PatientConversionStep = 
-  | 'lead' 
-  | 'contacted' 
-  | 'appointment-scheduled' 
-  | 'visited' 
-  | 'trial-started' 
-  | 'trial-completed' 
-  | 'purchased' 
+export type PatientConversionStep =
+  | 'lead'
+  | 'contacted'
+  | 'appointment-scheduled'
+  | 'visited'
+  | 'trial-started'
+  | 'trial-completed'
+  | 'purchased'
   | 'delivered';
 
 // Device Types
 export type DeviceType = 'hearing_aid' | 'cochlear_implant' | 'bone_anchored';
 export type DeviceSide = 'left' | 'right' | 'both';
-export type DeviceStatus = 'active' | 'trial' | 'returned' | 'replaced';
+export type DeviceStatus = 'active' | 'trial' | 'returned' | 'replaced' | 'assigned';
 
 // SGK Types
 export type SGKStatus = 'pending' | 'approved' | 'rejected' | 'paid';

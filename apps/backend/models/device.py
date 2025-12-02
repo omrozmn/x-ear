@@ -16,7 +16,7 @@ class Device(BaseModel):
             self.id = gen_id("dev")
     
     # Foreign keys
-    tenant_id = db.Column(db.String(50), db.ForeignKey('users.tenant_id'), nullable=True)
+    tenant_id = db.Column(db.String(50), db.ForeignKey('tenants.id'), nullable=True)
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=True)
     inventory_id = db.Column(db.String(50))
     

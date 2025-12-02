@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 
 // Create axios instance for admin routes
 export const adminApiInstance = axios.create({
-    baseURL: '/api', // Assuming the same base URL, but routes will be /admin/...
+    baseURL: '', // Empty because API client URLs already include /api prefix
     timeout: 30000,
     headers: {
         'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ adminApiInstance.interceptors.response.use(
 
                 // Try to refresh token
                 // We use axios directly to avoid infinite loops if this fails
-                const response = await axios.post('/api/admin/auth/refresh', {}, {
+                const response = await axios.post('/api/auth/refresh', {}, {
                     headers: {
                         'Authorization': `Bearer ${refreshToken}`
                     }

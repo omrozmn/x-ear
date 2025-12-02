@@ -1,33 +1,66 @@
 import { Button, Input } from '@x-ear/ui-web';
 import { useState } from 'react';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Phone, Lock } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 
 export function LoginForm() {
   const [username, setUsername] = useState('seed-admin');
   const [password, setPassword] = useState('AdminPass123!');
   const [showPassword, setShowPassword] = useState(false);
-  
-  const { login, isLoading, error } = useAuthStore();
+
+  const [otpCode, setOtpCode] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+
+  const { login, verifyOtp, sendOtp, isLoading, error, requiresOtp, requiresPhone, maskedPhone } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) {
       return;
     }
-    
+
     console.log('Form submission - username:', username, 'password:', password); // Debug log
-    
+
     try {
       await login({ username: username.trim(), password });
-      // RouterProvider is mounted inside AuthProvider, so use a full-page redirect
-      // to ensure RouterProvider initializes with the authenticated state.
-      window.location.replace('/');
+      // If login successful and no OTP required, redirect
+      // If OTP required, state update will trigger re-render showing OTP form
+      if (!useAuthStore.getState().requiresOtp) {
+        window.location.replace('/');
+      }
     } catch (error) {
       // Error is handled by the store
       console.error('Login failed:', error);
     }
   };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpCode.trim()) return;
+
+    try {
+      await verifyOtp(otpCode);
+      if (useAuthStore.getState().isAuthenticated) {
+        window.location.replace('/');
+      }
+    } catch (error) {
+      console.error('OTP verification failed:', error);
+    }
+  };
+
+  const handleSendOtp = async () => {
+    if (!phoneNumber.trim()) return;
+    try {
+      await sendOtp(phoneNumber);
+      // Maybe show success toast?
+    } catch (error) {
+      console.error('Send OTP failed:', error);
+    }
+  };
+
+  // The conditional rendering for OTP form is removed.
+  // The LoginForm will now always render the standard username/password form.
+  // OTP handling is expected to be managed globally, e.g., via a modal.
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -43,7 +76,7 @@ export function LoginForm() {
             İşitme cihazı hasta yönetim sistemi
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>

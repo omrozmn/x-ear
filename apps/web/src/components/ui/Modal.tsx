@@ -21,10 +21,10 @@ const sizeClasses = {
   full: 'max-w-[95vw]',
 };
 
-export const Modal: React.FC<Props> = ({ 
-  open, 
-  title, 
-  onClose, 
+export const Modal: React.FC<Props> = ({
+  open,
+  title,
+  onClose,
   children,
   size = 'xl',
   showCloseButton = true,
@@ -60,13 +60,13 @@ export const Modal: React.FC<Props> = ({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-      <div 
-        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+    <div className="fixed inset-0 flex items-center justify-center z-[9999] p-4">
+      <div
+        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
         onClick={handleOverlayClick}
       />
       <div className={`
-        bg-white rounded-lg shadow-xl z-10 w-full h-full max-h-[90vh] 
+        bg-white rounded-lg shadow-xl z-10 w-full h-auto max-h-[90vh] 
         flex flex-col overflow-hidden
         ${sizeClasses[size]}
         ${className}
@@ -75,9 +75,9 @@ export const Modal: React.FC<Props> = ({
         <div className="flex justify-between items-center p-4 border-b border-gray-200 flex-shrink-0">
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           {showCloseButton && (
-            <Button 
-              onClick={onClose} 
-              aria-label="close" 
+            <Button
+              onClick={onClose}
+              aria-label="close"
               variant='ghost'
               className="p-1 hover:bg-gray-100 rounded-full"
             >
@@ -85,7 +85,7 @@ export const Modal: React.FC<Props> = ({
             </Button>
           )}
         </div>
-        
+
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
           {children}

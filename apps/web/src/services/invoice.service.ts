@@ -608,7 +608,7 @@ export class InvoiceService {
     try {
       await invoicesSendToGib(id);
       // Try to refresh server state
-      const resp = await invoicesGetInvoice(id);
+      const resp = await invoicesGetInvoice(id) as any;
       if (resp && resp.data && resp.data.data) {
         // Mirror server state locally
         const serverInv = resp.data.data as any;

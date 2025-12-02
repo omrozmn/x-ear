@@ -7,7 +7,11 @@ import {
     LifeBuoy,
     Settings,
     PlusCircle,
-    BarChart3
+    BarChart3,
+    MessageSquare,
+    Package,
+    Folder,
+    Activity
 } from 'lucide-react'
 
 const navigation = [
@@ -17,6 +21,10 @@ const navigation = [
     { name: 'Kullanıcılar', href: '/users', icon: Users },
     { name: 'Planlar', href: '/plans', icon: CreditCard },
     { name: 'Eklentiler', href: '/addons', icon: PlusCircle },
+    { name: 'SMS Başlıkları', href: '/sms/headers', icon: MessageSquare },
+    { name: 'SMS Paketleri', href: '/sms/packages', icon: Package },
+    { name: 'Aktivite Logları', href: '/activity-logs', icon: Activity },
+    { name: 'Dosyalar', href: '/files', icon: Folder },
     { name: 'Faturalar', href: '/billing', icon: CreditCard },
     { name: 'Destek', href: '/support', icon: LifeBuoy },
     { name: 'Ayarlar', href: '/settings', icon: Settings },

@@ -15,8 +15,12 @@ export interface Device {
   patientId?: string;
   /** Inventory ID */
   inventoryId?: string;
-  /** Device serial number */
+  /** Device serial number (for single ear devices) */
   serialNumber: string;
+  /** Left ear device serial number */
+  serialNumberLeft?: string;
+  /** Right ear device serial number */
+  serialNumberRight?: string;
   /** Device brand */
   brand: string;
   /** Device model */

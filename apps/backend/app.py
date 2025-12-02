@@ -58,6 +58,11 @@ CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "PUT", "
 # Configure logging early so validation and startup messages are visible
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+# Initialize OTP store
+from services.otp_store import get_store
+app.extensions['otp_store'] = get_store()
+
 # Add file handler
 file_handler = logging.FileHandler(os.path.join(os.path.dirname(__file__), 'server.log'))
 file_handler.setLevel(logging.DEBUG)
@@ -148,6 +153,8 @@ app.config['CORS_SUPPORTS_CREDENTIALS'] = True
 
 # Initialize DB and extensions
 db.init_app(app)
+from flask_migrate import Migrate
+migrate = Migrate(app, db)
 
 def _sanitize_for_json(obj):
     """Recursively convert Decimal and other non-serializable types to JSON-serializable forms."""
@@ -194,6 +201,15 @@ def log_activity(user_id, action, entity_type, entity_id=None, details=None, req
 # Initialize optional extensions (OTP store, etc.)
 from extensions import init_extensions
 init_extensions(app)
+
+# Initialize Tenant Security (Global Query Filter)
+try:
+    from utils.tenant_security import setup_tenant_security
+    setup_tenant_security(app, db)
+    logger.info('Tenant security (global query filter) initialized')
+except Exception as e:
+    logger.error(f'Failed to initialize tenant security: {e}')
+
 
 # Register unified response envelope middleware
 try:
@@ -347,6 +363,24 @@ app.register_blueprint(notifications_bp, url_prefix='/api')
 from routes.communications import communications_bp
 app.register_blueprint(communications_bp, url_prefix='/api')
 
+# SMS Integration blueprint
+from routes.sms_integration import sms_bp
+app.register_blueprint(sms_bp, url_prefix='/api')
+
+# Activity Logs blueprint
+from routes.activity_logs import activity_logs_bp
+app.register_blueprint(activity_logs_bp, url_prefix='/api')
+
+# Upload blueprint
+from routes.upload import upload_bp
+app.register_blueprint(upload_bp, url_prefix='/api/upload')
+
+# Roles & Permissions blueprint
+from routes.roles import roles_bp
+from routes.permissions import permissions_bp
+app.register_blueprint(roles_bp, url_prefix='/api')
+app.register_blueprint(permissions_bp, url_prefix='/api')
+
 # ===== PATIENT SUBRESOURCES ENDPOINTS =====
 
 
@@ -440,6 +474,18 @@ app.register_blueprint(admin_addons_bp)  # admin_addons_bp already has url_prefi
 from routes.admin_dashboard import admin_dashboard_bp
 app.register_blueprint(admin_dashboard_bp)  # admin_dashboard_bp already has url_prefix='/api/admin/dashboard'
 
+from routes.admin_analytics import admin_analytics_bp
+app.register_blueprint(admin_analytics_bp)
+
+from routes.admin_settings import admin_settings_bp
+app.register_blueprint(admin_settings_bp)
+
+from routes.admin_invoices import admin_invoices_bp
+app.register_blueprint(admin_invoices_bp)
+
+from routes.admin_tickets import admin_tickets_bp
+app.register_blueprint(admin_tickets_bp)
+
 # ===== CHECKOUT / COMMERCE ENDPOINTS =====
 from routes.checkout import checkout_bp
 app.register_blueprint(checkout_bp)
@@ -447,6 +493,10 @@ app.register_blueprint(checkout_bp)
 # ===== TENANT USER MANAGEMENT ENDPOINTS =====
 from routes.tenant_users import tenant_users_bp
 app.register_blueprint(tenant_users_bp, url_prefix='/api')
+
+# ===== USER MANAGEMENT ENDPOINTS (legacy /api/users) =====
+from routes.users import users_bp
+app.register_blueprint(users_bp, url_prefix='/api')
 
 # ===== BRANCH MANAGEMENT ENDPOINTS =====
 from routes.branches import branches_bp
@@ -744,6 +794,15 @@ def _check_db_writeable():
         db.session.rollback()
         return False
     except Exception as e:
+        # If table doesn't exist, we assume it's a fresh DB and writable (or migration will fix it)
+        if 'relation "activity_logs" does not exist' in str(e) or 'no such table: activity_logs' in str(e):
+            logger.info('Skipping write check: activity_logs table missing (likely pre-migration)')
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+            return True
+            
         logger.exception('DB write check unexpected error: %s', e)
         try:
             db.session.rollback()

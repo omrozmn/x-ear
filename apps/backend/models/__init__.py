@@ -37,6 +37,8 @@ from .efatura_outbox import EFaturaOutbox
 from .replacement import Replacement
 from .subscription import Subscription, PaymentHistory
 
+from .sms_integration import SMSProviderConfig, SMSHeaderRequest, SMSPackage, TenantSMSCredit, TargetAudience
+
 # Maintain backward compatibility - all existing imports should work
 __all__ = [
     'db', 'BaseModel', 'now_utc', 'gen_id',
@@ -54,5 +56,10 @@ __all__ = [
     'App', 'Role', 'Permission', 'UserAppRole', 'role_permissions',
     'Tenant', 'Branch', 'AddOn', 'Plan', 'AdminUser', 'Category', 'Brand',
     'IdempotencyKey', 'EFaturaOutbox', 'Replacement',
-    'Subscription', 'PaymentHistory'
+    'Subscription', 'PaymentHistory',
+    'SMSProviderConfig',
+    'SMSHeaderRequest',
+    'SMSPackage',
+    'TenantSMSCredit',
+    'TargetAudience'
 ]

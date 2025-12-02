@@ -3,10 +3,10 @@ Purchase Invoice Models
 Handles incoming and outgoing invoices from/to suppliers via BirFatura integration
 """
 from datetime import datetime
-from .base import db
+from .base import db, BaseModel
 
 
-class PurchaseInvoice(db.Model):
+class PurchaseInvoice(BaseModel):
     """
     Purchase Invoice model represents invoices from suppliers or return invoices to suppliers.
     Integrated with BirFatura e-Invoice system.
@@ -51,9 +51,7 @@ class PurchaseInvoice(db.Model):
     # Notes
     notes = db.Column(db.Text)
     
-    # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Timestamps inherited from BaseModel
     
     def __repr__(self):
         return f'<PurchaseInvoice {self.invoice_number} from {self.sender_name}>'
@@ -87,7 +85,7 @@ class PurchaseInvoice(db.Model):
         }
 
 
-class PurchaseInvoiceItem(db.Model):
+class PurchaseInvoiceItem(BaseModel):
     """
     Purchase Invoice Item model represents line items in a purchase invoice.
     """
@@ -146,7 +144,7 @@ class PurchaseInvoiceItem(db.Model):
         }
 
 
-class SuggestedSupplier(db.Model):
+class SuggestedSupplier(BaseModel):
     """
     Suggested Supplier model represents potential suppliers identified from incoming invoices
     that don't match existing suppliers in the system.
@@ -180,9 +178,7 @@ class SuggestedSupplier(db.Model):
     supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=True)
     supplier = db.relationship('Supplier')
     
-    # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Timestamps inherited from BaseModel
     
     def __repr__(self):
         return f'<SuggestedSupplier {self.company_name} ({self.tax_number})>'

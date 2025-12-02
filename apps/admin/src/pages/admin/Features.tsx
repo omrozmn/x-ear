@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { useAdminGetFeatures, useAdminUpdateFeatures, useGetAdminPlans } from '@/lib/api-client';
+import { useGetAdminSettings, usePatchAdminSettings, useGetAdminPlans } from '@/lib/api-client';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Features: React.FC = () => {
     const { user } = useAuth();
-    const { data: featuresData, isLoading: featuresLoading, refetch: refetchFeatures } = useAdminGetFeatures();
+    const { data: settingsData, isLoading: featuresLoading, refetch: refetchFeatures } = useGetAdminSettings();
     const { data: plansData } = useGetAdminPlans();
-    const { mutateAsync: updateFeatures } = useAdminUpdateFeatures();
+    const { mutateAsync: updateSettings } = usePatchAdminSettings();
 
-    const features = featuresData?.features || {};
+    const features = (settingsData?.data?.settings as any)?.features || {};
     const plans = plansData?.data?.plans || [];
 
     const canToggle = Boolean(user && ["SUPER_ADMIN", "OWNER", "ADMIN"].includes(user.role));
@@ -20,12 +20,12 @@ const Features: React.FC = () => {
         const currentFeature = features[key] || { mode: 'hidden', plans: [] };
         const nextFeature = { ...currentFeature, ...patch };
 
-        const payload = {
-            [key]: nextFeature
+        const updates = {
+            [`features.${key}`]: nextFeature
         };
 
         try {
-            await updateFeatures({ data: { features: payload } });
+            await updateSettings({ data: { updates } });
             toast.success('Updated');
             refetchFeatures();
         } catch (e) {

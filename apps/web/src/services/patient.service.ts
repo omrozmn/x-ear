@@ -16,6 +16,7 @@ import {
 } from "../api/generated/schemas";
 import {
   patientsGetPatients,
+  patientsGetPatient,
   patientsCreatePatient,
   patientsUpdatePatient,
   patientsDeletePatient

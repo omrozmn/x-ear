@@ -6,7 +6,7 @@ from datetime import datetime
 from enum import Enum
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Integer, Numeric, JSON
 from sqlalchemy.orm import relationship
-from models.base import db
+from models.base import db, BaseModel
 
 class SubscriptionStatus(str, Enum):
     ACTIVE = "active"
@@ -24,7 +24,7 @@ class PaymentStatus(str, Enum):
     CANCELED = "canceled"
     REFUNDED = "refunded"
 
-class Subscription(db.Model):
+class Subscription(BaseModel):
     """
     Represents a tenant's subscription to a plan.
     """
@@ -52,8 +52,7 @@ class Subscription(db.Model):
     # Note: 'metadata' is a reserved attribute name on Declarative classes; map DB column 'metadata' to attribute 'metadata_json'
     metadata_json = Column('metadata', JSON, nullable=True)
 
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    # Timestamps inherited from BaseModel
 
     # Relationships
     tenant = relationship("Tenant", backref=db.backref("subscription", uselist=False))
@@ -73,7 +72,7 @@ class Subscription(db.Model):
             'plan': self.plan.to_dict() if self.plan else None
         }
 
-class PaymentHistory(db.Model):
+class PaymentHistory(BaseModel):
     """
     Tracks payments made by tenants for subscriptions.
     """
@@ -95,7 +94,7 @@ class PaymentHistory(db.Model):
     description = Column(String(255), nullable=True)
     invoice_url = Column(String(500), nullable=True)
     
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    # Timestamps inherited from BaseModel
     paid_at = Column(DateTime, nullable=True)
 
     def to_dict(self):

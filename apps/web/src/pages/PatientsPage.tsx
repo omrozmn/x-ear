@@ -8,7 +8,7 @@ import React, { useState, useMemo } from 'react';
 import { Button, Input, Tabs, TabsContent, TabsList, TabsTrigger, Modal, Pagination } from '@x-ear/ui-web';
 import { useNavigate, Outlet, useParams } from '@tanstack/react-router';
 import { usePatients, useCreatePatient, useDeletePatient } from '../hooks/usePatients';
-import { Patient } from '../types/patient/patient-base.types';
+import { Patient } from '../types/patient';
 import { Users, CheckCircle, Flame, Headphones, Filter, Search, Plus, RefreshCw, Upload, Edit, Trash2, X, Settings } from 'lucide-react';
 import { PatientFormModal } from '../components/patients/PatientFormModal';
 import { useUpdatePatient } from '../hooks/usePatients';
@@ -76,12 +76,14 @@ export function PatientsPage() {
     setIsEditModalOpen(true);
   };
 
-  const handlePatientSelect = (patientId: string, selected: boolean) => {
-    if (selected) {
-      setSelectedPatients(prev => [...prev, patientId]);
-    } else {
-      setSelectedPatients(prev => prev.filter(id => id !== patientId));
-    }
+  const handlePatientSelect = (patientId: string) => {
+    setSelectedPatients(prev => {
+      if (prev.includes(patientId)) {
+        return prev.filter(id => id !== patientId);
+      } else {
+        return [...prev, patientId];
+      }
+    });
   };
 
   const handlePatientClick = (patient: Patient) => {
@@ -90,9 +92,9 @@ export function PatientsPage() {
     console.log('Patient ID:', patient.id);
     if (patient.id) {
       console.log('Navigating to:', `/patients/${patient.id}`);
-      navigate({ 
-        to: '/patients/$patientId', 
-        params: { patientId: String(patient.id) } 
+      navigate({
+        to: '/patients/$patientId',
+        params: { patientId: String(patient.id) }
       });
     } else {
       console.error('Patient ID is missing!');
@@ -232,8 +234,8 @@ export function PatientsPage() {
               <RefreshCw className="h-4 w-4 mr-2" />
               Yenile
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => {
                 // TODO: Navigate to settings page with patients tab active
@@ -400,7 +402,7 @@ export function PatientsPage() {
         onClose={() => setShowNewPatientModal(false)}
         onSubmit={async (data) => {
           try {
-            const result = await createPatientMutation.mutateAsync(data as Partial<Patient>);
+            const result = await createPatientMutation.mutateAsync(data as any);
             setShowNewPatientModal(false);
             return result;
           } catch (e) {

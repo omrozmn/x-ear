@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <!-- ESMM Header Info -->
+  <div style="background: #f0fdf4; border: 1px solid #22c55e; border-radius: 6px; padding: 12px; margin-bottom: 15px;">
+    <div style="font-weight: 700; color: #15803d; margin-bottom: 8px; font-size: 12px;">
+      e-SERBEST MESLEK MAKBUZU
+    </div>
+    <table style="width: 100%; font-size: 10px; color: #166534;">
+      <tr>
+        <td style="width: 50%; vertical-align: top;">
+          {% if invoice.profession or invoice.meslek %}
+          <div><strong>Meslek:</strong> {{ invoice.profession or invoice.meslek }}</div>
+          {% endif %}
+          {% if invoice.service_description or invoice.hizmet_aciklama %}
+          <div><strong>Hizmet Açıklaması:</strong> {{ invoice.service_description or invoice.hizmet_aciklama }}</div>
+          {% endif %}
+        </td>
+        <td style="width: 50%; vertical-align: top;">
+          {% if invoice.service_date or invoice.hizmet_tarihi %}
+          <div><strong>Hizmet Tarihi:</strong> {{ invoice.service_date or invoice.hizmet_tarihi }}</div>
+          {% endif %}
+          {% if invoice.exchange_rate %}
+          <div><strong>Döviz Kuru:</strong> {{ invoice.exchange_rate }}</div>
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Invoice Lines Table -->
+  <table class="items">
+    <thead>
+      <tr>
+        <th style="width: 5%">Sıra No</th>
+        <th style="width: 45%">Hizmet Açıklaması</th>
+        <th style="width: 10%" class="right">Miktar</th>
+        <th style="width: 15%" class="right">Birim Fiyat</th>
+        <th style="width: 25%" class="right">Tutar</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in invoice.lines %}
+      <tr>
+        <td class="center">{{ loop.index }}</td>
+        <td>{{ line.description or line.name }}</td>
+        <td class="right">{{ line.quantity }}</td>
+        <td class="right">{{ "%.2f"|format(line.unit_price|float) }} TL</td>
+        <td class="right">{{ "%.2f"|format((line.line_extension_amount or (line.quantity|float * line.unit_price|float))|float) }} TL</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Totals -->
+  <div class="totals-section">
+    <table class="totals-table">
+      <tr>
+        <td>Brüt Ücret</td>
+        <td>{{ "%.2f"|format((invoice.gross_amount or invoice.line_extension_amount or invoice.subtotal or 0)|float) }} TL</td>
+      </tr>
+      {% if invoice.stoppage_rate or invoice.stopaj_orani %}
+      <tr>
+        <td>Gelir Vergisi Stopajı (%{{ invoice.stoppage_rate or invoice.stopaj_orani or 20 }})</td>
+        <td>{{ "%.2f"|format((invoice.stoppage_amount or invoice.stopaj_tutari or 0)|float) }} TL</td>
+      </tr>
+      {% endif %}
+      {% if invoice.tax_total %}
+      <tr>
+        <td>KDV (%{{ invoice.tax_percent or 20 }})</td>
+        <td>{{ "%.2f"|format((invoice.tax_total or 0)|float) }} TL</td>
+      </tr>
+      {% endif %}
+      {% if invoice.stamp_duty or invoice.damga_vergisi %}
+      <tr>
+        <td>Damga Vergisi</td>
+        <td>{{ "%.2f"|format((invoice.stamp_duty or invoice.damga_vergisi or 0)|float) }} TL</td>
+      </tr>
+      {% endif %}
+      <tr class="grand-total">
+        <td>Net Tahsil Edilecek</td>
+        <td>{{ "%.2f"|format((invoice.payable_amount or 0)|float) }} TL</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Exchange Rate Info -->
+  {% if invoice.currency and invoice.currency != 'TRY' %}
+  <div class="notes mt-2" style="background: #fef3c7; border-color: #f59e0b;">
+    <div class="notes-title" style="color: #b45309;">Döviz Bilgileri:</div>
+    <div>Para Birimi: {{ invoice.currency }}</div>
+    {% if invoice.exchange_rate %}<div>Kur: {{ invoice.exchange_rate }}</div>{% endif %}
+    {% if invoice.foreign_amount %}<div>Döviz Tutarı: {{ "%.2f"|format(invoice.foreign_amount|float) }} {{ invoice.currency }}</div>{% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Notes -->
+  {% if invoice.notes %}
+  <div class="notes mt-2">
+    <div class="notes-title">Notlar:</div>
+    {{ invoice.notes }}
+  </div>
+  {% endif %}
+{% endblock %}

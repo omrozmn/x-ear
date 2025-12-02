@@ -55,13 +55,44 @@ class BirfaturaClient:
             return {'text': resp.text}
 
     def send_document(self, payload: dict) -> dict:
-        # Support both raw XML wrappers and provider-shaped payloads
+        """Send document to GİB via Birfatura
+        
+        Real API Response Structure:
+        {
+            "Success": true,
+            "Message": "İşlem başarılı",
+            "Result": {
+                "invoiceNo": "ABC2024000001234",
+                "zipped": "base64_gzipped_pdf_data...",
+                "htmlString": "<html>...</html>",
+                "pdfLink": "https://uygulama.edonustur.com/pdf/..."
+            }
+        }
+        """
         if self._use_mock:
-            # If caller provided raw xml/base64, include it in the mock response
+            import base64
+            import gzip
+            import uuid
+            
+            # Generate a realistic mock PDF content
+            mock_pdf_content = b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\nMOCK PDF FOR TESTING"
+            mock_gzipped = gzip.compress(mock_pdf_content)
+            mock_zipped = base64.b64encode(mock_gzipped).decode('utf-8')
+            
+            # Generate a mock ETTN (UUID format)
+            mock_ettn = str(uuid.uuid4()).upper()
+            
             return {
                 'Success': True,
-                'Message': 'Mocked send_document',
-                'Received': payload
+                'Message': 'Mocked send_document - Fatura GİB\'e başarıyla gönderildi',
+                'Result': {
+                    'invoiceNo': 'XER2024' + str(uuid.uuid4().int)[:6],
+                    'zipped': mock_zipped,
+                    'htmlString': '<html><body><h1>Mock GİB Invoice</h1><p>ETTN: ' + mock_ettn + '</p></body></html>',
+                    'pdfLink': f'https://uygulama.edonustur.com/pdf/{mock_ettn}.pdf'
+                },
+                '_mock': True,
+                '_ettn': mock_ettn
             }
         return self.post('/api/outEBelgeV2/SendDocument', payload)
 
@@ -85,3 +116,53 @@ class BirfaturaClient:
     def get_inbox_documents_with_detail(self, payload: dict) -> dict:
         """Get incoming documents with detailed XML content"""
         return self.post('/api/OutEBelgeV2/GetInBoxDocumentsWithDetail', payload)
+
+    def preview_document_pdf(self, payload: dict) -> dict:
+        """Get PDF preview of a document"""
+        return self.post('/api/OutEBelgeV2/PreviewDocumentReturnPDF', payload)
+
+    def document_download_by_uuid(self, payload: dict) -> dict:
+        """Download document by UUID in specified format (XML, HTML, ZARF)
+        
+        Real API Response Structure:
+        {
+            "Success": true,
+            "Message": "İşlem başarılı",
+            "Result": {
+                "content": "base64_gzipped_content..."
+            }
+        }
+        """
+        if self._use_mock:
+            import base64
+            import gzip
+            
+            doc_type = payload.get('documentType', 'XML')
+            uuid_val = payload.get('uuid', 'UNKNOWN')
+            
+            if doc_type == 'XML':
+                mock_content = f'''<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2">
+    <UBLVersionID>2.1</UBLVersionID>
+    <CustomizationID>TR1.2</CustomizationID>
+    <ProfileID>TICARIFATURA</ProfileID>
+    <ID>XER2024000001</ID>
+    <UUID>{uuid_val}</UUID>
+    <IssueDate>2024-12-01</IssueDate>
+    <!-- Mock XML content for testing -->
+</Invoice>'''.encode('utf-8')
+            else:
+                mock_content = f'Mock {doc_type} content for UUID: {uuid_val}'.encode('utf-8')
+            
+            mock_gzipped = gzip.compress(mock_content)
+            mock_base64 = base64.b64encode(mock_gzipped).decode('utf-8')
+            
+            return {
+                'Success': True,
+                'Message': 'Mocked document_download_by_uuid',
+                'Result': {
+                    'content': mock_base64
+                },
+                '_mock': True
+            }
+        return self.post('/api/OutEBelgeV2/DocumentDownloadByUUID', payload)

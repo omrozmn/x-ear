@@ -3,16 +3,16 @@ from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, Foreign
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import json
-from .base import db
+from .base import db, BaseModel
 
-class Invoice(db.Model):
+class Invoice(BaseModel):
     """Invoice model for device sales"""
     __tablename__ = 'invoices'
     
     id = Column(Integer, primary_key=True)
     invoice_number = Column(String(50), unique=True, nullable=False, index=True)
     sale_id = Column(String(50), ForeignKey('sales.id'), nullable=True, index=True)  # Link to sale
-    patient_id = Column(String(50), ForeignKey('patients.id'), nullable=False, index=True)
+    patient_id = Column(String(50), ForeignKey('patients.id'), nullable=True, index=True)  # Nullable - iade faturaları, cari hesap faturaları için hasta olmayabilir
     device_id = Column(String(50), ForeignKey('devices.id'), nullable=True)
     tenant_id = Column(String(36), ForeignKey('tenants.id'), nullable=False, index=True)
     branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
@@ -31,9 +31,24 @@ class Invoice(db.Model):
     sent_to_gib = Column(Boolean, default=False)  # GİB'e gönderildi mi?
     sent_to_gib_at = Column(DateTime)  # GİB'e gönderilme tarihi
     notes = Column(Text)
+    # created_at/updated_at are inherited from BaseModel but we override to keep index/nullable settings
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_by = Column(String(100))
+    
+    # E-Belge (Birfatura) fields
+    edocument_status = Column(String(20), default='draft')  # draft, pending, approved, rejected, cancelled
+    edocument_type = Column(String(20))  # EFATURA, EARSIV, EIRSALIYE, EMM, ESMM
+    ettn = Column(String(100), unique=True, index=True)  # ETTN - UUID from GİB
+    profile_id = Column(String(50))  # TEMELFATURA, TICARIFATURA, EARSIVFATURA
+    invoice_type_code = Column(String(20))  # SATIS, IADE, TEVKIFAT, SGK, ISTISNA
+    qr_code_data = Column(Text)  # QR kod verisi
+    birfatura_response = Column(Text)  # JSON - birfatura yanıtı
+    gib_pdf_data = Column(Text)  # GİB'den gelen PDF - base64 gzipped (from SendDocument.Result.zipped)
+    gib_pdf_link = Column(String(500))  # Birfatura PDF link (from SendDocument.Result.pdfLink - may take minutes to activate)
+    gib_xml_data = Column(Text)  # GİB'den gelen XML - base64 (from DocumentDownloadByUUID)
+    birfatura_sent_at = Column(DateTime)  # Birfatura'ya gönderilme tarihi
+    birfatura_approved_at = Column(DateTime)  # GİB onay tarihi
     
     # Relationships
     patient = relationship('Patient')
@@ -59,17 +74,27 @@ class Invoice(db.Model):
             'notes': self.notes,
             'createdAt': self.created_at.isoformat() if self.created_at else None,
             'updatedAt': self.updated_at.isoformat() if self.updated_at else None,
-            'createdBy': self.created_by
+            'createdBy': self.created_by,
+            'edocumentStatus': self.edocument_status,
+            'edocumentType': self.edocument_type,
+            'ettn': self.ettn,
+            'profileId': self.profile_id,
+            'invoiceTypeCode': self.invoice_type_code,
+            'hasGibPdf': self.gib_pdf_data is not None,
+            'hasGibXml': self.gib_xml_data is not None,
+            'gibPdfLink': self.gib_pdf_link,
+            'birfaturaSentAt': self.birfatura_sent_at.isoformat() if self.birfatura_sent_at else None,
+            'birfaturaApprovedAt': self.birfatura_approved_at.isoformat() if self.birfatura_approved_at else None
         }
 
 
-class Proforma(db.Model):
+class Proforma(BaseModel):
     """Proforma (Price Quote) model"""
     __tablename__ = 'proformas'
     
     id = Column(Integer, primary_key=True)
     proforma_number = Column(String(50), unique=True, nullable=False, index=True)
-    patient_id = Column(String(50), ForeignKey('patients.id'), nullable=False, index=True)
+    patient_id = Column(String(50), ForeignKey('patients.id'), nullable=True, index=True)  # Nullable - cari hesap teklifleri için hasta olmayabilir
     tenant_id = Column(String(36), ForeignKey('tenants.id'), nullable=False, index=True)
     branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     

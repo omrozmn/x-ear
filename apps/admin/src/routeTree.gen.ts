@@ -19,7 +19,10 @@ import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as BillingRouteImport } from './routes/billing'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AddonsRouteImport } from './routes/addons'
+import { Route as ActivityLogsRouteImport } from './routes/activity-logs'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SmsPackagesRouteImport } from './routes/sms/packages'
+import { Route as SmsHeadersRouteImport } from './routes/sms/headers'
 
 const UsersRoute = UsersRouteImport.update({
   id: '/users',
@@ -71,14 +74,30 @@ const AddonsRoute = AddonsRouteImport.update({
   path: '/addons',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ActivityLogsRoute = ActivityLogsRouteImport.update({
+  id: '/activity-logs',
+  path: '/activity-logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SmsPackagesRoute = SmsPackagesRouteImport.update({
+  id: '/sms/packages',
+  path: '/sms/packages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SmsHeadersRoute = SmsHeadersRouteImport.update({
+  id: '/sms/headers',
+  path: '/sms/headers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/activity-logs': typeof ActivityLogsRoute
   '/addons': typeof AddonsRoute
   '/analytics': typeof AnalyticsRoute
   '/billing': typeof BillingRoute
@@ -89,9 +108,12 @@ export interface FileRoutesByFullPath {
   '/support': typeof SupportRoute
   '/tenants': typeof TenantsRoute
   '/users': typeof UsersRoute
+  '/sms/headers': typeof SmsHeadersRoute
+  '/sms/packages': typeof SmsPackagesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/activity-logs': typeof ActivityLogsRoute
   '/addons': typeof AddonsRoute
   '/analytics': typeof AnalyticsRoute
   '/billing': typeof BillingRoute
@@ -102,10 +124,13 @@ export interface FileRoutesByTo {
   '/support': typeof SupportRoute
   '/tenants': typeof TenantsRoute
   '/users': typeof UsersRoute
+  '/sms/headers': typeof SmsHeadersRoute
+  '/sms/packages': typeof SmsPackagesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/activity-logs': typeof ActivityLogsRoute
   '/addons': typeof AddonsRoute
   '/analytics': typeof AnalyticsRoute
   '/billing': typeof BillingRoute
@@ -116,11 +141,14 @@ export interface FileRoutesById {
   '/support': typeof SupportRoute
   '/tenants': typeof TenantsRoute
   '/users': typeof UsersRoute
+  '/sms/headers': typeof SmsHeadersRoute
+  '/sms/packages': typeof SmsPackagesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/activity-logs'
     | '/addons'
     | '/analytics'
     | '/billing'
@@ -131,9 +159,12 @@ export interface FileRouteTypes {
     | '/support'
     | '/tenants'
     | '/users'
+    | '/sms/headers'
+    | '/sms/packages'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/activity-logs'
     | '/addons'
     | '/analytics'
     | '/billing'
@@ -144,9 +175,12 @@ export interface FileRouteTypes {
     | '/support'
     | '/tenants'
     | '/users'
+    | '/sms/headers'
+    | '/sms/packages'
   id:
     | '__root__'
     | '/'
+    | '/activity-logs'
     | '/addons'
     | '/analytics'
     | '/billing'
@@ -157,10 +191,13 @@ export interface FileRouteTypes {
     | '/support'
     | '/tenants'
     | '/users'
+    | '/sms/headers'
+    | '/sms/packages'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ActivityLogsRoute: typeof ActivityLogsRoute
   AddonsRoute: typeof AddonsRoute
   AnalyticsRoute: typeof AnalyticsRoute
   BillingRoute: typeof BillingRoute
@@ -171,6 +208,8 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   TenantsRoute: typeof TenantsRoute
   UsersRoute: typeof UsersRoute
+  SmsHeadersRoute: typeof SmsHeadersRoute
+  SmsPackagesRoute: typeof SmsPackagesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -245,6 +284,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AddonsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/activity-logs': {
+      id: '/activity-logs'
+      path: '/activity-logs'
+      fullPath: '/activity-logs'
+      preLoaderRoute: typeof ActivityLogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -252,11 +298,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sms/packages': {
+      id: '/sms/packages'
+      path: '/sms/packages'
+      fullPath: '/sms/packages'
+      preLoaderRoute: typeof SmsPackagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sms/headers': {
+      id: '/sms/headers'
+      path: '/sms/headers'
+      fullPath: '/sms/headers'
+      preLoaderRoute: typeof SmsHeadersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ActivityLogsRoute: ActivityLogsRoute,
   AddonsRoute: AddonsRoute,
   AnalyticsRoute: AnalyticsRoute,
   BillingRoute: BillingRoute,
@@ -267,6 +328,8 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   TenantsRoute: TenantsRoute,
   UsersRoute: UsersRoute,
+  SmsHeadersRoute: SmsHeadersRoute,
+  SmsPackagesRoute: SmsPackagesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

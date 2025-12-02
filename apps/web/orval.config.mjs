@@ -1,7 +1,7 @@
 export default {
   'x-ear-api': {
     input: {
-      target: '../openapi.yaml',
+      target: '../../openapi.yaml',
     },
     output: {
       mode: 'single',

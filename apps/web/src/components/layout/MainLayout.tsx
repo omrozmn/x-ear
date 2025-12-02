@@ -23,7 +23,8 @@ import {
   User,
   UserCircle,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  MessageSquare
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -46,7 +47,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
-    if (subscription?.is_expired) {
+    if (subscription?.isExpired) {
       if (location.pathname !== '/settings/subscription') {
         navigate({ to: '/settings/subscription' });
       }
@@ -117,7 +118,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { key: 'inventory', label: 'Envanter', icon: Package, href: '/inventory' },
     { key: 'suppliers', label: 'Tedarikçiler', icon: Building2, href: '/suppliers' },
     { key: 'cashflow', label: 'Kasa', icon: Wallet, href: '/cashflow' },
-    { key: 'campaigns', label: 'Kampanyalar', icon: Megaphone, href: '/campaigns' },
+    { key: 'campaigns', label: 'SMS Gönderimi', icon: MessageSquare, href: '/campaigns' },
     {
       key: 'sgk',
       label: 'SGK',
@@ -146,6 +147,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       icon: Settings,
       submenu: [
         { label: 'Genel', href: '/settings' },
+        { label: 'Entegrasyon', href: '/settings/integration' },
         { label: 'Ekip Yönetimi', href: '/settings/team' },
         { label: 'Abonelik', href: '/settings/subscription' }
       ]

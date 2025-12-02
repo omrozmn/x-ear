@@ -7,29 +7,30 @@ import * as Dialog from '@radix-ui/react-dialog';
 
 import {
   useGetAdminPlans,
-  usePostAdminPlans,
-  usePutAdminPlansId,
-  useDeleteAdminPlansId,
-  useAdminGetFeatures,
+  useCreatePlan,
+  useUpdatePlan,
+  useDeletePlan,
   Plan,
   PlanInput
 } from '@/lib/api-client';
 import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import Pagination from '@/components/ui/Pagination';
 
 const PLAN_TYPES = ['BASIC', 'PRO', 'ENTERPRISE', 'CUSTOM'];
 const BILLING_INTERVALS = ['MONTHLY', 'YEARLY', 'QUARTERLY'];
 
 const Plans: React.FC = () => {
   const queryClient = useQueryClient();
-  const { data: plansData, isLoading, error } = useGetAdminPlans();
-  const { data: featuresData } = useAdminGetFeatures();
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const { data: plansData, isLoading, error } = useGetAdminPlans({ page, limit } as any);
 
   const plans = plansData?.data?.plans || [];
-  const features = featuresData?.features || {};
+  const pagination = plansData?.data?.pagination;
 
-  const { mutateAsync: createPlan } = usePostAdminPlans();
-  const { mutateAsync: updatePlan } = usePutAdminPlansId();
-  const { mutateAsync: deletePlan } = useDeleteAdminPlansId();
+  const { mutateAsync: createPlan } = useCreatePlan();
+  const { mutateAsync: updatePlan } = useUpdatePlan();
+  const { mutateAsync: deletePlan } = useDeletePlan();
 
   // Local state interface for the form, where features is an array for easier UI handling
   interface PlanFormState extends Omit<PlanInput, 'features'> {
@@ -280,6 +281,14 @@ const Plans: React.FC = () => {
                 ))}
               </tbody>
             </table>
+            <Pagination
+              currentPage={page}
+              totalPages={pagination?.totalPages || 1}
+              totalItems={pagination?.total || 0}
+              itemsPerPage={limit}
+              onPageChange={setPage}
+              onItemsPerPageChange={setLimit}
+            />
           </div>
         )}
 
@@ -594,7 +603,7 @@ const Plans: React.FC = () => {
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>
-      </div>
+      </div >
     </>
   );
 };

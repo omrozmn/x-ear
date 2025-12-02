@@ -294,9 +294,17 @@ def update_any_tenant_user(user_id):
             
         if 'isActive' in data:
             user.is_active = data['isActive']
+        if 'email' in data:
+            user.email = data['email']
+        if 'first_name' in data:
+            user.first_name = data['first_name']
+        if 'last_name' in data:
+            user.last_name = data['last_name']
+        if 'role' in data:
+            user.role = data['role']
+        if 'password' in data and data['password']:
+            user.set_password(data['password'])
             
-        # Add other fields if needed
-        
         db.session.commit()
         
         return jsonify({
@@ -416,6 +424,38 @@ def update_admin_ticket(ticket_id):
         
     except Exception as e:
         logger.error(f"Update ticket error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@admin_bp.route('/tickets/<ticket_id>/responses', methods=['POST'])
+@jwt_required()
+def create_ticket_response(ticket_id):
+    """Create response for support ticket (placeholder)"""
+    try:
+        data = request.get_json()
+        message = data.get('message')
+        
+        if not message:
+             return jsonify({
+                'success': False,
+                'error': {'message': 'Message is required'}
+            }), 400
+            
+        # Find ticket in mock store
+        ticket = next((t for t in MOCK_TICKETS if t['id'] == ticket_id), None)
+        
+        if not ticket:
+             return jsonify({
+                'success': False,
+                'error': {'message': 'Ticket not found'}
+            }), 404
+            
+        # In a real app, we would save the response to a TicketResponse model
+        logger.info(f"Response added to ticket {ticket_id}: {message}")
+            
+        return jsonify({'success': True, 'data': {'message': 'Response added'}}), 201
+        
+    except Exception as e:
+        logger.error(f"Create ticket response error: {e}")
         return jsonify({
             'success': False,
             'error': {'message': 'Internal server error'}

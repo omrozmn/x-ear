@@ -13,6 +13,7 @@ from services.pricing import (
     create_payment_plan,
     create_custom_payment_plan
 )
+from services.birfatura.service import BirfaturaClient
 from models.user import User
 from models.inventory import Inventory
 from models.enums import DeviceStatus, DeviceSide, DeviceCategory
@@ -962,11 +963,43 @@ def get_sale_invoice(sale_id):
 
 @invoices_bp.route('/invoices/<int:invoice_id>/pdf', methods=['GET'])
 def generate_invoice_pdf(invoice_id):
-    """Generate PDF for invoice"""
+    """
+    Generate PDF for invoice with smart source selection:
+    1. If GİB approved and gib_pdf_data exists -> Return GİB's official PDF
+    2. If GİB approved but no gib_pdf_data -> Return our PDF with QR + ETTN
+    3. If draft or pending -> Return our draft PDF (with TASLAK watermark for drafts)
+    """
+    import base64
+    import gzip
+    
     invoice = db.session.get(Invoice, invoice_id)
 
     if not invoice:
         return jsonify({'success': False, 'error': 'Invoice not found'}), 404
+    
+    # ==== CASE 1: GİB approved and we have the official PDF ====
+    if invoice.edocument_status == 'approved' and invoice.gib_pdf_data:
+        try:
+            # gib_pdf_data is base64 encoded (possibly gzipped)
+            pdf_bytes = base64.b64decode(invoice.gib_pdf_data)
+            # Try to decompress if gzipped
+            try:
+                pdf_bytes = gzip.decompress(pdf_bytes)
+            except Exception:
+                pass  # Not gzipped, use as is
+            
+            return send_file(
+                BytesIO(pdf_bytes), 
+                mimetype='application/pdf', 
+                download_name=f'{invoice.invoice_number or invoice.id}_gib.pdf'
+            )
+        except Exception as e:
+            print(f"Error returning GİB PDF for invoice {invoice_id}: {e}")
+            # Fall through to generate our own PDF
+    
+    # ==== CASE 2: GİB approved but no official PDF - generate ours with QR + ETTN ====
+    # ==== CASE 3: Draft or pending - generate our PDF (with watermark for drafts) ====
+    
     # Get sale data if exists
     sale_data = None
     if invoice.sale_id:
@@ -982,8 +1015,7 @@ def generate_invoice_pdf(invoice_id):
                 'devices': devices_list
             }
 
-    # First, attempt to render from a saved XML or from invoice data via templates.
-    # Look for saved XML under `instance/invoice_xml/` (by invoice number or id).
+    # Try to render from saved XML or from invoice data via templates
     try:
         base_instance = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'instance', 'invoice_xml'))
         xml_candidates = []
@@ -1007,8 +1039,18 @@ def generate_invoice_pdf(invoice_id):
                     invoice_data = invoice.to_dict()
 
                 # Pass invoice_type from invoice model if available to guide template selection
-                if 'invoice_type' not in invoice_data and hasattr(invoice, 'invoice_type'):
-                    invoice_data['invoice_type'] = getattr(invoice, 'invoice_type', None)
+                if 'invoice_type' not in invoice_data and hasattr(invoice, 'invoice_type_code'):
+                    invoice_data['invoice_type'] = getattr(invoice, 'invoice_type_code', None)
+                
+                # Add draft watermark if status is draft
+                invoice_data['is_draft'] = (invoice.edocument_status == 'draft')
+                
+                # Add ETTN and QR if approved but no GİB PDF
+                if invoice.edocument_status == 'approved':
+                    if invoice.ettn:
+                        invoice_data['uuid'] = invoice.ettn
+                    if invoice.qr_code_data:
+                        invoice_data['qr_code'] = invoice.qr_code_data
 
                 pdf_bytes = render_invoice_to_pdf(invoice_data)
                 return send_file(BytesIO(pdf_bytes), mimetype='application/pdf', download_name=(invoice.invoice_number or f'invoice_{invoice.id}') + '.pdf')
@@ -1016,13 +1058,26 @@ def generate_invoice_pdf(invoice_id):
                 # If renderer fails, log and fall back to sample PDF logic below
                 print(f"PDF renderer error for invoice {invoice_id}: {e}")
     except Exception as e:
-        # If checking saved XML failed, log and fall back to sample PDF logic below
+        # If checking saved XML failed, log and fall back
         print(f"Error checking saved XML for invoice {invoice_id}: {e}")
 
-    # If XML/template renderer wasn't used or failed, return a sample PDF from the repo `docs/examples` folder so
-    # the frontend receives a proper PDF blob. If a sample file is not
-    # available, fall back to returning invoice JSON data for debugging.
-    # Robustly locate `docs/examples` by searching parent directories.
+    # Try to build invoice_data from invoice model directly
+    try:
+        invoice_data = _build_invoice_data_from_model(invoice, sale_data)
+        invoice_data['is_draft'] = (invoice.edocument_status == 'draft')
+        
+        if invoice.edocument_status == 'approved':
+            if invoice.ettn:
+                invoice_data['uuid'] = invoice.ettn
+            if invoice.qr_code_data:
+                invoice_data['qr_code'] = invoice.qr_code_data
+        
+        pdf_bytes = render_invoice_to_pdf(invoice_data)
+        return send_file(BytesIO(pdf_bytes), mimetype='application/pdf', download_name=(invoice.invoice_number or f'invoice_{invoice.id}') + '.pdf')
+    except Exception as e:
+        print(f"Error generating PDF from model for invoice {invoice_id}: {e}")
+
+    # Fallback: use sample PDF from docs/examples
     cur_dir = os.path.abspath(os.path.dirname(__file__))
     examples_dir = None
     while True:
@@ -1035,31 +1090,21 @@ def generate_invoice_pdf(invoice_id):
             break
         cur_dir = parent
     if examples_dir is None:
-        # As a last resort, try the known repository absolute path.
         examples_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'docs', 'examples'))
 
-    # Choose sample PDF by rudimentary invoice attributes. Default to a
-    # generic sales invoice sample that resembles the real layout.
-    sample_files = [
-        'hasta-müşteri satış fatura.pdf',
-        'sgk fatura.pdf',
-        'iade fatura.pdf',
-        'kargo fişi.pdf'
-    ]
-
-    # Prefer SGK sample if invoice appears to be SGK-related
+    sample_files = ['hasta-müşteri satış fatura.pdf', 'sgk fatura.pdf', 'iade fatura.pdf']
     chosen = sample_files[0]
     try:
         inv_dict = invoice.to_dict()
         if inv_dict.get('notes') and 'sgk' in (inv_dict.get('notes') or '').lower():
             chosen = 'sgk fatura.pdf'
+        elif inv_dict.get('invoiceTypeCode') == 'IADE':
+            chosen = 'iade fatura.pdf'
     except Exception:
-        chosen = sample_files[0]
+        pass
 
     sample_path = os.path.join(examples_dir, chosen)
-    # (No debug prints in normal operation)
     if not os.path.exists(sample_path) and os.path.isdir(examples_dir):
-        # pick the first PDF in the examples folder as a best-effort fallback
         for fname in os.listdir(examples_dir):
             if fname.lower().endswith('.pdf'):
                 sample_path = os.path.join(examples_dir, fname)
@@ -1068,7 +1113,7 @@ def generate_invoice_pdf(invoice_id):
     if os.path.exists(sample_path):
         return send_file(sample_path, mimetype='application/pdf')
 
-    # Fallback: return invoice JSON data (useful for debugging in dev)
+    # Final fallback: return invoice JSON data
     invoice_data = invoice.to_dict()
     invoice_data['sale'] = sale_data
 
@@ -1077,6 +1122,107 @@ def generate_invoice_pdf(invoice_id):
         'data': invoice_data,
         'message': 'PDF sample not found; invoice data returned instead'
     })
+
+
+def _build_invoice_data_from_model(invoice, sale_data=None):
+    """Build invoice data dict from Invoice model for PDF rendering."""
+    from models.patient import Patient
+    from models.tenant import Tenant
+    
+    # Get patient info
+    patient = None
+    if invoice.patient_id:
+        patient = db.session.get(Patient, invoice.patient_id)
+    
+    # Get tenant (supplier) info
+    tenant = None
+    if invoice.tenant_id:
+        tenant = db.session.get(Tenant, invoice.tenant_id)
+    
+    # Build supplier info
+    supplier = {}
+    if tenant:
+        supplier = {
+            'name': tenant.name,
+            'address': getattr(tenant, 'address', ''),
+            'phone': getattr(tenant, 'phone', ''),
+            'email': getattr(tenant, 'email', ''),
+            'tax_office': getattr(tenant, 'tax_office', ''),
+            'tax_id': getattr(tenant, 'tax_id', ''),
+            'trade_registry_no': getattr(tenant, 'trade_registry_no', ''),
+            'mersis_no': getattr(tenant, 'mersis_no', '')
+        }
+    
+    # Build customer info
+    customer = {}
+    if patient:
+        customer = {
+            'name': patient.name if hasattr(patient, 'name') else f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip(),
+            'address': getattr(patient, 'address', ''),
+            'phone': getattr(patient, 'phone', ''),
+            'email': getattr(patient, 'email', ''),
+            'identity_number': getattr(patient, 'tc_number', invoice.patient_tc)
+        }
+    else:
+        customer = {
+            'name': invoice.patient_name or '',
+            'identity_number': invoice.patient_tc or ''
+        }
+    
+    # Build lines from sale data or single device
+    lines = []
+    if sale_data and sale_data.get('devices'):
+        for idx, dev in enumerate(sale_data['devices'], 1):
+            lines.append({
+                'line_no': idx,
+                'item_code': dev.get('serialNumber', ''),
+                'description': dev.get('productName', dev.get('name', '')),
+                'quantity': 1,
+                'unit_code': 'Adet',
+                'unit_price': float(dev.get('price', 0)),
+                'tax_percent': 20,
+                'tax_amount': float(dev.get('price', 0)) * 0.20,
+                'line_extension_amount': float(dev.get('price', 0))
+            })
+    elif invoice.device_name:
+        lines.append({
+            'line_no': 1,
+            'item_code': invoice.device_serial or '',
+            'description': invoice.device_name,
+            'quantity': 1,
+            'unit_code': 'Adet',
+            'unit_price': float(invoice.device_price or 0),
+            'tax_percent': 20,
+            'tax_amount': float(invoice.device_price or 0) * 0.20,
+            'line_extension_amount': float(invoice.device_price or 0)
+        })
+    
+    # Calculate totals
+    line_total = sum(l.get('line_extension_amount', 0) for l in lines)
+    tax_total = sum(l.get('tax_amount', 0) for l in lines)
+    
+    invoice_data = {
+        'invoice_id': invoice.invoice_number,
+        'uuid': invoice.ettn,
+        'issue_date': invoice.created_at.strftime('%d-%m-%Y') if invoice.created_at else '',
+        'issue_time': invoice.created_at.strftime('%H:%M:%S') if invoice.created_at else '',
+        'profile_id': invoice.profile_id or 'TEMELFATURA',
+        'customization_id': 'TR1.2',
+        'invoice_type': invoice.invoice_type_code or 'SATIS',
+        'document_type': invoice.edocument_type or 'EFATURA',
+        'supplier': supplier,
+        'customer': customer,
+        'lines': lines,
+        'line_extension_amount': line_total,
+        'allowance_total': 0,
+        'tax_total': tax_total,
+        'tax_percent': 20,
+        'tax_inclusive_amount': line_total + tax_total,
+        'payable_amount': line_total + tax_total,
+        'notes': invoice.notes or ''
+    }
+    
+    return invoice_data
 
 
 @invoices_bp.route('/invoices/<int:invoice_id>/xml', methods=['GET'])
@@ -1313,7 +1459,19 @@ def generate_sale_invoice_pdf(sale_id):
 
 @invoices_bp.route('/invoices/<int:invoice_id>/send-to-gib', methods=['POST'])
 def send_invoice_to_gib(invoice_id):
-    """Mark invoice as sent to GİB"""
+    """
+    Send invoice to GİB via Birfatura.
+    
+    Flow:
+    1. Generate UBL XML from invoice data
+    2. Send to Birfatura API
+    3. Update invoice with ETTN and status
+    4. If Birfatura returns PDF, store it
+    """
+    import base64
+    import gzip
+    import requests as http_requests
+    
     try:
         invoice = db.session.get(Invoice, invoice_id)
         
@@ -1330,9 +1488,135 @@ def send_invoice_to_gib(invoice_id):
                 'data': invoice.to_dict()
             }), 400
         
+        # Get request body for additional options
+        body = request.get_json() or {}
+        edocument_type = body.get('edocumentType', 'EFATURA')  # EFATURA, EARSIV, EIRSALIYE, etc.
+        profile_id = body.get('profileId', 'TEMELFATURA')  # TEMELFATURA, TICARIFATURA, EARSIVFATURA
+        invoice_type_code = body.get('invoiceTypeCode', 'SATIS')  # SATIS, IADE, TEVKIFAT, SGK
+        
+        # Update invoice with e-document info
+        invoice.edocument_type = edocument_type
+        invoice.profile_id = profile_id
+        invoice.invoice_type_code = invoice_type_code
+        invoice.edocument_status = 'pending'
+        
+        # Generate ETTN if not exists
+        if not invoice.ettn:
+            invoice.ettn = str(uuid4())
+        
+        # Build invoice data for XML generation
+        sale_data = None
+        if invoice.sale_id:
+            sale = db.session.get(Sale, invoice.sale_id)
+            if sale:
+                devices_rel = getattr(sale, 'devices', None)
+                devices_list = [d.to_dict() for d in devices_rel] if devices_rel else []
+                sale_data = {
+                    'id': sale.id,
+                    'totalAmount': sale.total_amount,
+                    'finalAmount': sale.final_amount,
+                    'paidAmount': sale.paid_amount,
+                    'devices': devices_list
+                }
+        
+        invoice_data = _build_invoice_data_from_model(invoice, sale_data)
+        invoice_data['uuid'] = invoice.ettn
+        invoice_data['profile_id'] = profile_id
+        invoice_data['invoice_type'] = invoice_type_code
+        invoice_data['document_type'] = edocument_type
+        
+        # Generate UBL XML
+        try:
+            # Setup output path for XML
+            base_instance = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'instance', 'invoice_xml'))
+            os.makedirs(base_instance, exist_ok=True)
+            xml_path = os.path.join(base_instance, f"{invoice.invoice_number}_{invoice.id}_ubl.xml")
+            
+            # Generate and save XML
+            xml_content = generate_ubl_xml(invoice_data, xml_path)
+            
+            # Read the generated XML content
+            with open(xml_path, 'r', encoding='utf-8') as f:
+                xml_content = f.read()
+        except Exception as xml_error:
+            print(f"XML generation error: {xml_error}")
+            return jsonify({
+                'success': False,
+                'error': f'XML generation failed: {str(xml_error)}'
+            }), 500
+        
+        # Prepare Birfatura request
+        xml_bytes = xml_content.encode('utf-8')
+        compressed = gzip.compress(xml_bytes)
+        document_b64 = base64.b64encode(compressed).decode('utf-8')
+        
+        birfatura_payload = {
+            'systemType': edocument_type,
+            'documentType': 'INVOICE',
+            'documentUUID': invoice.ettn,
+            'documentBytes': document_b64,
+            'receiverId': invoice_data.get('customer', {}).get('tax_id') or invoice_data.get('customer', {}).get('identity_number', ''),
+            'receiverAlias': '',
+            'isCompressed': True
+        }
+        
+        # Send to Birfatura using BirfaturaClient directly
+        birfatura_success = False
+        birfatura_response = None
+        
+        try:
+            # Use BirfaturaClient directly (supports mock mode automatically)
+            client = BirfaturaClient()
+            birfatura_response = client.send_document(birfatura_payload)
+            
+            if birfatura_response.get('Success'):
+                birfatura_success = True
+                invoice.edocument_status = 'approved'
+                invoice.birfatura_approved_at = datetime.utcnow()
+                
+                # Parse SendDocument response fields from Birfatura API
+                # Response structure: { Success, Message, Code, Result: { invoiceNo, zipped, htmlString, pdfLink } }
+                result = birfatura_response.get('Result', {})
+                
+                # Store assigned invoice number if provided
+                if result.get('invoiceNo'):
+                    # Birfatura may assign a new invoice number
+                    pass  # We already have our own invoice_number
+                
+                # Store PDF data - zipped is base64 gzipped PDF
+                if result.get('zipped'):
+                    invoice.gib_pdf_data = result.get('zipped')
+                
+                # Store PDF link for later download (may take a few minutes to become active)
+                if result.get('pdfLink'):
+                    invoice.gib_pdf_link = result.get('pdfLink')
+                
+                # HTML string if available
+                if result.get('htmlString'):
+                    # Could be stored separately if needed
+                    pass
+            else:
+                invoice.edocument_status = 'rejected'
+                
+            invoice.birfatura_response = json.dumps(birfatura_response)
+            
+        except Exception as bf_error:
+            print(f"Birfatura API error: {bf_error}")
+            # In mock/dev mode, still mark as approved for testing
+            if os.getenv('BIRFATURA_MOCK', '0') == '1' or os.getenv('FLASK_ENV', 'production') != 'production':
+                invoice.edocument_status = 'approved'
+                invoice.birfatura_approved_at = datetime.utcnow()
+                birfatura_success = True
+                birfatura_response = {'Success': True, 'Message': 'Mock mode - approved'}
+                invoice.birfatura_response = json.dumps(birfatura_response)
+            else:
+                invoice.edocument_status = 'pending'
+                invoice.birfatura_response = json.dumps({'error': str(bf_error)})
+        
         # Mark as sent to GİB
         invoice.sent_to_gib = True
         invoice.sent_to_gib_at = datetime.utcnow()
+        invoice.birfatura_sent_at = datetime.utcnow()
         
         # Add activity log
         activity = ActivityLog(
@@ -1340,25 +1624,98 @@ def send_invoice_to_gib(invoice_id):
             action='invoice_sent_to_gib',
             entity_type='invoice',
             entity_id=str(invoice.id),
-            details=f"Fatura GİB'e gönderildi: {invoice.invoice_number}"
+            details=f"Fatura GİB'e gönderildi: {invoice.invoice_number} (ETTN: {invoice.ettn})"
         )
         db.session.add(activity)
         
         db.session.commit()
         
         return jsonify({
-            'success': True,
-            'message': 'Fatura GİB\'e gönderildi olarak işaretlendi',
-            'data': invoice.to_dict()
+            'success': birfatura_success,
+            'message': 'Fatura GİB\'e gönderildi' if birfatura_success else 'Fatura gönderildi ancak onay bekliyor',
+            'data': invoice.to_dict(),
+            'ettn': invoice.ettn,
+            'birfaturaResponse': birfatura_response
         })
         
     except Exception as e:
         db.session.rollback()
         print(f"Error sending invoice to GİB: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'success': False,
             'error': f'Failed to send invoice to GİB: {str(e)}'
         }), 500
+
+
+@invoices_bp.route('/invoices/<int:invoice_id>/update-gib-status', methods=['POST'])
+def update_invoice_gib_status(invoice_id):
+    """
+    Update invoice status from Birfatura.
+    Called to check if GİB has approved/rejected the invoice and fetch PDF if available.
+    """
+    import base64
+    import gzip
+    import requests as http_requests
+    
+    try:
+        invoice = db.session.get(Invoice, invoice_id)
+        
+        if not invoice:
+            return jsonify({'success': False, 'error': 'Invoice not found'}), 404
+        
+        if not invoice.ettn:
+            return jsonify({'success': False, 'error': 'Invoice has no ETTN'}), 400
+        
+        # Try to fetch document from Birfatura
+        try:
+            # First try to get PDF
+            download_url = f"http://localhost:{os.getenv('PORT', '5003')}/api/OutEBelgeV2/DocumentDownloadByUUID"
+            
+            # Try PDF
+            resp = http_requests.post(download_url, json={
+                'documentUUID': invoice.ettn,
+                'fileExtension': 'PDF'
+            }, timeout=30)
+            
+            if resp.status_code == 200:
+                result = resp.json()
+                if result.get('Success') and result.get('Result', {}).get('content'):
+                    invoice.gib_pdf_data = result['Result']['content']
+                    invoice.edocument_status = 'approved'
+                    invoice.birfatura_approved_at = invoice.birfatura_approved_at or datetime.utcnow()
+            
+            # Also try to get XML
+            resp_xml = http_requests.post(download_url, json={
+                'documentUUID': invoice.ettn,
+                'fileExtension': 'XML'
+            }, timeout=30)
+            
+            if resp_xml.status_code == 200:
+                result_xml = resp_xml.json()
+                if result_xml.get('Success') and result_xml.get('Result', {}).get('content'):
+                    invoice.gib_xml_data = result_xml['Result']['content']
+            
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'data': invoice.to_dict(),
+                'hasGibPdf': invoice.gib_pdf_data is not None,
+                'hasGibXml': invoice.gib_xml_data is not None
+            })
+            
+        except Exception as e:
+            print(f"Error fetching GİB document: {e}")
+            return jsonify({
+                'success': False,
+                'error': f'Failed to fetch GİB document: {str(e)}'
+            }), 500
+            
+    except Exception as e:
+        print(f"Error updating GİB status: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @invoices_bp.route('/invoices/<int:invoice_id>', methods=['DELETE'])

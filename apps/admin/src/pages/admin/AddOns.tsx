@@ -5,35 +5,38 @@ import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import {
     useGetAdminAddons,
-    usePostAdminAddons,
-    usePutAdminAddonsId,
-    useDeleteAdminAddonsId,
+    useCreateAdminAddon,
+    useUpdateAdminAddon,
+    useDeleteAdminAddon,
     AddOn,
-    AddOnInput,
-    AddOnAddonType
 } from '@/lib/api-client';
 import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import * as Dialog from '@radix-ui/react-dialog';
+import Pagination from '@/components/ui/Pagination';
 
 const AddOns: React.FC = () => {
     const queryClient = useQueryClient();
-    const { data: addonsData, isLoading, error } = useGetAdminAddons();
+    const [page, setPage] = React.useState(1);
+    const [limit, setLimit] = React.useState(10);
+    const { data: addonsData, isLoading, error } = useGetAdminAddons({ page, limit } as any);
     const addons = addonsData?.data?.addons || [];
+    const pagination = addonsData?.data?.pagination;
 
-    const { mutateAsync: createAddon } = usePostAdminAddons();
-    const { mutateAsync: updateAddon } = usePutAdminAddonsId();
-    const { mutateAsync: deleteAddon } = useDeleteAdminAddonsId();
+    const { mutateAsync: createAddon } = useCreateAdminAddon();
+    const { mutateAsync: updateAddon } = useUpdateAdminAddon();
+    const { mutateAsync: deleteAddon } = useDeleteAdminAddon();
 
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
     const [editingAddon, setEditingAddon] = React.useState<AddOn | null>(null);
     const [deletingAddonId, setDeletingAddonId] = React.useState<string | null>(null);
-    const [formData, setFormData] = React.useState<Partial<AddOnInput>>({
+    const [formData, setFormData] = React.useState<Partial<AddOn>>({
         name: '',
         price: 0,
-        addon_type: 'FLAT_FEE',
+        description: '',
+        limit_amount: 0,
+        unit_name: '',
         is_active: true,
-        currency: 'TRY'
     });
     const [isStatusModalOpen, setIsStatusModalOpen] = React.useState(false);
     const [statusAddon, setStatusAddon] = React.useState<AddOn | null>(null);
@@ -70,12 +73,12 @@ const AddOns: React.FC = () => {
             if (editingAddon) {
                 await updateAddon({
                     id: editingAddon.id!,
-                    data: formData as AddOnInput
+                    data: formData as AddOn
                 });
                 toast.success('Eklenti güncellendi');
             } else {
                 await createAddon({
-                    data: formData as AddOnInput
+                    data: formData as AddOn
                 });
                 toast.success('Eklenti oluşturuldu');
             }
@@ -214,6 +217,14 @@ const AddOns: React.FC = () => {
                                 ))}
                             </tbody>
                         </table>
+                        <Pagination
+                            currentPage={page}
+                            totalPages={pagination?.totalPages || 1}
+                            totalItems={pagination?.total || 0}
+                            itemsPerPage={limit}
+                            onPageChange={setPage}
+                            onItemsPerPageChange={setLimit}
+                        />
                     </div>
                 )}
             </div>

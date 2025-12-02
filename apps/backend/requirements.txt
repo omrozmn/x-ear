@@ -56,3 +56,7 @@ python-Levenshtein
 
 # PDF generation
 pdfkit
+
+# Excel support
+pandas
+openpyxl

@@ -26,10 +26,13 @@ export const useInventory = (): UseInventoryResult => {
         lowStock: false
       });
 
-      if (response.data?.data) {
-        setProducts(response.data.data);
+      if (response.data?.data?.items) {
+        setProducts(response.data.data.items as unknown as InventoryItem[]);
+      } else if (Array.isArray(response.data?.data)) {
+        setProducts(response.data.data as unknown as InventoryItem[]);
       } else {
-        throw new Error('Failed to fetch inventory data');
+        // Fallback or empty
+        setProducts([]);
       }
     } catch (err) {
       console.error('Error fetching inventory:', err);

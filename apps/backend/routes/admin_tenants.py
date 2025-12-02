@@ -569,3 +569,41 @@ def add_tenant_addon(tenant_id):
             'success': False,
             'error': {'message': str(e)}
         }), 500
+
+@admin_tenants_bp.route('/<tenant_id>/status', methods=['PUT'])
+@jwt_required()
+def update_tenant_status(tenant_id):
+    """Update tenant status"""
+    try:
+        tenant = Tenant.query.get(tenant_id)
+        if not tenant or tenant.deleted_at:
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Tenant not found'}
+            }), 404
+            
+        data = request.get_json()
+        status = data.get('status')
+        
+        if not status:
+            return jsonify({
+                'success': False,
+                'error': {'message': 'Status is required'}
+            }), 400
+            
+        tenant.status = status
+        tenant.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'data': {'tenant': tenant.to_dict()}
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Update tenant status error: {e}")
+        return jsonify({
+            'success': False,
+            'error': {'message': str(e)}
+        }), 500

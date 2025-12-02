@@ -9,6 +9,7 @@ export interface LoginCredentials {
 
 export interface LoginResponse {
   access_token: string;
+  token?: string;
   refreshToken?: string;
   data: {
     id: string;
@@ -19,10 +20,14 @@ export interface LoginResponse {
     fullName?: string;
     role?: string;
     phone?: string;
+    isPhoneVerified?: boolean;
     isActive?: boolean;
     lastLogin?: string;
   };
   success: boolean;
+  requires_otp?: boolean;
+  requires_phone?: boolean;
+  masked_phone?: string;
   requestId: string;
   timestamp: string;
 }

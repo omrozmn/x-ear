@@ -5,14 +5,20 @@ import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Tabs from '@radix-ui/react-tabs';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { adminApiInstance } from '@/lib/api';
+import Pagination from '@/components/ui/Pagination';
 import {
     useGetAdminTenants,
-    usePutAdminTenantsIdStatus,
-    useGetAdminTenantsIdUsers,
-    usePutAdminTenantsId,
+    useUpdateTenantStatus,
+    useGetTenantUsers,
+    useUpdateTenant,
+    useCreateTenant,
     useGetAdminPlans,
     useGetAdminAddons,
+    useGetTenant,
+    useCreateTenantUser,
+    useUpdateTenantUser,
+    useSubscribeTenant,
+    useAddTenantAddon,
     Tenant,
     TenantStatus,
     User,
@@ -30,20 +36,19 @@ const TenantEditModal = ({ tenantId, isOpen, onClose }: { tenantId: string | nul
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState('general');
 
-    // Fetch tenant details (we can use the list data or fetch individual)
-    // For simplicity, let's fetch individual to get fresh data
-    const [tenant, setTenant] = useState<ExtendedTenant | null>(null);
-    const [loadingTenant, setLoadingTenant] = useState(false);
+    // Fetch tenant details
+    const { data: tenantData, isLoading: loadingTenant, refetch } = useGetTenant(tenantId!, {
+        query: {
+            enabled: !!tenantId && isOpen
+        }
+    });
+    const tenant = tenantData?.data?.tenant as ExtendedTenant;
 
     useEffect(() => {
         if (tenantId && isOpen) {
-            setLoadingTenant(true);
-            adminApiInstance.get(`/admin/tenants/${tenantId}`)
-                .then(res => setTenant(res.data.data.tenant as ExtendedTenant))
-                .catch(err => toast.error('Kiracı detayları yüklenemedi'))
-                .finally(() => setLoadingTenant(false));
+            refetch();
         }
-    }, [tenantId, isOpen]);
+    }, [tenantId, isOpen, refetch]);
 
     if (!isOpen) return null;
 
@@ -97,9 +102,8 @@ const TenantEditModal = ({ tenantId, isOpen, onClose }: { tenantId: string | nul
                                 <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
                                     <Tabs.Content value="general" className="outline-none">
                                         <GeneralTab tenant={tenant} onUpdate={() => {
-                                            queryClient.invalidateQueries({ queryKey: ['/admin/tenants'] });
-                                            // Refresh local tenant data
-                                            adminApiInstance.get(`/admin/tenants/${tenantId}`).then(res => setTenant(res.data.data.tenant as ExtendedTenant));
+                                            queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
+                                            refetch();
                                         }} />
                                     </Tabs.Content>
                                     <Tabs.Content value="users" className="outline-none">
@@ -107,8 +111,8 @@ const TenantEditModal = ({ tenantId, isOpen, onClose }: { tenantId: string | nul
                                     </Tabs.Content>
                                     <Tabs.Content value="subscription" className="outline-none">
                                         <SubscriptionTab tenant={tenant} onUpdate={() => {
-                                            queryClient.invalidateQueries({ queryKey: ['/admin/tenants'] });
-                                            adminApiInstance.get(`/admin/tenants/${tenantId}`).then(res => setTenant(res.data.data.tenant as ExtendedTenant));
+                                            queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
+                                            refetch();
                                         }} />
                                     </Tabs.Content>
                                 </div>
@@ -124,7 +128,7 @@ const TenantEditModal = ({ tenantId, isOpen, onClose }: { tenantId: string | nul
 };
 
 const GeneralTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, onUpdate: () => void }) => {
-    const { mutateAsync: updateTenant, isPending } = usePutAdminTenantsId();
+    const { mutateAsync: updateTenant, isPending } = useUpdateTenant();
     const [formData, setFormData] = useState({
         name: tenant.name || '',
         owner_email: tenant.owner_email || '',
@@ -221,11 +225,15 @@ const GeneralTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, onUpdate: ()
 
 const UsersTab = ({ tenantId }: { tenantId: string }) => {
     const queryClient = useQueryClient();
-    const { data: usersData, isLoading } = useGetAdminTenantsIdUsers(tenantId);
+    const { data: usersData, isLoading } = useGetTenantUsers(tenantId);
     const users = usersData?.data?.users || [];
     const [isAdding, setIsAdding] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [newUser, setNewUser] = useState({ email: '', password: '', first_name: '', last_name: '', role: 'tenant_user', username: '' });
+    const [newUser, setNewUser] = useState({ email: '', password: '', firstName: '', lastName: '', role: 'tenant_user', username: '' });
+
+    // Hooks
+    const { mutateAsync: createTenantUser } = useCreateTenantUser();
+    const { mutateAsync: updateTenantUser } = useUpdateTenantUser();
 
     // Edit User State
     const [editingUser, setEditingUser] = useState<any>(null);
@@ -235,11 +243,13 @@ const UsersTab = ({ tenantId }: { tenantId: string }) => {
     const confirmToggle = async () => {
         if (!userToToggle) return;
         try {
-            await adminApiInstance.put(`/admin/tenants/${tenantId}/users/${userToToggle.id}`, {
-                is_active: !userToToggle.is_active
+            await updateTenantUser({
+                id: tenantId,
+                userId: userToToggle.id,
+                data: { isActive: !userToToggle.isActive } as any
             });
-            toast.success(`Kullanıcı ${!userToToggle.is_active ? 'aktifleştirildi' : 'pasife alındı'}`);
-            await queryClient.invalidateQueries({ queryKey: [`/admin/tenants/${tenantId}/users`] });
+            toast.success(`Kullanıcı ${!userToToggle.isActive ? 'aktifleştirildi' : 'pasife alındı'}`);
+            await queryClient.invalidateQueries({ queryKey: [`/api/admin/tenants/${tenantId}/users`] });
         } catch (error: any) {
             toast.error(error.response?.data?.error?.message || 'Durum güncellenemedi');
         } finally {
@@ -251,11 +261,17 @@ const UsersTab = ({ tenantId }: { tenantId: string }) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await adminApiInstance.post(`/admin/tenants/${tenantId}/users`, newUser);
+            await createTenantUser({
+                id: tenantId,
+                data: {
+                    ...newUser,
+                    is_active: true
+                } as any
+            });
             toast.success('Kullanıcı eklendi');
             setIsAdding(false);
-            setNewUser({ email: '', password: '', first_name: '', last_name: '', role: 'tenant_user', username: '' });
-            await queryClient.invalidateQueries({ queryKey: [`/admin/tenants/${tenantId}/users`] });
+            setNewUser({ email: '', password: '', firstName: '', lastName: '', role: 'tenant_user', username: '' });
+            await queryClient.invalidateQueries({ queryKey: [`/api/admin/tenants/${tenantId}/users`] });
         } catch (error: any) {
             toast.error(error.response?.data?.error?.message || 'Kullanıcı eklenemedi');
         } finally {
@@ -310,15 +326,15 @@ const UsersTab = ({ tenantId }: { tenantId: string }) => {
                         <input
                             type="text"
                             placeholder="Ad"
-                            value={newUser.first_name}
-                            onChange={e => setNewUser({ ...newUser, first_name: e.target.value })}
+                            value={newUser.firstName}
+                            onChange={e => setNewUser({ ...newUser, firstName: e.target.value })}
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         />
                         <input
                             type="text"
                             placeholder="Soyad"
-                            value={newUser.last_name}
-                            onChange={e => setNewUser({ ...newUser, last_name: e.target.value })}
+                            value={newUser.lastName}
+                            onChange={e => setNewUser({ ...newUser, lastName: e.target.value })}
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         />
                         <select
@@ -367,7 +383,7 @@ const UsersTab = ({ tenantId }: { tenantId: string }) => {
                             {users.map((user) => (
                                 <tr key={user.id}>
                                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm">
-                                        <div className="font-medium text-gray-900">{user.first_name} {user.last_name}</div>
+                                        <div className="font-medium text-gray-900">{user.firstName} {user.lastName}</div>
                                         <div className="text-gray-500">{user.email}</div>
                                         <div className="text-xs text-gray-400">{user.username}</div>
                                     </td>
@@ -375,20 +391,20 @@ const UsersTab = ({ tenantId }: { tenantId: string }) => {
                                         {user.role === 'tenant_admin' ? 'Yönetici' : 'Kullanıcı'}
                                     </td>
                                     <td className="whitespace-nowrap px-3 py-4 text-sm">
-                                        <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                            {user.is_active ? 'Aktif' : 'Pasif'}
+                                        <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                            {user.isActive ? 'Aktif' : 'Pasif'}
                                         </span>
                                     </td>
                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                        {user.last_login ? new Date(user.last_login).toLocaleDateString('tr-TR') : '-'}
+                                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}
                                     </td>
                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-right">
                                         <div className="flex justify-end space-x-2">
                                             <button
                                                 onClick={() => handleToggleStatus(user)}
-                                                className={`text-xs font-medium px-2 py-1 rounded ${user.is_active ? 'text-red-600 bg-red-50 hover:bg-red-100' : 'text-green-600 bg-green-50 hover:bg-green-100'}`}
+                                                className={`text-xs font-medium px-2 py-1 rounded ${user.isActive ? 'text-red-600 bg-red-50 hover:bg-red-100' : 'text-green-600 bg-green-50 hover:bg-green-100'}`}
                                             >
-                                                {user.is_active ? 'Pasife Al' : 'Aktifleştir'}
+                                                {user.isActive ? 'Pasife Al' : 'Aktifleştir'}
                                             </button>
                                             <button
                                                 onClick={() => {
@@ -416,7 +432,7 @@ const UsersTab = ({ tenantId }: { tenantId: string }) => {
                     onClose={() => setIsEditModalOpen(false)}
                     user={editingUser}
                     tenantId={tenantId}
-                    onSuccess={async () => await queryClient.invalidateQueries({ queryKey: [`/admin/tenants/${tenantId}/users`] })}
+                    onSuccess={async () => await queryClient.invalidateQueries({ queryKey: [`/api/admin/tenants/${tenantId}/users`] })}
                 />
             )}
 
@@ -425,7 +441,7 @@ const UsersTab = ({ tenantId }: { tenantId: string }) => {
                 onClose={() => setUserToToggle(null)}
                 onConfirm={confirmToggle}
                 title="Durum Değişikliği"
-                message={`Kullanıcıyı ${userToToggle?.is_active ? 'pasife almak' : 'aktifleştirmek'} istediğinize emin misiniz?`}
+                message={`Kullanıcıyı ${userToToggle?.isActive ? 'pasife almak' : 'aktifleştirmek'} istediğinize emin misiniz?`}
             />
         </div>
     );
@@ -433,19 +449,20 @@ const UsersTab = ({ tenantId }: { tenantId: string }) => {
 
 const EditUserModal = ({ isOpen, onClose, user, tenantId, onSuccess }: { isOpen: boolean, onClose: () => void, user: any, tenantId: string, onSuccess: () => void }) => {
     const [formData, setFormData] = useState({
-        first_name: user.first_name || '',
-        last_name: user.last_name || '',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
         email: user.email || '',
         username: user.username || '',
         role: user.role || 'tenant_user',
         password: ''
     });
     const [loading, setLoading] = useState(false);
+    const { mutateAsync: updateTenantUser } = useUpdateTenantUser();
 
     useEffect(() => {
         setFormData({
-            first_name: user.first_name || '',
-            last_name: user.last_name || '',
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
             email: user.email || '',
             username: user.username || '',
             role: user.role || 'tenant_user',
@@ -457,7 +474,11 @@ const EditUserModal = ({ isOpen, onClose, user, tenantId, onSuccess }: { isOpen:
         e.preventDefault();
         setLoading(true);
         try {
-            await adminApiInstance.put(`/admin/tenants/${tenantId}/users/${user.id}`, formData);
+            await updateTenantUser({
+                id: tenantId,
+                userId: user.id,
+                data: formData as any
+            });
             toast.success('Kullanıcı güncellendi');
             onSuccess();
             onClose();
@@ -486,8 +507,8 @@ const EditUserModal = ({ isOpen, onClose, user, tenantId, onSuccess }: { isOpen:
                                 <label className="block text-sm font-medium text-gray-700">Ad</label>
                                 <input
                                     type="text"
-                                    value={formData.first_name}
-                                    onChange={e => setFormData({ ...formData, first_name: e.target.value })}
+                                    value={formData.firstName}
+                                    onChange={e => setFormData({ ...formData, firstName: e.target.value })}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 />
                             </div>
@@ -495,8 +516,8 @@ const EditUserModal = ({ isOpen, onClose, user, tenantId, onSuccess }: { isOpen:
                                 <label className="block text-sm font-medium text-gray-700">Soyad</label>
                                 <input
                                     type="text"
-                                    value={formData.last_name}
-                                    onChange={e => setFormData({ ...formData, last_name: e.target.value })}
+                                    value={formData.lastName}
+                                    onChange={e => setFormData({ ...formData, lastName: e.target.value })}
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 />
                             </div>
@@ -591,6 +612,9 @@ const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, onUpdat
     const [loading, setLoading] = useState(false);
     const [loadingAddon, setLoadingAddon] = useState(false);
 
+    const { mutateAsync: subscribeTenant } = useSubscribeTenant();
+    const { mutateAsync: addTenantAddon } = useAddTenantAddon();
+
     useEffect(() => {
         setSelectedPlanId(tenant.current_plan_id || '');
     }, [tenant]);
@@ -599,9 +623,12 @@ const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, onUpdat
         if (!selectedPlanId) return;
         setLoading(true);
         try {
-            await adminApiInstance.post(`/admin/tenants/${tenant.id}/subscribe`, {
-                plan_id: selectedPlanId,
-                billing_interval: billingInterval
+            await subscribeTenant({
+                id: tenant.id!,
+                data: {
+                    plan_id: selectedPlanId,
+                    billing_interval: billingInterval
+                }
             });
             toast.success('Abonelik güncellendi');
             onUpdate();
@@ -616,8 +643,11 @@ const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, onUpdat
         if (!selectedAddonId) return;
         setLoadingAddon(true);
         try {
-            await adminApiInstance.post(`/admin/tenants/${tenant.id}/addons`, {
-                addon_id: selectedAddonId
+            await addTenantAddon({
+                id: tenant.id!,
+                data: {
+                    addon_id: selectedAddonId
+                }
             });
             toast.success('Ek özellik eklendi');
             onUpdate();
@@ -700,7 +730,7 @@ const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, onUpdat
                         >
                             <option value="">Seçiniz...</option>
                             {addons.map(addon => (
-                                <option key={addon.id} value={addon.id}>
+                                <option key={addon.id} value={addon.id || ''}>
                                     {addon.name} ({addon.limit_amount} {addon.unit_name}) - {addon.price} TL
                                 </option>
                             ))}
@@ -738,6 +768,7 @@ export default function TenantsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
     const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const queryClient = useQueryClient();
@@ -745,7 +776,7 @@ export default function TenantsPage() {
     // Fetch tenants
     const { data: tenantsData, isLoading, error } = useGetAdminTenants({
         page,
-        limit: 10,
+        limit,
         search: searchTerm || undefined,
         status: statusFilter !== 'all' ? (statusFilter as TenantStatus) : undefined
     });
@@ -754,7 +785,7 @@ export default function TenantsPage() {
     const pagination = tenantsData?.data?.pagination;
 
     // Status update mutation
-    const { mutateAsync: updateStatus } = usePutAdminTenantsIdStatus();
+    const { mutateAsync: updateStatus } = useUpdateTenantStatus();
 
     const handleStatusChange = async (tenantId: string, newStatus: string, e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent row click
@@ -800,48 +831,46 @@ export default function TenantsPage() {
         );
     };
 
+    // const [limit, setLimit] = useState(10); // This line is a duplicate and should be removed.
+
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex justify-between items-center">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Aboneler</h2>
-                    <p className="mt-1 text-sm text-gray-500">
-                        Abone organizasyonlarını ve ayarlarını yönetin
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
+            <div className="sm:flex sm:items-center">
+                <div className="sm:flex-auto">
+                    <h1 className="text-xl font-semibold text-gray-900">Aboneler (Tenants)</h1>
+                    <p className="mt-2 text-sm text-gray-700">
+                        Sistemdeki tüm organizasyonların listesi.
                     </p>
                 </div>
-                <button
-                    type="button"
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                    <Plus className="-ml-1 mr-2 h-5 w-5" />
-                    Abone Ekle
-                </button>
+                <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto"
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Yeni Abone
+                    </button>
+                </div>
             </div>
 
-            {/* Filters */}
-            <div className="bg-white shadow rounded-lg p-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Search */}
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Search className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Abone ara..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                        />
+            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
                     </div>
-
-                    {/* Status Filter */}
+                    <input
+                        type="text"
+                        className="block w-full rounded-md border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        placeholder="İsim veya email ile ara..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="w-full sm:w-48">
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                     >
                         <option value="all">Tüm Durumlar</option>
                         <option value="active">Aktif</option>
@@ -852,164 +881,132 @@ export default function TenantsPage() {
                 </div>
             </div>
 
-            {/* Tenants Table */}
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-                {isLoading ? (
-                    <div className="p-12 text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                        <p className="mt-2 text-sm text-gray-500">Aboneler yükleniyor...</p>
-                    </div>
-                ) : error ? (
-                    <div className="p-12 text-center">
-                        <p className="text-red-600">Aboneler yüklenirken hata oluştu</p>
-                        <button
-                            onClick={() => queryClient.invalidateQueries({ queryKey: ['getAdminTenants'] })}
-                            className="mt-2 text-sm text-blue-600 hover:text-blue-500 underline"
-                        >
-                            Tekrar Dene
-                        </button>
-                    </div>
-                ) : (
-                    <>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Organizasyon
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Durum
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Plan
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Kullanıcılar
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Oluşturulma
-                                        </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            İşlemler
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {tenants.map((tenant) => (
-                                        <tr
-                                            key={tenant.id}
-                                            className="hover:bg-gray-50 cursor-pointer transition-colors"
-                                            onClick={() => setSelectedTenantId(tenant.id!)}
-                                        >
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div>
-                                                    <div className="text-sm font-medium text-gray-900">
-                                                        {tenant.name}
-                                                    </div>
-                                                    <div className="text-sm text-gray-500">
-                                                        {tenant.slug}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                {getStatusBadge(tenant.status)}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {tenant.current_plan || 'Plan Yok'}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {tenant.current_users || 0} / {tenant.max_users || '∞'}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {tenant.created_at ? new Date(tenant.created_at).toLocaleDateString('tr-TR') : '-'}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <div className="flex justify-end space-x-2">
-                                                    <button
-                                                        className="text-blue-600 hover:text-blue-900 p-1"
-                                                        title="Düzenle"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setSelectedTenantId(tenant.id!);
-                                                        }}
-                                                    >
-                                                        <Edit className="h-5 w-5" />
-                                                    </button>
-                                                    {tenant.status === TenantStatus.active && (
-                                                        <button
-                                                            onClick={(e) => handleStatusChange(tenant.id!, TenantStatus.suspended, e)}
-                                                            className="text-yellow-600 hover:text-yellow-900 p-1"
-                                                            title="Askıya Al"
-                                                        >
-                                                            <Ban className="h-5 w-5" />
-                                                        </button>
-                                                    )}
-                                                    {tenant.status === TenantStatus.suspended && (
-                                                        <button
-                                                            onClick={(e) => handleStatusChange(tenant.id!, TenantStatus.active, e)}
-                                                            className="text-green-600 hover:text-green-900 p-1"
-                                                            title="Aktifleştir"
-                                                        >
-                                                            <CheckCircle className="h-5 w-5" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Pagination */}
-                        {pagination && (pagination.totalPages || 0) > 1 && (
-                            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                                <div className="flex-1 flex justify-between sm:hidden">
-                                    <button
-                                        onClick={() => setPage(page - 1)}
-                                        disabled={page === 1}
-                                        className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Önceki
-                                    </button>
-                                    <button
-                                        onClick={() => setPage(page + 1)}
-                                        disabled={page === pagination.totalPages}
-                                        className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Sonraki
-                                    </button>
-                                </div>
-                                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                                    <div>
-                                        <p className="text-sm text-gray-700">
-                                            <span className="font-medium">{page}</span> / <span className="font-medium">{pagination.totalPages}</span> sayfa gösteriliyor
-                                        </p>
+            <div className="mt-8 flex flex-col">
+                <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                    <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+                        {error ? (
+                            <div className="bg-red-50 p-4 rounded-md">
+                                <div className="flex">
+                                    <div className="flex-shrink-0">
+                                        <XMarkIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
                                     </div>
-                                    <div>
-                                        <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                                    <div className="ml-3">
+                                        <h3 className="text-sm font-medium text-red-800">Aboneler yüklenirken hata oluştu</h3>
+                                        <div className="mt-2 text-sm text-red-700">
+                                            <p>{(error as any)?.response?.data?.error?.message || 'Bir hata oluştu.'}</p>
+                                        </div>
+                                        <div className="mt-4">
                                             <button
-                                                onClick={() => setPage(page - 1)}
-                                                disabled={page === 1}
-                                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                type="button"
+                                                onClick={() => queryClient.invalidateQueries({ queryKey: ['/admin/tenants'] })}
+                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                             >
-                                                Önceki
+                                                Tekrar Dene
                                             </button>
-                                            <button
-                                                onClick={() => setPage(page + 1)}
-                                                disabled={page === pagination.totalPages}
-                                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                Sonraki
-                                            </button>
-                                        </nav>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                        ) : isLoading ? (
+                            <div className="flex justify-center py-12">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                            </div>
+                        ) : (
+                            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                                <table className="min-w-full divide-y divide-gray-300">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                                                Organizasyon
+                                            </th>
+                                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                                Plan
+                                            </th>
+                                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                                Kullanıcılar
+                                            </th>
+                                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                                Durum
+                                            </th>
+                                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                                Kayıt Tarihi
+                                            </th>
+                                            <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                                                <span className="sr-only">İşlemler</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200 bg-white">
+                                        {tenants.map((tenant) => (
+                                            <tr key={tenant.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedTenantId(tenant.id!)}>
+                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                                                    <div className="font-medium text-gray-900">{tenant.name}</div>
+                                                    <div className="text-gray-500">{tenant.owner_email}</div>
+                                                </td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    <div className="text-gray-900">{tenant.current_plan || 'Plan Yok'}</div>
+                                                    {tenant.subscription_end_date && (
+                                                        <div className="text-xs text-gray-400">
+                                                            Bitiş: {new Date(tenant.subscription_end_date).toLocaleDateString('tr-TR')}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    {tenant.current_users} / {tenant.max_users}
+                                                </td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    {getStatusBadge(tenant.status)}
+                                                </td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                    {tenant.created_at ? new Date(tenant.created_at).toLocaleDateString('tr-TR') : '-'}
+                                                </td>
+                                                <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                                    <div className="flex justify-end space-x-2">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setSelectedTenantId(tenant.id!);
+                                                            }}
+                                                            className="text-blue-600 hover:text-blue-900"
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                            <span className="sr-only">Düzenle, {tenant.name}</span>
+                                                        </button>
+                                                        {tenant.status === 'active' ? (
+                                                            <button
+                                                                onClick={(e) => handleStatusChange(tenant.id!, 'suspended', e)}
+                                                                className="text-yellow-600 hover:text-yellow-900"
+                                                                title="Askıya Al"
+                                                            >
+                                                                <Ban className="h-4 w-4" />
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={(e) => handleStatusChange(tenant.id!, 'active', e)}
+                                                                className="text-green-600 hover:text-green-900"
+                                                                title="Aktifleştir"
+                                                            >
+                                                                <CheckCircle className="h-4 w-4" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                <Pagination
+                                    currentPage={page}
+                                    totalPages={pagination?.totalPages || 1}
+                                    totalItems={pagination?.total || 0}
+                                    itemsPerPage={limit}
+                                    onPageChange={setPage}
+                                    onItemsPerPageChange={setLimit}
+                                />
+                            </div>
                         )}
-                    </>
-                )}
+                    </div>
+                </div>
             </div>
 
             <TenantEditModal
@@ -1034,14 +1031,15 @@ const CreateTenantModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
         max_users: 5
     });
     const [loading, setLoading] = useState(false);
+    const { mutateAsync: createTenant } = useCreateTenant();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
-            await adminApiInstance.post('/admin/tenants', formData);
+            await createTenant({ data: formData as any });
             toast.success('Abone başarıyla oluşturuldu');
-            queryClient.invalidateQueries({ queryKey: ['/admin/tenants'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onClose();
             setFormData({ name: '', owner_email: '', max_users: 5 });
         } catch (error: any) {

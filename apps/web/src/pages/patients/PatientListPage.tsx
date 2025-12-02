@@ -160,9 +160,9 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
   }, [deletePatient, refresh]);
 
   const handlePatientClick = useCallback((patient: PatientSearchItem) => {
-    navigate({ 
-      to: '/patients/$patientId', 
-      params: { patientId: patient.id } 
+    navigate({
+      to: '/patients/$patientId',
+      params: { patientId: patient.id }
     });
   }, [navigate]);
 
@@ -206,7 +206,7 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
             </span>
           )}
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button
             onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
@@ -216,7 +216,7 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
           >
             {viewMode === 'grid' ? '☰' : '⊞'}
           </Button>
-          
+
           <Button
             onClick={handleRefresh}
             disabled={isLoading}
@@ -224,7 +224,7 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
           >
             {isLoading ? 'Yenileniyor...' : 'Yenile'}
           </Button>
-          
+
           <Button
             onClick={() => setShowCreateModal(true)}
           >
@@ -265,8 +265,8 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
         placeholder="Hasta ara (isim, telefon, TC)..."
         className="flex-1"
       />
-      
-            <PatientFilters
+
+      <PatientFilters
         filters={filters}
         onChange={setFilters}
         onClearFilters={clearFilters}
@@ -281,7 +281,7 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
         <div className="text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">👥</div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {searchTerm || Object.keys(filters).length > 0 
+            {searchTerm || Object.keys(filters).length > 0
               ? 'Arama kriterlerine uygun hasta bulunamadı'
               : 'Henüz hasta eklenmemiş'
             }
@@ -305,8 +305,8 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
 
     return (
       <div className={`
-        ${viewMode === 'grid' 
-          ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' 
+        ${viewMode === 'grid'
+          ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
           : 'space-y-2'
         }
       `}>
@@ -314,11 +314,11 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
           <PatientCard
             key={patient.id}
             patient={convertToSearchItem(patient)}
-            selected={selectedPatients.has(patient.id)}
+            selected={patient.id ? selectedPatients.has(patient.id) : false}
             onSelect={(patientId) => handleSelectPatient(patientId, !selectedPatients.has(patientId))}
             onClick={handlePatientClick}
             onEdit={() => setEditingPatient(patient)}
-            onDelete={() => handleDeletePatient(patient.id)}
+            onDelete={() => patient.id && handleDeletePatient(patient.id)}
             className="hover:shadow-md transition-shadow"
           />
         ))}
@@ -350,7 +350,7 @@ export function PatientListPage({ className = '' }: PatientListPageProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <span className="text-red-600 mr-2">⚠️</span>
-            <span className="text-sm text-red-700">{currentError instanceof Error ? currentError.message : currentError}</span>
+            <span className="text-sm text-red-700">{(currentError as any) instanceof Error ? (currentError as any).message : String(currentError)}</span>
           </div>
           <Button
             onClick={() => {

@@ -9,6 +9,49 @@ from datetime import datetime, timedelta
 
 subscriptions_bp = Blueprint('subscriptions', __name__)
 
+
+def serialize_tenant(tenant: Tenant | None) -> dict | None:
+    if not tenant:
+        return None
+
+    return {
+        'id': tenant.id,
+        'name': tenant.name,
+        'slug': tenant.slug,
+        'ownerEmail': tenant.owner_email,
+        'billingEmail': tenant.billing_email,
+        'status': tenant.status,
+        'currentPlan': tenant.current_plan,
+        'currentPlanId': tenant.current_plan_id,
+        'subscriptionStartDate': tenant.subscription_start_date.isoformat() if tenant.subscription_start_date else None,
+        'subscriptionEndDate': tenant.subscription_end_date.isoformat() if tenant.subscription_end_date else None,
+        'featureUsage': tenant.feature_usage or {},
+        'maxUsers': tenant.max_users,
+        'currentUsers': tenant.current_users,
+    }
+
+
+def serialize_plan(plan: Plan | None) -> dict | None:
+    if not plan:
+        return None
+
+    return {
+        'id': plan.id,
+        'name': plan.name,
+        'slug': plan.slug,
+        'description': plan.description,
+        'planType': plan.plan_type.value if plan.plan_type else None,
+        'price': float(plan.price) if plan.price is not None else None,
+        'billingInterval': plan.billing_interval.value if plan.billing_interval else None,
+        'features': plan.features or {},
+        'maxUsers': plan.max_users,
+        'maxStorageGb': plan.max_storage_gb,
+        'isActive': plan.is_active,
+        'isPublic': plan.is_public,
+        'monthlyPrice': plan.get_monthly_price(),
+        'yearlyPrice': plan.get_yearly_price(),
+    }
+
 @subscriptions_bp.route('/subscribe', methods=['POST'])
 @jwt_required()
 def subscribe():
@@ -114,10 +157,10 @@ def get_subscription():
             days_remaining = delta.days
             
     return success_response({
-        'tenant': tenant.to_dict(),
-        'plan': plan.to_dict() if plan else None,
-        'is_expired': is_expired,
-        'days_remaining': days_remaining
+        'tenant': serialize_tenant(tenant),
+        'plan': serialize_plan(plan),
+        'isExpired': is_expired,
+        'daysRemaining': days_remaining
     })
 
 @subscriptions_bp.route('/register-and-subscribe', methods=['POST'])

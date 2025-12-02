@@ -15,6 +15,7 @@
     "typecheck": "cd apps/web && npm run type-check",
     "clean": "rm -rf apps/web/node_modules apps/web/dist",
     "gen:api": "cd apps/web && npm run gen:api",
+    "sync:api": "python apps/update_openapi_admin.py && cd apps/admin && npm run gen:api && npm run type-check",
     "gen:storage-keys": "node scripts/generate-storage-keys.cjs",
     "db:migrate": "cd apps/backend && python -m alembic upgrade head",
     "db:migration": "cd apps/backend && python -m alembic revision --autogenerate",

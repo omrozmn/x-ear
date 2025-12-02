@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <!-- Shipment Info Box -->
+  <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 6px; padding: 12px; margin-bottom: 15px;">
+    <div style="font-weight: 700; color: #0369a1; margin-bottom: 8px; font-size: 12px;">
+      SEVKİYAT BİLGİLERİ
+    </div>
+    <table style="width: 100%; font-size: 10px; color: #0c4a6e;">
+      <tr>
+        <td style="width: 50%; vertical-align: top;">
+          {% if invoice.shipment_date or invoice.sevk_tarihi %}
+          <div><strong>Sevk Tarihi:</strong> {{ invoice.shipment_date or invoice.sevk_tarihi }}</div>
+          {% endif %}
+          {% if invoice.driver_name or invoice.sofor_adi %}
+          <div><strong>Şoför:</strong> {{ invoice.driver_name or invoice.sofor_adi }}</div>
+          {% endif %}
+          {% if invoice.driver_tc or invoice.sofor_tc %}
+          <div><strong>Şoför TC:</strong> {{ invoice.driver_tc or invoice.sofor_tc }}</div>
+          {% endif %}
+          {% if invoice.vehicle_plate or invoice.arac_plaka %}
+          <div><strong>Araç Plakası:</strong> {{ invoice.vehicle_plate or invoice.arac_plaka }}</div>
+          {% endif %}
+        </td>
+        <td style="width: 50%; vertical-align: top;">
+          {% if invoice.delivery_address %}
+          <div><strong>Teslimat Adresi:</strong> {{ invoice.delivery_address }}</div>
+          {% endif %}
+          {% if invoice.shipment_type or invoice.sevkiyat_turu %}
+          <div><strong>Sevkiyat Türü:</strong> {{ invoice.shipment_type or invoice.sevkiyat_turu }}</div>
+          {% endif %}
+          {% if invoice.carrier_name or invoice.tasiyici %}
+          <div><strong>Taşıyıcı:</strong> {{ invoice.carrier_name or invoice.tasiyici }}</div>
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Invoice Lines Table -->
+  <table class="items">
+    <thead>
+      <tr>
+        <th style="width: 4%">Sıra No</th>
+        <th style="width: 12%">Stok Kodu</th>
+        <th style="width: 38%">Mal Hizmet</th>
+        <th style="width: 10%" class="right">Miktar</th>
+        <th style="width: 8%">Birim</th>
+        <th style="width: 14%" class="right">Birim Fiyat</th>
+        <th style="width: 14%" class="right">Tutar</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in invoice.lines %}
+      <tr>
+        <td class="center">{{ loop.index }}</td>
+        <td>{{ line.item_code or line.seller_item_id or '' }}</td>
+        <td>
+          {{ line.description or line.name }}
+          {% if line.serial_number %}<br><span class="small">Seri No: {{ line.serial_number }}</span>{% endif %}
+        </td>
+        <td class="right">{{ line.quantity }}</td>
+        <td>{{ line.unit_code or 'Adet' }}</td>
+        <td class="right">{{ "%.2f"|format(line.unit_price|float) }} TL</td>
+        <td class="right">{{ "%.2f"|format((line.line_extension_amount or (line.quantity|float * line.unit_price|float))|float) }} TL</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Totals -->
+  <div class="totals-section">
+    <table class="totals-table">
+      <tr>
+        <td>Mal Hizmet Toplam Tutarı</td>
+        <td>{{ "%.2f"|format((invoice.line_extension_amount or invoice.subtotal or 0)|float) }} TL</td>
+      </tr>
+      {% if invoice.allowance_total %}
+      <tr>
+        <td>Toplam İskonto</td>
+        <td>{{ "%.2f"|format((invoice.allowance_total or 0)|float) }} TL</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <td>Hesaplanan KDV (%{{ invoice.tax_percent or 0 }})</td>
+        <td>{{ "%.2f"|format((invoice.tax_total or 0)|float) }} TL</td>
+      </tr>
+      <tr class="grand-total">
+        <td>Toplam Tutar</td>
+        <td>{{ "%.2f"|format((invoice.payable_amount or 0)|float) }} TL</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Notes -->
+  {% if invoice.notes %}
+  <div class="notes mt-2">
+    <div class="notes-title">Notlar:</div>
+    {{ invoice.notes }}
+  </div>
+  {% endif %}
+{% endblock %}

@@ -22,10 +22,10 @@ vi.mock('react-hot-toast', () => ({
 
 vi.mock('@/lib/api-client', () => ({
     useGetAdminPlans: vi.fn(),
-    usePostAdminPlans: vi.fn(),
-    usePutAdminPlansId: vi.fn(),
-    useDeleteAdminPlansId: vi.fn(),
-    useAdminGetFeatures: vi.fn(),
+    useCreatePlan: vi.fn(),
+    useUpdatePlan: vi.fn(),
+    useDeletePlan: vi.fn(),
+    useGetAdminSettings: vi.fn(),
 }));
 
 // Mock Radix UI Dialog
@@ -56,9 +56,13 @@ describe('Plans Component', () => {
         },
     ];
 
-    const mockFeatures = {
-        features: {
-            'advanced_reports': { mode: 'visible' }
+    const mockSettings = {
+        data: {
+            settings: {
+                features: {
+                    'advanced_reports': { mode: 'visible' }
+                }
+            }
         }
     };
 
@@ -70,16 +74,16 @@ describe('Plans Component', () => {
             isLoading: false,
             error: null,
         });
-        (ApiClient.useAdminGetFeatures as any).mockReturnValue({
-            data: mockFeatures,
+        (ApiClient.useGetAdminSettings as any).mockReturnValue({
+            data: mockSettings,
         });
-        (ApiClient.usePostAdminPlans as any).mockReturnValue({
+        (ApiClient.useCreatePlan as any).mockReturnValue({
             mutateAsync: vi.fn(),
         });
-        (ApiClient.usePutAdminPlansId as any).mockReturnValue({
+        (ApiClient.useUpdatePlan as any).mockReturnValue({
             mutateAsync: vi.fn(),
         });
-        (ApiClient.useDeleteAdminPlansId as any).mockReturnValue({
+        (ApiClient.useDeletePlan as any).mockReturnValue({
             mutateAsync: vi.fn(),
         });
     });
@@ -105,7 +109,7 @@ describe('Plans Component', () => {
 
     it('fills form and submits new plan', async () => {
         const mutateAsync = vi.fn().mockResolvedValue({});
-        (ApiClient.usePostAdminPlans as any).mockReturnValue({ mutateAsync });
+        (ApiClient.useCreatePlan as any).mockReturnValue({ mutateAsync });
 
         render(<Plans />);
 

@@ -1,8 +1,8 @@
-from .base import db
+from .base import db, BaseModel
 from datetime import datetime
 import json
 
-class DeviceReplacement(db.Model):
+class DeviceReplacement(BaseModel):
     __tablename__ = 'device_replacements'
     
     id = db.Column(db.String(50), primary_key=True)
@@ -13,8 +13,7 @@ class DeviceReplacement(db.Model):
     old_device_info = db.Column(db.Text)
     new_device_info = db.Column(db.Text)
     status = db.Column(db.String(50), default='pending_invoice')  # pending_invoice, invoice_created, completed
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Timestamps inherited from BaseModel
     
     # Relationships
     return_invoice = db.relationship('ReturnInvoice', backref='replacement', uselist=False, cascade='all, delete-orphan')
@@ -47,7 +46,7 @@ class DeviceReplacement(db.Model):
         return result
 
 
-class ReturnInvoice(db.Model):
+class ReturnInvoice(BaseModel):
     __tablename__ = 'return_invoices'
     
     id = db.Column(db.String(50), primary_key=True)
@@ -61,8 +60,7 @@ class ReturnInvoice(db.Model):
     invoice_note = db.Column(db.Text)
     gib_sent = db.Column(db.Boolean, default=False)
     gib_sent_date = db.Column(db.DateTime)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Timestamps inherited from BaseModel
     
     def to_dict(self):
         return {

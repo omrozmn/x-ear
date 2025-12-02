@@ -13,11 +13,8 @@ import type { PatientCustomData } from './patientCustomData';
 export interface Patient {
   /** Unique patient identifier */
   id?: string;
-  /**
-   * Turkish citizenship number
-   * @nullable
-   */
-  tcNumber?: string | null;
+  /** Turkish citizenship number */
+  tcNumber: string;
   /** Identity number */
   identityNumber?: string;
   /** Patient's first name */

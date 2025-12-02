@@ -20,6 +20,8 @@ declare module '@tanstack/react-router' {
   }
 }
 
+import { PhoneVerificationModal } from './components/PhoneVerificationModal';
+
 function App() {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -63,6 +65,7 @@ function App() {
           <GlobalErrorProvider>
             <AuthProvider>
               <RouterProvider router={router} />
+              <PhoneVerificationModal />
               <ReactQueryDevtools initialIsOpen={false} />
             </AuthProvider>
           </GlobalErrorProvider>

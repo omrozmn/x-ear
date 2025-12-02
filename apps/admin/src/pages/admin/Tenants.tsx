@@ -1,23 +1,17 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { PlusIcon, MagnifyingGlassIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon, PencilIcon } from '@heroicons/react/24/outline';
 import * as Dialog from '@radix-ui/react-dialog';
 import toast from 'react-hot-toast';
 
-
-import { adminApiInstance as apiClient } from '@/lib/api';
-import type { Tenant } from '@/lib/api-client';
+import {
+  useGetAdminTenants,
+  useCreateTenant,
+  useUpdateTenant,
+  useUpdateTenantStatus,
+  Tenant
+} from '@/lib/api-client';
 import Pagination from '@/components/ui/Pagination';
-
-interface TenantsResponse {
-  tenants: Tenant[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
 
 const Tenants: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,55 +41,50 @@ const Tenants: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Fetch tenants
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['tenants', page, searchTerm, statusFilter],
-    queryFn: async (): Promise<TenantsResponse> => {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-        ...(searchTerm && { search: searchTerm }),
-        ...(statusFilter !== 'all' && { status: statusFilter })
-      });
-
-      const response = await apiClient.get<{ data: TenantsResponse }>(`/api/admin/tenants?${params}`);
-      return response.data.data!;
-    },
+  // Fetch tenants
+  const { data: tenantsData, isLoading, error } = useGetAdminTenants({
+    page,
+    limit,
+    search: searchTerm || undefined,
+    status: statusFilter !== 'all' ? statusFilter : undefined
   });
 
-  // Status update mutation
-  const statusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      await apiClient.put(`/api/admin/tenants/${id}`, { status });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tenants'] });
-      toast.success('Tenant status updated successfully');
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.error?.message || 'Failed to update status');
-    },
-  });
+  const data = tenantsData?.data;
+  const tenants = data?.tenants || [];
+  const pagination = data?.pagination;
+
+  // Mutations
+  const { mutateAsync: updateTenantStatus } = useUpdateTenantStatus();
+  const { mutateAsync: createTenant } = useCreateTenant();
+  const { mutateAsync: updateTenant } = useUpdateTenant();
 
   const handleStatusChangeClick = (tenantId: string, newStatus: string) => {
     setStatusToChange({ id: tenantId, status: newStatus });
     setIsStatusModalOpen(true);
   };
 
-  const confirmStatusChange = () => {
+  const confirmStatusChange = async () => {
     if (statusToChange) {
-      statusMutation.mutate({ id: statusToChange.id, status: statusToChange.status });
-      setIsStatusModalOpen(false);
+      try {
+        await updateTenantStatus({ id: statusToChange.id, data: { status: statusToChange.status } });
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
+        toast.success('Tenant status updated successfully');
+        setIsStatusModalOpen(false);
+      } catch (error: any) {
+        toast.error(error.response?.data?.error?.message || 'Failed to update status');
+      }
     }
   };
 
   const handleCreateTenant = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await apiClient.post('/api/admin/tenants', createFormData);
+      // @ts-ignore - password field might not be in generated type but backend accepts it
+      await createTenant({ data: createFormData });
       toast.success('Kiracı oluşturuldu');
       setIsCreateModalOpen(false);
       setCreateFormData({ name: '', slug: '', owner_email: '', password: '' });
-      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || 'Kiracı oluşturulamadı');
     }
@@ -109,9 +98,9 @@ const Tenants: React.FC = () => {
   const handleEditTenant = (tenant: Tenant) => {
     setEditingTenant(tenant);
     setEditFormData({
-      name: tenant.name || '', // Assuming company_name maps to name in input
+      name: tenant.name || '',
       slug: tenant.slug || '',
-      owner_email: tenant.owner_email || '' // We might not be able to edit email if it's unique/primary
+      owner_email: tenant.owner_email || ''
     });
     setIsEditModalOpen(true);
   };
@@ -121,15 +110,17 @@ const Tenants: React.FC = () => {
     if (!editingTenant) return;
 
     try {
-      // Using apiClient directly as per file convention
-      await apiClient.put(`/api/admin/tenants/${editingTenant.id}`, {
-        name: editFormData.name,
-        slug: editFormData.slug,
-        owner_email: editFormData.owner_email
+      await updateTenant({
+        id: editingTenant.id!,
+        data: {
+          name: editFormData.name,
+          slug: editFormData.slug,
+          owner_email: editFormData.owner_email
+        }
       });
       toast.success('Kiracı güncellendi');
       setIsEditModalOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || 'Güncelleme başarısız');
     }
@@ -210,9 +201,9 @@ const Tenants: React.FC = () => {
 
             {/* Results count */}
             <div className="flex items-center text-sm text-gray-500">
-              {data && (
+              {pagination && (
                 <span>
-                  {data.pagination.total} sonuçtan {((page - 1) * limit) + 1}-{Math.min(page * limit, data.pagination.total)} arası gösteriliyor
+                  {pagination.total} sonuçtan {((page - 1) * limit) + 1}-{Math.min(page * limit, pagination.total || 0)} arası gösteriliyor
                 </span>
               )}
             </div>
@@ -230,7 +221,7 @@ const Tenants: React.FC = () => {
             <div className="p-6 text-center">
               <p className="text-red-600">Failed to load tenants</p>
               <button
-                onClick={() => queryClient.invalidateQueries({ queryKey: ['tenants'] })}
+                onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] })}
                 className="mt-2 text-sm text-primary-600 hover:text-primary-500"
               >
                 Try again
@@ -262,7 +253,7 @@ const Tenants: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {data?.tenants.map((tenant) => (
+                  {tenants.map((tenant) => (
                     <tr key={tenant.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
@@ -330,8 +321,8 @@ const Tenants: React.FC = () => {
               {/* Pagination */}
               <Pagination
                 currentPage={page}
-                totalPages={data?.pagination?.totalPages || 1}
-                totalItems={data?.pagination.total || 0}
+                totalPages={pagination?.totalPages || 1}
+                totalItems={pagination?.total || 0}
                 itemsPerPage={limit}
                 onPageChange={setPage}
                 onItemsPerPageChange={setLimit}

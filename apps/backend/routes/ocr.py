@@ -126,14 +126,56 @@ def process_document():
         if not image_path and not text:
             return jsonify({"error": "No image path or text provided"}), 400
 
-        result = svc.process_document(image_path=image_path or None, doc_type=doc_type, text=text, auto_crop=auto_crop)
-        # Attempt to extract patient name as part of the processing result for convenience
+        temp_file_path = None
         try:
-            patient_info = svc.extract_patient_name(image_path=image_path or None, text=text)
-            result['patient_info'] = patient_info
-        except Exception:
-            result['patient_info'] = None
-        return jsonify({"success": True, "result": result, "timestamp": datetime.now().isoformat()})
+            # Handle URL
+            if image_path and (image_path.startswith('http://') or image_path.startswith('https://')):
+                try:
+                    import requests
+                    import tempfile
+                    
+                    response = requests.get(image_path, stream=True, timeout=30)
+                    response.raise_for_status()
+                    
+                    # Create temp file
+                    # Extract extension from URL path (ignoring query params)
+                    path_part = image_path.split('?')[0]
+                    suffix = os.path.splitext(path_part)[1]
+                    if not suffix:
+                        suffix = '.jpg' # Default to jpg if no extension found
+                        
+                    fd, temp_file_path = tempfile.mkstemp(suffix=suffix)
+                    os.close(fd)
+                    
+                    with open(temp_file_path, 'wb') as f:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            f.write(chunk)
+                    
+                    # Use the temp file path for processing
+                    image_path_to_process = temp_file_path
+                except Exception as e:
+                    logger.error(f"Failed to download image from URL: {e}")
+                    return jsonify({"success": False, "error": f"Failed to download image: {str(e)}"}), 400
+            else:
+                image_path_to_process = image_path
+
+            result = svc.process_document(image_path=image_path_to_process or None, doc_type=doc_type, text=text, auto_crop=auto_crop)
+            # Attempt to extract patient name as part of the processing result for convenience
+            try:
+                patient_info = svc.extract_patient_name(image_path=image_path_to_process or None, text=text)
+                result['patient_info'] = patient_info
+            except Exception:
+                result['patient_info'] = None
+            return jsonify({"success": True, "result": result, "timestamp": datetime.now().isoformat()})
+            
+        finally:
+            # Cleanup temp file
+            if temp_file_path and os.path.exists(temp_file_path):
+                try:
+                    os.remove(temp_file_path)
+                except Exception:
+                    pass
+                    
     except Exception as e:
         logger.error(f"OCR processing error: {e}")
         return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500

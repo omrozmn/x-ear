@@ -4,9 +4,9 @@
  * @version 1.0.0
  */
 
-import type { 
-  PatientStatus, 
-  PatientSegment, 
+import type {
+  PatientStatus,
+  PatientSegment,
   PatientLabel,
   DeviceType,
   DeviceSide,
@@ -34,6 +34,7 @@ export interface PatientFilters {
   appointmentDateRange?: DateRange;
   branchId?: string;
   tags?: string[];
+  acquisitionType?: string[];
 }
 
 export interface AgeRange {

@@ -87,7 +87,9 @@ def get_activity_logs():
         entity_type = request.args.get('entity_type')
         entity_id = request.args.get('entity_id')
         user_id = request.args.get('user_id')
+        page = int(request.args.get('page', 1))
         limit = int(request.args.get('limit', 100))
+        offset = (page - 1) * limit
         
         # Build query
         query = ActivityLog.query.order_by(ActivityLog.created_at.desc())
@@ -99,13 +101,22 @@ def get_activity_logs():
         if user_id:
             query = query.filter(ActivityLog.user_id == user_id)
         
-        # Apply limit
-        activity_logs = query.limit(limit).all()
+        # Get total count
+        total = query.count()
+        
+        # Apply limit and offset
+        activity_logs = query.offset(offset).limit(limit).all()
         
         return jsonify({
             'success': True,
             'data': [log.to_dict() for log in activity_logs],
-            'count': len(activity_logs)
+            'count': total,
+            'pagination': {
+                'total': total,
+                'page': page,
+                'limit': limit,
+                'totalPages': (total + limit - 1) // limit
+            }
         })
         
     except Exception as e:
