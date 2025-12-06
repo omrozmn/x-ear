@@ -460,3 +460,345 @@ def create_ticket_response(ticket_id):
             'success': False,
             'error': {'message': 'Internal server error'}
         }), 500
+
+
+# =============================================================================
+# DEBUG / ROLE SWITCH ENDPOINTS (Only for admin@x-ear.com)
+# =============================================================================
+
+# Email authorized for debug role switching
+DEBUG_ADMIN_EMAIL = 'admin@x-ear.com'
+
+# Page permission mappings - which permissions apply to which pages
+PAGE_PERMISSION_MAP = {
+    'patients': [
+        {'code': 'patients.view', 'label': 'Hasta listesini görüntüleme'},
+        {'code': 'patients.create', 'label': 'Yeni hasta ekleme'},
+        {'code': 'patients.edit', 'label': 'Hasta düzenleme'},
+        {'code': 'patients.delete', 'label': 'Hasta silme'},
+        {'code': 'patients.notes', 'label': 'Hasta notlarına erişim'},
+        {'code': 'patients.history', 'label': 'Hasta geçmişini görüntüleme'},
+    ],
+    'sales': [
+        {'code': 'sales.view', 'label': 'Satış listesini görüntüleme'},
+        {'code': 'sales.create', 'label': 'Yeni satış oluşturma'},
+        {'code': 'sales.edit', 'label': 'Satış düzenleme'},
+        {'code': 'sales.delete', 'label': 'Satış silme'},
+        {'code': 'sales.approve', 'label': 'Satış onaylama'},
+    ],
+    'finance': [
+        {'code': 'finance.view', 'label': 'Finans bilgilerini görüntüleme'},
+        {'code': 'finance.payments', 'label': 'Ödeme işlemleri'},
+        {'code': 'finance.refunds', 'label': 'İade işlemleri'},
+        {'code': 'finance.reports', 'label': 'Finansal raporlar'},
+        {'code': 'finance.cash_register', 'label': 'Kasa işlemleri'},
+    ],
+    'invoices': [
+        {'code': 'invoices.view', 'label': 'Faturaları görüntüleme'},
+        {'code': 'invoices.create', 'label': 'Fatura oluşturma'},
+        {'code': 'invoices.send', 'label': 'Fatura gönderme'},
+        {'code': 'invoices.cancel', 'label': 'Fatura iptal etme'},
+    ],
+    'devices': [
+        {'code': 'devices.view', 'label': 'Cihaz listesini görüntüleme'},
+        {'code': 'devices.create', 'label': 'Yeni cihaz ekleme'},
+        {'code': 'devices.edit', 'label': 'Cihaz düzenleme'},
+        {'code': 'devices.delete', 'label': 'Cihaz silme'},
+        {'code': 'devices.assign', 'label': 'Cihaz atama'},
+    ],
+    'inventory': [
+        {'code': 'inventory.view', 'label': 'Stok bilgilerini görüntüleme'},
+        {'code': 'inventory.manage', 'label': 'Stok yönetimi'},
+    ],
+    'campaigns': [
+        {'code': 'campaigns.view', 'label': 'Kampanyaları görüntüleme'},
+        {'code': 'campaigns.create', 'label': 'Kampanya oluşturma'},
+        {'code': 'campaigns.edit', 'label': 'Kampanya düzenleme'},
+        {'code': 'campaigns.delete', 'label': 'Kampanya silme'},
+        {'code': 'campaigns.send_sms', 'label': 'SMS gönderme'},
+    ],
+    'sgk': [
+        {'code': 'sgk.view', 'label': 'SGK kayıtlarını görüntüleme'},
+        {'code': 'sgk.create', 'label': 'SGK provizyon oluşturma'},
+        {'code': 'sgk.upload', 'label': 'SGK başvuru yükleme'},
+    ],
+    'settings': [
+        {'code': 'settings.view', 'label': 'Ayarları görüntüleme'},
+        {'code': 'settings.edit', 'label': 'Ayarları düzenleme'},
+        {'code': 'settings.branches', 'label': 'Şube yönetimi'},
+        {'code': 'settings.integrations', 'label': 'Entegrasyon ayarları'},
+    ],
+    'team': [
+        {'code': 'team.view', 'label': 'Ekip üyelerini görüntüleme'},
+        {'code': 'team.create', 'label': 'Ekip üyesi ekleme'},
+        {'code': 'team.edit', 'label': 'Ekip üyesi düzenleme'},
+        {'code': 'team.delete', 'label': 'Ekip üyesi silme'},
+        {'code': 'team.permissions', 'label': 'Rol izinleri yönetimi'},
+    ],
+    'reports': [
+        {'code': 'reports.view', 'label': 'Raporları görüntüleme'},
+        {'code': 'reports.export', 'label': 'Rapor dışa aktarma'},
+    ],
+    'dashboard': [
+        {'code': 'dashboard.view', 'label': 'Dashboard görüntüleme'},
+        {'code': 'dashboard.analytics', 'label': 'Analitik verileri görüntüleme'},
+    ],
+}
+
+
+@admin_bp.route('/debug/switch-role', methods=['POST'])
+@jwt_required()
+def debug_switch_role():
+    """
+    Switch to a different role for debugging purposes.
+    Only available to admin@x-ear.com user.
+    Returns a new JWT with the selected role's permissions.
+    """
+    from models.user import User
+    from models.role import Role
+    from os import getenv
+    
+    # Check if debug mode is enabled (default: True for development)
+    if getenv('ENABLE_DEBUG_ROLE_SWITCH', 'true').lower() != 'true':
+        return jsonify({
+            'success': False,
+            'error': 'Debug role switch is disabled'
+        }), 403
+    
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+        
+        # Only admin@x-ear.com can use this feature
+        if user.email != DEBUG_ADMIN_EMAIL:
+            logger.warning(f"Unauthorized role switch attempt by {user.email}")
+            return jsonify({
+                'success': False,
+                'error': 'Bu özellik sadece sistem yöneticisi için kullanılabilir'
+            }), 403
+        
+        data = request.get_json() or {}
+        target_role = data.get('targetRole')
+        
+        if not target_role:
+            return jsonify({
+                'success': False,
+                'error': 'targetRole is required'
+            }), 400
+        
+        # Validate target role exists
+        role = Role.query.filter_by(name=target_role).first()
+        if not role:
+            return jsonify({
+                'success': False,
+                'error': f'Role "{target_role}" not found'
+            }), 404
+        
+        # Get role permissions
+        role_permissions = [p.name for p in role.permissions]
+        
+        # Create new JWT with impersonation claims
+        additional_claims = {
+            'tenant_id': user.tenant_id,
+            'effective_role': target_role,
+            'real_user_id': user.id,
+            'real_user_email': user.email,
+            'is_impersonating': True,
+            'role_permissions': role_permissions
+        }
+        
+        access_token = create_access_token(
+            identity=user.id,
+            additional_claims=additional_claims
+        )
+        
+        refresh_token = create_access_token(
+            identity=user.id,
+            expires_delta=timedelta(days=30),
+            additional_claims=additional_claims
+        )
+        
+        # Log impersonation for audit
+        logger.info(f"Role switch: {user.email} -> {target_role}")
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'accessToken': access_token,
+                'refreshToken': refresh_token,
+                'effectiveRole': target_role,
+                'roleDisplayName': {
+                    'tenant_admin': 'Tenant Admin',
+                    'admin': 'Yönetici',
+                    'odyolog': 'Odyolog',
+                    'odyometrist': 'Odyometrist',
+                    'secretary': 'Sekreter',
+                    'user': 'Kullanıcı',
+                }.get(target_role, target_role),
+                'permissions': role_permissions,
+                'isImpersonating': True,
+                'realUserEmail': user.email
+            }
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Debug role switch error: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@admin_bp.route('/debug/available-roles', methods=['GET'])
+@jwt_required()
+def debug_available_roles():
+    """
+    Get all available roles for debugging.
+    Only available to admin@x-ear.com user.
+    """
+    from models.user import User
+    from models.role import Role
+    from os import getenv
+    
+    if getenv('ENABLE_DEBUG_ROLE_SWITCH', 'true').lower() != 'true':
+        return jsonify({
+            'success': False,
+            'error': 'Debug role switch is disabled'
+        }), 403
+    
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user or user.email != DEBUG_ADMIN_EMAIL:
+            logger.warning(f"Unauthorized debug access attempt: user_id={user_id}, email={user.email if user else 'N/A'}")
+            return jsonify({
+                'success': False,
+                'error': 'Unauthorized'
+            }), 403
+        
+        roles = Role.query.all()
+        
+        role_display_names = {
+            'tenant_admin': 'Tenant Admin',
+            'admin': 'Yönetici',
+            'odyolog': 'Odyolog',
+            'odyometrist': 'Odyometrist',
+            'secretary': 'Sekreter',
+            'user': 'Kullanıcı',
+            'doctor': 'Doktor (Eski)',
+        }
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'roles': [
+                    {
+                        'name': r.name,
+                        'displayName': role_display_names.get(r.name, r.name),
+                        'description': r.description,
+                        'permissionCount': len(r.permissions)
+                    }
+                    for r in roles
+                ]
+            }
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Get available roles error: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@admin_bp.route('/debug/page-permissions/<page_key>', methods=['GET'])
+@jwt_required()
+def debug_page_permissions(page_key):
+    """
+    Get permissions for a specific page based on the effective role.
+    Only available to admin@x-ear.com user.
+    """
+    from models.user import User
+    from models.role import Role
+    from flask_jwt_extended import get_jwt
+    from os import getenv
+    
+    if getenv('ENABLE_DEBUG_ROLE_SWITCH', 'true').lower() != 'true':
+        return jsonify({
+            'success': False,
+            'error': 'Debug role switch is disabled'
+        }), 403
+    
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        jwt_claims = get_jwt()
+        
+        if not user or user.email != DEBUG_ADMIN_EMAIL:
+            return jsonify({
+                'success': False,
+                'error': 'Unauthorized'
+            }), 403
+        
+        # Get role from query param or JWT
+        role_name = request.args.get('role') or jwt_claims.get('effective_role') or user.role
+        
+        if page_key not in PAGE_PERMISSION_MAP:
+            return jsonify({
+                'success': False,
+                'error': f'Unknown page: {page_key}'
+            }), 404
+        
+        # Get role permissions
+        role = Role.query.filter_by(name=role_name).first()
+        role_permissions = set()
+        
+        if role:
+            role_permissions = {p.name for p in role.permissions}
+        elif role_name == 'tenant_admin':
+            # Tenant admin has all permissions
+            from models.permission import Permission
+            role_permissions = {p.name for p in Permission.query.all()}
+        
+        # Build response with allowed/denied status
+        page_perms = PAGE_PERMISSION_MAP[page_key]
+        actions = []
+        
+        for perm in page_perms:
+            actions.append({
+                'code': perm['code'],
+                'label': perm['label'],
+                'allowed': perm['code'] in role_permissions
+            })
+        
+        role_display_names = {
+            'tenant_admin': 'Tenant Admin',
+            'admin': 'Yönetici',
+            'odyolog': 'Odyolog',
+            'odyometrist': 'Odyometrist',
+            'secretary': 'Sekreter',
+            'user': 'Kullanıcı',
+        }
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'pageKey': page_key,
+                'role': role_name,
+                'roleDisplayName': role_display_names.get(role_name, role_name),
+                'actions': actions,
+                'allowedCount': sum(1 for a in actions if a['allowed']),
+                'totalCount': len(actions)
+            }
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Get page permissions error: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500

@@ -197,6 +197,12 @@ def login():
                 user = User.query.filter_by(phone=identifier).first()
 
         if not user or not user.check_password(password):
+            # Log failed login attempt
+            try:
+                from utils.activity_logging import log_login
+                log_login(identifier, None, success=False)
+            except Exception as e:
+                logger.warning(f"Failed to log failed login: {e}")
             return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
 
         # Check if user is active
@@ -229,6 +235,13 @@ def login():
             db.session.commit()
         except Exception:
             db.session.rollback()
+
+        # Log successful login
+        try:
+            from utils.activity_logging import log_login
+            log_login(user.id, user.tenant_id, success=True)
+        except Exception as e:
+            logger.warning(f"Failed to log login activity: {e}")
 
         access_token = create_access_token(identity=user.id, additional_claims={'tenant_id': user.tenant_id})
         refresh_token = create_access_token(identity=user.id, expires_delta=timedelta(days=30), additional_claims={'tenant_id': user.tenant_id})

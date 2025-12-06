@@ -17,6 +17,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.user import User
 from utils.idempotency import idempotent
 from utils.optimistic_locking import optimistic_lock, with_transaction
+# Permission checks handled by middleware - see middleware/permission_middleware.py
+from utils.activity_logging import log_action, create_activity_log
 
 patients_bp = Blueprint('patients', __name__)
 logger = logging.getLogger(__name__)
@@ -511,8 +513,8 @@ def get_patient(patient_id):
 
 
 @patients_bp.route('/patients', methods=['POST'])
-@jwt_required()
 @idempotent(methods=['POST'])
+@log_action(action="patient.created", entity_id_from_response="data.id")
 def create_patient():
     try:
         current_user_id = get_jwt_identity()
@@ -626,10 +628,10 @@ def create_patient():
 
 
 @patients_bp.route('/patients/<patient_id>', methods=['PUT','PATCH'])
-@jwt_required()
 @idempotent(methods=['PUT', 'PATCH'])
 @optimistic_lock(Patient, id_param='patient_id')
 @with_transaction
+@log_action(action="patient.updated", entity_id_param="patient_id")
 def update_patient(patient_id):
     try:
         current_user_id = get_jwt_identity()
@@ -759,7 +761,7 @@ def update_patient(patient_id):
 
 
 @patients_bp.route('/patients/<patient_id>', methods=['DELETE'])
-@jwt_required()
+@log_action(action="patient.deleted", entity_id_param="patient_id", is_critical=True)
 def delete_patient(patient_id):
     try:
         current_user_id = get_jwt_identity()

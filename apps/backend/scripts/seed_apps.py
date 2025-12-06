@@ -19,8 +19,11 @@ CORE_ROLES = [
     {'name': 'app_viewer', 'description': 'Read-only access to app entities', 'is_system': True},
     # X-Ear CRM specific roles
     {'name': 'tenant_admin', 'description': 'Tenant administrator with full control', 'is_system': True},
-    {'name': 'doctor', 'description': 'Doctor with medical access', 'is_system': True},
+    {'name': 'admin', 'description': 'Administrator with configurable permissions', 'is_system': True},
+    {'name': 'odyolog', 'description': 'Odyolog with medical access', 'is_system': True},
+    {'name': 'odyometrist', 'description': 'Odyometrist with hearing test access', 'is_system': True},
     {'name': 'secretary', 'description': 'Secretary with limited access', 'is_system': True},
+    {'name': 'user', 'description': 'Standard user with basic access', 'is_system': True},
 ]
 
 CORE_PERMISSIONS = [
@@ -110,17 +113,27 @@ CRM_PERMISSIONS = [
 # Role -> permissions mapping for X-Ear CRM
 CRM_ROLE_PERMISSIONS_MAP = {
     'tenant_admin': [p['name'] for p in CRM_PERMISSIONS],  # All permissions
-    'doctor': [
+    'admin': [p['name'] for p in CRM_PERMISSIONS],  # All permissions (but can be restricted)
+    'odyolog': [
         'patients.view', 'patients.create', 'patients.edit', 'patients.notes', 'patients.history',
         'sales.view', 'sales.create',
         'devices.view', 'devices.assign',
         'dashboard.view',
         'reports.view',
     ],
+    'odyometrist': [
+        'patients.view', 'patients.create', 'patients.edit', 'patients.notes', 'patients.history',
+        'devices.view',
+        'dashboard.view',
+    ],
     'secretary': [
         'patients.view', 'patients.create', 'patients.edit', 
         'sales.view',
         'devices.view',
+        'dashboard.view',
+    ],
+    'user': [
+        'patients.view',
         'dashboard.view',
     ],
 }

@@ -297,11 +297,25 @@ class BaseModel(db.Model):
     created_at = db.Column(db.DateTime, default=now_utc)
     updated_at = db.Column(db.DateTime, default=now_utc, onupdate=now_utc)
     
+    @staticmethod
+    def _format_datetime_utc(dt):
+        """Format datetime as ISO-8601 with UTC timezone suffix.
+        
+        Ensures consistent timezone handling across frontend/backend.
+        Stored as UTC, returned with +00:00 suffix so JS can convert to local time.
+        """
+        if dt is None:
+            return None
+        # If datetime has no timezone info, assume UTC and add it
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.isoformat()
+    
     def to_dict_base(self):
         """Base to_dict implementation with common fields"""
         return {
-            'createdAt': self.created_at.isoformat() if self.created_at else None,
-            'updatedAt': self.updated_at.isoformat() if self.updated_at else None
+            'createdAt': self._format_datetime_utc(self.created_at),
+            'updatedAt': self._format_datetime_utc(self.updated_at)
         }
 
 class JSONMixin:

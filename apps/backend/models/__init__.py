@@ -30,6 +30,7 @@ from .branch import Branch
 from .addon import AddOn
 from .plan import Plan
 from .admin_user import AdminUser
+from .admin_permission import AdminRoleModel, AdminPermissionModel, admin_role_permissions, admin_user_roles, DEFAULT_ADMIN_PERMISSIONS, DEFAULT_ADMIN_ROLES
 from .category import Category
 from .brand import Brand
 from .idempotency import IdempotencyKey
@@ -55,6 +56,8 @@ __all__ = [
     'PurchaseInvoice', 'PurchaseInvoiceItem', 'SuggestedSupplier',
     'App', 'Role', 'Permission', 'UserAppRole', 'role_permissions',
     'Tenant', 'Branch', 'AddOn', 'Plan', 'AdminUser', 'Category', 'Brand',
+    'AdminRoleModel', 'AdminPermissionModel', 'admin_role_permissions', 'admin_user_roles',
+    'DEFAULT_ADMIN_PERMISSIONS', 'DEFAULT_ADMIN_ROLES',
     'IdempotencyKey', 'EFaturaOutbox', 'Replacement',
     'Subscription', 'PaymentHistory',
     'SMSProviderConfig',

@@ -27,6 +27,37 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
+import { DebugRoleSwitcher } from './DebugRoleSwitcher';
+import { PagePermissionsViewer } from './PagePermissionsViewer';
+
+// Route'tan page key mapping
+const getPageKeyFromPath = (pathname: string): { key: string; title: string } | null => {
+  const pathMap: Record<string, { key: string; title: string }> = {
+    '/patients': { key: 'patients', title: 'Hastalar' },
+    '/appointments': { key: 'appointments', title: 'Randevular' },
+    '/sales': { key: 'sales', title: 'Satışlar' },
+    '/finance': { key: 'finance', title: 'Finans' },
+    '/invoices': { key: 'invoices', title: 'Faturalar' },
+    '/devices': { key: 'devices', title: 'Cihazlar' },
+    '/inventory': { key: 'inventory', title: 'Stok' },
+    '/campaigns': { key: 'campaigns', title: 'Kampanyalar' },
+    '/sgk': { key: 'sgk', title: 'SGK' },
+    '/settings': { key: 'settings', title: 'Ayarlar' },
+    '/team': { key: 'team', title: 'Ekip' },
+    '/reports': { key: 'reports', title: 'Raporlar' },
+    '/dashboard': { key: 'dashboard', title: 'Dashboard' },
+  };
+  
+  // Exact match first
+  if (pathMap[pathname]) return pathMap[pathname];
+  
+  // Prefix match
+  for (const [prefix, value] of Object.entries(pathMap)) {
+    if (pathname.startsWith(prefix)) return value;
+  }
+  
+  return null;
+};
 
 interface User {
   id: string;
@@ -124,22 +155,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       label: 'SGK',
       icon: Building,
       submenu: [
-        { label: 'SGK Raporları', href: '/sgk' },
-        { label: 'Hasta Eşleştirme', href: '/sgk/matching' },
-        { label: 'Belge Yükleme', href: '/sgk/upload' },
-        { label: 'Belge İndirme', href: '/sgk/downloads' }
+        { label: 'SGK Raporlari', href: '/sgk' },
+        { label: 'Hasta Eslestirme', href: '/sgk/matching' },
+        { label: 'Belge Yukleme', href: '/sgk/upload' },
+        { label: 'Belge Indirme', href: '/sgk/downloads' }
       ]
     },
-    {
-      key: 'reports',
-      label: 'Raporlar',
-      icon: PieChart,
-      submenu: [
-        { label: 'Genel Raporlar', href: '/reports' },
-        { label: 'Satış Raporları', href: '/reports/sales' },
-        { label: 'Hasta Raporları', href: '/reports/patients' }
-      ]
-    },
+    { key: 'reports', label: 'Raporlar', icon: PieChart, href: '/reports' },
     { key: 'automation', label: 'Otomasyon', icon: Bot, href: '/automation' },
     {
       key: 'settings',
@@ -401,6 +423,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 }}></span>
               </Button>
 
+              {/* Debug Role Switcher (admin@x-ear.com only) */}
+              <DebugRoleSwitcher darkMode={darkMode} />
+
               {/* User Menu */}
               <div style={{ position: 'relative' }}>
                 <Button
@@ -566,6 +591,21 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           minHeight: 'calc(100vh - 80px)'
         }}>
           {children}
+          
+          {/* Page Permissions Viewer (admin@x-ear.com only) */}
+          {(() => {
+            const pageInfo = getPageKeyFromPath(location.pathname);
+            if (pageInfo) {
+              return (
+                <PagePermissionsViewer
+                  pageKey={pageInfo.key}
+                  pageTitle={pageInfo.title}
+                  darkMode={darkMode}
+                />
+              );
+            }
+            return null;
+          })()}
         </main>
       </div>
     </div>

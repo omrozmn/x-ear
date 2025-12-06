@@ -1,85 +1,104 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
-from models.system import Settings
 from models.base import db
+from models.system_setting import SystemSetting
+from utils.admin_permissions import require_admin_permission, AdminPermissions
 import logging
 
 logger = logging.getLogger(__name__)
 
 admin_settings_bp = Blueprint('admin_settings', __name__, url_prefix='/api/admin/settings')
 
+@admin_settings_bp.route('/init-db', methods=['POST'])
+@jwt_required()
+@require_admin_permission(AdminPermissions.SYSTEM_MANAGE)
+def init_db():
+    """Initialize System Settings table"""
+    try:
+        engine = db.engine
+        SystemSetting.__table__.create(engine, checkfirst=True)
+        
+        # Seed default settings if empty
+        if SystemSetting.query.count() == 0:
+            defaults = [
+                SystemSetting(key='site_name', value='X-Ear CRM', category='general', is_public=True),
+                SystemSetting(key='maintenance_mode', value='false', category='maintenance', is_public=True),
+                SystemSetting(key='smtp_host', value='smtp.gmail.com', category='mail'),
+                SystemSetting(key='smtp_port', value='587', category='mail'),
+                SystemSetting(key='smtp_user', value='', category='mail'),
+                SystemSetting(key='smtp_pass', value='', category='mail'),
+            ]
+            db.session.add_all(defaults)
+            db.session.commit()
+            
+        return jsonify({'success': True, 'message': 'System Settings table initialized'}), 200
+    except Exception as e:
+        logger.error(f"Init DB error: {e}")
+        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+
 @admin_settings_bp.route('', methods=['GET'])
 @jwt_required()
-def get_admin_settings():
-    """Get system settings for admin"""
+@require_admin_permission(AdminPermissions.SETTINGS_READ)
+def get_settings():
+    """Get all system settings"""
     try:
-        settings = Settings.get_system_settings()
+        settings = SystemSetting.query.all()
         return jsonify({
-            "data": {
-                "settings": settings.settings_json
-            }
+            'success': True,
+            'data': [s.to_dict() for s in settings]
         }), 200
     except Exception as e:
-        logger.error(f"Get admin settings error: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
 
 @admin_settings_bp.route('', methods=['POST'])
 @jwt_required()
-def update_admin_settings():
+@require_admin_permission(AdminPermissions.SETTINGS_MANAGE)
+def update_settings():
     """Update system settings"""
     try:
         data = request.get_json()
-        settings_record = Settings.get_system_settings()
         
-        # Merge new settings with existing ones
-        current_settings = settings_record.settings_json
-        
-        # Deep merge or shallow merge? 
-        # For simplicity, we'll do a shallow merge of top-level keys, 
-        # but the frontend sends the whole object usually.
-        # If the frontend sends a partial object, we need to be careful.
-        # Assuming frontend sends the complete structure for the sections it edits.
-        
-        # However, to support the new integrations fields without losing others:
-        new_settings = {**current_settings, **data}
-        
-        settings_record.settings_json = new_settings
-        db.session.commit()
-        
-        return jsonify({
-            "data": {
-                "settings": new_settings
-            }
-        }), 200
-    except Exception as e:
-        logger.error(f"Update admin settings error: {e}")
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-@admin_settings_bp.route('', methods=['PATCH'])
-@jwt_required()
-def patch_admin_settings():
-    """Apply partial updates to system settings using dot-path notation."""
-    try:
-        data = request.get_json()
-        updates = data.get('updates')
-        
-        if not updates or not isinstance(updates, dict):
-            return jsonify({"error": "'updates' object required"}), 400
-
-        settings_record = Settings.get_system_settings()
-        
-        for path, val in updates.items():
-            settings_record.update_setting(path, val)
+        for item in data:
+            key = item.get('key')
+            value = item.get('value')
             
+            setting = SystemSetting.query.get(key)
+            if setting:
+                setting.value = str(value)
+            else:
+                setting = SystemSetting(
+                    key=key,
+                    value=str(value),
+                    category=item.get('category', 'general'),
+                    is_public=item.get('isPublic', False)
+                )
+                db.session.add(setting)
+        
         db.session.commit()
         
-        return jsonify({
-            "data": {
-                "settings": settings_record.settings_json
-            }
-        }), 200
+        return jsonify({'success': True, 'message': 'Settings updated'}), 200
     except Exception as e:
-        logger.error(f"Patch admin settings error: {e}")
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+
+@admin_settings_bp.route('/cache/clear', methods=['POST'])
+@jwt_required()
+@require_admin_permission(AdminPermissions.SYSTEM_MANAGE)
+def clear_cache():
+    """Clear system cache (Mock)"""
+    try:
+        # In a real app, this would clear Redis or other cache
+        return jsonify({'success': True, 'message': 'Cache cleared successfully'}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+
+@admin_settings_bp.route('/backup', methods=['POST'])
+@jwt_required()
+@require_admin_permission(AdminPermissions.SYSTEM_MANAGE)
+def trigger_backup():
+    """Trigger database backup (Mock)"""
+    try:
+        # In a real app, this would trigger a backup job
+        return jsonify({'success': True, 'message': 'Backup job started'}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+

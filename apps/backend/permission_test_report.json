@@ -1,0 +1,2732 @@
+{
+  "timestamp": "2025-12-02T23:53:04.996180",
+  "summary": {
+    "total": 268,
+    "passed": 235,
+    "failed": 33,
+    "skipped": 0
+  },
+  "results": {
+    "tenant_admin": [
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/patients",
+        "permission": "patients.view",
+        "description": "Hasta listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/patients/test_id",
+        "permission": "patients.view",
+        "description": "Hasta detay\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 400,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/patients",
+        "permission": "patients.create",
+        "description": "Hasta olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "PUT",
+        "path": "/api/patients/test_id",
+        "permission": "patients.edit",
+        "description": "Hasta g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "PATCH",
+        "path": "/api/patients/test_id",
+        "permission": "patients.edit",
+        "description": "Hasta k\u0131smi g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "DELETE",
+        "path": "/api/patients/test_id",
+        "permission": "patients.delete",
+        "description": "Hasta sil"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/patients/test_id/notes",
+        "permission": "patients.notes",
+        "description": "Hasta notlar\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/patients/test_id/notes",
+        "permission": "patients.notes",
+        "description": "Hasta notu ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/patients/test_id/history",
+        "permission": "patients.history",
+        "description": "Hasta ge\u00e7mi\u015fi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/patients/test_id/timeline",
+        "permission": "patients.history",
+        "description": "Hasta zaman \u00e7izelgesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/sales",
+        "permission": "sales.view",
+        "description": "Sat\u0131\u015f listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/sales",
+        "permission": "sales.create",
+        "description": "Sat\u0131\u015f olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "PATCH",
+        "path": "/api/sales/test_id",
+        "permission": "sales.edit",
+        "description": "Sat\u0131\u015f g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "DELETE",
+        "path": "/api/sales/test_id",
+        "permission": "sales.delete",
+        "description": "Sat\u0131\u015f sil"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/patients/test_id/sales",
+        "permission": "sales.view",
+        "description": "Hasta sat\u0131\u015flar\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/patients/test_id/product-sales",
+        "permission": "sales.create",
+        "description": "Hasta \u00fcr\u00fcn sat\u0131\u015f\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/finance/summary",
+        "permission": "finance.view",
+        "description": "Finans \u00f6zeti"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/finance/cash-register",
+        "permission": "finance.cash_register",
+        "description": "Kasa listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/finance/cash-register",
+        "permission": "finance.cash_register",
+        "description": "Kasa kayd\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/finance/reports",
+        "permission": "finance.reports",
+        "description": "Finans raporlar\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/finance/refunds",
+        "permission": "finance.refunds",
+        "description": "\u0130ade i\u015flemi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/invoices",
+        "permission": "invoices.view",
+        "description": "Fatura listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/invoices/test_id",
+        "permission": "invoices.view",
+        "description": "Fatura detay\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 400,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/invoices",
+        "permission": "invoices.create",
+        "description": "Fatura olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/invoices/test_id/send",
+        "permission": "invoices.send",
+        "description": "Fatura g\u00f6nder"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/invoices/test_id/cancel",
+        "permission": "invoices.cancel",
+        "description": "Fatura iptal"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/devices",
+        "permission": "devices.view",
+        "description": "Cihaz listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/devices/test_id",
+        "permission": "devices.view",
+        "description": "Cihaz detay\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 400,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/devices",
+        "permission": "devices.create",
+        "description": "Cihaz ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "PUT",
+        "path": "/api/devices/test_id",
+        "permission": "devices.edit",
+        "description": "Cihaz g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "DELETE",
+        "path": "/api/devices/test_id",
+        "permission": "devices.delete",
+        "description": "Cihaz sil"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/devices/test_id/assign",
+        "permission": "devices.assign",
+        "description": "Cihaz ata"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/inventory",
+        "permission": "inventory.view",
+        "description": "Stok listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 400,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/inventory",
+        "permission": "inventory.manage",
+        "description": "Stok ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "PUT",
+        "path": "/api/inventory/test_id",
+        "permission": "inventory.manage",
+        "description": "Stok g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/campaigns",
+        "permission": "campaigns.view",
+        "description": "Kampanya listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 400,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/campaigns",
+        "permission": "campaigns.create",
+        "description": "Kampanya olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "PUT",
+        "path": "/api/campaigns/test_id",
+        "permission": "campaigns.edit",
+        "description": "Kampanya g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "DELETE",
+        "path": "/api/campaigns/test_id",
+        "permission": "campaigns.delete",
+        "description": "Kampanya sil"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/campaigns/test_id/send-sms",
+        "permission": "campaigns.send_sms",
+        "description": "SMS g\u00f6nder"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/sgk/provisions",
+        "permission": "sgk.view",
+        "description": "SGK listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/sgk/provisions",
+        "permission": "sgk.create",
+        "description": "SGK olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 400,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/sgk/upload",
+        "permission": "sgk.upload",
+        "description": "SGK y\u00fckle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/settings",
+        "permission": "settings.view",
+        "description": "Ayarlar"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 400,
+        "role": "tenant_admin",
+        "method": "PUT",
+        "path": "/api/settings",
+        "permission": "settings.edit",
+        "description": "Ayarlar g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/branches",
+        "permission": "settings.view",
+        "description": "\u015eubeler"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 201,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/branches",
+        "permission": "settings.branches",
+        "description": "\u015eube ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "PUT",
+        "path": "/api/branches/test_id",
+        "permission": "settings.branches",
+        "description": "\u015eube g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "DELETE",
+        "path": "/api/branches/test_id",
+        "permission": "settings.branches",
+        "description": "\u015eube sil"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/integrations",
+        "permission": "settings.integrations",
+        "description": "Entegrasyonlar"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/users",
+        "permission": "team.view",
+        "description": "Kullan\u0131c\u0131 listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 400,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/users",
+        "permission": "team.create",
+        "description": "Kullan\u0131c\u0131 ekle"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol team.edit iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "tenant_admin",
+        "method": "PUT",
+        "path": "/api/users/test_id",
+        "permission": "team.edit",
+        "description": "Kullan\u0131c\u0131 g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "DELETE",
+        "path": "/api/users/test_id",
+        "permission": "team.delete",
+        "description": "Kullan\u0131c\u0131 sil"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/permissions",
+        "permission": "team.permissions",
+        "description": "\u0130zinler"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/permissions/role/odyolog",
+        "permission": "team.permissions",
+        "description": "Rol izinleri"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "PUT",
+        "path": "/api/permissions/role/odyolog",
+        "permission": "team.permissions",
+        "description": "Rol izinleri g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/reports",
+        "permission": "reports.view",
+        "description": "Raporlar"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/reports/export",
+        "permission": "reports.export",
+        "description": "Rapor d\u0131\u015fa aktar"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/dashboard",
+        "permission": "dashboard.view",
+        "description": "Dashboard"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/dashboard/stats",
+        "permission": "dashboard.view",
+        "description": "Dashboard istatistikleri"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/dashboard/analytics",
+        "permission": "dashboard.analytics",
+        "description": "Analitik"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/appointments",
+        "permission": "patients.view",
+        "description": "Randevular"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "tenant_admin",
+        "method": "GET",
+        "path": "/api/appointments/list",
+        "permission": "patients.view",
+        "description": "Randevu listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 400,
+        "role": "tenant_admin",
+        "method": "POST",
+        "path": "/api/appointments",
+        "permission": "patients.edit",
+        "description": "Randevu olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "PUT",
+        "path": "/api/appointments/test_id",
+        "permission": "patients.edit",
+        "description": "Randevu g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "tenant_admin",
+        "method": "DELETE",
+        "path": "/api/appointments/test_id",
+        "permission": "patients.edit",
+        "description": "Randevu sil"
+      }
+    ],
+    "odyolog": [
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/patients",
+        "permission": "patients.view",
+        "description": "Hasta listesi"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/patients/test_id",
+        "permission": "patients.view",
+        "description": "Hasta detay\u0131"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.create iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/patients",
+        "permission": "patients.create",
+        "description": "Hasta olu\u015ftur"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.edit iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "PUT",
+        "path": "/api/patients/test_id",
+        "permission": "patients.edit",
+        "description": "Hasta g\u00fcncelle"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.edit iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "PATCH",
+        "path": "/api/patients/test_id",
+        "permission": "patients.edit",
+        "description": "Hasta k\u0131smi g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "DELETE",
+        "path": "/api/patients/test_id",
+        "permission": "patients.delete",
+        "description": "Hasta sil"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.notes iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/patients/test_id/notes",
+        "permission": "patients.notes",
+        "description": "Hasta notlar\u0131"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.notes iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/patients/test_id/notes",
+        "permission": "patients.notes",
+        "description": "Hasta notu ekle"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.history iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/patients/test_id/history",
+        "permission": "patients.history",
+        "description": "Hasta ge\u00e7mi\u015fi"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.history iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/patients/test_id/timeline",
+        "permission": "patients.history",
+        "description": "Hasta zaman \u00e7izelgesi"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol sales.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/sales",
+        "permission": "sales.view",
+        "description": "Sat\u0131\u015f listesi"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol sales.create iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/sales",
+        "permission": "sales.create",
+        "description": "Sat\u0131\u015f olu\u015ftur"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol sales.edit iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "PATCH",
+        "path": "/api/sales/test_id",
+        "permission": "sales.edit",
+        "description": "Sat\u0131\u015f g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "DELETE",
+        "path": "/api/sales/test_id",
+        "permission": "sales.delete",
+        "description": "Sat\u0131\u015f sil"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol sales.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/patients/test_id/sales",
+        "permission": "sales.view",
+        "description": "Hasta sat\u0131\u015flar\u0131"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol sales.create iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/patients/test_id/product-sales",
+        "permission": "sales.create",
+        "description": "Hasta \u00fcr\u00fcn sat\u0131\u015f\u0131"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol finance.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/finance/summary",
+        "permission": "finance.view",
+        "description": "Finans \u00f6zeti"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/finance/cash-register",
+        "permission": "finance.cash_register",
+        "description": "Kasa listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/finance/cash-register",
+        "permission": "finance.cash_register",
+        "description": "Kasa kayd\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/finance/reports",
+        "permission": "finance.reports",
+        "description": "Finans raporlar\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/finance/refunds",
+        "permission": "finance.refunds",
+        "description": "\u0130ade i\u015flemi"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol invoices.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/invoices",
+        "permission": "invoices.view",
+        "description": "Fatura listesi"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol invoices.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/invoices/test_id",
+        "permission": "invoices.view",
+        "description": "Fatura detay\u0131"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol invoices.create iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/invoices",
+        "permission": "invoices.create",
+        "description": "Fatura olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/invoices/test_id/send",
+        "permission": "invoices.send",
+        "description": "Fatura g\u00f6nder"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/invoices/test_id/cancel",
+        "permission": "invoices.cancel",
+        "description": "Fatura iptal"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol devices.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/devices",
+        "permission": "devices.view",
+        "description": "Cihaz listesi"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol devices.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/devices/test_id",
+        "permission": "devices.view",
+        "description": "Cihaz detay\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/devices",
+        "permission": "devices.create",
+        "description": "Cihaz ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "PUT",
+        "path": "/api/devices/test_id",
+        "permission": "devices.edit",
+        "description": "Cihaz g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "DELETE",
+        "path": "/api/devices/test_id",
+        "permission": "devices.delete",
+        "description": "Cihaz sil"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol devices.assign iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/devices/test_id/assign",
+        "permission": "devices.assign",
+        "description": "Cihaz ata"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol inventory.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/inventory",
+        "permission": "inventory.view",
+        "description": "Stok listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/inventory",
+        "permission": "inventory.manage",
+        "description": "Stok ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "PUT",
+        "path": "/api/inventory/test_id",
+        "permission": "inventory.manage",
+        "description": "Stok g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/campaigns",
+        "permission": "campaigns.view",
+        "description": "Kampanya listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/campaigns",
+        "permission": "campaigns.create",
+        "description": "Kampanya olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "PUT",
+        "path": "/api/campaigns/test_id",
+        "permission": "campaigns.edit",
+        "description": "Kampanya g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "DELETE",
+        "path": "/api/campaigns/test_id",
+        "permission": "campaigns.delete",
+        "description": "Kampanya sil"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/campaigns/test_id/send-sms",
+        "permission": "campaigns.send_sms",
+        "description": "SMS g\u00f6nder"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol sgk.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/sgk/provisions",
+        "permission": "sgk.view",
+        "description": "SGK listesi"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol sgk.create iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/sgk/provisions",
+        "permission": "sgk.create",
+        "description": "SGK olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/sgk/upload",
+        "permission": "sgk.upload",
+        "description": "SGK y\u00fckle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/settings",
+        "permission": "settings.view",
+        "description": "Ayarlar"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "PUT",
+        "path": "/api/settings",
+        "permission": "settings.edit",
+        "description": "Ayarlar g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/branches",
+        "permission": "settings.view",
+        "description": "\u015eubeler"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/branches",
+        "permission": "settings.branches",
+        "description": "\u015eube ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "PUT",
+        "path": "/api/branches/test_id",
+        "permission": "settings.branches",
+        "description": "\u015eube g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "DELETE",
+        "path": "/api/branches/test_id",
+        "permission": "settings.branches",
+        "description": "\u015eube sil"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/integrations",
+        "permission": "settings.integrations",
+        "description": "Entegrasyonlar"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/users",
+        "permission": "team.view",
+        "description": "Kullan\u0131c\u0131 listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/users",
+        "permission": "team.create",
+        "description": "Kullan\u0131c\u0131 ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "PUT",
+        "path": "/api/users/test_id",
+        "permission": "team.edit",
+        "description": "Kullan\u0131c\u0131 g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "DELETE",
+        "path": "/api/users/test_id",
+        "permission": "team.delete",
+        "description": "Kullan\u0131c\u0131 sil"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/permissions",
+        "permission": "team.permissions",
+        "description": "\u0130zinler"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/permissions/role/odyolog",
+        "permission": "team.permissions",
+        "description": "Rol izinleri"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "PUT",
+        "path": "/api/permissions/role/odyolog",
+        "permission": "team.permissions",
+        "description": "Rol izinleri g\u00fcncelle"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol reports.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/reports",
+        "permission": "reports.view",
+        "description": "Raporlar"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/reports/export",
+        "permission": "reports.export",
+        "description": "Rapor d\u0131\u015fa aktar"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol dashboard.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/dashboard",
+        "permission": "dashboard.view",
+        "description": "Dashboard"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol dashboard.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/dashboard/stats",
+        "permission": "dashboard.view",
+        "description": "Dashboard istatistikleri"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/dashboard/analytics",
+        "permission": "dashboard.analytics",
+        "description": "Analitik"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/appointments",
+        "permission": "patients.view",
+        "description": "Randevular"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.view iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "GET",
+        "path": "/api/appointments/list",
+        "permission": "patients.view",
+        "description": "Randevu listesi"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.edit iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "POST",
+        "path": "/api/appointments",
+        "permission": "patients.edit",
+        "description": "Randevu olu\u015ftur"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.edit iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "PUT",
+        "path": "/api/appointments/test_id",
+        "permission": "patients.edit",
+        "description": "Randevu g\u00fcncelle"
+      },
+      {
+        "status": "FAIL",
+        "expected": "ACCESS",
+        "got": 403,
+        "reason": "Rol patients.edit iznine sahip ama 403 d\u00f6nd\u00fc",
+        "role": "odyolog",
+        "method": "DELETE",
+        "path": "/api/appointments/test_id",
+        "permission": "patients.edit",
+        "description": "Randevu sil"
+      }
+    ],
+    "odyometrist": [
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/patients",
+        "permission": "patients.view",
+        "description": "Hasta listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/patients/test_id",
+        "permission": "patients.view",
+        "description": "Hasta detay\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 400,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/patients",
+        "permission": "patients.create",
+        "description": "Hasta olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "odyometrist",
+        "method": "PUT",
+        "path": "/api/patients/test_id",
+        "permission": "patients.edit",
+        "description": "Hasta g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "odyometrist",
+        "method": "PATCH",
+        "path": "/api/patients/test_id",
+        "permission": "patients.edit",
+        "description": "Hasta k\u0131smi g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "DELETE",
+        "path": "/api/patients/test_id",
+        "permission": "patients.delete",
+        "description": "Hasta sil"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/patients/test_id/notes",
+        "permission": "patients.notes",
+        "description": "Hasta notlar\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/patients/test_id/notes",
+        "permission": "patients.notes",
+        "description": "Hasta notu ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/patients/test_id/history",
+        "permission": "patients.history",
+        "description": "Hasta ge\u00e7mi\u015fi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/patients/test_id/timeline",
+        "permission": "patients.history",
+        "description": "Hasta zaman \u00e7izelgesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/sales",
+        "permission": "sales.view",
+        "description": "Sat\u0131\u015f listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/sales",
+        "permission": "sales.create",
+        "description": "Sat\u0131\u015f olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "PATCH",
+        "path": "/api/sales/test_id",
+        "permission": "sales.edit",
+        "description": "Sat\u0131\u015f g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "DELETE",
+        "path": "/api/sales/test_id",
+        "permission": "sales.delete",
+        "description": "Sat\u0131\u015f sil"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/patients/test_id/sales",
+        "permission": "sales.view",
+        "description": "Hasta sat\u0131\u015flar\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/patients/test_id/product-sales",
+        "permission": "sales.create",
+        "description": "Hasta \u00fcr\u00fcn sat\u0131\u015f\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/finance/summary",
+        "permission": "finance.view",
+        "description": "Finans \u00f6zeti"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/finance/cash-register",
+        "permission": "finance.cash_register",
+        "description": "Kasa listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/finance/cash-register",
+        "permission": "finance.cash_register",
+        "description": "Kasa kayd\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/finance/reports",
+        "permission": "finance.reports",
+        "description": "Finans raporlar\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/finance/refunds",
+        "permission": "finance.refunds",
+        "description": "\u0130ade i\u015flemi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/invoices",
+        "permission": "invoices.view",
+        "description": "Fatura listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/invoices/test_id",
+        "permission": "invoices.view",
+        "description": "Fatura detay\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/invoices",
+        "permission": "invoices.create",
+        "description": "Fatura olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/invoices/test_id/send",
+        "permission": "invoices.send",
+        "description": "Fatura g\u00f6nder"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/invoices/test_id/cancel",
+        "permission": "invoices.cancel",
+        "description": "Fatura iptal"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/devices",
+        "permission": "devices.view",
+        "description": "Cihaz listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/devices/test_id",
+        "permission": "devices.view",
+        "description": "Cihaz detay\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/devices",
+        "permission": "devices.create",
+        "description": "Cihaz ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "PUT",
+        "path": "/api/devices/test_id",
+        "permission": "devices.edit",
+        "description": "Cihaz g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "DELETE",
+        "path": "/api/devices/test_id",
+        "permission": "devices.delete",
+        "description": "Cihaz sil"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/devices/test_id/assign",
+        "permission": "devices.assign",
+        "description": "Cihaz ata"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/inventory",
+        "permission": "inventory.view",
+        "description": "Stok listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/inventory",
+        "permission": "inventory.manage",
+        "description": "Stok ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "PUT",
+        "path": "/api/inventory/test_id",
+        "permission": "inventory.manage",
+        "description": "Stok g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/campaigns",
+        "permission": "campaigns.view",
+        "description": "Kampanya listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/campaigns",
+        "permission": "campaigns.create",
+        "description": "Kampanya olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "PUT",
+        "path": "/api/campaigns/test_id",
+        "permission": "campaigns.edit",
+        "description": "Kampanya g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "DELETE",
+        "path": "/api/campaigns/test_id",
+        "permission": "campaigns.delete",
+        "description": "Kampanya sil"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/campaigns/test_id/send-sms",
+        "permission": "campaigns.send_sms",
+        "description": "SMS g\u00f6nder"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/sgk/provisions",
+        "permission": "sgk.view",
+        "description": "SGK listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/sgk/provisions",
+        "permission": "sgk.create",
+        "description": "SGK olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/sgk/upload",
+        "permission": "sgk.upload",
+        "description": "SGK y\u00fckle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/settings",
+        "permission": "settings.view",
+        "description": "Ayarlar"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "PUT",
+        "path": "/api/settings",
+        "permission": "settings.edit",
+        "description": "Ayarlar g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/branches",
+        "permission": "settings.view",
+        "description": "\u015eubeler"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/branches",
+        "permission": "settings.branches",
+        "description": "\u015eube ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "PUT",
+        "path": "/api/branches/test_id",
+        "permission": "settings.branches",
+        "description": "\u015eube g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "DELETE",
+        "path": "/api/branches/test_id",
+        "permission": "settings.branches",
+        "description": "\u015eube sil"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/integrations",
+        "permission": "settings.integrations",
+        "description": "Entegrasyonlar"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/users",
+        "permission": "team.view",
+        "description": "Kullan\u0131c\u0131 listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/users",
+        "permission": "team.create",
+        "description": "Kullan\u0131c\u0131 ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "PUT",
+        "path": "/api/users/test_id",
+        "permission": "team.edit",
+        "description": "Kullan\u0131c\u0131 g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "DELETE",
+        "path": "/api/users/test_id",
+        "permission": "team.delete",
+        "description": "Kullan\u0131c\u0131 sil"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/permissions",
+        "permission": "team.permissions",
+        "description": "\u0130zinler"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/permissions/role/odyolog",
+        "permission": "team.permissions",
+        "description": "Rol izinleri"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "PUT",
+        "path": "/api/permissions/role/odyolog",
+        "permission": "team.permissions",
+        "description": "Rol izinleri g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/reports",
+        "permission": "reports.view",
+        "description": "Raporlar"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/reports/export",
+        "permission": "reports.export",
+        "description": "Rapor d\u0131\u015fa aktar"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/dashboard",
+        "permission": "dashboard.view",
+        "description": "Dashboard"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/dashboard/stats",
+        "permission": "dashboard.view",
+        "description": "Dashboard istatistikleri"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/dashboard/analytics",
+        "permission": "dashboard.analytics",
+        "description": "Analitik"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/appointments",
+        "permission": "patients.view",
+        "description": "Randevular"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "odyometrist",
+        "method": "GET",
+        "path": "/api/appointments/list",
+        "permission": "patients.view",
+        "description": "Randevu listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 400,
+        "role": "odyometrist",
+        "method": "POST",
+        "path": "/api/appointments",
+        "permission": "patients.edit",
+        "description": "Randevu olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "odyometrist",
+        "method": "PUT",
+        "path": "/api/appointments/test_id",
+        "permission": "patients.edit",
+        "description": "Randevu g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "odyometrist",
+        "method": "DELETE",
+        "path": "/api/appointments/test_id",
+        "permission": "patients.edit",
+        "description": "Randevu sil"
+      }
+    ],
+    "secretary": [
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/patients",
+        "permission": "patients.view",
+        "description": "Hasta listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/patients/test_id",
+        "permission": "patients.view",
+        "description": "Hasta detay\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 400,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/patients",
+        "permission": "patients.create",
+        "description": "Hasta olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "secretary",
+        "method": "PUT",
+        "path": "/api/patients/test_id",
+        "permission": "patients.edit",
+        "description": "Hasta g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "secretary",
+        "method": "PATCH",
+        "path": "/api/patients/test_id",
+        "permission": "patients.edit",
+        "description": "Hasta k\u0131smi g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "DELETE",
+        "path": "/api/patients/test_id",
+        "permission": "patients.delete",
+        "description": "Hasta sil"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/patients/test_id/notes",
+        "permission": "patients.notes",
+        "description": "Hasta notlar\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/patients/test_id/notes",
+        "permission": "patients.notes",
+        "description": "Hasta notu ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/patients/test_id/history",
+        "permission": "patients.history",
+        "description": "Hasta ge\u00e7mi\u015fi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/patients/test_id/timeline",
+        "permission": "patients.history",
+        "description": "Hasta zaman \u00e7izelgesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/sales",
+        "permission": "sales.view",
+        "description": "Sat\u0131\u015f listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/sales",
+        "permission": "sales.create",
+        "description": "Sat\u0131\u015f olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "PATCH",
+        "path": "/api/sales/test_id",
+        "permission": "sales.edit",
+        "description": "Sat\u0131\u015f g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "DELETE",
+        "path": "/api/sales/test_id",
+        "permission": "sales.delete",
+        "description": "Sat\u0131\u015f sil"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/patients/test_id/sales",
+        "permission": "sales.view",
+        "description": "Hasta sat\u0131\u015flar\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/patients/test_id/product-sales",
+        "permission": "sales.create",
+        "description": "Hasta \u00fcr\u00fcn sat\u0131\u015f\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/finance/summary",
+        "permission": "finance.view",
+        "description": "Finans \u00f6zeti"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/finance/cash-register",
+        "permission": "finance.cash_register",
+        "description": "Kasa listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/finance/cash-register",
+        "permission": "finance.cash_register",
+        "description": "Kasa kayd\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/finance/reports",
+        "permission": "finance.reports",
+        "description": "Finans raporlar\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/finance/refunds",
+        "permission": "finance.refunds",
+        "description": "\u0130ade i\u015flemi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/invoices",
+        "permission": "invoices.view",
+        "description": "Fatura listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/invoices/test_id",
+        "permission": "invoices.view",
+        "description": "Fatura detay\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/invoices",
+        "permission": "invoices.create",
+        "description": "Fatura olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/invoices/test_id/send",
+        "permission": "invoices.send",
+        "description": "Fatura g\u00f6nder"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/invoices/test_id/cancel",
+        "permission": "invoices.cancel",
+        "description": "Fatura iptal"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/devices",
+        "permission": "devices.view",
+        "description": "Cihaz listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/devices/test_id",
+        "permission": "devices.view",
+        "description": "Cihaz detay\u0131"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/devices",
+        "permission": "devices.create",
+        "description": "Cihaz ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "PUT",
+        "path": "/api/devices/test_id",
+        "permission": "devices.edit",
+        "description": "Cihaz g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "DELETE",
+        "path": "/api/devices/test_id",
+        "permission": "devices.delete",
+        "description": "Cihaz sil"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/devices/test_id/assign",
+        "permission": "devices.assign",
+        "description": "Cihaz ata"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/inventory",
+        "permission": "inventory.view",
+        "description": "Stok listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/inventory",
+        "permission": "inventory.manage",
+        "description": "Stok ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "PUT",
+        "path": "/api/inventory/test_id",
+        "permission": "inventory.manage",
+        "description": "Stok g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/campaigns",
+        "permission": "campaigns.view",
+        "description": "Kampanya listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/campaigns",
+        "permission": "campaigns.create",
+        "description": "Kampanya olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "PUT",
+        "path": "/api/campaigns/test_id",
+        "permission": "campaigns.edit",
+        "description": "Kampanya g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "DELETE",
+        "path": "/api/campaigns/test_id",
+        "permission": "campaigns.delete",
+        "description": "Kampanya sil"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/campaigns/test_id/send-sms",
+        "permission": "campaigns.send_sms",
+        "description": "SMS g\u00f6nder"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/sgk/provisions",
+        "permission": "sgk.view",
+        "description": "SGK listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/sgk/provisions",
+        "permission": "sgk.create",
+        "description": "SGK olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/sgk/upload",
+        "permission": "sgk.upload",
+        "description": "SGK y\u00fckle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/settings",
+        "permission": "settings.view",
+        "description": "Ayarlar"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "PUT",
+        "path": "/api/settings",
+        "permission": "settings.edit",
+        "description": "Ayarlar g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/branches",
+        "permission": "settings.view",
+        "description": "\u015eubeler"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/branches",
+        "permission": "settings.branches",
+        "description": "\u015eube ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "PUT",
+        "path": "/api/branches/test_id",
+        "permission": "settings.branches",
+        "description": "\u015eube g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "DELETE",
+        "path": "/api/branches/test_id",
+        "permission": "settings.branches",
+        "description": "\u015eube sil"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/integrations",
+        "permission": "settings.integrations",
+        "description": "Entegrasyonlar"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/users",
+        "permission": "team.view",
+        "description": "Kullan\u0131c\u0131 listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/users",
+        "permission": "team.create",
+        "description": "Kullan\u0131c\u0131 ekle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "PUT",
+        "path": "/api/users/test_id",
+        "permission": "team.edit",
+        "description": "Kullan\u0131c\u0131 g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "DELETE",
+        "path": "/api/users/test_id",
+        "permission": "team.delete",
+        "description": "Kullan\u0131c\u0131 sil"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/permissions",
+        "permission": "team.permissions",
+        "description": "\u0130zinler"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/permissions/role/odyolog",
+        "permission": "team.permissions",
+        "description": "Rol izinleri"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "PUT",
+        "path": "/api/permissions/role/odyolog",
+        "permission": "team.permissions",
+        "description": "Rol izinleri g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/reports",
+        "permission": "reports.view",
+        "description": "Raporlar"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/reports/export",
+        "permission": "reports.export",
+        "description": "Rapor d\u0131\u015fa aktar"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/dashboard",
+        "permission": "dashboard.view",
+        "description": "Dashboard"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 500,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/dashboard/stats",
+        "permission": "dashboard.view",
+        "description": "Dashboard istatistikleri"
+      },
+      {
+        "status": "PASS",
+        "expected": 403,
+        "got": 403,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/dashboard/analytics",
+        "permission": "dashboard.analytics",
+        "description": "Analitik"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/appointments",
+        "permission": "patients.view",
+        "description": "Randevular"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 200,
+        "role": "secretary",
+        "method": "GET",
+        "path": "/api/appointments/list",
+        "permission": "patients.view",
+        "description": "Randevu listesi"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 400,
+        "role": "secretary",
+        "method": "POST",
+        "path": "/api/appointments",
+        "permission": "patients.edit",
+        "description": "Randevu olu\u015ftur"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "secretary",
+        "method": "PUT",
+        "path": "/api/appointments/test_id",
+        "permission": "patients.edit",
+        "description": "Randevu g\u00fcncelle"
+      },
+      {
+        "status": "PASS",
+        "expected": "ACCESS",
+        "got": 404,
+        "role": "secretary",
+        "method": "DELETE",
+        "path": "/api/appointments/test_id",
+        "permission": "patients.edit",
+        "description": "Randevu sil"
+      }
+    ]
+  }
+}

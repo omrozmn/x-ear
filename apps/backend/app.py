@@ -266,7 +266,7 @@ def verify_turnstile_token(token):
 
 # Register blueprints
 from routes.ocr import ocr_bp
-app.register_blueprint(ocr_bp)
+app.register_blueprint(ocr_bp, url_prefix='/api/ocr')
 
 # ===== PATIENT CRUD ENDPOINTS =====
 
@@ -478,6 +478,10 @@ from routes.admin_analytics import admin_analytics_bp
 app.register_blueprint(admin_analytics_bp)
 
 from routes.admin_settings import admin_settings_bp
+from routes.admin_scan_queue import admin_scan_queue_bp
+app.register_blueprint(admin_scan_queue_bp)
+from routes.admin_production import admin_production_bp
+app.register_blueprint(admin_production_bp)
 app.register_blueprint(admin_settings_bp)
 
 from routes.admin_invoices import admin_invoices_bp
@@ -485,6 +489,27 @@ app.register_blueprint(admin_invoices_bp)
 
 from routes.admin_tickets import admin_tickets_bp
 app.register_blueprint(admin_tickets_bp)
+
+# Admin Roles & Permissions Management
+from routes.admin_roles import admin_roles_bp
+app.register_blueprint(admin_roles_bp)  # admin_roles_bp has no prefix - routes define full path
+from routes.admin_patients import admin_patients_bp
+from routes.admin_appointments import admin_appointments_bp
+from routes.admin_inventory import admin_inventory_bp
+from routes.admin_notifications import admin_notifications_bp
+from routes.admin_api_keys import admin_api_keys_bp
+from routes.admin_birfatura import admin_birfatura_bp
+from routes.admin_marketplaces import admin_marketplaces_bp
+from routes.admin_settings import admin_settings_bp
+from routes.admin_integrations import admin_integrations_bp
+app.register_blueprint(admin_integrations_bp)
+app.register_blueprint(admin_marketplaces_bp)
+app.register_blueprint(admin_birfatura_bp)
+app.register_blueprint(admin_api_keys_bp)
+app.register_blueprint(admin_notifications_bp)
+app.register_blueprint(admin_inventory_bp)
+app.register_blueprint(admin_appointments_bp)
+app.register_blueprint(admin_patients_bp)
 
 # ===== CHECKOUT / COMMERCE ENDPOINTS =====
 from routes.checkout import checkout_bp
@@ -987,6 +1012,31 @@ if os.getenv('FORCE_CREATE_TABLES', '0') == '1' or os.getenv('FLASK_ENV', 'produ
 
 # Initialize JWT manager
 jwt = JWTManager(app)
+
+# ===== PERMISSION MIDDLEWARE (MERKEZI İZİN KONTROLÜ) =====
+# Bu middleware tüm endpoint'leri config/permissions_map.py'deki 
+# tanımlara göre otomatik olarak kontrol eder.
+try:
+    from middleware.permission_middleware import (
+        init_permission_middleware, 
+        register_permission_blueprint,
+        validate_permission_map
+    )
+    init_permission_middleware(app)
+    register_permission_blueprint(app)
+    logger.info('Permission middleware initialized successfully')
+    
+    # Validate permission map against database (production'da kritik)
+    with app.app_context():
+        validation = validate_permission_map()
+        if not validation['valid']:
+            logger.error(f"Permission map validation failed: {validation['errors']}")
+        else:
+            logger.info(f"Permission map validation passed. Warnings: {validation['warnings']}")
+except Exception as e:
+    logger.error(f'Failed to initialize permission middleware: {e}')
+    if FLASK_ENV == 'production':
+        raise RuntimeError(f'Permission middleware initialization failed: {e}')
 
 if __name__ == '__main__':
     # When running app.py directly, default to port 5003 for local development

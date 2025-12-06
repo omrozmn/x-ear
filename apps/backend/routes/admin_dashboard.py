@@ -5,10 +5,14 @@ from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required
 from models.base import db
 from models.admin_user import AdminUser
-from models.user import User
+from models.user import User, ActivityLog
 from models.tenant import Tenant
 from models.plan import Plan
+from models.appointment import Appointment
+from models.patient import Patient
+from models.device import Device
 from sqlalchemy import func
+from datetime import datetime, timedelta
 import logging
 
 logger = logging.getLogger(__name__)
@@ -47,6 +51,43 @@ def get_dashboard_metrics():
             Tenant.deleted_at.is_(None)
         ).order_by(Tenant.created_at.desc()).limit(5).all()
         
+        # --- New Metrics ---
+        
+        # Today's Appointments
+        today = datetime.now().date()
+        today_start = datetime.combine(today, datetime.min.time())
+        today_end = datetime.combine(today, datetime.max.time())
+        
+        today_appointments = Appointment.query.filter(
+            Appointment.date >= today_start,
+            Appointment.date <= today_end
+        ).count()
+        
+        # Fitted Patients (Patients with devices)
+        fitted_patients = db.session.query(Patient).join(Device).distinct().count()
+        
+        # Daily Uploads (from ActivityLog)
+        daily_uploads = ActivityLog.query.filter(
+            (ActivityLog.action.in_(['document_upload', 'file_upload_init'])),
+            ActivityLog.created_at >= today_start,
+            ActivityLog.created_at <= today_end
+        ).count()
+        
+        # Recent Errors (Last 5 errors from ActivityLog)
+        recent_errors = ActivityLog.query.filter(
+            (ActivityLog.action.ilike('%error%')) | 
+            (ActivityLog.action.ilike('%fail%')) |
+            (ActivityLog.details.ilike('%error%'))
+        ).order_by(ActivityLog.created_at.desc()).limit(5).all()
+        
+        recent_errors_data = [{
+            'id': log.id,
+            'action': log.action,
+            'details': log.details,
+            'created_at': log.created_at.isoformat(),
+            'user_id': log.user_id
+        } for log in recent_errors]
+
         # Calculate mock revenue and other metrics for now
         # In a real app, these would come from actual data
         
@@ -57,10 +98,18 @@ def get_dashboard_metrics():
                     'overview': {
                         'total_tenants': total_tenants,
                         'active_tenants': status_breakdown.get('active', 0),
-                        'total_users': total_users, # This is currently AdminUser count, should be Tenant User count ideally
-                        'active_users': total_users, # Placeholder
+                        'total_users': total_users,
+                        'active_users': total_users,
                         'total_plans': total_plans
                     },
+                    'daily_stats': {
+                        'today_appointments': today_appointments,
+                        'fitted_patients': fitted_patients,
+                        'daily_uploads': daily_uploads,
+                        'pending_ocr': 0, # Placeholder
+                        'sgk_processed': 0 # Placeholder
+                    },
+                    'recent_errors': recent_errors_data,
                     'revenue': {
                         'monthly_recurring_revenue': 0 # Placeholder
                     },

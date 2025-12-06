@@ -59,4 +59,4 @@ pdfkit
 
 # Excel support
 pandas
-openpyxl
+openpyxlboto3

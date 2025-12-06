@@ -11,7 +11,11 @@ import {
     Activity,
     UserPlus,
     UserMinus,
-    Clock
+    Clock,
+    Calendar,
+    FileText,
+    ShieldCheck,
+    XCircle
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
@@ -35,6 +39,8 @@ export default function AdminDashboardPage() {
     const revenue = metrics?.revenue;
     const health = metrics?.health_metrics;
     const activity = metrics?.recent_activity;
+    const dailyStats = metrics?.daily_stats;
+    const recentErrors = metrics?.recent_errors;
 
     const loadDashboardData = () => {
         refetch();
@@ -60,7 +66,7 @@ export default function AdminDashboardPage() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pb-10">
             {/* Welcome section */}
             <div>
                 <h1 className="text-2xl font-bold text-gray-900">
@@ -113,7 +119,7 @@ export default function AdminDashboardPage() {
                 </div>
             ) : null}
 
-            {/* Stats grid */}
+            {/* Main Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Active Tenants */}
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -176,6 +182,70 @@ export default function AdminDashboardPage() {
                 </div>
             </div>
 
+            {/* Daily Operations Stats */}
+            {dailyStats && (
+                <div>
+                    <h2 className="text-lg font-medium text-gray-900 mb-4">Günlük Operasyon</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <div className="flex items-center">
+                                <div className="p-3 rounded-full bg-purple-100 text-purple-600">
+                                    <Calendar className="h-6 w-6" />
+                                </div>
+                                <div className="ml-4">
+                                    <p className="text-sm font-medium text-gray-500">Bugünkü Randevular</p>
+                                    <p className="text-2xl font-semibold text-gray-900">
+                                        {formatNumber(dailyStats.today_appointments || 0)}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <div className="flex items-center">
+                                <div className="p-3 rounded-full bg-teal-100 text-teal-600">
+                                    <ShieldCheck className="h-6 w-6" />
+                                </div>
+                                <div className="ml-4">
+                                    <p className="text-sm font-medium text-gray-500">Cihazlanan Hasta</p>
+                                    <p className="text-2xl font-semibold text-gray-900">
+                                        {formatNumber(dailyStats.fitted_patients || 0)}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <div className="flex items-center">
+                                <div className="p-3 rounded-full bg-orange-100 text-orange-600">
+                                    <FileText className="h-6 w-6" />
+                                </div>
+                                <div className="ml-4">
+                                    <p className="text-sm font-medium text-gray-500">Günlük Yükleme</p>
+                                    <p className="text-2xl font-semibold text-gray-900">
+                                        {formatNumber(dailyStats.daily_uploads || 0)}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <div className="flex items-center">
+                                <div className="p-3 rounded-full bg-cyan-100 text-cyan-600">
+                                    <Activity className="h-6 w-6" />
+                                </div>
+                                <div className="ml-4">
+                                    <p className="text-sm font-medium text-gray-500">SGK İşlenen</p>
+                                    <p className="text-2xl font-semibold text-gray-900">
+                                        {formatNumber(dailyStats.sgk_processed || 0)}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Secondary Metrics */}
             {activity && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -207,6 +277,46 @@ export default function AdminDashboardPage() {
                                 <p className="text-lg font-semibold">%{(health?.avg_seat_utilization_percent || 0).toFixed(1)}</p>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Recent Errors */}
+            {recentErrors && recentErrors.length > 0 && (
+                <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-200 flex items-center">
+                        <XCircle className="h-5 w-5 text-red-500 mr-2" />
+                        <h3 className="text-lg font-medium text-gray-900">Son Hatalar</h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksiyon</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detay</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {recentErrors.map((error) => (
+                                    <tr key={error.id}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {new Date(error.created_at).toLocaleString('tr-TR')}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {error.action}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-500 max-w-md truncate">
+                                            {error.details}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {error.user_id}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             )}

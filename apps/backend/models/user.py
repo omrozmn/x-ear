@@ -66,50 +66,138 @@ class User(BaseModel):
         return user_dict
 
 class ActivityLog(BaseModel, JSONMixin):
+    """
+    Activity Log model for tracking user actions across the platform.
+    
+    Supports two-level visibility:
+    - Platform Admin: See all tenant logs
+    - Tenant Admin: See only their tenant's logs
+    
+    Log retention: 180 days (configurable via ACTIVITY_LOG_RETENTION_DAYS)
+    """
     __tablename__ = 'activity_logs'
 
     # Primary key with auto-generated default
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("log"))
     
-    # Activity details
-    user_id = db.Column(db.String(50), nullable=False)  # Could be nullable for system actions
-    action = db.Column(db.String(50), nullable=False)
-    entity_type = db.Column(db.String(50), nullable=False)
-    entity_id = db.Column(db.String(50))
+    # Multi-tenant support
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=True, index=True)
+    branch_id = db.Column(db.String(50), db.ForeignKey('branches.id'), nullable=True)
     
-    # Request details
-    ip_address = db.Column(db.String(45))  # IPv6 support
-    user_agent = db.Column(db.Text)
+    # User tracking
+    user_id = db.Column(db.String(50), nullable=True)  # Nullable for system actions
+    real_user_id = db.Column(db.String(50), nullable=True)  # For impersonation tracking
+    role = db.Column(db.String(50), nullable=True)  # User's role at action time
     
-    # Additional data (JSON)
-    details = db.Column(db.Text)  # JSON string
+    # Action details
+    action = db.Column(db.String(100), nullable=False)  # e.g., "patient.created", "invoice.sent"
+    message = db.Column(db.String(500), nullable=True)  # Human-readable action description
+    entity_type = db.Column(db.String(50), nullable=True)  # Legacy field, now derived from action
+    entity_id = db.Column(db.String(50), nullable=True)
+    
+    # Structured data (JSON)
+    data = db.Column(db.Text, nullable=True)  # JSON - target IDs, file names, etc.
+    
+    # Request metadata
+    ip_address = db.Column(db.String(45), nullable=True)  # IPv6 support
+    user_agent = db.Column(db.Text, nullable=True)
+    
+    # Legacy field for backward compatibility
+    details = db.Column(db.Text, nullable=True)  # Deprecated, use 'data' instead
+    
+    # Critical action flag for filtering
+    is_critical = db.Column(db.Boolean, default=False, index=True)
+    
+    # Relationships for joined queries
+    tenant = db.relationship('Tenant', backref=db.backref('activity_logs', lazy='dynamic'))
+    branch = db.relationship('Branch', backref=db.backref('activity_logs', lazy='dynamic'))
+
+    @property
+    def data_json(self):
+        """Parse data field as JSON"""
+        return self.json_load(self.data)
+    
+    @data_json.setter
+    def data_json(self, value):
+        """Serialize value to JSON for data field"""
+        self.data = self.json_dump(value)
 
     @property
     def details_json(self):
+        """Legacy property for backward compatibility"""
         return self.json_load(self.details)
     
     @details_json.setter
     def details_json(self, value):
+        """Legacy setter for backward compatibility"""
         self.details = self.json_dump(value)
 
     def to_dict(self):
+        """Convert to dictionary for API response"""
         base_dict = self.to_dict_base()
         log_dict = {
             'id': self.id,
+            'tenantId': self.tenant_id,
+            'branchId': self.branch_id,
             'userId': self.user_id,
+            'realUserId': self.real_user_id,
+            'role': self.role,
             'action': self.action,
+            'message': self.message,
             'entityType': self.entity_type,
             'entityId': self.entity_id,
+            'data': self.data_json,
             'ipAddress': self.ip_address,
             'userAgent': self.user_agent,
+            'isCritical': self.is_critical,
+            # Legacy field
             'details': self.details_json
         }
         log_dict.update(base_dict)
         return log_dict
+    
+    def to_dict_with_user(self):
+        """Convert to dictionary with user information for display"""
+        result = self.to_dict()
+        
+        # Get user name if available
+        if self.user_id:
+            try:
+                user = User.query.get(self.user_id)
+                if user:
+                    result['userName'] = f"{user.first_name} {user.last_name}" if user.first_name else user.username
+                    result['userEmail'] = user.email
+            except Exception:
+                pass
+        
+        # Get tenant name if available
+        if self.tenant_id:
+            try:
+                from .tenant import Tenant
+                tenant = Tenant.query.get(self.tenant_id)
+                if tenant:
+                    result['tenantName'] = tenant.name
+            except Exception:
+                pass
+        
+        # Get branch name if available
+        if self.branch_id:
+            try:
+                from .branch import Branch
+                branch = Branch.query.get(self.branch_id)
+                if branch:
+                    result['branchName'] = branch.name
+            except Exception:
+                pass
+        
+        return result
 
-    # Index suggestions for performance
+    # Composite indexes for performance
     __table_args__ = (
         db.Index('ix_activity_user', 'user_id'),
         db.Index('ix_activity_entity', 'entity_type', 'entity_id'),
         db.Index('ix_activity_created', 'created_at'),
+        db.Index('ix_activity_tenant_created', 'tenant_id', 'created_at'),  # Main query index
+        db.Index('ix_activity_action', 'action'),
+        db.Index('ix_activity_tenant_action', 'tenant_id', 'action'),
     )

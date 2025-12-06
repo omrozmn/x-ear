@@ -55,6 +55,20 @@ export interface DashboardMetrics {
         active_memberships: number;
         total_plans: number;
     };
+    daily_stats?: {
+        today_appointments: number;
+        fitted_patients: number;
+        daily_uploads: number;
+        pending_ocr: number;
+        sgk_processed: number;
+    };
+    recent_errors?: {
+        id: string;
+        action: string;
+        details: string;
+        created_at: string;
+        user_id: string;
+    }[];
     recent_activity: {
         new_tenants_7d: number;
         new_users_7d: number;
@@ -204,6 +218,7 @@ export interface UsersResponse {
         limit: number;
         total: number;
         totalPages: number;
+        hasNext: boolean;
     };
 }
 
@@ -214,5 +229,72 @@ export interface InvoicesResponse {
         limit: number;
         total: number;
         totalPages: number;
+        hasNext: boolean;
     };
 }
+
+// ====== Admin Panel Permission System ======
+
+export interface AdminPermission {
+    id: string;
+    code: string;
+    name: string;
+    description: string;
+    category: string;
+}
+
+export interface AdminRoleType {
+    id: string;
+    name: string;
+    description: string;
+    is_system_role: boolean;
+    permissions?: AdminPermission[];
+    created_at: string;
+    updated_at: string;
+}
+
+// Platform izin kodları - backend ile senkronize
+export const AdminPermissions = {
+    // Tenant Management
+    TENANTS_READ: 'platform.tenants.read',
+    TENANTS_MANAGE: 'platform.tenants.manage',
+    
+    // User Management
+    USERS_READ: 'platform.users.read',
+    USERS_MANAGE: 'platform.users.manage',
+    
+    // Role Management
+    ROLES_READ: 'platform.roles.read',
+    ROLES_MANAGE: 'platform.roles.manage',
+    
+    // Billing & Invoices
+    BILLING_READ: 'platform.billing.read',
+    BILLING_MANAGE: 'platform.billing.manage',
+    
+    // System Settings
+    SETTINGS_READ: 'platform.settings.read',
+    SETTINGS_MANAGE: 'platform.settings.manage',
+    
+    // Integrations
+    INTEGRATIONS_READ: 'platform.integrations.read',
+    INTEGRATIONS_MANAGE: 'platform.integrations.manage',
+    
+    // Logs & Audit
+    ACTIVITY_LOGS_READ: 'platform.activity_logs.read',
+    AUDIT_READ: 'platform.audit.read',
+    
+    // System
+    SYSTEM_READ: 'platform.system.read',
+    SYSTEM_MANAGE: 'platform.system.manage',
+    
+    // Special
+    IMPERSONATION: 'platform.impersonation.use',
+    DEBUG: 'platform.debug.use',
+    
+    // Service Specific
+    SMS_MANAGE: 'platform.sms.manage',
+    EFATURA_MANAGE: 'platform.efatura.manage',
+    ECOMMERCE_MANAGE: 'platform.ecommerce.manage',
+} as const;
+
+export type AdminPermissionCode = typeof AdminPermissions[keyof typeof AdminPermissions];

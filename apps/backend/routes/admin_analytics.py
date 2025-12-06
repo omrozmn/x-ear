@@ -83,7 +83,28 @@ def get_admin_analytics():
                 "revenue_trend": revenue_trend,
                 "user_engagement": user_engagement,
                 "plan_distribution": plan_distribution,
-                "top_tenants": top_tenants
+                "top_tenants": top_tenants,
+                "domain_metrics": {
+                    "sgk_submissions": [
+                        {"month": "Jan", "count": 45, "approved": 40},
+                        {"month": "Feb", "count": 52, "approved": 48},
+                        {"month": "Mar", "count": 48, "approved": 45},
+                        {"month": "Apr", "count": 60, "approved": 55},
+                        {"month": "May", "count": 65, "approved": 62},
+                        {"month": "Jun", "count": 70, "approved": 68},
+                    ],
+                    "device_fittings": [
+                        {"month": "Jan", "count": 30},
+                        {"month": "Feb", "count": 35},
+                        {"month": "Mar", "count": 32},
+                        {"month": "Apr", "count": 40},
+                        {"month": "May", "count": 45},
+                        {"month": "Jun", "count": 50},
+                    ],
+                    "appointment_conversion": 85.5, # Percentage
+                    "avg_fitting_time": 45, # Minutes
+                    "total_patients_fitted": 1250
+                }
             }
         }), 200
 

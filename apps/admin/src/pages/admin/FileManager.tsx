@@ -5,12 +5,12 @@ import {
     DocumentIcon,
     ArrowUpTrayIcon,
     TrashIcon,
-    ArrowDownTrayIcon
+    ArrowDownTrayIcon,
+    XMarkIcon
 } from '@heroicons/react/24/outline';
-import { useListFiles, useGetPresignedUploadUrl, useProcessDocumentOcr } from '@/lib/api-client';
+import { useListFiles, useGetPresignedUploadUrl, useProcessDocumentOcr, useDeleteFile } from '@/lib/api-client';
 import toast from 'react-hot-toast';
 import axios from 'axios';
-import { XMarkIcon } from '@heroicons/react/24/outline';
 
 const FileManager: React.FC = () => {
     const [currentFolder, setCurrentFolder] = useState('uploads');
@@ -28,6 +28,9 @@ const FileManager: React.FC = () => {
 
     // OCR mutation
     const { mutateAsync: processOcr, isPending: isOcrPending } = useProcessDocumentOcr();
+
+    // Delete mutation
+    const { mutateAsync: deleteFile } = useDeleteFile();
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -94,6 +97,20 @@ const FileManager: React.FC = () => {
         } catch (error) {
             console.error(error);
             toast.error('OCR hatası', { id: toastId });
+        }
+    };
+
+    const handleDelete = async (key: string) => {
+        if (!window.confirm('Bu dosyayı silmek istediğinize emin misiniz?')) return;
+
+        const toastId = toast.loading('Dosya siliniyor...');
+        try {
+            await deleteFile({ params: { key } });
+            toast.success('Dosya silindi', { id: toastId });
+            queryClient.invalidateQueries({ queryKey: ['/api/upload/files'] });
+        } catch (error) {
+            console.error(error);
+            toast.error('Dosya silinemedi', { id: toastId });
         }
     };
 
@@ -259,6 +276,13 @@ const FileManager: React.FC = () => {
                                     >
                                         <ArrowDownTrayIcon className="h-5 w-5" />
                                     </a>
+                                    <button
+                                        onClick={() => handleDelete(file.key)}
+                                        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                        title="Sil"
+                                    >
+                                        <TrashIcon className="h-5 w-5" />
+                                    </button>
                                 </div>
                             </li>
                         ))}

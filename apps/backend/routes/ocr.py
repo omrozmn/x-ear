@@ -2,10 +2,15 @@ from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime
 import logging
 import os
+import uuid
+import threading
 
 from models.base import db
 from models.patient import Patient
+from models.ocr_job import OCRJob, OCRJobStatus
 from services.ocr_service import get_nlp_service, initialize_nlp_service
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.tenant_security import get_current_tenant_id
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +68,6 @@ def initialize_nlp_endpoint():
     can return quickly and heavy imports/downloads happen asynchronously.
     """
     try:
-        import threading
         def _init_background():
             try:
                 svc = initialize_nlp_service()
@@ -326,3 +330,92 @@ def debug_ner():
     except Exception as e:
         logger.error(f"debug_ner error: {e}")
         return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
+
+# ==================== OCR JOB MANAGEMENT ====================
+
+@ocr_bp.route('/jobs', methods=['GET'])
+@jwt_required()
+def list_jobs():
+    """List OCR jobs"""
+    try:
+        tenant_id = get_current_tenant_id()
+        status = request.args.get('status')
+        
+        query = OCRJob.query.filter_by(tenant_id=tenant_id)
+        if status:
+            try:
+                query = query.filter_by(status=OCRJobStatus(status))
+            except ValueError:
+                pass # Ignore invalid status
+            
+        jobs = query.order_by(OCRJob.created_at.desc()).limit(100).all()
+        return jsonify({'success': True, 'data': [job.to_dict() for job in jobs]}), 200
+    except Exception as e:
+        logger.error(f"List jobs error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@ocr_bp.route('/jobs', methods=['POST'])
+@jwt_required()
+def create_job():
+    """Create a new OCR job"""
+    try:
+        tenant_id = get_current_tenant_id()
+        data = request.get_json()
+        file_path = data.get('file_path')
+        doc_type = data.get('type', 'medical')
+        
+        if not file_path:
+            return jsonify({'error': 'file_path is required'}), 400
+            
+        job = OCRJob(
+            id=str(uuid.uuid4()),
+            tenant_id=tenant_id,
+            file_path=file_path,
+            document_type=doc_type,
+            status=OCRJobStatus.PENDING
+        )
+        db.session.add(job)
+        db.session.commit()
+        
+        # Trigger async processing here (e.g. via thread or celery)
+        def process_job(job_id, app):
+            with app.app_context():
+                job = OCRJob.query.get(job_id)
+                if not job: return
+                
+                try:
+                    job.status = OCRJobStatus.PROCESSING
+                    db.session.commit()
+                    
+                    svc = get_nlp_service()
+                    if not svc.initialized:
+                        svc.initialize()
+                        
+                    result = svc.process_document(image_path=job.file_path, doc_type=job.document_type)
+                    
+                    job.result = result
+                    job.status = OCRJobStatus.COMPLETED
+                    
+                    # Try to extract patient name
+                    if 'patient_info' in result and result['patient_info']:
+                        job.patient_name = result['patient_info'].get('name')
+                        
+                except Exception as e:
+                    logger.error(f"Job processing failed: {e}")
+                    job.status = OCRJobStatus.FAILED
+                    job.error_message = str(e)
+                
+                db.session.commit()
+        
+        # Pass the actual app object to the thread
+        # Note: current_app is a proxy, we need the real app object
+        # But current_app._get_current_object() works
+        app = current_app._get_current_object()
+        t = threading.Thread(target=process_job, args=(job.id, app))
+        t.start()
+        
+        return jsonify({'success': True, 'data': job.to_dict()}), 201
+        
+    except Exception as e:
+        logger.error(f"Create job error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500

@@ -63,6 +63,24 @@ def get_presigned_upload_url():
             content_type=content_type
         )
         
+        # Create Activity Log for upload attempt
+        try:
+            from models.user import ActivityLog
+            from models.base import db
+            activity_log = ActivityLog(
+                user_id=current_user_id,
+                action='file_upload_init',
+                entity_type='file',
+                entity_id=filename, # We don't have ID yet, use filename
+                details=f"File upload initiated: {filename} to {folder}",
+                ip_address=request.remote_addr,
+                user_agent=request.headers.get('User-Agent', '')
+            )
+            db.session.add(activity_log)
+            db.session.commit()
+        except Exception as log_error:
+            logger.error(f"Failed to create activity log for file upload: {log_error}")
+        
         return jsonify({
             'success': True,
             'data': presigned_data
@@ -107,4 +125,64 @@ def list_files():
         
     except Exception as e:
         logger.error(f"Error listing files: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@upload_bp.route('/files', methods=['DELETE'])
+@jwt_required()
+def delete_file():
+    """
+    Delete a file
+    
+    Query Params:
+        key (str): S3 key of the file to delete
+    """
+    try:
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        
+        key = request.args.get('key')
+        if not key:
+            return jsonify({'error': 'Key is required'}), 400
+            
+        # Get tenant ID
+        tenant_id = get_current_tenant_id()
+        if not tenant_id:
+            if current_user and hasattr(current_user, 'tenant_id'):
+                tenant_id = current_user.tenant_id
+            if not tenant_id:
+                tenant_id = 'admin' if current_user and current_user.role == 'admin' else 'public'
+        
+        # Security check: Ensure the key belongs to the tenant
+        # Key format: folder/tenant_id/...
+        # We should verify that the key contains the tenant_id segment
+        if str(tenant_id) not in key and getattr(current_user, 'role', '') != 'super_admin':
+             return jsonify({'error': 'Unauthorized to delete this file'}), 403
+
+        success = s3_service.delete_file(key)
+        
+        if success:
+            # Create Activity Log
+            try:
+                from models.user import ActivityLog
+                from models.base import db
+                activity_log = ActivityLog(
+                    user_id=current_user_id,
+                    action='file_delete',
+                    entity_type='file',
+                    entity_id=key,
+                    details=f"File deleted: {key}",
+                    ip_address=request.remote_addr,
+                    user_agent=request.headers.get('User-Agent', '')
+                )
+                db.session.add(activity_log)
+                db.session.commit()
+            except Exception as log_error:
+                logger.error(f"Failed to create activity log for file deletion: {log_error}")
+            
+            return jsonify({'success': True, 'message': 'File deleted successfully'}), 200
+        else:
+            return jsonify({'error': 'Failed to delete file'}), 500
+            
+    except Exception as e:
+        logger.error(f"Error deleting file: {e}")
         return jsonify({'error': str(e)}), 500

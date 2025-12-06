@@ -1,10 +1,14 @@
 from functools import wraps
 from flask import jsonify, request
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 from models.base import db
 from models.user import User
 from models.permission import Permission
 from models.user_app_role import UserAppRole
+from models.role import Role
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def role_required(role):
@@ -101,5 +105,161 @@ def permission_required(permission_name, app_id_arg=None):
             if not can(user, permission_name, app_id):
                 return jsonify({'success': False, 'error': 'Forbidden - insufficient permission'}), 403
             return fn(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+# =============================================================================
+# CRM Permission System - Role-based permissions for CRM endpoints
+# =============================================================================
+
+def get_effective_role(user):
+    """
+    Get the effective role for the user.
+    If the user is impersonating (via debug role switcher), return the impersonated role.
+    Otherwise, return the user's actual role.
+    """
+    try:
+        jwt_claims = get_jwt()
+        # Check if impersonating via debug role switcher
+        if jwt_claims.get('is_impersonating') and jwt_claims.get('effective_role'):
+            return jwt_claims.get('effective_role')
+    except Exception:
+        pass
+    
+    return getattr(user, 'role', None)
+
+
+def get_role_permissions(role_name):
+    """
+    Get all permission names for a given role.
+    Returns a set of permission names.
+    """
+    # tenant_admin has all permissions
+    if role_name == 'tenant_admin':
+        return {p.name for p in Permission.query.all()}
+    
+    role = Role.query.filter_by(name=role_name).first()
+    if not role:
+        return set()
+    
+    return {p.name for p in role.permissions}
+
+
+def has_crm_permission(user, permission_name):
+    """
+    Check if user has the specified CRM permission.
+    Takes into account role impersonation for debug/QA purposes.
+    
+    Args:
+        user: User object
+        permission_name: Permission name like 'patients.delete'
+    
+    Returns:
+        bool: True if user has permission, False otherwise
+    """
+    if not user:
+        return False
+    
+    effective_role = get_effective_role(user)
+    
+    # tenant_admin and admin have all permissions
+    if effective_role in ('tenant_admin', 'admin'):
+        return True
+    
+    # Check if permission is in JWT claims (for impersonated roles)
+    try:
+        jwt_claims = get_jwt()
+        if jwt_claims.get('is_impersonating') and jwt_claims.get('role_permissions'):
+            return permission_name in jwt_claims.get('role_permissions', [])
+    except Exception:
+        pass
+    
+    # Fall back to database lookup
+    permissions = get_role_permissions(effective_role)
+    return permission_name in permissions
+
+
+def crm_permission_required(permission_name):
+    """
+    Decorator to require that the current user has the specified CRM permission.
+    
+    This decorator checks:
+    1. JWT authentication
+    2. User exists
+    3. User's role (or effective role if impersonating) has the permission
+    
+    Usage:
+        @crm_permission_required('patients.delete')
+        def delete_patient(patient_id):
+            ...
+    
+    Args:
+        permission_name: Permission name like 'patients.delete', 'sales.create', etc.
+    """
+    def decorator(fn):
+        @wraps(fn)
+        @jwt_required()
+        def wrapper(*args, **kwargs):
+            user_id = get_jwt_identity()
+            user = User.query.get(user_id)
+            
+            if not user:
+                return jsonify({
+                    'success': False, 
+                    'error': 'Unauthorized - user not found'
+                }), 401
+            
+            if not has_crm_permission(user, permission_name):
+                effective_role = get_effective_role(user)
+                logger.warning(
+                    f"Permission denied: user={user.email}, role={effective_role}, "
+                    f"required_permission={permission_name}"
+                )
+                return jsonify({
+                    'success': False, 
+                    'error': f'Bu işlem için yetkiniz yok: {permission_name}'
+                }), 403
+            
+            return fn(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def crm_any_permission_required(*permission_names):
+    """
+    Decorator that allows access if user has ANY of the specified permissions.
+    
+    Usage:
+        @crm_any_permission_required('patients.view', 'patients.edit')
+        def get_patient(patient_id):
+            ...
+    """
+    def decorator(fn):
+        @wraps(fn)
+        @jwt_required()
+        def wrapper(*args, **kwargs):
+            user_id = get_jwt_identity()
+            user = User.query.get(user_id)
+            
+            if not user:
+                return jsonify({
+                    'success': False, 
+                    'error': 'Unauthorized - user not found'
+                }), 401
+            
+            for perm in permission_names:
+                if has_crm_permission(user, perm):
+                    return fn(*args, **kwargs)
+            
+            effective_role = get_effective_role(user)
+            logger.warning(
+                f"Permission denied: user={user.email}, role={effective_role}, "
+                f"required_any={permission_names}"
+            )
+            return jsonify({
+                'success': False, 
+                'error': f'Bu işlem için yetkiniz yok'
+            }), 403
         return wrapper
     return decorator

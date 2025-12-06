@@ -93,6 +93,23 @@ def add_patient_document(patient_id):
         patient.custom_data_json = custom_data
         db.session.commit()
 
+        # Create Activity Log
+        try:
+            from models.user import ActivityLog
+            activity_log = ActivityLog(
+                user_id=data.get('createdBy', 'system'),
+                action='document_upload',
+                entity_type='patient',
+                entity_id=patient_id,
+                details=f"Document uploaded: {document['fileName']}",
+                ip_address=request.remote_addr,
+                user_agent=request.headers.get('User-Agent', '')
+            )
+            db.session.add(activity_log)
+            db.session.commit()
+        except Exception as log_error:
+            logger.error(f"Failed to create activity log for document upload: {log_error}")
+
         logger.info(f"✅ Document added to patient {patient_id}: {document['fileName']}")
 
         resp = make_response(jsonify({

@@ -11,7 +11,16 @@ import {
     MessageSquare,
     Package,
     Folder,
-    Activity
+    Activity,
+    Shield,
+    FileText,
+    User,
+    Calendar,
+    Box,
+    Bell,
+    Key,
+    ShoppingBag,
+    Zap
 } from 'lucide-react'
 
 const navigation = [
@@ -19,14 +28,24 @@ const navigation = [
     { name: 'Raporlar', href: '/analytics', icon: BarChart3 },
     { name: 'Kiracılar', href: '/tenants', icon: Building2 },
     { name: 'Kullanıcılar', href: '/users', icon: Users },
+    { name: 'Hastalar', href: '/patients', icon: User },
+    { name: 'Randevular', href: '/appointments', icon: Calendar },
+    { name: 'Cihaz & Stok', href: '/inventory', icon: Box },
+    { name: 'Üretim Takibi', href: '/production', icon: Package },
+    { name: 'Pazaryerleri', href: '/marketplaces', icon: ShoppingBag },
+    { name: 'Bildirimler', href: '/notifications', icon: Bell },
+    { name: 'API Anahtarları', href: '/api-keys', icon: Key },
+    { name: 'Roller', href: '/roles', icon: Shield },
     { name: 'Planlar', href: '/plans', icon: CreditCard },
     { name: 'Eklentiler', href: '/addons', icon: PlusCircle },
     { name: 'SMS Başlıkları', href: '/sms/headers', icon: MessageSquare },
     { name: 'SMS Paketleri', href: '/sms/packages', icon: Package },
     { name: 'Aktivite Logları', href: '/activity-logs', icon: Activity },
     { name: 'Dosyalar', href: '/files', icon: Folder },
+    { name: 'OCR Kuyruğu', href: '/ocr-queue', icon: FileText },
     { name: 'Faturalar', href: '/billing', icon: CreditCard },
     { name: 'Destek', href: '/support', icon: LifeBuoy },
+    { name: 'Entegrasyonlar', href: '/integrations/vatan-sms', icon: Zap },
     { name: 'Ayarlar', href: '/settings', icon: Settings },
 ]
 

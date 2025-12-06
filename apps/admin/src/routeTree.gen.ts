@@ -10,23 +10,40 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsersRouteImport } from './routes/users'
+import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
 import { Route as TenantsRouteImport } from './routes/tenants'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as RolesRouteImport } from './routes/roles'
+import { Route as ProductionRouteImport } from './routes/production'
 import { Route as PlansRouteImport } from './routes/plans'
+import { Route as PatientsRouteImport } from './routes/patients'
+import { Route as OcrQueueRouteImport } from './routes/ocr-queue'
+import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as MarketplacesRouteImport } from './routes/marketplaces'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as InventoryRouteImport } from './routes/inventory'
+import { Route as FilesRouteImport } from './routes/files'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as BillingRouteImport } from './routes/billing'
+import { Route as AppointmentsRouteImport } from './routes/appointments'
+import { Route as ApiKeysRouteImport } from './routes/api-keys'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AddonsRouteImport } from './routes/addons'
 import { Route as ActivityLogsRouteImport } from './routes/activity-logs'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SmsPackagesRouteImport } from './routes/sms/packages'
 import { Route as SmsHeadersRouteImport } from './routes/sms/headers'
+import { Route as AuthenticatedAdminIntegrationsVatanSmsRouteImport } from './routes/_authenticated/admin/integrations/vatan-sms'
 
 const UsersRoute = UsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnauthorizedRoute = UnauthorizedRouteImport.update({
+  id: '/unauthorized',
+  path: '/unauthorized',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TenantsRoute = TenantsRouteImport.update({
@@ -44,14 +61,54 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RolesRoute = RolesRouteImport.update({
+  id: '/roles',
+  path: '/roles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductionRoute = ProductionRouteImport.update({
+  id: '/production',
+  path: '/production',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlansRoute = PlansRouteImport.update({
   id: '/plans',
   path: '/plans',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PatientsRoute = PatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OcrQueueRoute = OcrQueueRouteImport.update({
+  id: '/ocr-queue',
+  path: '/ocr-queue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplacesRoute = MarketplacesRouteImport.update({
+  id: '/marketplaces',
+  path: '/marketplaces',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InventoryRoute = InventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FilesRoute = FilesRouteImport.update({
+  id: '/files',
+  path: '/files',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesRoute = FeaturesRouteImport.update({
@@ -62,6 +119,16 @@ const FeaturesRoute = FeaturesRouteImport.update({
 const BillingRoute = BillingRouteImport.update({
   id: '/billing',
   path: '/billing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppointmentsRoute = AppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiKeysRoute = ApiKeysRouteImport.update({
+  id: '/api-keys',
+  path: '/api-keys',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
@@ -94,38 +161,68 @@ const SmsHeadersRoute = SmsHeadersRouteImport.update({
   path: '/sms/headers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminIntegrationsVatanSmsRoute =
+  AuthenticatedAdminIntegrationsVatanSmsRouteImport.update({
+    id: '/_authenticated/admin/integrations/vatan-sms',
+    path: '/admin/integrations/vatan-sms',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity-logs': typeof ActivityLogsRoute
   '/addons': typeof AddonsRoute
   '/analytics': typeof AnalyticsRoute
+  '/api-keys': typeof ApiKeysRoute
+  '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
   '/features': typeof FeaturesRoute
+  '/files': typeof FilesRoute
+  '/inventory': typeof InventoryRoute
   '/login': typeof LoginRoute
+  '/marketplaces': typeof MarketplacesRoute
+  '/notifications': typeof NotificationsRoute
+  '/ocr-queue': typeof OcrQueueRoute
+  '/patients': typeof PatientsRoute
   '/plans': typeof PlansRoute
+  '/production': typeof ProductionRoute
+  '/roles': typeof RolesRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/tenants': typeof TenantsRoute
+  '/unauthorized': typeof UnauthorizedRoute
   '/users': typeof UsersRoute
   '/sms/headers': typeof SmsHeadersRoute
   '/sms/packages': typeof SmsPackagesRoute
+  '/admin/integrations/vatan-sms': typeof AuthenticatedAdminIntegrationsVatanSmsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity-logs': typeof ActivityLogsRoute
   '/addons': typeof AddonsRoute
   '/analytics': typeof AnalyticsRoute
+  '/api-keys': typeof ApiKeysRoute
+  '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
   '/features': typeof FeaturesRoute
+  '/files': typeof FilesRoute
+  '/inventory': typeof InventoryRoute
   '/login': typeof LoginRoute
+  '/marketplaces': typeof MarketplacesRoute
+  '/notifications': typeof NotificationsRoute
+  '/ocr-queue': typeof OcrQueueRoute
+  '/patients': typeof PatientsRoute
   '/plans': typeof PlansRoute
+  '/production': typeof ProductionRoute
+  '/roles': typeof RolesRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/tenants': typeof TenantsRoute
+  '/unauthorized': typeof UnauthorizedRoute
   '/users': typeof UsersRoute
   '/sms/headers': typeof SmsHeadersRoute
   '/sms/packages': typeof SmsPackagesRoute
+  '/admin/integrations/vatan-sms': typeof AuthenticatedAdminIntegrationsVatanSmsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -133,16 +230,28 @@ export interface FileRoutesById {
   '/activity-logs': typeof ActivityLogsRoute
   '/addons': typeof AddonsRoute
   '/analytics': typeof AnalyticsRoute
+  '/api-keys': typeof ApiKeysRoute
+  '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
   '/features': typeof FeaturesRoute
+  '/files': typeof FilesRoute
+  '/inventory': typeof InventoryRoute
   '/login': typeof LoginRoute
+  '/marketplaces': typeof MarketplacesRoute
+  '/notifications': typeof NotificationsRoute
+  '/ocr-queue': typeof OcrQueueRoute
+  '/patients': typeof PatientsRoute
   '/plans': typeof PlansRoute
+  '/production': typeof ProductionRoute
+  '/roles': typeof RolesRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
   '/tenants': typeof TenantsRoute
+  '/unauthorized': typeof UnauthorizedRoute
   '/users': typeof UsersRoute
   '/sms/headers': typeof SmsHeadersRoute
   '/sms/packages': typeof SmsPackagesRoute
+  '/_authenticated/admin/integrations/vatan-sms': typeof AuthenticatedAdminIntegrationsVatanSmsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,48 +260,84 @@ export interface FileRouteTypes {
     | '/activity-logs'
     | '/addons'
     | '/analytics'
+    | '/api-keys'
+    | '/appointments'
     | '/billing'
     | '/features'
+    | '/files'
+    | '/inventory'
     | '/login'
+    | '/marketplaces'
+    | '/notifications'
+    | '/ocr-queue'
+    | '/patients'
     | '/plans'
+    | '/production'
+    | '/roles'
     | '/settings'
     | '/support'
     | '/tenants'
+    | '/unauthorized'
     | '/users'
     | '/sms/headers'
     | '/sms/packages'
+    | '/admin/integrations/vatan-sms'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/activity-logs'
     | '/addons'
     | '/analytics'
+    | '/api-keys'
+    | '/appointments'
     | '/billing'
     | '/features'
+    | '/files'
+    | '/inventory'
     | '/login'
+    | '/marketplaces'
+    | '/notifications'
+    | '/ocr-queue'
+    | '/patients'
     | '/plans'
+    | '/production'
+    | '/roles'
     | '/settings'
     | '/support'
     | '/tenants'
+    | '/unauthorized'
     | '/users'
     | '/sms/headers'
     | '/sms/packages'
+    | '/admin/integrations/vatan-sms'
   id:
     | '__root__'
     | '/'
     | '/activity-logs'
     | '/addons'
     | '/analytics'
+    | '/api-keys'
+    | '/appointments'
     | '/billing'
     | '/features'
+    | '/files'
+    | '/inventory'
     | '/login'
+    | '/marketplaces'
+    | '/notifications'
+    | '/ocr-queue'
+    | '/patients'
     | '/plans'
+    | '/production'
+    | '/roles'
     | '/settings'
     | '/support'
     | '/tenants'
+    | '/unauthorized'
     | '/users'
     | '/sms/headers'
     | '/sms/packages'
+    | '/_authenticated/admin/integrations/vatan-sms'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -200,16 +345,28 @@ export interface RootRouteChildren {
   ActivityLogsRoute: typeof ActivityLogsRoute
   AddonsRoute: typeof AddonsRoute
   AnalyticsRoute: typeof AnalyticsRoute
+  ApiKeysRoute: typeof ApiKeysRoute
+  AppointmentsRoute: typeof AppointmentsRoute
   BillingRoute: typeof BillingRoute
   FeaturesRoute: typeof FeaturesRoute
+  FilesRoute: typeof FilesRoute
+  InventoryRoute: typeof InventoryRoute
   LoginRoute: typeof LoginRoute
+  MarketplacesRoute: typeof MarketplacesRoute
+  NotificationsRoute: typeof NotificationsRoute
+  OcrQueueRoute: typeof OcrQueueRoute
+  PatientsRoute: typeof PatientsRoute
   PlansRoute: typeof PlansRoute
+  ProductionRoute: typeof ProductionRoute
+  RolesRoute: typeof RolesRoute
   SettingsRoute: typeof SettingsRoute
   SupportRoute: typeof SupportRoute
   TenantsRoute: typeof TenantsRoute
+  UnauthorizedRoute: typeof UnauthorizedRoute
   UsersRoute: typeof UsersRoute
   SmsHeadersRoute: typeof SmsHeadersRoute
   SmsPackagesRoute: typeof SmsPackagesRoute
+  AuthenticatedAdminIntegrationsVatanSmsRoute: typeof AuthenticatedAdminIntegrationsVatanSmsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -219,6 +376,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users'
       preLoaderRoute: typeof UsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unauthorized': {
+      id: '/unauthorized'
+      path: '/unauthorized'
+      fullPath: '/unauthorized'
+      preLoaderRoute: typeof UnauthorizedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tenants': {
@@ -242,6 +406,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/roles': {
+      id: '/roles'
+      path: '/roles'
+      fullPath: '/roles'
+      preLoaderRoute: typeof RolesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/production': {
+      id: '/production'
+      path: '/production'
+      fullPath: '/production'
+      preLoaderRoute: typeof ProductionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/plans': {
       id: '/plans'
       path: '/plans'
@@ -249,11 +427,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlansRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/patients': {
+      id: '/patients'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof PatientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ocr-queue': {
+      id: '/ocr-queue'
+      path: '/ocr-queue'
+      fullPath: '/ocr-queue'
+      preLoaderRoute: typeof OcrQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplaces': {
+      id: '/marketplaces'
+      path: '/marketplaces'
+      fullPath: '/marketplaces'
+      preLoaderRoute: typeof MarketplacesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inventory': {
+      id: '/inventory'
+      path: '/inventory'
+      fullPath: '/inventory'
+      preLoaderRoute: typeof InventoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/files': {
+      id: '/files'
+      path: '/files'
+      fullPath: '/files'
+      preLoaderRoute: typeof FilesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features': {
@@ -268,6 +488,20 @@ declare module '@tanstack/react-router' {
       path: '/billing'
       fullPath: '/billing'
       preLoaderRoute: typeof BillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/appointments': {
+      id: '/appointments'
+      path: '/appointments'
+      fullPath: '/appointments'
+      preLoaderRoute: typeof AppointmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api-keys': {
+      id: '/api-keys'
+      path: '/api-keys'
+      fullPath: '/api-keys'
+      preLoaderRoute: typeof ApiKeysRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/analytics': {
@@ -312,6 +546,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SmsHeadersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/integrations/vatan-sms': {
+      id: '/_authenticated/admin/integrations/vatan-sms'
+      path: '/admin/integrations/vatan-sms'
+      fullPath: '/admin/integrations/vatan-sms'
+      preLoaderRoute: typeof AuthenticatedAdminIntegrationsVatanSmsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -320,16 +561,29 @@ const rootRouteChildren: RootRouteChildren = {
   ActivityLogsRoute: ActivityLogsRoute,
   AddonsRoute: AddonsRoute,
   AnalyticsRoute: AnalyticsRoute,
+  ApiKeysRoute: ApiKeysRoute,
+  AppointmentsRoute: AppointmentsRoute,
   BillingRoute: BillingRoute,
   FeaturesRoute: FeaturesRoute,
+  FilesRoute: FilesRoute,
+  InventoryRoute: InventoryRoute,
   LoginRoute: LoginRoute,
+  MarketplacesRoute: MarketplacesRoute,
+  NotificationsRoute: NotificationsRoute,
+  OcrQueueRoute: OcrQueueRoute,
+  PatientsRoute: PatientsRoute,
   PlansRoute: PlansRoute,
+  ProductionRoute: ProductionRoute,
+  RolesRoute: RolesRoute,
   SettingsRoute: SettingsRoute,
   SupportRoute: SupportRoute,
   TenantsRoute: TenantsRoute,
+  UnauthorizedRoute: UnauthorizedRoute,
   UsersRoute: UsersRoute,
   SmsHeadersRoute: SmsHeadersRoute,
   SmsPackagesRoute: SmsPackagesRoute,
+  AuthenticatedAdminIntegrationsVatanSmsRoute:
+    AuthenticatedAdminIntegrationsVatanSmsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

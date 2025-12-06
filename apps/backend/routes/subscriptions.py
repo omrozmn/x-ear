@@ -129,7 +129,7 @@ def subscribe():
 
 @subscriptions_bp.route('/current', methods=['GET'])
 @jwt_required()
-def get_subscription():
+def get_current():
     """Get current subscription details"""
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)

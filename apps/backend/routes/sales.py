@@ -5,13 +5,14 @@ from models.base import db, gen_sale_id
 from models.patient import Patient
 from models.device import Device
 from models.sales import Sale, DeviceAssignment, PaymentPlan, PaymentInstallment, PaymentRecord
-from models.user import ActivityLog
+from models.user import ActivityLog, User
 from services.pricing import (
     calculate_device_pricing,
     create_payment_plan,
     create_custom_payment_plan
 )
 from utils.idempotency import idempotent
+from utils.authorization import crm_permission_required
 from datetime import datetime
 import logging
 from sqlalchemy import text

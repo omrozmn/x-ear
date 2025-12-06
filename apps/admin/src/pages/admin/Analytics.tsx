@@ -38,7 +38,7 @@ const Analytics: React.FC = () => {
     metric: selectedMetric
   });
 
-  const data = analyticsData?.data?.data;
+  const data = analyticsData?.data;
 
   const handleExport = () => {
     console.log('Exporting analytics data...');
@@ -321,6 +321,74 @@ const Analytics: React.FC = () => {
                   <Bar dataKey="growth" fill="#22c55e" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* Domain Metrics Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* SGK Submissions */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">SGK Başvuru Durumu</h3>
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={(data?.domain_metrics?.sgk_submissions || []) as any[]}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" name="Başvuru" fill="#94a3b8" />
+                  <Bar dataKey="approved" name="Onaylanan" fill="#10b981" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Device Fittings Trend */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Cihaz Uygulama Trendi</h3>
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={(data?.domain_metrics?.device_fittings || []) as any[]}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="count" name="Uygulama" stroke="#f59e0b" fill="#fcd34d" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-lg shadow flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Randevu Dönüşüm Oranı</p>
+              <p className="text-2xl font-bold text-gray-900">%{data?.domain_metrics?.appointment_conversion}</p>
+            </div>
+            <div className="p-3 bg-green-100 rounded-full text-green-600">
+              <ArrowTrendingUpIcon className="w-6 h-6" />
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Ort. Uygulama Süresi</p>
+              <p className="text-2xl font-bold text-gray-900">{data?.domain_metrics?.avg_fitting_time} dk</p>
+            </div>
+            <div className="p-3 bg-blue-100 rounded-full text-blue-600">
+              <UsersIcon className="w-6 h-6" />
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Toplam Cihazlanan Hasta</p>
+              <p className="text-2xl font-bold text-gray-900">{data?.domain_metrics?.total_patients_fitted}</p>
+            </div>
+            <div className="p-3 bg-purple-100 rounded-full text-purple-600">
+              <UsersIcon className="w-6 h-6" />
             </div>
           </div>
         </div>

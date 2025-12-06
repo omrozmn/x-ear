@@ -29,13 +29,16 @@ class Device(BaseModel):
     device_type = db.Column(db.String(20))  # BTE, ITE, etc.
     
     # Semantic category (enum)
-    category = db.Column(sa.Enum(DeviceCategory), default=DeviceCategory.HEARING_AID)
+    # Changed to String to handle legacy data with lowercase values
+    category = db.Column(db.String(50), default='HEARING_AID')
     
     # Device placement (enum)
-    ear = db.Column(sa.Enum(DeviceSide), default=DeviceSide.LEFT)
+    # Changed to String to handle legacy data
+    ear = db.Column(db.String(20), default='LEFT')
     
     # Status (enum)
-    status = db.Column(sa.Enum(DeviceStatus), default=DeviceStatus.IN_STOCK)
+    # Changed to String to handle legacy data
+    status = db.Column(db.String(20), default='IN_STOCK')
     
     # Trial period
     trial_start_date = db.Column(db.DateTime)
@@ -67,9 +70,9 @@ class Device(BaseModel):
             'model': self.model,
             'type': self.device_type,
             # Safe category access for schema migrations
-            'category': self.category.value if self.category else None,
-            'ear': self.ear.value if self.ear else None,
-            'status': self.status.value if self.status else None,
+            'category': self.category.value if hasattr(self.category, 'value') else self.category,
+            'ear': self.ear.value if hasattr(self.ear, 'value') else self.ear,
+            'status': self.status.value if hasattr(self.status, 'value') else self.status,
             'trialPeriod': {
                 'startDate': self.trial_start_date.isoformat() if self.trial_start_date else None,
                 'endDate': self.trial_end_date.isoformat() if self.trial_end_date else None,

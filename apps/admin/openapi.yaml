@@ -810,8 +810,268 @@ paths:
         '200':
           description: Success
 
+  /api/admin/activity-logs:
+    get:
+      summary: Get Activity Logs (Platform Admin - all tenants)
+      operationId: adminGetActivityLogs
+      description: Returns activity logs across all tenants. Only accessible by platform admins.
+      tags: [Activity Logs]
+      parameters:
+        - name: tenant_id
+          in: query
+          description: Filter by tenant ID
+          schema:
+            type: string
+        - name: branch_id
+          in: query
+          description: Filter by branch ID
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          description: Filter by user ID
+          schema:
+            type: string
+        - name: role
+          in: query
+          description: Filter by user role
+          schema:
+            type: string
+        - name: entity_type
+          in: query
+          description: Filter by entity type (patient, device, etc.)
+          schema:
+            type: string
+        - name: entity_id
+          in: query
+          description: Filter by entity ID
+          schema:
+            type: string
+        - name: action
+          in: query
+          description: Filter by action type (create, update, delete, etc.)
+          schema:
+            type: string
+        - name: is_critical
+          in: query
+          description: Filter by critical status
+          schema:
+            type: boolean
+        - name: start_date
+          in: query
+          description: Filter by start date (ISO format)
+          schema:
+            type: string
+            format: date-time
+        - name: end_date
+          in: query
+          description: Filter by end date (ISO format)
+          schema:
+            type: string
+            format: date-time
+        - name: search
+          in: query
+          description: Search in message and action
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActivityLog'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '403':
+          description: Forbidden - requires platform admin role
+
+  /api/admin/activity-logs/stats:
+    get:
+      summary: Get Activity Logs Statistics
+      operationId: adminGetActivityLogsStats
+      description: Returns statistics about activity logs across all tenants
+      tags: [Activity Logs]
+      parameters:
+        - name: tenant_id
+          in: query
+          description: Filter by tenant ID
+          schema:
+            type: string
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      total_logs:
+                        type: integer
+                      critical_logs:
+                        type: integer
+                      logs_by_action:
+                        type: object
+                        additionalProperties:
+                          type: integer
+                      logs_by_entity_type:
+                        type: object
+                        additionalProperties:
+                          type: integer
+                      logs_by_tenant:
+                        type: object
+                        additionalProperties:
+                          type: integer
+
+  /api/admin/activity-logs/filter-options:
+    get:
+      summary: Get Activity Log Filter Options
+      operationId: adminGetActivityLogFilterOptions
+      description: Returns available filter options for activity logs
+      tags: [Activity Logs]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      actions:
+                        type: array
+                        items:
+                          type: string
+                      entity_types:
+                        type: array
+                        items:
+                          type: string
+                      tenants:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+                      roles:
+                        type: array
+                        items:
+                          type: string
+
+  /api/admin/activity-logs/{id}:
+    get:
+      summary: Get Activity Log Detail
+      operationId: adminGetActivityLogDetail
+      description: Returns a single activity log with full details
+      tags: [Activity Logs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/ActivityLog'
+        '404':
+          description: Not found
+
 components:
   schemas:
+    ActivityLog:
+      type: object
+      properties:
+        id:
+          type: string
+        tenantId:
+          type: string
+        branchId:
+          type: string
+        userId:
+          type: string
+        realUserId:
+          type: string
+        role:
+          type: string
+        action:
+          type: string
+        message:
+          type: string
+        entityType:
+          type: string
+        entityId:
+          type: string
+        data:
+          type: object
+        details:
+          type: object
+        ipAddress:
+          type: string
+        userAgent:
+          type: string
+        isCritical:
+          type: boolean
+        userName:
+          type: string
+        userEmail:
+          type: string
+        tenantName:
+          type: string
+        branchName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
     User:
       type: object
       properties:
