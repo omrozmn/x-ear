@@ -128,7 +128,7 @@ export function LineWithholdingModal({
                       <Input
                           type="number"
                           step="0.01"
-                          value={formData.rate === '' ? '' : String(formData.rate)}
+                          value={formData.rate === ('' as unknown as number) ? '' : String(formData.rate)}
                           onChange={(e) => setFormData({
                             ...formData,
                             rate: e.target.value === '' ? '' as any : parseFloat(e.target.value)

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useQuery } from '@tanstack/react-query'
 import { patientApiService } from '@/services/patient/patient-api.service'
 import { Patient } from '@/types/patient'

@@ -48,7 +48,8 @@ class Appointment(BaseModel):
             'date': self.date.strftime('%Y-%m-%d') if self.date else None,
             'time': self.time,
             'duration': self.duration,
-            'type': self.appointment_type,
+            'appointmentType': self.appointment_type,  # Match Orval schema
+            'type': self.appointment_type,  # Keep for backward compatibility
             'status': self.status.value if self.status else None,
             'notes': self.notes
         }

@@ -79,15 +79,7 @@ export const useSyncInvoices = () => {
   return useMutation({
     mutationFn: async (params?: { startDate?: string; endDate?: string }) => {
       const payload = params ? { start_date: params.startDate, end_date: params.endDate } : undefined;
-      const key = await makeIdempotencyKey('birfatura:sync', payload ?? {});
-      await outbox.addOperation({
-        method: 'POST',
-        endpoint: `/api/birfatura/sync-invoices`,
-        headers: { 'Idempotency-Key': key },
-        data: payload,
-        priority: 'high'
-      });
-      return birfaturaSyncInvoices(payload as any, { headers: { 'Idempotency-Key': key } });
+      return birfaturaSyncInvoices(payload as any);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supplier-invoices'] });

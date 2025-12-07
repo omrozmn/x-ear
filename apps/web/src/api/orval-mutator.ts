@@ -1,6 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { AUTH_TOKEN, REFRESH_TOKEN } from '../constants/storage-keys';
-import { apiClient } from '../api/client';
 import { outbox, OutboxOperation } from '../utils/outbox';
 
 // API Configuration
@@ -409,7 +408,7 @@ axios.interceptors.response.use(
           (axios as any)._refreshSubscribers = [] as Array<(token: string | null) => void>;
 
           try {
-            const refreshResp = await apiClient.refreshToken();
+            const refreshResp = await apiClient.request({ url: '/api/auth/refresh', method: 'POST', data: JSON.stringify({ refreshToken: localStorage.getItem(REFRESH_TOKEN) || localStorage.getItem('refresh_token') }) } as any);
             if (refreshResp.status === 200 && refreshResp.data) {
               const newToken = (refreshResp.data as any).access_token || (refreshResp.data as any).accessToken || null;
               if (newToken) {
@@ -488,13 +487,27 @@ axios.interceptors.response.use(
   }
 );
 
-// Export the configured axios instance as customInstance
-export const customInstance = apiClient;
+// Orval mutator function - customInstance must be a function that returns axios instance or promise
+export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> => {
+  const source = axios.CancelToken.source();
+  const promise = apiClient({
+    ...config,
+    cancelToken: source.token,
+  }).then(({ data }) => data) as Promise<AxiosResponse<T>> & { cancel: () => void };
+
+  // Add cancel property for react-query
+  promise.cancel = () => {
+    source.cancel('Query was cancelled');
+  };
+
+  return promise;
+};
 
 // Export retry utility for manual use if needed
 export { retryRequest, calculateBackoffDelay, isRetryableError };
 
-// Orval mutator function
-export default (config: any) => {
-  return apiClient(config);
-};
+// Export the configured axios instance for direct usage
+export { apiClient };
+
+// Default export for Orval
+export default customInstance;

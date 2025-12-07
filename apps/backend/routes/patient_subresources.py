@@ -4,6 +4,7 @@ from models.patient import Patient
 from utils.idempotency import idempotent
 from utils.optimistic_locking import optimistic_lock, with_transaction
 import uuid
+import json
 from datetime import datetime, timezone
 from models.medical import HearingTest, PatientNote, EReceipt
 
@@ -325,3 +326,26 @@ def delete_patient_ereceipt(patient_id, ereceipt_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
+
+
+# Patient Appointments Routes
+@patient_subresources_bp.route('/patients/<patient_id>/appointments', methods=['GET'])
+def get_patient_appointments(patient_id):
+    """Get all appointments for a specific patient"""
+    from models.appointment import Appointment
+    
+    patient = db.session.get(Patient, patient_id)
+    if not patient:
+        return jsonify({'success': False, 'error': 'Patient not found'}), 404
+
+    appointments = Appointment.query.filter_by(patient_id=patient_id).order_by(Appointment.date.desc()).all()
+    
+    return jsonify({
+        "success": True,
+        "data": [appt.to_dict() for appt in appointments],
+        "meta": {
+            "total": len(appointments),
+            "patientId": patient_id
+        },
+        "timestamp": datetime.now().isoformat()
+    }), 200

@@ -2,8 +2,7 @@ openapi: 3.0.3
 info:
   title: X-Ear CRM API (auto-generated)
   version: 0.0.0-auto
-  description: X-Ear CRM API for managing patients, devices, appointments, sales,
-    and more
+  description: X-Ear CRM API for managing patients, devices, appointments, sales, and more
   contact:
     name: X-Ear Web App Support
     email: support@x-ear.com
@@ -27,20 +26,6 @@ tags:
   description: Device management operations
 - name: Health
   description: Health check operations
-- name: Inventory
-  description: Inventory management operations
-- name: Notifications
-  description: Notification operations
-- name: Ocr
-  description: OCR and document processing operations
-- name: Patients
-  description: Patient management operations
-- name: Timeline
-  description: Patient timeline operations
-- name: Products
-  description: Product management operations
-- name: Reports
-  description: Reporting operations
 - name: Sales
   description: Sales management operations
 - name: Settings
@@ -55,9 +40,7 @@ tags:
   description: Entity extraction operations
 - name: Extract_patient
   description: Patient extraction from documents
-- name: Init-db
-  description: Database initialization operations
-- name: Initialize
+- name: Init_db
   description: Service initialization operations
 - name: Process
   description: Document processing operations
@@ -126,7 +109,14 @@ paths:
         required: false
         schema:
           type: string
-          enum: [SCHEDULED, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW, RESCHEDULED]
+          enum:
+          - SCHEDULED
+          - CONFIRMED
+          - IN_PROGRESS
+          - COMPLETED
+          - CANCELLED
+          - NO_SHOW
+          - RESCHEDULED
         description: Filter by appointment status
       - name: branch_id
         in: query
@@ -171,9 +161,9 @@ paths:
                   type: string
                   description: Additional notes
               required:
-                - patient_id
-                - date
-                - time
+              - patient_id
+              - date
+              - time
       responses:
         '201':
           description: Appointment created successfully
@@ -236,7 +226,9 @@ paths:
         required: false
         schema:
           type: string
-          enum: [sms, email]
+          enum:
+          - sms
+          - email
         description: Filter by message type
       - name: status
         in: query
@@ -334,7 +326,9 @@ paths:
         required: false
         schema:
           type: string
-          enum: [sms, email]
+          enum:
+          - sms
+          - email
         description: Filter by template type
       - name: category
         in: query
@@ -509,7 +503,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
   /api/appointments/{appointment_id}:
     delete:
       summary: DELETE /api/appointments/{appointment_id}
@@ -679,7 +672,70 @@ paths:
         '200':
           description: Success
       description: Retrieve status information
+  /api/branches:
+    get:
+      summary: Get all branches for current tenant
+      operationId: branches_get_branches
+      tags:
+      - Branches
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        address:
+                          type: string
+                        phone:
+                          type: string
+                        email:
+                          type: string
+      description: Retrieve list of branches for the current tenant
   /api/campaigns:
+    get:
+      summary: List all campaigns
+      operationId: campaigns_get_campaigns
+      tags:
+      - Campaigns
+      parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          default: 20
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  campaigns:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Campaign'
+                  meta:
+                    $ref: '#/components/schemas/PaginationInfo'
+      description: Retrieve a list of marketing campaigns
     post:
       summary: POST /api/campaigns
       operationId: campaigns_create_campaign
@@ -878,7 +934,13 @@ paths:
         required: false
         schema:
           type: string
-          enum: [IN_STOCK, ASSIGNED, TRIAL, DEFECTIVE, LOST, RETURNED]
+          enum:
+          - IN_STOCK
+          - ASSIGNED
+          - TRIAL
+          - DEFECTIVE
+          - LOST
+          - RETURNED
         description: Filter by device status
       responses:
         '200':
@@ -949,10 +1011,7 @@ paths:
   /api/devices/{device_id}/stock-update:
     post:
       summary: Update device stock levels (simplified).
-      description: 'This endpoint is intentionally permissive for tests — real inventory
-        logic
-
-        should live in a dedicated inventory table/service.'
+      description: "This endpoint is intentionally permissive for tests \u2014 real inventory logic\nshould live in a dedicated inventory table/service."
       operationId: devices_update_device_stock
       tags:
       - Devices
@@ -993,7 +1052,7 @@ paths:
             schema:
               type: object
               required:
-                - name
+              - name
               properties:
                 name:
                   type: string
@@ -1030,7 +1089,7 @@ paths:
             schema:
               type: object
               required:
-                - name
+              - name
               properties:
                 name:
                   type: string
@@ -1076,8 +1135,7 @@ paths:
   /api/health:
     get:
       summary: Health endpoint exposing overall status and DB read/write check results.
-      description: Returns 200 when read+write ok, 503 when write fails, and 500 when
-        other errors occur.
+      description: Returns 200 when read+write ok, 503 when write fails, and 500 when other errors occur.
       operationId: health_check
       tags:
       - Health
@@ -1130,7 +1188,13 @@ paths:
         required: false
         schema:
           type: string
-          enum: [IN_STOCK, ASSIGNED, TRIAL, DEFECTIVE, LOST, RETURNED]
+          enum:
+          - IN_STOCK
+          - ASSIGNED
+          - TRIAL
+          - DEFECTIVE
+          - LOST
+          - RETURNED
         description: Filter by item status
       responses:
         '200':
@@ -1234,6 +1298,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
       description: Remove an item from inventory
+    put:
+      summary: Update an inventory item
+      operationId: inventory_update_inventory_item
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryItem'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/InventoryItem'
   /api/inventory/{item_id}/activity:
     get:
       summary: Get activity log for an inventory item
@@ -1370,7 +1463,7 @@ paths:
                   type: string
                   description: Category name to create
               required:
-                - category
+              - category
       responses:
         '201':
           description: Category created successfully
@@ -1410,6 +1503,265 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       description: Create a new inventory category
+  /api/invoices:
+    post:
+      summary: Create a new invoice
+      operationId: invoices_create_invoice
+      tags:
+      - Invoices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patientId:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      description:
+                        type: string
+                      quantity:
+                        type: integer
+                      unitPrice:
+                        type: number
+                      total:
+                        type: number
+                totalAmount:
+                  type: number
+                taxAmount:
+                  type: number
+                discountAmount:
+                  type: number
+              required:
+              - patientId
+              - items
+              - totalAmount
+      responses:
+        '201':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoice_id:
+                        type: string
+                      invoice_number:
+                        type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Create a new invoice for a patient
+  /api/invoices/{invoice_id}:
+    get:
+      summary: Get invoice by ID
+      operationId: invoices_get_invoice
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoice_id:
+                        type: string
+                      invoice_number:
+                        type: string
+                      patientId:
+                        type: string
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      totalAmount:
+                        type: number
+                      taxAmount:
+                        type: number
+                      discountAmount:
+                        type: number
+                      created_at:
+                        type: string
+                        format: date-time
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve an invoice by its ID
+    delete:
+      summary: Delete invoice by ID
+      operationId: invoices_delete_invoice
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Delete an invoice by its ID
+  /api/invoices/{invoice_id}/pdf:
+    get:
+      summary: Generate invoice PDF
+      operationId: invoices_generate_invoice_pdf
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice PDF generated successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Generate and download a PDF for the specified invoice
+  /api/invoices/{invoice_id}/send-to-gib:
+    post:
+      summary: Send invoice to GİB
+      operationId: invoices_send_to_gib
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice sent to GİB successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      gib_response:
+                        type: object
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Send the invoice to GİB (Turkish Revenue Administration)
   /api/notifications:
     get:
       summary: GET /api/notifications
@@ -1496,10 +1848,8 @@ paths:
       description: Create new process
   /api/openapi.yaml:
     get:
-      summary: Serve the canonical OpenAPI contract for frontend/back-end sync and
-        respond to CORS preflight.
-      description: 'Returns CORS headers so the static Swagger UI served from a different
-        origin (e.g. localhost:8080)
+      summary: Serve the canonical OpenAPI contract for frontend/back-end sync and respond to CORS preflight.
+      description: 'Returns CORS headers so the static Swagger UI served from a different origin (e.g. localhost:8080)
 
         can fetch the YAML without browser CORS errors.'
       operationId: serve_openapi_yaml
@@ -1515,24 +1865,24 @@ paths:
       tags:
       - Patients
       x-storage-keys:
-        - key: PATIENTS_DATA
-          description: Cached patient list data
-          type: array
-        - key: PATIENT_SEARCH_FILTERS
-          description: User's search filter preferences
-          type: object
-        - key: PATIENT_PAGINATION_STATE
-          description: Current pagination state
-          type: object
-        - key: PATIENT_SORT_PREFERENCES
-          description: User's sorting preferences
-          type: object
-        - key: PATIENT_VIEW_MODE
-          description: List/grid view mode preference
-          type: string
-        - key: PATIENT_SELECTED_COLUMNS
-          description: User's column visibility preferences
-          type: array
+      - key: PATIENTS_DATA
+        description: Cached patient list data
+        type: array
+      - key: PATIENT_SEARCH_FILTERS
+        description: User's search filter preferences
+        type: object
+      - key: PATIENT_PAGINATION_STATE
+        description: Current pagination state
+        type: object
+      - key: PATIENT_SORT_PREFERENCES
+        description: User's sorting preferences
+        type: object
+      - key: PATIENT_VIEW_MODE
+        description: List/grid view mode preference
+        type: string
+      - key: PATIENT_SELECTED_COLUMNS
+        description: User's column visibility preferences
+        type: array
       parameters:
       - name: page
         in: query
@@ -1567,7 +1917,12 @@ paths:
         required: false
         schema:
           type: string
-          enum: [ACTIVE, INACTIVE, LEAD, TRIAL, CUSTOMER]
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - LEAD
+          - TRIAL
+          - CUSTOMER
         description: Filter by patient status
       responses:
         '200':
@@ -1602,12 +1957,12 @@ paths:
       tags:
       - Patients
       x-storage-keys:
-        - key: PATIENT_FORM_VALIDATION_STATE
-          description: Form validation state and errors
-          type: object
-        - key: PATIENT_FORM_DRAFT
-          description: Draft form data for auto-save
-          type: object
+      - key: PATIENT_FORM_VALIDATION_STATE
+        description: Form validation state and errors
+        type: object
+      - key: PATIENT_FORM_DRAFT
+        description: Draft form data for auto-save
+        type: object
       requestBody:
         required: false
         content:
@@ -1623,18 +1978,62 @@ paths:
                 $ref: '#/components/schemas/Patient'
       description: Register a new patient with personal and medical information
   /api/patients/{patient_id}:
+    get:
+      summary: Get a specific patient by ID
+      operationId: patients_get_patient
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+      description: Retrieve detailed information about a specific patient
+    put:
+      summary: Update a patient
+      operationId: patients_update_patient
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+      description: Update an existing patient's information
     delete:
       summary: DELETE /api/patients/{patient_id}
       operationId: patients_delete_patient
       tags:
       - Patients
       x-storage-keys:
-        - key: PATIENT_DETAILS_TAB
-          description: Active tab in patient details view
-          type: string
-        - key: PATIENT_BULK_ACTIONS_STATE
-          description: Bulk actions selection state
-          type: object
+      - key: PATIENT_DETAILS_TAB
+        description: Active tab in patient details view
+        type: string
+      - key: PATIENT_BULK_ACTIONS_STATE
+        description: Bulk actions selection state
+        type: object
       parameters:
       - name: patient_id
         in: path
@@ -1671,6 +2070,45 @@ paths:
         '201':
           description: Success
       description: Create new assign-devices-extended
+  /api/patients/{patient_id}/devices:
+    get:
+      summary: Get all devices assigned to a specific patient
+      operationId: patients_get_patient_devices
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+                  meta:
+                    type: object
+                    properties:
+                      patientId:
+                        type: string
+                      patientName:
+                        type: string
+                      deviceCount:
+                        type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+      description: Get all devices assigned to a specific patient
   /api/patients/{patient_id}/ereceipts:
     post:
       summary: POST /api/patients/{patient_id}/ereceipts
@@ -1800,6 +2238,21 @@ paths:
         '204':
           description: Success
       description: Delete {note_id}
+  /api/patients/{patient_id}/promissory-notes:
+    get:
+      summary: Get all promissory notes for a patient
+      operationId: payments_get_patient_promissory_notes
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
   /api/patients/{patient_id}/sales:
     get:
       summary: GET /api/patients/{patient_id}/sales
@@ -1815,6 +2268,12 @@ paths:
       responses:
         '200':
           description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sale'
       description: Retrieve sales information
   /api/patients/{patient_id}/sgk-documents:
     get:
@@ -1835,8 +2294,7 @@ paths:
   /api/patients/{patient_id}/timeline:
     get:
       summary: Get timeline events for a patient
-      description: Retrieves all timeline events for a specific patient, including
-        events from both custom data and activity logs
+      description: Retrieves all timeline events for a specific patient, including events from both custom data and activity logs
       operationId: timeline_get_patient_timeline
       tags:
       - Timeline
@@ -1894,8 +2352,7 @@ paths:
           description: Internal server error
     post:
       summary: Add a new timeline event for a patient
-      description: Creates a new timeline event for a specific patient and logs it
-        to both custom data and activity logs
+      description: Creates a new timeline event for a specific patient and logs it to both custom data and activity logs
       operationId: timeline_add_timeline_event
       tags:
       - Timeline
@@ -2024,8 +2481,7 @@ paths:
   /api/patients/{patient_id}/activities:
     post:
       summary: Log an activity for a patient (alias for timeline event)
-      description: Alternative endpoint for adding timeline events, provides the same
-        functionality as POST /api/patients/{patient_id}/timeline
+      description: Alternative endpoint for adding timeline events, provides the same functionality as POST /api/patients/{patient_id}/timeline
       operationId: timeline_log_patient_activity
       tags:
       - Timeline
@@ -2064,15 +2520,12 @@ paths:
           description: Internal server error
   /api/patients/bulk_upload:
     post:
-      summary: Accept a multipart/form-data CSV file containing patients and upsert
-        them into the DB.
-      description: 'This endpoint is intentionally forgiving: it returns a summary
-        of created/updated rows
+      summary: Accept a multipart/form-data CSV file containing patients and upsert them into the DB.
+      description: 'This endpoint is intentionally forgiving: it returns a summary of created/updated rows
 
         and reports per-row errors without aborting the entire batch.
 
-        Authentication is optional for uploads in many workflows; we still log the
-        actor when present.'
+        Authentication is optional for uploads in many workflows; we still log the actor when present.'
       operationId: patients_bulk_upload_patients
       tags:
       - Patients
@@ -2085,6 +2538,238 @@ paths:
       responses:
         '201':
           description: Success
+  /api/patients/count:
+    get:
+      summary: Count patients with optional filters for SMS campaigns
+      description: |
+        Count patients matching the given filters. Only counts patients with valid phone numbers.
+        Useful for SMS campaign target audience estimation.
+      operationId: patients_count_patients
+      tags:
+      - Patients
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [active, passive]
+        description: Patient status filter
+      - name: segment
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Patient segment filter (lead, potential, won, etc.)
+      - name: acquisitionType
+        in: query
+        required: false
+        schema:
+          type: string
+        description: How the patient was acquired (advertisement, referral, walk-in, etc.)
+      - name: branchId
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by specific branch ID
+      - name: dateStart
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+        description: Filter by acquisition date start (ISO format)
+      - name: dateEnd
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+        description: Filter by acquisition date end (ISO format)
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Number of matching patients
+  /api/subscriptions/current:
+    get:
+      summary: Get current tenant subscription
+      description: Retrieve the authenticated tenant's subscription status, plan, and expiry info.
+      operationId: subscriptions_get_current
+      tags:
+      - Subscriptions
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      tenant:
+                        type: object
+                        description: Basic tenant subscription context
+                        properties:
+                          id:
+                            type: string
+                          name:
+                            type: string
+                          slug:
+                            type: string
+                          ownerEmail:
+                            type: string
+                          billingEmail:
+                            type: string
+                          status:
+                            type: string
+                          currentPlan:
+                            type: string
+                            nullable: true
+                          currentPlanId:
+                            type: string
+                            nullable: true
+                          subscriptionStartDate:
+                            type: string
+                            format: date-time
+                            nullable: true
+                          subscriptionEndDate:
+                            type: string
+                            format: date-time
+                            nullable: true
+                          featureUsage:
+                            type: object
+                            additionalProperties: true
+                          maxUsers:
+                            type: integer
+                          currentUsers:
+                            type: integer
+                      plan:
+                        type: object
+                        nullable: true
+                        description: Subscribed plan details when available
+                        properties:
+                          id:
+                            type: string
+                          name:
+                            type: string
+                          slug:
+                            type: string
+                          description:
+                            type: string
+                            nullable: true
+                          planType:
+                            type: string
+                          price:
+                            type: number
+                            format: float
+                          billingInterval:
+                            type: string
+                          features:
+                            type: object
+                            additionalProperties: true
+                          maxUsers:
+                            type: integer
+                            nullable: true
+                          maxStorageGb:
+                            type: integer
+                            nullable: true
+                          isActive:
+                            type: boolean
+                          isPublic:
+                            type: boolean
+                          monthlyPrice:
+                            type: number
+                            format: float
+                          yearlyPrice:
+                            type: number
+                            format: float
+                      isExpired:
+                        type: boolean
+                        description: Indicates if the subscription has expired
+                      daysRemaining:
+                        type: integer
+                        description: Days remaining until subscription expiration
+                  timestamp:
+                    type: string
+                    format: date-time
+                  requestId:
+                    type: string
+  /api/addons:
+    get:
+      summary: List active public add-ons
+      description: Retrieve active add-ons that tenants can purchase as optional features.
+      operationId: addons_list_active
+      tags:
+      - Addons
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        slug:
+                          type: string
+                        description:
+                          type: string
+                          nullable: true
+                        addonType:
+                          type: string
+                          enum: [PER_USER, FLAT_FEE, USAGE_BASED]
+                        price:
+                          type: number
+                          format: float
+                        currency:
+                          type: string
+                          example: TRY
+                        unitName:
+                          type: string
+                          nullable: true
+                        limitAmount:
+                          type: integer
+                          nullable: true
+                        isActive:
+                          type: boolean
+                        createdAt:
+                          type: string
+                          format: date-time
+                        updatedAt:
+                          type: string
+                          format: date-time
+                  timestamp:
+                    type: string
+                    format: date-time
+                  requestId:
+                    type: string
   /api/patients/export:
     get:
       summary: Export patients as CSV. Only admin users are allowed to perform exports.
@@ -2159,6 +2844,63 @@ paths:
         '201':
           description: Success
       description: Create new suppliers
+  /api/promissory-notes:
+    post:
+      summary: Create multiple promissory notes
+      operationId: payments_create_promissory_notes
+      tags:
+      - Promissory-notes
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/promissory-notes/{note_id}:
+    patch:
+      summary: Update a promissory note
+      operationId: payments_update_promissory_note
+      tags:
+      - Promissory-notes
+      parameters:
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/promissory-notes/{note_id}/collect:
+    post:
+      summary: Collect payment for a promissory note (full or partial)
+      operationId: payments_collect_promissory_note
+      tags:
+      - Promissory-notes
+      parameters:
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
   /api/register-phone:
     post:
       summary: POST /api/register-phone
@@ -2207,7 +2949,7 @@ paths:
       description: Retrieve financial information
   /api/reports/overview:
     get:
-      summary: Genel rapor özeti
+      summary: "Genel rapor \xF6zeti"
       operationId: reports_report_overview
       tags:
       - Reports
@@ -2386,6 +3128,178 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaymentRecord'
       description: Create new payment-plan
+  /api/sales/{sale_id}/promissory-notes:
+    get:
+      summary: Get all promissory notes for a specific sale
+      operationId: payments_get_sale_promissory_notes
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/sales/{sale_id}/invoice:
+    post:
+      summary: Create invoice for sale
+      operationId: sales_create_sale_invoice
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                invoice_type:
+                  type: string
+                  enum: [standard, proforma]
+                additional_notes:
+                  type: string
+      responses:
+        '201':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoice_id:
+                        type: string
+                      invoice_number:
+                        type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Sale not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Create an invoice for the specified sale
+    get:
+      summary: Get invoice for sale
+      operationId: sales_get_sale_invoice
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Invoice retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoice_id:
+                        type: string
+                      invoice_number:
+                        type: string
+                      sale_id:
+                        type: string
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      total_amount:
+                        type: number
+                      tax_amount:
+                        type: number
+                      created_at:
+                        type: string
+                        format: date-time
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Sale or invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve the invoice for the specified sale
+  /api/sales/{sale_id}/invoice/pdf:
+    get:
+      summary: Generate sale invoice PDF
+      operationId: sales_generate_sale_invoice_pdf
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Sale invoice PDF generated successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Sale or invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Generate and download a PDF for the specified sale invoice
   /api/settings:
     put:
       summary: Update system settings
@@ -2434,6 +3348,269 @@ paths:
         '204':
           description: Success
       description: Delete {document_id}
+  /api/sms/headers:
+    get:
+      summary: Get SMS headers
+      operationId: sms_get_headers
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  headers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        status:
+                          type: string
+      description: Retrieve list of SMS headers
+    post:
+      summary: Create SMS header
+      operationId: sms_create_header
+      tags:
+      - Sms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Success
+      description: Create a new SMS header
+  /api/sms/audiences:
+    get:
+      summary: Get SMS audiences
+      operationId: sms_get_audiences
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  audiences:
+                    type: array
+                    items:
+                      type: object
+      description: Retrieve list of SMS audiences
+    post:
+      summary: Create SMS audience
+      operationId: sms_create_audience
+      tags:
+      - Sms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+      description: Create a new SMS audience
+  /api/sms/audiences/upload:
+    post:
+      summary: Upload SMS audience file
+      operationId: sms_upload_audience
+      tags:
+      - Sms
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Success
+      description: Upload a file to create SMS audience
+  /api/sms/config:
+    get:
+      summary: Get SMS configuration
+      operationId: sms_get_config
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      description: Retrieve SMS configuration settings
+    put:
+      summary: Update SMS configuration
+      operationId: sms_update_config
+      tags:
+      - Sms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+      description: Update SMS configuration settings
+  /api/sms/packages:
+    get:
+      summary: Get SMS packages
+      operationId: sms_get_packages
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        description:
+                          type: string
+                          nullable: true
+                        smsCount:
+                          type: integer
+                        price:
+                          type: number
+                        currency:
+                          type: string
+                        isActive:
+                          type: boolean
+                  timestamp:
+                    type: string
+                    format: date-time
+                  requestId:
+                    type: string
+      description: Retrieve available SMS packages
+  /api/sms/credit:
+    get:
+      summary: Get SMS credit balance
+      operationId: sms_get_credit
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      tenantId:
+                        type: string
+                      balance:
+                        type: integer
+                      totalPurchased:
+                        type: integer
+                      totalUsed:
+                        type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+                  requestId:
+                    type: string
+      description: Retrieve current SMS credit balance
+  /api/sms/upload:
+    post:
+      summary: Upload SMS document
+      operationId: sms_upload_document
+      tags:
+      - Sms
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Success
+      description: Upload SMS-related document
+  /api/sms/documents/{documentType}/download:
+    get:
+      summary: Download SMS document
+      operationId: sms_download_document
+      tags:
+      - Sms
+      parameters:
+      - name: documentType
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Document type identifier
+      responses:
+        '200':
+          description: Success
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+      description: Download SMS-related document
+  /api/sms/documents/{documentType}:
+    delete:
+      summary: Delete SMS document
+      operationId: sms_delete_document
+      tags:
+      - Sms
+      parameters:
+      - name: documentType
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Document type identifier
+      responses:
+        '200':
+          description: Success
+      description: Delete SMS-related document
   /api/sms/monitoring:
     get:
       summary: GET /api/sms/monitoring
@@ -2476,7 +3653,10 @@ paths:
         required: false
         schema:
           type: string
-          enum: [ACTIVE, INACTIVE, PENDING]
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - PENDING
         description: Filter by supplier status
       - name: category
         in: query
@@ -2550,6 +3730,43 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
       description: Remove a supplier from the system
+    put:
+      summary: Update supplier details
+      operationId: suppliers_update_supplier
+      tags:
+      - Suppliers
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuppliersCreateSupplierBody'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Update an existing supplier's information
   /api/suppliers/{supplier_id}/products:
     get:
       summary: Get all products for a specific supplier
@@ -2737,6 +3954,141 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       description: Get current authenticated user information
+    put:
+      summary: Update current user profile
+      operationId: users_update_me
+      tags:
+      - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /api/users/me/password:
+    post:
+      summary: Change current user password
+      operationId: users_change_password
+      tags:
+      - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+              required:
+              - currentPassword
+              - newPassword
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+  /api/tenant/users:
+    get:
+      summary: List tenant users
+      operationId: tenant_users_list
+      tags:
+      - Tenant Users
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+    post:
+      summary: Invite/Create tenant user
+      operationId: tenant_users_invite
+      tags:
+      - Tenant Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                role:
+                  type: string
+              required:
+              - email
+              - firstName
+              - lastName
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+  /api/tenant/users/{user_id}:
+    delete:
+      summary: Delete tenant user
+      operationId: tenant_users_delete
+      tags:
+      - Tenant Users
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
   /entities:
     post:
       summary: Extract entities from image using OCR
@@ -2846,17 +4198,316 @@ paths:
   /swagger.html:
     get:
       summary: Serve the static Swagger UI page from the repository `public/` folder.
-      description: 'This helps local development: visit http://<backend-host>:<port>/swagger.html
-        so the
+      description: 'This helps local development: visit http://<backend-host>:<port>/swagger.html so the
 
-        Swagger UI and `/api/openapi.yaml` are on the same origin and no CORS overrides
-        are needed.'
+        Swagger UI and `/api/openapi.yaml` are on the same origin and no CORS overrides are needed.'
       operationId: serve_swagger_ui
       tags:
       - Swagger.html
       responses:
         '200':
           description: Success
+  /api/suppliers/{supplier_id}/invoices:
+    get:
+      summary: Get supplier purchase invoices (incoming and outgoing)
+      operationId: suppliers_get_supplier_invoices
+      tags:
+      - Suppliers
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 200
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [incoming, outgoing, all]
+          default: all
+      - name: start_date
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: end_date
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        '200':
+          description: Supplier invoices retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      invoices:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PurchaseInvoice'
+                      pagination:
+                        type: object
+                        properties:
+                          page:
+                            type: integer
+                          perPage:
+                            type: integer
+                          total:
+                            type: integer
+                          totalPages:
+                            type: integer
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Supplier not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve purchase invoices for the specified supplier
+  /api/suppliers/suggested:
+    get:
+      summary: Get suggested suppliers (pending approval)
+      operationId: suppliers_get_suggested_suppliers
+      tags:
+      - Suppliers
+      responses:
+        '200':
+          description: Suggested suppliers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      suggestedSuppliers:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SuggestedSupplier'
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Retrieve a list of suggested suppliers based on incoming invoices
+  /api/suppliers/suggested/{suggested_id}/accept:
+    post:
+      summary: Accept suggested supplier and create/link supplier record
+      operationId: suppliers_accept_suggested_supplier
+      tags:
+      - Suppliers
+      parameters:
+      - name: suggested_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '201':
+          description: Suggested supplier accepted and supplier created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      supplier:
+                        $ref: '#/components/schemas/Supplier'
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '200':
+          description: Suggested supplier linked to existing supplier
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      supplier:
+                        $ref: '#/components/schemas/Supplier'
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Accept a suggested supplier and create or link to a supplier by tax number
+  /api/suppliers/suggested/{suggested_id}:
+    delete:
+      summary: Reject a suggested supplier
+      operationId: suppliers_reject_suggested_supplier
+      tags:
+      - Suppliers
+      parameters:
+      - name: suggested_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Suggested supplier rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Suggested supplier not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Reject and mark a suggested supplier as rejected
+  /api/birfatura/sync-invoices:
+    post:
+      summary: Sync invoices from BirFatura provider
+      operationId: birfatura_sync_invoices
+      tags:
+      - BirFatura
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                start_date:
+                  type: string
+                  format: date-time
+                end_date:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Sync completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      imported:
+                        type: object
+                        properties:
+                          incoming:
+                            type: integer
+                          outgoing:
+                            type: integer
+                          duplicates:
+                            type: integer
+                          errors:
+                            type: integer
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Trigger invoice synchronization from integrator to local database
 components:
   schemas:
     Patient:
@@ -2868,27 +4519,15 @@ components:
         tcNumber:
           type: string
           description: Turkish citizenship number
-        tc_number:
-          type: string
-          description: Turkish citizenship number (snake_case alias)
         identityNumber:
           type: string
           description: Identity number
-        identity_number:
-          type: string
-          description: Identity number (snake_case alias)
         firstName:
           type: string
           description: Patient's first name
-        first_name:
-          type: string
-          description: Patient's first name (snake_case alias)
         lastName:
           type: string
           description: Patient's last name
-        last_name:
-          type: string
-          description: Patient's last name (snake_case alias)
         phone:
           type: string
           description: Patient's phone number
@@ -2900,10 +4539,6 @@ components:
           type: string
           format: date
           description: Patient's birth date
-        birth_date:
-          type: string
-          format: date
-          description: Patient's birth date (snake_case alias)
         gender:
           type: string
           enum:
@@ -2913,21 +4548,12 @@ components:
         addressCity:
           type: string
           description: Patient's city
-        address_city:
-          type: string
-          description: Patient's city (snake_case alias)
         addressDistrict:
           type: string
           description: Patient's district
-        address_district:
-          type: string
-          description: Patient's district (snake_case alias)
         addressFull:
           type: string
           description: Patient's full address
-        address_full:
-          type: string
-          description: Patient's full address (snake_case alias)
         status:
           type: string
           enum:
@@ -2943,21 +4569,12 @@ components:
         acquisitionType:
           type: string
           description: How patient was acquired
-        acquisition_type:
-          type: string
-          description: How patient was acquired (snake_case alias)
         conversionStep:
           type: string
           description: Patient conversion step
-        conversion_step:
-          type: string
-          description: Patient conversion step (snake_case alias)
         referredBy:
           type: string
           description: Who referred the patient
-        referred_by:
-          type: string
-          description: Who referred the patient (snake_case alias)
         priorityScore:
           type: integer
           description: Patient priority score
@@ -2992,21 +4609,12 @@ components:
         patientId:
           type: string
           description: Patient ID
-        patient_id:
-          type: string
-          description: Patient ID (snake_case alias)
         clinicianId:
           type: string
           description: Clinician ID
-        clinician_id:
-          type: string
-          description: Clinician ID (snake_case alias)
         branchId:
           type: string
           description: Branch ID
-        branch_id:
-          type: string
-          description: Branch ID (snake_case alias)
         date:
           type: string
           format: date-time
@@ -3020,9 +4628,6 @@ components:
         appointmentType:
           type: string
           description: Type of appointment
-        appointment_type:
-          type: string
-          description: Type of appointment (snake_case alias)
         status:
           type: string
           enum:
@@ -3054,21 +4659,18 @@ components:
         patientId:
           type: string
           description: Patient ID
-        patient_id:
-          type: string
-          description: Patient ID (snake_case alias)
         inventoryId:
           type: string
           description: Inventory ID
-        inventory_id:
-          type: string
-          description: Inventory ID (snake_case alias)
         serialNumber:
           type: string
-          description: Device serial number
-        serial_number:
+          description: Device serial number (for single ear devices)
+        serialNumberLeft:
           type: string
-          description: Device serial number (snake_case alias)
+          description: Left ear device serial number
+        serialNumberRight:
+          type: string
+          description: Right ear device serial number
         brand:
           type: string
           description: Device brand
@@ -3078,9 +4680,6 @@ components:
         deviceType:
           type: string
           description: Type of device
-        device_type:
-          type: string
-          description: Type of device (snake_case alias)
         category:
           type: string
           description: Device category
@@ -3105,48 +4704,25 @@ components:
           type: string
           format: date
           description: Trial start date
-        trial_start_date:
-          type: string
-          format: date
-          description: Trial start date (snake_case alias)
         trialEndDate:
           type: string
           format: date
           description: Trial end date
-        trial_end_date:
-          type: string
-          format: date
-          description: Trial end date (snake_case alias)
         trialExtendedUntil:
           type: string
           format: date
           description: Trial extended until date
-        trial_extended_until:
-          type: string
-          format: date
-          description: Trial extended until date (snake_case alias)
         warrantyStartDate:
           type: string
           format: date
           description: Warranty start date
-        warranty_start_date:
-          type: string
-          format: date
-          description: Warranty start date (snake_case alias)
         warrantyEndDate:
           type: string
           format: date
           description: Warranty end date
-        warranty_end_date:
-          type: string
-          format: date
-          description: Warranty end date (snake_case alias)
         warrantyTerms:
           type: string
           description: Warranty terms
-        warranty_terms:
-          type: string
-          description: Warranty terms (snake_case alias)
         price:
           type: number
           format: decimal
@@ -3292,13 +4868,47 @@ components:
           type: number
           format: float
           description: Unit price
+        kdv:
+          type: number
+          format: float
+          description: VAT/KDV rate percentage
+          default: 20
+        priceIncludesKdv:
+          type: boolean
+          description: Whether the listed price already includes VAT (KDV)
+          default: false
+        costIncludesKdv:
+          type: boolean
+          description: Whether the listed cost already includes VAT (KDV)
+          default: false
+        vatRate:
+          type: number
+          format: float
+          description: VAT rate percentage (alias for kdv)
+          default: 20
+        vatIncludedPrice:
+          type: number
+          format: float
+          description: Price including VAT/KDV
+        stock:
+          type: integer
+          description: Current stock level (alias for availableInventory)
+        serialNumber:
+          type: string
+          description: Product serial number
         direction:
           type: string
-          enum: [LEFT, RIGHT, BILATERAL]
+          enum:
+          - LEFT
+          - RIGHT
+          - BILATERAL
           description: Hearing aid direction
         ear:
           type: string
-          enum: [LEFT, RIGHT, BILATERAL]
+          enum:
+          - LEFT
+          - RIGHT
+          - BILATERAL
           description: Legacy field for direction
         warranty:
           type: integer
@@ -3354,7 +4964,6 @@ components:
       required:
       - name
       - contactPerson
-
     Campaign:
       type: object
       properties:
@@ -3436,7 +5045,6 @@ components:
       - userId
       - title
       - message
-
     ErrorResponse:
       type: object
       properties:
@@ -3500,21 +5108,12 @@ components:
         patientId:
           type: string
           description: Patient ID
-        patient_id:
-          type: string
-          description: Patient ID (snake_case alias)
         saleId:
           type: string
           description: Sale ID
-        sale_id:
-          type: string
-          description: Sale ID (snake_case alias)
         promissoryNoteId:
           type: string
           description: Promissory note ID
-        promissory_note_id:
-          type: string
-          description: Promissory note ID (snake_case alias)
         amount:
           type: number
           format: decimal
@@ -3523,30 +5122,16 @@ components:
           type: string
           format: date-time
           description: Payment date
-        payment_date:
-          type: string
-          format: date-time
-          description: Payment date (snake_case alias)
         dueDate:
           type: string
           format: date
           description: Due date
-        due_date:
-          type: string
-          format: date
-          description: Due date (snake_case alias)
         paymentMethod:
           type: string
           description: Payment method
-        payment_method:
-          type: string
-          description: Payment method (snake_case alias)
         paymentType:
           type: string
           description: Payment type
-        payment_type:
-          type: string
-          description: Payment type (snake_case alias)
         status:
           type: string
           enum:
@@ -3558,18 +5143,12 @@ components:
         referenceNumber:
           type: string
           description: Reference number
-        reference_number:
-          type: string
-          description: Reference number (snake_case alias)
         notes:
           type: string
           description: Payment notes
         deviceId:
           type: string
           description: Device ID
-        device_id:
-          type: string
-          description: Device ID (snake_case alias)
         ear:
           type: string
           enum:
@@ -3583,231 +5162,117 @@ components:
         fromInventory:
           type: boolean
           description: From inventory flag
-        from_inventory:
-          type: boolean
-          description: From inventory flag (snake_case alias)
         listPrice:
           type: number
           format: decimal
           description: List price
-        list_price:
-          type: number
-          format: decimal
-          description: List price (snake_case alias)
         salePrice:
           type: number
           format: decimal
           description: Sale price
-        sale_price:
-          type: number
-          format: decimal
-          description: Sale price (snake_case alias)
         sgkScheme:
           type: string
           description: SGK scheme
-        sgk_scheme:
-          type: string
-          description: SGK scheme (snake_case alias)
         sgkSupport:
           type: number
           format: decimal
           description: SGK support amount
-        sgk_support:
-          type: number
-          format: decimal
-          description: SGK support amount (snake_case alias)
         discountType:
           type: string
           description: Discount type
-        discount_type:
-          type: string
-          description: Discount type (snake_case alias)
         discountValue:
           type: number
           format: decimal
           description: Discount value
-        discount_value:
-          type: number
-          format: decimal
-          description: Discount value (snake_case alias)
         netPayable:
           type: number
           format: decimal
           description: Net payable amount
-        net_payable:
-          type: number
-          format: decimal
-          description: Net payable amount (snake_case alias)
         productId:
           type: string
           description: Product ID
-        product_id:
-          type: string
-          description: Product ID (snake_case alias)
         saleDate:
           type: string
           format: date-time
           description: Sale date
-        sale_date:
-          type: string
-          format: date-time
-          description: Sale date (snake_case alias)
         listPriceTotal:
           type: number
           format: decimal
           description: List price total
-        list_price_total:
-          type: number
-          format: decimal
-          description: List price total (snake_case alias)
         totalAmount:
           type: number
           format: decimal
           description: Total amount
-        total_amount:
-          type: number
-          format: decimal
-          description: Total amount (snake_case alias)
         discountAmount:
           type: number
           format: decimal
           description: Discount amount
-        discount_amount:
-          type: number
-          format: decimal
-          description: Discount amount (snake_case alias)
         finalAmount:
           type: number
           format: decimal
           description: Final amount
-        final_amount:
-          type: number
-          format: decimal
-          description: Final amount (snake_case alias)
         paidAmount:
           type: number
           format: decimal
           description: Paid amount
-        paid_amount:
-          type: number
-          format: decimal
-          description: Paid amount (snake_case alias)
         rightEarAssignmentId:
           type: string
           description: Right ear assignment ID
-        right_ear_assignment_id:
-          type: string
-          description: Right ear assignment ID (snake_case alias)
         leftEarAssignmentId:
           type: string
           description: Left ear assignment ID
-        left_ear_assignment_id:
-          type: string
-          description: Left ear assignment ID (snake_case alias)
         sgkCoverage:
           type: number
           format: decimal
           description: SGK coverage
-        sgk_coverage:
-          type: number
-          format: decimal
-          description: SGK coverage (snake_case alias)
         patientPayment:
           type: number
           format: decimal
           description: Patient payment
-        patient_payment:
-          type: number
-          format: decimal
-          description: Patient payment (snake_case alias)
         planName:
           type: string
           description: Payment plan name
-        plan_name:
-          type: string
-          description: Payment plan name (snake_case alias)
         installmentCount:
           type: integer
           description: Number of installments
-        installment_count:
-          type: integer
-          description: Number of installments (snake_case alias)
         installmentAmount:
           type: number
           format: decimal
           description: Installment amount
-        installment_amount:
-          type: number
-          format: decimal
-          description: Installment amount (snake_case alias)
         installmentNumber:
           type: integer
           description: Current installment number
-        installment_number:
-          type: integer
-          description: Current installment number (snake_case alias)
         remainingBalance:
           type: number
           format: decimal
           description: Remaining balance
-        remaining_balance:
-          type: number
-          format: decimal
-          description: Remaining balance (snake_case alias)
         interestRate:
           type: number
           format: decimal
           description: Interest rate
-        interest_rate:
-          type: number
-          format: decimal
-          description: Interest rate (snake_case alias)
         totalInterest:
           type: number
           format: decimal
           description: Total interest
-        total_interest:
-          type: number
-          format: decimal
-          description: Total interest (snake_case alias)
         processingFee:
           type: number
           format: decimal
           description: Processing fee amount
-        processing_fee:
-          type: number
-          format: decimal
-          description: Processing fee amount (snake_case alias)
         startDate:
           type: string
           format: date-time
           description: Start date
-        start_date:
-          type: string
-          format: date-time
-          description: Start date (snake_case alias)
         paymentPlanId:
           type: string
           description: Payment plan ID
-        payment_plan_id:
-          type: string
-          description: Payment plan ID (snake_case alias)
         paidDate:
           type: string
           format: date-time
           description: Paid date
-        paid_date:
-          type: string
-          format: date-time
-          description: Paid date (snake_case alias)
         lateFee:
           type: number
           format: decimal
           description: Late fee amount
-        late_fee:
-          type: number
-          format: decimal
-          description: Late fee amount (snake_case alias)
         createdAt:
           type: string
           format: date-time
@@ -3837,85 +5302,47 @@ components:
         passwordHash:
           type: string
           description: Password hash
-        password_hash:
-          type: string
-          description: Password hash (snake_case alias)
         firstName:
           type: string
           description: User first name
-        first_name:
-          type: string
-          description: User first name (snake_case alias)
         lastName:
           type: string
           description: User last name
-        last_name:
-          type: string
-          description: User last name (snake_case alias)
         role:
           type: string
           description: User role
         isActive:
           type: boolean
           description: User active status
-        is_active:
-          type: boolean
-          description: User active status (snake_case alias)
         lastLogin:
           type: string
           format: date-time
           description: Last login date
-        last_login:
-          type: string
-          format: date-time
-          description: Last login date (snake_case alias)
         passwordResetToken:
           type: string
           description: Password reset token
-        password_reset_token:
-          type: string
-          description: Password reset token (snake_case alias)
         passwordResetExpires:
           type: string
           format: date-time
           description: Password reset expiry
-        password_reset_expires:
-          type: string
-          format: date-time
-          description: Password reset expiry (snake_case alias)
         userId:
           type: string
           description: User ID for audit
-        user_id:
-          type: string
-          description: User ID for audit (snake_case alias)
         action:
           type: string
           description: User action
         entityType:
           type: string
           description: Entity type
-        entity_type:
-          type: string
-          description: Entity type (snake_case alias)
         entityId:
           type: string
           description: Entity ID
-        entity_id:
-          type: string
-          description: Entity ID (snake_case alias)
         ipAddress:
           type: string
           description: IP address
-        ip_address:
-          type: string
-          description: IP address (snake_case alias)
         userAgent:
           type: string
           description: User agent
-        user_agent:
-          type: string
-          description: User agent (snake_case alias)
         details:
           type: object
           description: Additional details
@@ -3942,12 +5369,10 @@ components:
           description: Template description
         templateType:
           type: string
-          enum: [sms, email]
+          enum:
+          - sms
+          - email
           description: Type of communication template
-        template_type:
-          type: string
-          enum: [sms, email]
-          description: Type of communication template (snake_case alias)
         category:
           type: string
           description: Template category (appointment_reminder, payment_due, welcome, etc.)
@@ -3957,15 +5382,9 @@ components:
         bodyText:
           type: string
           description: Plain text content
-        body_text:
-          type: string
-          description: Plain text content (snake_case alias)
         bodyHtml:
           type: string
           description: HTML content (for email templates)
-        body_html:
-          type: string
-          description: HTML content (snake_case alias)
         variables:
           type: array
           items:
@@ -3982,47 +5401,31 @@ components:
           description: Unique message identifier
         messageType:
           type: string
-          enum: [sms, email]
+          enum:
+          - sms
+          - email
           description: Type of message (sms or email)
         patientId:
           type: string
           description: Patient ID
-        patient_id:
-          type: string
-          description: Patient ID (snake_case alias)
         campaignId:
           type: string
           description: Campaign ID (if part of a campaign)
-        campaign_id:
-          type: string
-          description: Campaign ID (snake_case alias)
         templateId:
           type: string
           description: Template ID used for this message
-        template_id:
-          type: string
-          description: Template ID (snake_case alias)
         status:
           type: string
           description: Message status (sent, delivered, failed, etc.)
         phoneNumber:
           type: string
           description: Phone number (for SMS messages)
-        phone_number:
-          type: string
-          description: Phone number (snake_case alias)
         toEmail:
           type: string
           description: Recipient email address (for email messages)
-        to_email:
-          type: string
-          description: Recipient email address (snake_case alias)
         fromEmail:
           type: string
           description: Sender email address (for email messages)
-        from_email:
-          type: string
-          description: Sender email address (snake_case alias)
         subject:
           type: string
           description: Email subject (for email messages)
@@ -4032,37 +5435,20 @@ components:
         bodyText:
           type: string
           description: Plain text content (for email)
-        body_text:
-          type: string
-          description: Plain text content (snake_case alias)
         bodyHtml:
           type: string
           description: HTML content (for email)
-        body_html:
-          type: string
-          description: HTML content (snake_case alias)
         sentAt:
           type: string
           format: date-time
           description: When the message was sent
-        sent_at:
-          type: string
-          format: date-time
-          description: When the message was sent (snake_case alias)
         deliveredAt:
           type: string
           format: date-time
           description: When the message was delivered
-        delivered_at:
-          type: string
-          format: date-time
-          description: When the message was delivered (snake_case alias)
         errorMessage:
           type: string
           description: Error message if sending failed
-        error_message:
-          type: string
-          description: Error message (snake_case alias)
         cost:
           type: number
           format: float
@@ -4071,41 +5457,20 @@ components:
           type: string
           format: date-time
           description: Creation timestamp
-        created_at:
-          type: string
-          format: date-time
-          description: Creation timestamp (snake_case alias)
         updatedAt:
           type: string
           format: date-time
           description: Last update timestamp
-        updated_at:
-          type: string
-          format: date-time
-          description: Last update timestamp (snake_case alias)
-        is_active:
-          type: boolean
-          description: Whether template is active (snake_case alias)
         isSystem:
           type: boolean
           description: Whether template is a system template
-        is_system:
-          type: boolean
-          description: Whether template is a system template (snake_case alias)
         usageCount:
           type: integer
           description: Number of times template has been used
-        usage_count:
-          type: integer
-          description: Number of times template has been used (snake_case alias)
         lastUsedAt:
           type: string
           format: date-time
           description: Last time template was used
-        last_used_at:
-          type: string
-          format: date-time
-          description: Last time template was used (snake_case alias)
       required:
       - name
       - templateType
@@ -4121,7 +5486,9 @@ components:
           description: Template description
         templateType:
           type: string
-          enum: [sms, email]
+          enum:
+          - sms
+          - email
           description: Type of communication template
         category:
           type: string
@@ -4177,3 +5544,102 @@ components:
         isActive:
           type: boolean
           description: Whether template is active
+    PurchaseInvoice:
+      type: object
+      properties:
+        id:
+          type: integer
+        birfaturaUuid:
+          type: string
+        invoiceNumber:
+          type: string
+        invoiceDate:
+          type: string
+          format: date-time
+        invoiceType:
+          type: string
+          enum: [INCOMING, OUTGOING]
+        senderName:
+          type: string
+        senderTaxNumber:
+          type: string
+        senderTaxOffice:
+          type: string
+        senderAddress:
+          type: string
+        senderCity:
+          type: string
+        supplierId:
+          type: integer
+          nullable: true
+        currency:
+          type: string
+        subtotal:
+          type: number
+        taxAmount:
+          type: number
+        totalAmount:
+          type: number
+        status:
+          type: string
+        isMatched:
+          type: boolean
+        notes:
+          type: string
+          nullable: true
+        itemsCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    SuggestedSupplier:
+      type: object
+      properties:
+        id:
+          type: integer
+        companyName:
+          type: string
+        taxNumber:
+          type: string
+        taxOffice:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        invoiceCount:
+          type: integer
+        totalAmount:
+          type: number
+        firstInvoiceDate:
+          type: string
+          format: date-time
+          nullable: true
+        lastInvoiceDate:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED, REJECTED]
+        acceptedAt:
+          type: string
+          format: date-time
+          nullable: true
+        acceptedBy:
+          type: string
+          nullable: true
+        supplierId:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true

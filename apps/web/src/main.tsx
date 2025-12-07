@@ -13,8 +13,7 @@ try {
   if (persisted) {
     if (typeof window !== 'undefined') {
       // ensure in-memory helper is set for non-axios callers
-      // @ts-ignore
-      window.__AUTH_TOKEN__ = persisted
+      (window as Window & { __AUTH_TOKEN__?: string }).__AUTH_TOKEN__ = persisted
     }
     try {
       axios.defaults.headers.common['Authorization'] = `Bearer ${persisted}`

@@ -4,8 +4,8 @@ import BulkOperationsModal, { BulkOperation } from '../../pages/inventory/compon
 import WarningModal from '../../pages/inventory/components/WarningModal';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from '@tanstack/react-router';
-// Use shared axios instance configured in orval-mutator so auth interceptors apply
-import { customInstance as api } from '../../api/orval-mutator';
+// Use apiClient which is the configured axios instance (not customInstance which is the orval mutator function)
+import { apiClient } from '../../api/orval-mutator';
 import { AlertTriangle, Eye, Edit, Trash2 } from 'lucide-react';
 import { InventoryItem, InventoryFilters, InventoryStatus } from '../../types/inventory';
 
@@ -74,7 +74,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         }
       }
 
-      const response = await api.get('/api/inventory', { params });
+      const response = await apiClient.get('/api/inventory', { params });
 
       if (response.data.success && Array.isArray(response.data.data)) {
         // Map backend data to frontend format
@@ -367,7 +367,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
 
     try {
       setLoading(true);
-      await Promise.all(selectedIds.map(id => api.delete(`/api/inventory/${id}`)));
+      await Promise.all(selectedIds.map(id => apiClient.delete(`/api/inventory/${id}`)));
       setSelectedIds([]);
       await loadItems();
     } catch (err) {
@@ -393,37 +393,37 @@ export const InventoryList: React.FC<InventoryListProps> = ({
           const id = it.id;
           switch (operation.type) {
             case 'delete':
-              await api.delete(`/api/inventory/${id}`);
+              await apiClient.delete(`/api/inventory/${id}`);
               break;
             case 'update_stock':
               // Backend inventory API expects availableInventory to be set via PUT /api/inventory/:id
-              await api.put(`/api/inventory/${id}`, {
+              await apiClient.put(`/api/inventory/${id}`, {
                 availableInventory: operation.data?.stock ?? 0
               });
               break;
             case 'change_category':
-              await api.put(`/api/inventory/${id}`, { category: operation.data?.category });
+              await apiClient.put(`/api/inventory/${id}`, { category: operation.data?.category });
               break;
             case 'change_status':
-              await api.put(`/api/inventory/${id}`, { status: operation.data?.status });
+              await apiClient.put(`/api/inventory/${id}`, { status: operation.data?.status });
               break;
             case 'update_price':
-              await api.put(`/api/inventory/${id}`, {
+              await apiClient.put(`/api/inventory/${id}`, {
                 ...(operation.data?.price !== undefined && operation.data?.price !== null ? { price: operation.data.price } : {}),
                 ...(operation.data?.kdv !== undefined ? { kdv: operation.data.kdv, vatRate: operation.data.kdv } : {})
               });
               break;
             case 'update_supplier':
-              await api.put(`/api/inventory/${id}`, { supplier: operation.data?.supplier });
+              await apiClient.put(`/api/inventory/${id}`, { supplier: operation.data?.supplier });
               break;
             case 'change_brand':
-              await api.put(`/api/inventory/${id}`, { brand: operation.data?.brand });
+              await apiClient.put(`/api/inventory/${id}`, { brand: operation.data?.brand });
               break;
             case 'add_features':
               {
                 const newFeatures = operation.data?.features || [];
                 const merged = Array.from(new Set([...(it.features || []), ...newFeatures]));
-                await api.put(`/api/inventory/${id}`, { features: merged });
+                await apiClient.put(`/api/inventory/${id}`, { features: merged });
               }
               break;
             // export handled client-side; not part of BulkOperation payload

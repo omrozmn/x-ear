@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState } from 'react';
 import { PatientSale } from '../../hooks/patient/usePatientSales';
 import {
@@ -7,13 +6,13 @@ import {
   User,
   Package,
   CreditCard,
-  TrendingUp,
   TrendingDown,
   FileText,
   Eye,
   Receipt,
   Banknote,
-  RefreshCw
+  RefreshCw,
+  Smartphone
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 
@@ -223,7 +222,7 @@ export const PatientSaleCard: React.FC<PatientSaleCardProps> = ({
         <div className="mt-4 pt-3 border-t border-gray-100">
           <div className="flex flex-wrap gap-2">
             {/* Invoice Actions */}
-            {!sale.invoiceId ? (
+            {!sale.invoice?.id ? (
               <Button
                 variant="secondary"
                 onClick={(e) => {

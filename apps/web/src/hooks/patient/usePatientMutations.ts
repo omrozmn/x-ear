@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useCallback, useMemo } from 'react';
 import { Patient } from '../../types/patient';
 import { PatientSyncService } from '../../services/patient/patient-sync.service';

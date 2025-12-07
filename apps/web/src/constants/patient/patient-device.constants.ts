@@ -26,7 +26,8 @@ export const DEVICE_STATUS: Record<DeviceStatus, string> = {
   active: 'Aktif',
   trial: 'Deneme',
   returned: 'İade Edildi',
-  replaced: 'Değiştirildi'
+  replaced: 'Değiştirildi',
+  assigned: 'Atanmış'
 } as const;
 
 export const DEVICE_TYPE_COLORS: Record<DeviceType, string> = {
@@ -39,7 +40,8 @@ export const DEVICE_STATUS_COLORS: Record<DeviceStatus, string> = {
   active: '#10B981',
   trial: '#F59E0B',
   returned: '#6B7280',
-  replaced: '#8B5CF6'
+  replaced: '#8B5CF6',
+  assigned: '#3B82F6'
 } as const;
 
 // Popular Device Brands

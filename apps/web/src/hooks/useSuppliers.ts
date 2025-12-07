@@ -21,7 +21,7 @@ import {
 export const useSuppliers = (params: SuppliersGetSuppliersParams) => {
   return useQuery({
     queryKey: ['suppliers', params],
-    queryFn: () => suppliersGetSuppliers({ params }),
+    queryFn: ({ signal }) => suppliersGetSuppliers(params, signal),
     placeholderData: (previousData, previousQuery) => previousData,
   });
 };
@@ -29,7 +29,7 @@ export const useSuppliers = (params: SuppliersGetSuppliersParams) => {
 export const useSupplier = (id: string) => {
   return useQuery({
     queryKey: ['suppliers', id],
-    queryFn: () => suppliersGetSuppliers({ params: { search: id } }),
+    queryFn: ({ signal }) => suppliersGetSuppliers({ search: id }, signal),
     enabled: !!id,
     select: (data) => (data.data as any)?.data?.find((s: any) => String(s.id) === String(id) || (s as any)._id === id),
   });
@@ -46,8 +46,7 @@ export const useCreateSupplier = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (newSupplier: SuppliersCreateSupplierBody) => {
-      const key = await makeIdempotencyKey('suppliers:create', newSupplier);
-      return suppliersCreateSupplier(newSupplier, { headers: { 'Idempotency-Key': key } });
+      return suppliersCreateSupplier(newSupplier);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
@@ -59,15 +58,7 @@ export const useUpdateSupplier = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ supplierId, updates }: { supplierId: string; updates: SuppliersCreateSupplierBody }) => {
-      const key = await makeIdempotencyKey('suppliers:update', { supplierId, ...updates });
-      await outbox.addOperation({
-        method: 'PUT',
-        endpoint: `/api/suppliers/${supplierId}`,
-        data: updates,
-        headers: { 'Idempotency-Key': key },
-        priority: 'high'
-      });
-      return suppliersUpdateSupplier(supplierId, updates, { headers: { 'Idempotency-Key': key } });
+      return suppliersUpdateSupplier(supplierId, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
@@ -186,15 +177,7 @@ export const useSyncBirFaturaInvoices = () => {
       const payload = params
         ? { start_date: params.startDate, end_date: params.endDate }
         : undefined;
-      const key = await makeIdempotencyKey('birfatura:sync', payload ?? {});
-      await outbox.addOperation({
-        method: 'POST',
-        endpoint: `/api/birfatura/sync-invoices`,
-        headers: { 'Idempotency-Key': key },
-        data: payload,
-        priority: 'high'
-      });
-      return birfaturaSyncInvoices(payload as any, { headers: { 'Idempotency-Key': key } });
+      return birfaturaSyncInvoices(payload as any);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supplier-invoices'] });

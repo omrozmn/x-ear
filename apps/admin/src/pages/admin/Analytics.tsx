@@ -38,7 +38,7 @@ const Analytics: React.FC = () => {
     metric: selectedMetric
   });
 
-  const data = analyticsData?.data;
+  const data = analyticsData?.data as any;
 
   const handleExport = () => {
     console.log('Exporting analytics data...');

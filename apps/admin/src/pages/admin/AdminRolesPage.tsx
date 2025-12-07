@@ -86,7 +86,7 @@ const AdminRolesPage: React.FC = () => {
 
         try {
             await updatePermissionsMutation.mutateAsync({
-                roleId: selectedRole.id,
+                id: selectedRole.id,
                 permissions: selectedPermissions
             });
             toast.success('İzinler güncellendi');

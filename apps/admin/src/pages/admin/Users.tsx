@@ -73,7 +73,7 @@ const Users: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await updateAnyTenantUser({ id: userToToggle.id, data: { isActive: newStatus } });
+      await updateAnyTenantUser({ id: userToToggle.id, data: { is_active: newStatus } });
       await queryClient.invalidateQueries({ queryKey: ['/api/admin/users/all'] });
       toast.success('Kullanıcı durumu başarıyla güncellendi');
       setConfirmModalOpen(false);
@@ -192,11 +192,11 @@ const Users: React.FC = () => {
     );
   };
 
-  const getStatusBadge = (isActive: boolean | undefined) => {
+  const getStatusBadge = (is_active: boolean | undefined) => {
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
         }`}>
-        {isActive ? 'Aktif' : 'Pasif'}
+        {is_active ? 'Aktif' : 'Pasif'}
       </span>
     );
   };
@@ -345,10 +345,10 @@ const Users: React.FC = () => {
                       {getRoleBadge(user.role)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.tenant_name || '-'}
+                      {(user as any).tenant_name || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(user.isActive)}
+                      {getStatusBadge(user.is_active)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {user.last_login
@@ -374,13 +374,13 @@ const Users: React.FC = () => {
                           Düzenle
                         </button>
                         <button
-                          onClick={() => handleStatusToggleClick(user.id!, user.isActive)}
-                          className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 ${user.isActive
+                          onClick={() => handleStatusToggleClick(user.id!, user.is_active)}
+                          className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 ${user.is_active
                             ? "text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500"
                             : "text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500"
                             }`}
                         >
-                          {user.isActive ? 'Pasife Al' : 'Aktifleştir'}
+                          {user.is_active ? 'Pasife Al' : 'Aktifleştir'}
                         </button>
                       </div>
                     </td>

@@ -70,7 +70,9 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       const response = await inventoryGetInventoryItem(id);
 
       if (response.data.success && response.data.data) {
-        const apiItem = response.data.data;
+        // Backend might return snake_case, Orval types expect camelCase
+        // Cast to any to handle both formats
+        const apiItem = response.data.data as any;
 
         // Handle features
         let featuresArray: string[] = [];

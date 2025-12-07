@@ -2175,3 +2175,1848 @@ WHERE sms_provider_configs.tenant_id = ?
 2025-12-06 22:52:35,389 - app - INFO - Permission middleware initialized successfully
 2025-12-06 22:52:35,392 - middleware.permission_middleware - WARNING - Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'admin.system.view', 'activity_logs.export', 'admin.tickets.create', 'activity_logs.view', 'admin.users.delete', 'admin.activity_logs.view', 'admin.tenants.delete', 'admin.users.create', 'admin.tenants.create', 'admin.tenants.manage', 'admin.tickets.view', 'admin.tickets.respond', 'admin.tenants.edit', 'admin.tenants.view', 'admin.settings.view', 'admin.system.logs', 'admin.tickets.edit', 'admin.users.view', 'admin.users.edit', 'admin.settings.edit'}", "Permissions in DB but not used in map: {'sales.approve'}"]
 2025-12-06 22:52:35,392 - app - INFO - Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'admin.system.view', 'activity_logs.export', 'admin.tickets.create', 'activity_logs.view', 'admin.users.delete', 'admin.activity_logs.view', 'admin.tenants.delete', 'admin.users.create', 'admin.tenants.create', 'admin.tenants.manage', 'admin.tickets.view', 'admin.tickets.respond', 'admin.tenants.edit', 'admin.tenants.view', 'admin.settings.view', 'admin.system.logs', 'admin.tickets.edit', 'admin.users.view', 'admin.users.edit', 'admin.settings.edit'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-06 23:13:13,519 - app - WARNING - Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/backend/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+2025-12-06 23:13:13,613 - app - DEBUG - REDIS_URL present; skipping local Redis auto-start.
+2025-12-06 23:13:13,614 - app - WARNING - Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+2025-12-06 23:13:13,614 - services.otp_store - WARNING - Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+2025-12-06 23:13:13,615 - app - INFO - Tenant security (global query filter) initialized
+2025-12-06 23:13:14,198 - services.s3_service - WARNING - S3Service running in mock mode - no actual S3 operations will be performed
+2025-12-06 23:13:14,209 - app - INFO - Scheduling OCR/NLP service pre-warm in background
+2025-12-06 23:13:14,446 - app - INFO - Ensuring database tables exist (create_all)
+2025-12-06 23:13:14,454 - app - INFO - Permission middleware initialized successfully
+2025-12-06 23:13:14,457 - middleware.permission_middleware - WARNING - Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'admin.activity_logs.view', 'admin.settings.view', 'admin.system.logs', 'admin.tickets.respond', 'activity_logs.view', 'admin.tenants.create', 'activity_logs.export', 'admin.system.view', 'admin.tickets.view', 'admin.tenants.view', 'admin.users.view', 'admin.tickets.edit', 'admin.tenants.edit', 'admin.users.edit', 'admin.tenants.delete', 'admin.settings.edit', 'admin.users.create', 'admin.tickets.create', 'admin.tenants.manage', 'admin.users.delete'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-06 23:13:14,457 - app - INFO - Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'admin.activity_logs.view', 'admin.settings.view', 'admin.system.logs', 'admin.tickets.respond', 'activity_logs.view', 'admin.tenants.create', 'activity_logs.export', 'admin.system.view', 'admin.tickets.view', 'admin.tenants.view', 'admin.users.view', 'admin.tickets.edit', 'admin.tenants.edit', 'admin.users.edit', 'admin.tenants.delete', 'admin.settings.edit', 'admin.users.create', 'admin.tickets.create', 'admin.tenants.manage', 'admin.users.delete'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-06 23:18:36,364 - __main__ - WARNING - Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/backend/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+2025-12-06 23:18:36,436 - app - DEBUG - REDIS_URL present; skipping local Redis auto-start.
+2025-12-06 23:18:36,437 - app - WARNING - Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+2025-12-06 23:18:36,437 - services.otp_store - WARNING - Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+2025-12-06 23:18:36,437 - __main__ - INFO - Tenant security (global query filter) initialized
+2025-12-06 23:18:36,864 - services.s3_service - WARNING - S3Service running in mock mode - no actual S3 operations will be performed
+2025-12-06 23:18:36,871 - __main__ - INFO - Scheduling OCR/NLP service pre-warm in background
+2025-12-06 23:18:37,079 - __main__ - INFO - Ensuring database tables exist (create_all)
+2025-12-06 23:18:37,087 - __main__ - INFO - Permission middleware initialized successfully
+2025-12-06 23:18:37,090 - middleware.permission_middleware - WARNING - Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'admin.system.logs', 'admin.tickets.view', 'activity_logs.export', 'admin.tenants.create', 'admin.tenants.edit', 'admin.activity_logs.view', 'admin.settings.view', 'admin.users.create', 'admin.users.delete', 'admin.tickets.respond', 'admin.users.view', 'admin.tenants.delete', 'activity_logs.view', 'admin.tenants.manage', 'admin.tickets.create', 'admin.settings.edit', 'admin.tickets.edit', 'admin.tenants.view', 'admin.system.view', 'admin.users.edit'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-06 23:18:37,090 - __main__ - INFO - Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'admin.system.logs', 'admin.tickets.view', 'activity_logs.export', 'admin.tenants.create', 'admin.tenants.edit', 'admin.activity_logs.view', 'admin.settings.view', 'admin.users.create', 'admin.users.delete', 'admin.tickets.respond', 'admin.users.view', 'admin.tenants.delete', 'activity_logs.view', 'admin.tenants.manage', 'admin.tickets.create', 'admin.settings.edit', 'admin.tickets.edit', 'admin.tenants.view', 'admin.system.view', 'admin.users.edit'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-06 23:18:37,090 - __main__ - INFO - Starting Flask development server on 0.0.0.0:5003
+2025-12-06 23:21:59,966 - __main__ - WARNING - Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/backend/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+2025-12-06 23:22:00,042 - app - DEBUG - REDIS_URL present; skipping local Redis auto-start.
+2025-12-06 23:22:00,042 - app - WARNING - Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+2025-12-06 23:22:00,043 - services.otp_store - WARNING - Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+2025-12-06 23:22:00,043 - __main__ - INFO - Tenant security (global query filter) initialized
+2025-12-06 23:22:00,475 - services.s3_service - WARNING - S3Service running in mock mode - no actual S3 operations will be performed
+2025-12-06 23:22:00,483 - __main__ - INFO - Scheduling OCR/NLP service pre-warm in background
+2025-12-06 23:22:00,737 - __main__ - INFO - Ensuring database tables exist (create_all)
+2025-12-06 23:22:00,746 - __main__ - INFO - Permission middleware initialized successfully
+2025-12-06 23:22:00,748 - middleware.permission_middleware - WARNING - Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'admin.tenants.delete', 'activity_logs.view', 'admin.tenants.create', 'admin.users.edit', 'activity_logs.export', 'admin.tenants.manage', 'admin.activity_logs.view', 'admin.tenants.edit', 'admin.users.view', 'admin.tickets.respond', 'admin.system.logs', 'admin.settings.edit', 'admin.tickets.create', 'admin.tenants.view', 'admin.settings.view', 'admin.system.view', 'admin.users.create', 'admin.tickets.edit', 'admin.tickets.view', 'admin.users.delete'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-06 23:22:00,748 - __main__ - INFO - Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'admin.tenants.delete', 'activity_logs.view', 'admin.tenants.create', 'admin.users.edit', 'activity_logs.export', 'admin.tenants.manage', 'admin.activity_logs.view', 'admin.tenants.edit', 'admin.users.view', 'admin.tickets.respond', 'admin.system.logs', 'admin.settings.edit', 'admin.tickets.create', 'admin.tenants.view', 'admin.settings.view', 'admin.system.view', 'admin.users.create', 'admin.tickets.edit', 'admin.tickets.view', 'admin.users.delete'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-06 23:22:00,749 - __main__ - INFO - Starting Flask development server on 0.0.0.0:5003
+2025-12-06 23:22:00,758 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://192.168.1.114:5003
+2025-12-06 23:22:00,759 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-06 23:22:01,473 - services.ocr_service - WARNING - PaddleOCR not available: No module named 'imghdr'
+2025-12-06 23:23:09,536 - __main__ - WARNING - Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/backend/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+2025-12-06 23:23:09,612 - app - DEBUG - REDIS_URL present; skipping local Redis auto-start.
+2025-12-06 23:23:09,613 - app - WARNING - Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+2025-12-06 23:23:09,613 - services.otp_store - WARNING - Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+2025-12-06 23:23:09,613 - __main__ - INFO - Tenant security (global query filter) initialized
+2025-12-06 23:23:10,116 - services.s3_service - WARNING - S3Service running in mock mode - no actual S3 operations will be performed
+2025-12-06 23:23:10,125 - __main__ - INFO - Scheduling OCR/NLP service pre-warm in background
+2025-12-06 23:23:10,381 - __main__ - INFO - Ensuring database tables exist (create_all)
+2025-12-06 23:23:10,388 - __main__ - INFO - Permission middleware initialized successfully
+2025-12-06 23:23:10,391 - middleware.permission_middleware - WARNING - Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'admin.tickets.view', 'admin.system.view', 'admin.tenants.delete', 'admin.system.logs', 'admin.tenants.manage', 'activity_logs.view', 'admin.tickets.edit', 'admin.users.delete', 'admin.activity_logs.view', 'admin.users.create', 'activity_logs.export', 'admin.tenants.edit', 'admin.tenants.view', 'admin.tenants.create', 'admin.tickets.respond', 'admin.users.view', 'admin.users.edit', 'admin.tickets.create', 'admin.settings.view', 'admin.settings.edit'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-06 23:23:10,391 - __main__ - INFO - Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'admin.tickets.view', 'admin.system.view', 'admin.tenants.delete', 'admin.system.logs', 'admin.tenants.manage', 'activity_logs.view', 'admin.tickets.edit', 'admin.users.delete', 'admin.activity_logs.view', 'admin.users.create', 'activity_logs.export', 'admin.tenants.edit', 'admin.tenants.view', 'admin.tenants.create', 'admin.tickets.respond', 'admin.users.view', 'admin.users.edit', 'admin.tickets.create', 'admin.settings.view', 'admin.settings.edit'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-06 23:23:10,391 - __main__ - INFO - Starting Flask development server on 0.0.0.0:5003
+2025-12-06 23:23:10,407 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://192.168.1.114:5003
+2025-12-06 23:23:10,408 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-06 23:23:11,029 - services.ocr_service - WARNING - PaddleOCR not available: No module named 'imghdr'
+2025-12-06 23:23:56,282 - __main__ - WARNING - Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/backend/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+2025-12-06 23:23:56,347 - app - DEBUG - REDIS_URL present; skipping local Redis auto-start.
+2025-12-06 23:23:56,348 - app - WARNING - Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+2025-12-06 23:23:56,348 - services.otp_store - WARNING - Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+2025-12-06 23:23:56,349 - __main__ - INFO - Tenant security (global query filter) initialized
+2025-12-06 23:23:56,751 - services.s3_service - WARNING - S3Service running in mock mode - no actual S3 operations will be performed
+2025-12-06 23:23:56,759 - __main__ - INFO - Scheduling OCR/NLP service pre-warm in background
+2025-12-06 23:23:56,977 - __main__ - INFO - Ensuring database tables exist (create_all)
+2025-12-06 23:23:56,985 - __main__ - INFO - Permission middleware initialized successfully
+2025-12-06 23:23:56,988 - middleware.permission_middleware - WARNING - Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'admin.users.delete', 'admin.users.view', 'admin.tenants.view', 'admin.tickets.respond', 'admin.tickets.create', 'activity_logs.view', 'admin.tenants.edit', 'admin.users.create', 'admin.users.edit', 'admin.activity_logs.view', 'admin.tickets.view', 'admin.settings.view', 'admin.system.view', 'admin.system.logs', 'admin.tenants.create', 'admin.tickets.edit', 'activity_logs.export', 'admin.settings.edit', 'admin.tenants.manage', 'admin.tenants.delete'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-06 23:23:56,989 - __main__ - INFO - Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'admin.users.delete', 'admin.users.view', 'admin.tenants.view', 'admin.tickets.respond', 'admin.tickets.create', 'activity_logs.view', 'admin.tenants.edit', 'admin.users.create', 'admin.users.edit', 'admin.activity_logs.view', 'admin.tickets.view', 'admin.settings.view', 'admin.system.view', 'admin.system.logs', 'admin.tenants.create', 'admin.tickets.edit', 'activity_logs.export', 'admin.settings.edit', 'admin.tenants.manage', 'admin.tenants.delete'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-06 23:23:56,989 - __main__ - INFO - Starting Flask development server on 0.0.0.0:5003
+2025-12-06 23:23:56,997 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://192.168.1.114:5003
+2025-12-06 23:23:56,997 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-06 23:23:57,504 - services.ocr_service - WARNING - PaddleOCR not available: No module named 'imghdr'
+2025-12-06 23:26:06,099 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:06] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-06 23:26:06,125 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:06] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+2025-12-06 23:26:13,921 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:13] "[35m[1mOPTIONS /api/auth/login HTTP/1.1[0m" 204 -
+2025-12-06 23:26:13,926 - routes.auth - INFO - Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'admin123'}
+2025-12-06 23:26:13,926 - routes.auth - INFO - Login attempt - identifier: admin@x-ear.com, password_provided: True
+2025-12-06 23:26:14,024 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:14] "POST /api/auth/login HTTP/1.1" 200 -
+2025-12-06 23:26:14,036 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:14] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:26:14,090 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:14] "GET /api/admin/debug/available-roles HTTP/1.1" 200 -
+2025-12-06 23:26:14,151 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:14] "GET /api/dashboard HTTP/1.1" 200 -
+2025-12-06 23:26:14,276 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:14] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:26:15,666 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:15] "GET /api/appointments/list?page=1&per_page=1000 HTTP/1.1" 200 -
+2025-12-06 23:26:15,709 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:15] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:26:15,721 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:15] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:26:15,749 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:15] "GET /api/dashboard HTTP/1.1" 200 -
+2025-12-06 23:26:15,750 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:15] "GET /api/patients?per_page=100 HTTP/1.1" 200 -
+2025-12-06 23:26:15,751 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:15] "GET /api/patients?params[page]=1&params[per_page]=1000 HTTP/1.1" 200 -
+2025-12-06 23:26:15,752 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:15] "GET /api/admin/debug/available-roles HTTP/1.1" 200 -
+2025-12-06 23:26:15,876 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:26:15] "GET /api/dashboard/charts/patient-distribution HTTP/1.1" 200 -
+2025-12-06 23:29:51,399 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "[35m[1mOPTIONS /api/inventory/stats HTTP/1.1[0m" 204 -
+2025-12-06 23:29:51,402 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "[35m[1mOPTIONS /api/inventory/brands HTTP/1.1[0m" 204 -
+2025-12-06 23:29:51,403 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "[35m[1mOPTIONS /api/inventory?per_page=100 HTTP/1.1[0m" 204 -
+2025-12-06 23:29:51,404 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "[35m[1mOPTIONS /api/inventory/stats HTTP/1.1[0m" 204 -
+2025-12-06 23:29:51,404 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "[35m[1mOPTIONS /api/inventory/brands HTTP/1.1[0m" 204 -
+2025-12-06 23:29:51,404 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "[35m[1mOPTIONS /api/inventory?per_page=100 HTTP/1.1[0m" 204 -
+2025-12-06 23:29:51,429 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "GET /api/inventory?page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:29:51,430 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "GET /api/inventory?page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:29:51,433 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "GET /api/inventory?page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:29:51,442 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "GET /api/inventory/brands HTTP/1.1" 200 -
+2025-12-06 23:29:51,446 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "GET /api/inventory?page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:29:51,454 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "GET /api/inventory/brands HTTP/1.1" 200 -
+2025-12-06 23:29:51,455 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "GET /api/inventory?per_page=100 HTTP/1.1" 200 -
+2025-12-06 23:29:51,456 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "GET /api/inventory?per_page=100 HTTP/1.1" 200 -
+2025-12-06 23:29:51,457 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "GET /api/inventory/stats HTTP/1.1" 200 -
+2025-12-06 23:29:51,457 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:51] "GET /api/inventory/stats HTTP/1.1" 200 -
+2025-12-06 23:29:53,291 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:53] "GET /api/suppliers?params[search]=&params[page]=1&params[per_page]=20 HTTP/1.1" 200 -
+2025-12-06 23:29:59,879 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:29:59] "GET /api/suppliers?params[search]=5 HTTP/1.1" 200 -
+2025-12-06 23:30:02,295 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:02] "GET /api/suppliers?params[search]=6 HTTP/1.1" 200 -
+2025-12-06 23:30:03,844 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:03] "GET /api/suppliers?params[search]=4 HTTP/1.1" 200 -
+2025-12-06 23:30:08,280 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:08] "POST /api/birfatura/sync-invoices HTTP/1.1" 200 -
+2025-12-06 23:30:15,663 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:15] "[35m[1mOPTIONS /api/birfatura/sync-invoices HTTP/1.1[0m" 204 -
+2025-12-06 23:30:15,667 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:15] "[31m[1mPOST /api/birfatura/sync-invoices HTTP/1.1[0m" 401 -
+2025-12-06 23:30:17,355 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:17] "[35m[1mOPTIONS /api/permissions/my HTTP/1.1[0m" 204 -
+2025-12-06 23:30:17,373 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:17] "GET /api/permissions/my HTTP/1.1" 200 -
+2025-12-06 23:30:17,400 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:17] "GET /api/reports/financial?days=30 HTTP/1.1" 200 -
+2025-12-06 23:30:17,401 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:17] "GET /api/reports/overview?days=30 HTTP/1.1" 200 -
+2025-12-06 23:30:21,189 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:21] "GET /api/reports/patients?days=30 HTTP/1.1" 200 -
+2025-12-06 23:30:22,650 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:22] "GET /api/reports/promissory-notes/by-patient?status=active&page=1&per_page=10 HTTP/1.1" 200 -
+2025-12-06 23:30:22,652 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:22] "GET /api/reports/promissory-notes?days=365 HTTP/1.1" 200 -
+2025-12-06 23:30:25,395 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:25] "GET /api/reports/remaining-payments?page=1&per_page=20&min_amount=0 HTTP/1.1" 200 -
+2025-12-06 23:30:25,397 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:25] "GET /api/reports/cashflow-summary?days=30 HTTP/1.1" 200 -
+2025-12-06 23:30:30,394 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:30] "GET /api/activity-logs/filter-options HTTP/1.1" 200 -
+2025-12-06 23:30:30,407 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:30] "GET /api/activity-logs?page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:30:44,819 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:44] "GET /api/activity-logs?user_id=usr_admin&page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:30:49,053 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:49] "GET /api/activity-logs?action=auth.failed_login&page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:30:50,522 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:50] "GET /api/activity-logs?action=auth.login&page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:30:52,765 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:30:52] "GET /api/activity-logs?action=patient.created&page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:31:14,179 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:31:14] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-06 23:31:14,253 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:31:14] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+2025-12-06 23:34:58,922 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:34:58] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-06 23:34:58,964 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:34:58] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+2025-12-06 23:35:03,745 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:03] "[35m[1mOPTIONS /api/auth/login HTTP/1.1[0m" 204 -
+2025-12-06 23:35:03,750 - routes.auth - INFO - Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'admin123'}
+2025-12-06 23:35:03,750 - routes.auth - INFO - Login attempt - identifier: admin@x-ear.com, password_provided: True
+2025-12-06 23:35:03,855 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:03] "POST /api/auth/login HTTP/1.1" 200 -
+2025-12-06 23:35:03,865 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:03] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:35:03,887 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:03] "[35m[1mOPTIONS /api/permissions/my HTTP/1.1[0m" 204 -
+2025-12-06 23:35:03,894 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:03] "GET /api/permissions/my HTTP/1.1" 200 -
+2025-12-06 23:35:03,962 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:03] "GET /api/admin/debug/available-roles HTTP/1.1" 200 -
+2025-12-06 23:35:03,993 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:03] "GET /api/activity-logs/filter-options HTTP/1.1" 200 -
+2025-12-06 23:35:04,021 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:04] "GET /api/activity-logs?page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:35:04,092 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:04] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:35:05,190 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:05] "GET /api/appointments/list?page=1&per_page=1000 HTTP/1.1" 200 -
+2025-12-06 23:35:05,282 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:05] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:35:05,284 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:05] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:35:05,297 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:05] "GET /api/patients?params[page]=1&params[per_page]=1000 HTTP/1.1" 200 -
+2025-12-06 23:35:05,298 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:05] "GET /api/patients?per_page=100 HTTP/1.1" 200 -
+2025-12-06 23:35:05,299 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:05] "GET /api/dashboard HTTP/1.1" 200 -
+2025-12-06 23:35:05,302 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:05] "GET /api/admin/debug/available-roles HTTP/1.1" 200 -
+2025-12-06 23:35:05,401 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:05] "GET /api/dashboard/charts/patient-distribution HTTP/1.1" 200 -
+2025-12-06 23:35:07,114 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:07] "[35m[1mOPTIONS /api/permissions/my HTTP/1.1[0m" 204 -
+2025-12-06 23:35:07,122 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:07] "GET /api/permissions/my HTTP/1.1" 200 -
+2025-12-06 23:35:07,137 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:07] "GET /api/reports/financial?days=30 HTTP/1.1" 200 -
+2025-12-06 23:35:07,139 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:07] "GET /api/reports/overview?days=30 HTTP/1.1" 200 -
+2025-12-06 23:35:12,333 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:12] "POST /api/admin/debug/switch-role HTTP/1.1" 200 -
+2025-12-06 23:35:12,479 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:12] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:35:13,472 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:13] "GET /api/appointments/list?page=1&per_page=1000 HTTP/1.1" 200 -
+2025-12-06 23:35:13,509 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:13] "[35m[1mOPTIONS /api/permissions/my HTTP/1.1[0m" 204 -
+2025-12-06 23:35:13,511 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:13] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:35:13,512 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:13] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:35:13,553 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:13] "GET /api/patients?per_page=100 HTTP/1.1" 200 -
+2025-12-06 23:35:13,555 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:13] "GET /api/patients?params[page]=1&params[per_page]=1000 HTTP/1.1" 200 -
+2025-12-06 23:35:13,557 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:13] "GET /api/permissions/my HTTP/1.1" 200 -
+2025-12-06 23:35:13,560 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:13] "GET /api/admin/debug/available-roles HTTP/1.1" 200 -
+2025-12-06 23:35:13,688 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:13] "GET /api/reports/financial?days=30 HTTP/1.1" 200 -
+2025-12-06 23:35:13,688 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:13] "GET /api/reports/overview?days=30 HTTP/1.1" 200 -
+2025-12-06 23:35:15,833 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:15] "POST /api/admin/debug/switch-role HTTP/1.1" 200 -
+2025-12-06 23:35:16,017 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:16] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:35:16,995 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:16] "GET /api/appointments/list?page=1&per_page=1000 HTTP/1.1" 200 -
+2025-12-06 23:35:17,041 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:17] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:35:17,041 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:17] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:35:17,044 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:17] "[35m[1mOPTIONS /api/permissions/my HTTP/1.1[0m" 204 -
+2025-12-06 23:35:17,088 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:17] "GET /api/permissions/my HTTP/1.1" 200 -
+2025-12-06 23:35:17,092 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:17] "GET /api/patients?per_page=100 HTTP/1.1" 200 -
+2025-12-06 23:35:17,094 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:17] "GET /api/admin/debug/available-roles HTTP/1.1" 200 -
+2025-12-06 23:35:17,156 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:17] "GET /api/patients?params[page]=1&params[per_page]=1000 HTTP/1.1" 200 -
+2025-12-06 23:35:17,192 - middleware.permission_middleware - WARNING - Permission denied [MIDDLEWARE]: user=usr_admin, role=secretary, path=/api/reports/overview, method=GET, required=reports.view
+2025-12-06 23:35:17,192 - middleware.permission_middleware - WARNING - Permission denied [MIDDLEWARE]: user=usr_admin, role=secretary, path=/api/reports/financial, method=GET, required=reports.view
+2025-12-06 23:35:17,192 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:17] "[31m[1mGET /api/reports/overview?days=30 HTTP/1.1[0m" 403 -
+2025-12-06 23:35:17,192 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:17] "[31m[1mGET /api/reports/financial?days=30 HTTP/1.1[0m" 403 -
+2025-12-06 23:35:19,186 - middleware.permission_middleware - WARNING - Permission denied [MIDDLEWARE]: user=usr_admin, role=secretary, path=/api/reports/patients, method=GET, required=reports.view
+2025-12-06 23:35:19,187 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:19] "[31m[1mGET /api/reports/patients?days=30 HTTP/1.1[0m" 403 -
+2025-12-06 23:35:19,827 - middleware.permission_middleware - WARNING - Permission denied [MIDDLEWARE]: user=usr_admin, role=secretary, path=/api/reports/financial, method=GET, required=reports.view
+2025-12-06 23:35:19,827 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:19] "[31m[1mGET /api/reports/financial?days=30 HTTP/1.1[0m" 403 -
+2025-12-06 23:35:20,492 - middleware.permission_middleware - WARNING - Permission denied [MIDDLEWARE]: user=usr_admin, role=secretary, path=/api/reports/promissory-notes, method=GET, required=reports.view
+2025-12-06 23:35:20,492 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:20] "GET /api/reports/promissory-notes/by-patient?status=active&page=1&per_page=10 HTTP/1.1" 200 -
+2025-12-06 23:35:20,495 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:20] "[31m[1mGET /api/reports/promissory-notes?days=365 HTTP/1.1[0m" 403 -
+2025-12-06 23:35:21,110 - middleware.permission_middleware - WARNING - Permission denied [MIDDLEWARE]: user=usr_admin, role=secretary, path=/api/reports/remaining-payments, method=GET, required=reports.view
+2025-12-06 23:35:21,111 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:21] "[31m[1mGET /api/reports/remaining-payments?page=1&per_page=20&min_amount=0 HTTP/1.1[0m" 403 -
+2025-12-06 23:35:21,114 - middleware.permission_middleware - WARNING - Permission denied [MIDDLEWARE]: user=usr_admin, role=secretary, path=/api/reports/cashflow-summary, method=GET, required=reports.view
+2025-12-06 23:35:21,115 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:21] "[31m[1mGET /api/reports/cashflow-summary?days=30 HTTP/1.1[0m" 403 -
+2025-12-06 23:35:22,367 - middleware.permission_middleware - WARNING - Permission denied [MIDDLEWARE]: user=usr_admin, role=secretary, path=/api/activity-logs, method=GET, required=activity_logs.view
+2025-12-06 23:35:22,368 - middleware.permission_middleware - WARNING - Permission denied [MIDDLEWARE]: user=usr_admin, role=secretary, path=/api/activity-logs/filter-options, method=GET, required=activity_logs.view
+2025-12-06 23:35:22,368 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:22] "[31m[1mGET /api/activity-logs?page=1&per_page=20 HTTP/1.1[0m" 403 -
+2025-12-06 23:35:22,368 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:22] "[31m[1mGET /api/activity-logs/filter-options HTTP/1.1[0m" 403 -
+2025-12-06 23:35:25,451 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:25] "POST /api/admin/debug/switch-role HTTP/1.1" 200 -
+2025-12-06 23:35:25,596 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:25] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:35:26,585 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:26] "GET /api/appointments/list?page=1&per_page=1000 HTTP/1.1" 200 -
+2025-12-06 23:35:26,622 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:26] "[35m[1mOPTIONS /api/permissions/my HTTP/1.1[0m" 204 -
+2025-12-06 23:35:26,644 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:26] "GET /api/permissions/my HTTP/1.1" 200 -
+2025-12-06 23:35:26,662 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:26] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:35:26,663 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:26] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:35:26,670 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:26] "GET /api/patients?per_page=100 HTTP/1.1" 200 -
+2025-12-06 23:35:26,670 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:26] "GET /api/admin/debug/available-roles HTTP/1.1" 200 -
+2025-12-06 23:35:26,686 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:26] "GET /api/patients?params[page]=1&params[per_page]=1000 HTTP/1.1" 200 -
+2025-12-06 23:35:26,787 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:26] "GET /api/activity-logs/filter-options HTTP/1.1" 200 -
+2025-12-06 23:35:26,794 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:26] "GET /api/activity-logs?page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:35:30,540 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:30] "GET /api/reports/financial?days=30 HTTP/1.1" 200 -
+2025-12-06 23:35:30,540 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:30] "GET /api/reports/overview?days=30 HTTP/1.1" 200 -
+2025-12-06 23:35:35,591 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:35] "GET /api/reports/remaining-payments?page=1&per_page=20&min_amount=0 HTTP/1.1" 200 -
+2025-12-06 23:35:35,594 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:35:35] "GET /api/reports/cashflow-summary?days=30 HTTP/1.1" 200 -
+2025-12-06 23:36:00,849 - __main__ - ERROR - Unhandled exception: (sqlite3.OperationalError) no such column: sms_provider_configs.documents_email
+[SQL: SELECT sms_provider_configs.id AS sms_provider_configs_id, sms_provider_configs.tenant_id AS sms_provider_configs_tenant_id, sms_provider_configs.api_username AS sms_provider_configs_api_username, sms_provider_configs.api_password AS sms_provider_configs_api_password, sms_provider_configs.documents_email AS sms_provider_configs_documents_email, sms_provider_configs.documents AS sms_provider_configs_documents, sms_provider_configs.is_active AS sms_provider_configs_is_active, sms_provider_configs.created_at AS sms_provider_configs_created_at, sms_provider_configs.updated_at AS sms_provider_configs_updated_at 
+FROM sms_provider_configs 
+WHERE sms_provider_configs.tenant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('138283aa-249a-44e7-9600-257997ecd789', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: sms_provider_configs.documents_email
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask_jwt_extended/view_decorators.py", line 170, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/routes/sms_integration.py", line 30, in get_sms_config
+    config = SMSProviderConfig.query.filter_by(tenant_id=user.tenant_id).first()
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/models/base.py", line 193, in first
+    return BaseQuery.first(q)
+           ~~~~~~~~~~~~~~~^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: sms_provider_configs.documents_email
+[SQL: SELECT sms_provider_configs.id AS sms_provider_configs_id, sms_provider_configs.tenant_id AS sms_provider_configs_tenant_id, sms_provider_configs.api_username AS sms_provider_configs_api_username, sms_provider_configs.api_password AS sms_provider_configs_api_password, sms_provider_configs.documents_email AS sms_provider_configs_documents_email, sms_provider_configs.documents AS sms_provider_configs_documents, sms_provider_configs.is_active AS sms_provider_configs_is_active, sms_provider_configs.created_at AS sms_provider_configs_created_at, sms_provider_configs.updated_at AS sms_provider_configs_updated_at 
+FROM sms_provider_configs 
+WHERE sms_provider_configs.tenant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('138283aa-249a-44e7-9600-257997ecd789', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-06 23:36:00,855 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:00] "GET /api/sms/credit HTTP/1.1" 200 -
+2025-12-06 23:36:00,855 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:00] "GET /api/sms/headers HTTP/1.1" 200 -
+2025-12-06 23:36:00,869 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:00] "[35m[1mGET /api/sms/config HTTP/1.1[0m" 500 -
+2025-12-06 23:36:01,881 - __main__ - ERROR - Unhandled exception: (sqlite3.OperationalError) no such column: sms_provider_configs.documents_email
+[SQL: SELECT sms_provider_configs.id AS sms_provider_configs_id, sms_provider_configs.tenant_id AS sms_provider_configs_tenant_id, sms_provider_configs.api_username AS sms_provider_configs_api_username, sms_provider_configs.api_password AS sms_provider_configs_api_password, sms_provider_configs.documents_email AS sms_provider_configs_documents_email, sms_provider_configs.documents AS sms_provider_configs_documents, sms_provider_configs.is_active AS sms_provider_configs_is_active, sms_provider_configs.created_at AS sms_provider_configs_created_at, sms_provider_configs.updated_at AS sms_provider_configs_updated_at 
+FROM sms_provider_configs 
+WHERE sms_provider_configs.tenant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('138283aa-249a-44e7-9600-257997ecd789', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: sms_provider_configs.documents_email
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask_jwt_extended/view_decorators.py", line 170, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/routes/sms_integration.py", line 30, in get_sms_config
+    config = SMSProviderConfig.query.filter_by(tenant_id=user.tenant_id).first()
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/models/base.py", line 193, in first
+    return BaseQuery.first(q)
+           ~~~~~~~~~~~~~~~^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: sms_provider_configs.documents_email
+[SQL: SELECT sms_provider_configs.id AS sms_provider_configs_id, sms_provider_configs.tenant_id AS sms_provider_configs_tenant_id, sms_provider_configs.api_username AS sms_provider_configs_api_username, sms_provider_configs.api_password AS sms_provider_configs_api_password, sms_provider_configs.documents_email AS sms_provider_configs_documents_email, sms_provider_configs.documents AS sms_provider_configs_documents, sms_provider_configs.is_active AS sms_provider_configs_is_active, sms_provider_configs.created_at AS sms_provider_configs_created_at, sms_provider_configs.updated_at AS sms_provider_configs_updated_at 
+FROM sms_provider_configs 
+WHERE sms_provider_configs.tenant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('138283aa-249a-44e7-9600-257997ecd789', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-06 23:36:01,884 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:01] "[35m[1mGET /api/sms/config HTTP/1.1[0m" 500 -
+2025-12-06 23:36:03,901 - __main__ - ERROR - Unhandled exception: (sqlite3.OperationalError) no such column: sms_provider_configs.documents_email
+[SQL: SELECT sms_provider_configs.id AS sms_provider_configs_id, sms_provider_configs.tenant_id AS sms_provider_configs_tenant_id, sms_provider_configs.api_username AS sms_provider_configs_api_username, sms_provider_configs.api_password AS sms_provider_configs_api_password, sms_provider_configs.documents_email AS sms_provider_configs_documents_email, sms_provider_configs.documents AS sms_provider_configs_documents, sms_provider_configs.is_active AS sms_provider_configs_is_active, sms_provider_configs.created_at AS sms_provider_configs_created_at, sms_provider_configs.updated_at AS sms_provider_configs_updated_at 
+FROM sms_provider_configs 
+WHERE sms_provider_configs.tenant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('138283aa-249a-44e7-9600-257997ecd789', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: sms_provider_configs.documents_email
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask_jwt_extended/view_decorators.py", line 170, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/routes/sms_integration.py", line 30, in get_sms_config
+    config = SMSProviderConfig.query.filter_by(tenant_id=user.tenant_id).first()
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/models/base.py", line 193, in first
+    return BaseQuery.first(q)
+           ~~~~~~~~~~~~~~~^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: sms_provider_configs.documents_email
+[SQL: SELECT sms_provider_configs.id AS sms_provider_configs_id, sms_provider_configs.tenant_id AS sms_provider_configs_tenant_id, sms_provider_configs.api_username AS sms_provider_configs_api_username, sms_provider_configs.api_password AS sms_provider_configs_api_password, sms_provider_configs.documents_email AS sms_provider_configs_documents_email, sms_provider_configs.documents AS sms_provider_configs_documents, sms_provider_configs.is_active AS sms_provider_configs_is_active, sms_provider_configs.created_at AS sms_provider_configs_created_at, sms_provider_configs.updated_at AS sms_provider_configs_updated_at 
+FROM sms_provider_configs 
+WHERE sms_provider_configs.tenant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('138283aa-249a-44e7-9600-257997ecd789', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-06 23:36:03,905 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:03] "[35m[1mGET /api/sms/config HTTP/1.1[0m" 500 -
+2025-12-06 23:36:09,796 - routes.sms_integration - ERROR - Document upload failed: (sqlite3.OperationalError) no such column: sms_provider_configs.documents_email
+[SQL: SELECT sms_provider_configs.id AS sms_provider_configs_id, sms_provider_configs.tenant_id AS sms_provider_configs_tenant_id, sms_provider_configs.api_username AS sms_provider_configs_api_username, sms_provider_configs.api_password AS sms_provider_configs_api_password, sms_provider_configs.documents_email AS sms_provider_configs_documents_email, sms_provider_configs.documents AS sms_provider_configs_documents, sms_provider_configs.is_active AS sms_provider_configs_is_active, sms_provider_configs.created_at AS sms_provider_configs_created_at, sms_provider_configs.updated_at AS sms_provider_configs_updated_at 
+FROM sms_provider_configs 
+WHERE sms_provider_configs.tenant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('138283aa-249a-44e7-9600-257997ecd789', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-06 23:36:09,796 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:09] "[35m[1mPOST /api/sms/documents/upload HTTP/1.1[0m" 500 -
+2025-12-06 23:36:28,408 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:28] "[35m[1mPOST /api/sms/headers HTTP/1.1[0m" 201 -
+2025-12-06 23:36:28,417 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:28] "GET /api/sms/headers HTTP/1.1" 200 -
+2025-12-06 23:36:30,801 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:30] "GET /api/branches HTTP/1.1" 200 -
+2025-12-06 23:36:30,804 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:30] "GET /api/users HTTP/1.1" 200 -
+2025-12-06 23:36:30,805 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:30] "GET /api/branches HTTP/1.1" 200 -
+2025-12-06 23:36:32,619 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:32] "GET /api/subscriptions/current HTTP/1.1" 200 -
+2025-12-06 23:36:32,627 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:32] "GET /api/addons HTTP/1.1" 200 -
+2025-12-06 23:36:32,627 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:32] "GET /api/sms/packages HTTP/1.1" 200 -
+2025-12-06 23:36:38,613 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:38] "GET /api/branches HTTP/1.1" 200 -
+2025-12-06 23:36:38,619 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:38] "GET /api/branches HTTP/1.1" 200 -
+2025-12-06 23:36:40,652 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:40] "GET /api/permissions HTTP/1.1" 200 -
+2025-12-06 23:36:40,654 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:40] "GET /api/permissions/role/odyolog HTTP/1.1" 200 -
+2025-12-06 23:36:57,739 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:57] "GET /api/dashboard HTTP/1.1" 200 -
+2025-12-06 23:36:57,750 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:36:57] "GET /api/dashboard/charts/patient-distribution HTTP/1.1" 200 -
+2025-12-06 23:37:17,490 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:17] "GET /api/inventory HTTP/1.1" 200 -
+2025-12-06 23:37:17,505 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:17] "GET /api/inventory HTTP/1.1" 200 -
+2025-12-06 23:37:19,115 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:19] "GET /api/inventory HTTP/1.1" 200 -
+2025-12-06 23:37:19,119 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:19] "GET /api/inventory HTTP/1.1" 200 -
+2025-12-06 23:37:25,719 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:25] "GET /api/inventory?per_page=100 HTTP/1.1" 200 -
+2025-12-06 23:37:25,723 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:25] "GET /api/inventory/brands HTTP/1.1" 200 -
+2025-12-06 23:37:25,724 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:25] "GET /api/inventory?page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:37:25,727 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:25] "GET /api/inventory?per_page=100 HTTP/1.1" 200 -
+2025-12-06 23:37:25,731 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:25] "GET /api/inventory/stats HTTP/1.1" 200 -
+2025-12-06 23:37:25,731 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:25] "GET /api/inventory/brands HTTP/1.1" 200 -
+2025-12-06 23:37:25,732 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:25] "GET /api/inventory?page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:37:25,738 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:25] "GET /api/inventory?page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:37:25,739 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:25] "GET /api/inventory/stats HTTP/1.1" 200 -
+2025-12-06 23:37:25,742 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:25] "GET /api/inventory?page=1&per_page=20 HTTP/1.1" 200 -
+2025-12-06 23:37:26,581 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:26] "[31m[1mPOST /api/birfatura/sync-invoices HTTP/1.1[0m" 401 -
+2025-12-06 23:37:26,972 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:26] "GET /api/suppliers?params[search]=&params[page]=1&params[per_page]=20 HTTP/1.1" 200 -
+2025-12-06 23:37:27,640 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:27] "GET /api/cash-records HTTP/1.1" 200 -
+2025-12-06 23:37:30,343 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:30] "GET /api/suppliers?params[search]=6 HTTP/1.1" 200 -
+2025-12-06 23:37:43,835 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-06 23:37:43,845 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:43] "[35m[1mGET /api/sgk/e-receipts/delivered HTTP/1.1[0m" 500 -
+2025-12-06 23:37:43,848 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-06 23:37:43,849 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:43] "[35m[1mGET /api/sgk/e-receipts/delivered HTTP/1.1[0m" 500 -
+2025-12-06 23:37:55,531 - __main__ - ERROR - Unhandled exception: (sqlite3.OperationalError) no such column: sms_provider_configs.documents_email
+[SQL: SELECT sms_provider_configs.id AS sms_provider_configs_id, sms_provider_configs.tenant_id AS sms_provider_configs_tenant_id, sms_provider_configs.api_username AS sms_provider_configs_api_username, sms_provider_configs.api_password AS sms_provider_configs_api_password, sms_provider_configs.documents_email AS sms_provider_configs_documents_email, sms_provider_configs.documents AS sms_provider_configs_documents, sms_provider_configs.is_active AS sms_provider_configs_is_active, sms_provider_configs.created_at AS sms_provider_configs_created_at, sms_provider_configs.updated_at AS sms_provider_configs_updated_at 
+FROM sms_provider_configs 
+WHERE sms_provider_configs.tenant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('138283aa-249a-44e7-9600-257997ecd789', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: sms_provider_configs.documents_email
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask_jwt_extended/view_decorators.py", line 170, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/routes/sms_integration.py", line 30, in get_sms_config
+    config = SMSProviderConfig.query.filter_by(tenant_id=user.tenant_id).first()
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/models/base.py", line 193, in first
+    return BaseQuery.first(q)
+           ~~~~~~~~~~~~~~~^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: sms_provider_configs.documents_email
+[SQL: SELECT sms_provider_configs.id AS sms_provider_configs_id, sms_provider_configs.tenant_id AS sms_provider_configs_tenant_id, sms_provider_configs.api_username AS sms_provider_configs_api_username, sms_provider_configs.api_password AS sms_provider_configs_api_password, sms_provider_configs.documents_email AS sms_provider_configs_documents_email, sms_provider_configs.documents AS sms_provider_configs_documents, sms_provider_configs.is_active AS sms_provider_configs_is_active, sms_provider_configs.created_at AS sms_provider_configs_created_at, sms_provider_configs.updated_at AS sms_provider_configs_updated_at 
+FROM sms_provider_configs 
+WHERE sms_provider_configs.tenant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('138283aa-249a-44e7-9600-257997ecd789', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-06 23:37:55,537 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:55] "[35m[1mGET /api/sms/config HTTP/1.1[0m" 500 -
+2025-12-06 23:37:56,556 - __main__ - ERROR - Unhandled exception: (sqlite3.OperationalError) no such column: sms_provider_configs.documents_email
+[SQL: SELECT sms_provider_configs.id AS sms_provider_configs_id, sms_provider_configs.tenant_id AS sms_provider_configs_tenant_id, sms_provider_configs.api_username AS sms_provider_configs_api_username, sms_provider_configs.api_password AS sms_provider_configs_api_password, sms_provider_configs.documents_email AS sms_provider_configs_documents_email, sms_provider_configs.documents AS sms_provider_configs_documents, sms_provider_configs.is_active AS sms_provider_configs_is_active, sms_provider_configs.created_at AS sms_provider_configs_created_at, sms_provider_configs.updated_at AS sms_provider_configs_updated_at 
+FROM sms_provider_configs 
+WHERE sms_provider_configs.tenant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('138283aa-249a-44e7-9600-257997ecd789', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: sms_provider_configs.documents_email
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask_jwt_extended/view_decorators.py", line 170, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/routes/sms_integration.py", line 30, in get_sms_config
+    config = SMSProviderConfig.query.filter_by(tenant_id=user.tenant_id).first()
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/models/base.py", line 193, in first
+    return BaseQuery.first(q)
+           ~~~~~~~~~~~~~~~^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: sms_provider_configs.documents_email
+[SQL: SELECT sms_provider_configs.id AS sms_provider_configs_id, sms_provider_configs.tenant_id AS sms_provider_configs_tenant_id, sms_provider_configs.api_username AS sms_provider_configs_api_username, sms_provider_configs.api_password AS sms_provider_configs_api_password, sms_provider_configs.documents_email AS sms_provider_configs_documents_email, sms_provider_configs.documents AS sms_provider_configs_documents, sms_provider_configs.is_active AS sms_provider_configs_is_active, sms_provider_configs.created_at AS sms_provider_configs_created_at, sms_provider_configs.updated_at AS sms_provider_configs_updated_at 
+FROM sms_provider_configs 
+WHERE sms_provider_configs.tenant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('138283aa-249a-44e7-9600-257997ecd789', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-06 23:37:56,560 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:56] "[35m[1mGET /api/sms/config HTTP/1.1[0m" 500 -
+2025-12-06 23:37:58,579 - __main__ - ERROR - Unhandled exception: (sqlite3.OperationalError) no such column: sms_provider_configs.documents_email
+[SQL: SELECT sms_provider_configs.id AS sms_provider_configs_id, sms_provider_configs.tenant_id AS sms_provider_configs_tenant_id, sms_provider_configs.api_username AS sms_provider_configs_api_username, sms_provider_configs.api_password AS sms_provider_configs_api_password, sms_provider_configs.documents_email AS sms_provider_configs_documents_email, sms_provider_configs.documents AS sms_provider_configs_documents, sms_provider_configs.is_active AS sms_provider_configs_is_active, sms_provider_configs.created_at AS sms_provider_configs_created_at, sms_provider_configs.updated_at AS sms_provider_configs_updated_at 
+FROM sms_provider_configs 
+WHERE sms_provider_configs.tenant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('138283aa-249a-44e7-9600-257997ecd789', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: sms_provider_configs.documents_email
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask_jwt_extended/view_decorators.py", line 170, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/routes/sms_integration.py", line 30, in get_sms_config
+    config = SMSProviderConfig.query.filter_by(tenant_id=user.tenant_id).first()
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/models/base.py", line 193, in first
+    return BaseQuery.first(q)
+           ~~~~~~~~~~~~~~~^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: sms_provider_configs.documents_email
+[SQL: SELECT sms_provider_configs.id AS sms_provider_configs_id, sms_provider_configs.tenant_id AS sms_provider_configs_tenant_id, sms_provider_configs.api_username AS sms_provider_configs_api_username, sms_provider_configs.api_password AS sms_provider_configs_api_password, sms_provider_configs.documents_email AS sms_provider_configs_documents_email, sms_provider_configs.documents AS sms_provider_configs_documents, sms_provider_configs.is_active AS sms_provider_configs_is_active, sms_provider_configs.created_at AS sms_provider_configs_created_at, sms_provider_configs.updated_at AS sms_provider_configs_updated_at 
+FROM sms_provider_configs 
+WHERE sms_provider_configs.tenant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('138283aa-249a-44e7-9600-257997ecd789', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-06 23:37:58,583 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:58] "[35m[1mGET /api/sms/config HTTP/1.1[0m" 500 -
+2025-12-06 23:37:59,794 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:59] "GET /api/branches HTTP/1.1" 200 -
+2025-12-06 23:37:59,800 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:37:59] "GET /api/branches HTTP/1.1" 200 -
+2025-12-06 23:38:35,470 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:38:35] "[31m[1mGET /api/subscriptions/current HTTP/1.1[0m" 401 -
+2025-12-06 23:38:36,180 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:38:36] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-06 23:38:36,225 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:38:36] "[31m[1mGET /api/subscriptions/current HTTP/1.1[0m" 401 -
+2025-12-06 23:38:36,233 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:38:36] "[31m[1mGET /api/admin/debug/available-roles HTTP/1.1[0m" 401 -
+2025-12-06 23:38:36,234 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:38:36] "[31m[1mGET /api/subscriptions/current HTTP/1.1[0m" 401 -
+2025-12-06 23:38:36,338 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:38:36] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+2025-12-06 23:38:49,683 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:38:49] "POST /api/auth/send-verification-otp HTTP/1.1" 200 -
+2025-12-06 23:38:49,708 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:38:49] "GET /api/admin/debug/available-roles HTTP/1.1" 200 -
+2025-12-06 23:38:53,109 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:38:53] "POST /api/auth/send-verification-otp HTTP/1.1" 200 -
+2025-12-06 23:39:22,404 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:39:22] "GET /api/dashboard HTTP/1.1" 200 -
+2025-12-06 23:39:22,456 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:39:22] "GET /api/dashboard/charts/patient-distribution HTTP/1.1" 200 -
+2025-12-06 23:40:36,183 - werkzeug - INFO - 127.0.0.1 - - [06/Dec/2025 23:40:36] "[31m[1mPOST /api/birfatura/sync-invoices HTTP/1.1[0m" 401 -
+2025-12-07 00:16:45,122 - app - WARNING - Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/backend/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+2025-12-07 00:16:45,195 - app - DEBUG - REDIS_URL present; skipping local Redis auto-start.
+2025-12-07 00:16:45,196 - app - WARNING - Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+2025-12-07 00:16:45,196 - services.otp_store - WARNING - Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+2025-12-07 00:16:45,197 - app - INFO - Tenant security (global query filter) initialized
+2025-12-07 00:16:45,777 - services.s3_service - WARNING - S3Service running in mock mode - no actual S3 operations will be performed
+2025-12-07 00:16:45,786 - app - INFO - Scheduling OCR/NLP service pre-warm in background
+2025-12-07 00:16:46,283 - app - INFO - Ensuring database tables exist (create_all)
+2025-12-07 00:16:46,300 - app - INFO - Permission middleware initialized successfully
+2025-12-07 00:16:46,303 - middleware.permission_middleware - WARNING - Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'admin.tenants.delete', 'admin.users.delete', 'admin.tickets.view', 'admin.tickets.edit', 'admin.system.view', 'activity_logs.view', 'admin.tenants.create', 'admin.settings.edit', 'admin.users.view', 'admin.tickets.create', 'admin.tenants.manage', 'admin.system.logs', 'activity_logs.export', 'admin.tenants.edit', 'admin.tenants.view', 'admin.users.edit', 'admin.activity_logs.view', 'admin.users.create', 'admin.settings.view', 'admin.tickets.respond'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-07 00:16:46,303 - app - INFO - Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'admin.tenants.delete', 'admin.users.delete', 'admin.tickets.view', 'admin.tickets.edit', 'admin.system.view', 'activity_logs.view', 'admin.tenants.create', 'admin.settings.edit', 'admin.users.view', 'admin.tickets.create', 'admin.tenants.manage', 'admin.system.logs', 'activity_logs.export', 'admin.tenants.edit', 'admin.tenants.view', 'admin.users.edit', 'admin.activity_logs.view', 'admin.users.create', 'admin.settings.view', 'admin.tickets.respond'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-07 00:27:29,107 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:27:29] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:27:29,129 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:27:29] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+2025-12-07 00:34:16,786 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:34:16] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:34:16,827 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:34:16] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+2025-12-07 00:44:04,541 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:44:04] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:44:04,555 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:44:04] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+2025-12-07 00:44:10,686 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:44:10] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:44:10,705 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:44:10] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+2025-12-07 00:55:31,823 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:55:31] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:57:17,809 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:57:17] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:57:35,327 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:57:35] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:57:36,266 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:57:36] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:57:37,165 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:57:37] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:58:15,749 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:58:15] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:58:54,330 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:58:54] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:58:56,393 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:58:56] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:59:27,171 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:59:27] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:59:35,237 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:59:35] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 00:59:43,018 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 00:59:43] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:08:29,197 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:08:29] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:08:44,642 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:08:44] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:09:14,357 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:09:14] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:09:39,952 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:09:39] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:11:25,150 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:11:25] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:11:28,037 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:11:28] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:13:44,370 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:13:44] "GET /api/health HTTP/1.1" 200 -
+2025-12-07 01:14:23,610 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:14:23] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:14:34,106 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:14:34] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:14:40,152 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:14:40] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:17:28,598 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:17:28] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:17:35,068 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:17:35] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:17:53,397 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:17:53] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:18:23,306 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:18:23] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:18:31,497 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:18:31] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:18:42,349 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:18:42] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:18:59,154 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:18:59] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:19:01,188 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:19:01] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:19:14,295 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:19:14] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:19:43,624 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:19:43] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:20:03,076 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:20:03] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:20:22,554 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:20:22] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:20:48,438 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:20:48] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:21:51,819 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:21:51] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:22:17,467 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:22:17] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:23:37,456 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:23:37] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:24:29,748 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:24:29] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:25:18,879 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:25:18] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:28:16,828 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:28:16] "[31m[1mGET /api/appointments/list?page=1&per_page=1000 HTTP/1.1[0m" 401 -
+2025-12-07 01:35:17,169 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:35:17] "GET /api/health HTTP/1.1" 200 -
+2025-12-07 01:41:42,950 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:42] "[31m[1mGET /api/patients HTTP/1.1[0m" 401 -
+2025-12-07 01:41:42,992 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:42] "[31m[1mGET /api/patients?limit=5&page=1 HTTP/1.1[0m" 401 -
+2025-12-07 01:41:43,031 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[31m[1mGET /api/inventory HTTP/1.1[0m" 401 -
+2025-12-07 01:41:43,065 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[31m[1mGET /api/inventory/stats HTTP/1.1[0m" 401 -
+2025-12-07 01:41:43,098 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[31m[1mGET /api/sales HTTP/1.1[0m" 401 -
+2025-12-07 01:41:43,134 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[31m[1mGET /api/invoices HTTP/1.1[0m" 401 -
+2025-12-07 01:41:43,162 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[31m[1mGET /api/appointments HTTP/1.1[0m" 401 -
+2025-12-07 01:41:43,309 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "GET /api/communications/templates HTTP/1.1" 200 -
+2025-12-07 01:41:43,364 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "GET /api/communications/messages HTTP/1.1" 200 -
+2025-12-07 01:41:43,395 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[31m[1mGET /api/suppliers HTTP/1.1[0m" 401 -
+2025-12-07 01:41:43,430 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:41:43,441 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[35m[1mGET /api/cashflow HTTP/1.1[0m" 500 -
+2025-12-07 01:41:43,477 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:41:43,478 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[35m[1mGET /api/cashflow/stats HTTP/1.1[0m" 500 -
+2025-12-07 01:41:43,538 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "GET /api/dashboard HTTP/1.1" 200 -
+2025-12-07 01:41:43,564 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:41:43,565 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[35m[1mGET /api/reports/sales HTTP/1.1[0m" 500 -
+2025-12-07 01:41:43,599 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:41:43,600 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[35m[1mGET /api/reports/inventory HTTP/1.1[0m" 500 -
+2025-12-07 01:41:43,640 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[31m[1mGET /api/campaigns HTTP/1.1[0m" 401 -
+2025-12-07 01:41:43,683 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "GET /api/sgk/documents HTTP/1.1" 200 -
+2025-12-07 01:41:43,712 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[31m[1mGET /api/admin/debug/available-roles HTTP/1.1[0m" 401 -
+2025-12-07 01:41:43,748 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[31m[1mGET /api/admin/debug/page-permissions/patients HTTP/1.1[0m" 401 -
+2025-12-07 01:41:43,777 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:41:43,778 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:43] "[35m[1mGET /api/permissions/roles HTTP/1.1[0m" 500 -
+2025-12-07 01:41:51,282 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[31m[1mGET /api/patients HTTP/1.1[0m" 401 -
+2025-12-07 01:41:51,304 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[31m[1mGET /api/patients?limit=5&page=1 HTTP/1.1[0m" 401 -
+2025-12-07 01:41:51,329 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[31m[1mGET /api/inventory HTTP/1.1[0m" 401 -
+2025-12-07 01:41:51,354 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[31m[1mGET /api/inventory/stats HTTP/1.1[0m" 401 -
+2025-12-07 01:41:51,375 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[31m[1mGET /api/sales HTTP/1.1[0m" 401 -
+2025-12-07 01:41:51,396 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[31m[1mGET /api/invoices HTTP/1.1[0m" 401 -
+2025-12-07 01:41:51,417 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[31m[1mGET /api/appointments HTTP/1.1[0m" 401 -
+2025-12-07 01:41:51,447 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "GET /api/communications/templates HTTP/1.1" 200 -
+2025-12-07 01:41:51,468 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "GET /api/communications/messages HTTP/1.1" 200 -
+2025-12-07 01:41:51,487 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[31m[1mGET /api/suppliers HTTP/1.1[0m" 401 -
+2025-12-07 01:41:51,510 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:41:51,511 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[35m[1mGET /api/cashflow HTTP/1.1[0m" 500 -
+2025-12-07 01:41:51,531 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:41:51,532 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[35m[1mGET /api/cashflow/stats HTTP/1.1[0m" 500 -
+2025-12-07 01:41:51,558 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "GET /api/dashboard HTTP/1.1" 200 -
+2025-12-07 01:41:51,576 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:41:51,577 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[35m[1mGET /api/reports/sales HTTP/1.1[0m" 500 -
+2025-12-07 01:41:51,598 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:41:51,599 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[35m[1mGET /api/reports/inventory HTTP/1.1[0m" 500 -
+2025-12-07 01:41:51,620 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[31m[1mGET /api/campaigns HTTP/1.1[0m" 401 -
+2025-12-07 01:41:51,658 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "GET /api/sgk/documents HTTP/1.1" 200 -
+2025-12-07 01:41:51,683 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[31m[1mGET /api/admin/debug/available-roles HTTP/1.1[0m" 401 -
+2025-12-07 01:41:51,704 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[31m[1mGET /api/admin/debug/page-permissions/patients HTTP/1.1[0m" 401 -
+2025-12-07 01:41:51,725 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:41:51,726 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:41:51] "[35m[1mGET /api/permissions/roles HTTP/1.1[0m" 500 -
+2025-12-07 01:42:00,014 - routes.auth - INFO - Login attempt with data: {'username': 'admin', 'password': 'admin123'}
+2025-12-07 01:42:00,014 - routes.auth - INFO - Login attempt - identifier: admin, password_provided: True
+2025-12-07 01:42:00,137 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:42:00] "POST /api/auth/login HTTP/1.1" 200 -
+2025-12-07 01:42:00,833 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:42:00] "GET /api/patients?limit=2 HTTP/1.1" 200 -
+2025-12-07 01:46:05,616 - __main__ - WARNING - Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/backend/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+2025-12-07 01:46:05,708 - app - DEBUG - REDIS_URL present; skipping local Redis auto-start.
+2025-12-07 01:46:05,709 - app - WARNING - Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+2025-12-07 01:46:05,710 - services.otp_store - WARNING - Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+2025-12-07 01:46:05,710 - __main__ - INFO - Tenant security (global query filter) initialized
+2025-12-07 01:46:06,273 - services.s3_service - WARNING - S3Service running in mock mode - no actual S3 operations will be performed
+2025-12-07 01:46:06,282 - __main__ - INFO - Scheduling OCR/NLP service pre-warm in background
+2025-12-07 01:46:06,794 - __main__ - INFO - Ensuring database tables exist (create_all)
+2025-12-07 01:46:06,802 - __main__ - INFO - Permission middleware initialized successfully
+2025-12-07 01:46:06,804 - middleware.permission_middleware - WARNING - Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'admin.tickets.create', 'admin.tenants.delete', 'admin.tenants.edit', 'activity_logs.export', 'admin.tenants.create', 'activity_logs.view', 'admin.tickets.respond', 'admin.activity_logs.view', 'admin.users.view', 'admin.system.view', 'admin.users.edit', 'admin.tickets.view', 'admin.users.delete', 'admin.tenants.manage', 'admin.settings.view', 'admin.system.logs', 'admin.users.create', 'admin.tenants.view', 'admin.tickets.edit', 'admin.settings.edit'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-07 01:46:06,804 - __main__ - INFO - Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'admin.tickets.create', 'admin.tenants.delete', 'admin.tenants.edit', 'activity_logs.export', 'admin.tenants.create', 'activity_logs.view', 'admin.tickets.respond', 'admin.activity_logs.view', 'admin.users.view', 'admin.system.view', 'admin.users.edit', 'admin.tickets.view', 'admin.users.delete', 'admin.tenants.manage', 'admin.settings.view', 'admin.system.logs', 'admin.users.create', 'admin.tenants.view', 'admin.tickets.edit', 'admin.settings.edit'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-07 01:46:06,804 - __main__ - INFO - Starting Flask development server on 0.0.0.0:5003
+2025-12-07 01:46:06,814 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://192.168.1.114:5003
+2025-12-07 01:46:06,814 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-07 01:46:07,688 - services.ocr_service - WARNING - PaddleOCR not available: No module named 'imghdr'
+2025-12-07 01:46:15,636 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:46:15] "GET /api/health HTTP/1.1" 200 -
+2025-12-07 01:46:16,942 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:46:16] "GET /api/health HTTP/1.1" 200 -
+2025-12-07 01:46:38,910 - routes.auth - INFO - Login attempt with data: {'username': 'admin', 'password': 'admin123'}
+2025-12-07 01:46:38,910 - routes.auth - INFO - Login attempt - identifier: admin, password_provided: True
+2025-12-07 01:46:38,979 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:46:38] "POST /api/auth/login HTTP/1.1" 200 -
+2025-12-07 01:46:44,195 - routes.auth - INFO - Login attempt with data: {'username': 'admin', 'password': 'admin123'}
+2025-12-07 01:46:44,195 - routes.auth - INFO - Login attempt - identifier: admin, password_provided: True
+2025-12-07 01:46:44,253 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:46:44] "POST /api/auth/login HTTP/1.1" 200 -
+2025-12-07 01:47:04,656 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:47:04] "GET /api/patients?limit=2 HTTP/1.1" 200 -
+2025-12-07 01:47:12,683 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:47:12] "GET /api/patients?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:47:12,800 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:47:12] "GET /api/inventory?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:47:12,916 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:47:12] "GET /api/sales?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:47:13,081 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:47:13] "GET /api/appointments?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:47:13,183 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:47:13] "GET /api/suppliers?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:47:13,285 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:47:13] "GET /api/dashboard HTTP/1.1" 200 -
+2025-12-07 01:47:17,310 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:47:17] "GET /api/inventory?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:47:21,456 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:47:21] "GET /api/sales?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:47:46,392 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:47:46] "GET /api/appointments?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:48:11,522 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:48:11] "GET /api/suppliers?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:48:34,763 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:48:34] "GET /api/invoices?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:48:58,144 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:48:58] "GET /api/campaigns?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:49:22,684 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:49:22] "GET /api/dashboard HTTP/1.1" 200 -
+2025-12-07 01:50:25,405 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:50:25,410 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:50:25] "[35m[1mGET /api/cashflow/stats HTTP/1.1[0m" 500 -
+2025-12-07 01:50:29,540 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:50:29,541 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:50:29] "[35m[1mGET /api/cashflow?limit=1 HTTP/1.1[0m" 500 -
+2025-12-07 01:50:32,865 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:50:32,866 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:50:32] "[35m[1mGET /api/reports?limit=1 HTTP/1.1[0m" 500 -
+2025-12-07 01:50:36,442 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:50:36,443 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:50:36] "[35m[1mGET /api/admin/debug HTTP/1.1[0m" 500 -
+2025-12-07 01:50:39,779 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:50:39] "GET /api/users?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:50:43,455 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:50:43] "GET /api/branches?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:50:51,440 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:50:51,442 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:50:51] "[35m[1mGET /api/hearing-tests?limit=1 HTTP/1.1[0m" 500 -
+2025-12-07 01:50:54,890 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:50:54] "GET /api/settings HTTP/1.1" 200 -
+2025-12-07 01:50:58,428 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:50:58,429 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:50:58] "[35m[1mGET /api/documents?limit=1 HTTP/1.1[0m" 500 -
+2025-12-07 01:51:01,804 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:51:01,805 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:51:01] "[35m[1mGET /api/notes?limit=1 HTTP/1.1[0m" 500 -
+2025-12-07 01:51:05,716 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:51:05,716 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:51:05] "[35m[1mGET /api/patients/pt_ed80c26f/notes?limit=1 HTTP/1.1[0m" 500 -
+2025-12-07 01:51:09,789 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:51:09,790 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:51:09] "[35m[1mGET /api/patients/pt_ed80c26f/appointments?limit=1 HTTP/1.1[0m" 500 -
+2025-12-07 01:51:13,338 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:51:13] "[33mGET /api/patients/pt_ed80c26f HTTP/1.1[0m" 404 -
+2025-12-07 01:51:18,381 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:51:18] "GET /api/patients?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:51:21,663 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:51:21] "GET /api/patients/pat_7931397d HTTP/1.1" 200 -
+2025-12-07 01:51:25,119 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:51:25,121 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:51:25] "[35m[1mGET /api/patients/pat_7931397d/appointments?limit=1 HTTP/1.1[0m" 500 -
+2025-12-07 01:51:29,099 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:51:29] "GET /api/patients/pat_7931397d/sales?limit=1 HTTP/1.1" 200 -
+2025-12-07 01:51:32,318 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:51:32,319 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:51:32] "[35m[1mGET /api/patients/pat_7931397d/hearing-tests?limit=1 HTTP/1.1[0m" 500 -
+2025-12-07 01:51:35,911 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:51:35,912 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:51:35] "[35m[1mGET /api/patients/pat_7931397d/documents?limit=1 HTTP/1.1[0m" 500 -
+2025-12-07 01:55:46,698 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:55:46,706 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:55:46] "[35m[1mGET /api/cashflow HTTP/1.1[0m" 500 -
+2025-12-07 01:57:09,764 - __main__ - WARNING - Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/backend/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+2025-12-07 01:57:09,829 - app - DEBUG - REDIS_URL present; skipping local Redis auto-start.
+2025-12-07 01:57:09,829 - app - WARNING - Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+2025-12-07 01:57:09,830 - services.otp_store - WARNING - Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+2025-12-07 01:57:09,830 - __main__ - INFO - Tenant security (global query filter) initialized
+2025-12-07 01:57:10,241 - services.s3_service - WARNING - S3Service running in mock mode - no actual S3 operations will be performed
+2025-12-07 01:57:10,251 - __main__ - INFO - Scheduling OCR/NLP service pre-warm in background
+2025-12-07 01:57:10,723 - __main__ - INFO - Ensuring database tables exist (create_all)
+2025-12-07 01:57:10,733 - __main__ - INFO - Permission middleware initialized successfully
+2025-12-07 01:57:10,735 - middleware.permission_middleware - WARNING - Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'admin.users.create', 'activity_logs.view', 'admin.users.view', 'admin.users.edit', 'admin.settings.edit', 'admin.tickets.view', 'admin.tenants.view', 'admin.system.logs', 'admin.system.view', 'admin.tickets.respond', 'admin.tenants.delete', 'admin.tickets.edit', 'admin.activity_logs.view', 'admin.tenants.edit', 'admin.tickets.create', 'admin.tenants.manage', 'activity_logs.export', 'admin.tenants.create', 'admin.users.delete', 'admin.settings.view'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-07 01:57:10,736 - __main__ - INFO - Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'admin.users.create', 'activity_logs.view', 'admin.users.view', 'admin.users.edit', 'admin.settings.edit', 'admin.tickets.view', 'admin.tenants.view', 'admin.system.logs', 'admin.system.view', 'admin.tickets.respond', 'admin.tenants.delete', 'admin.tickets.edit', 'admin.activity_logs.view', 'admin.tenants.edit', 'admin.tickets.create', 'admin.tenants.manage', 'activity_logs.export', 'admin.tenants.create', 'admin.users.delete', 'admin.settings.view'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-07 01:57:10,736 - __main__ - INFO - Starting Flask development server on 0.0.0.0:5003
+2025-12-07 01:57:10,745 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://192.168.1.114:5003
+2025-12-07 01:57:10,745 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-07 01:57:20,689 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:57:20] "GET /api/health HTTP/1.1" 200 -
+2025-12-07 01:57:29,326 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:57:29] "GET /api/health HTTP/1.1" 200 -
+2025-12-07 01:57:40,077 - routes.auth - INFO - Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'Admin123!'}
+2025-12-07 01:57:40,077 - routes.auth - INFO - Login attempt - identifier: admin@x-ear.com, password_provided: True
+2025-12-07 01:57:40,132 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:57:40] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+2025-12-07 01:57:44,265 - routes.auth - INFO - Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'Admin123!'}
+2025-12-07 01:57:44,265 - routes.auth - INFO - Login attempt - identifier: admin@x-ear.com, password_provided: True
+2025-12-07 01:57:44,317 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:57:44] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+2025-12-07 01:57:50,963 - app - WARNING - Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/backend/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+2025-12-07 01:57:51,058 - app - DEBUG - REDIS_URL present; skipping local Redis auto-start.
+2025-12-07 01:57:51,059 - app - WARNING - Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+2025-12-07 01:57:51,059 - services.otp_store - WARNING - Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+2025-12-07 01:57:51,059 - app - INFO - Tenant security (global query filter) initialized
+2025-12-07 01:57:51,894 - services.s3_service - WARNING - S3Service running in mock mode - no actual S3 operations will be performed
+2025-12-07 01:57:51,913 - app - INFO - Scheduling OCR/NLP service pre-warm in background
+2025-12-07 01:57:52,205 - app - INFO - Ensuring database tables exist (create_all)
+2025-12-07 01:57:52,213 - app - INFO - Permission middleware initialized successfully
+2025-12-07 01:57:52,216 - middleware.permission_middleware - WARNING - Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'admin.tickets.respond', 'admin.users.create', 'admin.system.logs', 'admin.users.delete', 'activity_logs.export', 'admin.tenants.create', 'admin.activity_logs.view', 'admin.tickets.create', 'admin.settings.view', 'admin.users.edit', 'admin.system.view', 'admin.tenants.edit', 'activity_logs.view', 'admin.tenants.view', 'admin.tenants.delete', 'admin.tickets.view', 'admin.users.view', 'admin.tickets.edit', 'admin.tenants.manage', 'admin.settings.edit'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-07 01:57:52,216 - app - INFO - Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'admin.tickets.respond', 'admin.users.create', 'admin.system.logs', 'admin.users.delete', 'activity_logs.export', 'admin.tenants.create', 'admin.activity_logs.view', 'admin.tickets.create', 'admin.settings.view', 'admin.users.edit', 'admin.system.view', 'admin.tenants.edit', 'activity_logs.view', 'admin.tenants.view', 'admin.tenants.delete', 'admin.tickets.view', 'admin.users.view', 'admin.tickets.edit', 'admin.tenants.manage', 'admin.settings.edit'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-07 01:58:42,227 - routes.auth - INFO - Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'admin123'}
+2025-12-07 01:58:42,227 - routes.auth - INFO - Login attempt - identifier: admin@x-ear.com, password_provided: True
+2025-12-07 01:58:42,284 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:58:42] "POST /api/auth/login HTTP/1.1" 200 -
+2025-12-07 01:59:35,400 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 01:59:35,405 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 01:59:35] "[35m[1mGET /api/cashflow HTTP/1.1[0m" 500 -
+2025-12-07 02:00:03,679 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:03] "GET /api/patients HTTP/1.1" 200 -
+2025-12-07 02:00:03,696 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:03] "GET /api/appointments HTTP/1.1" 200 -
+2025-12-07 02:00:03,714 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:03] "GET /api/inventory HTTP/1.1" 200 -
+2025-12-07 02:00:03,732 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:03] "GET /api/sales HTTP/1.1" 200 -
+2025-12-07 02:00:03,750 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:03] "GET /api/invoices HTTP/1.1" 200 -
+2025-12-07 02:00:03,768 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:03] "GET /api/dashboard HTTP/1.1" 200 -
+2025-12-07 02:00:03,784 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:03] "GET /api/campaigns HTTP/1.1" 200 -
+2025-12-07 02:00:03,802 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:03] "GET /api/suppliers HTTP/1.1" 200 -
+2025-12-07 02:00:03,818 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:03] "GET /api/users HTTP/1.1" 200 -
+2025-12-07 02:00:03,832 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:03] "GET /api/branches HTTP/1.1" 200 -
+2025-12-07 02:00:03,847 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:03] "GET /api/settings HTTP/1.1" 200 -
+2025-12-07 02:00:03,859 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:03] "GET /api/sgk/documents HTTP/1.1" 200 -
+2025-12-07 02:00:03,873 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:03] "GET /api/reports/cashflow-summary HTTP/1.1" 200 -
+2025-12-07 02:00:13,232 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:13] "GET /api/patients?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:00:20,656 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:20] "GET /api/patients/pat_7931397d HTTP/1.1" 200 -
+2025-12-07 02:00:20,670 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 02:00:20,670 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:20] "[35m[1mGET /api/patients/pat_7931397d/appointments HTTP/1.1[0m" 500 -
+2025-12-07 02:00:20,684 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 02:00:20,685 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:20] "[35m[1mGET /api/patients/pat_7931397d/notes HTTP/1.1[0m" 500 -
+2025-12-07 02:00:20,699 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 02:00:20,701 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:20] "[35m[1mGET /api/patients/pat_7931397d/hearing-tests HTTP/1.1[0m" 500 -
+2025-12-07 02:00:20,724 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 02:00:20,724 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:20] "[35m[1mGET /api/patients/pat_7931397d/documents HTTP/1.1[0m" 500 -
+2025-12-07 02:00:20,754 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:20] "GET /api/patients/pat_7931397d/sales HTTP/1.1" 200 -
+2025-12-07 02:00:20,784 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:20] "GET /api/patients/pat_7931397d/sgk-documents HTTP/1.1" 200 -
+2025-12-07 02:00:20,813 - __main__ - ERROR - Unhandled exception: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 891, in dispatch_request
+    self.raise_routing_exception(req)
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/app.py", line 500, in raise_routing_exception
+    raise request.routing_exception  # type: ignore[misc]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/flask/ctx.py", line 362, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/.venv/lib/python3.12/site-packages/werkzeug/routing/map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-12-07 02:00:20,815 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:00:20] "[35m[1mGET /api/patients/pat_7931397d/timeline HTTP/1.1[0m" 500 -
+2025-12-07 02:02:19,003 - __main__ - WARNING - Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/backend/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+2025-12-07 02:02:19,058 - app - DEBUG - REDIS_URL present; skipping local Redis auto-start.
+2025-12-07 02:02:19,059 - app - WARNING - Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+2025-12-07 02:02:19,060 - services.otp_store - WARNING - Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+2025-12-07 02:02:19,060 - __main__ - INFO - Tenant security (global query filter) initialized
+2025-12-07 02:02:19,457 - services.s3_service - WARNING - S3Service running in mock mode - no actual S3 operations will be performed
+2025-12-07 02:02:19,476 - __main__ - INFO - Scheduling OCR/NLP service pre-warm in background
+2025-12-07 02:02:19,753 - __main__ - INFO - Ensuring database tables exist (create_all)
+2025-12-07 02:02:19,762 - __main__ - INFO - Permission middleware initialized successfully
+2025-12-07 02:02:19,764 - middleware.permission_middleware - WARNING - Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'admin.settings.edit', 'admin.tickets.view', 'admin.activity_logs.view', 'admin.users.delete', 'admin.tickets.create', 'admin.tenants.edit', 'admin.system.logs', 'admin.tickets.respond', 'admin.tenants.delete', 'admin.tenants.manage', 'admin.settings.view', 'admin.tenants.create', 'activity_logs.export', 'activity_logs.view', 'admin.tenants.view', 'admin.system.view', 'admin.users.edit', 'admin.users.create', 'admin.tickets.edit', 'admin.users.view'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-07 02:02:19,764 - __main__ - INFO - Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'admin.settings.edit', 'admin.tickets.view', 'admin.activity_logs.view', 'admin.users.delete', 'admin.tickets.create', 'admin.tenants.edit', 'admin.system.logs', 'admin.tickets.respond', 'admin.tenants.delete', 'admin.tenants.manage', 'admin.settings.view', 'admin.tenants.create', 'activity_logs.export', 'activity_logs.view', 'admin.tenants.view', 'admin.system.view', 'admin.users.edit', 'admin.users.create', 'admin.tickets.edit', 'admin.users.view'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-07 02:02:19,764 - __main__ - INFO - Starting Flask development server on 0.0.0.0:5003
+2025-12-07 02:02:19,822 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://192.168.1.114:5003
+2025-12-07 02:02:19,822 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-07 02:02:29,929 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:02:29] "GET /api/health HTTP/1.1" 200 -
+2025-12-07 02:02:36,440 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:02:36] "GET /api/health HTTP/1.1" 200 -
+2025-12-07 02:02:45,352 - routes.auth - INFO - Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'admin123'}
+2025-12-07 02:02:45,352 - routes.auth - INFO - Login attempt - identifier: admin@x-ear.com, password_provided: True
+2025-12-07 02:02:45,412 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:02:45] "POST /api/auth/login HTTP/1.1" 200 -
+2025-12-07 02:02:53,914 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:02:53] "GET /api/patients/pat_7931397d/appointments HTTP/1.1" 200 -
+2025-12-07 02:02:53,929 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:02:53] "GET /api/patients/pat_7931397d/notes HTTP/1.1" 200 -
+2025-12-07 02:02:53,943 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:02:53] "GET /api/patients/pat_7931397d/hearing-tests HTTP/1.1" 200 -
+2025-12-07 02:02:53,957 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:02:53] "GET /api/patients/pat_7931397d/documents HTTP/1.1" 200 -
+2025-12-07 02:02:53,973 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:02:53] "GET /api/patients/pat_7931397d/timeline HTTP/1.1" 200 -
+2025-12-07 02:03:02,226 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:02] "GET /api/patients HTTP/1.1" 200 -
+2025-12-07 02:03:02,241 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:02] "GET /api/appointments HTTP/1.1" 200 -
+2025-12-07 02:03:02,258 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:02] "GET /api/inventory HTTP/1.1" 200 -
+2025-12-07 02:03:02,276 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:02] "GET /api/sales HTTP/1.1" 200 -
+2025-12-07 02:03:02,293 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:02] "GET /api/invoices HTTP/1.1" 200 -
+2025-12-07 02:03:02,312 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:02] "GET /api/dashboard HTTP/1.1" 200 -
+2025-12-07 02:03:02,328 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:02] "GET /api/campaigns HTTP/1.1" 200 -
+2025-12-07 02:03:02,344 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:02] "GET /api/suppliers HTTP/1.1" 200 -
+2025-12-07 02:03:02,360 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:02] "GET /api/users HTTP/1.1" 200 -
+2025-12-07 02:03:02,374 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:02] "GET /api/branches HTTP/1.1" 200 -
+2025-12-07 02:03:02,388 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:02] "GET /api/settings HTTP/1.1" 200 -
+2025-12-07 02:03:02,399 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:02] "GET /api/sgk/documents HTTP/1.1" 200 -
+2025-12-07 02:03:02,414 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:02] "GET /api/reports/cashflow-summary HTTP/1.1" 200 -
+2025-12-07 02:03:54,404 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:03:54] "GET /api/patients?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:04:00,226 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:00] "GET /api/appointments?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:04:05,720 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:05] "GET /api/inventory?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:04:11,839 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:11] "GET /api/sales?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:04:17,293 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:17] "GET /api/devices?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:04:22,092 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:22] "GET /api/suppliers?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:04:27,322 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:27] "GET /api/dashboard HTTP/1.1" 200 -
+2025-12-07 02:04:32,842 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:32] "GET /api/campaigns?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:04:38,761 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:38] "[31m[1mGET /api/notifications HTTP/1.1[0m" 400 -
+2025-12-07 02:04:45,013 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:45] "[31m[1mGET /api/notifications HTTP/1.1[0m" 400 -
+2025-12-07 02:04:50,048 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:50] "GET /api/notifications?user_id=usr_admin HTTP/1.1" 200 -
+2025-12-07 02:04:57,705 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:57] "GET /api/patients/pat_7931397d/appointments HTTP/1.1" 200 -
+2025-12-07 02:04:57,719 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:57] "GET /api/patients/pat_7931397d/notes HTTP/1.1" 200 -
+2025-12-07 02:04:57,733 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:57] "GET /api/patients/pat_7931397d/hearing-tests HTTP/1.1" 200 -
+2025-12-07 02:04:57,746 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:57] "GET /api/patients/pat_7931397d/documents HTTP/1.1" 200 -
+2025-12-07 02:04:57,761 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:57] "GET /api/patients/pat_7931397d/timeline HTTP/1.1" 200 -
+2025-12-07 02:04:57,776 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:57] "GET /api/patients/pat_7931397d/sales HTTP/1.1" 200 -
+2025-12-07 02:04:57,789 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:57] "GET /api/patients/pat_7931397d/sgk-documents HTTP/1.1" 200 -
+2025-12-07 02:04:57,809 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:57] "GET /api/patients/pat_7931397d/devices HTTP/1.1" 200 -
+2025-12-07 02:04:57,823 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:04:57] "GET /api/patients/pat_7931397d/ereceipts HTTP/1.1" 200 -
+2025-12-07 02:05:05,263 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:05:05] "GET /api/patients?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:05:10,457 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:05:10] "GET /api/sales?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:05:15,267 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:05:15] "GET /api/inventory?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:05:21,534 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:05:21] "GET /api/appointments?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:05:55,812 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:05:55] "GET /api/appointments?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:06:01,026 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:06:01] "GET /api/appointments?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:06:28,648 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:06:28] "GET /api/users?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:06:49,113 - __main__ - WARNING - Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/backend/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+2025-12-07 02:06:49,174 - app - DEBUG - REDIS_URL present; skipping local Redis auto-start.
+2025-12-07 02:06:49,175 - app - WARNING - Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+2025-12-07 02:06:49,176 - services.otp_store - WARNING - Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+2025-12-07 02:06:49,176 - __main__ - INFO - Tenant security (global query filter) initialized
+2025-12-07 02:06:49,576 - services.s3_service - WARNING - S3Service running in mock mode - no actual S3 operations will be performed
+2025-12-07 02:06:49,593 - __main__ - INFO - Scheduling OCR/NLP service pre-warm in background
+2025-12-07 02:06:49,856 - __main__ - INFO - Ensuring database tables exist (create_all)
+2025-12-07 02:06:49,865 - __main__ - INFO - Permission middleware initialized successfully
+2025-12-07 02:06:49,867 - middleware.permission_middleware - WARNING - Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'admin.tickets.view', 'admin.activity_logs.view', 'admin.tenants.view', 'admin.tenants.manage', 'activity_logs.export', 'admin.users.create', 'admin.tenants.edit', 'admin.tickets.edit', 'admin.tenants.delete', 'admin.settings.edit', 'admin.tickets.respond', 'admin.system.logs', 'admin.system.view', 'admin.users.delete', 'admin.users.view', 'admin.users.edit', 'admin.settings.view', 'admin.tenants.create', 'admin.tickets.create', 'activity_logs.view'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-07 02:06:49,867 - __main__ - INFO - Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'admin.tickets.view', 'admin.activity_logs.view', 'admin.tenants.view', 'admin.tenants.manage', 'activity_logs.export', 'admin.users.create', 'admin.tenants.edit', 'admin.tickets.edit', 'admin.tenants.delete', 'admin.settings.edit', 'admin.tickets.respond', 'admin.system.logs', 'admin.system.view', 'admin.users.delete', 'admin.users.view', 'admin.users.edit', 'admin.settings.view', 'admin.tenants.create', 'admin.tickets.create', 'activity_logs.view'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+2025-12-07 02:06:49,868 - __main__ - INFO - Starting Flask development server on 0.0.0.0:5003
+2025-12-07 02:06:49,875 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://192.168.1.114:5003
+2025-12-07 02:06:49,875 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-12-07 02:07:34,460 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:34] "GET /api/appointments?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:07:37,306 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:37] "GET /api/appointments?limit=1 HTTP/1.1" 200 -
+2025-12-07 02:07:46,772 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:46] "GET /api/health HTTP/1.1" 200 -
+2025-12-07 02:07:46,796 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:46] "GET /api/patients HTTP/1.1" 200 -
+2025-12-07 02:07:46,812 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:46] "GET /api/appointments HTTP/1.1" 200 -
+2025-12-07 02:07:46,829 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:46] "GET /api/inventory HTTP/1.1" 200 -
+2025-12-07 02:07:46,848 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:46] "GET /api/sales HTTP/1.1" 200 -
+2025-12-07 02:07:46,867 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:46] "GET /api/invoices HTTP/1.1" 200 -
+2025-12-07 02:07:46,888 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:46] "GET /api/dashboard HTTP/1.1" 200 -
+2025-12-07 02:07:46,906 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:46] "GET /api/campaigns HTTP/1.1" 200 -
+2025-12-07 02:07:46,925 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:46] "GET /api/suppliers HTTP/1.1" 200 -
+2025-12-07 02:07:46,945 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:46] "GET /api/users HTTP/1.1" 200 -
+2025-12-07 02:07:46,962 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:46] "GET /api/branches HTTP/1.1" 200 -
+2025-12-07 02:07:46,979 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:46] "GET /api/settings HTTP/1.1" 200 -
+2025-12-07 02:07:46,992 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:46] "GET /api/sgk/documents HTTP/1.1" 200 -
+2025-12-07 02:07:47,008 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:47] "GET /api/devices HTTP/1.1" 200 -
+2025-12-07 02:07:47,029 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:47] "GET /api/roles HTTP/1.1" 200 -
+2025-12-07 02:07:47,049 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:47] "GET /api/reports/overview HTTP/1.1" 200 -
+2025-12-07 02:07:56,363 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:56] "GET /api/patients/pat_7931397d/appointments HTTP/1.1" 200 -
+2025-12-07 02:07:56,381 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:56] "GET /api/patients/pat_7931397d/notes HTTP/1.1" 200 -
+2025-12-07 02:07:56,396 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:56] "GET /api/patients/pat_7931397d/hearing-tests HTTP/1.1" 200 -
+2025-12-07 02:07:56,410 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:56] "GET /api/patients/pat_7931397d/documents HTTP/1.1" 200 -
+2025-12-07 02:07:56,424 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:56] "GET /api/patients/pat_7931397d/timeline HTTP/1.1" 200 -
+2025-12-07 02:07:56,439 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:56] "GET /api/patients/pat_7931397d/sales HTTP/1.1" 200 -
+2025-12-07 02:07:56,453 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:56] "GET /api/patients/pat_7931397d/sgk-documents HTTP/1.1" 200 -
+2025-12-07 02:07:56,470 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:56] "GET /api/patients/pat_7931397d/devices HTTP/1.1" 200 -
+2025-12-07 02:07:56,484 - werkzeug - INFO - 127.0.0.1 - - [07/Dec/2025 02:07:56] "GET /api/patients/pat_7931397d/ereceipts HTTP/1.1" 200 -

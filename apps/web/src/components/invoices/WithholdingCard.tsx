@@ -43,7 +43,7 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
           <Input
             type="number"
             step="0.01"
-            value={formData.withholdingRate === '' ? '' : String(formData.withholdingRate)}
+            value={formData.withholdingRate === ('' as unknown as number) ? '' : String(formData.withholdingRate)}
             onChange={(e) => setFormData({ ...formData, withholdingRate: e.target.value === '' ? '' as any : parseFloat(e.target.value) })}
             placeholder="Örn: 50"
             fullWidth
@@ -55,7 +55,7 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
           <Input
             type="number"
             step="0.01"
-            value={formData.taxFreeAmount === '' ? '' : String(formData.taxFreeAmount)}
+            value={formData.taxFreeAmount === ('' as unknown as number) ? '' : String(formData.taxFreeAmount)}
             onChange={(e) => setFormData({ ...formData, taxFreeAmount: e.target.value === '' ? '' as any : parseFloat(e.target.value) })}
             placeholder="0.00"
             fullWidth
@@ -67,7 +67,7 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
           <Input type="number" step="0.01" value={formData.withholdingAmount} readOnly className="bg-gray-50" fullWidth />
         </div>
 
-        {formData.withholdingRate > 0 && formData.taxFreeAmount > 0 && (
+        {Number(formData.withholdingRate) > 0 && Number(formData.taxFreeAmount) > 0 && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <div className="flex items-start">
               <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />

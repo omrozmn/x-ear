@@ -55,4 +55,14 @@ export function useUploadSgkDocuments() {
   });
 }
 
+export function useDeleteSgkDocument(patientId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { id: string; idempotencyKey?: string }) => {
+      return await sgkService.deleteDocument(data.id);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEY(patientId) }),
+  });
+}
+
 export default useSgkDocuments;

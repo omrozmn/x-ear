@@ -10,19 +10,19 @@ import { sgkService as fullSgkService } from '../sgk.service';
 // SGK Service - handles SGK document operations
 export const sgkService = {
   // Upload SGK document
-  uploadDocument: (body?: any, opts?: any) => sgkUploadSgkDocument(body, opts),
+  uploadDocument: (body?: any) => sgkUploadSgkDocument(body),
 
   // Delete SGK document
-  deleteDocument: (documentId: string, opts?: any) => sgkDeleteSgkDocument(documentId, opts),
+  deleteDocument: (documentId: string) => sgkDeleteSgkDocument(documentId),
 
   // List SGK documents for a patient
-  listDocuments: (patientId: string, opts?: any) => sgkGetPatientSgkDocuments(patientId, opts),
+  listDocuments: (patientId: string) => sgkGetPatientSgkDocuments(patientId),
 
   // Process OCR
-  processOcr: (body?: any, opts?: any) => sgkProcessOcr(body, opts),
+  processOcr: (body?: any) => sgkProcessOcr(body),
 
   // Trigger SGK processing
-  triggerProcessing: (body?: any, opts?: any) => automationTriggerSgkProcessing(body, opts),
+  triggerProcessing: (body?: any) => automationTriggerSgkProcessing(body),
 
   // Workflow methods from the full SGK service
   getWorkflow: (workflowId: string) => fullSgkService.getWorkflow(workflowId),

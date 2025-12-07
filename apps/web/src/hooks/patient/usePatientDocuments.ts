@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { patientApiService } from '../../services/patient/patient-api.service';
 
 export interface PatientDocument {

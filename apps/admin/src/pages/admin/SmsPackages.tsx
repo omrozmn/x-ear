@@ -4,14 +4,13 @@ import {
     Plus,
     Edit2,
     Check,
-    X,
     Loader2
 } from 'lucide-react';
-import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
+import { Button, Input, Textarea } from '@x-ear/ui-web';
 import {
     useGetApiAdminSmsPackages,
-    usePostApiAdminSmsPackages,
-    usePutApiAdminSmsPackagesPkgId
+    useCreateAdminSmsPackage,
+    useUpdateAdminSmsPackage
 } from '../../lib/api-client';
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -25,8 +24,8 @@ export default function SMSPackagesPage() {
 
     const { data: packagesData, isLoading, refetch } = useGetApiAdminSmsPackages({ page, limit } as any);
 
-    const createMutation = usePostApiAdminSmsPackages();
-    const updateMutation = usePutApiAdminSmsPackagesPkgId();
+    const createMutation = useCreateAdminSmsPackage();
+    const updateMutation = useUpdateAdminSmsPackage();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -46,7 +45,7 @@ export default function SMSPackagesPage() {
         try {
             if (editingPkg) {
                 await updateMutation.mutateAsync({
-                    pkgId: editingPkg.id,
+                    id: editingPkg.id,
                     data: {
                         name: formData.name,
                         description: formData.description,

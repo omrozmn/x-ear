@@ -26,7 +26,9 @@ export * from './patient-adapter';
 export type {
   Patient,
   PatientDevice,
-  PatientNote
+  PatientNote,
+  PatientSegment,
+  PatientLabel
 } from './patient-base.types';
 
 export type {

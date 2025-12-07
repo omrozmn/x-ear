@@ -1,30 +1,31 @@
-// @ts-nocheck
-export type PatientStatus = 'active' | 'inactive' | 'pending' | 'archived';
-
 /**
  * Patient Status Constants
  * @fileoverview Status definitions and related constants
  * @version 1.0.0
  */
 
+import { PatientStatus } from '../../api/generated/schemas';
 import type { 
-  PatientStatus, 
   PatientSegment, 
   PatientLabel 
 } from '../../types/patient';
 
 export const PATIENT_STATUS: Record<PatientStatus, string> = {
-  active: 'Aktif',
-  inactive: 'Pasif',
-  archived: 'Arşivlendi'
+  ACTIVE: 'Aktif',
+  INACTIVE: 'Pasif',
+  LEAD: 'Potansiyel',
+  TRIAL: 'Deneme',
+  CUSTOMER: 'Müşteri'
 } as const;
 
 export const PATIENT_SEGMENT: Record<PatientSegment, string> = {
-  new: 'Yeni',
-  trial: 'Deneme',
-  purchased: 'Satın Alındı',
-  control: 'Kontrol',
-  renewal: 'Yenileme'
+  NEW: 'Yeni',
+  TRIAL: 'Deneme',
+  PURCHASED: 'Satın Alındı',
+  CONTROL: 'Kontrol',
+  RENEWAL: 'Yenileme',
+  EXISTING: 'Mevcut',
+  VIP: 'VIP'
 } as const;
 
 export const PATIENT_LABEL: Record<PatientLabel, string> = {
@@ -37,17 +38,21 @@ export const PATIENT_LABEL: Record<PatientLabel, string> = {
 } as const;
 
 export const STATUS_COLORS: Record<PatientStatus, string> = {
-  active: '#10B981',
-  inactive: '#6B7280',
-  archived: '#9CA3AF'
+  ACTIVE: '#10B981',
+  INACTIVE: '#6B7280',
+  LEAD: '#8B5CF6',
+  TRIAL: '#F59E0B',
+  CUSTOMER: '#059669'
 } as const;
 
 export const SEGMENT_COLORS: Record<PatientSegment, string> = {
-  new: '#8B5CF6',
-  trial: '#F59E0B',
-  purchased: '#10B981',
-  control: '#06B6D4',
-  renewal: '#EC4899'
+  NEW: '#8B5CF6',
+  TRIAL: '#F59E0B',
+  PURCHASED: '#10B981',
+  CONTROL: '#06B6D4',
+  RENEWAL: '#EC4899',
+  EXISTING: '#6B7280',
+  VIP: '#FFD700'
 } as const;
 
 export const LABEL_COLORS: Record<PatientLabel, string> = {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 // Database schema interfaces

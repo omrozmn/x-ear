@@ -4,7 +4,8 @@ export default defineConfig({
     admin: {
         input: './openapi.yaml',
         output: {
-            target: './src/lib/api-client.ts',
+            mode: 'tags-split',
+            target: './src/lib/api/index.ts',
             client: 'react-query',
             override: {
                 mutator: {

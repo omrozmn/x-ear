@@ -701,7 +701,8 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
       low: 'text-gray-600',
       medium: 'text-blue-600',
       high: 'text-orange-600',
-      critical: 'text-red-600'
+      critical: 'text-red-600',
+      urgent: 'text-red-600'
     };
     return colors[priority || ''] || 'text-gray-600';
   };
@@ -760,7 +761,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                     setIsSending(true);
                     try {
                       // Try to send response via API
-                      await createTicketResponse({ id: ticket.id!, data: { message: response } });
+                      await createTicketResponse({ ticketId: ticket.id!, data: { message: response } });
                       toast.success('Yanıt gönderildi');
                       setResponse('');
                     } catch (error) {
@@ -809,7 +810,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                     {ticket.priority === 'low' && 'Düşük'}
                     {ticket.priority === 'medium' && 'Orta'}
                     {ticket.priority === 'high' && 'Yüksek'}
-                    {ticket.priority === 'critical' && 'Acil'}
+                    {ticket.priority === 'urgent' && 'Acil'}
                   </div>
                 </div>
 

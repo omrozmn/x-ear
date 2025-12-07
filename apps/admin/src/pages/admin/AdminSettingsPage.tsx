@@ -28,7 +28,7 @@ const AdminSettingsPage: React.FC = () => {
 
     useEffect(() => {
         if (settingsData?.data) {
-            setSettings(settingsData.data);
+            setSettings(settingsData.data as any);
         }
     }, [settingsData]);
 

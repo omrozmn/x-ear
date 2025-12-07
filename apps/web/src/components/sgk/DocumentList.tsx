@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from 'react';
 import { Button, Card, CardContent, Badge } from '@x-ear/ui-web';
 import DocumentUploadModal from '@/components/sgk/DocumentUploadModal';
@@ -6,12 +5,27 @@ import { useSgkDocuments, useDeleteSgkDocument } from '@/hooks/sgk/useSgkDocumen
 
 type Props = { patientId: string };
 
+interface SgkDocumentItem {
+  id: string;
+  name?: string;
+  filename?: string;
+  createdAt?: string;
+  created_at?: string;
+  status?: string;
+  url?: string;
+  downloadUrl?: string;
+}
+
+interface DocumentData {
+  data?: SgkDocumentItem[];
+}
+
 export default function DocumentList({ patientId }: Props) {
   const [open, setOpen] = useState(false);
   const { data, isLoading, isError } = useSgkDocuments(patientId);
   const deleteMutation = useDeleteSgkDocument(patientId);
 
-  const docs = (data as any)?.data || [];
+  const docs = (data as DocumentData)?.data || [];
 
   return (
     <div>
@@ -29,7 +43,7 @@ export default function DocumentList({ patientId }: Props) {
 
       {!isLoading && docs.length > 0 && (
         <div className="space-y-2">
-          {docs.map((d: any) => (
+          {docs.map((d) => (
             <Card key={d.id}>
               <CardContent className="flex items-center justify-between p-4">
                 <div>

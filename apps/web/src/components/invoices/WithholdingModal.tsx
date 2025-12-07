@@ -78,7 +78,7 @@ export function WithholdingModal({
                       <Input
                         type="number"
                         step="0.01"
-                        value={formData.withholdingRate === '' ? '' : String(formData.withholdingRate)}
+                        value={formData.withholdingRate === ('' as unknown as number) ? '' : String(formData.withholdingRate)}
                         onChange={(e) => setFormData({
                           ...formData,
                           withholdingRate: e.target.value === '' ? '' as any : parseFloat(e.target.value)
@@ -100,7 +100,7 @@ export function WithholdingModal({
                       <Input
                         type="number"
                         step="0.01"
-                        value={formData.taxFreeAmount === '' ? '' : String(formData.taxFreeAmount)}
+                        value={formData.taxFreeAmount === ('' as unknown as number) ? '' : String(formData.taxFreeAmount)}
                         onChange={(e) => setFormData({
                           ...formData,
                           taxFreeAmount: e.target.value === '' ? '' as any : parseFloat(e.target.value)

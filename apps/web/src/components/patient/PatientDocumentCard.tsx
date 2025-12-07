@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import { PatientDocument } from '../../hooks/patient/usePatientDocuments';
 import {

@@ -32,7 +32,9 @@ import {
 } from '@/lib/api-client';
 
 // Helper interfaces for component state if not fully covered by generated types
-interface CreateInvoiceData extends Partial<Invoice> { }
+interface CreateInvoiceData extends Partial<Invoice> {
+  tenant_id: string;
+}
 
 const Billing: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -181,7 +183,7 @@ const Billing: React.FC = () => {
   const handleCreateInvoice = async (data: CreateInvoiceData) => {
     setIsSubmitting(true);
     try {
-      await createInvoice({ data });
+      await createInvoice({ data: data as any });
       await queryClient.invalidateQueries({ queryKey: ['/admin/invoices'] });
       setShowCreateModal(false);
       toast.success('Fatura başarıyla oluşturuldu');

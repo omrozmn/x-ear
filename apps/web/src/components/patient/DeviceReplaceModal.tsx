@@ -7,7 +7,7 @@ import { invoiceService } from '../../services/invoice.service';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { CheckCircle } from 'lucide-react';
 import { ProductSearchInput } from '../cashflow/ProductSearchInput';
-import { apiClient } from '../../api/client';
+import { apiClient } from '../../api/orval-mutator';
 import { PatientDevice } from '../../types/patient';
 
 interface InventoryItem {
@@ -59,7 +59,6 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
   useEffect(() => {
     // Reset selection when modal opens
     if (!isOpen) {
-      setResults([]);
       setSelectedInventory(null);
       setError(null);
       setIsSubmitting(false);
@@ -106,7 +105,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
     try {
       setLoadingReplacements(true);
       try {
-        const { status, data: j } = await apiClient.request<any>(`/patients/${patientId}/replacements`);
+        const { status, data: j } = await apiClient.get<any>(`/api/patients/${patientId}/replacements`);
         if (status < 400) {
           const items = (j.data || []).map((rep: any) => {
             const normalize = (field: any) => {
@@ -186,10 +185,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
         supplierInvoiceNumber: createdInvoice.supplierInvoiceNumber || createdInvoice.invoiceNumber
       };
       try {
-        const { status, data: j } = await apiClient.request<any>(`/replacements/${replacementId}/invoice`, {
-          method: 'POST',
-          body: JSON.stringify(body)
-        });
+        const { status, data: j } = await apiClient.post<any>(`/api/replacements/${replacementId}/invoice`, body);
         if (status >= 400 || !j?.success) throw new Error(j?.error || 'Linkleme başarısız');
       } catch (e: any) {
         throw e;
@@ -209,9 +205,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
     try {
       setActionMessage(null);
       try {
-        const { status, data: j } = await apiClient.request<any>(`/return-invoices/${invoiceId}/send-to-gib`, {
-          method: 'POST'
-        });
+        const { status, data: j } = await apiClient.post<any>(`/api/return-invoices/${invoiceId}/send-to-gib`);
         if (status >= 400 || !j?.success) throw new Error(j?.error || 'GİB gönderimi başarısız');
       } catch (e) {
         throw e;

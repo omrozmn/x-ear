@@ -77,6 +77,8 @@ export interface InventoryItem {
   taxRate?: number; // KDV oranı
   productServiceCode?: string; // Mal/Hizmet kodu
   gtipCode?: string; // GTİP kodu (ihracat için)
+  priceIncludesKdv?: boolean;
+  costIncludesKdv?: boolean;
   
   // Status and metadata
   status?: InventoryStatus;

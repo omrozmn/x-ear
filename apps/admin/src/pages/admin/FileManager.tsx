@@ -105,7 +105,7 @@ const FileManager: React.FC = () => {
 
         const toastId = toast.loading('Dosya siliniyor...');
         try {
-            await deleteFile({ params: { key } });
+            await deleteFile({ fileId: key });
             toast.success('Dosya silindi', { id: toastId });
             queryClient.invalidateQueries({ queryKey: ['/api/upload/files'] });
         } catch (error) {

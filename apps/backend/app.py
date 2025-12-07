@@ -382,7 +382,17 @@ app.register_blueprint(roles_bp, url_prefix='/api')
 app.register_blueprint(permissions_bp, url_prefix='/api')
 
 # ===== PATIENT SUBRESOURCES ENDPOINTS =====
+# Patient subresources: hearing-tests, notes, ereceipts, devices
+from routes.patient_subresources import patient_subresources_bp
+app.register_blueprint(patient_subresources_bp, url_prefix='/api')
 
+# Timeline/Activity endpoints for patients
+from routes.timeline import timeline_bp
+app.register_blueprint(timeline_bp, url_prefix='/api')
+
+# Patient Documents endpoints
+from routes.documents import documents_bp
+app.register_blueprint(documents_bp, url_prefix='/api')
 
 from routes.plans import plans_bp
 app.register_blueprint(plans_bp, url_prefix='/api/plans')

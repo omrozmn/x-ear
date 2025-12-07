@@ -1,17 +1,11 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { 
   ArrowLeft, 
-  AlertCircle, 
   Calendar, 
   Activity, 
   Shield, 
-  CreditCard,
-  User,
-  Phone,
-  Mail,
-  MapPin
+  CreditCard
 } from 'lucide-react';
 import { usePatient } from '../hooks/patient/usePatient';
 import { usePatientDevices } from '../hooks/patient/usePatientDevices';
@@ -31,6 +25,7 @@ import { PATIENT_DETAILS_TAB_LEGACY } from '../constants/storage-keys';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { Button } from '@x-ear/ui-web';
 import { useUpdatePatient } from '../hooks/usePatients';
+import type { Patient } from '../types/patient';
 
 export const PatientDetailsPage: React.FC = () => {
   const { patientId } = useParams({ strict: false }) as { patientId?: string };

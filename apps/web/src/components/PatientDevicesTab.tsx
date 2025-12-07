@@ -13,7 +13,7 @@ import { ConfirmDialog } from './ui/ConfirmDialog';
 import { Smartphone, AlertCircle, Plus, Edit, Trash2, RefreshCw, Settings } from 'lucide-react';
 import { Button } from './ui/Button';
 import { PatientDevice } from '../types/patient';
-import { apiClient } from '../api/client';
+import { apiClient } from '../api/orval-mutator';
 
 interface DeviceAssignment {
   id?: string;
@@ -196,10 +196,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
       setActionError(null);
       
       // Update device status to cancelled
-      const { status, data: cancelResult } = await apiClient.request<any>(`/device-assignments/${deviceToCancel}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: 'cancelled' })
-      });
+      const { status, data: cancelResult } = await apiClient.patch<any>(`/api/device-assignments/${deviceToCancel}`, { status: 'cancelled' });
 
       if (status >= 400 || !cancelResult?.success) {
         const err = cancelResult?.error || cancelResult?.message || `Backend error: ${status}`;
@@ -267,10 +264,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
 
       console.log('📤 Creating replacement with payload:', payload);
 
-      const { status: createStatus, data: createResult } = await apiClient.request<any>(`/patients/${patientId}/replacements`, {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
+      const { status: createStatus, data: createResult } = await apiClient.post<any>(`/api/patients/${patientId}/replacements`, payload);
 
       console.log('📥 Replacement create response:', createResult);
 
@@ -427,10 +421,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
         console.log('📤 Editing device:', editingDevice);
         
         // Call API to update device assignment
-        const { status: updateStatus, data: result } = await apiClient.request<any>(`/device-assignments/${editingDevice.id}`, {
-          method: 'PATCH',
-          body: JSON.stringify(updateData)
-        });
+        const { status: updateStatus, data: result } = await apiClient.patch<any>(`/api/device-assignments/${editingDevice.id}`, updateData);
         
         console.log('📥 Backend response:', result);
         console.log('📥 Backend response FULL:', JSON.stringify(result, null, 2));
@@ -502,10 +493,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
         console.log('📤 Sending device assignment data:', apiData);
         
         // Call API to create device assignment and sale record
-        const { status: assignStatus, data: result } = await apiClient.request<any>(`/patients/${patientId}/assign-devices-extended`, {
-          method: 'POST',
-          body: JSON.stringify(apiData)
-        });
+        const { status: assignStatus, data: result } = await apiClient.post<any>(`/api/patients/${patientId}/assign-devices-extended`, apiData);
         
         
         console.log('📥 Backend response:', result);
