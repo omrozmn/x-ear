@@ -1,5 +1,9 @@
 /// <reference types="vite/client" />
 // API Client for X-Ear Web Application
+
+// Re-export Patient from generated schemas for consistency
+export type { Patient } from './generated/schemas';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003/api';
 
 export interface LoginCredentials {
@@ -32,7 +36,8 @@ export interface LoginResponse {
   timestamp: string;
 }
 
-export interface Patient {
+// Legacy Patient type - use generated type instead
+export interface LegacyPatient {
   id: string;
   name: string;
   email?: string;
@@ -45,7 +50,7 @@ export interface Patient {
 export interface PatientsResponse {
   success: boolean;
   data: {
-    patients: Patient[];
+    patients: LegacyPatient[];
     total: number;
     page: number;
     limit: number;
@@ -157,19 +162,19 @@ class ApiClient {
     return this.request<PatientsResponse>(endpoint);
   }
 
-  async getPatient(id: string): Promise<ApiResponse<{ patient: Patient }>> {
-    return this.request<{ patient: Patient }>(`/patients/${id}`);
+  async getPatient(id: string): Promise<ApiResponse<{ patient: LegacyPatient }>> {
+    return this.request<{ patient: LegacyPatient }>(`/patients/${id}`);
   }
 
-  async createPatient(patient: CreatePatientRequest): Promise<ApiResponse<{ patient: Patient }>> {
-    return this.request<{ patient: Patient }>('/patients', {
+  async createPatient(patient: CreatePatientRequest): Promise<ApiResponse<{ patient: LegacyPatient }>> {
+    return this.request<{ patient: LegacyPatient }>('/patients', {
       method: 'POST',
       body: JSON.stringify(patient),
     });
   }
 
-  async updatePatient(id: string, patient: UpdatePatientRequest): Promise<ApiResponse<{ patient: Patient }>> {
-    return this.request<{ patient: Patient }>(`/patients/${id}`, {
+  async updatePatient(id: string, patient: UpdatePatientRequest): Promise<ApiResponse<{ patient: LegacyPatient }>> {
+    return this.request<{ patient: LegacyPatient }>(`/patients/${id}`, {
       method: 'PUT',
       body: JSON.stringify(patient),
     });

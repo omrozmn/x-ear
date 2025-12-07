@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Patient } from '../../api/client';
+import type { Patient } from '../../api/generated/schemas';
 import { PatientApiService } from '../../services/patient/patient-api.service';
 import { PatientStorageService } from '../../services/patient/patient-storage.service';
 

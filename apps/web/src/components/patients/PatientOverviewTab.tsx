@@ -201,12 +201,12 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
               </div>
             </div>
 
-            {patient.branchId && patient.branchId !== 'branch-1' && (
+            {(patient as any).branchId && (patient as any).branchId !== 'branch-1' && (
               <div className="flex items-center space-x-3">
                 <MapPin className="w-5 h-5 text-gray-400" />
                 <div>
                   <p className="text-sm font-medium text-gray-500">Şube</p>
-                  <p className="text-sm text-gray-900">{patient.branchId}</p>
+                  <p className="text-sm text-gray-900">{(patient as any).branchId}</p>
                 </div>
               </div>
             )}
@@ -342,7 +342,7 @@ export const PatientOverviewTab: React.FC<PatientOverviewTabProps> = ({
 
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={handleCloseModal}
               disabled={isSubmitting}
             >

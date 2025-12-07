@@ -16,7 +16,8 @@ export interface SupplierFilters {
 }
 
 // Extended Supplier type that matches backend response
-export interface SupplierExtended extends BaseSupplier {
+export interface SupplierExtended extends Omit<BaseSupplier, 'name'> {
+  name: string; // Required field
   companyName?: string;
   companyCode?: string;
   taxOffice?: string;
@@ -36,5 +37,4 @@ export interface SupplierExtended extends BaseSupplier {
   email?: string;
   address?: string;
   taxNumber?: string;
-  name?: string; // Alias for companyName if needed
 }

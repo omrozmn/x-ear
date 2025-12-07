@@ -40,9 +40,10 @@ export const PatientDetailsPage: React.FC = () => {
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [noteText, setNoteText] = useState('');
 
-  const { patient, isLoading, error, refetch } = usePatient(patientId);
+  const { patient, isLoading, error, loadPatient } = usePatient(patientId);
+  const refetch = () => patientId ? loadPatient(patientId) : Promise.resolve();
   const updatePatientMutation = useUpdatePatient();
-  const { devices } = usePatientDevices(patientId, patient?.devices);
+  const { devices } = usePatientDevices(patientId, (patient as any)?.devices);
   const { sales } = usePatientSales(patientId);
   const { timeline } = usePatientTimeline(patientId);
   const { documents } = usePatientDocuments(patientId);

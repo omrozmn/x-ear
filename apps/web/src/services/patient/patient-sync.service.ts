@@ -38,6 +38,99 @@ export class PatientSyncService {
   private readonly BATCH_SIZE = 50;
   private syncInProgress = false;
 
+  /**
+   * Create a new patient
+   */
+  async createPatient(patientData: Partial<LocalPatient>, _idempotencyKey?: string): Promise<LocalPatient> {
+    const newPatient: LocalPatient = {
+      id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      firstName: patientData.firstName || '',
+      lastName: patientData.lastName || '',
+      phone: patientData.phone || '',
+      email: patientData.email,
+      tcNumber: patientData.tcNumber,
+      birthDate: patientData.birthDate,
+      status: patientData.status,
+      segment: patientData.segment,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as LocalPatient;
+
+    // Save to local storage
+    await indexedDBManager.updatePatient(newPatient);
+
+    // Add to outbox for sync
+    await outbox.addOperation({
+      method: 'POST',
+      endpoint: '/api/patients',
+      data: newPatient,
+      headers: { 'Idempotency-Key': _idempotencyKey || `create-patient-${Date.now()}` }
+    });
+
+    return newPatient;
+  }
+
+  /**
+   * Update an existing patient
+   */
+  async updatePatient(patientId: string, updates: Partial<LocalPatient>, _idempotencyKey?: string): Promise<LocalPatient> {
+    const existingPatient = await indexedDBManager.getPatient(patientId);
+    if (!existingPatient) {
+      throw new Error(`Patient ${patientId} not found`);
+    }
+
+    const updatedPatient: LocalPatient = {
+      ...existingPatient,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    } as LocalPatient;
+
+    await indexedDBManager.updatePatient(updatedPatient);
+
+    await outbox.addOperation({
+      method: 'PUT',
+      endpoint: `/api/patients/${patientId}`,
+      data: updatedPatient,
+      headers: { 'Idempotency-Key': _idempotencyKey || `update-patient-${patientId}-${Date.now()}` }
+    });
+
+    return updatedPatient;
+  }
+
+  /**
+   * Delete a patient
+   */
+  async deletePatient(patientId: string, _idempotencyKey?: string): Promise<void> {
+    await indexedDBManager.deletePatient(patientId);
+
+    await outbox.addOperation({
+      method: 'DELETE',
+      endpoint: `/api/patients/${patientId}`,
+      data: { id: patientId },
+      headers: { 'Idempotency-Key': _idempotencyKey || `delete-patient-${patientId}-${Date.now()}` }
+    });
+  }
+
+  /**
+   * Get sync status
+   */
+  async getSyncStatus(): Promise<{ pending: number; lastSync: string | null; isOnline: boolean }> {
+    const pendingCount = await this.getPendingSyncCount();
+    const lastSync = await this.getLastSyncTime();
+    return {
+      pending: pendingCount,
+      lastSync,
+      isOnline: navigator.onLine
+    };
+  }
+
+  /**
+   * Force sync with server
+   */
+  async forceSync(): Promise<SyncResult> {
+    return this.syncPatients({ force: true });
+  }
+
   async syncPatients(options: SyncOptions = {}): Promise<SyncResult> {
     if (this.syncInProgress) {
       throw new Error('Sync already in progress');

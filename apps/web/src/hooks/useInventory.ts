@@ -26,10 +26,16 @@ export const useInventory = (): UseInventoryResult => {
         lowStock: false
       });
 
-      if (response.data?.data?.items) {
-        setProducts(response.data.data.items as unknown as InventoryItem[]);
-      } else if (Array.isArray(response.data?.data)) {
-        setProducts(response.data.data as unknown as InventoryItem[]);
+      // Handle different response structures
+      const responseData = response.data as any;
+      if (responseData?.data?.items) {
+        setProducts(responseData.data.items as InventoryItem[]);
+      } else if (responseData?.items) {
+        setProducts(responseData.items as InventoryItem[]);
+      } else if (Array.isArray(responseData?.data)) {
+        setProducts(responseData.data as InventoryItem[]);
+      } else if (Array.isArray(responseData)) {
+        setProducts(responseData as InventoryItem[]);
       } else {
         // Fallback or empty
         setProducts([]);
