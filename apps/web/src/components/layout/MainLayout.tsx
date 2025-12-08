@@ -549,7 +549,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                               delete (window as any).__AUTH_TOKEN__;
                             } catch (err) { }
                           }
-                          navigate({ to: '/login' });
+                          navigate({ to: '/login' as any });
                         }}
                         style={{
                           display: 'flex',

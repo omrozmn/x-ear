@@ -86,7 +86,7 @@ export function RolePermissionsTab() {
   // Fetch role permissions using orval hook
   const { data: rolePermissionsResponse, isLoading: loadingRole } = usePermissionsGetRolePermissions(
     selectedRole,
-    { query: { enabled: !!selectedRole } }
+    { query: { enabled: !!selectedRole, queryKey: getPermissionsGetRolePermissionsQueryKey(selectedRole) } }
   );
 
   // Update role permissions mutation using orval hook

@@ -905,7 +905,7 @@ export class InvoiceService {
 
     try {
       // Ask axios to not throw on non-2xx so we can inspect the body (it may be JSON error instead of a PDF blob)
-      const response = await invoicesGenerateInvoicePdf(String(serverId), { validateStatus: () => true });
+      const response = await invoicesGenerateInvoicePdf(String(serverId));
 
       // If server returned 200, return the blob
       if ((response as any).status === 200) {

@@ -617,14 +617,9 @@ class AppointmentService {
   private generateTitle(type: AppointmentType): string {
     const titles: Record<AppointmentType, string> = {
       consultation: 'Konsültasyon',
-      follow_up: 'Kontrol Muayenesi',
-      trial: 'Deneme Başlangıç',
-      delivery: 'Cihaz Teslimi',
-      control_visit: 'Kontrol Ziyareti',
-      battery_renewal: 'Pil Yenileme',
-      repair: 'Tamir',
-      fitting: 'Cihaz Ayarı',
-      assessment: 'Değerlendirme'
+      'follow-up': 'Kontrol Muayenesi',
+      'hearing-test': 'İşitme Testi',
+      'device-trial': 'Cihaz Denemesi'
     };
     return titles[type] || 'Randevu';
   }

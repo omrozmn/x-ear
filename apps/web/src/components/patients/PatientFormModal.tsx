@@ -240,7 +240,7 @@ export function PatientFormModal({
       console.log('=== FORM SUBMIT DATA ===');
       console.log('cleanedData:', cleanedData);
       
-      const result = await onSubmit(cleanedData);
+      const result = await onSubmit(cleanedData as any);
       if (result) {
         onClose();
       }

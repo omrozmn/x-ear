@@ -40,30 +40,26 @@ def require_admin_permission(*required_permissions):
                 # JWT kontrolü
                 verify_jwt_in_request()
                 jwt_data = get_jwt()
-                admin_user_id = get_jwt_identity()
+                user_id = get_jwt_identity()
                 
-                # Admin JWT mi kontrol et (claim name is 'type' from login)
+                # Admin JWT mi kontrol et - token type 'admin' VEYA user AdminUser tablosunda olmalı
                 token_type = jwt_data.get('type') or jwt_data.get('token_type')
-                if token_type != 'admin':
-                    logger.warning(f"Non-admin token used for admin endpoint: user={admin_user_id}, type={token_type}")
+                
+                # AdminUser'ı yükle (hem admin hem normal tokenlar için)
+                from models.admin_user import AdminUser
+                admin_user = AdminUser.query.get(user_id)
+                
+                # AdminUser kontrolü - user mutlaka AdminUser tablosunda olmalı
+                if not admin_user:
+                    # Normal user (non-admin) token ile admin endpoint'e erişmeye çalışıyor
+                    logger.warning(f"Non-admin user attempted admin endpoint access: user_id={user_id}, type={token_type}")
                     return jsonify({
                         'error': 'Bu endpoint sadece admin panel kullanıcıları için erişilebilir',
-                        'code': 'ADMIN_TOKEN_REQUIRED'
-                    }), 403
-                
-                # AdminUser'ı yükle
-                from models.admin_user import AdminUser
-                admin_user = AdminUser.query.get(admin_user_id)
-                
-                if not admin_user:
-                    logger.warning(f"Admin user not found: {admin_user_id}")
-                    return jsonify({
-                        'error': 'Admin kullanıcı bulunamadı',
-                        'code': 'ADMIN_USER_NOT_FOUND'
+                        'code': 'ADMIN_USER_REQUIRED'
                     }), 403
                 
                 if not admin_user.is_active:
-                    logger.warning(f"Inactive admin user attempted access: {admin_user_id}")
+                    logger.warning(f"Inactive admin user attempted access: {user_id}")
                     return jsonify({
                         'error': 'Hesabınız devre dışı bırakılmış',
                         'code': 'ADMIN_USER_INACTIVE'
@@ -203,6 +199,9 @@ class AdminPermissions:
     TENANTS_READ = 'platform.tenants.read'
     TENANTS_MANAGE = 'platform.tenants.manage'
     
+    # Dashboard
+    DASHBOARD_VIEW = 'platform.dashboard.view'
+    
     # Users
     USERS_READ = 'platform.users.read'
     USERS_MANAGE = 'platform.users.manage'
@@ -255,3 +254,39 @@ class AdminPermissions:
     
     BIRFATURA_READ = 'platform.birfatura.read'
     BIRFATURA_MANAGE = 'platform.birfatura.manage'
+    
+    # Additional Modules
+    ANALYTICS_READ = 'platform.analytics.read'
+    
+    PATIENTS_READ = 'platform.patients.read'
+    PATIENTS_MANAGE = 'platform.patients.manage'
+    
+    APPOINTMENTS_READ = 'platform.appointments.read'
+    APPOINTMENTS_MANAGE = 'platform.appointments.manage'
+    
+    INVENTORY_READ = 'platform.inventory.read'
+    INVENTORY_MANAGE = 'platform.inventory.manage'
+    
+    ADDONS_READ = 'platform.addons.read'
+    ADDONS_MANAGE = 'platform.addons.manage'
+    
+    TICKETS_READ = 'platform.tickets.read'
+    TICKETS_MANAGE = 'platform.tickets.manage'
+    
+    NOTIFICATIONS_READ = 'platform.notifications.read'
+    NOTIFICATIONS_MANAGE = 'platform.notifications.manage'
+    
+    PLANS_READ = 'platform.plans.read'
+    PLANS_MANAGE = 'platform.plans.manage'
+    
+    INVOICES_READ = 'platform.invoices.read'
+    INVOICES_MANAGE = 'platform.invoices.manage'
+
+    # Suppliers
+    SUPPLIERS_READ = 'platform.suppliers.read'
+    SUPPLIERS_MANAGE = 'platform.suppliers.manage'
+
+    # Campaigns
+    CAMPAIGNS_READ = 'platform.campaigns.read'
+    CAMPAIGNS_MANAGE = 'platform.campaigns.manage'
+

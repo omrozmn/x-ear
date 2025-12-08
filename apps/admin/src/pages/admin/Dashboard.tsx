@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
-
-import { useGetAdminDashboardMetrics, DashboardMetrics } from '@/lib/api-client';
+import {
+  useGetAdminAnalytics,
+  AnalyticsOverview,
+  RevenueTrend
+} from '@/lib/api-client';
 
 const Dashboard = () => {
   const { user } = useAuth();
 
-  // Use Orval hook
-  const { data: dashboardData, isLoading, error } = useGetAdminDashboardMetrics();
-  const metrics = (dashboardData?.data?.metrics || {}) as DashboardMetrics;
+  // Use new Analytics hook
+  const { data: analyticsData, isLoading, error } = useGetAdminAnalytics();
+  const data = analyticsData?.data;
+  const overview = data?.overview;
 
   const formatNumber = (num: number | undefined) => {
     if (num === undefined) return '-';
@@ -57,39 +61,6 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* Alerts */}
-          {metrics && metrics.alerts && (
-            (metrics.alerts.expiring_soon || 0) > 0 ||
-            (metrics.alerts.high_churn || 0) > 0 ||
-            (metrics.alerts.low_utilization || 0) > 0
-          ) && (
-              <div className="mb-6">
-                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-yellow-800">Attention Required</h3>
-                      <div className="text-sm text-yellow-700 mt-1">
-                        {(metrics.alerts.expiring_soon || 0) > 0 && (
-                          <p>{metrics.alerts.expiring_soon} memberships expiring soon</p>
-                        )}
-                        {(metrics.alerts.high_churn || 0) > 0 && (
-                          <p>High churn rate detected</p>
-                        )}
-                        {(metrics.alerts.low_utilization || 0) > 0 && (
-                          <p>{metrics.alerts.low_utilization} tenants with low seat utilization</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
           {/* Stats grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -110,7 +81,10 @@ const Dashboard = () => {
                           Aktif Kiracılar
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {isLoading ? '-' : formatNumber(metrics?.overview?.active_tenants)}
+                          {isLoading ? '-' : formatNumber(overview?.active_tenants)}
+                        </dd>
+                        <dd className="text-xs text-green-600 mt-1">
+                          +{overview?.tenants_growth}% geçen aya göre
                         </dd>
                       </dl>
                     </div>
@@ -131,10 +105,13 @@ const Dashboard = () => {
                     <div className="ml-5 w-0 flex-1">
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">
-                          Aktif Kullanıcılar
+                          Aylık Aktif Kullanıcı
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {isLoading ? '-' : formatNumber(metrics?.overview?.active_users)}
+                          {isLoading ? '-' : formatNumber(overview?.monthly_active_users)}
+                        </dd>
+                        <dd className="text-xs text-green-600 mt-1">
+                          +{overview?.mau_growth}% geçen aya göre
                         </dd>
                       </dl>
                     </div>
@@ -155,10 +132,13 @@ const Dashboard = () => {
                     <div className="ml-5 w-0 flex-1">
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">
-                          Aylık Gelir
+                          Toplam Ciro
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {isLoading ? '-' : formatCurrency(metrics?.revenue?.monthly_recurring_revenue)}
+                          {isLoading ? '-' : formatCurrency(overview?.total_revenue)}
+                        </dd>
+                        <dd className="text-xs text-green-600 mt-1">
+                          +{overview?.revenue_growth}% geçen aya göre
                         </dd>
                       </dl>
                     </div>
@@ -168,32 +148,8 @@ const Dashboard = () => {
             </div>
 
             {/* Additional Metrics */}
-            {metrics && (
+            {overview && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="card">
-                  <div className="card-body">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                          <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">
-                            New Tenants (7d)
-                          </dt>
-                          <dd className="text-lg font-medium text-gray-900">
-                            {formatNumber(metrics.recent_activity?.new_tenants_7d)}
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 <div className="card">
                   <div className="card-body">
                     <div className="flex items-center">
@@ -210,55 +166,7 @@ const Dashboard = () => {
                             Churn Rate
                           </dt>
                           <dd className="text-lg font-medium text-gray-900">
-                            {metrics.health_metrics?.churn_rate_percent?.toFixed(1)}%
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div className="card-body">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                          <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">
-                            Seat Utilization
-                          </dt>
-                          <dd className="text-lg font-medium text-gray-900">
-                            {metrics.health_metrics?.avg_seat_utilization_percent?.toFixed(1)}%
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div className="card-body">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                          <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt className="text-sm font-medium text-gray-500 truncate">
-                            Expiring Soon
-                          </dt>
-                          <dd className="text-lg font-medium text-gray-900">
-                            {formatNumber(metrics.recent_activity?.expiring_memberships_30d)}
+                            {overview.churn_rate?.toFixed(1)}%
                           </dd>
                         </dl>
                       </div>
@@ -296,19 +204,6 @@ const Dashboard = () => {
                         </p>
                       </div>
                     )}
-
-                    <div className="mt-6">
-                      <h4 className="font-medium text-gray-900 mb-2">Available Features:</h4>
-                      <ul className="list-disc list-inside space-y-1 text-sm">
-                        <li>Tenant Management</li>
-                        <li>User Management</li>
-                        <li>Billing & Invoicing</li>
-                        <li>Support Tickets</li>
-                        <li>Analytics & Reporting</li>
-                        <li>Audit Logging</li>
-                        {String(user?.role) === 'SUPER_ADMIN' && <li>Impersonation</li>}
-                      </ul>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -319,34 +214,57 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="card">
               <div className="card-header">
-                <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
+                <h3 className="text-lg font-medium text-gray-900">Top Tenants</h3>
               </div>
               <div className="card-body">
-                <div className="text-center py-6 text-gray-500">
-                  <p>Activity data will be loaded here</p>
-                </div>
+                {data?.top_tenants?.length ? (
+                  <ul className="divide-y divide-gray-200">
+                    {data.top_tenants.map((tenant) => (
+                      <li key={tenant.id} className="py-4 flex justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{tenant.name}</p>
+                          <p className="text-xs text-gray-500">{tenant.users} Users</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-gray-900">{formatCurrency(tenant.revenue)}</p>
+                          <p className="text-xs text-green-600">+{tenant.growth}%</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-center py-6 text-gray-500">
+                    <p>No data available</p>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="card">
               <div className="card-header">
-                <h3 className="text-lg font-medium text-gray-900">System Status</h3>
+                <h3 className="text-lg font-medium text-gray-900">Revenue Trend</h3>
               </div>
               <div className="card-body">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">API Status</span>
-                    <span className="badge-success">Healthy</span>
+                {data?.revenue_trend?.length ? (
+                  <div className="space-y-4">
+                    {data.revenue_trend.map((item, idx) => (
+                      <div key={idx} className="flex items-center">
+                        <span className="w-12 text-sm text-gray-500">{item.month}</span>
+                        <div className="flex-1 mx-4 bg-gray-100 rounded-full h-2">
+                          <div
+                            className="bg-primary-600 h-2 rounded-full"
+                            style={{ width: `${Math.min((item.revenue || 0) / 50000 * 100, 100)}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">{formatCurrency(item.revenue)}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Database</span>
-                    <span className="badge-success">Connected</span>
+                ) : (
+                  <div className="text-center py-6 text-gray-500">
+                    <p>No data available</p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Last Backup</span>
-                    <span className="text-sm text-gray-900">2 hours ago</span>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

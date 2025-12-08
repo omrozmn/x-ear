@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
+from utils.admin_permissions import require_admin_permission, AdminPermissions
 from models.base import db
 from models.patient import Patient
 from models.tenant import Tenant
@@ -11,6 +12,7 @@ admin_patients_bp = Blueprint('admin_patients', __name__, url_prefix='/api/admin
 
 @admin_patients_bp.route('', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.PATIENTS_READ)
 def get_all_patients():
     """Get list of ALL patients from ALL tenants"""
     try:

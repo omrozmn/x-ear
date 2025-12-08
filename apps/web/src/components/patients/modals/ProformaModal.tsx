@@ -284,7 +284,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
 
       // Prepare data for parent component
       const finalProformaData: ProformaData = {
-        patientId: patient.id || patient.tcNumber, // Use id if available, fallback to tcNumber
+        patientId: patient.id || patient.tcNumber || '', // Use id if available, fallback to tcNumber
         proformaNumber: result.data.proforma_number,
         validUntil: validUntil,
         items: items,

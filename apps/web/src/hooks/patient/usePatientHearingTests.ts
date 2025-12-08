@@ -30,7 +30,7 @@ export function usePatientHearingTests(patientId?: string) {
 
     try {
       const result = await apiService.getHearingTests(id);
-      setHearingTests(result?.data || []);
+      setHearingTests((result?.data || []) as PatientHearingTest[]);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
       setHearingTests([]);

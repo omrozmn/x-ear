@@ -377,14 +377,14 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             <div className="mt-3">
               <ProductSearchInput
                 className="w-full"
-                selectedProduct={selectedInventory}
-                onSelectProduct={(p) => { setSelectedInventory(p); }}
+                selectedProduct={selectedInventory as any}
+                onSelectProduct={(p) => { setSelectedInventory(p as InventoryItem | null); }}
                 showReplaceButton={true}
-                onReplaceClick={async (item) => {
+                onReplaceClick={async (item: any) => {
                   try {
                     setIsSubmitting(true);
                     setError(null);
-                    await onReplace(device.id, reason, notes, item.id, item ? { id: item.id, brand: item.brand, model: item.model, supplier: item.supplier, category: item.category } : undefined);
+                    await onReplace(device.id, reason, notes, item.id, item ? { id: item.id, brand: item.brand, model: item.model, supplier: item.supplier ?? null, category: item.category } : undefined);
                     showSuccess('Cihaz değişimi kaydedildi');
                     await refreshReplacements();
                   } catch (err: any) {

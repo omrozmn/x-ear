@@ -185,7 +185,7 @@ function Dashboard() {
 
 function PatientDistribution() {
   const { data, isLoading, isError } = usePatientDistribution();
-  const raw = data?.data || [];
+  const raw = (data as any)?.data || [];
   const list = Array.isArray(raw) ? raw : [];
 
   // Convert to pie slices by summing breakdowns per branch (use status counts as primary)

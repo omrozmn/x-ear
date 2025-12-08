@@ -21,7 +21,7 @@ const AdminScanQueuePage: React.FC = () => {
     );
     const retryMutation = useRetryScan();
 
-    const queueItems = queueData?.data || [];
+    const queueItems = (queueData as any)?.data || [];
 
     const handleRetry = async (id: string) => {
         try {
@@ -108,7 +108,7 @@ const AdminScanQueuePage: React.FC = () => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`text-xs font-medium ${item.priority === 'high' ? 'text-red-600' :
-                                                item.priority === 'low' ? 'text-gray-500' : 'text-blue-600'
+                                            item.priority === 'low' ? 'text-gray-500' : 'text-blue-600'
                                             }`}>
                                             {item.priority.toUpperCase()}
                                         </span>

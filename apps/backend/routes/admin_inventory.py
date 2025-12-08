@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
+from utils.admin_permissions import require_admin_permission, AdminPermissions
 from models.base import db
 from models.device import Device
 from models.tenant import Tenant
@@ -12,6 +13,7 @@ admin_inventory_bp = Blueprint('admin_inventory', __name__, url_prefix='/api/adm
 
 @admin_inventory_bp.route('', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.INVENTORY_READ)
 def get_all_inventory():
     """Get list of ALL devices/inventory from ALL tenants"""
     try:

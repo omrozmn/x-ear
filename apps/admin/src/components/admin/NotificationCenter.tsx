@@ -18,14 +18,14 @@ export function NotificationCenter() {
 
     const handleMarkRead = async (id: string) => {
         try {
-            await markReadMutation.mutateAsync({ notificationId: id });
+            await markReadMutation.mutateAsync({ id });
             refetch();
         } catch (error) {
             console.error(error);
         }
     };
 
-    const unreadCount = notificationsData?.data?.filter((n: any) => !n.read).length || 0;
+    const unreadCount = notificationsData?.data?.notifications?.filter((n: any) => !n.read).length || 0;
 
     return (
         <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -50,9 +50,9 @@ export function NotificationCenter() {
                         )}
                     </div>
                     <div className="max-h-[400px] overflow-y-auto">
-                        {notificationsData?.data && notificationsData.data.length > 0 ? (
+                        {notificationsData?.data?.notifications && notificationsData.data.notifications.length > 0 ? (
                             <div className="divide-y">
-                                {notificationsData.data.map((notif: any) => (
+                                {notificationsData.data.notifications.map((notif: any) => (
                                     <div key={notif.id} className={`p-4 hover:bg-gray-50 transition-colors ${!notif.read ? 'bg-indigo-50/50' : ''}`}>
                                         <div className="flex justify-between items-start mb-1">
                                             <h4 className={`text-sm ${!notif.read ? 'font-bold text-gray-900' : 'font-medium text-gray-700'}`}>

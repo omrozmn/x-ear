@@ -1,7 +1,26 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { Patient } from '../../api/generated/schemas';
+import type { Patient } from '../../types/patient';
 import { PatientApiService } from '../../services/patient/patient-api.service';
 import { PatientStorageService } from '../../services/patient/patient-storage.service';
+
+// Helper to convert LegacyPatient or API response to Patient type
+function toPatient(data: any): Patient | null {
+  if (!data) return null;
+  return {
+    id: data.id || '',
+    firstName: data.firstName || data.first_name || (data.name ? data.name.split(' ')[0] : ''),
+    lastName: data.lastName || data.last_name || (data.name ? data.name.split(' ').slice(1).join(' ') : ''),
+    tcNumber: data.tcNumber || data.tc_number || '',
+    phone: data.phone || '',
+    email: data.email,
+    birthDate: data.birthDate || data.birth_date,
+    status: data.status,
+    segment: data.segment,
+    createdAt: data.createdAt || data.created_at,
+    updatedAt: data.updatedAt || data.updated_at,
+    ...data, // Include any additional fields
+  } as Patient;
+}
 
 /**
  * Simplified usePatient hook for individual patient management
@@ -26,12 +45,12 @@ export function usePatient(patientId?: string) {
       // Try API first
       const result = await apiService.fetchPatient(id);
       if (result) {
-        // API service returns Patient directly
-        setPatient(result);
+        // Convert API result to Patient type
+        setPatient(toPatient(result));
       } else {
         // Fallback to local storage
         const localPatient = await storageService.getPatientById(id);
-        setPatient(localPatient);
+        setPatient(toPatient(localPatient));
       }
     } catch (err) {
   setError(err instanceof Error ? err : new Error(String(err)));
@@ -39,7 +58,7 @@ export function usePatient(patientId?: string) {
       // Try local storage as fallback
       try {
         const localPatient = await storageService.getPatientById(id);
-        setPatient(localPatient);
+        setPatient(toPatient(localPatient));
       } catch (localErr) {
         console.error('Failed to load from local storage:', localErr);
       }
@@ -58,8 +77,9 @@ export function usePatient(patientId?: string) {
     try {
       const result = await apiService.updatePatient(patient.id, updates);
       if (result) {
-        setPatient(result);
-        return result;
+        const updatedPatient = toPatient(result);
+        setPatient(updatedPatient);
+        return updatedPatient;
       }
       return null;
     } catch (err) {

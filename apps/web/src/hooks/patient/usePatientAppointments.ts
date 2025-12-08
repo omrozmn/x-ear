@@ -33,7 +33,7 @@ export function usePatientAppointments(patientId?: string) {
 
     try {
       const result = await apiService.getAppointments(id);
-      setAppointments(result?.data || []);
+      setAppointments((result?.data || []) as PatientAppointment[]);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
       setAppointments([]);

@@ -115,7 +115,7 @@ export function SupplierDetailPage() {
               <Edit className="h-4 w-4 mr-2" />
               Düzenle
             </Button>
-            <Button variant="default" onClick={() => navigate({ to: '/purchases', search: `?supplierId=${encodeURIComponent(supplierId)}` })}>
+            <Button variant="default" onClick={() => navigate({ to: '/suppliers/$supplierId', params: { supplierId }, search: {} as any })}>
               Alışlarda Görüntüle
             </Button>
             <Button variant="danger" onClick={handleDelete}>
@@ -303,7 +303,7 @@ export function SupplierDetailPage() {
                       </div>
                     ) : invoicesError ? (
                       <div className="text-red-500 text-center py-8">Siparişler yüklenirken hata oluştu.</div>
-                    ) : invoicesData?.data?.invoices?.length ? (
+                    ) : (invoicesData as any)?.data?.invoices?.length ? (
                       <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead>
@@ -316,7 +316,7 @@ export function SupplierDetailPage() {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
-                            {invoicesData.data.invoices.map((inv: any) => (
+                            {(invoicesData as any).data.invoices.map((inv: any) => (
                               <tr key={inv.id}>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{inv.invoiceNumber || '-'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{inv.invoiceDate ? new Date(inv.invoiceDate).toLocaleDateString() : '-'}</td>
@@ -330,7 +330,7 @@ export function SupplierDetailPage() {
                         <div className="flex justify-end items-center mt-4 gap-2">
                           <Button variant="outline" onClick={() => setInvoicePage(Math.max(1, invoicePage - 1))} disabled={invoicePage <= 1}>Önceki</Button>
                           <span className="text-sm text-gray-600">Sayfa {invoicePage}</span>
-                          <Button variant="outline" onClick={() => setInvoicePage(invoicePage + 1)} disabled={invoicesData?.data?.pagination && invoicePage >= (invoicesData.data.pagination.totalPages || 1)}>Sonraki</Button>
+                          <Button variant="outline" onClick={() => setInvoicePage(invoicePage + 1)} disabled={(invoicesData as any)?.data?.pagination && invoicePage >= ((invoicesData as any).data.pagination.totalPages || 1)}>Sonraki</Button>
                         </div>
                       </div>
                     ) : (

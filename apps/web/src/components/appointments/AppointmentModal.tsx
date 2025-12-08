@@ -12,6 +12,7 @@ interface AppointmentModalProps {
   patientId?: string;
   initialDate?: string;
   initialTime?: string;
+  quickAppointmentData?: { date: string; time: string } | null;
 }
 
 export const AppointmentModal: React.FC<AppointmentModalProps> = ({

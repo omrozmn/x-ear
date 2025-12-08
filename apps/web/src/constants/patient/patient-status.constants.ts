@@ -8,7 +8,7 @@ import { PatientStatus } from '../../api/generated/schemas';
 import type { 
   PatientSegment, 
   PatientLabel 
-} from '../../types/patient';
+} from '../../types/patient/patient-base.types';
 
 export const PATIENT_STATUS: Record<PatientStatus, string> = {
   ACTIVE: 'Aktif',

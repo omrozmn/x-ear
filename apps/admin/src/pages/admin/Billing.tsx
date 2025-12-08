@@ -13,27 +13,40 @@ import {
 import * as Dialog from '@radix-ui/react-dialog';
 import Pagination from '@/components/ui/Pagination';
 import toast from 'react-hot-toast';
-
-
 import {
   useGetAdminInvoices,
-  useGetAdminInvoice,
-  useRecordAdminInvoicePayment,
-  useCreateAdminInvoice,
-  getAdminInvoicePdf,
+  useGetAdminInvoicesId,
+  usePostAdminInvoicesIdPayment,
+  usePostAdminInvoices,
+} from '@/lib/api/billing/billing';
+import {
   useGetAdminPlans,
+  usePostAdminPlans,
+  usePutAdminPlansId,
+  useDeleteAdminPlansId,
+} from '@/lib/api/plans/plans';
+import {
   useGetAdminTenants,
+} from '@/lib/api/tenants/tenants';
+import {
   Invoice,
   Plan,
-  useCreatePlan,
-  useUpdatePlan,
-  useDeletePlan,
   PlanInput
-} from '@/lib/api-client';
+} from '@/lib/api/index.schemas';
+import { adminApi } from '@/lib/apiMutator';
+
+const getAdminInvoicePdf = (id: string) => {
+  return adminApi({
+    url: `/admin/invoices/${id}/pdf`,
+    method: 'GET',
+    responseType: 'blob'
+  });
+};
 
 // Helper interfaces for component state if not fully covered by generated types
-interface CreateInvoiceData extends Partial<Invoice> {
+interface CreateInvoiceData {
   tenant_id: string;
+  amount: number;
 }
 
 const Billing: React.FC = () => {
@@ -88,21 +101,21 @@ const Billing: React.FC = () => {
   const tenants = tenantsData?.data?.tenants || [];
 
   // Fetch invoice details
-  const { data: invoiceDetailsData } = useGetAdminInvoice(selectedInvoiceId!, {
+  const { data: invoiceDetailsData } = useGetAdminInvoicesId(selectedInvoiceId!, {
     query: { enabled: !!selectedInvoiceId && showInvoiceModal }
   });
   const selectedInvoice = invoiceDetailsData?.data?.invoice;
 
   // Payment record mutation
-  const { mutateAsync: recordPayment } = useRecordAdminInvoicePayment();
+  const { mutateAsync: recordPayment } = usePostAdminInvoicesIdPayment();
 
   // Create invoice mutation
-  const { mutateAsync: createInvoice, isPending: isCreatingInvoice } = useCreateAdminInvoice();
+  const { mutateAsync: createInvoice, isPending: isCreatingInvoice } = usePostAdminInvoices();
 
   // Plan mutations
-  const { mutateAsync: createPlan } = useCreatePlan();
-  const { mutateAsync: updatePlan } = useUpdatePlan();
-  const { mutateAsync: deletePlan } = useDeletePlan();
+  const { mutateAsync: createPlan } = usePostAdminPlans();
+  const { mutateAsync: updatePlan } = usePutAdminPlansId();
+  const { mutateAsync: deletePlan } = useDeleteAdminPlansId();
 
   const handlePaymentRecordClick = (invoiceId: string, totalAmount: number) => {
     setPaymentInvoiceId(invoiceId);
@@ -290,19 +303,17 @@ const Billing: React.FC = () => {
   const getStatusBadge = (status: string | undefined) => {
     if (!status) return null;
     const statusClasses: Record<string, string> = {
-      draft: 'bg-gray-100 text-gray-800',
-      open: 'bg-blue-100 text-blue-800',
+      active: 'bg-blue-100 text-blue-800',
       paid: 'bg-green-100 text-green-800',
-      void: 'bg-red-100 text-red-800',
-      overdue: 'bg-orange-100 text-orange-800'
+      cancelled: 'bg-red-100 text-red-800',
+      refunded: 'bg-orange-100 text-orange-800'
     };
 
     const statusLabels: Record<string, string> = {
-      draft: 'Taslak',
-      open: 'Açık',
+      active: 'Aktif',
       paid: 'Ödendi',
-      void: 'İptal',
-      overdue: 'Gecikmiş'
+      cancelled: 'İptal',
+      refunded: 'İade'
     };
 
     return (
@@ -439,7 +450,7 @@ const Billing: React.FC = () => {
                           Gecikmiş
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {invoices.filter(inv => inv.status === 'overdue').length || 0}
+                          -
                         </dd>
                       </dl>
                     </div>
@@ -461,7 +472,7 @@ const Billing: React.FC = () => {
                           Toplam Tutar
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {formatCurrency(invoices.reduce((sum, inv) => sum + (inv.total || 0), 0) || 0)}
+                          {formatCurrency(invoices.reduce((sum, inv) => sum + (inv.devicePrice || 0), 0) || 0)}
                         </dd>
                       </dl>
                     </div>
@@ -494,11 +505,10 @@ const Billing: React.FC = () => {
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 >
                   <option value="all">Tüm Durumlar</option>
-                  <option value="draft">Taslak</option>
-                  <option value="open">Açık</option>
+                  <option value="active">Aktif</option>
                   <option value="paid">Ödendi</option>
-                  <option value="overdue">Gecikmiş</option>
-                  <option value="void">İptal</option>
+                  <option value="cancelled">İptal</option>
+                  <option value="refunded">İade</option>
                 </select>
 
                 {/* Results count */}
@@ -562,17 +572,17 @@ const Billing: React.FC = () => {
                               <DocumentTextIcon className="h-5 w-5 text-gray-400 mr-2" />
                               <div>
                                 <div className="text-sm font-medium text-gray-900">
-                                  {invoice.invoice_number}
+                                  {invoice.invoiceNumber}
                                 </div>
                                 <div className="text-sm text-gray-500">
-                                  {invoice.issue_date ? formatDate(invoice.issue_date) : '-'}
+                                  {invoice.createdAt ? formatDate(invoice.createdAt) : '-'}
                                 </div>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
-                              {invoice.tenant_name}
+                              {invoice.tenantName}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -580,36 +590,36 @@ const Billing: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
-                              {formatCurrency(invoice.total || 0, invoice.currency)}
+                              {formatCurrency(invoice.devicePrice || 0)}
                             </div>
-                            {(invoice.paid_amount || 0) > 0 && (
+                            {invoice.status === 'paid' && (
                               <div className="text-sm text-green-600">
-                                Ödenen: {formatCurrency(invoice.paid_amount || 0, invoice.currency)}
+                                Ödendi
                               </div>
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {invoice.due_date ? formatDate(invoice.due_date) : '-'}
+                            {invoice.createdAt ? formatDate(invoice.createdAt) : '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex justify-end space-x-2">
                               <button
-                                onClick={() => handleViewInvoice(invoice.id!)}
+                                onClick={() => handleViewInvoice(invoice.id!.toString())}
                                 className="text-primary-600 hover:text-primary-900"
                                 title="Detayları Görüntüle"
                               >
                                 <EyeIcon className="h-4 w-4" />
                               </button>
                               <button
-                                onClick={() => handleDownloadPDF(invoice.id!)}
+                                onClick={() => handleDownloadPDF(invoice.id!.toString())}
                                 className="text-gray-600 hover:text-gray-900"
                                 title="PDF İndir"
                               >
                                 <ArrowDownTrayIcon className="h-4 w-4" />
                               </button>
-                              {invoice.status === 'open' && (
+                              {invoice.status === 'active' && (
                                 <button
-                                  onClick={() => handlePaymentRecordClick(invoice.id!, (invoice.total || 0) - (invoice.paid_amount || 0))}
+                                  onClick={() => handlePaymentRecordClick(invoice.id!.toString(), invoice.devicePrice || 0)}
                                   className="text-green-600 hover:text-green-900 text-xs px-2 py-1 border border-green-300 rounded"
                                 >
                                   Ödeme Kaydet
@@ -698,7 +708,7 @@ const Billing: React.FC = () => {
             <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900">
-                  Fatura Detayları - {selectedInvoice.invoice_number}
+                  Fatura Detayları - {selectedInvoice.invoiceNumber}
                 </h3>
                 <button
                   onClick={() => setShowInvoiceModal(false)}
@@ -716,19 +726,15 @@ const Billing: React.FC = () => {
                     <dl className="space-y-1 text-sm">
                       <div className="flex justify-between">
                         <dt className="text-gray-500">Fatura No:</dt>
-                        <dd className="text-gray-900">{selectedInvoice.invoice_number}</dd>
+                        <dd className="text-gray-900">{selectedInvoice.invoiceNumber}</dd>
                       </div>
                       <div className="flex justify-between">
                         <dt className="text-gray-500">Durum:</dt>
                         <dd>{getStatusBadge(selectedInvoice.status)}</dd>
                       </div>
                       <div className="flex justify-between">
-                        <dt className="text-gray-500">Düzenleme:</dt>
-                        <dd className="text-gray-900">{selectedInvoice.issue_date ? formatDate(selectedInvoice.issue_date) : '-'}</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-gray-500">Vade:</dt>
-                        <dd className="text-gray-900">{selectedInvoice.due_date ? formatDate(selectedInvoice.due_date) : '-'}</dd>
+                        <dt className="text-gray-500">Oluşturulma:</dt>
+                        <dd className="text-gray-900">{selectedInvoice.createdAt ? formatDate(selectedInvoice.createdAt) : '-'}</dd>
                       </div>
                     </dl>
                   </div>
@@ -737,86 +743,62 @@ const Billing: React.FC = () => {
                     <dl className="space-y-1 text-sm">
                       <div className="flex justify-between">
                         <dt className="text-gray-500">Kiracı:</dt>
-                        <dd className="text-gray-900">{selectedInvoice.tenant_name}</dd>
+                        <dd className="text-gray-900">{selectedInvoice.tenantName}</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Hasta:</dt>
+                        <dd className="text-gray-900">{selectedInvoice.patientName || '-'}</dd>
                       </div>
                     </dl>
                   </div>
                 </div>
 
-                {/* Invoice Items */}
-                {selectedInvoice.items && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">Fatura Kalemleri</h4>
-                    <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                      <table className="min-w-full divide-y divide-gray-300">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Açıklama</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Miktar</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Birim Fiyat</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Toplam</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200 bg-white">
-                          {selectedInvoice.items.map((item) => (
-                            <tr key={item.id}>
-                              <td className="px-6 py-4 text-sm text-gray-900">{item.description}</td>
-                              <td className="px-6 py-4 text-sm text-gray-900">{item.quantity}</td>
-                              <td className="px-6 py-4 text-sm text-gray-900">
-                                {formatCurrency(item.unit_price || 0, selectedInvoice.currency)}
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-900">
-                                {formatCurrency(item.total || 0, selectedInvoice.currency)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                {/* Invoice Items (Single Device) */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Fatura Kalemleri</h4>
+                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-300">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cihaz</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tutar</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 bg-white">
+                        <tr>
+                          <td className="px-6 py-4 text-sm text-gray-900">{selectedInvoice.deviceName || 'Cihaz Satışı'}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900">
+                            {formatCurrency(selectedInvoice.devicePrice || 0)}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                )}
+                </div>
 
                 {/* Invoice Totals */}
                 <div className="border-t pt-4">
                   <dl className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Ara Toplam:</dt>
-                      <dd className="text-gray-900">{formatCurrency(selectedInvoice.subtotal || 0, selectedInvoice.currency)}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Vergi:</dt>
-                      <dd className="text-gray-900">{formatCurrency(selectedInvoice.tax_total || 0, selectedInvoice.currency)}</dd>
-                    </div>
                     <div className="flex justify-between border-t pt-2 font-medium">
                       <dt className="text-gray-900">Toplam:</dt>
-                      <dd className="text-gray-900">{formatCurrency(selectedInvoice.total || 0, selectedInvoice.currency)}</dd>
+                      <dd className="text-gray-900">{formatCurrency(selectedInvoice.devicePrice || 0)}</dd>
                     </div>
-                    {(selectedInvoice.paid_amount || 0) > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <dt>Ödenen:</dt>
-                        <dd>{formatCurrency(selectedInvoice.paid_amount || 0, selectedInvoice.currency)}</dd>
-                      </div>
-                    )}
                   </dl>
                 </div>
 
                 {/* Actions */}
                 <div className="flex justify-end space-x-3 pt-4 border-t">
                   <button
-                    onClick={() => handleDownloadPDF(selectedInvoice.id!)}
+                    onClick={() => handleDownloadPDF(selectedInvoice.id!.toString())}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                   >
                     <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                     PDF İndir
                   </button>
-                  {selectedInvoice.status === 'open' && (
+                  {selectedInvoice.status === 'active' && (
                     <button
                       onClick={() => {
-                        handlePaymentRecordClick(selectedInvoice.id!, (selectedInvoice.total || 0) - (selectedInvoice.paid_amount || 0));
-                        // Don't close invoice modal, let them stack or handle appropriately. 
-                        // Actually, maybe better to close invoice modal or keep it? 
-                        // Let's keep it open, the payment modal will be on top (z-50 vs z-50 might be tricky, let's ensure payment modal has higher z-index or is nested properly)
-                        // Radix Dialog Portal handles z-index well usually.
+                        handlePaymentRecordClick(selectedInvoice.id!.toString(), selectedInvoice.devicePrice || 0);
                       }}
                       className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
                     >
@@ -1109,37 +1091,12 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
 }) => {
   const [formData, setFormData] = useState<CreateInvoiceData>({
     tenant_id: '',
-    due_date: '',
-    currency: 'TRY',
-    items: [{ description: '', quantity: 1, unit_price: 0 }]
+    amount: 0
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
-  };
-
-  const addItem = () => {
-    setFormData(prev => ({
-      ...prev,
-      items: [...(prev.items || []), { description: '', quantity: 1, unit_price: 0 }]
-    }));
-  };
-
-  const removeItem = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      items: (prev.items || []).filter((_, i) => i !== index)
-    }));
-  };
-
-  const updateItem = (index: number, field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      items: (prev.items || []).map((item, i) =>
-        i === index ? { ...item, [field]: value } : item
-      )
-    }));
   };
 
   if (!isOpen) return null;
@@ -1155,7 +1112,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Kiracı</label>
               <select
@@ -1173,90 +1130,16 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Vade Tarihi</label>
+              <label className="block text-sm font-medium text-gray-700">Tutar (TRY)</label>
               <input
-                type="date"
-                value={formData.due_date}
-                onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
+                type="number"
+                value={formData.amount}
+                onChange={(e) => setFormData(prev => ({ ...prev, amount: Number(e.target.value) }))}
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
+                min="0"
+                step="0.01"
               />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Para Birimi</label>
-            <select
-              value={formData.currency}
-              onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-            >
-              <option value="TRY">TRY</option>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-            </select>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700">Fatura Kalemleri</label>
-              <button
-                type="button"
-                onClick={addItem}
-                className="text-sm text-primary-600 hover:text-primary-500"
-              >
-                + Kalem Ekle
-              </button>
-            </div>
-            <div className="space-y-3">
-              {formData.items?.map((item, index) => (
-                <div key={index} className="grid grid-cols-12 gap-2 items-end">
-                  <div className="col-span-5">
-                    <input
-                      type="text"
-                      placeholder="Açıklama"
-                      value={item.description}
-                      onChange={(e) => updateItem(index, 'description', e.target.value)}
-                      className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                      required
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <input
-                      type="number"
-                      placeholder="Miktar"
-                      value={item.quantity}
-                      onChange={(e) => updateItem(index, 'quantity', Number(e.target.value))}
-                      className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                      min="1"
-                      required
-                    />
-                  </div>
-                  <div className="col-span-3">
-                    <input
-                      type="number"
-                      placeholder="Birim Fiyat"
-                      value={item.unit_price}
-                      onChange={(e) => updateItem(index, 'unit_price', Number(e.target.value))}
-                      className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                      min="0"
-                      step="0.01"
-                      required
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    {(formData.items?.length || 0) > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeItem(index)}
-                        className="w-full px-3 py-2 text-sm text-red-600 hover:text-red-500"
-                      >
-                        Sil
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
 

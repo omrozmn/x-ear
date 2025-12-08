@@ -1,6 +1,6 @@
 import { Button, Input } from '@x-ear/ui-web';
 import { useState } from 'react';
-import { Eye, EyeOff, LogIn, Phone, Lock } from 'lucide-react';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 
 export function LoginForm() {
@@ -8,10 +8,10 @@ export function LoginForm() {
   const [password, setPassword] = useState('AdminPass123!');
   const [showPassword, setShowPassword] = useState(false);
 
-  const [otpCode, setOtpCode] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [otpCode, _setOtpCode] = useState('');
+  const [phoneNumber, _setPhoneNumber] = useState('');
 
-  const { login, verifyOtp, sendOtp, isLoading, error, requiresOtp, requiresPhone, maskedPhone } = useAuthStore();
+  const { login, verifyOtp, sendOtp, isLoading, error, requiresOtp: _requiresOtp, requiresPhone: _requiresPhone, maskedPhone: _maskedPhone } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +34,7 @@ export function LoginForm() {
     }
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
+  const _handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otpCode.trim()) return;
 
@@ -48,7 +48,7 @@ export function LoginForm() {
     }
   };
 
-  const handleSendOtp = async () => {
+  const _handleSendOtp = async () => {
     if (!phoneNumber.trim()) return;
     try {
       await sendOtp(phoneNumber);

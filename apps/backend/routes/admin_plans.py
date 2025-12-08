@@ -6,6 +6,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 from models.base import db
 from models.plan import Plan, PlanType, BillingInterval
+from utils.admin_permissions import require_admin_permission, AdminPermissions
 import logging
 import uuid
 
@@ -15,6 +16,7 @@ admin_plans_bp = Blueprint('admin_plans', __name__, url_prefix='/api/admin/plans
 
 @admin_plans_bp.route('', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.PLANS_READ)
 def list_plans():
     """List all plans with optional filtering"""
     try:
@@ -60,6 +62,7 @@ def list_plans():
 
 @admin_plans_bp.route('', methods=['POST'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.PLANS_MANAGE)
 def create_plan():
     """Create a new plan"""
     try:
@@ -106,6 +109,7 @@ def create_plan():
 
 @admin_plans_bp.route('/<plan_id>', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.PLANS_READ)
 def get_plan(plan_id):
     """Get plan details"""
     try:
@@ -130,6 +134,7 @@ def get_plan(plan_id):
 
 @admin_plans_bp.route('/<plan_id>', methods=['PUT'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.PLANS_MANAGE)
 def update_plan(plan_id):
     """Update plan"""
     try:
@@ -184,6 +189,7 @@ def update_plan(plan_id):
 
 @admin_plans_bp.route('/<plan_id>', methods=['DELETE'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.PLANS_MANAGE)
 def delete_plan(plan_id):
     """Delete plan (soft delete by setting is_active=False)"""
     try:

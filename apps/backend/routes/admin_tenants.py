@@ -6,6 +6,7 @@ from flask_jwt_extended import jwt_required
 from datetime import datetime
 from models.base import db
 from models.tenant import Tenant, TenantStatus
+from utils.admin_permissions import require_admin_permission, AdminPermissions
 import logging
 import uuid
 
@@ -15,6 +16,7 @@ admin_tenants_bp = Blueprint('admin_tenants', __name__, url_prefix='/api/admin/t
 
 @admin_tenants_bp.route('', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TENANTS_READ)
 def list_tenants():
     """List all tenants"""
     try:
@@ -84,6 +86,7 @@ def list_tenants():
 
 @admin_tenants_bp.route('', methods=['POST'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
 def create_tenant():
     """Create tenant"""
     try:
@@ -128,6 +131,7 @@ def create_tenant():
 
 @admin_tenants_bp.route('/<tenant_id>', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TENANTS_READ)
 def get_tenant(tenant_id):
     """Get tenant details"""
     try:
@@ -152,6 +156,7 @@ def get_tenant(tenant_id):
 
 @admin_tenants_bp.route('/<tenant_id>', methods=['PUT'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
 def update_tenant(tenant_id):
     """Update tenant"""
     try:
@@ -205,6 +210,7 @@ def update_tenant(tenant_id):
 
 @admin_tenants_bp.route('/<tenant_id>', methods=['DELETE'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
 def delete_tenant(tenant_id):
     """Delete tenant (soft delete)"""
     try:
@@ -233,6 +239,7 @@ def delete_tenant(tenant_id):
 
 @admin_tenants_bp.route('/<tenant_id>/users', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.USERS_READ)
 def get_tenant_users(tenant_id):
     """Get users for a specific tenant"""
     try:
@@ -272,6 +279,7 @@ def get_tenant_users(tenant_id):
         }), 500
 @admin_tenants_bp.route('/<tenant_id>/subscribe', methods=['POST'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
 def subscribe_tenant(tenant_id):
     """Subscribe tenant to a plan (Admin override)"""
     try:
@@ -363,6 +371,7 @@ def subscribe_tenant(tenant_id):
 
 @admin_tenants_bp.route('/<tenant_id>/users', methods=['POST'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.USERS_MANAGE)
 def create_tenant_user(tenant_id):
     """Create a user for a specific tenant"""
     try:
@@ -428,6 +437,7 @@ def create_tenant_user(tenant_id):
 
 @admin_tenants_bp.route('/<tenant_id>/users/<user_id>', methods=['PUT'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.USERS_MANAGE)
 def update_tenant_user(tenant_id, user_id):
     """Update a tenant user"""
     try:
@@ -507,6 +517,7 @@ def update_tenant_user(tenant_id, user_id):
 
 @admin_tenants_bp.route('/<tenant_id>/addons', methods=['POST'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
 def add_tenant_addon(tenant_id):
     """Add addon to tenant (Admin override)"""
     try:
@@ -572,6 +583,7 @@ def add_tenant_addon(tenant_id):
 
 @admin_tenants_bp.route('/<tenant_id>/status', methods=['PUT'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
 def update_tenant_status(tenant_id):
     """Update tenant status"""
     try:

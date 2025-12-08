@@ -779,7 +779,7 @@ export function ProductLinesSection({
                   <div className="relative">
                     <input
                       type="number"
-                      value={line.unitPrice === '' || line.unitPrice === undefined ? '' : String(line.unitPrice)}
+                      value={line.unitPrice === undefined || line.unitPrice === null ? '' : String(line.unitPrice)}
                       onChange={(e) => handleLineChange(index, 'unitPrice', e.target.value === '' ? '' : parseFloat(e.target.value))}
                       min="0"
                       step="0.01"
@@ -800,7 +800,7 @@ export function ProductLinesSection({
                   <div className="flex gap-1">
                     <input
                       type="number"
-                      value={line.discount === '' || line.discount === undefined ? '' : String(line.discount)}
+                      value={line.discount === undefined || line.discount === null ? '' : String(line.discount)}
                       onChange={(e) => handleLineChange(index, 'discount', e.target.value === '' ? '' : parseFloat(e.target.value))}
                       min="0"
                       step="0.01"

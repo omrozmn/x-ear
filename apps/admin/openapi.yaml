@@ -271,24 +271,261 @@ paths:
         '200':
           description: Success
 
-  /admin/invoices/{id}/pdf:
+  /admin/suppliers:
     get:
-      summary: Download Invoice PDF
-      tags: [Billing]
+      summary: List Suppliers
+      tags: [Suppliers]
       parameters:
-        - name: id
-          in: path
-          required: true
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
           schema:
             type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [active, inactive]
       responses:
         '200':
           description: Success
           content:
-            application/pdf:
+            application/json:
               schema:
-                type: string
-                format: binary
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      suppliers:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Supplier'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+    post:
+      summary: Create Supplier
+      tags: [Suppliers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      supplier:
+                        $ref: '#/components/schemas/Supplier'
+
+  /admin/suppliers/{id}:
+    get:
+      summary: Get Supplier Details
+      tags: [Suppliers]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      supplier:
+                        $ref: '#/components/schemas/Supplier'
+    put:
+      summary: Update Supplier
+      tags: [Suppliers]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierInput'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      supplier:
+                        $ref: '#/components/schemas/Supplier'
+    delete:
+      summary: Delete Supplier
+      tags: [Suppliers]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+
+  /admin/campaigns:
+    get:
+      summary: List Campaigns
+      tags: [Campaigns]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [active, inactive]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      campaigns:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Campaign'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+    post:
+      summary: Create Campaign
+      tags: [Campaigns]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampaignInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      campaign:
+                        $ref: '#/components/schemas/Campaign'
+
+  /admin/campaigns/{id}:
+    get:
+      summary: Get Campaign Details
+      tags: [Campaigns]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      campaign:
+                        $ref: '#/components/schemas/Campaign'
+    put:
+      summary: Update Campaign
+      tags: [Campaigns]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampaignInput'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      campaign:
+                        $ref: '#/components/schemas/Campaign'
+    delete:
+      summary: Delete Campaign
+      tags: [Campaigns]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
 
   /admin/plans:
     get:
@@ -1125,51 +1362,30 @@ components:
       type: object
       properties:
         id:
+          type: integer
+        invoiceNumber:
           type: string
-        tenant_id:
+        tenantId:
           type: string
-        tenant_name:
+        tenantName:
           type: string
-        invoice_number:
+        patientName:
           type: string
-        amount:
-          type: number
-        subtotal:
-          type: number
-        tax_total:
-          type: number
-        total:
-          type: number
-        paid_amount:
-          type: number
-        currency:
+        deviceName:
           type: string
+        devicePrice:
+          type: number
         status:
           type: string
-          enum: [paid, pending, overdue, cancelled, open]
-        due_date:
+          enum: [active, cancelled, refunded, paid]
+        createdAt:
           type: string
-        issue_date:
+        updatedAt:
           type: string
-        created_at:
+        hasGibPdf:
+          type: boolean
+        gibPdfLink:
           type: string
-        items:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: string
-              description:
-                type: string
-              quantity:
-                type: number
-              unit_price:
-                type: number
-              amount:
-                type: number
-              total:
-                type: number
 
     InvoiceInput:
       type: object
@@ -1377,6 +1593,18 @@ components:
         tenant_id:
           type: string
 
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
     DashboardMetrics:
       type: object
       properties:
@@ -1452,6 +1680,38 @@ components:
           type: number
         churn_growth:
           type: number
+        domain_metrics:
+          $ref: '#/components/schemas/DomainMetrics'
+
+    DomainMetrics:
+      type: object
+      properties:
+        sgk_submissions:
+          type: array
+          items:
+            type: object
+            properties:
+              month:
+                type: string
+              count:
+                type: integer
+              approved:
+                type: integer
+        device_fittings:
+          type: array
+          items:
+            type: object
+            properties:
+              month:
+                type: string
+              count:
+                type: integer
+        appointment_conversion:
+          type: number
+        avg_fitting_time:
+          type: number
+        total_patients_fitted:
+          type: integer
 
     RevenueTrend:
       type: object
@@ -1579,17 +1839,116 @@ components:
         paymentSecretKey:
           type: string
 
-    Pagination:
+
+
+    Supplier:
       type: object
       properties:
-        page:
+        id:
           type: integer
-        limit:
+        company_name:
+          type: string
+        contact_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        tax_id:
+          type: string
+        tax_office:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SupplierInput:
+      type: object
+      required:
+        - company_name
+      properties:
+        company_name:
+          type: string
+        contact_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        tax_id:
+          type: string
+        tax_office:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+
+    Campaign:
+      type: object
+      properties:
+        id:
           type: integer
-        total:
-          type: integer
-        totalPages:
-          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        discount_type:
+          type: string
+          enum: [PERCENTAGE, FIXED_AMOUNT]
+        discount_value:
+          type: number
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+        target_audience:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CampaignInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        discount_type:
+          type: string
+          enum: [PERCENTAGE, FIXED_AMOUNT]
+        discount_value:
+          type: number
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+        target_audience:
+          type: string
+
 
     AddOn:
       type: object

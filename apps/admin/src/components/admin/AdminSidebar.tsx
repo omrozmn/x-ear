@@ -20,7 +20,9 @@ import {
     Bell,
     Key,
     ShoppingBag,
-    Zap
+    Zap,
+    Truck,
+    Megaphone
 } from 'lucide-react'
 
 const navigation = [
@@ -31,6 +33,8 @@ const navigation = [
     { name: 'Hastalar', href: '/patients', icon: User },
     { name: 'Randevular', href: '/appointments', icon: Calendar },
     { name: 'Cihaz & Stok', href: '/inventory', icon: Box },
+    { name: 'Tedarikçiler', href: '/suppliers', icon: Truck },
+    { name: 'Kampanyalar', href: '/campaigns', icon: Megaphone },
     { name: 'Üretim Takibi', href: '/production', icon: Package },
     { name: 'Pazaryerleri', href: '/marketplaces', icon: ShoppingBag },
     { name: 'Bildirimler', href: '/notifications', icon: Bell },

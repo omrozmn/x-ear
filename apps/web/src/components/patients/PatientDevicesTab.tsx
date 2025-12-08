@@ -150,7 +150,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
 
     try {
       setLoading(true);
-      +      void updates;
+      void updates;
 
       // Note: This assumes there's an update method in the API
       // await devicesApi.devicesUpdateDevice(deviceId, updates);
@@ -486,10 +486,10 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
 
                       const rawSgk = dp.sgkSupport ?? dp.sgk_support ?? dp.sgkReduction ?? dp.sgk_reduction ?? dp.sgk_coverage_amount ?? null;
                       if (rawSgk !== null && rawSgk !== undefined) {
-                        console.log('[PatientDevicesTab] deviceId=', dp.id || dp.deviceId || dp.assignmentId, 'ear=', earVal, 'rawSgk=', rawSgkNum, 'qty=', qty, 'compareBase=', compareBase);
                         const rawSgkNum = Number(rawSgk);
-                        let perUnit = rawSgkNum;
                         const compareBase = Number(dp.salePrice ?? dp.sale_price ?? dp.listPrice ?? dp.list_price ?? dp.netPayable ?? dp.net_payable ?? 0);
+                        console.log('[PatientDevicesTab] deviceId=', dp.id || dp.deviceId || dp.assignmentId, 'ear=', earVal, 'rawSgk=', rawSgkNum, 'qty=', qty, 'compareBase=', compareBase);
+                        let perUnit = rawSgkNum;
                         if (qty > 1 && compareBase > 0 && rawSgkNum > compareBase * 1.1) {
                           perUnit = rawSgkNum / qty;
                         }

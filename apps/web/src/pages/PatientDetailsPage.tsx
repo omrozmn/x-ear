@@ -43,7 +43,7 @@ export const PatientDetailsPage: React.FC = () => {
   const { patient, isLoading, error, loadPatient } = usePatient(patientId);
   const refetch = () => patientId ? loadPatient(patientId) : Promise.resolve();
   const updatePatientMutation = useUpdatePatient();
-  const { devices } = usePatientDevices(patientId, (patient as any)?.devices);
+  const { devices } = usePatientDevices(patientId ?? '');
   const { sales } = usePatientSales(patientId);
   const { timeline } = usePatientTimeline(patientId);
   const { documents } = usePatientDocuments(patientId);
@@ -192,7 +192,7 @@ export const PatientDetailsPage: React.FC = () => {
               <CreditCard className="h-5 w-5 text-red-500" />
               <div>
                 <p className="text-sm text-gray-600">Durum</p>
-                <div className="mt-1">{getStatusBadge(patient.status)}</div>
+                <div className="mt-1">{getStatusBadge(patient.status ?? 'active')}</div>
               </div>
             </div>
           </div>

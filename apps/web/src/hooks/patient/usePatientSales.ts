@@ -94,7 +94,14 @@ export function usePatientSales(patientId?: string) {
 
     try {
       const result = await apiService.getSales(id);
-      setSales(result?.data || []);
+      // Map Sale[] to PatientSale[] with required fields
+      const mappedSales: PatientSale[] = (result?.data || []).map((sale: any) => ({
+        ...sale,
+        finalAmount: sale.finalAmount ?? sale.final_amount ?? sale.totalAmount ?? 0,
+        paidAmount: sale.paidAmount ?? sale.paid_amount ?? 0,
+        paymentStatus: sale.paymentStatus ?? sale.payment_status ?? 'pending',
+      }));
+      setSales(mappedSales);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
       setSales([]);

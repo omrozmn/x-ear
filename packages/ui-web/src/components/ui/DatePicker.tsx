@@ -23,6 +23,7 @@ interface DatePickerProps {
   showTime?: boolean;
   fullWidth?: boolean;
   className?: string;
+  required?: boolean;
 }
 
 const MONTHS = [

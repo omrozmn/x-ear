@@ -55,7 +55,7 @@ export function CashRecordDetailModal({
       if (record.patientName) {
         const [firstName, ...lastNameParts] = record.patientName.split(' ');
         setSelectedPatient({
-          id: record.patientId,
+          id: record.patientId ?? undefined,
           firstName: firstName || '',
           lastName: lastNameParts.join(' ') || '',
         });

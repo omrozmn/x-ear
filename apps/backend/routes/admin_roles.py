@@ -399,6 +399,7 @@ def update_admin_user_roles(user_id):
 
 @admin_roles_bp.route('/api/admin/my-permissions', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.ROLES_READ)
 def get_my_admin_permissions():
     """
     Mevcut admin kullanıcısının izinlerini döndürür.

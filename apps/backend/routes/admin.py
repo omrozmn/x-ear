@@ -6,6 +6,7 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 from datetime import datetime, timedelta
 from models.base import db
 from models.admin_user import AdminUser
+from utils.admin_permissions import require_admin_permission, AdminPermissions
 import logging
 import uuid
 import traceback
@@ -80,6 +81,7 @@ def admin_login():
 
 @admin_bp.route('/users', methods=['POST'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.USERS_MANAGE)
 def create_admin_user():
     """Create admin user or tenant user"""
     try:
@@ -169,6 +171,7 @@ def create_admin_user():
 
 @admin_bp.route('/users', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.USERS_READ)
 def get_admin_users():
     """Get list of admin users"""
     try:
@@ -216,6 +219,7 @@ def get_admin_users():
 
 @admin_bp.route('/users/all', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.USERS_READ)
 def get_all_tenant_users():
     """Get list of ALL users from ALL tenants"""
     try:
@@ -277,6 +281,7 @@ def get_all_tenant_users():
 
 @admin_bp.route('/users/all/<user_id>', methods=['PUT'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.USERS_MANAGE)
 def update_any_tenant_user(user_id):
     """Update any tenant user (Admin Panel)"""
     try:
@@ -323,6 +328,7 @@ MOCK_TICKETS = []
 
 @admin_bp.route('/tickets', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TICKETS_READ)
 def get_admin_tickets():
     """Get support tickets (placeholder)"""
     page = request.args.get('page', 1, type=int)
@@ -348,6 +354,7 @@ def get_admin_tickets():
 
 @admin_bp.route('/tickets', methods=['POST'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TICKETS_MANAGE)
 def create_admin_ticket():
     """Create support ticket (placeholder)"""
     try:
@@ -398,6 +405,7 @@ def create_admin_ticket():
 
 @admin_bp.route('/tickets/<ticket_id>', methods=['PUT'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TICKETS_MANAGE)
 def update_admin_ticket(ticket_id):
     """Update support ticket (placeholder)"""
     try:
@@ -428,6 +436,7 @@ def update_admin_ticket(ticket_id):
 
 @admin_bp.route('/tickets/<ticket_id>/responses', methods=['POST'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TICKETS_MANAGE)
 def create_ticket_response(ticket_id):
     """Create response for support ticket (placeholder)"""
     try:
@@ -548,6 +557,7 @@ PAGE_PERMISSION_MAP = {
 
 @admin_bp.route('/debug/switch-role', methods=['POST'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.DEBUG_USE)
 def debug_switch_role():
     """
     Switch to a different role for debugging purposes.
@@ -654,6 +664,7 @@ def debug_switch_role():
 
 @admin_bp.route('/debug/available-roles', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.DEBUG_USE)
 def debug_available_roles():
     """
     Get all available roles for debugging.
@@ -717,6 +728,7 @@ def debug_available_roles():
 
 @admin_bp.route('/debug/page-permissions/<page_key>', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.DEBUG_USE)
 def debug_page_permissions(page_key):
     """
     Get permissions for a specific page based on the effective role.

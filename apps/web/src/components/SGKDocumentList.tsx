@@ -33,7 +33,7 @@ interface SGKDocumentListProps {
 
 export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
   patientId,
-  filters: externalFilters,
+  filters: _externalFilters,
   onDocumentSelect,
   onDocumentEdit,
   onDocumentDelete,
@@ -42,12 +42,12 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
 }) => {
   const [documents, setDocuments] = useState<SGKDocument[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [_error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<SGKDocumentType | ''>('');
   const [selectedStatus, setSelectedStatus] = useState<SGKWorkflowStatus | ''>('');
   const [selectedProcessingStatus, setSelectedProcessingStatus] = useState<SGKProcessingStatus | ''>('');
-  const [sortBy, setSortBy] = useState<'date' | 'name' | 'type' | 'status'>('date');
+  const [sortBy, _setSortBy] = useState<'date' | 'name' | 'type' | 'status'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   
   // Batch operations state
@@ -69,7 +69,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
     
     try {
       const result = await sgkService.listDocuments(patientId);
-      const documents = (result as SGKSearchResult).documents || [];
+      const documents = ((result as unknown) as SGKSearchResult).documents || [];
       setDocuments(documents);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Belgeler yüklenirken hata oluştu');

@@ -81,7 +81,7 @@ interface CommunicationDB extends DBSchema {
       'by-type': string;
       'by-category': string;
       'by-sync-status': string;
-      'by-active': boolean;
+      'by-active': string;
     };
   };
   outbox: {

@@ -152,11 +152,7 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patient, onPatient
         autoProcess: false,
       };
 
-      const uploadResult = await sgkService.uploadDocument(body, {
-        headers: {
-          'Idempotency-Key': `sgk-upload-${patientId}-${Date.now()}`
-        }
-      });
+      const uploadResult = await sgkService.uploadDocument(body);
 
       showSuccess('Başarılı', 'SGK belgesi başarıyla yüklendi');
       setSuccessMessage('SGK belgesi başarıyla yüklendi');

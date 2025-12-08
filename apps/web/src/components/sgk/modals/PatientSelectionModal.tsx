@@ -69,7 +69,7 @@ export const PatientSelectionModal: React.FC<PatientSelectionModalProps> = ({
     return mockPatients.filter(patient => 
       patient.firstName.toLowerCase().includes(searchLower) ||
       patient.lastName.toLowerCase().includes(searchLower) ||
-      patient.tcNumber.includes(searchTerm) ||
+      (patient.tcNumber ?? '').includes(searchTerm) ||
       patient.phone.includes(searchTerm)
     );
   }, [searchTerm]);

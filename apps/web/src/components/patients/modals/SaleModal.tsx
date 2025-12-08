@@ -163,7 +163,7 @@ function SaleModal({ isOpen, onClose, patient, onSaleCreate }: SaleModalProps) {
         alert('Satış başarıyla kaydedildi!');
 
         // Create timeline and sales logs
-        const saleId = response.data?.id;
+        const saleId = (response.data as any)?.id;
         if (saleId && notes.trim() && patient.id) {
           await createTimelineLog(patient.id, notes, saleId);
         }

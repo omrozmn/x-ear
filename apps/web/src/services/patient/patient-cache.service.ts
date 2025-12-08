@@ -52,6 +52,7 @@ export interface PatientSearchItem {
   hasInsurance: boolean;
   outstandingBalance: number;
   priority: number;
+  labels?: string[]; // Optional labels array for compatibility
 }
 
 export class PatientCacheService {
@@ -175,7 +176,8 @@ export class PatientCacheService {
         deviceCount: 0, // Device count would need to be fetched separately
         hasInsurance: !!(patient.sgkInfo && Object.keys(patient.sgkInfo).length > 0),
         outstandingBalance: 0, // This would need to be calculated from actual data
-        priority: patient.priorityScore || 0
+        priority: patient.priorityScore || 0,
+        labels: patient.tags || [] // Map tags to labels for compatibility
       }));
 
       return {

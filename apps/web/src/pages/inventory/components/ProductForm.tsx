@@ -4,6 +4,7 @@ import { InventoryFormData, InventoryCategory, InventoryType, EarDirection, Inve
 
 import { FeatureTagInput } from './FeatureTagInput';
 import { SupplierAutocomplete } from './SupplierAutocomplete';
+import { BrandAutocomplete } from './BrandAutocomplete';
 
 interface ProductFormProps {
   isOpen: boolean;

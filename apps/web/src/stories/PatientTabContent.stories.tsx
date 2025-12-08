@@ -26,7 +26,7 @@ const meta: Meta<typeof PatientTabContent> = {
 export default meta;
 type Story = StoryObj<typeof PatientTabContent>;
 
-const mockPatient: Patient = {
+const mockPatient = {
   id: '1',
   firstName: 'Ahmet',
   lastName: 'Yılmaz',
@@ -49,7 +49,7 @@ const mockPatient: Patient = {
   notes: [],
   createdAt: '2023-01-01T00:00:00Z',
   updatedAt: '2023-01-01T00:00:00Z'
-};
+} as Patient;
 
 export const OverviewTab: Story = {
   args: {

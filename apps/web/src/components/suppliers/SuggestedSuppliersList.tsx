@@ -74,7 +74,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
 
     const handleAccept = async (supplier: SuggestedSupplier) => {
         try {
-            await acceptMutation.mutateAsync(supplier.id);
+            await acceptMutation.mutateAsync(supplier.id ?? 0);
             setSelectedSupplier(null);
             onSupplierAccepted?.();
         } catch (error) {
@@ -84,7 +84,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
 
     const handleReject = async (supplierId: number) => {
         try {
-            await rejectMutation.mutateAsync(supplierId);
+            await rejectMutation.mutateAsync(supplierId ?? 0);
         } catch (error) {
             console.error('Failed to reject supplier:', error);
         }
@@ -267,7 +267,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                             </div>
 
                             {/* Invoice List */}
-                            <InvoiceListSection supplierId={selectedSupplier.id} />
+                            <InvoiceListSection supplierId={selectedSupplier.id ?? 0} />
 
                             <div>
                                 <label className="text-sm font-medium text-gray-500">Toplam Tutar</label>
@@ -303,7 +303,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                             variant="outline"
                             className="text-red-600 hover:bg-red-50"
                             onClick={() => {
-                                handleReject(selectedSupplier.id);
+                                handleReject(selectedSupplier.id ?? 0);
                                 setSelectedSupplier(null);
                             }}
                             disabled={rejectMutation.isPending}

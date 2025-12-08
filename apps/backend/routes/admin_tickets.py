@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
+from utils.admin_permissions import require_admin_permission, AdminPermissions
 from datetime import datetime
 import uuid
 
@@ -24,6 +25,7 @@ MOCK_TICKETS = [
 
 @admin_tickets_bp.route('', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TICKETS_READ)
 def get_admin_tickets():
     page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 10, type=int)
@@ -61,6 +63,7 @@ def get_admin_tickets():
 
 @admin_tickets_bp.route('', methods=['POST'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TICKETS_MANAGE)
 def create_admin_ticket():
     data = request.get_json()
     new_ticket = {
@@ -74,6 +77,7 @@ def create_admin_ticket():
 
 @admin_tickets_bp.route('/<id>', methods=['PUT'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.TICKETS_MANAGE)
 def update_admin_ticket(id):
     ticket = next((t for t in MOCK_TICKETS if t['id'] == id), None)
     if not ticket:

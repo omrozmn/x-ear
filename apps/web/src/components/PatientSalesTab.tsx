@@ -52,7 +52,7 @@ export const PatientSalesTab: React.FC<PatientSalesTabProps> = ({
   
   const [showSaleForm, setShowSaleForm] = useState(false);
   const [editingSale, setEditingSale] = useState<Record<string, unknown> | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [_isSaving, setIsSaving] = useState(false);
   
   // Modal states
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
@@ -101,7 +101,7 @@ export const PatientSalesTab: React.FC<PatientSalesTabProps> = ({
     setShowSaleForm(true);
   };
 
-  const handleSaveSale = async (saleData: Record<string, unknown>) => {
+  const _handleSaveSale = async (saleData: Record<string, unknown>) => {
     setIsSaving(true);
     try {
       if (editingSale) {

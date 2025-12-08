@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { usePatientDevices } from '../hooks/patient/usePatientDevices';
 import { PatientDeviceCard } from './patient/PatientDeviceCard';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
-import { ErrorBoundary } from './common/ErrorBoundary';
 import { DeviceAssignmentForm } from './forms/DeviceAssignmentForm';
 import { DeviceEditModal } from './patient/DeviceEditModal';
 import { DeviceTrialModal } from './patient/DeviceTrialModal';
@@ -10,8 +9,7 @@ import { DeviceMaintenanceModal } from './patient/DeviceMaintenanceModal';
 import { InventoryManagementModal } from './patient/InventoryManagementModal';
 import { DeviceReplaceModal } from './patient/DeviceReplaceModal';
 import { ConfirmDialog } from './ui/ConfirmDialog';
-import { Smartphone, AlertCircle, Plus, Edit, Trash2, RefreshCw, Settings } from 'lucide-react';
-import { Button } from './ui/Button';
+import { Smartphone, AlertCircle, Plus } from 'lucide-react';
 import { PatientDevice } from '../types/patient';
 import { apiClient } from '../api/orval-mutator';
 
@@ -68,7 +66,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
   const [showInventoryModal, setShowInventoryModal] = useState(false);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<PatientDevice | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [_isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -143,7 +141,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
     }
   }, [successMessage, actionError]);
 
-  const handleDeviceClick = (device: PatientDevice) => {
+  const _handleDeviceClick = (device: PatientDevice) => {
     console.log('Device clicked:', device);
   };
 
@@ -321,17 +319,17 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
     }
   };
 
-  const handleStartTrial = (device: PatientDevice) => {
+  const _handleStartTrial = (device: PatientDevice) => {
     setSelectedDevice(device);
     setShowTrialModal(true);
   };
 
-  const handleDeviceMaintenance = (device: PatientDevice) => {
+  const _handleDeviceMaintenance = (device: PatientDevice) => {
     setSelectedDevice(device);
     setShowMaintenanceModal(true);
   };
 
-  const handleInventoryManagement = () => {
+  const _handleInventoryManagement = () => {
     setShowInventoryModal(true);
   };
 
@@ -630,7 +628,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
               // and pass them into each duplicated card so UI shows per-ear values.
               const dp: any = device as any;
               // Prefer explicit per-item helpers when present, otherwise divide totals by 2
-              const totalSgk = Number(dp.sgkSupport ?? dp.sgk_support ?? dp.sgkReduction ?? dp.sgk_coverage_amount ?? 0);
+              const _totalSgk = Number(dp.sgkSupport ?? dp.sgk_support ?? dp.sgkReduction ?? dp.sgk_coverage_amount ?? 0);
               // salePrice returned by backend may already be per-item (common) while netPayable/patientPayment is the total.
               // Determine per-item sale robustly:
               // 1) prefer explicit per-item helpers, 2) if net total exists use net/qty, 3) detect if salePrice is already per-item by comparing sale*qty === netTotal
@@ -704,7 +702,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
 
             // For single ear, position card based on ear (audiological view)
             const isRight = device.ear === 'right' || device.ear === 'R' || (device as any).earSide === 'RIGHT';
-            const isLeft = device.ear === 'left' || device.ear === 'L' || (device as any).earSide === 'LEFT';
+            const _isLeft = device.ear === 'left' || device.ear === 'L' || (device as any).earSide === 'LEFT';
             
             return (
               <div key={device.id} className="grid grid-cols-1 md:grid-cols-2 gap-4">

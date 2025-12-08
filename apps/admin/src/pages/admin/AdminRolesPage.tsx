@@ -35,9 +35,9 @@ const AdminRolesPage: React.FC = () => {
     const deleteRoleMutation = useDeleteRole();
     const updatePermissionsMutation = useUpdateRolePermissions();
 
-    const roles = rolesData?.data?.roles || [];
-    const groupedPermissions = permissionsData?.data?.grouped || {};
-    const categories = permissionsData?.data?.categories || [];
+    const roles = (rolesData as any)?.data?.roles || [];
+    const groupedPermissions = (permissionsData as any)?.data?.grouped || {};
+    const categories = (permissionsData as any)?.data?.categories || [];
 
     const handleCreate = async () => {
         if (!roleName) {
@@ -77,7 +77,7 @@ const AdminRolesPage: React.FC = () => {
 
     const openPermissionModal = (role: any) => {
         setSelectedRole(role);
-        setSelectedPermissions(role.permissions.map((p: any) => p.code));
+        setSelectedPermissions(role.permissions?.map((p: any) => p.code) || []);
         setIsPermissionModalOpen(true);
     };
 

@@ -6,6 +6,7 @@ from flask_jwt_extended import jwt_required
 from datetime import datetime
 from models.base import db
 from models.addon import AddOn, AddOnType
+from utils.admin_permissions import require_admin_permission, AdminPermissions
 import logging
 import uuid
 
@@ -15,6 +16,7 @@ admin_addons_bp = Blueprint('admin_addons', __name__, url_prefix='/api/admin/add
 
 @admin_addons_bp.route('', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.ADDONS_READ)
 def list_addons():
     """List all add-ons"""
     try:
@@ -57,6 +59,7 @@ def list_addons():
 
 @admin_addons_bp.route('', methods=['POST'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.ADDONS_MANAGE)
 def create_addon():
     """Create a new add-on"""
     try:
@@ -106,6 +109,7 @@ def create_addon():
 
 @admin_addons_bp.route('/<addon_id>', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.ADDONS_READ)
 def get_addon(addon_id):
     """Get add-on details"""
     try:
@@ -130,6 +134,7 @@ def get_addon(addon_id):
 
 @admin_addons_bp.route('/<addon_id>', methods=['PUT'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.ADDONS_MANAGE)
 def update_addon(addon_id):
     """Update add-on"""
     try:
@@ -179,6 +184,7 @@ def update_addon(addon_id):
 
 @admin_addons_bp.route('/<addon_id>', methods=['DELETE'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.ADDONS_MANAGE)
 def delete_addon(addon_id):
     """Delete add-on (soft delete by setting is_active=False)"""
     try:

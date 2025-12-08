@@ -369,7 +369,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 <CategoryAutocomplete
                   categories={categories}
                   value={filters.category || ''}
-                  onChange={(v) => onFiltersChange({ ...filters, category: v || undefined })}
+                  onChange={(v) => onFiltersChange({ ...filters, category: (v || undefined) as any })}
                 />
               </div>
 

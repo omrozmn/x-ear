@@ -1,0 +1,120 @@
+# ============================================
+# Mirror Repository File Inclusion List
+# ============================================
+# This file defines which files/directories are included
+# in the mirror repository. Only listed items are synced.
+# ============================================
+
+# ============================================
+# INCLUDED DIRECTORIES
+# ============================================
+
+# Application code
+apps/backend/
+apps/admin/
+apps/web/
+apps/landing/
+apps/mobile/
+
+# Shared packages
+packages/core/
+packages/ui-web/
+packages/ui-native/
+
+# Scripts (filtered by clean script)
+scripts/
+
+# Public documentation
+docs/
+
+# GitHub workflows (only mirror-safe ones)
+.github/workflows/
+
+# ============================================
+# INCLUDED ROOT FILES
+# ============================================
+
+# Package management
+package.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
+package-lock.json
+yarn.lock
+
+# TypeScript configuration
+tsconfig.json
+
+# API specification
+openapi.yaml
+
+# Code generation
+orval.config.mjs
+orval.config.js
+orval.config.ts
+
+# Code quality (optional)
+.eslintrc.js
+.eslintrc.json
+.eslintrc
+.prettierrc
+.prettierrc.js
+.prettierrc.json
+
+# Docker (non-sensitive)
+docker-compose.yml
+docker-compose.yaml
+docker-compose.prod.yml
+docker-compose.production.yml
+docker-compose.dev.yml
+docker-compose.development.yml
+Dockerfile
+Dockerfile.backend
+Dockerfile.web
+Dockerfile.admin
+
+# Environment templates
+.env.example
+apps/backend/.env.example
+apps/admin/.env.example
+apps/web/.env.example
+
+# Mirror-specific files (renamed during sync)
+.gitignore.mirror -> .gitignore
+CONTRIBUTING.mirror.md -> CONTRIBUTING.md
+README.mirror.md -> README.md
+
+# ============================================
+# EXCLUDED (NEVER SYNCED)
+# ============================================
+
+# These are excluded by the clean script:
+
+# Environment & Secrets
+# .env, .env.*, *.pem, *.key, secrets/
+
+# Dependencies
+# node_modules/, .venv/, venv/
+
+# Build outputs
+# dist/, build/, .next/, .nuxt/, .turbo/
+
+# Caches
+# .cache/, __pycache__/, .pytest_cache/
+
+# Database
+# *.db, *.sqlite, instance/
+
+# Logs
+# *.log, logs/
+
+# IDE
+# .vscode/, .idea/
+
+# ML Models
+# .paddleocr/, hf_cache/
+
+# Coverage
+# coverage/, htmlcov/
+
+# Internal documentation
+# *INTERNAL*, *SECRET*, *PRIVATE*

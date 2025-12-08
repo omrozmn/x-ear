@@ -167,7 +167,7 @@ export default function IntegrationSettings() {
                 data: {
                     headerText: newHeader,
                     headerType: newHeaderType
-                }
+                } as any
             });
             showSuccessToast('Başlık talebi oluşturuldu. Yönetici onayı bekleniyor.');
             setNewHeader('');
@@ -218,8 +218,8 @@ export default function IntegrationSettings() {
     );
 
     // Safely extract headers array from response - API returns {success, data: [...]}
-    const headers = Array.isArray(headersData?.data) ? headersData.data : (headersData?.data?.data || []);
-    const credit = creditData?.data?.data;
+    const headers = Array.isArray((headersData as any)?.data) ? (headersData as any).data : ((headersData as any)?.data?.data || []);
+    const credit = (creditData as any)?.data?.data;
 
     return (
         <div className="p-6 max-w-6xl mx-auto">

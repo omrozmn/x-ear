@@ -269,7 +269,7 @@ class SimpleCommunicationSync {
     try {
       const stored = localStorage.getItem(this.STORAGE_KEYS.outbox);
       const outbox = stored ? JSON.parse(stored) : [];
-      const remaining = [];
+      const remaining: any[] = [];
 
       for (const item of outbox) {
         try {

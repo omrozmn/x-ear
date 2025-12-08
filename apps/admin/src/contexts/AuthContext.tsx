@@ -68,14 +68,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const login = async (credentials: LoginCredentials & { mfa_token?: string }) => {
         try {
-            const response = await adminLogin({ data: credentials });
+            const response = await adminLogin(credentials) as any;
 
             if (response.requires_mfa) {
                 return { requires_mfa: true };
             }
 
-            if (response.token && response.user) {
-                const { user, token } = response;
+            if (response.access_token && response.data) {
+                const { data: user, access_token: token } = response;
                 // Cast to TypeAdminUser because generated type might differ slightly (e.g. optional id)
                 setAuth(user as unknown as TypeAdminUser, token);
                 tokenManager.setToken(token);

@@ -497,8 +497,14 @@ app.register_blueprint(admin_settings_bp)
 from routes.admin_invoices import admin_invoices_bp
 app.register_blueprint(admin_invoices_bp)
 
+from routes.admin_suppliers import admin_suppliers_bp
+app.register_blueprint(admin_suppliers_bp)
+
 from routes.admin_tickets import admin_tickets_bp
 app.register_blueprint(admin_tickets_bp)
+
+from routes.admin_campaigns import admin_campaigns_bp
+app.register_blueprint(admin_campaigns_bp)
 
 # Admin Roles & Permissions Management
 from routes.admin_roles import admin_roles_bp

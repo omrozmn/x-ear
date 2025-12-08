@@ -138,7 +138,12 @@ export function SupplierFormModal({
 
     try {
       // Remove district field (not supported by backend)
-      const { district, ...dataToSend } = formData;
+      // Add name field (required by SupplierExtended) as companyName
+      const { district, ...rest } = formData;
+      const dataToSend = {
+        ...rest,
+        name: formData.companyName, // Map companyName to name for API compatibility
+      };
       await onSave(dataToSend);
       onClose();
     } catch (error) {

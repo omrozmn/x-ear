@@ -31,7 +31,7 @@ export function usePatientNotes(patientId?: string) {
 
     try {
       const result = await patientApiService.getNotes(id);
-      setNotes(result?.data || []);
+      setNotes((result?.data || []) as PatientNote[]);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
       setNotes([]);

@@ -18,7 +18,8 @@ export function useUploadSgkDocument(patientId: string) {
       const idempotencyKey = (formData as any).idempotencyKey || generateIdempotencyKey();
 
       try {
-        return await sgkService.uploadDocument(formData as any, { idempotencyKey });
+        // Upload document - sgkService.uploadDocument only takes body parameter
+        return await sgkService.uploadDocument(formData as any);
       } catch (err) {
         // On network/offline failure, serialize file blob to IndexedDB and enqueue outbox operation
         try {
@@ -49,8 +50,7 @@ export function useUploadSgkDocument(patientId: string) {
 export function useUploadSgkDocuments() {
   return useMutation({
     mutationFn: async (formData: FormData) => {
-      const idempotencyKey = generateIdempotencyKey();
-      return await sgkService.uploadDocument(formData, { idempotencyKey });
+      return await sgkService.uploadDocument(formData);
     },
   });
 }

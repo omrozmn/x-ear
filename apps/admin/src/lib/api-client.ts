@@ -16,8 +16,7 @@ import {
   useGetAdminInvoices,
   useGetAdminInvoicesId,
   usePostAdminInvoices,
-  usePostAdminInvoicesIdPayment,
-  getAdminInvoicesIdPdf
+  usePostAdminInvoicesIdPayment
 } from './api/billing/billing';
 
 // Export generated hooks
@@ -62,7 +61,14 @@ export { useGetAdminInvoices as useGetAdminInvoices };
 export { useGetAdminInvoicesId as useGetAdminInvoice };
 export { usePostAdminInvoices as useCreateAdminInvoice };
 export { usePostAdminInvoicesIdPayment as useRecordAdminInvoicePayment };
-export { getAdminInvoicesIdPdf as getAdminInvoicePdf };
+
+export const getAdminInvoicePdf = (id: string) => {
+  return adminApi({
+    url: `/admin/invoices/${id}/pdf`,
+    method: 'GET',
+    responseType: 'blob'
+  });
+};
 
 // ============================================================================
 // MANUAL OVERRIDES & MISSING FUNCTIONS
@@ -223,8 +229,8 @@ export const useTriggerBackup = <TData = any, TError = unknown, TContext = unkno
 }
 
 // Roles
-export const getRoles = () => adminApi<{ data: any }>({ url: '/api/admin/roles' });
-export const useGetRoles = (options?: any): UseQueryResult<{ data: any }, unknown> => useQuery({ queryKey: ['roles'], queryFn: () => getRoles(), ...options?.query }) as UseQueryResult<{ data: any }, unknown>;
+export const getRoles = (params?: any) => adminApi<{ data: any }>({ url: '/api/admin/roles', params });
+export const useGetRoles = (params?: any, options?: any): UseQueryResult<{ data: any }, unknown> => useQuery({ queryKey: ['roles', params], queryFn: () => getRoles(params), ...options?.query }) as UseQueryResult<{ data: any }, unknown>;
 
 export const createRole = (data: any) => adminApi<any>({ url: '/api/admin/roles', method: 'POST', data });
 export const useCreateRole = (options?: any) => useMutation({ mutationFn: (data: any) => createRole(data.data), ...options?.mutation });
@@ -235,8 +241,8 @@ export const useUpdateRole = (options?: any) => useMutation({ mutationFn: ({ id,
 export const deleteRole = (id: string) => adminApi<any>({ url: `/api/admin/roles/${id}`, method: 'DELETE' });
 export const useDeleteRole = (options?: any) => useMutation({ mutationFn: ({ id }: { id: string }) => deleteRole(id), ...options?.mutation });
 
-export const getPermissions = () => adminApi<{ data: any }>({ url: '/api/admin/permissions' });
-export const useGetPermissions = (options?: any): UseQueryResult<{ data: any }, unknown> => useQuery({ queryKey: ['permissions'], queryFn: () => getPermissions(), ...options?.query }) as UseQueryResult<{ data: any }, unknown>;
+export const getPermissions = (params?: any) => adminApi<{ data: any }>({ url: '/api/admin/permissions', params });
+export const useGetPermissions = (params?: any, options?: any): UseQueryResult<{ data: any }, unknown> => useQuery({ queryKey: ['permissions', params], queryFn: () => getPermissions(params), ...options?.query }) as UseQueryResult<{ data: any }, unknown>;
 
 export const updateRolePermissions = (id: string, permissions: string[]) => adminApi<any>({ url: `/api/admin/roles/${id}/permissions`, method: 'PUT', data: { permissions } });
 export const useUpdateRolePermissions = (options?: any) => useMutation({ mutationFn: ({ id, permissions }: { id: string, permissions: string[] }) => updateRolePermissions(id, permissions), ...options?.mutation });
@@ -258,3 +264,50 @@ export const useGetProductionOrders = (params?: any, options?: any): UseQueryRes
 
 export const updateProductionOrderStatus = (id: string, status: string) => adminApi<any>({ url: `/api/admin/production/orders/${id}/status`, method: 'PUT', data: { status } });
 export const useUpdateProductionOrderStatus = (options?: any) => useMutation({ mutationFn: ({ id, status }: { id: string, status: string }) => updateProductionOrderStatus(id, status), ...options?.mutation });
+
+// API Keys
+export const getApiKeys = (params?: any) => adminApi<{ data: any }>({ url: '/api/admin/api-keys', params });
+export const useGetApiKeys = (params?: any, options?: any): UseQueryResult<{ data: any }, unknown> => useQuery({ queryKey: ['apiKeys', params], queryFn: () => getApiKeys(params), ...options?.query }) as UseQueryResult<{ data: any }, unknown>;
+
+export const createApiKey = (data: any) => adminApi<any>({ url: '/api/admin/api-keys', method: 'POST', data });
+export const useCreateApiKey = (options?: any) => useMutation({ mutationFn: (data: any) => createApiKey(data.data), ...options?.mutation });
+
+export const revokeApiKey = (id: string) => adminApi<any>({ url: `/api/admin/api-keys/${id}/revoke`, method: 'POST' });
+export const useRevokeApiKey = (options?: any) => useMutation({ mutationFn: ({ id }: { id: string }) => revokeApiKey(id), ...options?.mutation });
+
+// BirFatura
+export const getBirFaturaStats = () => adminApi<{ data: any }>({ url: '/api/admin/integrations/birfatura/stats' });
+export const useGetBirFaturaStats = (options?: any): UseQueryResult<{ data: any }, unknown> => useQuery({ queryKey: ['birFaturaStats'], queryFn: () => getBirFaturaStats(), ...options?.query }) as UseQueryResult<{ data: any }, unknown>;
+
+export const getBirFaturaInvoices = (params?: any) => adminApi<{ data: any }>({ url: '/api/admin/integrations/birfatura/invoices', params });
+export const useGetBirFaturaInvoices = (params?: any, options?: any): UseQueryResult<{ data: any }, unknown> => useQuery({ queryKey: ['birFaturaInvoices', params], queryFn: () => getBirFaturaInvoices(params), ...options?.query }) as UseQueryResult<{ data: any }, unknown>;
+
+export const getBirFaturaLogs = (params?: any) => adminApi<{ data: any }>({ url: '/api/admin/integrations/birfatura/logs', params });
+export const useGetBirFaturaLogs = (params?: any, options?: any): UseQueryResult<{ data: any }, unknown> => useQuery({ queryKey: ['birFaturaLogs', params], queryFn: () => getBirFaturaLogs(params), ...options?.query }) as UseQueryResult<{ data: any }, unknown>;
+
+// Marketplaces
+export const getMarketplaceIntegrations = (params?: any) => adminApi<{ data: any }>({ url: '/api/admin/marketplaces', params });
+export const useGetMarketplaceIntegrations = (params?: any, options?: any): UseQueryResult<{ data: any }, unknown> => useQuery({ queryKey: ['marketplaceIntegrations', params], queryFn: () => getMarketplaceIntegrations(params), ...options?.query }) as UseQueryResult<{ data: any }, unknown>;
+
+export const createMarketplaceIntegration = (data: any) => adminApi<any>({ url: '/api/admin/marketplaces', method: 'POST', data });
+export const useCreateMarketplaceIntegration = (options?: any) => useMutation({ mutationFn: (data: any) => createMarketplaceIntegration(data.data), ...options?.mutation });
+
+export const syncMarketplaceIntegration = (id: string) => adminApi<any>({ url: `/api/admin/marketplaces/${id}/sync`, method: 'POST' });
+export const useSyncMarketplaceIntegration = (options?: any) => useMutation({ mutationFn: ({ id }: { id: string }) => syncMarketplaceIntegration(id), ...options?.mutation });
+
+// Notification Templates
+export const getNotificationTemplates = (params?: any) => adminApi<{ data: any }>({ url: '/api/admin/notifications/templates', params });
+export const useGetNotificationTemplates = (params?: any, options?: any): UseQueryResult<{ data: any }, unknown> => useQuery({ queryKey: ['notificationTemplates', params], queryFn: () => getNotificationTemplates(params), ...options?.query }) as UseQueryResult<{ data: any }, unknown>;
+
+// User Notifications
+export const getApiNotifications = (params?: any) => adminApi<{ data: any }>({ url: '/api/admin/notifications', params });
+export const useGetApiNotifications = (params?: any, options?: any): UseQueryResult<{ data: any }, unknown> => useQuery({ queryKey: ['apiNotifications', params], queryFn: () => getApiNotifications(params), ...options?.query }) as UseQueryResult<{ data: any }, unknown>;
+
+export const markNotificationRead = (id: string) => adminApi<any>({ url: `/api/admin/notifications/${id}/read`, method: 'PUT' });
+export const usePutApiNotificationsNotificationIdRead = (options?: any) => useMutation({ mutationFn: ({ id }: { id: string }) => markNotificationRead(id), ...options?.mutation });
+
+// Auth
+export const adminLogin = (credentials: any) => adminApi<any>({ url: '/api/auth/login', method: 'POST', data: credentials });
+export const useAdminLogin = (options?: any) => useMutation({ mutationFn: (credentials: any) => adminLogin(credentials), ...options?.mutation });
+
+

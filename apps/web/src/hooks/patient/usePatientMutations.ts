@@ -1,9 +1,10 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Patient } from '../../types/patient';
+import type { Patient } from '../../types/patient';
+import type { Patient as LocalPatient } from '../../types/patient/patient-base.types';
 import { PatientSyncService } from '../../services/patient/patient-sync.service';
 import { PatientStorageService } from '../../services/patient/patient-storage.service';
 
-// Define request types locally
+// Define request types locally - these match the PatientSyncService expectations
 interface PatientCreateRequest {
   firstName?: string;
   lastName?: string;
@@ -12,10 +13,10 @@ interface PatientCreateRequest {
   birthDate?: string;
   email?: string;
   address?: string;
-  status?: 'active' | 'inactive' | 'archived';
-  segment?: 'new' | 'trial' | 'purchased' | 'control' | 'renewal';
-  label?: 'yeni' | 'arama-bekliyor' | 'randevu-verildi' | 'deneme-yapildi' | 'kontrol-hastasi' | 'satis-tamamlandi';
-  acquisitionType?: 'tabela' | 'sosyal-medya' | 'tanitim' | 'referans' | 'diger';
+  status?: string;
+  segment?: string;
+  label?: string;
+  acquisitionType?: string;
   tags?: string[];
   customData?: Record<string, unknown>;
 }
@@ -56,9 +57,9 @@ export function usePatientMutations() {
 
     try {
       const idempotencyKey = generateIdempotencyKey();
-      const createdPatient = await syncService.createPatient(patientData, idempotencyKey);
+      const createdPatient = await syncService.createPatient(patientData as Partial<LocalPatient>, idempotencyKey);
       
-      options?.onSuccess?.(createdPatient);
+      options?.onSuccess?.(createdPatient as Patient);
       return createdPatient;
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to create patient');
@@ -84,9 +85,9 @@ export function usePatientMutations() {
 
     try {
       const idempotencyKey = generateIdempotencyKey();
-      const updatedPatient = await syncService.updatePatient(patientId, updates, idempotencyKey);
+      const updatedPatient = await syncService.updatePatient(patientId, updates as Partial<LocalPatient>, idempotencyKey);
       
-      options?.onSuccess?.(updatedPatient);
+      options?.onSuccess?.(updatedPatient as Patient);
       return updatedPatient;
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to update patient');
@@ -149,8 +150,8 @@ export function usePatientMutations() {
         const idempotencyKey = generateIdempotencyKey();
         
         try {
-          const createdPatient = await syncService.createPatient(patientData, idempotencyKey);
-          createdPatients.push(createdPatient);
+          const createdPatient = await syncService.createPatient(patientData as Partial<LocalPatient>, idempotencyKey);
+          createdPatients.push(createdPatient as Patient);
           options?.onProgress?.(i + 1, total);
         } catch (err) {
           console.error(`Failed to create patient ${i + 1}:`, err);
@@ -194,8 +195,8 @@ export function usePatientMutations() {
         const idempotencyKey = generateIdempotencyKey();
         
         try {
-          const updatedPatient = await syncService.updatePatient(id, data, idempotencyKey);
-          updatedPatients.push(updatedPatient);
+          const updatedPatient = await syncService.updatePatient(id, data as Partial<LocalPatient>, idempotencyKey);
+          updatedPatients.push(updatedPatient as Patient);
           options?.onProgress?.(i + 1, total);
         } catch (err) {
           console.error(`Failed to update patient ${id}:`, err);

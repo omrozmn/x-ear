@@ -42,8 +42,8 @@ const AdminApiKeysPage: React.FC = () => {
                 }
             });
 
-            if (result.data?.apiKey) {
-                setNewKey(result.data.apiKey);
+            if ((result as any).data?.apiKey) {
+                setNewKey((result as any).data.apiKey);
                 toast.success('API Anahtarı oluşturuldu');
                 refetch();
             }
@@ -57,7 +57,7 @@ const AdminApiKeysPage: React.FC = () => {
         if (!confirm('Bu anahtarı silmek istediğinize emin misiniz?')) return;
 
         try {
-            await revokeApiKeyMutation.mutateAsync({ keyId });
+            await revokeApiKeyMutation.mutateAsync({ id: keyId });
             toast.success('API Anahtarı silindi');
             refetch();
         } catch (error) {

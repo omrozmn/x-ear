@@ -5,78 +5,164 @@ from models.base import db
 from models.tenant import Tenant
 from models.user import User
 from models.plan import Plan
+from models.invoice import Invoice
+from utils.admin_permissions import require_admin_permission, AdminPermissions
 from sqlalchemy import func
 
 admin_analytics_bp = Blueprint('admin_analytics', __name__, url_prefix='/api/admin/analytics')
 
 @admin_analytics_bp.route('', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.ANALYTICS_READ)
 def get_admin_analytics():
     """Get admin analytics data"""
     try:
-        # Mock data for now, or simple aggregations
+        # Total Revenue
+        total_revenue = db.session.query(func.sum(Invoice.device_price)).scalar() or 0
         
-        # Overview
-        total_revenue = 150000.00 # Placeholder
+        # Active Tenants
         active_tenants = Tenant.query.filter_by(status='active').count()
-        monthly_active_users = User.query.filter(User.last_login >= datetime.utcnow() - timedelta(days=30)).count()
+        
+        # Monthly Active Users (Users logged in within last 30 days)
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        monthly_active_users = User.query.filter(User.last_login >= thirty_days_ago).count()
+        
+        # Calculate growth (comparing to previous period) - Simplified for now
+        # Ideally, we would query previous period data as well
         
         overview = {
-            "total_revenue": total_revenue,
-            "revenue_growth": 12.5,
+            "total_revenue": float(total_revenue),
+            "revenue_growth": 0, # TODO: Calculate real growth
             "active_tenants": active_tenants,
-            "tenants_growth": 5.2,
+            "tenants_growth": 0,
             "monthly_active_users": monthly_active_users,
-            "mau_growth": 8.4,
-            "churn_rate": 2.1,
-            "churn_growth": -0.5
+            "mau_growth": 0,
+            "churn_rate": 0,
+            "churn_growth": 0
         }
         
-        # Revenue Trend (Mock)
-        revenue_trend = [
-            {"month": "Jan", "revenue": 12000, "growth": 10},
-            {"month": "Feb", "revenue": 15000, "growth": 25},
-            {"month": "Mar", "revenue": 18000, "growth": 20},
-            {"month": "Apr", "revenue": 22000, "growth": 22},
-            {"month": "May", "revenue": 25000, "growth": 13},
-            {"month": "Jun", "revenue": 30000, "growth": 20},
-        ]
+        # 2. Revenue Trend (Last 6 months)
+        six_months_ago = datetime.utcnow() - timedelta(days=180)
         
-        # User Engagement (Mock)
-        user_engagement = [
-            {"date": "2023-06-01", "dau": 120, "wau": 450, "mau": 1200},
-            {"date": "2023-06-02", "dau": 130, "wau": 460, "mau": 1210},
-            {"date": "2023-06-03", "dau": 125, "wau": 455, "mau": 1205},
-            {"date": "2023-06-04", "dau": 140, "wau": 470, "mau": 1220},
-            {"date": "2023-06-05", "dau": 150, "wau": 480, "mau": 1230},
-        ]
+        # Group by year and month
+        # Note: This uses extract which works across DBs mostly, but syntax might vary slightly
+        revenue_trend_query = db.session.query(
+            func.extract('year', Invoice.created_at).label('year'),
+            func.extract('month', Invoice.created_at).label('month'),
+            func.sum(Invoice.device_price).label('revenue')
+        ).filter(Invoice.created_at >= six_months_ago)\
+         .group_by(func.extract('year', Invoice.created_at), func.extract('month', Invoice.created_at))\
+         .order_by(func.extract('year', Invoice.created_at), func.extract('month', Invoice.created_at)).all()
         
-        # Plan Distribution
-        plans = db.session.query(Tenant.current_plan, func.count(Tenant.id)).group_by(Tenant.current_plan).all()
+        revenue_trend = []
+        months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        
+        for year, month, revenue in revenue_trend_query:
+            month_idx = int(month) - 1
+            month_name = months[month_idx] if 0 <= month_idx < 12 else str(month)
+            
+            revenue_trend.append({
+                "month": f"{month_name}",
+                "revenue": float(revenue or 0),
+                "growth": 0 # Can be calculated in loop
+            })
+            
+        # Calculate growth
+        for i in range(1, len(revenue_trend)):
+            prev = revenue_trend[i-1]["revenue"]
+            curr = revenue_trend[i]["revenue"]
+            if prev > 0:
+                growth = ((curr - prev) / prev) * 100
+                revenue_trend[i]["growth"] = round(growth, 1)
+        
+        # 3. User Engagement (Last 7 days)
+        # We can use User.last_login distribution or created_at
+        # For now, let's use created_at as a proxy for "New Users" trend
+        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        new_users_query = db.session.query(
+            func.date(User.created_at).label('date'),
+            func.count(User.id).label('count')
+        ).filter(User.created_at >= seven_days_ago)\
+         .group_by(func.date(User.created_at))\
+         .order_by('date').all()
+         
+        user_engagement = []
+        for date_str, count in new_users_query:
+            user_engagement.append({
+                "date": str(date_str),
+                "new_users": count,
+                "dau": 0, # Requires activity log
+                "wau": 0,
+                "mau": 0
+            })
+
+        # 4. Plan Distribution (Real Data)
+        plans = db.session.query(Tenant.current_plan_id, func.count(Tenant.id)).group_by(Tenant.current_plan_id).all()
         plan_distribution = []
-        colors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
-        for i, (plan_name, count) in enumerate(plans):
-            if plan_name:
-                plan_distribution.append({
-                    "name": plan_name,
-                    "value": count,
-                    "color": colors[i % len(colors)]
-                })
+        colors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
         
+        for i, (plan_id, count) in enumerate(plans):
+            plan_name = "Unknown"
+            if plan_id:
+                plan = db.session.get(Plan, plan_id)
+                if plan:
+                    plan_name = plan.name
+            else:
+                plan_name = "No Plan"
+            
+            plan_distribution.append({
+                "name": plan_name,
+                "value": count,
+                "color": colors[i % len(colors)]
+            })
+            
         if not plan_distribution:
              plan_distribution = [
-                {"name": "Basic", "value": 40, "color": "#0088FE"},
-                {"name": "Pro", "value": 30, "color": "#00C49F"},
-                {"name": "Enterprise", "value": 20, "color": "#FFBB28"},
+                {"name": "No Data", "value": 0, "color": "#e0e0e0"}
             ]
 
-        # Top Tenants (Mock)
-        top_tenants = [
-            {"id": "1", "name": "Acme Corp", "revenue": 5000, "growth": 15, "users": 25},
-            {"id": "2", "name": "Globex", "revenue": 3500, "growth": 10, "users": 15},
-            {"id": "3", "name": "Soylent Corp", "revenue": 2000, "growth": 5, "users": 10},
-        ]
+        # 5. Top Tenants by Revenue (Real Data)
+        # Note: Invoice.device_price might not be the correct field for subscription revenue. 
+        # Assuming Invoice.amount is the total invoice amount.
+        top_tenants_query = db.session.query(
+            Tenant.id,
+            Tenant.name,
+            func.sum(Invoice.device_price).label('total_revenue'),
+            func.count(User.id).label('user_count')
+        ).join(Invoice, Invoice.tenant_id == Tenant.id)\
+         .outerjoin(User, User.tenant_id == Tenant.id)\
+         .group_by(Tenant.id, Tenant.name)\
+         .order_by(func.sum(Invoice.device_price).desc())\
+         .limit(5).all()
+         
+        top_tenants = []
+        for t_id, t_name, t_rev, t_users in top_tenants_query:
+            top_tenants.append({
+                "id": t_id,
+                "name": t_name,
+                "revenue": float(t_rev or 0),
+                "growth": 0, 
+                "users": t_users or 0
+            })
+            
+        # 6. Domain Metrics (Real Data)
+        from models.medical import EReceipt, HearingTest
+        from models.appointment import Appointment
+        from models.patient import Patient
         
+        ereceipt_count = EReceipt.query.count()
+        hearing_test_count = HearingTest.query.count()
+        appointment_count = Appointment.query.count()
+        patient_count = Patient.query.count()
+        
+        # Calculate conversion rate (Appointments with hearing tests / Total appointments)
+        # This is an approximation
+        conversion_rate = 0
+        if appointment_count > 0:
+            # Assuming logic: appointments that resulted in a test
+            # Ideally we check linked records
+            conversion_rate = (hearing_test_count / appointment_count) * 100
+
         return jsonify({
             "data": {
                 "overview": overview,
@@ -85,28 +171,17 @@ def get_admin_analytics():
                 "plan_distribution": plan_distribution,
                 "top_tenants": top_tenants,
                 "domain_metrics": {
-                    "sgk_submissions": [
-                        {"month": "Jan", "count": 45, "approved": 40},
-                        {"month": "Feb", "count": 52, "approved": 48},
-                        {"month": "Mar", "count": 48, "approved": 45},
-                        {"month": "Apr", "count": 60, "approved": 55},
-                        {"month": "May", "count": 65, "approved": 62},
-                        {"month": "Jun", "count": 70, "approved": 68},
-                    ],
-                    "device_fittings": [
-                        {"month": "Jan", "count": 30},
-                        {"month": "Feb", "count": 35},
-                        {"month": "Mar", "count": 32},
-                        {"month": "Apr", "count": 40},
-                        {"month": "May", "count": 45},
-                        {"month": "Jun", "count": 50},
-                    ],
-                    "appointment_conversion": 85.5, # Percentage
-                    "avg_fitting_time": 45, # Minutes
-                    "total_patients_fitted": 1250
+                    "ereceipt_count": ereceipt_count,
+                    "hearing_test_count": hearing_test_count,
+                    "appointment_count": appointment_count,
+                    "patient_count": patient_count,
+                    "appointment_conversion": round(conversion_rate, 1),
+                    "total_patients": patient_count
                 }
             }
         }), 200
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500

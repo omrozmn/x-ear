@@ -121,8 +121,8 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
       supplier: '',
       brand: '',
       features: [],
-      newFeature: ''
-      ,reason: ''
+      newFeature: '',
+      kdv: ''
     });
     onClose();
   };

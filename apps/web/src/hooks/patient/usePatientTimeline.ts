@@ -42,7 +42,7 @@ export function usePatientTimeline(patientId?: string) {
 
     try {
       const result = await apiService.getTimeline(id);
-      setTimeline(result?.data || []);
+      setTimeline((result?.data || []) as TimelineEvent[]);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
       setTimeline([]);

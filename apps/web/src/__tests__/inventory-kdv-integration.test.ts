@@ -25,14 +25,14 @@ describe('Inventory KDV integration', () => {
     const id = item.id;
 
     // Update KDV via our helper so frontend call is tested
-    const updateResp = await inventoryUpdateInventoryItem(id, { kdv: 1, priceIncludesKdv: true, costIncludesKdv: false });
+    const updateResp = await inventoryUpdateInventoryItem(id, { kdv: 1, priceIncludesKdv: true, costIncludesKdv: false } as any);
     expect(updateResp.status).toBe(200);
-    expect(updateResp.data.success).toBe(true);
-    expect(updateResp.data.data.kdv).toBe(1);
+    expect((updateResp.data as any).success).toBe(true);
+    expect((updateResp.data as any).data.kdv).toBe(1);
     // debug log
     console.log('UPDATE RESP:', JSON.stringify(updateResp.data));
-    expect(updateResp.data.data.priceIncludesKdv).toBe(true);
-    expect(updateResp.data.data.costIncludesKdv).toBe(false);
+    expect((updateResp.data as any).data.priceIncludesKdv).toBe(true);
+    expect((updateResp.data as any).data.costIncludesKdv).toBe(false);
 
     // GET and verify
     const getResp = await axios.get(`${BACKEND}/api/inventory/${id}`);

@@ -5,12 +5,13 @@ from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required
 from models.base import db
 from models.admin_user import AdminUser
-from models.user import User, ActivityLog
+from models.user import User
 from models.tenant import Tenant
 from models.plan import Plan
 from models.appointment import Appointment
 from models.patient import Patient
 from models.device import Device
+from utils.admin_permissions import require_admin_permission, AdminPermissions
 from sqlalchemy import func
 from datetime import datetime, timedelta
 import logging
@@ -21,6 +22,7 @@ admin_dashboard_bp = Blueprint('admin_dashboard', __name__, url_prefix='/api/adm
 
 @admin_dashboard_bp.route('/metrics', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.DASHBOARD_VIEW)
 def get_dashboard_metrics():
     """Get dashboard metrics"""
     try:
@@ -66,31 +68,43 @@ def get_dashboard_metrics():
         # Fitted Patients (Patients with devices)
         fitted_patients = db.session.query(Patient).join(Device).distinct().count()
         
-        # Daily Uploads (from ActivityLog)
-        daily_uploads = ActivityLog.query.filter(
-            (ActivityLog.action.in_(['document_upload', 'file_upload_init'])),
-            ActivityLog.created_at >= today_start,
-            ActivityLog.created_at <= today_end
-        ).count()
+        # Daily Uploads and Recent Errors from ActivityLog (with error handling)
+        daily_uploads = 0
+        recent_errors_data = []
         
-        # Recent Errors (Last 5 errors from ActivityLog)
-        recent_errors = ActivityLog.query.filter(
-            (ActivityLog.action.ilike('%error%')) | 
-            (ActivityLog.action.ilike('%fail%')) |
-            (ActivityLog.details.ilike('%error%'))
-        ).order_by(ActivityLog.created_at.desc()).limit(5).all()
-        
-        recent_errors_data = [{
-            'id': log.id,
-            'action': log.action,
-            'details': log.details,
-            'created_at': log.created_at.isoformat(),
-            'user_id': log.user_id
-        } for log in recent_errors]
+        try:
+            from models.user import ActivityLog
+            daily_uploads = ActivityLog.query.filter(
+                (ActivityLog.action.in_(['document_upload', 'file_upload_init'])),
+                ActivityLog.created_at >= today_start,
+                ActivityLog.created_at <= today_end
+            ).count()
+            
+            # Recent Errors (Last 5 errors from ActivityLog)
+            recent_errors = ActivityLog.query.filter(
+                (ActivityLog.action.ilike('%error%')) | 
+                (ActivityLog.action.ilike('%fail%')) |
+                (ActivityLog.details.ilike('%error%'))
+            ).order_by(ActivityLog.created_at.desc()).limit(5).all()
+            
+            recent_errors_data = [{
+                'id': log.id,
+                'action': log.action,
+                'details': log.details,
+                'created_at': log.created_at.isoformat(),
+                'user_id': log.user_id
+            } for log in recent_errors]
+        except Exception as e:
+            logger.warning(f"ActivityLog query failed (table may not exist): {e}")
 
-        # Calculate mock revenue and other metrics for now
-        # In a real app, these would come from actual data
-        
+        # Calculate Revenue (MRR - Last 30 days)
+        from models.invoice import Invoice
+        last_30_days = datetime.utcnow() - timedelta(days=30)
+        mrr = db.session.query(func.sum(Invoice.device_price)).filter(
+            Invoice.created_at >= last_30_days,
+            Invoice.status != 'cancelled'
+        ).scalar() or 0.0
+
         return jsonify({
             'success': True,
             'data': {
@@ -111,7 +125,7 @@ def get_dashboard_metrics():
                     },
                     'recent_errors': recent_errors_data,
                     'revenue': {
-                        'monthly_recurring_revenue': 0 # Placeholder
+                        'monthly_recurring_revenue': float(mrr)
                     },
                     'alerts': {
                         'expiring_soon': 0,

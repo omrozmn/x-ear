@@ -1,0 +1,441 @@
+name: Sync to Mirror Repository
+# ============================================
+# Mirror Repository Sync Workflow
+# ============================================
+# This workflow automatically syncs a clean, filtered version
+# of the main repository to a separate "mirror" repository.
+# External developers only have access to the mirror repo.
+# ============================================
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      force_sync:
+        description: 'Force sync even if no changes detected'
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: 'Dry run - show what would be synced without pushing'
+        required: false
+        default: false
+        type: boolean
+
+# Prevent concurrent runs to avoid conflicts
+concurrency:
+  group: mirror-sync-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  MIRROR_REPO: omrozmn/x-ear-mirror
+  MIRROR_BRANCH: main
+  SOURCE_BRANCH: main
+
+jobs:
+  mirror-sync:
+    name: Sync to Mirror Repository
+    runs-on: ubuntu-latest
+    
+    # Only run on main/master branch pushes
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+    
+    permissions:
+      contents: read
+    
+    steps:
+      # ============================================
+      # 1. CHECKOUT SOURCE REPOSITORY
+      # ============================================
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for proper sync
+          path: source
+      
+      # ============================================
+      # 2. SETUP ENVIRONMENT
+      # ============================================
+      - name: Setup Git
+        run: |
+          git config --global user.name "Mirror Sync Bot"
+          git config --global user.email "mirror-sync@x-ear.local"
+      
+      # ============================================
+      # 3. CREATE CLEAN MIRROR DIRECTORY
+      # ============================================
+      - name: Prepare mirror directory
+        run: |
+          mkdir -p mirror
+          echo "Mirror directory created"
+      
+      # ============================================
+      # 4. FILTER AND COPY ALLOWED FILES
+      # ============================================
+      - name: Filter and copy production files
+        run: |
+          cd source
+          
+          # Define the files and directories to include in the mirror
+          # This is the whitelist - only these will be copied
+          
+          echo "=== Starting file filtering ==="
+          
+          # Create directory structure in mirror
+          mkdir -p ../mirror/apps/backend
+          mkdir -p ../mirror/apps/admin
+          mkdir -p ../mirror/apps/web
+          mkdir -p ../mirror/apps/landing
+          mkdir -p ../mirror/packages/core
+          mkdir -p ../mirror/packages/ui-web
+          mkdir -p ../mirror/packages/ui-native
+          mkdir -p ../mirror/scripts
+          mkdir -p ../mirror/docs
+          mkdir -p ../mirror/.github/workflows
+          
+          # ============================================
+          # BACKEND - Copy only production files
+          # ============================================
+          echo "Copying backend..."
+          if [ -d "apps/backend" ]; then
+            rsync -av --progress \
+              --exclude='__pycache__' \
+              --exclude='*.pyc' \
+              --exclude='.pytest_cache' \
+              --exclude='instance/' \
+              --exclude='*.db' \
+              --exclude='*.sqlite' \
+              --exclude='.venv' \
+              --exclude='venv' \
+              --exclude='.env' \
+              --exclude='.env.*' \
+              --exclude='!.env.example' \
+              --exclude='*.log' \
+              --exclude='*.pid' \
+              --exclude='.cache' \
+              --exclude='htmlcov' \
+              --exclude='.coverage' \
+              --exclude='*.egg-info' \
+              --exclude='dist' \
+              --exclude='build' \
+              apps/backend/ ../mirror/apps/backend/
+          fi
+          
+          # ============================================
+          # ADMIN APP - Copy frontend admin
+          # ============================================
+          echo "Copying admin app..."
+          if [ -d "apps/admin" ]; then
+            rsync -av --progress \
+              --exclude='node_modules' \
+              --exclude='dist' \
+              --exclude='build' \
+              --exclude='.cache' \
+              --exclude='.turbo' \
+              --exclude='coverage' \
+              --exclude='.env' \
+              --exclude='.env.*' \
+              --exclude='!.env.example' \
+              apps/admin/ ../mirror/apps/admin/
+          fi
+          
+          # ============================================
+          # WEB APP - Copy frontend web
+          # ============================================
+          echo "Copying web app..."
+          if [ -d "apps/web" ]; then
+            rsync -av --progress \
+              --exclude='node_modules' \
+              --exclude='dist' \
+              --exclude='build' \
+              --exclude='.cache' \
+              --exclude='.turbo' \
+              --exclude='coverage' \
+              --exclude='.env' \
+              --exclude='.env.*' \
+              --exclude='!.env.example' \
+              apps/web/ ../mirror/apps/web/
+          fi
+          
+          # ============================================
+          # LANDING PAGE - Copy if exists
+          # ============================================
+          echo "Copying landing page..."
+          if [ -d "apps/landing" ]; then
+            rsync -av --progress \
+              --exclude='node_modules' \
+              --exclude='dist' \
+              --exclude='build' \
+              --exclude='.cache' \
+              --exclude='.env' \
+              --exclude='.env.*' \
+              apps/landing/ ../mirror/apps/landing/
+          fi
+          
+          # ============================================
+          # PACKAGES - Shared libraries
+          # ============================================
+          echo "Copying packages..."
+          if [ -d "packages/core" ]; then
+            rsync -av --progress \
+              --exclude='node_modules' \
+              --exclude='dist' \
+              --exclude='build' \
+              --exclude='.turbo' \
+              packages/core/ ../mirror/packages/core/
+          fi
+          
+          if [ -d "packages/ui-web" ]; then
+            rsync -av --progress \
+              --exclude='node_modules' \
+              --exclude='dist' \
+              --exclude='build' \
+              --exclude='.turbo' \
+              --exclude='storybook-static' \
+              packages/ui-web/ ../mirror/packages/ui-web/
+          fi
+          
+          if [ -d "packages/ui-native" ]; then
+            rsync -av --progress \
+              --exclude='node_modules' \
+              --exclude='dist' \
+              --exclude='build' \
+              packages/ui-native/ ../mirror/packages/ui-native/
+          fi
+          
+          # ============================================
+          # SCRIPTS - Utility scripts (filtered)
+          # ============================================
+          echo "Copying scripts..."
+          if [ -d "scripts" ]; then
+            rsync -av --progress \
+              --exclude='*secret*' \
+              --exclude='*password*' \
+              --exclude='*.local.*' \
+              scripts/ ../mirror/scripts/
+          fi
+          
+          # ============================================
+          # DOCUMENTATION
+          # ============================================
+          echo "Copying documentation..."
+          if [ -d "docs" ]; then
+            rsync -av --progress \
+              --exclude='*INTERNAL*' \
+              --exclude='*internal*' \
+              --exclude='*SECRET*' \
+              --exclude='*secret*' \
+              --exclude='*PRIVATE*' \
+              --exclude='*private*' \
+              docs/ ../mirror/docs/
+          fi
+          
+          # ============================================
+          # ROOT CONFIG FILES
+          # ============================================
+          echo "Copying root config files..."
+          
+          # Package management
+          [ -f "package.json" ] && cp package.json ../mirror/
+          [ -f "pnpm-lock.yaml" ] && cp pnpm-lock.yaml ../mirror/
+          [ -f "pnpm-workspace.yaml" ] && cp pnpm-workspace.yaml ../mirror/
+          [ -f "package-lock.json" ] && cp package-lock.json ../mirror/
+          
+          # TypeScript config
+          [ -f "tsconfig.json" ] && cp tsconfig.json ../mirror/
+          
+          # API specification
+          [ -f "openapi.yaml" ] && cp openapi.yaml ../mirror/
+          
+          # Orval config (API client generation)
+          [ -f "orval.config.mjs" ] && cp orval.config.mjs ../mirror/
+          
+          # Docker files (compose only, no secrets)
+          for file in docker-compose*.yml; do
+            if [ -f "$file" ] && [[ ! "$file" =~ (secret|local|override) ]]; then
+              cp "$file" ../mirror/
+            fi
+          done
+          
+          # Copy .env.example files
+          find . -name '.env.example' -type f | while read envfile; do
+            dir=$(dirname "$envfile")
+            mkdir -p "../mirror/$dir"
+            cp "$envfile" "../mirror/$envfile"
+          done
+          
+          # ============================================
+          # MIRROR-SPECIFIC FILES
+          # ============================================
+          echo "Adding mirror-specific files..."
+          
+          # Copy the mirror .gitignore
+          [ -f ".gitignore.mirror" ] && cp .gitignore.mirror ../mirror/.gitignore
+          
+          # Copy CONTRIBUTING.md for mirror
+          [ -f "CONTRIBUTING.mirror.md" ] && cp CONTRIBUTING.mirror.md ../mirror/CONTRIBUTING.md
+          
+          # Copy mirror-specific README if exists
+          [ -f "README.mirror.md" ] && cp README.mirror.md ../mirror/README.md
+          
+          echo "=== File filtering complete ==="
+      
+      # ============================================
+      # 5. SECURITY CHECK - Scan for secrets
+      # ============================================
+      - name: Security scan for secrets
+        run: |
+          echo "=== Scanning for potential secrets ==="
+          cd mirror
+          
+          # Check for common secret patterns
+          SECRETS_FOUND=0
+          
+          # Check for .env files (not .env.example)
+          ENV_FILES=$(find . -name '.env' -o -name '.env.local' -o -name '.env.production' 2>/dev/null | grep -v '.env.example' || true)
+          if [ -n "$ENV_FILES" ]; then
+            echo "ERROR: Found .env files that should not be in mirror:"
+            echo "$ENV_FILES"
+            SECRETS_FOUND=1
+          fi
+          
+          # Check for potential API keys in files
+          POTENTIAL_SECRETS=$(grep -r -l -i -E "(api_key|apikey|secret_key|secretkey|password|token)[\s]*[=:][\s]*['\"][^'\"]+['\"]" --include="*.js" --include="*.ts" --include="*.py" --include="*.json" . 2>/dev/null | head -20 || true)
+          if [ -n "$POTENTIAL_SECRETS" ]; then
+            echo "WARNING: Files with potential hardcoded secrets:"
+            echo "$POTENTIAL_SECRETS"
+            echo "Please review these files manually"
+          fi
+          
+          # Check for private keys
+          KEY_FILES=$(find . -name "*.pem" -o -name "*.key" -o -name "*.p12" 2>/dev/null || true)
+          if [ -n "$KEY_FILES" ]; then
+            echo "ERROR: Found private key files:"
+            echo "$KEY_FILES"
+            SECRETS_FOUND=1
+          fi
+          
+          if [ "$SECRETS_FOUND" -eq 1 ]; then
+            echo "ERROR: Secrets detected! Aborting sync."
+            exit 1
+          fi
+          
+          echo "=== Security scan passed ==="
+      
+      # ============================================
+      # 6. GENERATE MIRROR METADATA
+      # ============================================
+      - name: Generate mirror metadata
+        run: |
+          cd mirror
+          
+          # Create a sync metadata file
+          cat > .mirror-sync-info.json << EOF
+          {
+            "syncedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "sourceRepo": "${{ github.repository }}",
+            "sourceCommit": "${{ github.sha }}",
+            "sourceBranch": "${{ github.ref_name }}",
+            "workflowRun": "${{ github.run_id }}",
+            "note": "This is a read-only mirror. Submit PRs here for review."
+          }
+          EOF
+          
+          echo "Mirror metadata generated"
+      
+      # ============================================
+      # 7. SHOW DRY RUN RESULTS (if requested)
+      # ============================================
+      - name: Show dry run results
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          echo "=== DRY RUN - Files that would be synced ==="
+          cd mirror
+          find . -type f | head -100
+          echo ""
+          echo "Total files: $(find . -type f | wc -l)"
+          echo ""
+          echo "Directory structure:"
+          find . -type d | head -50
+          echo ""
+          echo "=== DRY RUN COMPLETE - No changes pushed ==="
+      
+      # ============================================
+      # 8. CLONE MIRROR REPO AND SYNC
+      # ============================================
+      - name: Clone mirror repository
+        if: github.event.inputs.dry_run != 'true'
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_REPO_TOKEN }}
+        run: |
+          git clone --depth 1 https://x-token:${MIRROR_TOKEN}@github.com/${{ env.MIRROR_REPO }}.git mirror-repo
+          cd mirror-repo
+          git checkout ${{ env.MIRROR_BRANCH }} || git checkout -b ${{ env.MIRROR_BRANCH }}
+      
+      - name: Sync files to mirror
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          # Remove all existing files in mirror-repo (except .git)
+          cd mirror-repo
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} \;
+          
+          # Copy all filtered files to mirror-repo
+          cp -r ../mirror/* .
+          cp -r ../mirror/.* . 2>/dev/null || true
+          
+          echo "Files synced to mirror repository"
+      
+      # ============================================
+      # 9. COMMIT AND PUSH TO MIRROR
+      # ============================================
+      - name: Commit and push to mirror
+        if: github.event.inputs.dry_run != 'true'
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_REPO_TOKEN }}
+        run: |
+          cd mirror-repo
+          
+          # Stage all changes
+          git add -A
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to sync"
+            exit 0
+          fi
+          
+          # Create commit message
+          COMMIT_MSG="Mirror sync: ${{ github.sha }}"
+          COMMIT_BODY="Source: ${{ github.repository }}@${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+          Author: ${{ github.actor }}
+          Workflow: ${{ github.workflow }}
+          Run: ${{ github.run_id }}"
+          
+          git commit -m "$COMMIT_MSG" -m "$COMMIT_BODY"
+          
+          # Force push to mirror (history is rewritten)
+          git push --force origin ${{ env.MIRROR_BRANCH }}
+          
+          echo "=== Mirror sync complete ==="
+          echo "Mirror repository: https://github.com/${{ env.MIRROR_REPO }}"
+      
+      # ============================================
+      # 10. POST-SYNC SUMMARY
+      # ============================================
+      - name: Post-sync summary
+        if: always()
+        run: |
+          echo "========================================"
+          echo "         MIRROR SYNC SUMMARY"
+          echo "========================================"
+          echo "Status: ${{ job.status }}"
+          echo "Source: ${{ github.repository }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Mirror: ${{ env.MIRROR_REPO }}"
+          echo "Dry Run: ${{ github.event.inputs.dry_run || 'false' }}"
+          echo "========================================"

@@ -74,38 +74,25 @@ export type InvoiceStatus = typeof InvoiceStatus[keyof typeof InvoiceStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const InvoiceStatus = {
-  paid: 'paid',
-  pending: 'pending',
-  overdue: 'overdue',
+  active: 'active',
   cancelled: 'cancelled',
-  open: 'open',
+  refunded: 'refunded',
+  paid: 'paid',
 } as const;
 
-export type InvoiceItemsItem = {
-  id?: string;
-  description?: string;
-  quantity?: number;
-  unit_price?: number;
-  amount?: number;
-  total?: number;
-};
-
 export interface Invoice {
-  id?: string;
-  tenant_id?: string;
-  tenant_name?: string;
-  invoice_number?: string;
-  amount?: number;
-  subtotal?: number;
-  tax_total?: number;
-  total?: number;
-  paid_amount?: number;
-  currency?: string;
+  id?: number;
+  invoiceNumber?: string;
+  tenantId?: string;
+  tenantName?: string;
+  patientName?: string;
+  deviceName?: string;
+  devicePrice?: number;
   status?: InvoiceStatus;
-  due_date?: string;
-  issue_date?: string;
-  created_at?: string;
-  items?: InvoiceItemsItem[];
+  createdAt?: string;
+  updatedAt?: string;
+  hasGibPdf?: boolean;
+  gibPdfLink?: string;
 }
 
 export type InvoiceInputItemsItem = {
@@ -300,6 +287,13 @@ export interface SupportTicketInput {
   tenant_id?: string;
 }
 
+export interface Pagination {
+  page?: number;
+  limit?: number;
+  total?: number;
+  totalPages?: number;
+}
+
 export type DashboardMetricsOverview = {
   total_tenants?: number;
   active_tenants?: number;
@@ -350,6 +344,26 @@ export interface AnalyticsOverview {
   mau_growth?: number;
   churn_rate?: number;
   churn_growth?: number;
+  domain_metrics?: DomainMetrics;
+}
+
+export type DomainMetricsSgkSubmissionsItem = {
+  month?: string;
+  count?: number;
+  approved?: number;
+};
+
+export type DomainMetricsDeviceFittingsItem = {
+  month?: string;
+  count?: number;
+};
+
+export interface DomainMetrics {
+  sgk_submissions?: DomainMetricsSgkSubmissionsItem[];
+  device_fittings?: DomainMetricsDeviceFittingsItem[];
+  appointment_conversion?: number;
+  avg_fitting_time?: number;
+  total_patients_fitted?: number;
 }
 
 export interface RevenueTrend {
@@ -420,11 +434,90 @@ export interface SystemSettings {
   paymentSecretKey?: string;
 }
 
-export interface Pagination {
-  page?: number;
-  limit?: number;
-  total?: number;
-  totalPages?: number;
+export type SupplierStatus = typeof SupplierStatus[keyof typeof SupplierStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const SupplierStatus = {
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export interface Supplier {
+  id?: number;
+  company_name?: string;
+  contact_name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  tax_id?: string;
+  tax_office?: string;
+  status?: SupplierStatus;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type SupplierInputStatus = typeof SupplierInputStatus[keyof typeof SupplierInputStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const SupplierInputStatus = {
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export interface SupplierInput {
+  company_name: string;
+  contact_name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  tax_id?: string;
+  tax_office?: string;
+  status?: SupplierInputStatus;
+}
+
+export type CampaignDiscountType = typeof CampaignDiscountType[keyof typeof CampaignDiscountType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CampaignDiscountType = {
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED_AMOUNT: 'FIXED_AMOUNT',
+} as const;
+
+export interface Campaign {
+  id?: number;
+  name?: string;
+  description?: string;
+  discount_type?: CampaignDiscountType;
+  discount_value?: number;
+  start_date?: string;
+  end_date?: string;
+  is_active?: boolean;
+  target_audience?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type CampaignInputDiscountType = typeof CampaignInputDiscountType[keyof typeof CampaignInputDiscountType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CampaignInputDiscountType = {
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED_AMOUNT: 'FIXED_AMOUNT',
+} as const;
+
+export interface CampaignInput {
+  name: string;
+  description?: string;
+  discount_type?: CampaignInputDiscountType;
+  discount_value?: number;
+  start_date?: string;
+  end_date?: string;
+  is_active?: boolean;
+  target_audience?: string;
 }
 
 export type AddOnAddonType = typeof AddOnAddonType[keyof typeof AddOnAddonType];
@@ -567,6 +660,104 @@ export type GetAdminInvoicesId200 = {
 
 export type PostAdminInvoicesIdPaymentBody = {
   amount?: number;
+};
+
+export type GetAdminSuppliersParams = {
+page?: number;
+limit?: number;
+search?: string;
+status?: GetAdminSuppliersStatus;
+};
+
+export type GetAdminSuppliersStatus = typeof GetAdminSuppliersStatus[keyof typeof GetAdminSuppliersStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const GetAdminSuppliersStatus = {
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export type GetAdminSuppliers200Data = {
+  suppliers?: Supplier[];
+  pagination?: Pagination;
+};
+
+export type GetAdminSuppliers200 = {
+  data?: GetAdminSuppliers200Data;
+};
+
+export type PostAdminSuppliers201Data = {
+  supplier?: Supplier;
+};
+
+export type PostAdminSuppliers201 = {
+  data?: PostAdminSuppliers201Data;
+};
+
+export type GetAdminSuppliersId200Data = {
+  supplier?: Supplier;
+};
+
+export type GetAdminSuppliersId200 = {
+  data?: GetAdminSuppliersId200Data;
+};
+
+export type PutAdminSuppliersId200Data = {
+  supplier?: Supplier;
+};
+
+export type PutAdminSuppliersId200 = {
+  data?: PutAdminSuppliersId200Data;
+};
+
+export type GetAdminCampaignsParams = {
+page?: number;
+limit?: number;
+search?: string;
+status?: GetAdminCampaignsStatus;
+};
+
+export type GetAdminCampaignsStatus = typeof GetAdminCampaignsStatus[keyof typeof GetAdminCampaignsStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const GetAdminCampaignsStatus = {
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export type GetAdminCampaigns200Data = {
+  campaigns?: Campaign[];
+  pagination?: Pagination;
+};
+
+export type GetAdminCampaigns200 = {
+  data?: GetAdminCampaigns200Data;
+};
+
+export type PostAdminCampaigns201Data = {
+  campaign?: Campaign;
+};
+
+export type PostAdminCampaigns201 = {
+  data?: PostAdminCampaigns201Data;
+};
+
+export type GetAdminCampaignsId200Data = {
+  campaign?: Campaign;
+};
+
+export type GetAdminCampaignsId200 = {
+  data?: GetAdminCampaignsId200Data;
+};
+
+export type PutAdminCampaignsId200Data = {
+  campaign?: Campaign;
+};
+
+export type PutAdminCampaignsId200 = {
+  data?: PutAdminCampaignsId200Data;
 };
 
 export type GetAdminPlansParams = {

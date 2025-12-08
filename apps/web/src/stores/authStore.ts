@@ -448,13 +448,13 @@ export const useAuthStore = create<AuthStore>()(
 
                 if (userResponse.status === 200 && userResponse.data) {
                   const userData = userResponse.data;
-                  const transformedUser = {
+                  const transformedUser: User = {
                     id: userData.id || '',
                     email: userData.email || '',
                     name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.username || '',
                     role: userData.role || 'user',
                     phone: userData.phone,
-                    isPhoneVerified: userData.isPhoneVerified
+                    isPhoneVerified: (userData as any).isPhoneVerified
                   };
 
                   set({

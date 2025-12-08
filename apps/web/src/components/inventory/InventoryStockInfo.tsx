@@ -10,11 +10,11 @@ interface InventoryStockInfoProps {
 export const InventoryStockInfo: React.FC<InventoryStockInfoProps> = ({ item }) => {
   const getStockStatus = () => {
     if (item.availableInventory === 0) {
-      return { label: 'Tükendi', color: 'red' as const };
+      return { label: 'Tükendi', color: 'danger' as const };
     } else if (item.availableInventory <= item.reorderLevel) {
-      return { label: 'Düşük Stok', color: 'yellow' as const };
+      return { label: 'Düşük Stok', color: 'warning' as const };
     } else {
-      return { label: 'Stokta', color: 'green' as const };
+      return { label: 'Stokta', color: 'success' as const };
     }
   };
 
@@ -99,7 +99,7 @@ export const InventoryStockInfo: React.FC<InventoryStockInfoProps> = ({ item }) 
                   Toplam Değer
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ₺{item.totalValue.toFixed(2)}
+                  ₺{(item.totalValue ?? 0).toFixed(2)}
                 </p>
               </div>
               <TrendingUp className="w-8 h-8 text-purple-500" />

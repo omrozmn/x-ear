@@ -211,11 +211,11 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
     try {
       // include kdv in the payload so backend can persist kdv_rate
       const response = await inventoryUpdateInventoryItem(id, {
-        name: editedItem.name,
-        brand: editedItem.brand,
+        name: editedItem.name ?? item.name,
+        brand: editedItem.brand ?? item.brand,
         model: editedItem.model,
-        category: editedItem.category,
-        price: editedItem.price,
+        category: editedItem.category ?? item.category,
+        price: editedItem.price ?? item.price,
         cost: editedItem.cost,
         barcode: editedItem.barcode,
         stockCode: editedItem.stockCode,
@@ -227,7 +227,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         kdv: kdvRate,
         priceIncludesKdv: isPriceKdvIncluded,
         costIncludesKdv: isCostKdvIncluded,
-      });
+      } as any);
 
       if (response.data.success) {
         await loadItem();
@@ -270,7 +270,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         count: features.length
       });
 
-      const response = await inventoryUpdateInventoryItem(id, { features });
+      const response = await inventoryUpdateInventoryItem(id, { features } as any);
 
       if (response.data.success) {
         await loadItem();

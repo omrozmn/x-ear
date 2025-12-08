@@ -149,7 +149,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
         ...prev,
         saleStatus: sale.status || 'PENDING',
         paymentMethod: sale.paymentMethod || 'cash',
-        saleType: productDetails?.category === 'hearing_aid' ? 'device' : 'service'
+        saleType: (productDetails?.category as string) === 'hearing_aid' ? 'device' : 'service'
       }));
     }
   }, [sale, isOpen, productDetails]);

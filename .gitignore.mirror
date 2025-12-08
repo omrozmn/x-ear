@@ -1,0 +1,306 @@
+# ============================================
+# X-EAR Mirror Repository - Production .gitignore
+# This file is optimized for Python + React + Docker projects
+# ============================================
+
+# ============================================
+# 1. DEPENDENCIES & PACKAGE MANAGERS
+# ============================================
+
+# Node.js
+node_modules/
+.pnp/
+.pnp.js
+.yarn/
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Python
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.Python
+pip-wheel-metadata/
+*.egg-info/
+*.egg
+MANIFEST
+
+# ============================================
+# 2. BUILD OUTPUTS & COMPILED FILES
+# ============================================
+
+# General build
+build/
+dist/
+out/
+.output/
+.nuxt/
+.next/
+.turbo/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# ============================================
+# 3. ENVIRONMENT & SECRETS (CRITICAL)
+# ============================================
+
+# Environment files - NEVER commit these
+.env
+.env.*
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+!.env.example
+!.env.sample
+
+# Secret keys and certificates
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+.secrets/
+
+# ============================================
+# 4. DATABASE & DATA FILES
+# ============================================
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# Database dumps
+*.sql.gz
+*.dump
+*.bak
+
+# Instance folders
+instance/
+/apps/backend/instance/
+
+# ============================================
+# 5. LOGS & TEMPORARY FILES
+# ============================================
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# PID files
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+*.tmp
+*.temp
+
+# ============================================
+# 6. CACHES
+# ============================================
+
+# General cache
+.cache/
+.parcel-cache/
+
+# Python caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.hypothesis/
+.nox/
+.tox/
+
+# ML/AI model caches (large files)
+.paddleocr/
+.cache_transformers/
+hf_cache/
+huggingface/
+models/
+*.h5
+*.pt
+*.pth
+*.onnx
+*.pb
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ============================================
+# 7. IDE & EDITOR
+# ============================================
+
+# VSCode
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ============================================
+# 8. TESTING & COVERAGE
+# ============================================
+
+coverage/
+.nyc_output/
+*.lcov
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ============================================
+# 9. DOCKER
+# ============================================
+
+# Docker compose override (local settings)
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Docker volumes (if mounted locally)
+.docker/
+docker-data/
+
+# ============================================
+# 10. MISCELLANEOUS
+# ============================================
+
+# Storybook
+storybook-static/
+
+# Chromatic
+chromatic-*.json
+
+# Generated API clients (if re-generated locally)
+# Note: Keep generated/ if it's committed for distribution
+# generated/
+
+# Lock files (keep these for reproducible builds)
+# !package-lock.json
+# !pnpm-lock.yaml
+# !yarn.lock
+# !poetry.lock
+
+# Local scripts and notes
+*.local
+*.local.*
+notes/
+TODO.local.md
+NOTES.md
+scratch/
+
+# Large media files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Backup files
+*.backup
+*.bkp
+*~
+
+# ============================================
+# 11. PROJECT-SPECIFIC EXCLUSIONS
+# ============================================
+
+# Backend specific
+/apps/backend/database.db
+/apps/backend/xear_crm.db
+/apps/backend/*.db
+/apps/backend/*.log
+/apps/backend/*.pid
+/backend/instance/
+
+# Analysis and temporary markdown files (internal docs)
+*_ANALYSIS.md
+*_CHECKLIST.md
+*_COMPLETE.md
+*_FIXED.md
+*_IMPLEMENTATION.md
+*_MIGRATION.md
+*_PLAN.md
+*_PROGRESS.md
+*_SUMMARY.md
+*_TEMP.md
+
+# Scrape and debug files
+*_scrape_log.jsonl
+*_resp_saved.json
+eslint-*.json
+
+# Personal/internal documentation
+HANDOFF*.md
+TODO*.md

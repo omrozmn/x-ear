@@ -47,8 +47,8 @@ const AdminNotificationsPage: React.FC = () => {
 
     const handleTemplateSelect = (template: any) => {
         setSelectedTemplate(template);
-        setCustomTitle(template.titleTemplate);
-        setCustomMessage(template.bodyTemplate);
+        setCustomTitle(template.titleTemplate || '');
+        setCustomMessage(template.bodyTemplate || '');
     };
 
     return (
@@ -154,8 +154,8 @@ const AdminNotificationsPage: React.FC = () => {
                                         key={template.id}
                                         onClick={() => handleTemplateSelect(template)}
                                         className={`p-3 rounded-md border cursor-pointer transition-colors ${selectedTemplate?.id === template.id
-                                                ? 'border-primary-500 bg-primary-50'
-                                                : 'border-gray-200 hover:bg-gray-50'
+                                            ? 'border-primary-500 bg-primary-50'
+                                            : 'border-gray-200 hover:bg-gray-50'
                                             }`}
                                     >
                                         <div className="font-medium text-sm text-gray-900">{template.name}</div>

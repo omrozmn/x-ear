@@ -36,7 +36,7 @@ export function usePatientDocuments(patientId?: string) {
 
     try {
       const result = await patientApiService.getDocuments(id);
-      setDocuments(result?.data || []);
+      setDocuments((result?.data || []) as PatientDocument[]);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
       setDocuments([]);
