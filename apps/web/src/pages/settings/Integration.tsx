@@ -26,6 +26,9 @@ import * as Tabs from '@radix-ui/react-tabs';
 import * as Dialog from '@radix-ui/react-dialog';
 import axios from 'axios';
 
+
+import { PosSettings } from './PosSettings';
+
 const REQUIRED_DOCUMENTS = [
     { id: 'contract', label: 'Sözleşme', hasExample: true },
     { id: 'id_card', label: 'Kimlik Fotokopisi veya Resmi', hasExample: false },
@@ -98,7 +101,7 @@ export default function IntegrationSettings() {
 
             // Get token from localStorage
             const token = localStorage.getItem('x-ear.auth.token@v1');
-            
+
             await axios.post('/api/sms/documents/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -260,6 +263,15 @@ export default function IntegrationSettings() {
                             }`}
                     >
                         SMS Başlıkları
+                    </Tabs.Trigger>
+                    <Tabs.Trigger
+                        value="pos"
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'pos'
+                            ? 'border-indigo-600 text-indigo-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                    >
+                        Online Ödeme (POS)
                     </Tabs.Trigger>
                 </Tabs.List>
 
@@ -507,13 +519,16 @@ export default function IntegrationSettings() {
                         )}
                     </div>
                 </Tabs.Content>
+                <Tabs.Content value="pos" className="space-y-6">
+                    <PosSettings />
+                </Tabs.Content>
             </Tabs.Root>
 
             {/* Document Preview Modal */}
             <Dialog.Root open={!!previewDoc} onOpenChange={(open) => !open && closePreview()}>
                 <Dialog.Portal>
                     <Dialog.Overlay className="fixed inset-0 bg-black/60 z-[9999]" />
-                    <Dialog.Content 
+                    <Dialog.Content
                         className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 w-[95vw] md:w-[90vw] h-[85vh] md:h-[90vh] max-w-6xl z-[10000] flex flex-col shadow-2xl"
                         aria-describedby={undefined}
                     >
@@ -548,7 +563,7 @@ export default function IntegrationSettings() {
             <Dialog.Root open={showContractExample} onOpenChange={setShowContractExample}>
                 <Dialog.Portal>
                     <Dialog.Overlay className="fixed inset-0 bg-black/60 z-[9999]" />
-                    <Dialog.Content 
+                    <Dialog.Content
                         className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 w-[95vw] md:w-[90vw] h-[85vh] md:h-[90vh] max-w-6xl z-[10000] flex flex-col shadow-2xl"
                         aria-describedby={undefined}
                     >

@@ -322,6 +322,11 @@ app.register_blueprint(proformas_bp, url_prefix='/api')
 from routes.payments import payments_bp
 app.register_blueprint(payments_bp, url_prefix='/api')
 
+# ===== PAYMENT INTEGRATIONS (POS) ENDPOINTS =====
+from routes.payment_integrations import payment_integrations_bp
+app.register_blueprint(payment_integrations_bp)
+
+
 # ===== CASH RECORDS ENDPOINTS =====
 # Cash register records for cashflow management
 from routes.unified_cash import unified_cash_bp

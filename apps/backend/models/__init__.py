@@ -38,6 +38,7 @@ from .efatura_outbox import EFaturaOutbox
 from .replacement import Replacement
 from .subscription import Subscription, PaymentHistory
 
+from .stock_movement import StockMovement
 from .sms_integration import SMSProviderConfig, SMSHeaderRequest, SMSPackage, TenantSMSCredit, TargetAudience
 
 # Maintain backward compatibility - all existing imports should work
@@ -50,7 +51,7 @@ __all__ = [
     'PromissoryNote',
     'Settings', 'Campaign', 'SMSLog',
     'EmailLog', 'CommunicationTemplate', 'CommunicationHistory',
-    'Inventory', 'Supplier', 'ProductSupplier',
+    'Inventory', 'StockMovement', 'Supplier', 'ProductSupplier',
     'DeviceReplacement', 'ReturnInvoice',
     'Invoice', 'Proforma',
     'PurchaseInvoice', 'PurchaseInvoiceItem', 'SuggestedSupplier',

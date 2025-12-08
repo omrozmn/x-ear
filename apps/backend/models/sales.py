@@ -30,8 +30,17 @@ class PaymentRecord(BaseModel):
     
     # Reference info
     reference_number = db.Column(db.String(100))  # Check number, transaction ID, etc.
-    notes = db.Column(db.Text)
-    
+    # POS / Online Payment details
+    pos_provider = db.Column(db.String(50))  # e.g., paytr, iyzico
+    pos_transaction_id = db.Column(db.String(100), index=True)
+    pos_status = db.Column(db.String(50))  # success, failed, refund
+    installment_count = db.Column(db.Integer, default=1)
+    is_3d_secure = db.Column(db.Boolean, default=False)
+    pos_raw_response = db.Column(db.JSON)  # Store full callback for audit
+    gross_amount = db.Column(sa.Numeric(12, 2))  # Amount charged to card
+    net_amount = db.Column(sa.Numeric(12, 2))  # Amount after commission
+    error_message = db.Column(db.Text)
+
     def to_dict(self):
         base_dict = self.to_dict_base()
         payment_dict = {
@@ -47,7 +56,13 @@ class PaymentRecord(BaseModel):
             'paymentType': self.payment_type,
             'status': self.status,
             'referenceNumber': self.reference_number,
-            'notes': self.notes
+            'notes': self.notes,
+            # POS Details
+            'posProvider': self.pos_provider,
+            'posStatus': self.pos_status,
+            'installmentCount': self.installment_count,
+            'grossAmount': float(self.gross_amount) if self.gross_amount else None,
+            'netAmount': float(self.net_amount) if self.net_amount else None
         }
         payment_dict.update(base_dict)
         return payment_dict

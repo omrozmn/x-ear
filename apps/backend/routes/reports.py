@@ -779,3 +779,110 @@ def report_promissory_notes_list():
     except Exception as e:
         logger.error(f"Promissory notes list error: {str(e)}")
         return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
+
+
+@reports_bp.route('/reports/pos-movements', methods=['GET'])
+def report_pos_movements():
+    """POS Hareketleri Raporu"""
+    try:
+        from models.sales import PaymentRecord
+        
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 20))
+        days = int(request.args.get('days', 30))
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+        branch_ids = get_user_branch_filter()
+        
+        # Re-build query with explicit selects and joins for performance
+        query = db.session.query(
+            PaymentRecord,
+            Sale,
+            Patient
+        ).join(
+            Sale, PaymentRecord.sale_id == Sale.id, isouter=True
+        ).join(
+            Patient, Sale.patient_id == Patient.id, isouter=True
+        ).filter(
+            PaymentRecord.created_at >= start_date,
+            PaymentRecord.created_at <= end_date,
+            PaymentRecord.pos_provider != None
+        )
+        
+        if branch_ids:
+            query = query.filter(Sale.branch_id.in_(branch_ids))
+            
+        total = query.count()
+            
+        query = query.order_by(PaymentRecord.created_at.desc())
+        results = query.offset((page - 1) * per_page).limit(per_page).all()
+        
+        data = []
+        summary = {
+            'total_volume': 0,
+            'success_count': 0,
+            'fail_count': 0
+        }
+        
+        # Calculate summary across ALL matching records (not just page) - simplified
+        # For full summary we should run separate aggregation query, but let's do simple query first
+        agg_query = db.session.query(
+            func.count(PaymentRecord.id),
+            func.sum(PaymentRecord.amount)
+        ).filter(
+             PaymentRecord.created_at >= start_date,
+             PaymentRecord.created_at <= end_date,
+             PaymentRecord.pos_provider != None,
+             PaymentRecord.status == 'paid'
+        )
+        if branch_ids:
+             agg_query = agg_query.join(Sale, PaymentRecord.sale_id == Sale.id).filter(Sale.branch_id.in_(branch_ids))
+        
+        success_count, total_vol = agg_query.first()
+        summary['total_volume'] = float(total_vol or 0)
+        summary['success_count'] = success_count or 0
+        
+        # Failed count
+        fail_query = db.session.query(func.count(PaymentRecord.id)).filter(
+             PaymentRecord.created_at >= start_date,
+             PaymentRecord.created_at <= end_date,
+             PaymentRecord.pos_provider != None,
+             PaymentRecord.status != 'paid'
+        )
+        if branch_ids:
+             fail_query = fail_query.join(Sale, PaymentRecord.sale_id == Sale.id).filter(Sale.branch_id.in_(branch_ids))
+        summary['fail_count'] = fail_query.scalar() or 0
+        
+
+        for payment, sale, patient in results:
+            data.append({
+                'id': payment.id,
+                'date': payment.created_at.isoformat(),
+                'amount': float(payment.amount or 0),
+                'gross_amount': float(payment.gross_amount or 0),
+                'status': payment.status,
+                'pos_status': payment.pos_status,
+                'pos_transaction_id': payment.pos_transaction_id,
+                'installment': payment.installment_count,
+                'error_message': payment.error_message,
+                'sale_id': sale.id if sale else None,
+                'patient_name': f"{patient.first_name} {patient.last_name}" if patient else "Bilinmiyor"
+            })
+            
+        return jsonify({
+            'success': True,
+            'data': data,
+            'summary': summary,
+            'meta': {
+                'total': total,
+                'page': page,
+                'per_page': per_page,
+                'total_pages': (total + per_page - 1) // per_page
+            },
+            'timestamp': datetime.now().isoformat()
+        })
+
+    except Exception as e:
+        logger.error(f"POS movements report error: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+

@@ -11,6 +11,7 @@ from services.pricing import (
     create_payment_plan,
     create_custom_payment_plan
 )
+from services.stock_service import create_stock_movement
 from utils.idempotency import idempotent
 from utils.authorization import crm_permission_required
 from datetime import datetime
@@ -490,8 +491,39 @@ def update_device_assignment(assignment_id):
         data = request.get_json()
         
         # Update fields if provided
+        # Update fields if provided
         if 'status' in data:
+            status_val = data['status']
             assignment.notes = (assignment.notes or '') + f"\n[İptal edildi: {datetime.now().strftime('%Y-%m-%d %H:%M')}]"
+            
+            # Stock Return Logic
+            if status_val in ['cancelled', 'returned'] and assignment.inventory_id:
+                from models.inventory import Inventory
+                inv_item = db.session.get(Inventory, assignment.inventory_id)
+                if inv_item:
+                    # Decide if serial or quantity
+                    serial_to_restore = assignment.serial_number or assignment.serial_number_left or assignment.serial_number_right
+                    
+                    restored = False
+                    if serial_to_restore:
+                         restored = inv_item.add_serial_number(serial_to_restore)
+                    else:
+                         # Quantity
+                         ear_val = str(assignment.ear or '').lower()
+                         qty = 2 if (ear_val.startswith('b') or ear_val in ['both', 'bilateral']) else 1
+                         restored = inv_item.update_inventory(qty)
+                    
+                    if restored:
+                         create_stock_movement(
+                            inventory_id=inv_item.id,
+                            movement_type="return",
+                            quantity=1 if serial_to_restore else qty,
+                            tenant_id=inv_item.tenant_id,
+                            serial_number=serial_to_restore,
+                            transaction_id=assignment.sale_id or assignment.id,
+                            created_by=data.get('user_id', 'system'),
+                            session=db.session
+                         )
         
         if 'ear_side' in data:
             assignment.ear = data['ear_side']
@@ -800,7 +832,7 @@ def _create_sale_record(patient_id, pricing_calculation, paid_amount, payment_pl
             return None, jsonify({"success": False, "error": str(raw_err)}), 500
 
 
-def _create_single_device_assignment(assignment_data, patient_id, sale_id, sgk_scheme, pricing_calculation, index=0, tenant_id=None, branch_id=None):
+def _create_single_device_assignment(assignment_data, patient_id, sale_id, sgk_scheme, pricing_calculation, index=0, tenant_id=None, branch_id=None, created_by=None):
     """Create a single device assignment."""
     inventory_id = assignment_data.get('inventoryId')
     if not inventory_id:
@@ -900,7 +932,7 @@ def _create_single_device_assignment(assignment_data, patient_id, sale_id, sgk_s
         patient_id=patient_id,
         device_id=inventory_id,
         sale_id=sale_id,
-        ear=assignment_data.get('ear_side', 'both') or assignment_data.get('ear', 'both'),
+        ear=assignment_data.get('ear_side') or assignment_data.get('ear') or 'both',
         reason=assignment_data.get('reason', 'Sale'),
         from_inventory=True,
         inventory_id=inventory_id,
@@ -912,20 +944,62 @@ def _create_single_device_assignment(assignment_data, patient_id, sale_id, sgk_s
         discount_value=discount_value,
         net_payable=net_payable,
         payment_method=assignment_data.get('payment_method', 'cash'),
-        notes=assignment_data.get('notes', '')
+        notes=assignment_data.get('notes', ''),
+        serial_number=assignment_data.get('serial_number') or assignment_data.get('serialNumber'),
+        serial_number_left=assignment_data.get('serial_number_left') or assignment_data.get('serialNumberLeft'),
+        serial_number_right=assignment_data.get('serial_number_right') or assignment_data.get('serialNumberRight')
     )
 
     db.session.add(assignment)
     db.session.flush()
+
+    # Stock Movement and Inventory Deduction
+    assigned_serial = assignment.serial_number or assignment.serial_number_left or assignment.serial_number_right
+    
+    if assigned_serial:
+        # Serialized item: remove serial number
+        if inventory_item.remove_serial_number(assigned_serial):
+            create_stock_movement(
+                inventory_id=inventory_item.id,
+                movement_type="sale",
+                quantity=-1,
+                tenant_id=inventory_item.tenant_id,
+                serial_number=assigned_serial,
+                transaction_id=sale_id,
+                created_by=created_by,
+                session=db.session
+            )
+        # Note: If serial not found, we silently proceed or should we error? 
+        # Ideally, validation should happen before, but remove_serial_number returns False if not found.
+        # For legacy compatibility, we might not want to block sale if serial is missing but item exists.
+    else:
+        # Non-serialized item: deduct quantity based on ear configuration
+        ear_val = str(assignment.ear or '').lower()
+        qty = 2 if (ear_val.startswith('b') or ear_val in ['both', 'bilateral']) else 1
+        
+        if inventory_item.update_inventory(-qty):
+            create_stock_movement(
+                inventory_id=inventory_item.id,
+                movement_type="sale",
+                quantity=-qty,
+                tenant_id=inventory_item.tenant_id,
+                serial_number=None,
+                transaction_id=sale_id,
+                created_by=created_by,
+                session=db.session
+            )
+        else:
+            return None, f"Insufficient inventory for {inventory_item.name}"
+
     return assignment, None
 
 
-def _create_device_assignments(device_assignments, patient_id, sale, sgk_scheme, pricing_calculation, tenant_id, branch_id=None):
+def _create_device_assignments(device_assignments, patient_id, sale, sgk_scheme, pricing_calculation, tenant_id, branch_id=None, created_by=None):
     """Create all device assignments for a sale."""
     created_assignment_ids = []
 
     for i, assignment_data in enumerate(device_assignments):
-        assignment, error = _create_single_device_assignment(assignment_data, patient_id, sale.id, sgk_scheme, pricing_calculation, i, tenant_id, branch_id)
+        assignment, error = _create_single_device_assignment(assignment_data, patient_id, sale.id, sgk_scheme, pricing_calculation, i, tenant_id, branch_id, created_by=created_by)
         if error:
             db.session.rollback()
             return None, jsonify({"success": False, "error": error, "timestamp": datetime.now().isoformat()}), 400
@@ -1197,7 +1271,7 @@ def _assign_devices_extended_impl(patient_id, data):
 
         # Create device assignments
         created_assignment_ids, error_response, status_code = _create_device_assignments(
-            device_assignments, patient_id, sale, sgk_scheme, pricing_calculation, patient.tenant_id, branch_id
+            device_assignments, patient_id, sale, sgk_scheme, pricing_calculation, patient.tenant_id, branch_id, created_by=data.get('user_id', 'system')
         )
         if error_response:
             return error_response, status_code
@@ -1436,9 +1510,42 @@ def _create_product_device_assignment(patient_id, product_id, sale_id, base_pric
     db.session.add(device_assignment)
 
 
-def _update_product_inventory(product):
+def _update_product_inventory(product, transaction_id=None, created_by=None):
     """Update product inventory quantity."""
-    product.available_inventory -= 1
+    # Check if product is ORM instance or has update_inventory method
+    if hasattr(product, 'update_inventory'):
+        if product.update_inventory(-1):
+             create_stock_movement(
+                inventory_id=product.id,
+                movement_type="sale",
+                quantity=-1,
+                tenant_id=product.tenant_id,
+                serial_number=None,
+                transaction_id=transaction_id,
+                created_by=created_by,
+                session=db.session
+             )
+    else:
+        # Fallback for raw object
+        product.available_inventory -= 1
+        # Try raw SQL update
+        try:
+             db.session.execute(
+                 text("UPDATE inventory SET available_inventory = available_inventory - 1, used_inventory = used_inventory + 1 WHERE id = :id"),
+                 {'id': product.id}
+             )
+             create_stock_movement(
+                inventory_id=product.id,
+                movement_type="sale",
+                quantity=-1,
+                tenant_id=product.tenant_id,
+                serial_number=None,
+                transaction_id=transaction_id,
+                created_by=created_by,
+                session=db.session
+             )
+        except Exception as e:
+             logger.error(f"Failed to update inventory for raw product {product.id}: {e}")
 
 
 def _handle_product_sale_idempotency(e, patient_id, data, idempotency_key):
@@ -1503,7 +1610,7 @@ def create_product_sale(patient_id):
         _create_product_device_assignment(patient_id, product.id, sale.id, base_price, final_price, product, data, user.tenant_id)
 
         # Update inventory
-        _update_product_inventory(product)
+        _update_product_inventory(product, transaction_id=sale.id, created_by=user.id)
 
         db.session.commit()
         logger.info('Sale created successfully: %s idempotency_key=%s', sale.id, idempotency_key)

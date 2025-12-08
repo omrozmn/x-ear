@@ -28,7 +28,9 @@ def now_utc():
 from models.inventory import Inventory, UNIT_TYPES
 from models.brand import Brand
 from models.category import Category
+from models.stock_movement import StockMovement
 from uuid import uuid4
+from services.stock_service import create_stock_movement
 
 inventory_bp = Blueprint('inventory', __name__, url_prefix='/api/inventory')
 
@@ -811,6 +813,72 @@ def get_inventory_item(item_id):
         }), 500
 
 
+
+@inventory_bp.route('/<item_id>/movements', methods=['GET'])
+@jwt_required()
+def get_inventory_movements(item_id):
+    """Get stock movement history for an item"""
+    try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 401
+
+        item = db.session.get(Inventory, item_id)
+        if not item or item.tenant_id != user.tenant_id:
+            return jsonify({'success': False, 'error': 'Inventory item not found'}), 404
+
+        # Filters
+        start_date = request.args.get('startTime') or request.args.get('start_date')
+        end_date = request.args.get('endTime') or request.args.get('end_date')
+        movement_type = request.args.get('type')
+        created_by = request.args.get('user')
+
+        query = item.movements 
+        # Note: 'movements' is a dynamic relationship query object because lazy='dynamic'
+
+        if start_date:
+            try:
+                # Handle ISO format or fallback
+                dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+                query = query.filter(StockMovement.created_at >= dt)
+            except:
+                pass
+        
+        if end_date:
+            try:
+                dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                query = query.filter(StockMovement.created_at <= dt)
+            except:
+                pass
+
+        if movement_type:
+            query = query.filter(StockMovement.movement_type == movement_type)
+        
+        if created_by:
+            query = query.filter(StockMovement.created_by == created_by)
+
+        # Pagination
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 20))
+
+        # Get count before pagination
+        total = query.count()
+        movements = query.order_by(StockMovement.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+
+        return jsonify({
+            'success': True,
+            'data': [m.to_dict() for m in movements],
+            'meta': {
+                'page': page,
+                'perPage': per_page,
+                'total': total
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @inventory_bp.route('', methods=['POST'])
 @jwt_required()
 @idempotent(methods=['POST'])
@@ -968,7 +1036,20 @@ def update_inventory_item(item_id):
         
         # Update inventory levels if provided
         if 'availableInventory' in data or 'inventory' in data:
-            item.available_inventory = data.get('availableInventory') or data.get('inventory', item.available_inventory)
+            new_inv = int(data.get('availableInventory') or data.get('inventory', item.available_inventory))
+            diff = new_inv - item.available_inventory
+            if diff != 0:
+                item.available_inventory = new_inv
+                create_stock_movement(
+                    inventory_id=item.id,
+                    movement_type="adjustment",
+                    quantity=diff,
+                    tenant_id=item.tenant_id,
+                    serial_number=None,
+                    transaction_id=f"adj-{int(now_utc().timestamp())}",
+                    created_by=user.id,
+                    session=db.session
+                )
         
         if 'onTrial' in data:
             item.on_trial = data.get('onTrial', item.on_trial)
@@ -1169,6 +1250,16 @@ def add_serial_numbers(item_id):
         for serial in serials:
             if item.add_serial_number(serial):
                 added_count += 1
+                create_stock_movement(
+                    inventory_id=item.id,
+                    movement_type="adjustment",
+                    quantity=1,
+                    tenant_id=item.tenant_id,
+                    serial_number=serial,
+                    transaction_id=f"add-serial-{int(now_utc().timestamp())}",
+                    created_by=user.id,
+                    session=db.session
+                )
         
         item.updated_at = now_utc()
         db.session.commit()
@@ -1224,6 +1315,17 @@ def assign_to_patient(item_id):
                     'success': False,
                     'error': 'Serial number not found in inventory'
                 }), 400
+            
+            create_stock_movement(
+                inventory_id=item.id,
+                movement_type="sale", # Manual assignment
+                quantity=-1,
+                tenant_id=item.tenant_id,
+                serial_number=serial_number,
+                transaction_id=f"manual-assign-{int(now_utc().timestamp())}",
+                created_by=user.id,
+                session=db.session
+            )
         else:
             # Otherwise, just decrease inventory count
             if not item.update_inventory(-quantity):
@@ -1231,6 +1333,17 @@ def assign_to_patient(item_id):
                     'success': False,
                     'error': 'Insufficient inventory'
                 }), 400
+            
+            create_stock_movement(
+                inventory_id=item.id,
+                movement_type="sale",
+                quantity=-quantity,
+                tenant_id=item.tenant_id,
+                serial_number=None,
+                transaction_id=f"manual-assign-{int(now_utc().timestamp())}",
+                created_by=user.id,
+                session=db.session
+            )
         
         item.updated_at = now_utc()
         db.session.commit()

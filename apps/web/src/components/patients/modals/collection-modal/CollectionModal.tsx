@@ -1,6 +1,6 @@
 import React from 'react';
-import { 
-  Button, 
+import {
+  Button,
   Alert,
   Tabs,
   TabsContent,
@@ -11,6 +11,7 @@ import { X, CreditCard, FileText } from 'lucide-react';
 import { useCollection } from './hooks/useCollection';
 import { PaymentForm } from './components/PaymentForm';
 import { PromissoryNoteForm } from './components/PromissoryNoteForm';
+import { PosPaymentForm } from '../../../finance/PosPaymentForm';
 import { CollectionSummary } from './components/CollectionSummary';
 import type { CollectionModalProps } from './types';
 
@@ -110,14 +111,18 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
 
             {/* Tabs */}
             <Tabs value={state.activeTab} onValueChange={(value) => updateState({ activeTab: value as any })}>
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="payments" className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4" />
-                  Ödeme Al
+                  Nakit / Havale
                 </TabsTrigger>
                 <TabsTrigger value="promissory" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
-                  Senet İşlemleri
+                  Senet
+                </TabsTrigger>
+                <TabsTrigger value="pos" className="flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Online POS
                 </TabsTrigger>
               </TabsList>
 
@@ -143,7 +148,32 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
                   formatCurrency={formatCurrency}
                 />
               </TabsContent>
+
+              <TabsContent value="pos" className="mt-6">
+                {sale.id ? (
+                  <PosPaymentForm
+                    saleId={sale.id}
+                    amount={calculations.remainingBalance}
+                    onSuccess={() => {
+                      // On success, we should probably close modal and refresh
+                      if (onPaymentCreate) {
+                        // Mock payment data as it's already created in backend
+                        onPaymentCreate({
+                          amount: calculations.remainingBalance,
+                          paymentMethod: 'card',
+                          status: 'paid'
+                        } as any);
+                      }
+                    }}
+                  />
+                ) : (
+                  <Alert variant="warning">
+                    Online ödeme yapabilmek için önce satışı kaydetmeniz gerekmektedir.
+                  </Alert>
+                )}
+              </TabsContent>
             </Tabs>
+
           </div>
         </div>
 

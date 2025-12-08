@@ -204,6 +204,10 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/patients/<patient_id>/payment-records'): 'finance.view',
     ('PATCH', '/payment-records/<record_id>'): 'finance.payments',
     
+    # POS Integrations
+    ('POST', '/api/payments/pos/paytr/initiate'): 'finance.payments',
+    ('POST', '/api/payments/pos/paytr/callback'): 'public',
+    
     # Promissory Notes
     ('GET', '/patients/<patient_id>/promissory-notes'): 'finance.view',
     ('POST', '/promissory-notes'): 'finance.payments',

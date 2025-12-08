@@ -120,6 +120,9 @@ class Inventory(BaseModel):
     # Warranty
     warranty = db.Column(db.Integer, default=0)  # warranty in months
     
+    # Relationships
+    movements = db.relationship('StockMovement', back_populates='inventory', lazy='dynamic', cascade='all, delete-orphan')
+
     # Timestamps inherited from BaseModel
 
     def to_dict(self):

@@ -12,6 +12,7 @@ from models.inventory import Inventory
 from models.patient import Patient
 from models.user import ActivityLog, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from services.stock_service import create_stock_movement
 
 logger = logging.getLogger(__name__)
 
@@ -225,6 +226,20 @@ def send_invoice_to_gib(invoice_id):
                             success = inv.update_inventory(-1)
                             if not success:
                                 inventory_note = f"Insufficient stock for inventory {inv.id}; could not decrement"
+                        
+                        # Stock Movement Log
+                        if not inventory_note: # Only log if successful
+                            create_stock_movement(
+                                inventory_id=inv.id,
+                                movement_type="sale", # Replacement out is effectively a sale or output
+                                quantity=-1,
+                                tenant_id=inv.tenant_id,
+                                serial_number=serial if (serial and inv.category == 'hearing_aid') else None,
+                                transaction_id=r.id,
+                                created_by=user.id,
+                                session=db.session
+                            )
+
                         # ensure inventory row is saved
                         db.session.add(inv)
             except Exception as e:

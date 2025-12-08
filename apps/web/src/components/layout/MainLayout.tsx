@@ -24,7 +24,8 @@ import {
   UserCircle,
   LogOut,
   ChevronDown,
-  MessageSquare
+  MessageSquare,
+  CreditCard
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { DebugRoleSwitcher } from './DebugRoleSwitcher';
@@ -47,15 +48,15 @@ const getPageKeyFromPath = (pathname: string): { key: string; title: string } | 
     '/reports': { key: 'reports', title: 'Raporlar' },
     '/dashboard': { key: 'dashboard', title: 'Dashboard' },
   };
-  
+
   // Exact match first
   if (pathMap[pathname]) return pathMap[pathname];
-  
+
   // Prefix match
   for (const [prefix, value] of Object.entries(pathMap)) {
     if (pathname.startsWith(prefix)) return value;
   }
-  
+
   return null;
 };
 
@@ -148,6 +149,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     },
     { key: 'inventory', label: 'Envanter', icon: Package, href: '/inventory' },
     { key: 'suppliers', label: 'Tedarikçiler', icon: Building2, href: '/suppliers' },
+    { key: 'pos', label: 'Tahsilat (POS)', icon: CreditCard, href: '/pos' },
     { key: 'cashflow', label: 'Kasa', icon: Wallet, href: '/cashflow' },
     { key: 'campaigns', label: 'SMS Gönderimi', icon: MessageSquare, href: '/campaigns' },
     {
@@ -591,7 +593,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           minHeight: 'calc(100vh - 80px)'
         }}>
           {children}
-          
+
           {/* Page Permissions Viewer (admin@x-ear.com only) */}
           {(() => {
             const pageInfo = getPageKeyFromPath(location.pathname);
