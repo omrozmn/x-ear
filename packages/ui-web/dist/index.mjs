@@ -506,35 +506,45 @@ var Modal = ({
 }) => {
   const modalRef = useRef(null);
   const previousFocusRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  const closableRef = useRef(closable);
   useEffect3(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+  useEffect3(() => {
+    closableRef.current = closable;
+  }, [closable]);
+  useEffect3(() => {
+    if (!isOpen)
+      return;
     const handleEscapeKey = (event) => {
-      if (event.key === "Escape" && closable) {
-        onClose();
+      if (event.key === "Escape" && closableRef.current) {
+        onCloseRef.current();
       }
     };
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscapeKey);
-      previousFocusRef.current = document.activeElement;
-      document.body.style.overflow = "hidden";
-      setTimeout(() => {
-        const focusableElements = modalRef.current?.querySelectorAll(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusableElements && focusableElements.length > 0) {
-          focusableElements[0].focus();
-        }
-      }, 100);
-    }
+    previousFocusRef.current = document.activeElement;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleEscapeKey);
+    const timer = setTimeout(() => {
+      const focusableElements = modalRef.current?.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusableElements && focusableElements.length > 0) {
+        focusableElements[0].focus();
+      }
+    }, 100);
     return () => {
+      clearTimeout(timer);
       document.removeEventListener("keydown", handleEscapeKey);
-      if (isOpen) {
-        document.body.style.overflow = "";
-        if (previousFocusRef.current) {
+      document.body.style.overflow = "";
+      if (previousFocusRef.current) {
+        try {
           previousFocusRef.current.focus();
+        } catch (e) {
         }
       }
     };
-  }, [isOpen, closable, onClose]);
+  }, [isOpen]);
   const handleKeyDown = (event) => {
     if (event.key === "Tab") {
       const focusableElements = modalRef.current?.querySelectorAll(
@@ -571,7 +581,7 @@ var Modal = ({
   const modalContent = /* @__PURE__ */ jsx4(
     "div",
     {
-      className: "fixed inset-0 z-50 overflow-y-auto",
+      className: "fixed inset-0 z-[9999] overflow-y-auto",
       "aria-labelledby": "modal-title",
       role: "dialog",
       "aria-modal": "true",
@@ -619,26 +629,15 @@ var Modal = ({
                     )
                   ] }),
                   /* @__PURE__ */ jsx4("div", { className: "px-6 py-4", children }),
-                  showFooter && /* @__PURE__ */ jsx4("div", { className: "px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600", children: customFooter || /* @__PURE__ */ jsxs4("div", { className: "flex justify-end space-x-3", children: [
-                    /* @__PURE__ */ jsx4(
-                      "button",
-                      {
-                        type: "button",
-                        onClick: onClose,
-                        className: "px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors",
-                        children: cancelButtonText
-                      }
-                    ),
-                    onSave && /* @__PURE__ */ jsx4(
-                      "button",
-                      {
-                        type: "button",
-                        onClick: handleSave,
-                        className: "px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors",
-                        children: saveButtonText
-                      }
-                    )
-                  ] }) })
+                  showFooter && /* @__PURE__ */ jsx4("div", { className: "px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600", children: customFooter || /* @__PURE__ */ jsx4("div", { className: "flex justify-end space-x-3", children: onSave && /* @__PURE__ */ jsx4(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: handleSave,
+                      className: "px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors",
+                      children: saveButtonText
+                    }
+                  ) }) })
                 ]
               }
             )
@@ -801,6 +800,13 @@ var createInventoryStats = () => [
       /* @__PURE__ */ jsx5("path", { d: "M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" }),
       /* @__PURE__ */ jsx5("path", { fillRule: "evenodd", d: "M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.51-1.31c-.562-.649-1.413-1.076-2.353-1.253V5a1 1 0 10-2 0v.092z", clipRule: "evenodd" })
     ] })
+  },
+  {
+    title: "Toplam \u0130\u015Fitme Cihaz\u0131",
+    value: "0",
+    color: "purple",
+    subtitle: "Stok: 0",
+    icon: /* @__PURE__ */ jsx5("svg", { className: "w-6 h-6", fill: "currentColor", viewBox: "0 0 20 20", children: /* @__PURE__ */ jsx5("path", { d: "M4 3a1 1 0 000 2h12a1 1 0 100-2H4zm0 4a1 1 0 000 2h12a1 1 0 100-2H4zM3 12a2 2 0 012-2h10a2 2 0 012 2v3a1 1 0 11-2 0v-3H5v3a1 1 0 11-2 0v-3z" }) })
   }
 ];
 
@@ -826,7 +832,8 @@ var DataTable = ({
   bordered = false,
   striped = false,
   hoverable = true,
-  className = ""
+  className = "",
+  onRowClick
 }) => {
   const [searchValue, setSearchValue] = useState5("");
   const [sortConfig, setSortConfig] = useState5(null);
@@ -908,7 +915,10 @@ var DataTable = ({
     return /* @__PURE__ */ jsx6("div", { className: "flex items-center space-x-2", children: actions.map((action) => /* @__PURE__ */ jsxs6(
       "button",
       {
-        onClick: () => action.onClick(record),
+        onClick: (e) => {
+          e.stopPropagation();
+          action.onClick(record);
+        },
         disabled: action.disabled?.(record),
         className: `
               inline-flex items-center px-2 py-1 text-sm font-medium rounded-md
@@ -1135,7 +1145,9 @@ var DataTable = ({
                       ${striped && index % 2 === 1 ? "bg-gray-50 dark:bg-gray-700/50" : ""}
                       ${hoverable ? "hover:bg-gray-50 dark:hover:bg-gray-700/50" : ""}
                       ${isSelected ? "bg-blue-50 dark:bg-blue-900/20" : ""}
+                      ${onRowClick ? "cursor-pointer" : ""}
                     `,
+            onClick: () => onRowClick?.(record),
             children: [
               rowSelection && /* @__PURE__ */ jsx6("td", { className: cellPadding[size], children: /* @__PURE__ */ jsx6(
                 "input",
@@ -1143,6 +1155,7 @@ var DataTable = ({
                   type: "checkbox",
                   checked: isSelected,
                   disabled: checkboxProps.disabled,
+                  onClick: (e) => e.stopPropagation(),
                   onChange: (e) => handleSelectRow(record, e.target.checked),
                   className: "rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
                 }
@@ -1225,7 +1238,7 @@ var Button = ({
 };
 
 // src/components/ui/Input.tsx
-import { forwardRef } from "react";
+import { forwardRef, useMemo as useMemo2 } from "react";
 import { AlertCircle } from "lucide-react";
 import { jsx as jsx8, jsxs as jsxs8 } from "react/jsx-runtime";
 var Input = forwardRef(({
@@ -1239,7 +1252,8 @@ var Input = forwardRef(({
   id,
   ...props
 }, ref) => {
-  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedId = useMemo2(() => `input-${Math.random().toString(36).substr(2, 9)}`, []);
+  const inputId = id || generatedId;
   const baseClasses = "block px-3 py-2 border rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed";
   const stateClasses = error ? "border-red-300 focus:border-red-500 focus:ring-red-500" : "border-gray-300 focus:border-blue-500 focus:ring-blue-500";
   const widthClasses = fullWidth ? "w-full" : "";
@@ -1296,7 +1310,7 @@ var Select = forwardRef2(({
   ...props
 }, ref) => {
   const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
-  const baseClasses = "block px-3 py-2 pr-10 border rounded-lg text-sm bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed appearance-none";
+  const baseClasses = "block px-3 py-2 pr-9 border rounded-lg text-sm bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed appearance-none";
   const stateClasses = error ? "border-red-300 focus:border-red-500 focus:ring-red-500" : "border-gray-300 focus:border-blue-500 focus:ring-blue-500";
   const widthClasses = fullWidth ? "w-full" : "";
   const selectClasses = [
@@ -1336,7 +1350,7 @@ var Select = forwardRef2(({
           ]
         }
       ),
-      /* @__PURE__ */ jsx9("div", { className: "absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none", children: error ? /* @__PURE__ */ jsx9(AlertCircle2, { className: "w-5 h-5 text-red-500" }) : /* @__PURE__ */ jsx9(ChevronDown3, { className: "w-5 h-5 text-gray-400" }) })
+      /* @__PURE__ */ jsx9("div", { className: "absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none", children: error ? /* @__PURE__ */ jsx9(AlertCircle2, { className: "w-4 h-4 text-red-500" }) : /* @__PURE__ */ jsx9(ChevronDown3, { className: "w-4 h-4 text-gray-400" }) })
     ] }),
     error && /* @__PURE__ */ jsx9("p", { className: "mt-1 text-sm text-red-600", children: error }),
     helperText && !error && /* @__PURE__ */ jsx9("p", { className: "mt-1 text-sm text-gray-500", children: helperText })
@@ -1630,6 +1644,7 @@ var Loading = ({
 
 // src/components/ui/DatePicker.tsx
 import { useState as useState6, useRef as useRef2, useEffect as useEffect4 } from "react";
+import { createPortal as createPortal2 } from "react-dom";
 import { Calendar as Calendar2, ChevronLeft as ChevronLeft2, ChevronRight as ChevronRight3, AlertCircle as AlertCircle4 } from "lucide-react";
 import { clsx } from "clsx";
 import { jsx as jsx15, jsxs as jsxs14 } from "react/jsx-runtime";
@@ -1654,6 +1669,7 @@ var DAYS = ["Pzt", "Sal", "\xC7ar", "Per", "Cum", "Cmt", "Paz"];
 var DatePicker = ({
   value,
   onChange,
+  onMonthYearChange,
   placeholder = "Tarih se\xE7in",
   label,
   error,
@@ -1668,13 +1684,26 @@ var DatePicker = ({
 }) => {
   const [isOpen, setIsOpen] = useState6(false);
   const [currentMonth, setCurrentMonth] = useState6(value || /* @__PURE__ */ new Date());
+  const [availableYears, setAvailableYears] = useState6(() => {
+    const cur = (/* @__PURE__ */ new Date()).getFullYear();
+    const yearsArr = [];
+    for (let y = cur - 5; y <= cur + 1; y++)
+      yearsArr.push(y);
+    return yearsArr;
+  });
   const [timeValue, setTimeValue] = useState6(
     value ? `${value.getHours().toString().padStart(2, "0")}:${value.getMinutes().toString().padStart(2, "0")}` : "00:00"
   );
   const containerRef = useRef2(null);
+  const inputRef = useRef2(null);
+  const popupRef = useRef2(null);
+  const [popupStyle, setPopupStyle] = useState6(null);
   useEffect4(() => {
     const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      const target = event.target;
+      const clickedInsideContainer = containerRef.current && containerRef.current.contains(target);
+      const clickedInsidePopup = popupRef.current && popupRef.current.contains(target);
+      if (!clickedInsideContainer && !clickedInsidePopup) {
         setIsOpen(false);
       }
     };
@@ -1770,7 +1799,17 @@ var DatePicker = ({
           placeholder,
           disabled,
           readOnly: true,
-          onClick: () => !disabled && setIsOpen(!isOpen),
+          ref: inputRef,
+          onClick: () => {
+            if (disabled)
+              return;
+            const next = !isOpen;
+            setIsOpen(next);
+            if (next && inputRef.current) {
+              const rect = inputRef.current.getBoundingClientRect();
+              setPopupStyle({ position: "absolute", left: rect.left + window.scrollX, top: rect.bottom + window.scrollY + 8, zIndex: 9999 });
+            }
+          },
           className: cn(
             "w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer",
             error ? "border-red-300" : "border-gray-300",
@@ -1781,70 +1820,104 @@ var DatePicker = ({
       ),
       /* @__PURE__ */ jsx15("div", { className: "absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none", children: error ? /* @__PURE__ */ jsx15(AlertCircle4, { className: "h-4 w-4 text-red-500" }) : /* @__PURE__ */ jsx15(Calendar2, { className: "h-4 w-4 text-gray-400" }) })
     ] }),
-    isOpen && /* @__PURE__ */ jsxs14("div", { className: "absolute z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-4 min-w-[280px]", children: [
-      /* @__PURE__ */ jsxs14("div", { className: "flex items-center justify-between mb-4", children: [
-        /* @__PURE__ */ jsx15(
-          "button",
-          {
-            type: "button",
-            onClick: () => navigateMonth("prev"),
-            className: "p-1 hover:bg-gray-100 rounded",
-            children: /* @__PURE__ */ jsx15(ChevronLeft2, { className: "h-4 w-4" })
-          }
-        ),
-        /* @__PURE__ */ jsxs14("h3", { className: "text-sm font-medium", children: [
-          MONTHS[currentMonth.getMonth()],
-          " ",
-          currentMonth.getFullYear()
-        ] }),
-        /* @__PURE__ */ jsx15(
-          "button",
-          {
-            type: "button",
-            onClick: () => navigateMonth("next"),
-            className: "p-1 hover:bg-gray-100 rounded",
-            children: /* @__PURE__ */ jsx15(ChevronRight3, { className: "h-4 w-4" })
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsx15("div", { className: "grid grid-cols-7 gap-1 mb-2", children: DAYS.map((day) => /* @__PURE__ */ jsx15("div", { className: "text-xs font-medium text-gray-500 text-center p-1", children: day }, day)) }),
-      /* @__PURE__ */ jsx15("div", { className: "grid grid-cols-7 gap-1", children: days.map((date, index) => {
-        const isCurrentMonth = date.getMonth() === currentMonthNumber;
-        const isSelected = value ? isSameDay(date, value) : false;
-        const isToday = isSameDay(date, /* @__PURE__ */ new Date());
-        const disabled2 = isDateDisabled(date);
-        return /* @__PURE__ */ jsx15(
-          "button",
-          {
-            type: "button",
-            onClick: () => handleDateSelect(date),
-            disabled: disabled2,
-            className: cn(
-              "p-1 text-sm rounded hover:bg-gray-100 transition-colors",
-              !isCurrentMonth && "text-gray-300",
-              isCurrentMonth && "text-gray-900",
-              isSelected && "bg-blue-500 text-white hover:bg-blue-600",
-              isToday && !isSelected && "bg-blue-50 text-blue-600",
-              disabled2 && "cursor-not-allowed opacity-50"
+    isOpen && (() => {
+      const popup = /* @__PURE__ */ jsx15("div", { style: popupStyle, className: "bg-white border border-gray-200 rounded-md shadow-lg p-4 min-w-[280px]", children: /* @__PURE__ */ jsxs14("div", { ref: popupRef, children: [
+        /* @__PURE__ */ jsxs14("div", { className: "flex items-center justify-between mb-4", children: [
+          /* @__PURE__ */ jsx15(
+            "button",
+            {
+              type: "button",
+              onClick: () => navigateMonth("prev"),
+              className: "p-1 hover:bg-gray-100 rounded",
+              children: /* @__PURE__ */ jsx15(ChevronLeft2, { className: "h-4 w-4" })
+            }
+          ),
+          /* @__PURE__ */ jsxs14("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx15(
+              "select",
+              {
+                "aria-label": "Ay se\xE7in",
+                value: currentMonth.getMonth(),
+                onChange: (e) => {
+                  const m = parseInt(e.target.value, 10);
+                  setCurrentMonth((prev) => {
+                    const newDate = new Date(prev.getFullYear(), m, 1);
+                    onMonthYearChange?.(newDate.getFullYear(), newDate.getMonth());
+                    return newDate;
+                  });
+                },
+                className: "text-sm px-2 py-1 border rounded",
+                children: MONTHS.map((m, i) => /* @__PURE__ */ jsx15("option", { value: i, children: m }, m))
+              }
             ),
-            children: date.getDate()
-          },
-          index
-        );
-      }) }),
-      showTime && /* @__PURE__ */ jsxs14("div", { className: "mt-4 pt-4 border-t border-gray-200", children: [
-        /* @__PURE__ */ jsx15("label", { className: "block text-xs font-medium text-gray-700 mb-2", children: "Saat" }),
-        /* @__PURE__ */ jsx15(
-          "input",
-          {
-            type: "time",
-            value: timeValue,
-            onChange: (e) => handleTimeChange(e.target.value),
-            className: "w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-          }
-        )
-      ] })
-    ] }),
+            /* @__PURE__ */ jsx15(
+              "select",
+              {
+                "aria-label": "Y\u0131l se\xE7in",
+                value: currentMonth.getFullYear(),
+                onChange: (e) => {
+                  const y = parseInt(e.target.value, 10);
+                  setCurrentMonth((prev) => {
+                    const newDate = new Date(y, prev.getMonth(), 1);
+                    onMonthYearChange?.(newDate.getFullYear(), newDate.getMonth());
+                    return newDate;
+                  });
+                },
+                className: "text-sm px-2 py-1 border rounded",
+                children: availableYears.map((y) => /* @__PURE__ */ jsx15("option", { value: y, children: y }, y))
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsx15(
+            "button",
+            {
+              type: "button",
+              onClick: () => navigateMonth("next"),
+              className: "p-1 hover:bg-gray-100 rounded",
+              children: /* @__PURE__ */ jsx15(ChevronRight3, { className: "h-4 w-4" })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx15("div", { className: "grid grid-cols-7 gap-1 mb-2", children: DAYS.map((day) => /* @__PURE__ */ jsx15("div", { className: "text-xs font-medium text-gray-500 text-center p-1", children: day }, day)) }),
+        /* @__PURE__ */ jsx15("div", { className: "grid grid-cols-7 gap-1", children: days.map((date, index) => {
+          const isCurrentMonth = date.getMonth() === currentMonthNumber;
+          const isSelected = value ? isSameDay(date, value) : false;
+          const isToday = isSameDay(date, /* @__PURE__ */ new Date());
+          const disabled2 = isDateDisabled(date);
+          return /* @__PURE__ */ jsx15(
+            "button",
+            {
+              type: "button",
+              onClick: () => handleDateSelect(date),
+              disabled: disabled2,
+              className: cn(
+                "p-1 text-sm rounded hover:bg-gray-100 transition-colors",
+                !isCurrentMonth && "text-gray-300",
+                isCurrentMonth && "text-gray-900",
+                isSelected && "bg-blue-500 text-white hover:bg-blue-600",
+                isToday && !isSelected && "bg-blue-50 text-blue-600",
+                disabled2 && "cursor-not-allowed opacity-50"
+              ),
+              children: date.getDate()
+            },
+            index
+          );
+        }) }),
+        showTime && /* @__PURE__ */ jsxs14("div", { className: "mt-4 pt-4 border-t border-gray-200", children: [
+          /* @__PURE__ */ jsx15("label", { className: "block text-xs font-medium text-gray-700 mb-2", children: "Saat" }),
+          /* @__PURE__ */ jsx15(
+            "input",
+            {
+              type: "time",
+              value: timeValue,
+              onChange: (e) => handleTimeChange(e.target.value),
+              className: "w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+            }
+          )
+        ] })
+      ] }) });
+      return typeof document !== "undefined" ? createPortal2(popup, document.body) : popup;
+    })(),
     (error || helperText) && /* @__PURE__ */ jsx15("div", { className: "mt-1 text-sm", children: error ? /* @__PURE__ */ jsxs14("span", { className: "text-red-600 flex items-center gap-1", children: [
       /* @__PURE__ */ jsx15(AlertCircle4, { className: "h-3 w-3" }),
       error
@@ -1903,7 +1976,7 @@ var ToastProvider = ({
 };
 var ToastContainer = () => {
   const { toasts } = useToast();
-  return /* @__PURE__ */ jsx16("div", { className: "fixed top-4 right-4 z-50 space-y-2 max-w-sm w-full", children: toasts.map((toast2) => /* @__PURE__ */ jsx16(ToastItem, { toast: toast2 }, toast2.id)) });
+  return /* @__PURE__ */ jsx16("div", { className: "fixed top-20 right-4 space-y-2 max-w-sm w-full", style: { zIndex: 7e4 }, children: toasts.map((toast2) => /* @__PURE__ */ jsx16(ToastItem, { toast: toast2 }, toast2.id)) });
 };
 var ToastItem = ({ toast: toast2 }) => {
   const { removeToast } = useToast();
@@ -2203,7 +2276,7 @@ var Autocomplete = ({
   const dropdownRef = useRef3(null);
   const searchTimeoutRef = useRef3();
   useEffect6(() => {
-    if (searchQuery.length >= minSearchLength) {
+    if (searchQuery.length >= minSearchLength || minSearchLength === 0) {
       const filtered = filterOptions(options, searchQuery).slice(0, maxResults);
       setFilteredOptions(filtered);
     } else {
@@ -2267,8 +2340,14 @@ var Autocomplete = ({
         break;
       case "Enter":
         e.preventDefault();
-        if (isOpen && highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
-          handleOptionSelect(filteredOptions[highlightedIndex]);
+        if (isOpen) {
+          if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
+            handleOptionSelect(filteredOptions[highlightedIndex]);
+          } else if (filteredOptions.length === 1) {
+            handleOptionSelect(filteredOptions[0]);
+          } else if (filteredOptions.length > 0) {
+            handleOptionSelect(filteredOptions[0]);
+          }
         }
         break;
       case "Escape":
@@ -4669,1036 +4748,6 @@ var ComponentsDemo = () => {
   );
 };
 var ComponentsDemo_default = ComponentsDemo;
-
-// src/pages/InventoryPage.tsx
-import { useState as useState17, useEffect as useEffect10, useMemo as useMemo2 } from "react";
-import {
-  Search as Search3,
-  Plus as Plus2,
-  Upload,
-  Download,
-  MoreHorizontal,
-  Package as Package3,
-  AlertTriangle as AlertTriangle2,
-  DollarSign as DollarSign2,
-  TrendingUp as TrendingUp3,
-  Edit as Edit2,
-  Trash2 as Trash22,
-  Eye as Eye2
-} from "lucide-react";
-import { jsx as jsx41, jsxs as jsxs32 } from "react/jsx-runtime";
-var sampleInventoryData = [
-  {
-    id: "1",
-    productName: "Wireless Headphones",
-    brand: "TechBrand",
-    model: "WH-1000XM4",
-    category: "Electronics",
-    stock: 25,
-    minStock: 10,
-    unitPrice: 299.99,
-    vatIncludedPrice: 353.99,
-    totalValue: 8849.75,
-    barcode: "1234567890123",
-    supplier: "Tech Supplier Inc.",
-    warrantyPeriod: "2 years",
-    status: "active",
-    createdAt: "2024-01-15T10:30:00Z",
-    updatedAt: "2024-01-20T14:45:00Z"
-  },
-  {
-    id: "2",
-    productName: "Bluetooth Speaker",
-    brand: "AudioMax",
-    model: "BT-500",
-    category: "Electronics",
-    stock: 5,
-    minStock: 15,
-    unitPrice: 89.99,
-    vatIncludedPrice: 106.19,
-    totalValue: 530.95,
-    barcode: "2345678901234",
-    supplier: "Audio Solutions Ltd.",
-    warrantyPeriod: "1 year",
-    status: "active",
-    createdAt: "2024-01-10T09:15:00Z",
-    updatedAt: "2024-01-18T16:20:00Z"
-  }
-];
-var categories = ["All", "Electronics", "Accessories", "Components", "Tools"];
-var brands = ["All", "TechBrand", "AudioMax", "ComponentCorp", "ToolMaster"];
-var statusOptions = ["All", "Active", "Inactive", "Discontinued"];
-var InventoryPage = () => {
-  const [inventoryData, setInventoryData] = useState17(sampleInventoryData);
-  const [loading, setLoading] = useState17(false);
-  const [filters, setFilters] = useState17({
-    search: "",
-    category: "All",
-    brand: "All",
-    status: "All",
-    lowStock: false
-  });
-  const [isAddModalOpen, setIsAddModalOpen] = useState17(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState17(false);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState17(false);
-  const [isBulkModalOpen, setIsBulkModalOpen] = useState17(false);
-  const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState17(false);
-  const [selectedItem, setSelectedItem] = useState17(null);
-  const [bulkOperation, setBulkOperation] = useState17("category");
-  const [bulkFormData, setBulkFormData] = useState17({
-    category: "",
-    priceType: "percentage",
-    // percentage, fixed, increase, decrease
-    priceValue: "",
-    stockOperation: "set",
-    // set, increase, decrease
-    stockValue: "",
-    supplier: ""
-  });
-  const [selectedRowKeys, setSelectedRowKeys] = useState17([]);
-  const [pagination, setPagination] = useState17({
-    current: 1,
-    pageSize: 20,
-    total: 0
-  });
-  const [formData, setFormData] = useState17({
-    productName: "",
-    brand: "",
-    model: "",
-    category: "",
-    stock: 0,
-    minStock: 0,
-    unitPrice: 0,
-    barcode: "",
-    supplier: "",
-    warrantyPeriod: "",
-    status: "active"
-  });
-  const filteredData = useMemo2(() => {
-    let filtered = inventoryData;
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(
-        (item) => item.productName.toLowerCase().includes(searchLower) || item.brand.toLowerCase().includes(searchLower) || item.model.toLowerCase().includes(searchLower) || item.barcode?.toLowerCase().includes(searchLower)
-      );
-    }
-    if (filters.category !== "All") {
-      filtered = filtered.filter((item) => item.category === filters.category);
-    }
-    if (filters.brand !== "All") {
-      filtered = filtered.filter((item) => item.brand === filters.brand);
-    }
-    if (filters.status !== "All") {
-      filtered = filtered.filter((item) => item.status === filters.status.toLowerCase());
-    }
-    if (filters.lowStock) {
-      filtered = filtered.filter((item) => item.stock <= item.minStock);
-    }
-    return filtered;
-  }, [inventoryData, filters]);
-  const stats = useMemo2(() => {
-    const totalProducts = inventoryData.length;
-    const lowStockCount = inventoryData.filter((item) => item.stock <= item.minStock).length;
-    const totalValue = inventoryData.reduce((sum, item) => sum + item.totalValue, 0);
-    const activeTrials = inventoryData.filter((item) => item.status === "active").length;
-    return {
-      totalProducts,
-      lowStockCount,
-      totalValue,
-      activeTrials
-    };
-  }, [inventoryData]);
-  useEffect10(() => {
-    setPagination((prev) => ({
-      ...prev,
-      total: filteredData.length
-    }));
-  }, [filteredData]);
-  const columns = [
-    {
-      key: "productName",
-      title: "Product Name",
-      sortable: true,
-      render: (value, record) => /* @__PURE__ */ jsxs32("div", { className: "flex flex-col", children: [
-        /* @__PURE__ */ jsx41("span", { className: "font-medium text-gray-900 dark:text-white", children: value }),
-        /* @__PURE__ */ jsxs32("span", { className: "text-sm text-gray-500 dark:text-gray-400", children: [
-          record.brand,
-          " - ",
-          record.model
-        ] })
-      ] })
-    },
-    {
-      key: "category",
-      title: "Category",
-      sortable: true,
-      render: (value) => /* @__PURE__ */ jsx41(Badge, { variant: "secondary", children: value })
-    },
-    {
-      key: "stock",
-      title: "Stock",
-      sortable: true,
-      render: (value, record) => /* @__PURE__ */ jsxs32("div", { className: "flex items-center space-x-2", children: [
-        /* @__PURE__ */ jsx41("span", { className: `font-medium ${value <= record.minStock ? "text-red-600" : "text-gray-900 dark:text-white"}`, children: value }),
-        value <= record.minStock && /* @__PURE__ */ jsx41(AlertTriangle2, { className: "w-4 h-4 text-red-500" })
-      ] })
-    },
-    {
-      key: "minStock",
-      title: "Min Stock",
-      sortable: true
-    },
-    {
-      key: "unitPrice",
-      title: "Unit Price",
-      sortable: true,
-      render: (value) => `\u20BA${value.toFixed(2)}`
-    },
-    {
-      key: "vatIncludedPrice",
-      title: "VAT Included Price",
-      sortable: true,
-      render: (value) => `\u20BA${value.toFixed(2)}`
-    },
-    {
-      key: "totalValue",
-      title: "Total Value",
-      sortable: true,
-      render: (value) => `\u20BA${value.toFixed(2)}`
-    },
-    {
-      key: "status",
-      title: "Status",
-      render: (value) => /* @__PURE__ */ jsx41(
-        Badge,
-        {
-          variant: value === "active" ? "success" : value === "inactive" ? "warning" : "danger",
-          children: value.charAt(0).toUpperCase() + value.slice(1)
-        }
-      )
-    }
-  ];
-  const actions = [
-    {
-      key: "view",
-      label: "View Details",
-      icon: /* @__PURE__ */ jsx41(Eye2, { className: "w-4 h-4" }),
-      onClick: (record) => {
-        setSelectedItem(record);
-        setIsDetailsModalOpen(true);
-      }
-    },
-    {
-      key: "edit",
-      label: "Edit",
-      icon: /* @__PURE__ */ jsx41(Edit2, { className: "w-4 h-4" }),
-      onClick: (record) => {
-        setSelectedItem(record);
-        setFormData(record);
-        setIsEditModalOpen(true);
-      }
-    },
-    {
-      key: "delete",
-      label: "Delete",
-      icon: /* @__PURE__ */ jsx41(Trash22, { className: "w-4 h-4" }),
-      variant: "danger",
-      onClick: (record) => {
-        if (window.confirm(`Are you sure you want to delete ${record.productName}?`)) {
-          setInventoryData((prev) => prev.filter((item) => item.id !== record.id));
-        }
-      }
-    }
-  ];
-  const bulkActions = [
-    {
-      key: "bulk-operations",
-      label: "Bulk Operations",
-      icon: /* @__PURE__ */ jsx41(MoreHorizontal, { className: "w-4 h-4" }),
-      onClick: (selectedRecords) => {
-        setIsBulkModalOpen(true);
-      }
-    },
-    {
-      key: "delete",
-      label: "Delete Selected",
-      icon: /* @__PURE__ */ jsx41(Trash22, { className: "w-4 h-4" }),
-      variant: "danger",
-      onClick: (selectedRecords) => {
-        if (window.confirm(`Are you sure you want to delete ${selectedRecords.length} items?`)) {
-          const selectedIds = selectedRecords.map((record) => record.id);
-          setInventoryData((prev) => prev.filter((item) => !selectedIds.includes(item.id)));
-          setSelectedRowKeys([]);
-        }
-      }
-    },
-    {
-      key: "export",
-      label: "Export Selected",
-      icon: /* @__PURE__ */ jsx41(Download, { className: "w-4 h-4" }),
-      onClick: (selectedRecords) => {
-        exportToCSV(selectedRecords);
-      }
-    }
-  ];
-  const handleBulkOperation = () => {
-    const selectedRecords = inventoryData.filter((item) => selectedRowKeys.includes(item.id));
-    if (selectedRecords.length === 0) {
-      alert("Please select items to perform bulk operations");
-      return;
-    }
-    try {
-      let updatedData = [...inventoryData];
-      switch (bulkOperation) {
-        case "category":
-          if (!bulkFormData.category) {
-            alert("Please select a category");
-            return;
-          }
-          updatedData = updatedData.map(
-            (item) => selectedRowKeys.includes(item.id) ? { ...item, category: bulkFormData.category, updatedAt: (/* @__PURE__ */ new Date()).toISOString() } : item
-          );
-          break;
-        case "price":
-          if (!bulkFormData.priceValue) {
-            alert("Please enter a price value");
-            return;
-          }
-          const priceValue = parseFloat(bulkFormData.priceValue);
-          updatedData = updatedData.map((item) => {
-            if (!selectedRowKeys.includes(item.id))
-              return item;
-            let newPrice = item.unitPrice;
-            switch (bulkFormData.priceType) {
-              case "percentage":
-                newPrice = item.unitPrice * (1 + priceValue / 100);
-                break;
-              case "fixed":
-                newPrice = priceValue;
-                break;
-              case "increase":
-                newPrice = item.unitPrice + priceValue;
-                break;
-              case "decrease":
-                newPrice = item.unitPrice - priceValue;
-                break;
-            }
-            const vatIncludedPrice = newPrice * 1.18;
-            const totalValue = newPrice * item.stock;
-            return {
-              ...item,
-              unitPrice: Math.max(0, newPrice),
-              vatIncludedPrice,
-              totalValue,
-              updatedAt: (/* @__PURE__ */ new Date()).toISOString()
-            };
-          });
-          break;
-        case "stock":
-          if (!bulkFormData.stockValue) {
-            alert("Please enter a stock value");
-            return;
-          }
-          const stockValue = parseInt(bulkFormData.stockValue);
-          updatedData = updatedData.map((item) => {
-            if (!selectedRowKeys.includes(item.id))
-              return item;
-            let newStock = item.stock;
-            switch (bulkFormData.stockOperation) {
-              case "set":
-                newStock = stockValue;
-                break;
-              case "increase":
-                newStock = item.stock + stockValue;
-                break;
-              case "decrease":
-                newStock = Math.max(0, item.stock - stockValue);
-                break;
-            }
-            const totalValue = item.unitPrice * newStock;
-            return {
-              ...item,
-              stock: newStock,
-              totalValue,
-              updatedAt: (/* @__PURE__ */ new Date()).toISOString()
-            };
-          });
-          break;
-        case "supplier":
-          if (!bulkFormData.supplier) {
-            alert("Please enter a supplier name");
-            return;
-          }
-          updatedData = updatedData.map(
-            (item) => selectedRowKeys.includes(item.id) ? { ...item, supplier: bulkFormData.supplier, updatedAt: (/* @__PURE__ */ new Date()).toISOString() } : item
-          );
-          break;
-        case "delete":
-          if (window.confirm(`Are you sure you want to delete ${selectedRecords.length} items?`)) {
-            updatedData = updatedData.filter((item) => !selectedRowKeys.includes(item.id));
-          } else {
-            return;
-          }
-          break;
-      }
-      setInventoryData(updatedData);
-      setSelectedRowKeys([]);
-      setIsBulkModalOpen(false);
-      setBulkFormData({
-        category: "",
-        priceType: "percentage",
-        priceValue: "",
-        stockOperation: "set",
-        stockValue: "",
-        supplier: ""
-      });
-    } catch (error) {
-      console.error("Bulk operation error:", error);
-      alert("An error occurred during bulk operation");
-    }
-  };
-  const exportToCSV = (data) => {
-    const headers = [
-      "ID",
-      "Product Name",
-      "Brand",
-      "Model",
-      "Category",
-      "Stock",
-      "Min Stock",
-      "Unit Price",
-      "VAT Included Price",
-      "Total Value",
-      "Barcode",
-      "Serial Number",
-      "Supplier",
-      "Warranty Period",
-      "Status",
-      "Created At",
-      "Updated At"
-    ];
-    const csvContent = [
-      headers.join(","),
-      ...data.map((item) => [
-        item.id,
-        `"${item.productName}"`,
-        `"${item.brand}"`,
-        `"${item.model}"`,
-        `"${item.category}"`,
-        item.stock,
-        item.minStock,
-        item.unitPrice,
-        item.vatIncludedPrice,
-        item.totalValue,
-        `"${item.barcode || ""}"`,
-        `"${item.serialNumber || ""}"`,
-        `"${item.supplier || ""}"`,
-        `"${item.warrantyPeriod || ""}"`,
-        item.status,
-        item.createdAt,
-        item.updatedAt
-      ].join(","))
-    ].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `inventory_export_${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-  const printInventory = () => {
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Inventory Report</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-          th { background-color: #f2f2f2; }
-          .header { text-align: center; margin-bottom: 30px; }
-          .stats { display: flex; justify-content: space-around; margin: 20px 0; }
-          .stat-item { text-align: center; }
-          @media print { .no-print { display: none; } }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>Inventory Report</h1>
-          <p>Generated on: ${(/* @__PURE__ */ new Date()).toLocaleDateString()}</p>
-        </div>
-        
-        <div class="stats">
-          <div class="stat-item">
-            <h3>${stats.totalProducts}</h3>
-            <p>Total Products</p>
-          </div>
-          <div class="stat-item">
-            <h3>${stats.lowStockCount}</h3>
-            <p>Low Stock Items</p>
-          </div>
-          <div class="stat-item">
-            <h3>\u20BA${stats.totalValue.toFixed(2)}</h3>
-            <p>Total Value</p>
-          </div>
-        </div>
-        
-        <table>
-          <thead>
-            <tr>
-              <th>Product Name</th>
-              <th>Brand</th>
-              <th>Category</th>
-              <th>Stock</th>
-              <th>Unit Price</th>
-              <th>Total Value</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${filteredData.map((item) => `
-              <tr>
-                <td>${item.productName}</td>
-                <td>${item.brand}</td>
-                <td>${item.category}</td>
-                <td>${item.stock}</td>
-                <td>\u20BA${item.unitPrice.toFixed(2)}</td>
-                <td>\u20BA${item.totalValue.toFixed(2)}</td>
-                <td>${item.status}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </body>
-      </html>
-    `;
-    const printWindow = window.open("", "_blank");
-    if (printWindow) {
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.print();
-    }
-  };
-  const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value
-    }));
-  };
-  const handleAddItem = () => {
-    if (!formData.productName || !formData.brand || !formData.category) {
-      alert("Please fill in all required fields");
-      return false;
-    }
-    const newItem = {
-      id: Date.now().toString(),
-      productName: formData.productName,
-      brand: formData.brand,
-      model: formData.model || "",
-      category: formData.category,
-      stock: formData.stock || 0,
-      minStock: formData.minStock || 0,
-      unitPrice: formData.unitPrice || 0,
-      vatIncludedPrice: (formData.unitPrice || 0) * 1.18,
-      // 18% VAT
-      totalValue: (formData.stock || 0) * ((formData.unitPrice || 0) * 1.18),
-      barcode: formData.barcode,
-      supplier: formData.supplier,
-      warrantyPeriod: formData.warrantyPeriod,
-      status: formData.status,
-      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
-      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
-    };
-    setInventoryData((prev) => [...prev, newItem]);
-    setFormData({
-      productName: "",
-      brand: "",
-      model: "",
-      category: "",
-      stock: 0,
-      minStock: 0,
-      unitPrice: 0,
-      barcode: "",
-      supplier: "",
-      warrantyPeriod: "",
-      status: "active"
-    });
-    return true;
-  };
-  const handleEditItem = () => {
-    if (!selectedItem || !formData.productName || !formData.brand || !formData.category) {
-      alert("Please fill in all required fields");
-      return false;
-    }
-    const updatedItem = {
-      ...selectedItem,
-      ...formData,
-      vatIncludedPrice: (formData.unitPrice || 0) * 1.18,
-      totalValue: (formData.stock || 0) * ((formData.unitPrice || 0) * 1.18),
-      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
-    };
-    setInventoryData(
-      (prev) => prev.map((item) => item.id === selectedItem.id ? updatedItem : item)
-    );
-    setSelectedItem(null);
-    setFormData({
-      productName: "",
-      brand: "",
-      model: "",
-      category: "",
-      stock: 0,
-      minStock: 0,
-      unitPrice: 0,
-      barcode: "",
-      supplier: "",
-      warrantyPeriod: "",
-      status: "active"
-    });
-    return true;
-  };
-  const handlePaginationChange = (page, pageSize) => {
-    setPagination((prev) => ({
-      ...prev,
-      current: page,
-      pageSize
-    }));
-  };
-  const handleRowSelection = (selectedRowKeys2, selectedRows) => {
-    setSelectedRowKeys(selectedRowKeys2);
-  };
-  return /* @__PURE__ */ jsxs32("div", { className: "p-6 space-y-6", children: [
-    /* @__PURE__ */ jsxs32("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ jsxs32("div", { children: [
-        /* @__PURE__ */ jsx41("h1", { className: "text-2xl font-bold text-gray-900 dark:text-white", children: "Inventory Management" }),
-        /* @__PURE__ */ jsx41("p", { className: "text-gray-600 dark:text-gray-400", children: "Manage your product inventory" })
-      ] }),
-      /* @__PURE__ */ jsxs32("div", { className: "flex items-center space-x-3", children: [
-        /* @__PURE__ */ jsx41(
-          Button,
-          {
-            variant: "outline",
-            onClick: printInventory,
-            icon: /* @__PURE__ */ jsx41(Download, { className: "w-4 h-4" }),
-            children: "Print"
-          }
-        ),
-        /* @__PURE__ */ jsx41(
-          Button,
-          {
-            variant: "outline",
-            onClick: () => exportToCSV(filteredData),
-            icon: /* @__PURE__ */ jsx41(Download, { className: "w-4 h-4" }),
-            children: "Export CSV"
-          }
-        ),
-        /* @__PURE__ */ jsx41(
-          Button,
-          {
-            variant: "outline",
-            onClick: () => setIsBulkUploadModalOpen(true),
-            icon: /* @__PURE__ */ jsx41(Upload, { className: "w-4 h-4" }),
-            children: "Bulk Upload"
-          }
-        ),
-        /* @__PURE__ */ jsx41(
-          Button,
-          {
-            onClick: () => setIsAddModalOpen(true),
-            icon: /* @__PURE__ */ jsx41(Plus2, { className: "w-4 h-4" }),
-            children: "Add Product"
-          }
-        )
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxs32("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6", children: [
-      /* @__PURE__ */ jsx41(
-        StatsCard,
-        {
-          title: "Total Products",
-          value: stats.totalProducts.toString(),
-          color: "blue",
-          icon: /* @__PURE__ */ jsx41(Package3, { className: "w-6 h-6" })
-        }
-      ),
-      /* @__PURE__ */ jsx41(
-        StatsCard,
-        {
-          title: "Low Stock",
-          value: stats.lowStockCount.toString(),
-          color: "red",
-          icon: /* @__PURE__ */ jsx41(AlertTriangle2, { className: "w-6 h-6" })
-        }
-      ),
-      /* @__PURE__ */ jsx41(
-        StatsCard,
-        {
-          title: "Total Value",
-          value: `\u20BA${stats.totalValue.toFixed(2)}`,
-          color: "green",
-          icon: /* @__PURE__ */ jsx41(DollarSign2, { className: "w-6 h-6" })
-        }
-      ),
-      /* @__PURE__ */ jsx41(
-        StatsCard,
-        {
-          title: "Active Items",
-          value: stats.activeTrials.toString(),
-          color: "purple",
-          icon: /* @__PURE__ */ jsx41(TrendingUp3, { className: "w-6 h-6" })
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsx41(Card, { className: "p-4", children: /* @__PURE__ */ jsxs32("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4", children: [
-      /* @__PURE__ */ jsx41("div", { className: "lg:col-span-2", children: /* @__PURE__ */ jsx41(
-        Input,
-        {
-          placeholder: "Search products, brands, models...",
-          value: filters.search,
-          onChange: (e) => handleFilterChange("search", e.target.value),
-          leftIcon: /* @__PURE__ */ jsx41(Search3, { className: "w-4 h-4" })
-        }
-      ) }),
-      /* @__PURE__ */ jsx41(
-        Select,
-        {
-          value: filters.category,
-          onChange: (value) => handleFilterChange("category", value),
-          options: categories.map((cat) => ({ value: cat, label: cat })),
-          placeholder: "Category"
-        }
-      ),
-      /* @__PURE__ */ jsx41(
-        Select,
-        {
-          value: filters.brand,
-          onChange: (value) => handleFilterChange("brand", value),
-          options: brands.map((brand) => ({ value: brand, label: brand })),
-          placeholder: "Brand"
-        }
-      ),
-      /* @__PURE__ */ jsx41(
-        Select,
-        {
-          value: filters.status,
-          onChange: (value) => handleFilterChange("status", value),
-          options: statusOptions.map((status) => ({ value: status, label: status })),
-          placeholder: "Status"
-        }
-      ),
-      /* @__PURE__ */ jsx41("div", { className: "flex items-center", children: /* @__PURE__ */ jsx41(
-        Checkbox,
-        {
-          checked: filters.lowStock,
-          onChange: (checked) => handleFilterChange("lowStock", checked),
-          label: "Low Stock Only"
-        }
-      ) })
-    ] }) }),
-    /* @__PURE__ */ jsx41(Card, { children: /* @__PURE__ */ jsx41(
-      DataTable,
-      {
-        data: filteredData.slice(
-          (pagination.current - 1) * pagination.pageSize,
-          pagination.current * pagination.pageSize
-        ),
-        columns,
-        loading,
-        pagination: {
-          ...pagination,
-          onChange: handlePaginationChange
-        },
-        rowSelection: {
-          selectedRowKeys,
-          onChange: handleRowSelection
-        },
-        actions,
-        bulkActions,
-        searchable: false,
-        sortable: true,
-        rowKey: "id",
-        hoverable: true,
-        striped: true
-      }
-    ) }),
-    /* @__PURE__ */ jsx41(
-      Modal,
-      {
-        isOpen: isAddModalOpen,
-        onClose: () => setIsAddModalOpen(false),
-        onSave: handleAddItem,
-        title: "Add New Product",
-        size: "lg",
-        children: /* @__PURE__ */ jsxs32("div", { className: "space-y-4", children: [
-          /* @__PURE__ */ jsxs32("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Product Name *",
-                value: formData.productName || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, productName: e.target.value })),
-                placeholder: "Enter product name"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Brand *",
-                value: formData.brand || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, brand: e.target.value })),
-                placeholder: "Enter brand"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Model",
-                value: formData.model || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, model: e.target.value })),
-                placeholder: "Enter model"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Select,
-              {
-                label: "Category *",
-                value: formData.category || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, category: e.target.value })),
-                options: categories.filter((cat) => cat !== "All").map((cat) => ({ value: cat, label: cat })),
-                placeholder: "Select category"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Stock Quantity",
-                type: "number",
-                value: formData.stock?.toString() || "0",
-                onChange: (e) => setFormData((prev) => ({ ...prev, stock: parseInt(e.target.value) || 0 })),
-                placeholder: "0"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Minimum Stock",
-                type: "number",
-                value: formData.minStock?.toString() || "0",
-                onChange: (e) => setFormData((prev) => ({ ...prev, minStock: parseInt(e.target.value) || 0 })),
-                placeholder: "0"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Unit Price",
-                type: "number",
-                step: "0.01",
-                value: formData.unitPrice?.toString() || "0",
-                onChange: (e) => setFormData((prev) => ({ ...prev, unitPrice: parseFloat(e.target.value) || 0 })),
-                placeholder: "0.00"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Barcode",
-                value: formData.barcode || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, barcode: e.target.value })),
-                placeholder: "Enter barcode"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Supplier",
-                value: formData.supplier || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, supplier: e.target.value })),
-                placeholder: "Enter supplier"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Warranty Period",
-                value: formData.warrantyPeriod || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, warrantyPeriod: e.target.value })),
-                placeholder: "e.g., 2 years"
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsx41(
-            Select,
-            {
-              label: "Status",
-              value: formData.status || "active",
-              onChange: (e) => setFormData((prev) => ({ ...prev, status: e.target.value })),
-              options: [
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
-                { value: "discontinued", label: "Discontinued" }
-              ]
-            }
-          )
-        ] })
-      }
-    ),
-    /* @__PURE__ */ jsx41(
-      Modal,
-      {
-        isOpen: isEditModalOpen,
-        onClose: () => {
-          setIsEditModalOpen(false);
-          setSelectedItem(null);
-        },
-        onSave: handleEditItem,
-        title: "Edit Product",
-        size: "lg",
-        children: /* @__PURE__ */ jsxs32("div", { className: "space-y-4", children: [
-          /* @__PURE__ */ jsxs32("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4", children: [
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Product Name *",
-                value: formData.productName || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, productName: e.target.value })),
-                placeholder: "Enter product name"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Brand *",
-                value: formData.brand || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, brand: e.target.value })),
-                placeholder: "Enter brand"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Model",
-                value: formData.model || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, model: e.target.value })),
-                placeholder: "Enter model"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Select,
-              {
-                label: "Category *",
-                value: formData.category || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, category: e.target.value })),
-                options: categories.filter((cat) => cat !== "All").map((cat) => ({ value: cat, label: cat })),
-                placeholder: "Select category"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Stock Quantity",
-                type: "number",
-                value: formData.stock?.toString() || "0",
-                onChange: (e) => setFormData((prev) => ({ ...prev, stock: parseInt(e.target.value) || 0 })),
-                placeholder: "0"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Minimum Stock",
-                type: "number",
-                value: formData.minStock?.toString() || "0",
-                onChange: (e) => setFormData((prev) => ({ ...prev, minStock: parseInt(e.target.value) || 0 })),
-                placeholder: "0"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Unit Price",
-                type: "number",
-                step: "0.01",
-                value: formData.unitPrice?.toString() || "0",
-                onChange: (e) => setFormData((prev) => ({ ...prev, unitPrice: parseFloat(e.target.value) || 0 })),
-                placeholder: "0.00"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Barcode",
-                value: formData.barcode || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, barcode: e.target.value })),
-                placeholder: "Enter barcode"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Supplier",
-                value: formData.supplier || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, supplier: e.target.value })),
-                placeholder: "Enter supplier"
-              }
-            ),
-            /* @__PURE__ */ jsx41(
-              Input,
-              {
-                label: "Warranty Period",
-                value: formData.warrantyPeriod || "",
-                onChange: (e) => setFormData((prev) => ({ ...prev, warrantyPeriod: e.target.value })),
-                placeholder: "e.g., 2 years"
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsx41(
-            Select,
-            {
-              label: "Status",
-              value: formData.status || "active",
-              onChange: (e) => setFormData((prev) => ({ ...prev, status: e.target.value })),
-              options: [
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
-                { value: "discontinued", label: "Discontinued" }
-              ]
-            }
-          )
-        ] })
-      }
-    ),
-    /* @__PURE__ */ jsx41(
-      Modal,
-      {
-        isOpen: isBulkUploadModalOpen,
-        onClose: () => setIsBulkUploadModalOpen(false),
-        title: "Bulk Upload Products",
-        size: "md",
-        children: /* @__PURE__ */ jsxs32("div", { className: "space-y-4", children: [
-          /* @__PURE__ */ jsxs32("div", { className: "text-center", children: [
-            /* @__PURE__ */ jsx41(Upload, { className: "w-12 h-12 mx-auto text-gray-400 mb-4" }),
-            /* @__PURE__ */ jsx41("p", { className: "text-gray-600 dark:text-gray-400", children: "Upload a CSV file with your product data" })
-          ] }),
-          /* @__PURE__ */ jsx41("div", { className: "border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6", children: /* @__PURE__ */ jsx41(
-            "input",
-            {
-              type: "file",
-              accept: ".csv",
-              className: "w-full",
-              onChange: (e) => {
-                console.log("File selected:", e.target.files?.[0]);
-              }
-            }
-          ) }),
-          /* @__PURE__ */ jsx41("div", { className: "text-sm text-gray-500 dark:text-gray-400", children: /* @__PURE__ */ jsx41("p", { children: "CSV format: Product Name, Brand, Model, Category, Stock, Min Stock, Unit Price, Barcode, Supplier, Warranty Period" }) })
-        ] })
-      }
-    )
-  ] });
-};
-var InventoryPage_default = InventoryPage;
 export {
   Alert,
   AlertDescription,
@@ -5729,7 +4778,6 @@ export {
   FormLabel,
   HStack,
   Input,
-  InventoryPage_default as InventoryPage,
   Label,
   Layout_default as Layout,
   Loading,

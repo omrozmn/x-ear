@@ -11,4 +11,5 @@ export type UpdatePaytrConfigBody = {
   merchant_key?: string;
   merchant_salt?: string;
   test_mode?: boolean;
+  enabled?: boolean;
 };

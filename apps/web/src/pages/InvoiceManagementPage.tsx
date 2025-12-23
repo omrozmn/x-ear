@@ -42,7 +42,7 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
   className = ''
 }) => {
   const navigate = useNavigate();
-  
+
   const [state, setState] = useState<PageState>({
     invoices: [],
     selectedInvoices: [],
@@ -110,123 +110,23 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // Mock data for demonstration
-      const mockInvoices: Invoice[] = [
-        {
-          id: '1',
-          invoiceNumber: 'INV-2024-001',
-          type: 'service',
-          status: 'sent',
-          patientName: 'Ahmet Yılmaz',
-          patientPhone: '+90 532 123 4567',
-          patientTcNumber: '12345678901',
-          billingAddress: {
-            name: 'Ahmet Yılmaz',
-            address: 'Atatürk Cad. No:123',
-            city: 'İstanbul',
-            district: 'Kadıköy',
-            postalCode: '34710',
-            country: 'Türkiye',
-            taxNumber: '1234567890',
-            taxOffice: 'Kadıköy Vergi Dairesi'
-          },
-          issueDate: '2024-01-15',
-          dueDate: '2024-02-15',
-          paymentMethod: 'credit_card',
-          items: [
-            {
-              id: '1',
-              name: 'Genel Muayene',
-              description: 'Rutin kontrol muayenesi',
-              quantity: 1,
-              unitPrice: 150,
-              discount: 0,
-              taxRate: 18,
-              taxAmount: 27,
-              totalPrice: 177
-            }
-          ],
-          subtotal: 150,
-          totalDiscount: 0,
-          taxes: [
-            {
-              type: 'kdv',
-              rate: 18,
-              baseAmount: 150,
-              taxAmount: 27
-            }
-          ],
-          totalTax: 27,
-          grandTotal: 177,
-          currency: 'TRY',
-          notes: 'Genel muayene hizmeti',
-          createdAt: '2024-01-15T10:00:00Z',
-          updatedAt: '2024-01-15T10:00:00Z',
-          createdBy: 'admin'
-        },
-        {
-          id: '2',
-          invoiceNumber: 'INV-2024-002',
-          type: 'service',
-          status: 'draft',
-          patientName: 'Fatma Demir',
-          patientPhone: '+90 533 987 6543',
-          billingAddress: {
-            name: 'Fatma Demir',
-            address: 'İnönü Bulvarı No:456',
-            city: 'Ankara',
-            district: 'Çankaya',
-            postalCode: '06100',
-            country: 'Türkiye'
-          },
-          issueDate: '2024-01-16',
-          dueDate: '2024-02-16',
-          items: [
-            {
-              id: '2',
-              name: 'Diş Tedavisi',
-              description: 'Kanal tedavisi',
-              quantity: 1,
-              unitPrice: 500,
-              discount: 50,
-              discountType: 'amount',
-              taxRate: 18,
-              taxAmount: 81,
-              totalPrice: 531
-            }
-          ],
-          subtotal: 500,
-          totalDiscount: 50,
-          taxes: [
-            {
-              type: 'kdv',
-              rate: 18,
-              baseAmount: 450,
-              taxAmount: 81
-            }
-          ],
-          totalTax: 81,
-          grandTotal: 531,
-          currency: 'TRY',
-          createdAt: '2024-01-16T14:30:00Z',
-          updatedAt: '2024-01-16T14:30:00Z',
-          createdBy: 'admin'
-        }
-      ];
+      // Fetch real invoices from service
+      const result = await invoiceService.getInvoices(state.filters);
 
       setState(prev => ({
         ...prev,
-        invoices: mockInvoices,
+        invoices: result.invoices,
         isLoading: false
       }));
     } catch (error) {
+      console.error('Error loading invoices:', error);
       setState(prev => ({
         ...prev,
         error: error instanceof Error ? error.message : 'Faturalar yüklenirken hata oluştu',
         isLoading: false
       }));
     }
-  }, []);
+  }, [state.filters]);
 
   // Filter invoices based on filters
   const filteredInvoices = React.useMemo(() => {
@@ -485,7 +385,7 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
           <nav className="flex space-x-8">
             {[
               { key: 'list', label: 'Fatura Listesi', Icon: FileText },
-              { key: 'templates', label: 'Şablonlar', Icon: File }
+              // { key: 'templates', label: 'Şablonlar', Icon: File }
             ].map((tab) => (
               <Button
                 key={tab.key}
@@ -540,24 +440,24 @@ export const InvoiceManagementPage: React.FC<InvoiceManagementPageProps> = ({
 
           {/* Invoice Table (now using shared InvoiceList component) */}
           <div className="invoice-table bg-white rounded-lg shadow overflow-hidden">
-              <InvoiceList
-                onInvoiceSelect={(inv) => handleEditInvoice(inv)}
-                filters={state.filters}
-                onFiltersChange={handleFiltersChange}
-                showActions={true}
-                compact={false}
-              />
+            <InvoiceList
+              onInvoiceSelect={(inv) => handleEditInvoice(inv)}
+              filters={state.filters}
+              onFiltersChange={handleFiltersChange}
+              showActions={true}
+              compact={false}
+            />
           </div>
         </div>
       )}
-      {state.currentView === 'templates' && (
+      {/* {state.currentView === 'templates' && (
         <InvoiceTemplateManager
           onTemplateSelect={handleUseTemplate}
           onTemplateCreate={() => console.log('Template created')}
           onTemplateUpdate={() => console.log('Template updated')}
           onTemplateDelete={() => console.log('Template deleted')}
         />
-      )}
+      )} */}
       {/* Invoice Modal */}
       {modalState.isOpen && (
         <InvoiceModal

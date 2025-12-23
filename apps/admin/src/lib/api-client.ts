@@ -130,9 +130,14 @@ export const useProcessDocumentOcr = <TData = any, TError = unknown, TContext = 
   return useMutation({ mutationFn: (data: any) => adminApi<TData>({ url: '/api/admin/ocr/process', method: 'POST', data }), ...options?.mutation });
 }
 
+// Integrations
+export const useGetAdminIntegrations = (params?: any, options?: any): UseQueryResult<{ data: any }, unknown> => {
+  return useQuery({ queryKey: ['adminIntegrations', params], queryFn: () => adminApi({ url: '/api/admin/integrations', params }), ...options?.query }) as UseQueryResult<{ data: any }, unknown>;
+}
+
 // SMS PACKAGES CRUD
 export const getApiAdminSmsPackages = (params?: any, signal?: AbortSignal) => {
-  return adminApi<{ data: any }>({ url: '/api/admin/sms-packages', params, signal });
+  return adminApi<{ data: any }>({ url: '/api/admin/sms/packages', params, signal });
 };
 
 export const useGetApiAdminSmsPackages = <TData = Awaited<ReturnType<typeof getApiAdminSmsPackages>>, TError = unknown>(options?: { query?: any }): UseQueryResult<{ data: any }, TError> => {
@@ -140,7 +145,7 @@ export const useGetApiAdminSmsPackages = <TData = Awaited<ReturnType<typeof getA
 };
 
 export const createAdminSmsPackage = (data: any, signal?: AbortSignal) => {
-  return adminApi<{ success: boolean }>({ url: '/api/admin/sms-packages', method: 'POST', data, signal });
+  return adminApi<{ success: boolean }>({ url: '/api/admin/sms/packages', method: 'POST', data, signal });
 };
 
 export const useCreateAdminSmsPackage = <TData = any, TError = unknown, TContext = unknown>(options?: { mutation?: any }) => {
@@ -148,7 +153,7 @@ export const useCreateAdminSmsPackage = <TData = any, TError = unknown, TContext
 };
 
 export const updateAdminSmsPackage = (id: string, data: any, signal?: AbortSignal) => {
-  return adminApi<{ success: boolean }>({ url: `/api/admin/sms-packages/${id}`, method: 'PUT', data, signal });
+  return adminApi<{ success: boolean }>({ url: `/api/admin/sms/packages/${id}`, method: 'PUT', data, signal });
 };
 
 export const useUpdateAdminSmsPackage = <TData = any, TError = unknown, TContext = unknown>(options?: { mutation?: any }) => {
@@ -156,7 +161,7 @@ export const useUpdateAdminSmsPackage = <TData = any, TError = unknown, TContext
 };
 
 export const deleteAdminSmsPackage = (id: string, signal?: AbortSignal) => {
-  return adminApi<{ success: boolean }>({ url: `/api/admin/sms-packages/${id}`, method: 'DELETE', signal });
+  return adminApi<{ success: boolean }>({ url: `/api/admin/sms/packages/${id}`, method: 'DELETE', signal });
 };
 
 export const useDeleteAdminSmsPackage = <TData = any, TError = unknown, TContext = unknown>(options?: { mutation?: any }) => {
@@ -164,10 +169,10 @@ export const useDeleteAdminSmsPackage = <TData = any, TError = unknown, TContext
 };
 
 // SMS HEADERS CRUD
-export const getApiAdminSmsHeaders = (params?: any) => adminApi<{ data: any }>({ url: '/api/admin/sms-headers', params });
+export const getApiAdminSmsHeaders = (params?: any) => adminApi<{ data: any }>({ url: '/api/admin/sms/headers', params });
 export const useGetApiAdminSmsHeaders = (params?: any, options?: any): UseQueryResult<{ data: any }, unknown> => useQuery({ queryKey: ['smsHeaders', params], queryFn: () => getApiAdminSmsHeaders(params), ...options?.query }) as UseQueryResult<{ data: any }, unknown>;
 
-export const updateSmsHeaderStatus = (id: string, data: { status: string, rejectionReason?: string }) => adminApi<any>({ url: `/api/admin/sms-headers/${id}/status`, method: 'PUT', data });
+export const updateSmsHeaderStatus = (id: string, data: { status: string, rejectionReason?: string }) => adminApi<any>({ url: `/api/admin/sms/headers/${id}/status`, method: 'PUT', data });
 export const usePutApiAdminSmsHeadersHeaderIdStatus = (options?: any) => useMutation({ mutationFn: ({ headerId, data }: { headerId: string, data: { status: string, rejectionReason?: string } }) => updateSmsHeaderStatus(headerId, data), ...options?.mutation });
 
 // PLANS CRUD
@@ -222,10 +227,10 @@ export const useCreateTicketResponse = <TData = any, TError = unknown, TContext 
 export const useGetSystemSettings = useGetAdminSettings;
 export const useUpdateSystemSettings = useUpdateAdminSettings;
 export const useClearCache = <TData = any, TError = unknown, TContext = unknown>(options?: { mutation?: UseMutationOptions<TData, TError, void, TContext> }) => {
-  return useMutation({ mutationFn: () => adminApi<TData>({ url: '/api/admin/cache/clear', method: 'POST' }), ...options?.mutation });
+  return useMutation({ mutationFn: () => adminApi<TData>({ url: '/api/admin/settings/cache/clear', method: 'POST' }), ...options?.mutation });
 }
 export const useTriggerBackup = <TData = any, TError = unknown, TContext = unknown>(options?: { mutation?: UseMutationOptions<TData, TError, void, TContext> }) => {
-  return useMutation({ mutationFn: () => adminApi<TData>({ url: '/api/admin/backup/trigger', method: 'POST' }), ...options?.mutation });
+  return useMutation({ mutationFn: () => adminApi<TData>({ url: '/api/admin/settings/backup', method: 'POST' }), ...options?.mutation });
 }
 
 // Roles

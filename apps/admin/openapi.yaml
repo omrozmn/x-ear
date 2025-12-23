@@ -4,7 +4,8 @@ info:
   version: 1.0.0
   description: API for X-Ear Admin Panel
 servers:
-  - url: http://localhost:5003
+  - url: http://localhost:5003/api
+    description: Local development server
 paths:
   /admin/features:
     get:

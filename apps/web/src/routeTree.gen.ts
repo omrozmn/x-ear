@@ -21,6 +21,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuppliersIndexRouteImport } from './routes/suppliers/index'
 import { Route as SgkIndexRouteImport } from './routes/sgk/index'
 import { Route as ReportsIndexRouteImport } from './routes/reports/index'
+import { Route as PosIndexRouteImport } from './routes/pos/index'
 import { Route as PatientsIndexRouteImport } from './routes/patients/index'
 import { Route as InvoicesIndexRouteImport } from './routes/invoices/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory/index'
@@ -32,6 +33,8 @@ import { Route as SettingsRolesRouteImport } from './routes/settings/roles'
 import { Route as SettingsIntegrationRouteImport } from './routes/settings/integration'
 import { Route as SettingsCompanyRouteImport } from './routes/settings/company'
 import { Route as ReportsActivityRouteImport } from './routes/reports/activity'
+import { Route as PosSuccessRouteImport } from './routes/pos/success'
+import { Route as PosFailRouteImport } from './routes/pos/fail'
 import { Route as PatientsPatientIdRouteImport } from './routes/patients/$patientId'
 import { Route as InvoicesPurchasesRouteImport } from './routes/invoices/purchases'
 import { Route as InvoicesNewRouteImport } from './routes/invoices/new'
@@ -97,6 +100,11 @@ const ReportsIndexRoute = ReportsIndexRouteImport.update({
   path: '/reports/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PosIndexRoute = PosIndexRouteImport.update({
+  id: '/pos/',
+  path: '/pos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PatientsIndexRoute = PatientsIndexRouteImport.update({
   id: '/patients/',
   path: '/patients/',
@@ -152,6 +160,16 @@ const ReportsActivityRoute = ReportsActivityRouteImport.update({
   path: '/reports/activity',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PosSuccessRoute = PosSuccessRouteImport.update({
+  id: '/pos/success',
+  path: '/pos/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PosFailRoute = PosFailRouteImport.update({
+  id: '/pos/fail',
+  path: '/pos/fail',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PatientsPatientIdRoute = PatientsPatientIdRouteImport.update({
   id: '/patients/$patientId',
   path: '/patients/$patientId',
@@ -187,6 +205,8 @@ export interface FileRoutesByFullPath {
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
+  '/pos/fail': typeof PosFailRoute
+  '/pos/success': typeof PosSuccessRoute
   '/reports/activity': typeof ReportsActivityRoute
   '/settings/company': typeof SettingsCompanyRoute
   '/settings/integration': typeof SettingsIntegrationRoute
@@ -198,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/inventory/': typeof InventoryIndexRoute
   '/invoices/': typeof InvoicesIndexRoute
   '/patients': typeof PatientsIndexRoute
+  '/pos': typeof PosIndexRoute
   '/reports': typeof ReportsIndexRoute
   '/sgk': typeof SgkIndexRoute
   '/suppliers': typeof SuppliersIndexRoute
@@ -214,6 +235,8 @@ export interface FileRoutesByTo {
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
+  '/pos/fail': typeof PosFailRoute
+  '/pos/success': typeof PosSuccessRoute
   '/reports/activity': typeof ReportsActivityRoute
   '/settings/company': typeof SettingsCompanyRoute
   '/settings/integration': typeof SettingsIntegrationRoute
@@ -225,6 +248,7 @@ export interface FileRoutesByTo {
   '/inventory': typeof InventoryIndexRoute
   '/invoices': typeof InvoicesIndexRoute
   '/patients': typeof PatientsIndexRoute
+  '/pos': typeof PosIndexRoute
   '/reports': typeof ReportsIndexRoute
   '/sgk': typeof SgkIndexRoute
   '/suppliers': typeof SuppliersIndexRoute
@@ -244,6 +268,8 @@ export interface FileRoutesById {
   '/invoices/new': typeof InvoicesNewRoute
   '/invoices/purchases': typeof InvoicesPurchasesRoute
   '/patients/$patientId': typeof PatientsPatientIdRoute
+  '/pos/fail': typeof PosFailRoute
+  '/pos/success': typeof PosSuccessRoute
   '/reports/activity': typeof ReportsActivityRoute
   '/settings/company': typeof SettingsCompanyRoute
   '/settings/integration': typeof SettingsIntegrationRoute
@@ -255,6 +281,7 @@ export interface FileRoutesById {
   '/inventory/': typeof InventoryIndexRoute
   '/invoices/': typeof InvoicesIndexRoute
   '/patients/': typeof PatientsIndexRoute
+  '/pos/': typeof PosIndexRoute
   '/reports/': typeof ReportsIndexRoute
   '/sgk/': typeof SgkIndexRoute
   '/suppliers/': typeof SuppliersIndexRoute
@@ -275,6 +302,8 @@ export interface FileRouteTypes {
     | '/invoices/new'
     | '/invoices/purchases'
     | '/patients/$patientId'
+    | '/pos/fail'
+    | '/pos/success'
     | '/reports/activity'
     | '/settings/company'
     | '/settings/integration'
@@ -286,6 +315,7 @@ export interface FileRouteTypes {
     | '/inventory/'
     | '/invoices/'
     | '/patients'
+    | '/pos'
     | '/reports'
     | '/sgk'
     | '/suppliers'
@@ -302,6 +332,8 @@ export interface FileRouteTypes {
     | '/invoices/new'
     | '/invoices/purchases'
     | '/patients/$patientId'
+    | '/pos/fail'
+    | '/pos/success'
     | '/reports/activity'
     | '/settings/company'
     | '/settings/integration'
@@ -313,6 +345,7 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/invoices'
     | '/patients'
+    | '/pos'
     | '/reports'
     | '/sgk'
     | '/suppliers'
@@ -331,6 +364,8 @@ export interface FileRouteTypes {
     | '/invoices/new'
     | '/invoices/purchases'
     | '/patients/$patientId'
+    | '/pos/fail'
+    | '/pos/success'
     | '/reports/activity'
     | '/settings/company'
     | '/settings/integration'
@@ -342,6 +377,7 @@ export interface FileRouteTypes {
     | '/inventory/'
     | '/invoices/'
     | '/patients/'
+    | '/pos/'
     | '/reports/'
     | '/sgk/'
     | '/suppliers/'
@@ -358,6 +394,8 @@ export interface RootRouteChildren {
   TestRoute: typeof TestRoute
   UtsRoute: typeof UtsRoute
   PatientsPatientIdRoute: typeof PatientsPatientIdRoute
+  PosFailRoute: typeof PosFailRoute
+  PosSuccessRoute: typeof PosSuccessRoute
   ReportsActivityRoute: typeof ReportsActivityRoute
   SettingsCompanyRoute: typeof SettingsCompanyRoute
   SettingsIntegrationRoute: typeof SettingsIntegrationRoute
@@ -367,6 +405,7 @@ export interface RootRouteChildren {
   SgkDownloadsRoute: typeof SgkDownloadsRoute
   SuppliersSupplierIdRoute: typeof SuppliersSupplierIdRoute
   PatientsIndexRoute: typeof PatientsIndexRoute
+  PosIndexRoute: typeof PosIndexRoute
   ReportsIndexRoute: typeof ReportsIndexRoute
   SgkIndexRoute: typeof SgkIndexRoute
   SuppliersIndexRoute: typeof SuppliersIndexRoute
@@ -458,6 +497,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pos/': {
+      id: '/pos/'
+      path: '/pos'
+      fullPath: '/pos'
+      preLoaderRoute: typeof PosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/patients/': {
       id: '/patients/'
       path: '/patients'
@@ -535,6 +581,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportsActivityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pos/success': {
+      id: '/pos/success'
+      path: '/pos/success'
+      fullPath: '/pos/success'
+      preLoaderRoute: typeof PosSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pos/fail': {
+      id: '/pos/fail'
+      path: '/pos/fail'
+      fullPath: '/pos/fail'
+      preLoaderRoute: typeof PosFailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/patients/$patientId': {
       id: '/patients/$patientId'
       path: '/patients/$patientId'
@@ -607,6 +667,8 @@ const rootRouteChildren: RootRouteChildren = {
   TestRoute: TestRoute,
   UtsRoute: UtsRoute,
   PatientsPatientIdRoute: PatientsPatientIdRoute,
+  PosFailRoute: PosFailRoute,
+  PosSuccessRoute: PosSuccessRoute,
   ReportsActivityRoute: ReportsActivityRoute,
   SettingsCompanyRoute: SettingsCompanyRoute,
   SettingsIntegrationRoute: SettingsIntegrationRoute,
@@ -616,6 +678,7 @@ const rootRouteChildren: RootRouteChildren = {
   SgkDownloadsRoute: SgkDownloadsRoute,
   SuppliersSupplierIdRoute: SuppliersSupplierIdRoute,
   PatientsIndexRoute: PatientsIndexRoute,
+  PosIndexRoute: PosIndexRoute,
   ReportsIndexRoute: ReportsIndexRoute,
   SgkIndexRoute: SgkIndexRoute,
   SuppliersIndexRoute: SuppliersIndexRoute,

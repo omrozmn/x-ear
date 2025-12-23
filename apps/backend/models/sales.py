@@ -168,6 +168,7 @@ class Sale(BaseModel):
     patient_payment = db.Column(sa.Numeric(12,2))  # Precise money handling
     
     # Additional info
+    report_status = db.Column(db.String(50))
     notes = db.Column(db.Text)
     
     # Relationships
@@ -192,6 +193,7 @@ class Sale(BaseModel):
             'paymentMethod': self.payment_method,
             'sgkCoverage': float(self.sgk_coverage) if self.sgk_coverage else 0.0,
             'patientPayment': float(self.patient_payment) if self.patient_payment else None,
+            'reportStatus': self.report_status,
             'notes': self.notes
         }
         sale_dict.update(base_dict)

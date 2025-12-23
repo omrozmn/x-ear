@@ -16,11 +16,13 @@ except FileNotFoundError:
 # Define schemas
 paytr_initiate_request = {
     'type': 'object',
-    'required': ['sale_id'],
+    'required': ['amount'],
     'properties': {
         'sale_id': {'type': 'string'},
+        'patient_id': {'type': 'string'}, 
         'installment_count': {'type': 'integer', 'default': 1},
-        'amount': {'type': 'number'}
+        'amount': {'type': 'number'},
+        'description': {'type': 'string'}
     }
 }
 
@@ -30,6 +32,7 @@ paytr_initiate_response = {
         'success': {'type': 'boolean'},
         'token': {'type': 'string'},
         'iframe_url': {'type': 'string'},
+        'payment_record_id': {'type': 'string'},
         'error': {'type': 'string'}
     }
 }
@@ -45,7 +48,6 @@ spec['components']['schemas']['PayTRInitiateResponse'] = paytr_initiate_response
 
 # Define Paths
 paths = spec.get('paths', {})
-
 
 # Validates paths
 paths['/api/payments/pos/paytr/config'] = {
@@ -66,8 +68,8 @@ paths['/api/payments/pos/paytr/config'] = {
                                     'type': 'object',
                                     'properties': {
                                         'merchant_id': {'type': 'string'},
-                                        'merchant_key': {'type': 'string'},
-                                        'merchant_salt': {'type': 'string'},
+                                        'merchant_key_masked': {'type': 'string'},
+                                        'merchant_salt_masked': {'type': 'string'},
                                         'test_mode': {'type': 'boolean'},
                                         'enabled': {'type': 'boolean'}
                                     }
@@ -92,7 +94,8 @@ paths['/api/payments/pos/paytr/config'] = {
                             'merchant_id': {'type': 'string'},
                             'merchant_key': {'type': 'string'},
                             'merchant_salt': {'type': 'string'},
-                            'test_mode': {'type': 'boolean'}
+                            'test_mode': {'type': 'boolean'},
+                            'enabled': {'type': 'boolean'}
                         }
                     }
                 }
@@ -117,7 +120,6 @@ paths['/api/payments/pos/paytr/config'] = {
 }
 
 paths['/api/payments/pos/paytr/initiate'] = {
-
     'post': {
         'summary': 'Initiate PayTR Payment',
         'operationId': 'paytr_initiate',
@@ -175,16 +177,16 @@ paths['/api/payments/pos/paytr/callback'] = {
     }
 }
 
-
-paths['/api/reports/pos-movements'] = {
+paths['/api/payments/pos/transactions'] = {
     'get': {
-        'summary': 'POS Movements Report',
-        'operationId': 'report_pos_movements',
-        'tags': ['Reports'],
+        'summary': 'POS Transactions Report',
+        'operationId': 'get_pos_transactions',
+        'tags': ['PaymentIntegrations'],
         'parameters': [
-            {'name': 'page', 'in': 'query', 'schema': {'type': 'integer', 'default': 1}},
-            {'name': 'per_page', 'in': 'query', 'schema': {'type': 'integer', 'default': 20}},
-            {'name': 'days', 'in': 'query', 'schema': {'type': 'integer', 'default': 30}}
+            {'name': 'provider', 'in': 'query', 'schema': {'type': 'string'}},
+            {'name': 'start_date', 'in': 'query', 'schema': {'type': 'string'}},
+            {'name': 'end_date', 'in': 'query', 'schema': {'type': 'string'}},
+            {'name': 'limit', 'in': 'query', 'schema': {'type': 'integer', 'default': 50}}
         ],
         'responses': {
             '200': {
@@ -203,27 +205,14 @@ paths['/api/reports/pos-movements'] = {
                                             'id': {'type': 'string'},
                                             'date': {'type': 'string'},
                                             'amount': {'type': 'number'},
-                                            'gross_amount': {'type': 'number'},
                                             'status': {'type': 'string'},
                                             'pos_status': {'type': 'string'},
-                                            'pos_transaction_id': {'type': 'string'},
-                                            'installment': {'type': 'integer'},
-                                            'error_message': {'type': 'string'},
-                                            'sale_id': {'type': 'string'},
-                                            'patient_name': {'type': 'string'}
+                                            'pos_provider': {'type': 'string'},
+                                            'installment_count': {'type': 'integer'},
+                                            'payment_record_id': {'type': 'string'}
                                         }
                                     }
-                                },
-                                'summary': {
-                                    'type': 'object',
-                                    'properties': {
-                                        'total_volume': {'type': 'number'},
-                                        'success_count': {'type': 'integer'},
-                                        'fail_count': {'type': 'integer'}
-                                    }
-                                },
-                                'meta': {'type': 'object'},
-                                'timestamp': {'type': 'string'}
+                                }
                             }
                         }
                     }
@@ -234,7 +223,6 @@ paths['/api/reports/pos-movements'] = {
 }
 
 spec['paths'] = paths
-
 
 with open(openapi_path, 'w') as f:
     yaml.dump(spec, f, sort_keys=False)

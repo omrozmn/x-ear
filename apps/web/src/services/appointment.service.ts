@@ -35,28 +35,15 @@ class AppointmentService {
   // Try to load appointments from backend and populate local storage
   private async bootstrapFromServer(): Promise<void> {
     try {
-      // Include Authorization header when available to avoid 401s from protected endpoints
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      try {
-        const token = (window as any).__AUTH_TOKEN__ || localStorage.getItem('x-ear.auth.token@v1') || localStorage.getItem('auth_token');
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-      } catch (err) {
-        // ignore access errors to localStorage
-      }
-
-      const resp = await fetch('/api/appointments/list?page=1&per_page=1000', { credentials: 'same-origin', headers });
-      if (!resp.ok) return;
-      const json = await resp.json();
-      const items = (json && json.data) || [];
+      // Use the generated API client
+      const { appointmentsApi } = await import('../api/appointments');
+      const items = await appointmentsApi.getAppointments({ limit: '1000' } as any);
 
       if (!Array.isArray(items) || items.length === 0) return;
 
       // Try to fetch patient names to enrich appointments (best-effort)
       let patientMap: Record<string, string> = {};
       try {
-        // dynamic import to avoid circular dependencies at module load
         const { patientApiService } = await import('./patient/patient-api.service');
         const patients = await patientApiService.fetchAllPatients(1000);
         patientMap = patients.reduce((acc: Record<string, string>, p: any) => {
@@ -70,25 +57,25 @@ class AppointmentService {
       // Map backend shape to local Appointment type
       this.appointments = items.map((d: any) => ({
         id: d.id,
-        patientId: d.patientId,
-        patientName: d.patientName || patientMap[d.patientId] || '',
+        patientId: d.patient_id || d.patientId,
+        patientName: d.patient_name || d.patientName || patientMap[d.patient_id || d.patientId] || '',
         date: d.date,
         time: d.time,
-        startTime: d.startTime || `${d.date}T${d.time}:00.000Z`,
-        endTime: d.endTime || new Date(`${d.date}T${d.time}:00Z`).toISOString(),
+        startTime: d.startTime || (d.date && d.time ? `${d.date}T${d.time}:00.000Z` : ''),
+        endTime: d.endTime || (d.date && d.time ? this.calculateEndTime(d.date, d.time, d.duration || 30) : ''),
         duration: d.duration || 30,
-        title: d.title || '',
-        type: d.type || 'consultation',
+        title: d.title || this.generateTitle(d.appointment_type || d.type || 'consultation'),
+        type: d.appointment_type || d.type || 'consultation',
         status: (d.status || 'scheduled').toLowerCase(),
         notes: d.notes,
         clinician: d.clinician || undefined,
-        clinicianId: d.clinicianId || undefined,
+        clinicianId: d.clinician_id || d.clinicianId || undefined,
         location: d.location || undefined,
-        branchId: d.branchId || undefined,
+        branchId: d.branch_id || d.branchId || undefined,
         reminderSent: d.reminderSent || false,
-        createdBy: d.createdBy || undefined,
-        createdAt: d.createdAt || new Date().toISOString(),
-        updatedAt: d.updatedAt || new Date().toISOString()
+        createdBy: d.created_by || d.createdBy || undefined,
+        createdAt: d.created_at || d.createdAt || new Date().toISOString(),
+        updatedAt: d.updated_at || d.updatedAt || new Date().toISOString()
       }));
 
       this.saveAppointments();
@@ -206,13 +193,19 @@ class AppointmentService {
     this.appointments[index] = updatedAppointment;
     this.saveAppointments();
 
-    // Queue for sync
-    await outbox.addOperation({
-      method: 'PUT',
-      endpoint: `/api/appointments/${id}`,
-      data: updatedAppointment,
-      priority: 'normal'
-    });
+    try {
+      const { appointmentsApi } = await import('../api/appointments');
+      const idempotencyKey = `appt-upd-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      await appointmentsApi.updateAppointment(id, updatedAppointment, idempotencyKey);
+    } catch (error) {
+      console.warn('API update failed, falling back to outbox:', error);
+      await outbox.addOperation({
+        method: 'PUT',
+        endpoint: `/api/appointments/${id}`,
+        data: updatedAppointment,
+        priority: 'normal'
+      });
+    }
 
     this.notify();
     return updatedAppointment;
@@ -224,18 +217,27 @@ class AppointmentService {
       throw new Error(`Appointment with id ${id} not found`);
     }
 
-    // Remove from local storage
+    // Remove from local storage immediately (optimistic UI)
+    const deletedAppointment = this.appointments[index];
     this.appointments.splice(index, 1);
     this.saveAppointments();
-
-    // Queue for sync
-    await outbox.addOperation({
-      method: 'DELETE',
-      endpoint: `/api/appointments/${id}`,
-      priority: 'normal'
-    });
-
     this.notify();
+
+    try {
+      const { appointmentsApi } = await import('../api/appointments');
+      const idempotencyKey = `appt-del-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      await appointmentsApi.deleteAppointment(id, idempotencyKey);
+    } catch (error) {
+      console.warn('API delete failed, falling back to outbox:', error);
+      // Revert local changes if critical failure? No, we want optimistic UI.
+      // But actually, if we use outbox fallback, we should just queue it.
+
+      await outbox.addOperation({
+        method: 'DELETE',
+        endpoint: `/api/appointments/${id}`,
+        priority: 'normal'
+      });
+    }
   }
 
   // Query methods

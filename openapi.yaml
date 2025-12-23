@@ -1013,8 +1013,10 @@ paths:
   /api/devices/{device_id}/stock-update:
     post:
       summary: Update device stock levels (simplified).
-      description: "This endpoint is intentionally permissive for tests \u2014 real\
-        \ inventory logic\nshould live in a dedicated inventory table/service."
+      description: 'This endpoint is intentionally permissive for tests — real inventory
+        logic
+
+        should live in a dedicated inventory table/service.'
       operationId: devices_update_device_stock
       tags:
       - Devices
@@ -1722,7 +1724,7 @@ paths:
       description: Generate and download a PDF for the specified invoice
   /api/invoices/{invoice_id}/send-to-gib:
     post:
-      summary: "Send invoice to G\u0130B"
+      summary: Send invoice to GİB
       operationId: invoices_send_to_gib
       tags:
       - Invoices
@@ -1734,7 +1736,7 @@ paths:
           type: string
       responses:
         '200':
-          description: "Invoice sent to G\u0130B successfully"
+          description: Invoice sent to GİB successfully
           content:
             application/json:
               schema:
@@ -1766,7 +1768,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      description: "Send the invoice to G\u0130B (Turkish Revenue Administration)"
+      description: Send the invoice to GİB (Turkish Revenue Administration)
   /api/notifications:
     get:
       summary: GET /api/notifications
@@ -2972,7 +2974,7 @@ paths:
       description: Retrieve financial information
   /api/reports/overview:
     get:
-      summary: "Genel rapor \xF6zeti"
+      summary: Genel rapor özeti
       operationId: reports_report_overview
       tags:
       - Reports
@@ -4974,7 +4976,7 @@ paths:
           description: Success
   /api/admin/admin-users:
     get:
-      summary: "Admin kullan\u0131c\u0131lar\u0131 rolleriyle birlikte listele"
+      summary: Admin kullanıcıları rolleriyle birlikte listele
       operationId: admin_roles_get_admin_users_with_roles
       tags:
       - Admin
@@ -4983,7 +4985,7 @@ paths:
           description: Success
   /api/admin/admin-users/{user_id}:
     get:
-      summary: "Admin kullan\u0131c\u0131 detay\u0131"
+      summary: Admin kullanıcı detayı
       operationId: admin_roles_get_admin_user_detail
       tags:
       - Admin
@@ -4998,9 +5000,12 @@ paths:
           description: Success
   /api/admin/admin-users/{user_id}/roles:
     put:
-      summary: "Kullan\u0131c\u0131ya rol ata"
-      description: "Body:\nrole_ids: list[str] - Rol ID'leri\nNot: admin@x-ear.com\
-        \ kullan\u0131c\u0131s\u0131ndan SuperAdmin rol\xFC kald\u0131r\u0131lamaz"
+      summary: Kullanıcıya rol ata
+      description: 'Body:
+
+        role_ids: list[str] - Rol ID''leri
+
+        Not: admin@x-ear.com kullanıcısından SuperAdmin rolü kaldırılamaz'
       operationId: admin_roles_update_admin_user_roles
       tags:
       - Admin
@@ -5432,9 +5437,8 @@ paths:
           description: Success
   /api/admin/my-permissions:
     get:
-      summary: "Mevcut admin kullan\u0131c\u0131s\u0131n\u0131n izinlerini d\xF6nd\xFC\
-        r\xFCr."
-      description: "Frontend i\xE7in - sidebar, buton gizleme vb."
+      summary: Mevcut admin kullanıcısının izinlerini döndürür.
+      description: Frontend için - sidebar, buton gizleme vb.
       operationId: admin_roles_get_my_admin_permissions
       tags:
       - Admin
@@ -5521,8 +5525,10 @@ paths:
           description: Success
   /api/admin/permissions:
     get:
-      summary: "T\xFCm izinleri listele"
-      description: "Query params:\ncategory: str - Kategoriye g\xF6re filtrele"
+      summary: Tüm izinleri listele
+      description: 'Query params:
+
+        category: str - Kategoriye göre filtrele'
       operationId: admin_roles_get_admin_permissions
       tags:
       - Admin
@@ -5531,8 +5537,7 @@ paths:
           description: Success
   /api/admin/permissions/check/{endpoint_path}:
     get:
-      summary: "Belirli bir endpoint i\xE7in gerekli permission'\u0131 d\xF6nd\xFC\
-        r\xFCr."
+      summary: Belirli bir endpoint için gerekli permission'ı döndürür.
       operationId: permission_admin_check_endpoint_permission
       tags:
       - Admin
@@ -5547,7 +5552,7 @@ paths:
           description: Success
   /api/admin/permissions/coverage:
     get:
-      summary: "Permission coverage raporunu d\xF6nd\xFCr\xFCr."
+      summary: Permission coverage raporunu döndürür.
       operationId: permission_admin_get_permission_coverage
       tags:
       - Admin
@@ -5556,7 +5561,7 @@ paths:
           description: Success
   /api/admin/permissions/map:
     get:
-      summary: "T\xFCm endpoint-permission mapping'ini d\xF6nd\xFCr\xFCr."
+      summary: Tüm endpoint-permission mapping'ini döndürür.
       operationId: permission_admin_get_permission_map
       tags:
       - Admin
@@ -5640,9 +5645,14 @@ paths:
           description: Success
   /api/admin/roles:
     post:
-      summary: "Yeni rol olu\u015Ftur"
-      description: "Body:\nname: str - Rol ad\u0131 (unique)\ndescription: str - A\xE7\
-        \u0131klama\npermissions: list[str] - \u0130zin kodlar\u0131"
+      summary: Yeni rol oluştur
+      description: 'Body:
+
+        name: str - Rol adı (unique)
+
+        description: str - Açıklama
+
+        permissions: list[str] - İzin kodları'
       operationId: admin_roles_create_admin_role
       tags:
       - Admin
@@ -5673,9 +5683,12 @@ paths:
           description: Success
   /api/admin/roles/{role_id}/permissions:
     put:
-      summary: "Rol izinlerini g\xFCncelle"
-      description: "Body:\npermissions: list[str] - \u0130zin kodlar\u0131\nNot: SuperAdmin\
-        \ rol\xFCn\xFCn izinleri de\u011Fi\u015Ftirilemez"
+      summary: Rol izinlerini güncelle
+      description: 'Body:
+
+        permissions: list[str] - İzin kodları
+
+        Not: SuperAdmin rolünün izinleri değiştirilemez'
       operationId: admin_roles_update_admin_role_permissions
       tags:
       - Admin
@@ -6687,8 +6700,8 @@ paths:
   /api/invoices/{invoice_id}/update-gib-status:
     post:
       summary: Update invoice status from Birfatura.
-      description: "Called to check if G\u0130B has approved/rejected the invoice\
-        \ and fetch PDF if available."
+      description: Called to check if GİB has approved/rejected the invoice and fetch
+        PDF if available.
       operationId: invoices_update_invoice_gib_status
       tags:
       - Invoices
@@ -7278,7 +7291,7 @@ paths:
           description: Success
   /api/reports/cashflow-summary:
     get:
-      summary: "Kasa \xF6zeti raporu - tahsilatlar (Sales tabanl\u0131)"
+      summary: Kasa özeti raporu - tahsilatlar (Sales tabanlı)
       operationId: reports_report_cashflow_summary
       tags:
       - Reports
@@ -7293,7 +7306,7 @@ paths:
           description: Success
   /api/reports/promissory-notes:
     get:
-      summary: "Senet raporlar\u0131 - ayl\u0131k say\u0131, gelir ve \xF6zet"
+      summary: Senet raporları - aylık sayı, gelir ve özet
       operationId: reports_report_promissory_notes
       tags:
       - Reports
@@ -7308,8 +7321,7 @@ paths:
           description: Success
   /api/reports/promissory-notes/by-patient:
     get:
-      summary: "Hasta bazl\u0131 senet \xF6zeti - hangi hastan\u0131n ka\xE7 senedi\
-        \ kalm\u0131\u015F"
+      summary: Hasta bazlı senet özeti - hangi hastanın kaç senedi kalmış
       operationId: reports_report_promissory_notes_by_patient
       tags:
       - Reports
@@ -7339,7 +7351,7 @@ paths:
           description: Success
   /api/reports/promissory-notes/list:
     get:
-      summary: "Toplu senet listesi - modal i\xE7in"
+      summary: Toplu senet listesi - modal için
       operationId: reports_report_promissory_notes_list
       tags:
       - Reports
@@ -7369,8 +7381,7 @@ paths:
           description: Success
   /api/reports/remaining-payments:
     get:
-      summary: "Kalan \xF6demeler raporu - hangi hastan\u0131n ne kadar \xF6demesi\
-        \ kalm\u0131\u015F"
+      summary: Kalan ödemeler raporu - hangi hastanın ne kadar ödemesi kalmış
       operationId: reports_report_remaining_payments
       tags:
       - Reports
@@ -7395,10 +7406,10 @@ paths:
           description: Success
   /api/return-invoices/{invoice_id}/send-to-gib:
     post:
-      summary: "Mark return invoice as sent to GIB. In legacy flow G\u0130B send triggers\
-        \ replacement completion and stock effects."
-      description: "Here we mark gib_sent and update replacement status. Actual EFatura/G\u0130\
-        B integration should be added server-side."
+      summary: Mark return invoice as sent to GIB. In legacy flow GİB send triggers
+        replacement completion and stock effects.
+      description: Here we mark gib_sent and update replacement status. Actual EFatura/GİB
+        integration should be added server-side.
       operationId: replacements_send_invoice_to_gib
       tags:
       - Return-invoices
@@ -7505,11 +7516,10 @@ paths:
           description: Success
   /api/sales/recalc:
     post:
-      summary: "Sat\u0131\u015F kay\u0131tlar\u0131n\u0131n SGK ve hasta \xF6deme\
-        \ tutarlar\u0131n\u0131 yeniden hesaplarken kal\u0131c\u0131 olarak g\xFC\
-        nceller."
-      description: "\u0130ste\u011Fe ba\u011Fl\u0131 filtreler: body veya query i\xE7\
-        inde `patientId`, `saleId`, `limit`."
+      summary: Satış kayıtlarının SGK ve hasta ödeme tutarlarını yeniden hesaplarken
+        kalıcı olarak günceller.
+      description: 'İsteğe bağlı filtreler: body veya query içinde `patientId`, `saleId`,
+        `limit`.'
       operationId: sales_recalc_sales
       tags:
       - Sales
@@ -7580,7 +7590,7 @@ paths:
           description: Success
   /api/sgk/e-receipt/query:
     post:
-      summary: "E-re\xE7ete sorgulama endpoint'i"
+      summary: E-reçete sorgulama endpoint'i
       operationId: sgk_query_e_receipt
       tags:
       - Sgk
@@ -7595,7 +7605,7 @@ paths:
           description: Success
   /api/sgk/patient-rights/query:
     post:
-      summary: "SGK hasta haklar\u0131 sorgulama endpoint'i"
+      summary: SGK hasta hakları sorgulama endpoint'i
       operationId: sgk_query_patient_rights
       tags:
       - Sgk
@@ -7651,7 +7661,7 @@ paths:
           description: Success
   /api/sgk/workflow/create:
     post:
-      summary: "SGK workflow olu\u015Fturma endpoint'i"
+      summary: SGK workflow oluşturma endpoint'i
       operationId: sgk_create_sgk_workflow
       tags:
       - Sgk
@@ -7666,7 +7676,7 @@ paths:
           description: Success
   /api/sgk/workflow/{workflow_id}:
     get:
-      summary: "SGK workflow detaylar\u0131 endpoint'i"
+      summary: SGK workflow detayları endpoint'i
       operationId: sgk_get_sgk_workflow
       tags:
       - Sgk
@@ -7681,7 +7691,7 @@ paths:
           description: Success
   /api/sgk/workflow/{workflow_id}/update:
     put:
-      summary: "SGK workflow g\xFCncelleme endpoint'i"
+      summary: SGK workflow güncelleme endpoint'i
       operationId: sgk_update_sgk_workflow
       tags:
       - Sgk
@@ -7885,15 +7895,27 @@ paths:
           description: Success
   /api/unified-cash-records:
     get:
-      summary: "Birle\u015Fik cash records endpoint'i - t\xFCm finansal kay\u0131\
-        tlar\u0131 tek yerden d\xF6nd\xFCr\xFCr."
-      description: "\u015Eu kaynak t\xFCrlerini birle\u015Ftirir:\n- Sales (sat\u0131\
-        \u015Flar)\n- PaymentRecords (\xF6deme kay\u0131tlar\u0131)\n- Cash Records\
-        \ (nakit kay\u0131tlar\u0131)\nQuery parametreleri:\n- limit: maksimum kay\u0131\
-        t say\u0131s\u0131 (varsay\u0131lan: 200)\n- start_date, end_date: tarih filtreleri\
-        \ (ISO format)\n- record_type: kay\u0131t t\xFCr\xFC filtresi (sale, payment,\
-        \ cash)\n- patient_id: hasta ID filtresi\n- status: durum filtresi (paid,\
-        \ pending, partial)"
+      summary: Birleşik cash records endpoint'i - tüm finansal kayıtları tek yerden
+        döndürür.
+      description: 'Şu kaynak türlerini birleştirir:
+
+        - Sales (satışlar)
+
+        - PaymentRecords (ödeme kayıtları)
+
+        - Cash Records (nakit kayıtları)
+
+        Query parametreleri:
+
+        - limit: maksimum kayıt sayısı (varsayılan: 200)
+
+        - start_date, end_date: tarih filtreleri (ISO format)
+
+        - record_type: kayıt türü filtresi (sale, payment, cash)
+
+        - patient_id: hasta ID filtresi
+
+        - status: durum filtresi (paid, pending, partial)'
       operationId: unified_cash_get_unified_cash_records
       tags:
       - Unified-cash-records
@@ -7902,9 +7924,12 @@ paths:
           description: Success
   /api/unified-cash-records/summary:
     get:
-      summary: "Finansal \xF6zet bilgileri d\xF6nd\xFCr\xFCr."
-      description: "Query parametreleri:\n- period: \xF6zet d\xF6nemi (today, week,\
-        \ month, year)\n- start_date, end_date: \xF6zel tarih aral\u0131\u011F\u0131"
+      summary: Finansal özet bilgileri döndürür.
+      description: 'Query parametreleri:
+
+        - period: özet dönemi (today, week, month, year)
+
+        - start_date, end_date: özel tarih aralığı'
       operationId: unified_cash_get_cash_summary
       tags:
       - Unified-cash-records
@@ -8033,9 +8058,9 @@ paths:
                     properties:
                       merchant_id:
                         type: string
-                      merchant_key:
+                      merchant_key_masked:
                         type: string
-                      merchant_salt:
+                      merchant_salt_masked:
                         type: string
                       test_mode:
                         type: boolean
@@ -8059,6 +8084,8 @@ paths:
                 merchant_salt:
                   type: string
                 test_mode:
+                  type: boolean
+                enabled:
                   type: boolean
       responses:
         '200':
@@ -8141,6 +8168,242 @@ paths:
                   meta:
                     type: object
                   timestamp:
+                    type: string
+  /api/payments/pos/transactions:
+    get:
+      summary: POS Transactions Report
+      operationId: get_pos_transactions
+      tags:
+      - PaymentIntegrations
+      parameters:
+      - name: provider
+        in: query
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        schema:
+          type: string
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 50
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        date:
+                          type: string
+                        amount:
+                          type: number
+                        status:
+                          type: string
+                        pos_status:
+                          type: string
+                        pos_provider:
+                          type: string
+                        installment_count:
+                          type: integer
+                        payment_record_id:
+                          type: string
+  /api/pos/commission/calculate:
+    post:
+      tags:
+      - POS Commission
+      summary: Calculate commission for amount and installments
+      operationId: calculateCommission
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommissionCalculationRequest'
+      responses:
+        '200':
+          description: Commission calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommissionCalculationResponse'
+  /api/pos/commission/installment-options:
+    post:
+      tags:
+      - POS Commission
+      summary: Get installment options with calculated amounts
+      operationId: getInstallmentOptions
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstallmentOptionsRequest'
+      responses:
+        '200':
+          description: Installment options retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallmentOptionsResponse'
+  /api/pos/commission/rates:
+    get:
+      tags:
+      - POS Commission
+      summary: Get commission rates for current tenant
+      operationId: getCommissionRates
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Commission rates retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommissionRatesResponse'
+  /api/pos/commission/rates/system:
+    get:
+      tags:
+      - POS Commission Admin
+      summary: Get system-wide commission rates
+      operationId: getSystemCommissionRates
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: System rates retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      rates:
+                        $ref: '#/components/schemas/CommissionRates'
+                      defaults:
+                        $ref: '#/components/schemas/CommissionRates'
+    put:
+      tags:
+      - POS Commission Admin
+      summary: Update system-wide commission rates
+      operationId: updateSystemCommissionRates
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - rates
+              properties:
+                rates:
+                  $ref: '#/components/schemas/CommissionRates'
+      responses:
+        '200':
+          description: Rates updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+  /api/pos/commission/rates/tenant/{tenant_id}:
+    get:
+      tags:
+      - POS Commission Admin
+      summary: Get tenant-specific commission rates
+      operationId: getTenantCommissionRates
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Tenant rates retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      tenant_rates:
+                        $ref: '#/components/schemas/CommissionRates'
+                      system_rates:
+                        $ref: '#/components/schemas/CommissionRates'
+                      effective_rates:
+                        $ref: '#/components/schemas/CommissionRates'
+    put:
+      tags:
+      - POS Commission Admin
+      summary: Update tenant-specific commission rates
+      operationId: updateTenantCommissionRates
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - rates
+              properties:
+                rates:
+                  $ref: '#/components/schemas/CommissionRates'
+      responses:
+        '200':
+          description: Tenant rates updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
                     type: string
 components:
   schemas:
@@ -9728,15 +9991,19 @@ components:
     PayTRInitiateRequest:
       type: object
       required:
-      - sale_id
+      - amount
       properties:
         sale_id:
+          type: string
+        patient_id:
           type: string
         installment_count:
           type: integer
           default: 1
         amount:
           type: number
+        description:
+          type: string
     PayTRInitiateResponse:
       type: object
       properties:
@@ -9746,5 +10013,106 @@ components:
           type: string
         iframe_url:
           type: string
+        payment_record_id:
+          type: string
         error:
           type: string
+    CommissionCalculationRequest:
+      type: object
+      required:
+      - amount
+      - installment_count
+      properties:
+        amount:
+          type: number
+          format: float
+        installment_count:
+          type: integer
+        provider:
+          type: string
+          default: xear_pos
+    CommissionCalculationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            gross_amount:
+              type: number
+            commission_rate:
+              type: number
+            commission_amount:
+              type: number
+            net_amount:
+              type: number
+            provider:
+              type: string
+            installment_count:
+              type: integer
+    InstallmentOptionsRequest:
+      type: object
+      required:
+      - amount
+      properties:
+        amount:
+          type: number
+          format: float
+        provider:
+          type: string
+          default: xear_pos
+    InstallmentOption:
+      type: object
+      properties:
+        installment_count:
+          type: integer
+        label:
+          type: string
+        gross_amount:
+          type: number
+        commission_rate:
+          type: number
+        commission_amount:
+          type: number
+        net_amount:
+          type: number
+        monthly_payment:
+          type: number
+          nullable: true
+    InstallmentOptionsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            options:
+              type: array
+              items:
+                $ref: '#/components/schemas/InstallmentOption'
+            provider:
+              type: string
+    CommissionRates:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          type: number
+    CommissionRatesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            rates:
+              $ref: '#/components/schemas/CommissionRates'
+            is_custom:
+              type: boolean
+            available_providers:
+              type: array
+              items:
+                type: string

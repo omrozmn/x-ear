@@ -12,7 +12,8 @@ import {
     Download,
     Trash2,
     Eye,
-    Info
+    Info,
+    CreditCard
 } from 'lucide-react';
 import {
     useSmsGetConfig,
@@ -25,7 +26,6 @@ import { Button, Input, Select, useToastHelpers } from '@x-ear/ui-web';
 import * as Tabs from '@radix-ui/react-tabs';
 import * as Dialog from '@radix-ui/react-dialog';
 import axios from 'axios';
-
 
 import { PosSettings } from './PosSettings';
 
@@ -46,7 +46,8 @@ const HEADER_TYPES = [
 ];
 
 export default function IntegrationSettings() {
-    const [activeTab, setActiveTab] = useState('docs');
+    const [activeTab, setActiveTab] = useState('sms');
+    const [smsSubTab, setSmsSubTab] = useState('docs');
     const [previewDoc, setPreviewDoc] = useState<{ type: string, url: string, filename: string } | null>(null);
     const [showContractExample, setShowContractExample] = useState(false);
     const { success: showSuccessToast, error: showErrorToast, info: showInfoToast } = useToastHelpers();
@@ -63,16 +64,12 @@ export default function IntegrationSettings() {
         setPreviewDoc(null);
     };
 
-    // API Config State
     const { data: configData, isLoading: configLoading, refetch: refetchConfig } = useSmsGetConfig();
     const { data: creditData } = useSmsGetCredit();
-
     const [isUploading, setIsUploading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-
     const [uploadedDocs, setUploadedDocs] = useState<any[]>([]);
 
-    // Headers State
     const { data: headersData, isLoading: headersLoading, refetch: refetchHeaders } = useSmsGetHeaders();
     const requestHeaderMutation = useSmsCreateHeader();
     const [newHeader, setNewHeader] = useState('');
@@ -98,8 +95,6 @@ export default function IntegrationSettings() {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('documentType', docType);
-
-            // Get token from localStorage
             const token = localStorage.getItem('x-ear.auth.token@v1');
 
             await axios.post('/api/sms/documents/upload', formData, {
@@ -201,18 +196,9 @@ export default function IntegrationSettings() {
 
     if (configLoading) return (
         <div className="p-6 max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                    <MessageSquare className="w-8 h-8 text-indigo-600" />
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">SMS Entegrasyonu</h1>
-                        <p className="text-gray-500 dark:text-gray-400">SMS sağlayıcısı entegrasyon ayarları ve başlık yönetimi</p>
-                    </div>
-                </div>
-                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 px-6 py-4 rounded-xl border border-indigo-200 dark:border-indigo-800 animate-pulse">
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Kalan SMS Kredisi</div>
-                    <div className="h-9 w-20 bg-indigo-200 dark:bg-indigo-700 rounded" />
-                </div>
+            <div className="mb-8">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Entegrasyonlar</h1>
+                <p className="text-gray-500 dark:text-gray-400">Üçüncü parti servis entegrasyon ayarları</p>
             </div>
             <div className="flex justify-center py-16">
                 <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
@@ -220,49 +206,29 @@ export default function IntegrationSettings() {
         </div>
     );
 
-    // Safely extract headers array from response - API returns {success, data: [...]}
     const headers = Array.isArray((headersData as any)?.data) ? (headersData as any).data : ((headersData as any)?.data?.data || []);
     const credit = (creditData as any)?.data?.data;
 
     return (
         <div className="p-6 max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                    <MessageSquare className="w-8 h-8 text-indigo-600" />
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">SMS Entegrasyonu</h1>
-                        <p className="text-gray-500 dark:text-gray-400">SMS sağlayıcısı entegrasyon ayarları ve başlık yönetimi</p>
-                    </div>
-                </div>
-
-                {/* SMS Credit Display */}
-                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 px-6 py-4 rounded-xl border border-indigo-200 dark:border-indigo-800">
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Kalan SMS Kredisi</div>
-                    <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-                        {credit?.balance?.toLocaleString() || '0'}
-                    </div>
-                </div>
+            <div className="mb-8">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Entegrasyonlar</h1>
+                <p className="text-gray-500 dark:text-gray-400">Üçüncü parti servis entegrasyon ayarları</p>
             </div>
 
             <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
                 <Tabs.List className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
                     <Tabs.Trigger
-                        value="docs"
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'docs'
+                        value="sms"
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sms'
                             ? 'border-indigo-600 text-indigo-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
-                        Başvuru Belgeleri
-                    </Tabs.Trigger>
-                    <Tabs.Trigger
-                        value="headers"
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'headers'
-                            ? 'border-indigo-600 text-indigo-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                            }`}
-                    >
-                        SMS Başlıkları
+                        <div className="flex items-center gap-2">
+                            <MessageSquare className="w-4 h-4" />
+                            SMS Entegrasyonu
+                        </div>
                     </Tabs.Trigger>
                     <Tabs.Trigger
                         value="pos"
@@ -271,254 +237,260 @@ export default function IntegrationSettings() {
                             : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
-                        Online Ödeme (POS)
+                        <div className="flex items-center gap-2">
+                            <CreditCard className="w-4 h-4" />
+                            Online Ödeme (POS)
+                        </div>
                     </Tabs.Trigger>
                 </Tabs.List>
 
-                {/* Documents Tab */}
-                <Tabs.Content value="docs" className="space-y-6">
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-start gap-3 mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                            <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                            <div className="text-sm text-blue-800 dark:text-blue-200">
-                                <p className="font-medium mb-1">SMS Sağlayıcısı Başvuru Belgeleri</p>
-                                <p>Belgeleri yükledikten sonra yönetici onayı beklemelisiniz. Onay sonrası belgeler otomatik olarak SMS sağlayıcısına iletilecektir.</p>
-                            </div>
+                {/* SMS Tab Content */}
+                <Tabs.Content value="sms" className="space-y-6">
+                    {/* SMS Credit Card */}
+                    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 px-6 py-4 rounded-xl border border-indigo-200 dark:border-indigo-800">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Kalan SMS Kredisi</div>
+                        <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+                            {credit?.balance?.toLocaleString() || '0'}
                         </div>
+                    </div>
 
-                        <div className="space-y-4">
-                            {REQUIRED_DOCUMENTS.map((doc) => {
-                                const uploaded = getUploadedDoc(doc.id);
-                                return (
-                                    <div key={doc.id} className={`p-4 rounded-lg border ${uploaded ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700' : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700'}`}>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3 flex-1">
-                                                {uploaded ? (
-                                                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                                                ) : (
-                                                    <FileText className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                                                )}
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="font-medium text-gray-900 dark:text-white">{doc.label}</div>
+                    {/* SMS Sub-Tabs */}
+                    <div className="border-b border-gray-200 dark:border-gray-700 mb-4">
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => setSmsSubTab('docs')}
+                                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${smsSubTab === 'docs'
+                                    ? 'border-blue-600 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                Başvuru Belgeleri
+                            </button>
+                            <button
+                                onClick={() => setSmsSubTab('headers')}
+                                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${smsSubTab === 'headers'
+                                    ? 'border-blue-600 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                SMS Başlıkları
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* SMS Documents Sub-Tab */}
+                    {smsSubTab === 'docs' && (
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                            <div className="flex items-start gap-3 mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                <div className="text-sm text-blue-800 dark:text-blue-200">
+                                    <p className="font-medium mb-1">SMS Sağlayıcısı Başvuru Belgeleri</p>
+                                    <p>Belgeleri yükledikten sonra yönetici onayı beklemelisiniz. Onay sonrası belgeler otomatik olarak SMS sağlayıcısına iletilecektir.</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                {REQUIRED_DOCUMENTS.map((doc) => {
+                                    const uploaded = getUploadedDoc(doc.id);
+                                    return (
+                                        <div key={doc.id} className={`p-4 rounded-lg border ${uploaded ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700' : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700'}`}>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3 flex-1">
                                                     {uploaded ? (
-                                                        <div className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-2">
-                                                            <span className="truncate max-w-[200px]" title={uploaded.filename}>{uploaded.filename}</span>
-                                                            <span className="text-gray-400">({(uploaded.size / 1024).toFixed(1)} KB)</span>
-                                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">Yüklendi</span>
-                                                        </div>
+                                                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                                                     ) : (
-                                                        <div className="text-xs text-gray-500 mt-1">Henüz yüklenmedi</div>
+                                                        <FileText className="w-5 h-5 text-gray-400 flex-shrink-0" />
                                                     )}
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="font-medium text-gray-900 dark:text-white">{doc.label}</div>
+                                                        {uploaded ? (
+                                                            <div className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-2">
+                                                                <span className="truncate max-w-[200px]" title={uploaded.filename}>{uploaded.filename}</span>
+                                                                <span className="text-gray-400">({(uploaded.size / 1024).toFixed(1)} KB)</span>
+                                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">Yüklendi</span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="text-xs text-gray-500 mt-1">Henüz yüklenmedi</div>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="flex items-center gap-2 flex-shrink-0">
-                                                {doc.hasExample && (
+                                                <div className="flex items-center gap-2 flex-shrink-0">
+                                                    {doc.hasExample && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => setShowContractExample(true)}
+                                                            title="Örnek sözleşmeyi görüntüle"
+                                                        >
+                                                            <Info className="w-4 h-4 text-blue-500" />
+                                                        </Button>
+                                                    )}
+                                                    {uploaded && (
+                                                        <>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handlePreviewDocument(doc.id)}
+                                                                title="Belgeyi önizle"
+                                                            >
+                                                                <Eye className="w-4 h-4 text-indigo-500" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleDeleteDocument(doc.id)}
+                                                                disabled={isDeleting}
+                                                                title="Belgeyi sil"
+                                                            >
+                                                                <Trash2 className="w-4 h-4 text-red-500" />
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                    <input
+                                                        ref={(node) => {
+                                                            uploadInputsRef.current[doc.id] = node;
+                                                        }}
+                                                        type="file"
+                                                        className="hidden"
+                                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (file) handleFileUpload(file, doc.id);
+                                                            e.target.value = '';
+                                                        }}
+                                                        disabled={isUploading}
+                                                    />
                                                     <Button
-                                                        variant="ghost"
+                                                        type="button"
+                                                        variant={uploaded ? "outline" : "primary"}
                                                         size="sm"
-                                                        onClick={() => setShowContractExample(true)}
-                                                        title="Örnek sözleşmeyi görüntüle"
+                                                        disabled={isUploading}
+                                                        onClick={() => uploadInputsRef.current[doc.id]?.click()}
                                                     >
-                                                        <Info className="w-4 h-4 text-blue-500" />
+                                                        {isUploading ? (
+                                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                        ) : (
+                                                            <Upload className="w-4 h-4 mr-2" />
+                                                        )}
+                                                        {uploaded ? 'Tekrar Yükle' : 'Yükle'}
                                                     </Button>
-                                                )}
-                                                {uploaded && (
-                                                    <>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handlePreviewDocument(doc.id)}
-                                                            title="Belgeyi önizle"
-                                                        >
-                                                            <Eye className="w-4 h-4 text-indigo-500" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleDeleteDocument(doc.id)}
-                                                            disabled={isDeleting}
-                                                            title="Belgeyi sil"
-                                                        >
-                                                            <Trash2 className="w-4 h-4 text-red-500" />
-                                                        </Button>
-                                                    </>
-                                                )}
-                                                {/* Upload/Re-upload Button - always available */}
-                                                <input
-                                                    ref={(node) => {
-                                                        uploadInputsRef.current[doc.id] = node;
-                                                    }}
-                                                    type="file"
-                                                    className="hidden"
-                                                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                                                    onChange={(e) => {
-                                                        const file = e.target.files?.[0];
-                                                        if (file) handleFileUpload(file, doc.id);
-                                                        // Reset input so same file can be re-selected
-                                                        e.target.value = '';
-                                                    }}
-                                                    disabled={isUploading}
-                                                />
-                                                <Button
-                                                    type="button"
-                                                    variant={uploaded ? "outline" : "primary"}
-                                                    size="sm"
-                                                    disabled={isUploading}
-                                                    onClick={() => uploadInputsRef.current[doc.id]?.click()}
-                                                >
-                                                    {isUploading ? (
-                                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                    ) : (
-                                                        <Upload className="w-4 h-4 mr-2" />
-                                                    )}
-                                                    {uploaded ? 'Tekrar Yükle' : 'Yükle'}
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {uploadedDocs.length === REQUIRED_DOCUMENTS.length && (
-                            <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                                <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
-                                    <CheckCircle className="w-5 h-5" />
-                                    <p className="font-medium">Tüm belgeler yüklendi! Yönetici onayı bekleniyor.</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </Tabs.Content>
-
-                {/* SMS Headers Tab */}
-                <Tabs.Content value="headers" className="space-y-6">
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Yeni SMS Başlığı Talebi</h3>
-
-                        <div className="flex items-start gap-3 mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                            <p className="text-xs text-amber-800 dark:text-amber-200">
-                                BTK sadece sahipliği kanıtlanmış başlık kullanımına izin vermektedir.
-                                Firma unvanı dışındaki başlıklar için belge yüklemeniz gerekir.
-                            </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Başlık Metni
-                                </label>
-                                <Input
-                                    value={newHeader}
-                                    onChange={(e) => setNewHeader(e.target.value.toUpperCase().slice(0, 11))}
-                                    placeholder="MAX 11 KARAKTER"
-                                    maxLength={11}
-                                />
-                                <p className="text-xs text-gray-500 mt-1">{newHeader.length}/11 karakter</p>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Başlık Tipi
-                                </label>
-                                <Select
-                                    value={newHeaderType}
-                                    onChange={(e) => setNewHeaderType(e.target.value)}
-                                    options={HEADER_TYPES}
-                                    fullWidth
-                                />
-                            </div>
-                        </div>
-
-                        {/* Show document upload when non-company header types are selected */}
-                        {newHeaderType !== 'company_title' && (
-                            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Upload className="w-4 h-4 text-gray-500" />
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Belge Yükleme (Zorunlu)
-                                    </span>
-                                </div>
-                                <p className="text-xs text-gray-500 mb-3">
-                                    {newHeaderType === 'trademark' && 'Marka tescil belgesi yükleyiniz'}
-                                    {newHeaderType === 'domain' && 'Alan adı sahiplik belgesi yükleyiniz'}
-                                    {newHeaderType === 'other' && 'Başlık sahipliğini kanıtlayan belge yükleyiniz'}
-                                </p>
-                                <label className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                    <Upload className="w-4 h-4" />
-                                    <span className="text-sm">Belge Seç</span>
-                                    <input
-                                        type="file"
-                                        className="hidden"
-                                        accept=".pdf,.jpg,.jpeg,.png"
-                                        onChange={(e) => {
-                                            const file = e.target.files?.[0];
-                                            if (file) {
-                                                // TODO: Handle header document upload
-                                                showInfoToast(`${file.name} seçildi`);
-                                            }
-                                        }}
-                                    />
-                                </label>
-                            </div>
-                        )}
-
-                        <Button
-                            onClick={handleRequestHeader}
-                            disabled={requestHeaderMutation.isPending || !newHeader}
-                        >
-                            {requestHeaderMutation.isPending ? (
-                                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gönderiliyor...</>
-                            ) : (
-                                <><Plus className="w-4 h-4 mr-2" /> Başlık Talebi Oluştur</>
-                            )}
-                        </Button>
-                    </div>
-
-                    {/* Existing Headers */}
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Mevcut Başlıklarınız</h3>
-
-                        {headersLoading ? (
-                            <div className="flex justify-center py-8">
-                                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                            </div>
-                        ) : headers.length === 0 ? (
-                            <div className="text-center py-8 text-gray-500">
-                                Henüz başlık talebiniz bulunmamaktadır
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {headers.map((header: any) => (
-                                    <div key={header.id ?? header.name} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                        <div className="flex items-center gap-4">
-                                            <div className="font-mono font-bold text-lg text-gray-900 dark:text-white">
-                                                {header.name || header.headerText}
-                                            </div>
-                                            {header.headerType && (
-                                                <div className="text-sm text-gray-500">
-                                                    ({HEADER_TYPES.find(t => t.value === header.headerType)?.label || header.headerType})
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            {getStatusBadge(header.status || 'pending')}
-                                            {header.status === 'rejected' && header.rejectionReason && (
-                                                <button
-                                                    className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1"
-                                                    onClick={() => showErrorToast(header.rejectionReason)}
-                                                >
-                                                    <AlertCircle className="w-3 h-3" />
-                                                    Red Nedeni
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
-                        )}
-                    </div>
+
+                            {uploadedDocs.length === REQUIRED_DOCUMENTS.length && (
+                                <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                    <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+                                        <CheckCircle className="w-5 h-5" />
+                                        <p className="font-medium">Tüm belgeler yüklendi! Yönetici onayı bekleniyor.</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* SMS Headers Sub-Tab */}
+                    {smsSubTab === 'headers' && (
+                        <>
+                            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Yeni SMS Başlığı Talebi</h3>
+
+                                <div className="flex items-start gap-3 mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                                    <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                                    <p className="text-xs text-amber-800 dark:text-amber-200">
+                                        BTK sadece sahipliği kanıtlanmış başlık kullanımına izin vermektedir.
+                                        Firma unvanı dışındaki başlıklar için belge yüklemeniz gerekir.
+                                    </p>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            Başlık Metni
+                                        </label>
+                                        <Input
+                                            value={newHeader}
+                                            onChange={(e) => setNewHeader(e.target.value.toUpperCase().slice(0, 11))}
+                                            placeholder="MAX 11 KARAKTER"
+                                            maxLength={11}
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">{newHeader.length}/11 karakter</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            Başlık Tipi
+                                        </label>
+                                        <Select
+                                            value={newHeaderType}
+                                            onChange={(e) => setNewHeaderType(e.target.value)}
+                                            options={HEADER_TYPES}
+                                            fullWidth
+                                        />
+                                    </div>
+                                </div>
+
+                                <Button
+                                    onClick={handleRequestHeader}
+                                    disabled={requestHeaderMutation.isPending || !newHeader}
+                                >
+                                    {requestHeaderMutation.isPending ? (
+                                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gönderiliyor...</>
+                                    ) : (
+                                        <><Plus className="w-4 h-4 mr-2" /> Başlık Talebi Oluştur</>
+                                    )}
+                                </Button>
+                            </div>
+
+                            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Mevcut Başlıklarınız</h3>
+
+                                {headersLoading ? (
+                                    <div className="flex justify-center py-8">
+                                        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                                    </div>
+                                ) : headers.length === 0 ? (
+                                    <div className="text-center py-8 text-gray-500">
+                                        Henüz başlık talebiniz bulunmamaktadır
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {headers.map((header: any) => (
+                                            <div key={header.id ?? header.name} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="font-mono font-bold text-lg text-gray-900 dark:text-white">
+                                                        {header.name || header.headerText}
+                                                    </div>
+                                                    {header.headerType && (
+                                                        <div className="text-sm text-gray-500">
+                                                            ({HEADER_TYPES.find(t => t.value === header.headerType)?.label || header.headerType})
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    {getStatusBadge(header.status || 'pending')}
+                                                    {header.status === 'rejected' && header.rejectionReason && (
+                                                        <button
+                                                            className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1"
+                                                            onClick={() => showErrorToast(header.rejectionReason)}
+                                                        >
+                                                            <AlertCircle className="w-3 h-3" />
+                                                            Red Nedeni
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
                 </Tabs.Content>
+
+                {/* POS Tab Content */}
                 <Tabs.Content value="pos" className="space-y-6">
                     <PosSettings />
                 </Tabs.Content>

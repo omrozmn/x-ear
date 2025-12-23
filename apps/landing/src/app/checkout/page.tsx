@@ -86,7 +86,7 @@ function CheckoutContent() {
 
             if (response.ok && data.success) {
                 // Redirect to CRM login with success message
-                window.location.href = `${process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:8080'}/login?registered=true`;
+                window.location.href = `${process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:8080'}/login?registered=true`;
             } else {
                 setError(data.error?.message || data.message || "Bir hata oluştu.");
             }

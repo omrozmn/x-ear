@@ -8,8 +8,8 @@
 
 export type GetPaytrConfig200Data = {
   merchant_id?: string;
-  merchant_key?: string;
-  merchant_salt?: string;
+  merchant_key_masked?: string;
+  merchant_salt_masked?: string;
   test_mode?: boolean;
   enabled?: boolean;
 };

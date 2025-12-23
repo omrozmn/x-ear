@@ -7,7 +7,9 @@
  */
 
 export interface PayTRInitiateRequest {
-  sale_id: string;
+  sale_id?: string;
+  patient_id?: string;
   installment_count?: number;
-  amount?: number;
+  amount: number;
+  description?: string;
 }

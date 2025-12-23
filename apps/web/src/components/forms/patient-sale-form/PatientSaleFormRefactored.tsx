@@ -31,10 +31,10 @@ interface ProductDropdownProps {
   placeholder?: string;
 }
 
-const ProductDropdown: React.FC<ProductDropdownProps> = ({ 
-  selectedProduct, 
-  onProductSelect, 
-  placeholder = "Ürün seçin veya arayın..." 
+const ProductDropdown: React.FC<ProductDropdownProps> = ({
+  selectedProduct,
+  onProductSelect,
+  placeholder = "Ürün seçin veya arayın..."
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -51,7 +51,7 @@ const ProductDropdown: React.FC<ProductDropdownProps> = ({
       try {
         const response = await inventoryGetInventoryItems();
         const inventoryData = response.data as any;
-        
+
         if (inventoryData.data) {
           const productList = inventoryData.data.map(mapInventoryItemToProduct);
           setProducts(productList);
@@ -135,7 +135,7 @@ const ProductDropdown: React.FC<ProductDropdownProps> = ({
           placeholder={placeholder}
           className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
-        
+
         {/* Search Icon */}
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
           <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
@@ -204,17 +204,53 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
 }) => {
   const patientApiService = useMemo(() => new PatientApiService(), []);
   const { success, error } = useToastHelpers();
-  
+
+  // SGK Support Options
+  const sgkSupportOptions = [
+    { value: '', label: 'SGK desteği seçiniz' },
+    { value: 'no_coverage', label: 'SGK Desteği Yok' },
+    { value: 'under4_parent_working', label: '4 Yaş Altı (Veli Çalışan)' },
+    { value: 'under4_parent_retired', label: '4 Yaş Altı (Veli Emekli)' },
+    { value: 'age5_12_parent_working', label: '5-12 Yaş (Veli Çalışan)' },
+    { value: 'age5_12_parent_retired', label: '5-12 Yaş (Veli Emekli)' },
+    { value: 'age13_18_parent_working', label: '13-18 Yaş (Veli Çalışan)' },
+    { value: 'age13_18_parent_retired', label: '13-18 Yaş (Veli Emekli)' },
+    { value: 'over18_working', label: '18+ Yaş (Çalışan)' },
+    { value: 'over18_retired', label: '18+ Yaş (Emekli)' }
+  ];
+
+  const sgkFallbackValues: Record<string, number> = {
+    'no_coverage': 0,
+    'under4_parent_working': 6104.44,
+    'under4_parent_retired': 7630.56,
+    'age5_12_parent_working': 5426.17,
+    'age5_12_parent_retired': 6782.72,
+    'age13_18_parent_working': 5087.04,
+    'age13_18_parent_retired': 6358.88,
+    'over18_working': 3391.36,
+    'over18_retired': 4239.20
+  };
+
   // Form state
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [unitPrice, setUnitPrice] = useState<number>(0);
-  const [discountAmount, setDiscountAmount] = useState<number>(0);
-  const [sgkStatus, setSgkStatus] = useState<boolean>(false);
-  const [sgkAmount, setSgkAmount] = useState<number>(0);
+  const [discountType, setDiscountType] = useState<'amount' | 'percentage'>('amount');
+  const [discountInput, setDiscountInput] = useState<number>(0);
+  const [sgkSupportType, setSgkSupportType] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<string>('cash');
   const [saleDate, setSaleDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState<string>('');
+  const [collectedAmount, setCollectedAmount] = useState<number>(0);
+  const [isCollectedAmountManuallySet, setIsCollectedAmountManuallySet] = useState<boolean>(false);
+  const [reportStatus, setReportStatus] = useState<string>('no_report');
+
+  // Determine if product is a hearing aid
+  const isHearingAid = useMemo(() => {
+    if (!selectedProduct?.category) return false;
+    const cat = selectedProduct.category.toLowerCase();
+    return cat.includes('işitme') || cat.includes('hearing') || cat.includes('cihaz') || cat.includes('aid');
+  }, [selectedProduct]);
 
   // Update unit price when product is selected
   useEffect(() => {
@@ -228,11 +264,11 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
   // Helper function to get KDV rate based on category
   const getKdvRate = (category: string | undefined): number => {
     if (!category) return 20;
-    
+
     // Hearing aids have 0% KDV, others have 20%
     const lowerCategory = category.toLowerCase();
-    if (lowerCategory.includes('işitme') || lowerCategory.includes('hearing') || 
-        lowerCategory.includes('cihaz') || lowerCategory.includes('aid')) {
+    if (lowerCategory.includes('işitme') || lowerCategory.includes('hearing') ||
+      lowerCategory.includes('cihaz') || lowerCategory.includes('aid')) {
       return 0;
     }
     return 20;
@@ -241,12 +277,30 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
   // Pricing calculation with discount and SGK
   const pricingCalculation = useMemo(() => {
     const basePrice = quantity * unitPrice;
-    const netAmount = Math.max(0, basePrice - discountAmount);
+
+    // Calculate Discount
+    let calculatedDiscount = 0;
+    if (discountType === 'percentage') {
+      calculatedDiscount = (basePrice * discountInput) / 100;
+    } else {
+      calculatedDiscount = discountInput;
+    }
+
+    const netAmount = Math.max(0, basePrice - calculatedDiscount);
     const kdvRate = selectedProduct ? getKdvRate(selectedProduct.category) : 20;
     const kdvAmount = (netAmount * kdvRate) / 100;
     const totalWithKdv = netAmount + kdvAmount;
-    const sgkCoverage = sgkStatus ? sgkAmount : 0;
-    const finalAmount = totalWithKdv - sgkCoverage;
+
+    // Calculate SGK
+    let calculatedSgk = 0;
+    if (isHearingAid) {
+      const schemeAmount = sgkFallbackValues[sgkSupportType] || 0;
+      calculatedSgk = Math.min(schemeAmount, totalWithKdv);
+    } else {
+      calculatedSgk = 0;
+    }
+
+    const finalAmount = Math.max(0, totalWithKdv - calculatedSgk);
 
     return {
       basePrice,
@@ -254,19 +308,27 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
       kdvRate,
       kdvAmount,
       totalWithKdv,
-      sgkCoverage,
+      sgkCoverage: calculatedSgk,
+      discountAmount: calculatedDiscount,
       finalAmount
     };
-  }, [quantity, unitPrice, discountAmount, selectedProduct, sgkStatus, sgkAmount]);
+  }, [quantity, unitPrice, discountType, discountInput, selectedProduct, sgkSupportType, isHearingAid]);
 
   // Calculate total amount
   const totalAmount = useMemo(() => {
     return pricingCalculation.finalAmount;
   }, [pricingCalculation]);
 
+  // Sync collected amount with final amount strictly if not manually modified
+  useEffect(() => {
+    if (!isCollectedAmountManuallySet) {
+      setCollectedAmount(pricingCalculation.finalAmount);
+    }
+  }, [pricingCalculation.finalAmount, isCollectedAmountManuallySet]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedProduct) {
       alert('Lütfen bir ürün seçin');
       return;
@@ -274,11 +336,6 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
 
     if (quantity <= 0) {
       alert('Miktar 0\'dan büyük olmalıdır');
-      return;
-    }
-
-    if (unitPrice <= 0) {
-      alert('Birim fiyat 0\'dan büyük olmalıdır');
       return;
     }
 
@@ -295,27 +352,28 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
           totalPrice: pricingCalculation.basePrice,
           listPrice: unitPrice,
           ear: 'both', // Default ear side
-          discountType: discountAmount > 0 ? 'amount' : 'none',
-          discountValue: discountAmount,
+          discountType: discountType,
+          discountValue: discountInput,
           notes: notes
         }],
         paymentMethod,
         saleDate,
         notes,
         totalAmount: pricingCalculation.finalAmount,
-        paidAmount: pricingCalculation.finalAmount,
-        sgkScheme: sgkStatus ? 'standard' : 'none',
-        sgkAmount: sgkStatus ? sgkAmount : 0,
-        discount: discountAmount
+        paidAmount: collectedAmount,
+        sgkScheme: isHearingAid ? sgkSupportType : 'none',
+        sgkAmount: pricingCalculation.sgkCoverage,
+        discount: pricingCalculation.discountAmount,
+        reportStatus: reportStatus
       };
 
       await patientApiService.createSale(patientId || '', saleData);
-      
+
       // Reset form
       resetForm();
-      
+
       success('Satış başarıyla kaydedildi!');
-      
+
       if (onSaleComplete) {
         onSaleComplete();
       }
@@ -329,22 +387,21 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
     setSelectedProduct(null);
     setQuantity(1);
     setUnitPrice(0);
-    setDiscountAmount(0);
-    setSgkStatus(false);
-    setSgkAmount(0);
+    setDiscountType('amount');
+    setDiscountInput(0);
+    setSgkSupportType('');
     setPaymentMethod('cash');
     setSaleDate(new Date().toISOString().split('T')[0]);
     setNotes('');
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Ürün Satışı</h2>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="max-w-2xl mx-auto p-4 bg-white rounded-lg shadow-sm">
+
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Product Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Ürün Seçimi *
           </label>
           <ProductDropdown
@@ -357,7 +414,7 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
         {/* Quantity and Unit Price */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Miktar *
             </label>
             <input
@@ -369,9 +426,9 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
               required
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Birim Fiyat (₺) *
             </label>
             <input
@@ -386,88 +443,85 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
           </div>
         </div>
 
-        {/* Discount Amount */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            İndirim Tutarı (₺)
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={discountAmount}
-            onChange={(e) => setDiscountAmount(parseFloat(e.target.value) || 0)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="İndirim tutarını girin..."
-          />
+        {/* Discount Section */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              İndirim Tipi
+            </label>
+            <select
+              value={discountType}
+              onChange={(e) => setDiscountType(e.target.value as 'amount' | 'percentage')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="amount">Tutar (₺)</option>
+              <option value="percentage">Yüzde (%)</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              İndirim Değeri
+            </label>
+            <input
+              type="number"
+              min="0"
+              step={discountType === 'percentage' ? '1' : '0.01'}
+              max={discountType === 'percentage' ? '100' : undefined}
+              value={discountInput}
+              onChange={(e) => setDiscountInput(parseFloat(e.target.value) || 0)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder={discountType === 'percentage' ? '%10' : '100.00'}
+            />
+          </div>
         </div>
 
-        {/* SGK Section */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <div className="flex items-center mb-3">
-            <input
-              type="checkbox"
-              id="sgk-status"
-              checked={sgkStatus}
-              onChange={(e) => setSgkStatus(e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <label htmlFor="sgk-status" className="ml-2 block text-sm font-medium text-gray-700">
-              SGK Kapsamında
+        {/* SGK Section - Only for Hearing Aids */}
+        {isHearingAid && (
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              SGK Destek Türü
             </label>
+            <select
+              value={sgkSupportType}
+              onChange={(e) => setSgkSupportType(e.target.value)}
+              className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            >
+              {sgkSupportOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            {sgkSupportType && sgkFallbackValues[sgkSupportType] > 0 && (
+              <div className="text-xs text-green-600 mt-1">
+                Tahmini SGK Desteği: ₺{sgkFallbackValues[sgkSupportType].toLocaleString('tr-TR')}
+              </div>
+            )}
           </div>
-          
-          {sgkStatus && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                SGK Karşılama Tutarı (₺)
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={sgkAmount}
-                onChange={(e) => setSgkAmount(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="SGK karşılama tutarını girin..."
-              />
-            </div>
-          )}
-        </div>
+        )}
 
         {/* Product Details Display */}
         {selectedProduct && (
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <h3 className="text-lg font-semibold text-blue-900 mb-3">Ürün Detayları</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+            <h3 className="text-sm font-semibold text-blue-900 mb-2">Ürün Detayları</h3>
+            <div className="grid grid-cols-3 gap-2 text-xs">
               <div>
                 <span className="font-medium text-blue-700">Marka:</span>
-                <span className="ml-2 text-blue-600">{selectedProduct.brand || '-'}</span>
+                <span className="ml-1 text-blue-600 truncate block">{selectedProduct.brand || '-'}</span>
               </div>
               <div>
                 <span className="font-medium text-blue-700">Model:</span>
-                <span className="ml-2 text-blue-600">{selectedProduct.name || '-'}</span>
-              </div>
-              <div>
-                <span className="font-medium text-blue-700">Kategori:</span>
-                <span className="ml-2 text-blue-600">{selectedProduct.category || '-'}</span>
+                <span className="ml-1 text-blue-600 truncate block">{selectedProduct.name || '-'}</span>
               </div>
               <div>
                 <span className="font-medium text-blue-700">Liste Fiyatı:</span>
-                <span className="ml-2 text-blue-600">₺{selectedProduct.price.toLocaleString('tr-TR')}</span>
+                <span className="ml-1 text-blue-600">₺{selectedProduct.price.toLocaleString('tr-TR')}</span>
               </div>
               <div>
                 <span className="font-medium text-blue-700">Stok:</span>
-                <span className={`ml-2 font-medium ${
-                  (selectedProduct.stock || 0) === 0 ? 'text-red-600' : 
+                <span className={`ml-1 font-medium ${(selectedProduct.stock || 0) === 0 ? 'text-red-600' :
                   (selectedProduct.stock || 0) <= 5 ? 'text-yellow-600' : 'text-green-600'
-                }`}>
-                  {selectedProduct.stock || 0} adet
+                  }`}>
+                  {selectedProduct.stock || 0}
                 </span>
-              </div>
-              <div>
-                <span className="font-medium text-blue-700">KDV Oranı:</span>
-                <span className="ml-2 text-blue-600">%{getKdvRate(selectedProduct.category)}</span>
               </div>
             </div>
           </div>
@@ -475,132 +529,147 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
 
         {/* Detailed Pricing Breakdown */}
         {selectedProduct && (
-          <div className="space-y-4">
-            {/* Discount Section */}
-            {discountAmount > 0 && (
-              <div className="bg-red-50 p-3 rounded-lg border border-red-200">
-                <div className="flex justify-between items-center">
-                  <span className="text-red-700 font-medium">İndirim Uygulandı</span>
-                  <span className="text-red-700 font-bold">-₺{discountAmount.toLocaleString('tr-TR')}</span>
-                </div>
-              </div>
-            )}
-
-            {/* SGK Coverage Section */}
-            {sgkStatus && sgkAmount > 0 && (
-              <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                <div className="flex justify-between items-center">
-                  <span className="text-green-700 font-medium">SGK Karşılaması</span>
-                  <span className="text-green-700 font-bold">-₺{sgkAmount.toLocaleString('tr-TR')}</span>
-                </div>
-              </div>
-            )}
-            
+          <div className="space-y-3">
             {/* Total Amount Breakdown */}
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <div className="flex justify-between items-center mb-3">
-                <span className="font-bold text-blue-900 text-lg">Toplam Tutar</span>
-                <span className="font-bold text-blue-600 text-xl">₺{pricingCalculation.finalAmount.toLocaleString('tr-TR')}</span>
+            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-bold text-blue-900 text-base">Toplam Tutar</span>
+                <span className="font-bold text-blue-600 text-lg">₺{pricingCalculation.finalAmount.toLocaleString('tr-TR')}</span>
               </div>
-              
+
               {/* Components Breakdown */}
-              <div className="border-t border-blue-200 pt-3 space-y-1">
-                <div className="flex justify-between text-sm text-blue-700">
-                  <span>Liste Fiyatı ({quantity} x ₺{unitPrice.toLocaleString('tr-TR')}):</span>
-                  <span>₺{pricingCalculation.basePrice.toLocaleString('tr-TR')}</span>
+              <div className="border-t border-blue-200 pt-2 space-y-1">
+                {/* Simplified breakdown */}
+                <div className="flex justify-between text-xs text-blue-700">
+                  <span>Ara Toplam:</span>
+                  <span className={pricingCalculation.discountAmount > 0 ? "line-through text-gray-400" : ""}>
+                    ₺{pricingCalculation.basePrice.toLocaleString('tr-TR')}
+                  </span>
                 </div>
-                {discountAmount > 0 && (
-                  <div className="flex justify-between text-sm text-blue-700">
-                    <span>İndirim:</span>
-                    <span>-₺{discountAmount.toLocaleString('tr-TR')}</span>
+                {/* Show discounted net amount if there is a discount */}
+                {pricingCalculation.discountAmount > 0 && (
+                  <div className="flex justify-between text-xs text-blue-700 font-medium">
+                    <span>İndirimli Tutar:</span>
+                    <span>₺{pricingCalculation.netAmount.toLocaleString('tr-TR')}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm text-blue-700">
+                {pricingCalculation.discountAmount > 0 && (
+                  <div className="flex justify-between text-xs text-blue-700">
+                    <span>İndirim{discountType === 'percentage' && ` (%${discountInput})`}:</span>
+                    <span>-₺{pricingCalculation.discountAmount.toLocaleString('tr-TR')}</span>
+                  </div>
+                )}
+                {pricingCalculation.sgkCoverage > 0 && (
+                  <div className="flex justify-between text-xs text-green-700 font-medium">
+                    <span>SGK Desteği:</span>
+                    <span>-₺{pricingCalculation.sgkCoverage.toLocaleString('tr-TR')}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-xs text-blue-700">
                   <span>KDV (%{pricingCalculation.kdvRate}):</span>
                   <span>₺{pricingCalculation.kdvAmount.toLocaleString('tr-TR')}</span>
                 </div>
-                <div className="flex justify-between text-sm text-blue-700 font-medium border-t border-blue-200 pt-1">
-                  <span>KDV Dahil Toplam:</span>
-                  <span>₺{pricingCalculation.totalWithKdv.toLocaleString('tr-TR')}</span>
-                </div>
-                {sgkStatus && sgkAmount > 0 && (
-                  <div className="flex justify-between text-sm text-blue-700">
-                    <span>SGK Karşılaması:</span>
-                    <span>-₺{sgkAmount.toLocaleString('tr-TR')}</span>
-                  </div>
-                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* Total Amount Display */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <div className="flex justify-between items-center">
-            <span className="text-lg font-medium text-gray-700">Toplam Tutar:</span>
-            <span className="text-2xl font-bold text-blue-600">₺{totalAmount.toLocaleString()}</span>
+        {/* Payment Method and Sale Date Row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Ödeme Yöntemi *
+            </label>
+            <select
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            >
+              <option value="cash">Nakit</option>
+              <option value="credit_card">Kredi Kartı</option>
+              <option value="bank_transfer">Banka Transferi</option>
+              <option value="installment">Taksit</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Satış Tarihi *
+            </label>
+            <input
+              type="date"
+              value={saleDate}
+              onChange={(e) => setSaleDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            />
           </div>
         </div>
 
-        {/* Payment Method */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Ödeme Yöntemi *
-          </label>
-          <select
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
-          >
-            <option value="cash">Nakit</option>
-            <option value="credit_card">Kredi Kartı</option>
-            <option value="bank_transfer">Banka Transferi</option>
-            <option value="installment">Taksit</option>
-          </select>
-        </div>
+        {/* Collected Amount and Report Status Row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tahsil Edilen Tutar (₺)
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={collectedAmount}
+              onChange={(e) => {
+                setCollectedAmount(parseFloat(e.target.value) || 0);
+                setIsCollectedAmountManuallySet(true);
+              }}
+              className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-blue-800"
+            />
+          </div>
 
-        {/* Sale Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Satış Tarihi *
-          </label>
-          <input
-            type="date"
-            value={saleDate}
-            onChange={(e) => setSaleDate(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Rapor Durumu
+            </label>
+            <select
+              value={reportStatus}
+              onChange={(e) => setReportStatus(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="no_report">Raporsuz Özel Satış</option>
+              <option value="report_pending">Rapor Beklemede</option>
+              <option value="report_delivered">Rapor Teslim Alındı</option>
+              <option value="report_missing">Rapor Eksik</option>
+            </select>
+          </div>
         </div>
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Notlar
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            rows={3}
+            rows={2}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Satışla ilgili notlar..."
           />
         </div>
 
         {/* Action Buttons */}
-        <div className="flex space-x-4 pt-4">
+        <div className="flex space-x-3 pt-2">
           <button
             type="submit"
-            className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
           >
             Satışı Kaydet
           </button>
-          
+
           <button
             type="button"
             onClick={resetForm}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
           >
             Temizle
           </button>

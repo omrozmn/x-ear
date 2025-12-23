@@ -256,7 +256,11 @@ export class PatientApiService {
         product_id: productId,
         discount_amount: ((saleData as Record<string, unknown>)?.discount as number) || 0,
         payment_method: ((saleData as Record<string, unknown>)?.paymentMethod as string) || 'cash',
-        notes: ((saleData as Record<string, unknown>)?.notes as string) || ''
+        notes: ((saleData as Record<string, unknown>)?.notes as string) || '',
+        paid_amount: ((saleData as Record<string, unknown>)?.paidAmount as number),
+        sale_date: ((saleData as Record<string, unknown>)?.saleDate as string),
+        sgk_coverage: ((saleData as Record<string, unknown>)?.sgkAmount as number),
+        report_status: ((saleData as Record<string, unknown>)?.reportStatus as string)
       } as unknown as SalesCreateSaleBody;
 
       const response = await salesCreateSale(body);

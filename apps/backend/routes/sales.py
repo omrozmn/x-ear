@@ -1436,6 +1436,34 @@ def _calculate_product_pricing(product, data):
 
 def _create_product_sale_record(patient_id, product_id, base_price, discount, final_price, data, tenant_id):
     """Create product sale record with ORM fallback."""
+    # Parse sale_date
+    sale_date = datetime.now()
+    if data.get('sale_date'):
+        try:
+            # Handle potential ISO format with timezone
+            d_str = str(data.get('sale_date')).replace('Z', '+00:00')
+            # If it's just YYYY-MM-DD, fromisoformat handles it fine
+            sale_date = datetime.fromisoformat(d_str)
+        except ValueError:
+            pass
+
+    # Handle amounts
+    paid_amount = 0.0
+    if 'paid_amount' in data:
+        paid_amount = float(data.get('paid_amount'))
+    elif data.get('payment_type') == 'cash':
+        paid_amount = float(final_price)
+    
+    sgk_coverage = float(data.get('sgk_coverage', 0))
+    report_status = data.get('report_status')
+    
+    # Determine status
+    status = 'pending'
+    if paid_amount >= final_price:
+        status = 'completed'
+
+    patient_payment = max(0, final_price - sgk_coverage)
+
     sale = Sale(
         tenant_id=tenant_id,
         patient_id=patient_id,
@@ -1443,12 +1471,15 @@ def _create_product_sale_record(patient_id, product_id, base_price, discount, fi
         total_amount=base_price,
         discount_amount=discount,
         final_amount=final_price,
-        paid_amount=final_price if data.get('payment_type') == 'cash' else 0,
+        paid_amount=paid_amount,
         payment_method=data.get('payment_type', 'cash'),
-        status='completed' if data.get('payment_type') == 'cash' else 'pending',
-        sale_date=datetime.now(),
+        status=status,
+        sale_date=sale_date,
         notes=data.get('notes', ''),
-        product_id=product_id
+        product_id=product_id,
+        sgk_coverage=sgk_coverage,
+        report_status=report_status,
+        patient_payment=patient_payment
     )
 
     try:
@@ -1460,7 +1491,7 @@ def _create_product_sale_record(patient_id, product_id, base_price, discount, fi
         try:
             sale_id = sale.id or gen_sale_id()
             insert_stmt = text(
-                "INSERT INTO sales (id, tenant_id, patient_id, product_id, sale_date, list_price_total, total_amount, discount_amount, final_amount, paid_amount, payment_method, status, sgk_coverage, patient_payment, notes, created_at, updated_at) VALUES (:id, :tenant_id, :patient_id, :product_id, :sale_date, :list_price_total, :total_amount, :discount_amount, :final_amount, :paid_amount, :payment_method, :status, :sgk_coverage, :patient_payment, :notes, :created_at, :updated_at)"
+                "INSERT INTO sales (id, tenant_id, patient_id, product_id, sale_date, list_price_total, total_amount, discount_amount, final_amount, paid_amount, payment_method, status, sgk_coverage, patient_payment, notes, report_status, created_at, updated_at) VALUES (:id, :tenant_id, :patient_id, :product_id, :sale_date, :list_price_total, :total_amount, :discount_amount, :final_amount, :paid_amount, :payment_method, :status, :sgk_coverage, :patient_payment, :notes, :report_status, :created_at, :updated_at)"
             )
             now = datetime.now()
             params = {
@@ -1468,17 +1499,18 @@ def _create_product_sale_record(patient_id, product_id, base_price, discount, fi
                 'tenant_id': tenant_id,
                 'patient_id': patient_id,
                 'product_id': product_id,
-                'sale_date': now,
+                'sale_date': sale_date,
                 'list_price_total': float(base_price),
                 'total_amount': float(base_price),
                 'discount_amount': float(discount),
                 'final_amount': float(final_price),
-                'paid_amount': float(sale.paid_amount),
+                'paid_amount': float(paid_amount),
                 'payment_method': sale.payment_method,
-                'status': sale.status,
-                'sgk_coverage': 0.0,
-                'patient_payment': float(final_price),
+                'status': status,
+                'sgk_coverage': float(sgk_coverage),
+                'patient_payment': float(patient_payment),
                 'notes': sale.notes or '',
+                'report_status': report_status,
                 'created_at': now,
                 'updated_at': now
             }

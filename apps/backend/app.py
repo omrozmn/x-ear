@@ -326,6 +326,11 @@ app.register_blueprint(payments_bp, url_prefix='/api')
 from routes.payment_integrations import payment_integrations_bp
 app.register_blueprint(payment_integrations_bp)
 
+# ===== POS COMMISSION RATES ENDPOINTS =====
+from routes.pos_commission import pos_commission_bp
+app.register_blueprint(pos_commission_bp)
+
+
 
 # ===== CASH RECORDS ENDPOINTS =====
 # Cash register records for cashflow management

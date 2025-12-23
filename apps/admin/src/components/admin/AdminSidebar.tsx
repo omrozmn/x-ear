@@ -22,7 +22,8 @@ import {
     ShoppingBag,
     Zap,
     Truck,
-    Megaphone
+    Megaphone,
+    Wallet
 } from 'lucide-react'
 
 const navigation = [
@@ -48,6 +49,7 @@ const navigation = [
     { name: 'Dosyalar', href: '/files', icon: Folder },
     { name: 'OCR Kuyruğu', href: '/ocr-queue', icon: FileText },
     { name: 'Faturalar', href: '/billing', icon: CreditCard },
+    { name: 'Ödemeler', href: '/payments', icon: Wallet },
     { name: 'Destek', href: '/support', icon: LifeBuoy },
     { name: 'Entegrasyonlar', href: '/integrations/vatan-sms', icon: Zap },
     { name: 'Ayarlar', href: '/settings', icon: Settings },

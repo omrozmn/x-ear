@@ -59,6 +59,8 @@ interface PatientSalesTabProps {
 }
 
 export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
+  const { warning } = useToastHelpers(); // Add toast helper
+
   // Modal states
   const [showNewSaleModal, setShowNewSaleModal] = useState(false);
   const [showCollectionModal, setShowCollectionModal] = useState(false);
@@ -79,7 +81,7 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedSales, setSelectedSales] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
 
   // SGK states
   const [sgkPatientInfo, setSgkPatientInfo] = useState<{
@@ -162,7 +164,8 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
         productId: sale.productId,
         createdAt: sale.createdAt,
         updatedAt: sale.updatedAt,
-        payments: sale.payments || []
+        payments: sale.payments || [],
+        reportStatus: (sale as any).reportStatus
       }));
 
       console.log('✅ Transformed sales:', transformedSales);
@@ -388,15 +391,23 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
     await loadSGKPatientInfo();
   };
 
+  // Function to safely open modals that require a sale
+  const handleSaleAction = (action: () => void) => {
+    // This logic is tricky because the header buttons don't have a sale selected contextually
+    // So we just warn the user.
+    warning('Lütfen işlem yapmak istediğiniz satışı listeden seçiniz.');
+  };
+
   return (
     <div className="space-y-6">
       {/* SGK Patient Info Card */}
+      {/* SGK Patient Info Card - Commented out as requested
       <SGKInfoCard
         sgkPatientInfo={sgkPatientInfo}
         sgkLoading={sgkLoading}
         sgkCoverageCalculation={sgkCoverageCalculation}
         onQueryPatientRights={handleQueryPatientRights}
-      />
+      /> */}
 
       {/* Sales Summary Cards */}
       <SalesSummaryCards
@@ -415,16 +426,18 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
           <Button onClick={() => setShowProformaModal(true)} variant="outline">
             Proforma
           </Button>
-          <Button onClick={() => setShowCollectionModal(true)} variant="outline">
+          {/* 
+          <Button onClick={() => handleSaleAction(() => setShowCollectionModal(true))} variant="outline">
             Tahsilat
           </Button>
-          <Button onClick={() => setShowPromissoryNoteModal(true)} variant="outline">
+          <Button onClick={() => handleSaleAction(() => setShowPromissoryNoteModal(true))} variant="outline">
             Senet
-          </Button>
-          <Button onClick={() => setShowReturnExchangeModal(true)} variant="outline">
+          </Button> 
+          */}
+          <Button onClick={() => handleSaleAction(() => setShowReturnExchangeModal(true))} variant="outline">
             İade/Değişim
           </Button>
-          <Button onClick={() => setShowDeviceReplacementModal(true)} variant="outline">
+          <Button onClick={() => handleSaleAction(() => setShowDeviceReplacementModal(true))} variant="outline">
             Cihaz Değişimi
           </Button>
         </div>
@@ -436,7 +449,8 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
           <div className="flex justify-between items-center">
             <CardTitle>Satış Geçmişi</CardTitle>
             <div className="flex items-center space-x-2">
-              <div className="flex border border-gray-300 rounded-md">
+              {/* View Toggle Buttons - Commented out for now, forcing table view */}
+              {/* <div className="flex border border-gray-300 rounded-md">
                 <Button
                   variant={viewMode === 'table' ? 'default' : 'ghost'}
                   size="sm"
@@ -455,7 +469,7 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
                   <Grid className="w-4 h-4 mr-1" />
                   Kartlar
                 </Button>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -507,8 +521,9 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
             <div className="text-center py-8 text-gray-500">
               Henüz satış kaydı bulunmuyor.
             </div>
-          ) : viewMode === 'table' ? (
-            console.log('📋 Rendering table view, sales count:', filteredSales.length),
+          ) : (
+            // viewMode === 'table' ? (
+            // console.log('📋 Rendering table view, sales count:', filteredSales.length),
             <SalesTableView
               sales={filteredSales.map((sale) => {
                 const paid = sale.payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
@@ -541,43 +556,44 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
               onCollectPayment={(sale) => handleCollectionClick(sale as any)}
               onManagePromissoryNotes={(sale) => handlePromissoryNoteClick(sale as any)}
             />
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {filteredSales.map((sale) => {
-                const paid = sale.payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
-                const discount = sale.discountAmount || 0;
-                const finalAmt = (sale.totalAmount ?? 0) - discount;
-                const remaining = Math.max(finalAmt - paid, 0);
-                const mappedSale = {
-                  id: sale.id as string,
-                  patientId: sale.patientId || patient.id || '',
-                  productId: sale.productId as string | undefined,
-                  saleDate: sale.saleDate || new Date().toISOString(),
-                  listPriceTotal: sale.listPriceTotal as number | undefined,
-                  totalAmount: sale.totalAmount ?? 0,
-                  discountAmount: discount,
-                  finalAmount: finalAmt,
-                  paidAmount: paid,
-                  remainingAmount: remaining,
-                  paymentStatus: sale.status === 'COMPLETED' ? 'completed' :
-                    sale.status === 'CANCELLED' ? 'cancelled' : 'pending',
-                  paymentMethod: (sale as any).paymentMethod,
-                  soldBy: (sale as any).soldBy,
-                  sgkCoverage: (sale as any).sgkCoverage,
-                  createdAt: sale.createdAt || new Date().toISOString(),
-                  updatedAt: sale.updatedAt || new Date().toISOString()
-                } as PatientSale;
-                return (
-                  <PatientSaleCard
-                    key={sale.id}
-                    sale={mappedSale}
-                    onSaleClick={(s) => handleEditSaleClick(s as any)}
-                    onCollectPayment={() => handleCollectionClick(sale)}
-                    onManagePromissoryNotes={() => handlePromissoryNoteClick(sale)}
-                  />
-                );
-              })}
-            </div>
+            // ) : (
+            //   <div className="grid grid-cols-1 gap-4">
+            //     {filteredSales.map((sale) => {
+            //       const paid = sale.payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
+            //       const discount = sale.discountAmount || 0;
+            //       const finalAmt = (sale.totalAmount ?? 0) - discount;
+            //       const remaining = Math.max(finalAmt - paid, 0);
+            //       const mappedSale = {
+            //         id: sale.id as string,
+            //         patientId: sale.patientId || patient.id || '',
+            //         productId: sale.productId as string | undefined,
+            //         saleDate: sale.saleDate || new Date().toISOString(),
+            //         listPriceTotal: sale.listPriceTotal as number | undefined,
+            //         totalAmount: sale.totalAmount ?? 0,
+            //         discountAmount: discount,
+            //         finalAmount: finalAmt,
+            //         paidAmount: paid,
+            //         remainingAmount: remaining,
+            //         paymentStatus: sale.status === 'COMPLETED' ? 'completed' :
+            //           sale.status === 'CANCELLED' ? 'cancelled' : 'pending',
+            //         paymentMethod: (sale as any).paymentMethod,
+            //         soldBy: (sale as any).soldBy,
+            //         sgkCoverage: (sale as any).sgkCoverage,
+            //         createdAt: sale.createdAt || new Date().toISOString(),
+            //         updatedAt: sale.updatedAt || new Date().toISOString()
+            //       } as PatientSale;
+            //       return (
+            //         <PatientSaleCard
+            //           key={sale.id}
+            //           sale={mappedSale}
+            //           onSaleClick={(s) => handleEditSaleClick(s as any)}
+            //           onCollectPayment={() => handleCollectionClick(sale)}
+            //           onManagePromissoryNotes={() => handlePromissoryNoteClick(sale)}
+            //         />
+            //       );
+            //     })}
+            //   </div>
+            // )
           )}
         </CardContent>
       </Card>
@@ -606,10 +622,10 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className="font-semibold text-gray-900 text-sm">Cihaz Değişimi #{index + 1}</h4>
                           <span className={`inline-block px-2 py-0.5 text-xs rounded ${replacement.status === 'pending_invoice' ? 'bg-yellow-100 text-yellow-800' :
-                              replacement.status === 'invoice_created' ? 'bg-blue-100 text-blue-800' :
-                                replacement.status === 'completed' && replacement.returnInvoice?.gibSent ? 'bg-green-100 text-green-800' :
-                                  replacement.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                    'bg-gray-100 text-gray-800'
+                            replacement.status === 'invoice_created' ? 'bg-blue-100 text-blue-800' :
+                              replacement.status === 'completed' && replacement.returnInvoice?.gibSent ? 'bg-green-100 text-green-800' :
+                                replacement.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                  'bg-gray-100 text-gray-800'
                             }`}>
                             {
                               replacement.status === 'pending_invoice' ? 'Fatura Bekliyor' :
@@ -737,10 +753,10 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
 
       {/* Modals */}
       {showNewSaleModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4">
+              <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">Yeni Satış</h2>
                 <Button
                   variant="ghost"
@@ -763,69 +779,89 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
         </div>
       )}
 
-      <CollectionModal
-        isOpen={showCollectionModal}
-        onClose={() => setShowCollectionModal(false)}
-        patient={patient}
-        sale={selectedSale as any}
-        onPaymentCreate={(paymentData: OrvalPaymentRecord) => {
-          console.log('Payment created:', paymentData);
-          setShowCollectionModal(false);
-          // Refresh sales list after payment
-          loadPatientSales();
-        }}
-      />
+      {showCollectionModal && selectedSale && (
+        <div className="fixed inset-0 z-[9999]">
+          <CollectionModal
+            isOpen={showCollectionModal}
+            onClose={() => setShowCollectionModal(false)}
+            patient={patient}
+            sale={selectedSale as any}
+            onPaymentCreate={(paymentData: OrvalPaymentRecord) => {
+              console.log('Payment created:', paymentData);
+              setShowCollectionModal(false);
+              // Refresh sales list after payment
+              loadPatientSales();
+            }}
+          />
+        </div>
+      )}
 
-      <PromissoryNoteModal
-        isOpen={showPromissoryNoteModal}
-        onClose={() => setShowPromissoryNoteModal(false)}
-        patient={patient}
-        sale={selectedSale}
-        onSave={(noteData) => {
-          console.log('Promissory note saved:', noteData);
-          setShowPromissoryNoteModal(false);
-        }}
-      />
+      {showPromissoryNoteModal && selectedSale && (
+        <div className="fixed inset-0 z-[9999]">
+          <PromissoryNoteModal
+            isOpen={showPromissoryNoteModal}
+            onClose={() => setShowPromissoryNoteModal(false)}
+            patient={patient}
+            sale={selectedSale}
+            onSave={(noteData) => {
+              console.log('Promissory note saved:', noteData);
+              setShowPromissoryNoteModal(false);
+            }}
+          />
+        </div>
+      )}
 
-      <EditSaleModal
-        isOpen={showEditSaleModal}
-        onClose={() => setShowEditSaleModal(false)}
-        patient={patient}
-        sale={selectedSale as any}
-        onSaleUpdate={(saleData) => {
-          console.log('Sale updated:', saleData);
-          setShowEditSaleModal(false);
-          // Refresh sales list after updating sale
-          loadPatientSales();
-        }}
-      />
+      {showEditSaleModal && (
+        <div className="fixed inset-0 z-[9999]">
+          <EditSaleModal
+            isOpen={showEditSaleModal}
+            onClose={() => setShowEditSaleModal(false)}
+            patient={patient}
+            sale={selectedSale as any}
+            onSaleUpdate={(saleData) => {
+              console.log('Sale updated:', saleData);
+              setShowEditSaleModal(false);
+              // Refresh sales list after updating sale
+              loadPatientSales();
+            }}
+          />
+        </div>
+      )}
 
-      <ReturnExchangeModal
-        isOpen={showReturnExchangeModal}
-        onClose={() => setShowReturnExchangeModal(false)}
-        patient={patient}
-        sale={selectedSale as any}
-        onReturnExchangeCreate={(data) => {
-          console.log('Return/Exchange created:', data);
-          setShowReturnExchangeModal(false);
-          // Refresh sales list after return/exchange
-          loadPatientSales();
-        }}
-      />
+      {/* Return Exchange Modal Wrapper */}
+      {showReturnExchangeModal && selectedSale && (
+        <div className="fixed inset-0 z-[9999]">
+          <ReturnExchangeModal
+            isOpen={showReturnExchangeModal}
+            onClose={() => setShowReturnExchangeModal(false)}
+            patient={patient}
+            sale={selectedSale as any}
+            onReturnExchangeCreate={() => {
+              setShowReturnExchangeModal(false);
+              loadPatientSales();
+            }}
+          />
+        </div>
+      )}
 
-      <ProformaModal
-        isOpen={showProformaModal}
-        onClose={() => setShowProformaModal(false)}
-        patient={patient}
-        onProformaCreate={(data) => {
-          console.log('Proforma created:', data);
-          setShowProformaModal(false);
-        }}
-      />
+      {/* Proforma Modal Wrapper - Add z-index */}
+      {showProformaModal && (
+        <div className="fixed inset-0 z-[9999]">
+          <ProformaModal
+            isOpen={showProformaModal}
+            onClose={() => setShowProformaModal(false)}
+            patient={patient}
+            onProformaCreate={(data) => {
+              console.log('Proforma created:', data);
+              setShowProformaModal(false);
+            }}
+          />
+        </div>
+      )}
 
       {/* Device Replacement Modal */}
       {showDeviceReplacementModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">

@@ -30,7 +30,7 @@ function SuccessContent() {
                     )}
 
                     <a
-                        href="http://localhost:8080/login"
+                        href={`${process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:8080'}/login`}
                         className="w-full flex justify-center items-center py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all shadow-lg shadow-indigo-600/20"
                     >
                         Panele Giriş Yap

@@ -120,6 +120,9 @@ import type {
   CashRecordsCreateCashRecordBody,
   CheckoutConfirmPaymentBody,
   CheckoutCreateCheckoutSessionBody,
+  CommissionCalculationRequest,
+  CommissionCalculationResponse,
+  CommissionRatesResponse,
   CommunicationTemplateCreate,
   CommunicationTemplateUpdate,
   CommunicationsCreateCommunicationHistoryBody,
@@ -144,6 +147,12 @@ import type {
   DevicesUpdateDeviceStockBody,
   ErrorResponse,
   GetPaytrConfig200,
+  GetPosTransactions200,
+  GetPosTransactionsParams,
+  GetSystemCommissionRates200,
+  GetTenantCommissionRates200,
+  InstallmentOptionsRequest,
+  InstallmentOptionsResponse,
   InventoryAddSerialNumbersBody,
   InventoryAssignToPatientBody,
   InventoryBulkUploadInventoryBody,
@@ -294,6 +303,10 @@ import type {
   UpdatePaytrConfig200,
   UpdatePaytrConfigBody,
   UpdateSettingsBody,
+  UpdateSystemCommissionRates200,
+  UpdateSystemCommissionRatesBody,
+  UpdateTenantCommissionRates200,
+  UpdateTenantCommissionRatesBody,
   UpdateUnreadedStatusRequestData,
   UploadGetPresignedUploadUrlBody,
   User,
@@ -26932,3 +26945,622 @@ export function useReportPosMovements<TData = Awaited<ReturnType<typeof reportPo
 
   return query;
 }
+
+
+
+
+
+/**
+ * @summary POS Transactions Report
+ */
+export const getPosTransactions = (
+    params?: GetPosTransactionsParams, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<GetPosTransactions200>> => {
+    
+    
+    return axios.get(
+      `/api/payments/pos/transactions`,{
+    ...options,
+        params: {...params, ...options?.params},}
+    );
+  }
+
+
+
+
+export const getGetPosTransactionsQueryKey = (params?: GetPosTransactionsParams,) => {
+    return [
+    `/api/payments/pos/transactions`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetPosTransactionsQueryOptions = <TData = Awaited<ReturnType<typeof getPosTransactions>>, TError = AxiosError<unknown>>(params?: GetPosTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosTransactions>>, TError, TData>>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPosTransactionsQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPosTransactions>>> = ({ signal }) => getPosTransactions(params, { signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPosTransactions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetPosTransactionsQueryResult = NonNullable<Awaited<ReturnType<typeof getPosTransactions>>>
+export type GetPosTransactionsQueryError = AxiosError<unknown>
+
+
+export function useGetPosTransactions<TData = Awaited<ReturnType<typeof getPosTransactions>>, TError = AxiosError<unknown>>(
+ params: undefined |  GetPosTransactionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosTransactions>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPosTransactions>>,
+          TError,
+          Awaited<ReturnType<typeof getPosTransactions>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetPosTransactions<TData = Awaited<ReturnType<typeof getPosTransactions>>, TError = AxiosError<unknown>>(
+ params?: GetPosTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosTransactions>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPosTransactions>>,
+          TError,
+          Awaited<ReturnType<typeof getPosTransactions>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetPosTransactions<TData = Awaited<ReturnType<typeof getPosTransactions>>, TError = AxiosError<unknown>>(
+ params?: GetPosTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosTransactions>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary POS Transactions Report
+ */
+
+export function useGetPosTransactions<TData = Awaited<ReturnType<typeof getPosTransactions>>, TError = AxiosError<unknown>>(
+ params?: GetPosTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosTransactions>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetPosTransactionsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+
+/**
+ * @summary Calculate commission for amount and installments
+ */
+export const calculateCommission = (
+    commissionCalculationRequest: CommissionCalculationRequest, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<CommissionCalculationResponse>> => {
+    
+    
+    return axios.post(
+      `/api/pos/commission/calculate`,
+      commissionCalculationRequest,options
+    );
+  }
+
+
+
+export const getCalculateCommissionMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateCommission>>, TError,{data: CommissionCalculationRequest}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof calculateCommission>>, TError,{data: CommissionCalculationRequest}, TContext> => {
+
+const mutationKey = ['calculateCommission'];
+const {mutation: mutationOptions, axios: axiosOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, axios: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof calculateCommission>>, {data: CommissionCalculationRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  calculateCommission(data,axiosOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CalculateCommissionMutationResult = NonNullable<Awaited<ReturnType<typeof calculateCommission>>>
+    export type CalculateCommissionMutationBody = CommissionCalculationRequest
+    export type CalculateCommissionMutationError = AxiosError<unknown>
+
+    /**
+ * @summary Calculate commission for amount and installments
+ */
+export const useCalculateCommission = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateCommission>>, TError,{data: CommissionCalculationRequest}, TContext>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof calculateCommission>>,
+        TError,
+        {data: CommissionCalculationRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getCalculateCommissionMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+/**
+ * @summary Get installment options with calculated amounts
+ */
+export const getInstallmentOptions = (
+    installmentOptionsRequest: InstallmentOptionsRequest, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<InstallmentOptionsResponse>> => {
+    
+    
+    return axios.post(
+      `/api/pos/commission/installment-options`,
+      installmentOptionsRequest,options
+    );
+  }
+
+
+
+export const getGetInstallmentOptionsMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getInstallmentOptions>>, TError,{data: InstallmentOptionsRequest}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof getInstallmentOptions>>, TError,{data: InstallmentOptionsRequest}, TContext> => {
+
+const mutationKey = ['getInstallmentOptions'];
+const {mutation: mutationOptions, axios: axiosOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, axios: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof getInstallmentOptions>>, {data: InstallmentOptionsRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  getInstallmentOptions(data,axiosOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GetInstallmentOptionsMutationResult = NonNullable<Awaited<ReturnType<typeof getInstallmentOptions>>>
+    export type GetInstallmentOptionsMutationBody = InstallmentOptionsRequest
+    export type GetInstallmentOptionsMutationError = AxiosError<unknown>
+
+    /**
+ * @summary Get installment options with calculated amounts
+ */
+export const useGetInstallmentOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getInstallmentOptions>>, TError,{data: InstallmentOptionsRequest}, TContext>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof getInstallmentOptions>>,
+        TError,
+        {data: InstallmentOptionsRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getGetInstallmentOptionsMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+/**
+ * @summary Get commission rates for current tenant
+ */
+export const getCommissionRates = (
+     options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<CommissionRatesResponse>> => {
+    
+    
+    return axios.get(
+      `/api/pos/commission/rates`,options
+    );
+  }
+
+
+
+
+export const getGetCommissionRatesQueryKey = () => {
+    return [
+    `/api/pos/commission/rates`
+    ] as const;
+    }
+
+    
+export const getGetCommissionRatesQueryOptions = <TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = AxiosError<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCommissionRatesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionRates>>> = ({ signal }) => getCommissionRates({ signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetCommissionRatesQueryResult = NonNullable<Awaited<ReturnType<typeof getCommissionRates>>>
+export type GetCommissionRatesQueryError = AxiosError<unknown>
+
+
+export function useGetCommissionRates<TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = AxiosError<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCommissionRates>>,
+          TError,
+          Awaited<ReturnType<typeof getCommissionRates>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetCommissionRates<TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCommissionRates>>,
+          TError,
+          Awaited<ReturnType<typeof getCommissionRates>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetCommissionRates<TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get commission rates for current tenant
+ */
+
+export function useGetCommissionRates<TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetCommissionRatesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+
+/**
+ * @summary Get system-wide commission rates
+ */
+export const getSystemCommissionRates = (
+     options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<GetSystemCommissionRates200>> => {
+    
+    
+    return axios.get(
+      `/api/pos/commission/rates/system`,options
+    );
+  }
+
+
+
+
+export const getGetSystemCommissionRatesQueryKey = () => {
+    return [
+    `/api/pos/commission/rates/system`
+    ] as const;
+    }
+
+    
+export const getGetSystemCommissionRatesQueryOptions = <TData = Awaited<ReturnType<typeof getSystemCommissionRates>>, TError = AxiosError<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemCommissionRates>>, TError, TData>>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSystemCommissionRatesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSystemCommissionRates>>> = ({ signal }) => getSystemCommissionRates({ signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSystemCommissionRates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetSystemCommissionRatesQueryResult = NonNullable<Awaited<ReturnType<typeof getSystemCommissionRates>>>
+export type GetSystemCommissionRatesQueryError = AxiosError<unknown>
+
+
+export function useGetSystemCommissionRates<TData = Awaited<ReturnType<typeof getSystemCommissionRates>>, TError = AxiosError<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemCommissionRates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSystemCommissionRates>>,
+          TError,
+          Awaited<ReturnType<typeof getSystemCommissionRates>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetSystemCommissionRates<TData = Awaited<ReturnType<typeof getSystemCommissionRates>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemCommissionRates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSystemCommissionRates>>,
+          TError,
+          Awaited<ReturnType<typeof getSystemCommissionRates>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetSystemCommissionRates<TData = Awaited<ReturnType<typeof getSystemCommissionRates>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemCommissionRates>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get system-wide commission rates
+ */
+
+export function useGetSystemCommissionRates<TData = Awaited<ReturnType<typeof getSystemCommissionRates>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemCommissionRates>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetSystemCommissionRatesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+
+/**
+ * @summary Update system-wide commission rates
+ */
+export const updateSystemCommissionRates = (
+    updateSystemCommissionRatesBody: UpdateSystemCommissionRatesBody, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<UpdateSystemCommissionRates200>> => {
+    
+    
+    return axios.put(
+      `/api/pos/commission/rates/system`,
+      updateSystemCommissionRatesBody,options
+    );
+  }
+
+
+
+export const getUpdateSystemCommissionRatesMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSystemCommissionRates>>, TError,{data: UpdateSystemCommissionRatesBody}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSystemCommissionRates>>, TError,{data: UpdateSystemCommissionRatesBody}, TContext> => {
+
+const mutationKey = ['updateSystemCommissionRates'];
+const {mutation: mutationOptions, axios: axiosOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, axios: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSystemCommissionRates>>, {data: UpdateSystemCommissionRatesBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateSystemCommissionRates(data,axiosOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSystemCommissionRatesMutationResult = NonNullable<Awaited<ReturnType<typeof updateSystemCommissionRates>>>
+    export type UpdateSystemCommissionRatesMutationBody = UpdateSystemCommissionRatesBody
+    export type UpdateSystemCommissionRatesMutationError = AxiosError<unknown>
+
+    /**
+ * @summary Update system-wide commission rates
+ */
+export const useUpdateSystemCommissionRates = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSystemCommissionRates>>, TError,{data: UpdateSystemCommissionRatesBody}, TContext>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateSystemCommissionRates>>,
+        TError,
+        {data: UpdateSystemCommissionRatesBody},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateSystemCommissionRatesMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+/**
+ * @summary Get tenant-specific commission rates
+ */
+export const getTenantCommissionRates = (
+    tenantId: string, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<GetTenantCommissionRates200>> => {
+    
+    
+    return axios.get(
+      `/api/pos/commission/rates/tenant/${tenantId}`,options
+    );
+  }
+
+
+
+
+export const getGetTenantCommissionRatesQueryKey = (tenantId?: string,) => {
+    return [
+    `/api/pos/commission/rates/tenant/${tenantId}`
+    ] as const;
+    }
+
+    
+export const getGetTenantCommissionRatesQueryOptions = <TData = Awaited<ReturnType<typeof getTenantCommissionRates>>, TError = AxiosError<unknown>>(tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantCommissionRates>>, TError, TData>>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTenantCommissionRatesQueryKey(tenantId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTenantCommissionRates>>> = ({ signal }) => getTenantCommissionRates(tenantId, { signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(tenantId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTenantCommissionRates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetTenantCommissionRatesQueryResult = NonNullable<Awaited<ReturnType<typeof getTenantCommissionRates>>>
+export type GetTenantCommissionRatesQueryError = AxiosError<unknown>
+
+
+export function useGetTenantCommissionRates<TData = Awaited<ReturnType<typeof getTenantCommissionRates>>, TError = AxiosError<unknown>>(
+ tenantId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantCommissionRates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTenantCommissionRates>>,
+          TError,
+          Awaited<ReturnType<typeof getTenantCommissionRates>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetTenantCommissionRates<TData = Awaited<ReturnType<typeof getTenantCommissionRates>>, TError = AxiosError<unknown>>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantCommissionRates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTenantCommissionRates>>,
+          TError,
+          Awaited<ReturnType<typeof getTenantCommissionRates>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetTenantCommissionRates<TData = Awaited<ReturnType<typeof getTenantCommissionRates>>, TError = AxiosError<unknown>>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantCommissionRates>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get tenant-specific commission rates
+ */
+
+export function useGetTenantCommissionRates<TData = Awaited<ReturnType<typeof getTenantCommissionRates>>, TError = AxiosError<unknown>>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantCommissionRates>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetTenantCommissionRatesQueryOptions(tenantId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+
+/**
+ * @summary Update tenant-specific commission rates
+ */
+export const updateTenantCommissionRates = (
+    tenantId: string,
+    updateTenantCommissionRatesBody: UpdateTenantCommissionRatesBody, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<UpdateTenantCommissionRates200>> => {
+    
+    
+    return axios.put(
+      `/api/pos/commission/rates/tenant/${tenantId}`,
+      updateTenantCommissionRatesBody,options
+    );
+  }
+
+
+
+export const getUpdateTenantCommissionRatesMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTenantCommissionRates>>, TError,{tenantId: string;data: UpdateTenantCommissionRatesBody}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof updateTenantCommissionRates>>, TError,{tenantId: string;data: UpdateTenantCommissionRatesBody}, TContext> => {
+
+const mutationKey = ['updateTenantCommissionRates'];
+const {mutation: mutationOptions, axios: axiosOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, axios: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTenantCommissionRates>>, {tenantId: string;data: UpdateTenantCommissionRatesBody}> = (props) => {
+          const {tenantId,data} = props ?? {};
+
+          return  updateTenantCommissionRates(tenantId,data,axiosOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateTenantCommissionRatesMutationResult = NonNullable<Awaited<ReturnType<typeof updateTenantCommissionRates>>>
+    export type UpdateTenantCommissionRatesMutationBody = UpdateTenantCommissionRatesBody
+    export type UpdateTenantCommissionRatesMutationError = AxiosError<unknown>
+
+    /**
+ * @summary Update tenant-specific commission rates
+ */
+export const useUpdateTenantCommissionRates = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTenantCommissionRates>>, TError,{tenantId: string;data: UpdateTenantCommissionRatesBody}, TContext>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateTenantCommissionRates>>,
+        TError,
+        {tenantId: string;data: UpdateTenantCommissionRatesBody},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateTenantCommissionRatesMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }

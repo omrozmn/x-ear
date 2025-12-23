@@ -13,10 +13,12 @@ import { Route as UsersRouteImport } from './routes/users'
 import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
 import { Route as TenantsRouteImport } from './routes/tenants'
 import { Route as SupportRouteImport } from './routes/support'
+import { Route as SuppliersRouteImport } from './routes/suppliers'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RolesRouteImport } from './routes/roles'
 import { Route as ProductionRouteImport } from './routes/production'
 import { Route as PlansRouteImport } from './routes/plans'
+import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PatientsRouteImport } from './routes/patients'
 import { Route as OcrQueueRouteImport } from './routes/ocr-queue'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -25,6 +27,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as FilesRouteImport } from './routes/files'
 import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CampaignsRouteImport } from './routes/campaigns'
 import { Route as BillingRouteImport } from './routes/billing'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as ApiKeysRouteImport } from './routes/api-keys'
@@ -56,6 +60,11 @@ const SupportRoute = SupportRouteImport.update({
   path: '/support',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SuppliersRoute = SuppliersRouteImport.update({
+  id: '/suppliers',
+  path: '/suppliers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -74,6 +83,11 @@ const ProductionRoute = ProductionRouteImport.update({
 const PlansRoute = PlansRouteImport.update({
   id: '/plans',
   path: '/plans',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentsRoute = PaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PatientsRoute = PatientsRouteImport.update({
@@ -114,6 +128,16 @@ const FilesRoute = FilesRouteImport.update({
 const FeaturesRoute = FeaturesRouteImport.update({
   id: '/features',
   path: '/features',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampaignsRoute = CampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BillingRoute = BillingRouteImport.update({
@@ -176,6 +200,8 @@ export interface FileRoutesByFullPath {
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
+  '/campaigns': typeof CampaignsRoute
+  '/dashboard': typeof DashboardRoute
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
@@ -184,10 +210,12 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof NotificationsRoute
   '/ocr-queue': typeof OcrQueueRoute
   '/patients': typeof PatientsRoute
+  '/payments': typeof PaymentsRoute
   '/plans': typeof PlansRoute
   '/production': typeof ProductionRoute
   '/roles': typeof RolesRoute
   '/settings': typeof SettingsRoute
+  '/suppliers': typeof SuppliersRoute
   '/support': typeof SupportRoute
   '/tenants': typeof TenantsRoute
   '/unauthorized': typeof UnauthorizedRoute
@@ -204,6 +232,8 @@ export interface FileRoutesByTo {
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
+  '/campaigns': typeof CampaignsRoute
+  '/dashboard': typeof DashboardRoute
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
@@ -212,10 +242,12 @@ export interface FileRoutesByTo {
   '/notifications': typeof NotificationsRoute
   '/ocr-queue': typeof OcrQueueRoute
   '/patients': typeof PatientsRoute
+  '/payments': typeof PaymentsRoute
   '/plans': typeof PlansRoute
   '/production': typeof ProductionRoute
   '/roles': typeof RolesRoute
   '/settings': typeof SettingsRoute
+  '/suppliers': typeof SuppliersRoute
   '/support': typeof SupportRoute
   '/tenants': typeof TenantsRoute
   '/unauthorized': typeof UnauthorizedRoute
@@ -233,6 +265,8 @@ export interface FileRoutesById {
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
+  '/campaigns': typeof CampaignsRoute
+  '/dashboard': typeof DashboardRoute
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
@@ -241,10 +275,12 @@ export interface FileRoutesById {
   '/notifications': typeof NotificationsRoute
   '/ocr-queue': typeof OcrQueueRoute
   '/patients': typeof PatientsRoute
+  '/payments': typeof PaymentsRoute
   '/plans': typeof PlansRoute
   '/production': typeof ProductionRoute
   '/roles': typeof RolesRoute
   '/settings': typeof SettingsRoute
+  '/suppliers': typeof SuppliersRoute
   '/support': typeof SupportRoute
   '/tenants': typeof TenantsRoute
   '/unauthorized': typeof UnauthorizedRoute
@@ -263,6 +299,8 @@ export interface FileRouteTypes {
     | '/api-keys'
     | '/appointments'
     | '/billing'
+    | '/campaigns'
+    | '/dashboard'
     | '/features'
     | '/files'
     | '/inventory'
@@ -271,10 +309,12 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/ocr-queue'
     | '/patients'
+    | '/payments'
     | '/plans'
     | '/production'
     | '/roles'
     | '/settings'
+    | '/suppliers'
     | '/support'
     | '/tenants'
     | '/unauthorized'
@@ -291,6 +331,8 @@ export interface FileRouteTypes {
     | '/api-keys'
     | '/appointments'
     | '/billing'
+    | '/campaigns'
+    | '/dashboard'
     | '/features'
     | '/files'
     | '/inventory'
@@ -299,10 +341,12 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/ocr-queue'
     | '/patients'
+    | '/payments'
     | '/plans'
     | '/production'
     | '/roles'
     | '/settings'
+    | '/suppliers'
     | '/support'
     | '/tenants'
     | '/unauthorized'
@@ -319,6 +363,8 @@ export interface FileRouteTypes {
     | '/api-keys'
     | '/appointments'
     | '/billing'
+    | '/campaigns'
+    | '/dashboard'
     | '/features'
     | '/files'
     | '/inventory'
@@ -327,10 +373,12 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/ocr-queue'
     | '/patients'
+    | '/payments'
     | '/plans'
     | '/production'
     | '/roles'
     | '/settings'
+    | '/suppliers'
     | '/support'
     | '/tenants'
     | '/unauthorized'
@@ -348,6 +396,8 @@ export interface RootRouteChildren {
   ApiKeysRoute: typeof ApiKeysRoute
   AppointmentsRoute: typeof AppointmentsRoute
   BillingRoute: typeof BillingRoute
+  CampaignsRoute: typeof CampaignsRoute
+  DashboardRoute: typeof DashboardRoute
   FeaturesRoute: typeof FeaturesRoute
   FilesRoute: typeof FilesRoute
   InventoryRoute: typeof InventoryRoute
@@ -356,10 +406,12 @@ export interface RootRouteChildren {
   NotificationsRoute: typeof NotificationsRoute
   OcrQueueRoute: typeof OcrQueueRoute
   PatientsRoute: typeof PatientsRoute
+  PaymentsRoute: typeof PaymentsRoute
   PlansRoute: typeof PlansRoute
   ProductionRoute: typeof ProductionRoute
   RolesRoute: typeof RolesRoute
   SettingsRoute: typeof SettingsRoute
+  SuppliersRoute: typeof SuppliersRoute
   SupportRoute: typeof SupportRoute
   TenantsRoute: typeof TenantsRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
@@ -399,6 +451,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/suppliers': {
+      id: '/suppliers'
+      path: '/suppliers'
+      fullPath: '/suppliers'
+      preLoaderRoute: typeof SuppliersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -425,6 +484,13 @@ declare module '@tanstack/react-router' {
       path: '/plans'
       fullPath: '/plans'
       preLoaderRoute: typeof PlansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payments': {
+      id: '/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof PaymentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/patients': {
@@ -481,6 +547,20 @@ declare module '@tanstack/react-router' {
       path: '/features'
       fullPath: '/features'
       preLoaderRoute: typeof FeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/campaigns': {
+      id: '/campaigns'
+      path: '/campaigns'
+      fullPath: '/campaigns'
+      preLoaderRoute: typeof CampaignsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/billing': {
@@ -564,6 +644,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiKeysRoute: ApiKeysRoute,
   AppointmentsRoute: AppointmentsRoute,
   BillingRoute: BillingRoute,
+  CampaignsRoute: CampaignsRoute,
+  DashboardRoute: DashboardRoute,
   FeaturesRoute: FeaturesRoute,
   FilesRoute: FilesRoute,
   InventoryRoute: InventoryRoute,
@@ -572,10 +654,12 @@ const rootRouteChildren: RootRouteChildren = {
   NotificationsRoute: NotificationsRoute,
   OcrQueueRoute: OcrQueueRoute,
   PatientsRoute: PatientsRoute,
+  PaymentsRoute: PaymentsRoute,
   PlansRoute: PlansRoute,
   ProductionRoute: ProductionRoute,
   RolesRoute: RolesRoute,
   SettingsRoute: SettingsRoute,
+  SuppliersRoute: SuppliersRoute,
   SupportRoute: SupportRoute,
   TenantsRoute: TenantsRoute,
   UnauthorizedRoute: UnauthorizedRoute,

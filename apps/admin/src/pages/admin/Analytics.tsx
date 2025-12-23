@@ -241,7 +241,7 @@ const Analytics: React.FC = () => {
           {/* Revenue Trend */}
           <div className="bg-white shadow rounded-lg p-6 lg:col-span-2">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Gelir Trendi</h3>
-            <div className="h-80 w-full">
+            <div className="h-80 w-full" style={{ minHeight: '320px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={(data?.revenue_trend || []) as any[]}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -263,7 +263,7 @@ const Analytics: React.FC = () => {
           {/* Plan Distribution */}
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Plan Dağılımı</h3>
-            <div className="h-80 w-full">
+            <div className="h-80 w-full" style={{ minHeight: '320px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -292,7 +292,7 @@ const Analytics: React.FC = () => {
           {/* User Engagement */}
           <div className="bg-white shadow rounded-lg p-6 lg:col-span-2">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Kullanıcı Etkileşimi</h3>
-            <div className="h-80 w-full">
+            <div className="h-80 w-full" style={{ minHeight: '320px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={(data?.user_engagement || []) as any[]}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -311,7 +311,7 @@ const Analytics: React.FC = () => {
           {/* Revenue Growth */}
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Gelir Büyümesi</h3>
-            <div className="h-80 w-full">
+            <div className="h-80 w-full" style={{ minHeight: '320px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={(data?.revenue_trend || []) as any[]}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -330,7 +330,7 @@ const Analytics: React.FC = () => {
           {/* SGK Submissions */}
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">SGK Başvuru Durumu</h3>
-            <div className="h-80 w-full">
+            <div className="h-80 w-full" style={{ minHeight: '320px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={(data?.domain_metrics?.sgk_submissions || []) as any[]}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -348,7 +348,7 @@ const Analytics: React.FC = () => {
           {/* Device Fittings Trend */}
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Cihaz Uygulama Trendi</h3>
-            <div className="h-80 w-full">
+            <div className="h-80 w-full" style={{ minHeight: '320px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={(data?.domain_metrics?.device_fittings || []) as any[]}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />

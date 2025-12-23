@@ -55,74 +55,73 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
 }) => {
   return (
     <div className="space-y-4">
-      {/* Basic Filters */}
-      <div className="flex flex-wrap gap-4 items-center">
-        <Button
-          variant="outline"
-          onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          className="flex items-center"
-        >
-          <Filter className="w-4 h-4 mr-2" />
-          Gelişmiş Filtreler
-          {showAdvancedFilters ? <ChevronUp className="w-4 h-4 ml-2" /> : <ChevronDown className="w-4 h-4 ml-2" />}
-        </Button>
-        
-        <Button variant="outline" onClick={onExportSales}>
-          <Download className="w-4 h-4 mr-2" />
-          Dışa Aktar
-        </Button>
-        
-        <Button variant="outline" onClick={onPrintSales}>
-          <Printer className="w-4 h-4 mr-2" />
-          Yazdır
-        </Button>
-      </div>
+      {/* Consolidated Filters */}
+      <div className="flex flex-wrap gap-4 items-center justify-between">
+        <div className="flex flex-wrap gap-4 items-center flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Satış ara..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-64"
+            />
+          </div>
 
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Satış ara..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 w-64"
-          />
+          <select
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
+          >
+            <option value="all">Tüm Tarihler</option>
+            <option value="today">Bugün</option>
+            <option value="week">Bu Hafta</option>
+            <option value="month">Bu Ay</option>
+            <option value="year">Bu Yıl</option>
+          </select>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
+          >
+            <option value="all">Tüm Durumlar</option>
+            <option value="completed">Tamamlandı</option>
+            <option value="pending">Beklemede</option>
+            <option value="cancelled">İptal Edildi</option>
+          </select>
+
+          <select
+            value={paymentMethodFilter}
+            onChange={(e) => setPaymentMethodFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
+          >
+            <option value="all">Tüm Ödemeler</option>
+            <option value="cash">Nakit</option>
+            <option value="card">Kart</option>
+            <option value="transfer">Havale</option>
+            <option value="installment">Taksit</option>
+          </select>
         </div>
-        
-        <select
-          value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all">Tüm Tarihler</option>
-          <option value="today">Bugün</option>
-          <option value="week">Bu Hafta</option>
-          <option value="month">Bu Ay</option>
-          <option value="year">Bu Yıl</option>
-        </select>
-        
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all">Tüm Durumlar</option>
-          <option value="completed">Tamamlandı</option>
-          <option value="pending">Beklemede</option>
-          <option value="cancelled">İptal Edildi</option>
-        </select>
-        
-        <select
-          value={paymentMethodFilter}
-          onChange={(e) => setPaymentMethodFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all">Tüm Ödeme Yöntemleri</option>
-          <option value="cash">Nakit</option>
-          <option value="card">Kart</option>
-          <option value="transfer">Havale</option>
-          <option value="installment">Taksit</option>
-        </select>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className="flex items-center"
+          >
+            <Filter className="w-4 h-4" />
+            {showAdvancedFilters ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
+          </Button>
+
+          <Button variant="outline" onClick={onExportSales} size="sm" title="Dışa Aktar">
+            <Download className="w-4 h-4" />
+          </Button>
+
+          <Button variant="outline" onClick={onPrintSales} size="sm" title="Yazdır">
+            <Printer className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Advanced Filters */}

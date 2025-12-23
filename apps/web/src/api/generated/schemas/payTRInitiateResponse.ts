@@ -10,5 +10,6 @@ export interface PayTRInitiateResponse {
   success?: boolean;
   token?: string;
   iframe_url?: string;
+  payment_record_id?: string;
   error?: string;
 }

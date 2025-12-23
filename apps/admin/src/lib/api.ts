@@ -2,8 +2,11 @@ import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
 // Create axios instance for admin routes
+// NOTE: baseURL is empty because Vite dev server proxy already handles /api prefix
+// Vite config: proxy: { '/api': { target: 'http://localhost:5003' } }
+// So /api/admin/tenants -> http://localhost:5003/api/admin/tenants
 export const adminApiInstance = axios.create({
-    baseURL: '', // Empty because API client URLs already include /api prefix
+    baseURL: '', // Empty - Vite proxy handles /api prefix
     timeout: 30000,
     headers: {
         'Content-Type': 'application/json',

@@ -21,7 +21,7 @@ import {
 export const useSuppliers = (params: SuppliersGetSuppliersParams) => {
   return useQuery({
     queryKey: ['suppliers', params],
-    queryFn: ({ signal }) => suppliersGetSuppliers(params, signal),
+    queryFn: ({ signal }) => suppliersGetSuppliers(params, { signal }),
     placeholderData: (previousData, previousQuery) => previousData,
   });
 };
@@ -29,7 +29,7 @@ export const useSuppliers = (params: SuppliersGetSuppliersParams) => {
 export const useSupplier = (id: string) => {
   return useQuery({
     queryKey: ['suppliers', id],
-    queryFn: ({ signal }) => suppliersGetSuppliers({ search: id }, signal),
+    queryFn: ({ signal }) => suppliersGetSuppliers({ search: id }, { signal }),
     enabled: !!id,
     select: (data) => (data.data as any)?.data?.find((s: any) => String(s.id) === String(id) || (s as any)._id === id),
   });

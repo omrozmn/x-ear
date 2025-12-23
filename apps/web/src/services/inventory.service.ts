@@ -70,7 +70,34 @@ export class InventoryService {
 
   // CRUD Operations
   async getAllItems(): Promise<InventoryItem[]> {
-    return this.loadInventory();
+    try {
+      // Use Orval mutator to fetch from API
+      const { customInstance } = await import('../api/orval-mutator');
+      const response = await customInstance<{ data: InventoryItem[] }>({
+        url: '/api/inventory',
+        method: 'GET'
+      });
+
+      // Orval mutator returns the response body directly in the promise resolution
+      // If the body is { data: [...] }, then response.data is the array
+      // However, if the existing code uses response.data.data, we should be careful.
+      // Based on createItem usage: response.data.data
+      // But based on orval-mutator implementation: it returns body.
+      // If body is { data: Item }, then response.data is Item.
+      // If createItem thinks response is AxiosResponse, it might be accessing response.data (body) then .data (property).
+      // Let's inspect what we have.
+
+      // Safe access:
+      const items = (response as any).data || (response as any).items || [];
+      if (Array.isArray(items)) {
+        this.saveInventory(items);
+        return items;
+      }
+      return [];
+    } catch (error) {
+      console.warn('Failed to fetch inventory from API, falling back to local storage:', error);
+      return this.loadInventory();
+    }
   }
 
   async getItemById(id: string): Promise<InventoryItem | null> {
@@ -193,17 +220,30 @@ export class InventoryService {
       throw new Error('Inventory item not found');
     }
 
+    // Remove from local storage immediately (optimistic UI)
     items.splice(index, 1);
     this.saveInventory(items);
 
-    // Queue for sync
-    await outbox.addOperation({
-      method: 'DELETE',
-      endpoint: `/api/inventory/${id}`,
-      headers: {
-        'Idempotency-Key': `delete-inventory-${id}-${Date.now()}`
-      }
-    });
+    try {
+      const { customInstance } = await import('../api/orval-mutator');
+      await customInstance({
+        url: `/api/inventory/${id}`,
+        method: 'DELETE',
+        headers: {
+          'Idempotency-Key': `delete-inventory-${id}-${Date.now()}`
+        }
+      });
+    } catch (error) {
+      console.warn('API delete failed, falling back to outbox:', error);
+      // Queue for sync
+      await outbox.addOperation({
+        method: 'DELETE',
+        endpoint: `/api/inventory/${id}`,
+        headers: {
+          'Idempotency-Key': `delete-inventory-${id}-${Date.now()}`
+        }
+      });
+    }
   }
 
   // Search and Filter

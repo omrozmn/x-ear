@@ -1,0 +1,82 @@
+
+================================================================================
+Starting Backend Endpoint Tests
+Base URL: http://localhost:5003
+================================================================================
+
+
+[Public Health Endpoint]
+[17:24:23] ✓ PASS GET /api/health
+  Database connected: True
+[17:24:23] ℹ INFO Authentication
+  Logging in as admin@x-ear.com...
+[17:24:23] ✓ PASS Admin Login
+  Token: eyJhbGciOiJIUzI1NiIs...
+
+[Landing Page Endpoints]
+[17:24:23] ✓ PASS GET /api/plans
+  Plans found: 2
+[17:24:23] ✓ PASS GET /api/config/turnstile
+  Site key configured: True
+[17:24:23] ⊘ SKIP POST /api/checkout/session
+  Skipped to avoid creating test data
+
+[Admin Dashboard Endpoints]
+[17:24:23] ✓ PASS GET /api/admin/dashboard/metrics
+  Metrics retrieved successfully
+
+[Admin Analytics Endpoints]
+[17:24:23] ✓ PASS GET /api/admin/analytics
+  Analytics data retrieved
+
+[Admin Tenants Endpoints]
+[17:24:23] ✓ PASS GET /api/admin/tenants
+  Tenants found: 0
+[17:24:23] ✓ PASS GET /api/admin/tenants/stats
+  Tenant stats retrieved
+
+[Admin Plans Endpoints]
+[17:24:23] ✓ PASS GET /api/admin/plans
+  Plans found: 0
+[17:24:23] ✓ PASS GET /api/admin/plans/stats
+  Plan stats retrieved
+
+[Admin Addons Endpoints]
+[17:24:23] ✓ PASS GET /api/admin/addons
+  Addons found: 0
+
+[Admin Users Endpoints]
+[17:24:23] ✓ PASS GET /api/admin/users
+  Admin users found: 0
+[17:24:23] ✓ PASS GET /api/admin/users/all
+  Tenant users found: 0
+
+[Admin Settings Endpoints]
+[17:24:23] ✗ FAIL GET /api/admin/features
+  Status: 500
+
+[Admin Tickets Endpoints]
+[17:24:23] ✓ PASS GET /api/admin/tickets
+  Tickets found: 0
+
+[Checkout/Commerce Endpoints]
+[17:24:23] ⊘ SKIP POST /api/checkout/session
+  Skipped to avoid creating test transactions
+[17:24:23] ⊘ SKIP POST /api/checkout/confirm
+  Skipped to avoid modifying payment data
+
+================================================================================
+Test Summary
+================================================================================
+
+Passed:  14
+Failed:  1
+Skipped: 3
+Total:   18
+
+Failed Tests:
+  • GET /api/admin/features
+    Status: 500
+
+================================================================================
+

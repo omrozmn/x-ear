@@ -26,7 +26,7 @@ export default function FAQ() {
                             </Link>
                         </nav>
                         <div className="hidden md:flex items-center space-x-4">
-                            <a href="http://localhost:8082/login" className="text-gray-300 hover:text-white transition">
+                            <a href={`${process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:8082'}/login`} className="text-gray-300 hover:text-white transition">
                                 Giriş Yap
                             </a>
                             <Link

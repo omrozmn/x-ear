@@ -52,7 +52,7 @@ export default function Register() {
                             </Link>
                         </nav>
                         <div className="flex items-center space-x-4">
-                            <a href="http://localhost:8080/login" className="text-gray-400 hover:text-white transition">
+                            <a href={`${process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:8080'}/login`} className="text-gray-400 hover:text-white transition">
                                 Giriş Yap
                             </a>
                             <Link
@@ -116,7 +116,7 @@ export default function Register() {
                                 </form>
                                 <p className="mt-6 text-center text-sm text-gray-400">
                                     Zaten bir hesabın var mı?{" "}
-                                    <a href="http://localhost:8080/login" className="font-medium text-indigo-400 hover:text-indigo-300">
+                                    <a href={`${process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:8080'}/login`} className="font-medium text-indigo-400 hover:text-indigo-300">
                                         Giriş Yap
                                     </a>
                                 </p>
