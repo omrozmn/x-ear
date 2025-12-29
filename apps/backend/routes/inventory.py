@@ -873,17 +873,40 @@ def get_inventory_movements(item_id):
             
             # Try to find patient info from assignment
             if movement.transaction_id:
-                # Check if it's an assignment ID
-                from models import DeviceAssignment, Patient
-                assignment = db.session.query(DeviceAssignment).filter_by(
-                    id=movement.transaction_id
-                ).first()
+                # Try to find patient info from assignment or sale
+            if movement.transaction_id:
+                patient_id = None
                 
-                if assignment and assignment.patient_id:
-                    patient = db.session.get(Patient, assignment.patient_id)
+                # Check based on prefix or type
+                # 1. Device Assignment (starts with assign_)
+                if movement.transaction_id.startswith('assign_'):
+                    from models import DeviceAssignment
+                    assignment = db.session.get(DeviceAssignment, movement.transaction_id)
+                    if assignment:
+                        patient_id = assignment.patient_id
+                
+                # 2. Sale (usually numeric or different format)
+                # If not found yet, try Sale
+                if not patient_id:
+                    from models import Sale
+                    # Try direct lookup (if ID matches)
+                    sale = db.session.get(Sale, movement.transaction_id)
+                    if sale:
+                        patient_id = sale.patient_id
+                    else:
+                        # Sometimes transaction_id might be string but Sale ID is int or vice-versa
+                        # Or it might be a legacy sale ID
+                        pass
+
+                # If we found a patient ID, fetch patient details
+                if patient_id:
+                    from models import Patient
+                    patient = db.session.get(Patient, patient_id)
                     if patient:
                         movement_dict['patientId'] = patient.id
                         movement_dict['patientName'] = f"{patient.first_name} {patient.last_name}".strip()
+            
+            enriched_movements.append(movement_dict)
             
             enriched_movements.append(movement_dict)
 
