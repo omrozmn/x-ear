@@ -44,6 +44,8 @@ import type {
   InventoryGetInventoryItem200,
   InventoryGetInventoryItems200,
   InventoryGetInventoryItemsParams,
+  InventoryGetItemMovements200,
+  InventoryGetItemMovementsParams,
   InventoryItem,
   InventoryUpdateInventoryItem200,
   SuccessResponse
@@ -640,6 +642,105 @@ export const useInventoryAddSerialNumbers = <TError = AxiosError<unknown>,
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * @summary GET /api/inventory/{item_id}/movements
+ */
+export const inventoryGetItemMovements = (
+    itemId: string,
+    params?: InventoryGetItemMovementsParams, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<InventoryGetItemMovements200>> => {
+    
+    
+    return axios.get(
+      `/api/inventory/${itemId}/movements`,{
+    ...options,
+        params: {...params, ...options?.params},}
+    );
+  }
+
+
+
+
+export const getInventoryGetItemMovementsQueryKey = (itemId?: string,
+    params?: InventoryGetItemMovementsParams,) => {
+    return [
+    `/api/inventory/${itemId}/movements`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getInventoryGetItemMovementsQueryOptions = <TData = Awaited<ReturnType<typeof inventoryGetItemMovements>>, TError = AxiosError<unknown>>(itemId: string,
+    params?: InventoryGetItemMovementsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof inventoryGetItemMovements>>, TError, TData>>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getInventoryGetItemMovementsQueryKey(itemId,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof inventoryGetItemMovements>>> = ({ signal }) => inventoryGetItemMovements(itemId,params, { signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(itemId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof inventoryGetItemMovements>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type InventoryGetItemMovementsQueryResult = NonNullable<Awaited<ReturnType<typeof inventoryGetItemMovements>>>
+export type InventoryGetItemMovementsQueryError = AxiosError<unknown>
+
+
+export function useInventoryGetItemMovements<TData = Awaited<ReturnType<typeof inventoryGetItemMovements>>, TError = AxiosError<unknown>>(
+ itemId: string,
+    params: undefined |  InventoryGetItemMovementsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof inventoryGetItemMovements>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof inventoryGetItemMovements>>,
+          TError,
+          Awaited<ReturnType<typeof inventoryGetItemMovements>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useInventoryGetItemMovements<TData = Awaited<ReturnType<typeof inventoryGetItemMovements>>, TError = AxiosError<unknown>>(
+ itemId: string,
+    params?: InventoryGetItemMovementsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof inventoryGetItemMovements>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof inventoryGetItemMovements>>,
+          TError,
+          Awaited<ReturnType<typeof inventoryGetItemMovements>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useInventoryGetItemMovements<TData = Awaited<ReturnType<typeof inventoryGetItemMovements>>, TError = AxiosError<unknown>>(
+ itemId: string,
+    params?: InventoryGetItemMovementsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof inventoryGetItemMovements>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary GET /api/inventory/{item_id}/movements
+ */
+
+export function useInventoryGetItemMovements<TData = Awaited<ReturnType<typeof inventoryGetItemMovements>>, TError = AxiosError<unknown>>(
+ itemId: string,
+    params?: InventoryGetItemMovementsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof inventoryGetItemMovements>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getInventoryGetItemMovementsQueryOptions(itemId,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * Retrieve low-stock information
  * @summary Get all items with low stock levels
  */
