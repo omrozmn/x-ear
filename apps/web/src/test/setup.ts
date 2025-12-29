@@ -28,8 +28,8 @@ vi.stubGlobal('sessionStorage', sessionStorageMock);
 // Mock window.location
 Object.defineProperty(window, 'location', {
   value: {
-    href: 'http://localhost:8080',
-    origin: 'http://localhost:8080',
+    href: 'http://localhost:5003',
+    origin: 'http://localhost:5003',
     pathname: '/',
     search: '',
     hash: '',

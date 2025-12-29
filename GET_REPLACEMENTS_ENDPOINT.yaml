@@ -1,0 +1,75 @@
+# Temporary OpenAPI Addition
+# Adding this endpoint definition manually since automated detection failed
+
+paths:
+  /api/patients/{patient_id}/replacements:
+    get:
+      summary: Get patient replacements
+      operationId: patients_get_patient_replacements
+      tags:
+        - Patients
+      parameters:
+        - name: patient_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Patient ID
+      responses:
+        '200':
+          description: List of patient replacements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        patientId:
+                          type: string
+                        saleId:
+                          type: string
+                        oldDeviceId:
+                          type: string
+                        newDeviceId:
+                          type: string
+                        oldDeviceInfo:
+                          type: string
+                        newDeviceInfo:
+                          type: string
+                        replacementReason:
+                          type: string
+                        status:
+                          type: string
+                        priceDifference:
+                          type: number
+                        notes:
+                          type: string
+                        createdBy:
+                          type: string
+                        returnInvoiceId:
+                          type: string
+                        returnInvoiceStatus:
+                          type: string
+                        gibSent:
+                          type: boolean
+                        gibSentDate:
+                          type: string
+                          format: date-time
+                        createdAt:
+                          type: string
+                          format: date-time
+                        updatedAt:
+                          type: string
+                          format: date-time
+                  count:
+                    type: integer
+                  timestamp:
+                    type: string

@@ -4,12 +4,17 @@ import BulkOperationsModal, { BulkOperation } from '../../pages/inventory/compon
 import WarningModal from '../../pages/inventory/components/WarningModal';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from '@tanstack/react-router';
-// Use apiClient which is the configured axios instance (not customInstance which is the orval mutator function)
-import { apiClient } from '../../api/orval-mutator';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  useInventoryGetInventoryItems,
+  useInventoryDeleteInventoryItem,
+  useInventoryUpdateInventoryItem,
+  getInventoryGetInventoryItemsQueryKey
+} from '../../api/generated/inventory/inventory';
+import { InventoryItem as InventoryItemSchema, InventoryGetInventoryItemsParams } from '../../api/generated/schemas';
 import { AlertTriangle, Eye, Edit, Trash2 } from 'lucide-react';
-import { InventoryItem, InventoryFilters, InventoryStatus } from '../../types/inventory';
-
-// `api` is the shared axios instance with auth interceptors and retry logic
+import { InventoryItem as FrontendInventoryItem, InventoryFilters, InventoryStatus, InventoryCategory } from '../../types/inventory';
+import type { AxiosError } from 'axios';
 
 // Human-friendly category labels (keep in sync with ProductForm CATEGORIES)
 const CATEGORY_LABELS: Record<string, string> = {
@@ -23,11 +28,18 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 interface InventoryListProps {
   filters?: InventoryFilters;
-  onItemSelect?: (item: InventoryItem) => void;
-  onItemEdit?: (item: InventoryItem) => void;
-  onItemDelete?: (item: InventoryItem) => void;
+  onItemSelect?: (item: FrontendInventoryItem) => void;
+  onItemEdit?: (item: FrontendInventoryItem) => void;
+  onItemDelete?: (item: FrontendInventoryItem) => void;
   className?: string;
   refreshKey?: number;
+}
+
+// Define specific type for extended params to handle backend filters not in OpenAPI
+interface ExtendedInventoryParams extends InventoryGetInventoryItemsParams {
+  brand?: string;
+  supplier?: string;
+  out_of_stock?: boolean;
 }
 
 export const InventoryList: React.FC<InventoryListProps> = ({
@@ -38,150 +50,151 @@ export const InventoryList: React.FC<InventoryListProps> = ({
   className = '',
   refreshKey
 }) => {
-  const [items, setItems] = useState<InventoryItem[]>([]);
+  const queryClient = useQueryClient();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [failureModalOpen, setFailureModalOpen] = useState(false);
   const [failureDetails, setFailureDetails] = useState<Array<{ id: string; message: string; status?: number; data?: any }>>([]);
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [totalItems, setTotalItems] = useState(0);
 
-  const loadItems = async () => {
-    try {
-      setLoading(true);
+  // Build API query params
+  const queryParams: ExtendedInventoryParams = useMemo(() => {
+    const params: ExtendedInventoryParams = {
+      page: currentPage,
+      per_page: pageSize
+    };
 
-      // Build API query params
-      const params: any = {
-        page: currentPage,
-        per_page: pageSize
-      };
+    if (filters.category) params.category = filters.category;
+    if (filters.brand) params.brand = filters.brand;
+    if (filters.search) params.search = filters.search;
+    if (filters.supplier) params.supplier = filters.supplier;
 
-      if (filters.category) params.category = filters.category;
-      if (filters.brand) params.brand = filters.brand;
-      if (filters.search) params.search = filters.search;
-      if (filters.supplier) params.supplier = filters.supplier;
+    // Stock status filter
+    if (filters.stockStatus && filters.stockStatus !== 'all') {
+      if (filters.stockStatus === 'low_stock') {
+        // Backend key from OpenAPI is camelCase 'lowStock'
+        params.lowStock = true;
+      } else if (filters.stockStatus === 'out_of_stock') {
+        // Custom param not in OpenAPI yet
+        params.out_of_stock = true;
+      }
+    }
+    return params;
+  }, [currentPage, pageSize, filters]);
 
-      // Stock status filter
-      if (filters.stockStatus && filters.stockStatus !== 'all') {
-        if (filters.stockStatus === 'low_stock') {
-          params.low_stock = true;
-        } else if (filters.stockStatus === 'out_of_stock') {
-          params.out_of_stock = true;
+  // Data Fetching Query
+  // Verify with backend that it accepts extra params (Axios serializes them even if type doesn't say so)
+  const {
+    data: fetchResponse,
+    isLoading,
+    error: fetchError,
+    refetch
+  } = useInventoryGetInventoryItems(queryParams as InventoryGetInventoryItemsParams, {
+    query: {
+      staleTime: 5000
+    }
+  });
+
+  // Mutations
+  const deleteItemMutation = useInventoryDeleteInventoryItem();
+  const updateItemMutation = useInventoryUpdateInventoryItem();
+
+  // Reload when parent signals refresh
+  useEffect(() => {
+    if (typeof refreshKey !== 'undefined') {
+      refetch();
+    }
+  }, [refreshKey, refetch]);
+
+  // Transform Data
+  const { items, totalItems } = useMemo(() => {
+    // Check if data exists
+    if (!fetchResponse?.data?.data || !Array.isArray(fetchResponse.data.data)) {
+      return { items: [], totalItems: 0 };
+    }
+
+    const rawItems = fetchResponse.data.data;
+    const mappedItems: FrontendInventoryItem[] = rawItems.map((item: any) => {
+      // Handle features
+      let features: string[] = [];
+      if (item.features) {
+        if (typeof item.features === 'string') {
+          try {
+            features = JSON.parse(item.features);
+          } catch {
+            features = item.features.split(',').map((f: string) => f.trim()).filter(Boolean);
+          }
+        } else if (Array.isArray(item.features)) {
+          features = item.features;
         }
       }
 
-      const response = await apiClient.get('/api/inventory', { params });
-
-      if (response.data.success && Array.isArray(response.data.data)) {
-        // Map backend data to frontend format
-        const mappedItems: InventoryItem[] = response.data.data.map((item: any) => {
-            // Handle features
-            let features: string[] = [];
-            if (item.features) {
-              if (typeof item.features === 'string') {
-                try {
-                  features = JSON.parse(item.features);
-                } catch {
-                  features = item.features.split(',').map((f: string) => f.trim()).filter(Boolean);
-                }
-              } else if (Array.isArray(item.features)) {
-                features = item.features;
-              }
-            }
-            
-            // Handle serial numbers
-            let availableSerials: string[] = [];
-            if (item.availableSerials) {
-              if (typeof item.availableSerials === 'string') {
-                try {
-                  availableSerials = JSON.parse(item.availableSerials);
-                } catch {
-                  availableSerials = [];
-                }
-              } else if (Array.isArray(item.availableSerials)) {
-                availableSerials = item.availableSerials;
-              }
-            }
-            
-            // Normalize category: backend may return either a key string or an object
-            // with label/name/value. Prefer human-readable fields when available.
-            const rawCategory = item.category;
-            let categoryLabel = '';
-            if (rawCategory) {
-              if (typeof rawCategory === 'string') {
-                  // Map known keys to human-friendly labels, otherwise show the raw string
-                  categoryLabel = CATEGORY_LABELS[rawCategory] || rawCategory;
-                } else if (typeof rawCategory === 'object') {
-                categoryLabel = rawCategory.label || rawCategory.name || rawCategory.value || rawCategory.title || '';
-              }
-            }
-
-            // Resolve KDV safely: prefer explicit kdv, then vatRate, else fallback to 18
-            const rawKdv = typeof item.kdv !== 'undefined' && item.kdv !== null ? item.kdv : (typeof item.vatRate !== 'undefined' && item.vatRate !== null ? item.vatRate : undefined);
-            const parsedKdv = typeof rawKdv !== 'undefined' ? Number(rawKdv) : undefined;
-            const kdvVal = typeof parsedKdv === 'number' && !isNaN(parsedKdv) ? parsedKdv : 18;
-
-            const priceNum = parseFloat(item.price) || 0;
-            const vatIncluded = priceNum * (1 + (kdvVal / 100.0));
-
-            return {
-              id: String(item.id),
-              name: item.name || 'Unnamed Product',
-              brand: item.brand || '',
-              model: item.model || '',
-              category: categoryLabel || '',
-              availableInventory: item.availableInventory || item.available_inventory || 0,
-              totalInventory: item.totalInventory || item.total_inventory || 0,
-              usedInventory: item.usedInventory || item.used_inventory || 0,
-              reorderLevel: item.reorderLevel || item.minInventory || item.min_inventory || 5,
-              price: priceNum,
-              kdv: kdvVal,
-              vatIncludedPrice: vatIncluded || 0,
-              totalValue: (item.availableInventory || item.available_inventory || 0) * priceNum || 0,
-              cost: parseFloat(item.cost) || 0,
-              barcode: item.barcode || '',
-              supplier: item.supplier || '',
-              description: item.description || '',
-              status: (item.availableInventory || item.available_inventory || 0) > 0 ? 'available' : 'out_of_stock',
-              features,
-              availableSerials,
-              createdAt: item.createdAt || item.created_at || new Date().toISOString(),
-              lastUpdated: item.updatedAt || item.updated_at || new Date().toISOString()
-            };
-          });
-          
-        setItems(mappedItems);
-        // Backend returns total in meta.total
-        const total = response.data.meta?.total || response.data.total || response.data.pagination?.total || mappedItems.length;
-        setTotalItems(total);
-        setError(null);
-      } else {
-        setError('Invalid response format');
+      // Handle serial numbers
+      let availableSerials: string[] = [];
+      if (item.availableSerials) {
+        if (typeof item.availableSerials === 'string') {
+          try {
+            availableSerials = JSON.parse(item.availableSerials);
+          } catch {
+            availableSerials = [];
+          }
+        } else if (Array.isArray(item.availableSerials)) {
+          availableSerials = item.availableSerials;
+        }
       }
-    } catch (err) {
-      console.error('Failed to load inventory:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load inventory');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    loadItems();
-  }, [filters, currentPage, pageSize]);
-  // also reload when parent signals refresh
-  useEffect(() => {
-    if (typeof refreshKey !== 'undefined') {
-      loadItems();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshKey]);
+      // Category - Keep as Enum value for Type Safety
+      // The render function in columns will handle the label display
+      const rawCategory = (item.category as InventoryCategory) || 'accessory'; // Fallback to safe enum
 
-  // Helper: format numbers as TR locale with 2 decimals and ` TRY` suffix
+      // Resolve KDV
+      const rawKdv = typeof item.kdv !== 'undefined' && item.kdv !== null ? item.kdv : (typeof item.vatRate !== 'undefined' && item.vatRate !== null ? item.vatRate : undefined);
+      const parsedKdv = typeof rawKdv !== 'undefined' ? Number(rawKdv) : undefined;
+      const kdvVal = typeof parsedKdv === 'number' && !isNaN(parsedKdv) ? parsedKdv : 18;
+
+      const priceNum = parseFloat(item.price) || 0;
+      const vatIncluded = priceNum * (1 + (kdvVal / 100.0));
+
+      // Map to FrontendInventoryItem interface
+      return {
+        id: String(item.id),
+        name: item.name || 'Unnamed Product',
+        brand: item.brand || '',
+        model: item.model || '',
+        category: rawCategory,
+
+        availableInventory: item.availableInventory ?? item.stock ?? item.available_inventory ?? 0,
+        totalInventory: item.totalInventory ?? item.total_inventory ?? 0,
+        usedInventory: item.usedInventory ?? item.used_inventory ?? 0,
+        reorderLevel: item.reorderLevel ?? item.minInventory ?? item.min_inventory ?? 5,
+
+        price: priceNum, // Mandatory
+        cost: parseFloat(item.cost) || 0,
+
+        vatIncludedPrice: vatIncluded || 0,
+        totalValue: (item.availableInventory || item.available_inventory || 0) * priceNum || 0,
+
+        barcode: item.barcode || '',
+        supplier: item.supplier || '',
+        description: item.description || '',
+
+        status: ((item.availableInventory || 0) > 0 ? 'available' : 'out_of_stock') as InventoryStatus,
+        features,
+        availableSerials,
+
+        createdAt: item.createdAt || item.created_at || new Date().toISOString(),
+        lastUpdated: item.updatedAt || item.updated_at || new Date().toISOString()
+      };
+    });
+
+    // Pagination info from schema: pagination.total
+    const total = fetchResponse.data.pagination?.total || mappedItems.length;
+    return { items: mappedItems, totalItems: total };
+  }, [fetchResponse]);
+
+  // Helper: format numbers as TR locale
   const formatCurrencyTR = (amount: number) => {
     try {
       return (amount ?? 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TRY';
@@ -190,9 +203,151 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     }
   };
 
-  // Table columns configuration - Turkish labels
+  // Bulk actions
+  const exportSelected = () => {
+    if (selectedIds.length === 0) return;
+    const selectedItems = items.filter(i => selectedIds.includes(i.id));
+
+    const headers = [
+      'ID', 'Ürün Adı', 'Marka', 'Model', 'Kategori', 'Stok',
+      'Fiyat', 'Barkod', 'Tedarikçi'
+    ];
+
+    const csvContent = [
+      headers.join(','),
+      ...selectedItems.map((item: any) => [
+        item.id,
+        `"${item.name || ''}"`,
+        `"${item.brand || ''}"`,
+        `"${item.model || ''}"`,
+        `"${CATEGORY_LABELS[item.category] || item.category || ''}"`,
+        item.availableInventory || 0,
+        item.price || 0,
+        `"${item.barcode || ''}"`,
+        `"${item.supplier || ''}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `inventory_selected_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const deleteSelected = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(`${selectedIds.length} ürünü silmek istediğinizden emin misiniz?`)) return;
+
+    try {
+      await Promise.all(selectedIds.map(id => deleteItemMutation.mutateAsync({ itemId: id })));
+      setSelectedIds([]);
+      // Invalidate specific query keys
+      await queryClient.invalidateQueries({ queryKey: getInventoryGetInventoryItemsQueryKey() });
+    } catch (err) {
+      console.error('Bulk delete failed:', err);
+      alert('Toplu silme başarısız oldu');
+    }
+  };
+
+  const handleBulkOperation = async (operation: BulkOperation) => {
+    try {
+      const selectedItems = items.filter(i => selectedIds.includes(i.id));
+
+      // Perform API-backed bulk operation for each selected item
+      const failures: Array<{ id: string; message: string; status?: number; data?: any }> = [];
+
+      // Execute sequentially
+      for (const it of selectedItems) {
+        try {
+          const id = it.id;
+          switch (operation.type) {
+            case 'delete':
+              await deleteItemMutation.mutateAsync({ itemId: id });
+              break;
+            case 'update_stock':
+              await updateItemMutation.mutateAsync({
+                itemId: id,
+                data: { availableInventory: operation.data?.stock ?? 0 } as unknown as InventoryItemSchema
+              });
+              break;
+            case 'change_category':
+              await updateItemMutation.mutateAsync({
+                itemId: id,
+                data: { category: operation.data?.category } as unknown as InventoryItemSchema
+              });
+              break;
+            case 'change_status':
+              // Status might be strict enum in TS but mostly string in API
+              await updateItemMutation.mutateAsync({
+                itemId: id,
+                data: { status: operation.data?.status } as any
+              });
+              break;
+            case 'update_price':
+              await updateItemMutation.mutateAsync({
+                itemId: id,
+                data: {
+                  ...(operation.data?.price !== undefined && operation.data?.price !== null ? { price: operation.data.price } : {}),
+                  ...(operation.data?.kdv !== undefined ? { kdv: operation.data.kdv, vatRate: operation.data.kdv } : {})
+                } as unknown as InventoryItemSchema
+              });
+              break;
+            case 'update_supplier':
+              await updateItemMutation.mutateAsync({
+                itemId: id,
+                data: { supplier: operation.data?.supplier } as unknown as InventoryItemSchema
+              });
+              break;
+            case 'change_brand':
+              await updateItemMutation.mutateAsync({
+                itemId: id,
+                data: { brand: operation.data?.brand } as unknown as InventoryItemSchema
+              });
+              break;
+            case 'add_features':
+              {
+                const newFeatures = operation.data?.features || [];
+                const merged = Array.from(new Set([...(it.features || []), ...newFeatures]));
+                await updateItemMutation.mutateAsync({
+                  itemId: id,
+                  data: { features: merged } as unknown as InventoryItemSchema
+                });
+              }
+              break;
+            default:
+              console.warn('Unsupported bulk operation:', operation.type);
+          }
+        } catch (err: any) {
+          const status = err?.response?.status;
+          const data = err?.response?.data;
+          const message = err?.message || String(err);
+          const failureData = { ...(data || {}), operation: operation.type, payload: operation.data };
+          failures.push({ id: it.id, message, status, data: failureData });
+        }
+      }
+
+      if (failures.length > 0) {
+        console.error('Some bulk operations failed:', failures);
+        setFailureDetails(failures);
+        setFailureModalOpen(true);
+      }
+
+      await queryClient.invalidateQueries({ queryKey: getInventoryGetInventoryItemsQueryKey() });
+      setSelectedIds([]);
+      setIsBulkModalOpen(false);
+    } catch (err: any) {
+      console.error('Bulk operation failed:', err);
+      const message = err?.message || String(err);
+      setFailureDetails([{ id: 'bulk', message, data: err?.response?.data }]);
+      setFailureModalOpen(true);
+    }
+  };
+
+  // Table columns configuration
   const columns = [
-    // Selection column
     {
       key: '__select__',
       title: (
@@ -209,7 +364,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
           }}
         />
       ),
-      render: (value: any, record: InventoryItem) => (
+      render: (value: any, record: FrontendInventoryItem) => (
         <Checkbox
           checked={selectedIds.includes(record.id)}
           onChange={() => {
@@ -226,7 +381,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       key: 'name',
       title: 'Ürün Adı',
       sortable: true,
-      render: (value: string, record: InventoryItem) => (
+      render: (value: string, record: FrontendInventoryItem) => (
         <div className="flex flex-col">
           <Link
             to="/inventory/$id"
@@ -244,14 +399,14 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       title: 'Kategori',
       sortable: true,
       render: (value: string) => (
-        <Badge variant="secondary">{value}</Badge>
+        <Badge variant="secondary">{CATEGORY_LABELS[value] || value}</Badge>
       )
     },
     {
       key: 'availableInventory',
       title: 'Stok',
       sortable: true,
-      render: (value: number, record: InventoryItem) => (
+      render: (value: number, record: FrontendInventoryItem) => (
         <div className="flex items-center space-x-2">
           <span className={`font-medium ${value <= record.reorderLevel ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>
             {value}
@@ -295,7 +450,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       key: 'status',
       title: 'Durum',
       render: (value: string) => (
-        <Badge 
+        <Badge
           variant={value === 'available' ? 'success' : value === 'low_stock' ? 'warning' : 'danger'}
         >
           {value === 'available' ? 'Mevcut' : value === 'low_stock' ? 'Düşük Stok' : 'Tükendi'}
@@ -304,13 +459,12 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     }
   ];
 
-  // Table actions
   const actions = [
     {
       key: 'edit',
       label: 'Düzenle',
       icon: <Edit className="w-4 h-4" />,
-      onClick: (record: InventoryItem) => {
+      onClick: (record: FrontendInventoryItem) => {
         onItemEdit?.(record);
       }
     },
@@ -319,152 +473,26 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       label: 'Sil',
       icon: <Trash2 className="w-4 h-4" />,
       variant: 'danger' as const,
-      onClick: (record: InventoryItem) => {
+      onClick: async (record: FrontendInventoryItem) => {
         if (window.confirm(`${record.name} ürününü silmek istediğinizden emin misiniz?`)) {
-          onItemDelete?.(record);
+          if (onItemDelete) {
+            onItemDelete(record);
+          } else {
+            // Default delete behavior/fallback
+            try {
+              await deleteItemMutation.mutateAsync({ itemId: record.id });
+              await queryClient.invalidateQueries({ queryKey: getInventoryGetInventoryItemsQueryKey() });
+            } catch (e) {
+              console.error("Delete failed", e);
+              alert("Silme başarısız");
+            }
+          }
         }
       }
     }
   ];
 
-  // Bulk actions
-  const exportSelected = () => {
-    if (selectedIds.length === 0) return;
-    const selectedItems = items.filter(i => selectedIds.includes(i.id));
-
-    const headers = [
-      'ID', 'Ürün Adı', 'Marka', 'Model', 'Kategori', 'Stok', 
-      'Fiyat', 'Barkod', 'Tedarikçi'
-    ];
-
-    const csvContent = [
-      headers.join(','),
-      ...selectedItems.map((item: any) => [
-        item.id,
-        `"${item.name || ''}"`,
-        `"${item.brand || ''}"`,
-        `"${item.model || ''}"`,
-        `"${item.category || ''}"`,
-        item.availableInventory || 0,
-        item.price || 0,
-        `"${item.barcode || ''}"`,
-        `"${item.supplier || ''}"`
-      ].join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `inventory_selected_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const deleteSelected = async () => {
-    if (selectedIds.length === 0) return;
-    if (!window.confirm(`${selectedIds.length} ürünü silmek istediğinizden emin misiniz?`)) return;
-
-    try {
-      setLoading(true);
-      await Promise.all(selectedIds.map(id => apiClient.delete(`/api/inventory/${id}`)));
-      setSelectedIds([]);
-      await loadItems();
-    } catch (err) {
-      console.error('Bulk delete failed:', err);
-      alert('Toplu silme başarısız oldu');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleBulkOperation = async (operation: BulkOperation) => {
-    try {
-      setLoading(true);
-
-      const selectedItems = items.filter(i => selectedIds.includes(i.id));
-
-      // Perform API-backed bulk operation for each selected item
-      const failures: Array<{ id: string; message: string; status?: number; data?: any }> = [];
-
-      // Run requests sequentially to avoid overwhelming the backend and get clearer error context
-      for (const it of selectedItems) {
-        try {
-          const id = it.id;
-          switch (operation.type) {
-            case 'delete':
-              await apiClient.delete(`/api/inventory/${id}`);
-              break;
-            case 'update_stock':
-              // Backend inventory API expects availableInventory to be set via PUT /api/inventory/:id
-              await apiClient.put(`/api/inventory/${id}`, {
-                availableInventory: operation.data?.stock ?? 0
-              });
-              break;
-            case 'change_category':
-              await apiClient.put(`/api/inventory/${id}`, { category: operation.data?.category });
-              break;
-            case 'change_status':
-              await apiClient.put(`/api/inventory/${id}`, { status: operation.data?.status });
-              break;
-            case 'update_price':
-              await apiClient.put(`/api/inventory/${id}`, {
-                ...(operation.data?.price !== undefined && operation.data?.price !== null ? { price: operation.data.price } : {}),
-                ...(operation.data?.kdv !== undefined ? { kdv: operation.data.kdv, vatRate: operation.data.kdv } : {})
-              });
-              break;
-            case 'update_supplier':
-              await apiClient.put(`/api/inventory/${id}`, { supplier: operation.data?.supplier });
-              break;
-            case 'change_brand':
-              await apiClient.put(`/api/inventory/${id}`, { brand: operation.data?.brand });
-              break;
-            case 'add_features':
-              {
-                const newFeatures = operation.data?.features || [];
-                const merged = Array.from(new Set([...(it.features || []), ...newFeatures]));
-                await apiClient.put(`/api/inventory/${id}`, { features: merged });
-              }
-              break;
-            // export handled client-side; not part of BulkOperation payload
-            default:
-              console.warn('Unsupported bulk operation:', operation.type);
-          }
-        } catch (err: any) {
-          const status = err?.response?.status;
-          const data = err?.response?.data;
-          const message = err?.message || String(err);
-          // Attach operation context to the failure data to aid debugging
-          const failureData = { ...(data || {}), operation: operation.type, payload: operation.data };
-          failures.push({ id: it.id, message, status, data: failureData });
-        }
-      }
-
-
-      if (failures.length > 0) {
-        console.error('Some bulk operations failed:', failures);
-        setFailureDetails(failures);
-        setFailureModalOpen(true);
-      }
-
-      // Reload items from API to reflect persisted changes
-      await loadItems();
-
-      // finalize
-      setSelectedIds([]);
-      setIsBulkModalOpen(false);
-    } catch (err: any) {
-      console.error('Bulk operation failed:', err);
-      // Surface the error in the failure modal instead of native alert
-      const message = err?.message || String(err);
-      setFailureDetails([{ id: 'bulk', message, data: err?.response?.data }]);
-      setFailureModalOpen(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className={`flex items-center justify-center p-8 ${className}`}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -473,7 +501,8 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     );
   }
 
-  if (error) {
+  if (fetchError) {
+    const errorMsg = (fetchError as AxiosError<any>)?.response?.data?.message || fetchError.message || 'Bir hata oluştu';
     return (
       <div className={`bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 ${className}`}>
         <div className="flex">
@@ -484,7 +513,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
           </div>
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800 dark:text-red-300">Envanter yüklenirken hata</h3>
-            <div className="mt-2 text-sm text-red-700 dark:text-red-400">{error}</div>
+            <div className="mt-2 text-sm text-red-700 dark:text-red-400">{errorMsg}</div>
           </div>
         </div>
       </div>
@@ -519,7 +548,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         columns={columns as any}
         data={items}
         actions={actions}
-        loading={loading}
+        loading={isLoading || deleteItemMutation.isPending || updateItemMutation.isPending}
         pagination={{
           current: currentPage,
           pageSize: pageSize,
@@ -538,7 +567,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         onClose={() => setIsBulkModalOpen(false)}
         selectedItems={selectedIds}
         onBulkOperation={handleBulkOperation}
-        isLoading={loading}
+        isLoading={deleteItemMutation.isPending || updateItemMutation.isPending}
       />
       <WarningModal
         isOpen={failureModalOpen}

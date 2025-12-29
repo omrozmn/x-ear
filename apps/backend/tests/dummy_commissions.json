@@ -1,0 +1,24 @@
+# Dummy data for commission ledger edge-cases
+[
+  {
+    "affiliate_id": 1,
+    "tenant_id": 101,
+    "event": "signup",
+    "amount": 100.0,
+    "status": "pending"
+  },
+  {
+    "affiliate_id": 2,
+    "tenant_id": 102,
+    "event": "payment",
+    "amount": 200.0,
+    "status": "paid"
+  },
+  {
+    "affiliate_id": 1,
+    "tenant_id": 101,
+    "event": "refund",
+    "amount": -100.0,
+    "status": "cancelled"
+  }
+]

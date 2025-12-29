@@ -2275,7 +2275,7 @@ const sgkProcessOcr = <TData = AxiosResponse<void>>(
   }
 
 /**
- * Returns CORS headers so the static Swagger UI served from a different origin (e.g. localhost:8080)
+ * Returns CORS headers so the static Swagger UI served from a different origin (e.g. localhost:5003)
 can fetch the YAML without browser CORS errors.
  * @summary Serve the canonical OpenAPI contract for frontend/back-end sync and respond to CORS preflight.
  */

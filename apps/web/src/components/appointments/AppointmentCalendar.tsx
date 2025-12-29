@@ -48,7 +48,8 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const handleAppointmentClick = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
     setQuickAppointmentData(null);
-    setModalMode('view');
+    // Open the modal directly in edit mode so form fields are prefilled
+    setModalMode('edit');
     setShowModal(true);
     onAppointmentClick?.(appointment);
 

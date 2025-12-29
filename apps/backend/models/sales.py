@@ -73,6 +73,9 @@ class DeviceAssignment(BaseModel):
     # Primary key with auto-generated default
     id = db.Column(db.String(50), primary_key=True, default=lambda: gen_id("assign"))
     
+    # User-facing ID (e.g., ATM-123456)
+    assignment_uid = db.Column(db.String(20), unique=True, nullable=True)
+    
     # Foreign keys
     patient_id = db.Column(db.String(50), db.ForeignKey('patients.id'), nullable=False)
     device_id = db.Column(db.String(50), nullable=True)  # Can be inventory_id or actual device_id
@@ -101,7 +104,16 @@ class DeviceAssignment(BaseModel):
     net_payable = db.Column(sa.Numeric(12, 2))
     payment_method = db.Column(db.String(20))
     
+    # Delivery and loaner tracking
+    delivery_status = db.Column(db.String(20), default='pending')  # pending, delivered
+    is_loaner = db.Column(db.Boolean, default=False)  # Is this assignment using a loaner device
+    loaner_inventory_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=True)  # Loaner device from inventory
+    loaner_serial_number = db.Column(db.String(100))  # Serial number of loaner device
+    loaner_brand = db.Column(db.String(100))  # Brand of loaner device
+    loaner_model = db.Column(db.String(100))  # Model of loaner device
+    
     # Additional info
+    report_status = db.Column(db.String(50))  # raporlu, raporsuz, bekleniyor
     notes = db.Column(db.Text)
 
     # Relationships
@@ -130,7 +142,14 @@ class DeviceAssignment(BaseModel):
             'notes': self.notes,
             'serialNumber': self.serial_number,
             'serialNumberLeft': self.serial_number_left,
-            'serialNumberRight': self.serial_number_right
+            'serialNumberRight': self.serial_number_right,
+            'deliveryStatus': self.delivery_status,
+            'isLoaner': self.is_loaner,
+            'loanerInventoryId': self.loaner_inventory_id,
+            'loanerSerialNumber': self.loaner_serial_number,
+            'loanerBrand': self.loaner_brand,
+            'loanerModel': self.loaner_model,
+            'reportStatus': self.report_status
         }
         assignment_dict.update(base_dict)
         return assignment_dict

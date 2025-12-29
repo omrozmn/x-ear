@@ -1,0 +1,18 @@
+# Dummy data for affiliate and commission tests
+[
+  {
+    "email": "affiliate1@example.com",
+    "password": "testpass1",
+    "iban": "TR330006100519786457841326"
+  },
+  {
+    "email": "affiliate2@example.com",
+    "password": "testpass2",
+    "iban": "DE89370400440532013000"
+  },
+  {
+    "email": "fraud@example.com",
+    "password": "fraudpass",
+    "iban": "GB82WEST12345698765432"
+  }
+]

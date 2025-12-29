@@ -28,6 +28,11 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   const [currentMode, setCurrentMode] = useState(mode);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  // Keep internal currentMode in sync when parent changes the `mode` prop
+  React.useEffect(() => {
+    setCurrentMode(mode);
+  }, [mode]);
+
   if (!isOpen) return null;
 
   const getStatusColor = (status: AppointmentStatus): string => {

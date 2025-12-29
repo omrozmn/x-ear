@@ -37,7 +37,7 @@ class AppointmentService {
     try {
       // Use the generated API client
       const { appointmentsApi } = await import('../api/appointments');
-      const items = await appointmentsApi.getAppointments({ limit: '1000' } as any);
+      const items = await appointmentsApi.getAppointments({ per_page: 1000 } as any);
 
       if (!Array.isArray(items) || items.length === 0) return;
 

@@ -82,7 +82,7 @@ def init_permission_middleware(app):
         
         # ADMIN BYPASS: tenant_admin ve admin rolleri tüm izinlere sahip
         # Bu roller tam yetkili yönetici rolleridir
-        ADMIN_ROLES = {'tenant_admin', 'admin'}
+        ADMIN_ROLES = {'tenant_admin', 'admin', 'super_admin'}
         
         # Admin Panel Endpoint'leri için özel kontrol
         if request.path.startswith('/api/admin/') and not request.path.startswith('/api/admin/debug/'):

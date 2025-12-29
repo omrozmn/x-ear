@@ -46,6 +46,9 @@ class Tenant(db.Model):
     max_users = Column(db.Integer, default=5)
     current_users = Column(db.Integer, default=0)
     
+    max_branches = Column(db.Integer, default=1)
+    current_branches = Column(db.Integer, default=0)
+    
     # Additional information
     company_info = Column(JSON, nullable=True)
     settings = Column(JSON, nullable=True)

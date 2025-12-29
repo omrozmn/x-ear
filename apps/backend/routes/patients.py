@@ -393,7 +393,8 @@ def list_patients():
                     Patient.first_name.ilike(search_term),
                     Patient.last_name.ilike(search_term),
                     Patient.phone.ilike(search_term),
-                    Patient.email.ilike(search_term)
+                    Patient.email.ilike(search_term),
+                    Patient.id.ilike(search_term)
                 )
             )
         
@@ -747,7 +748,22 @@ def update_patient(patient_id):
         
         db.session.commit()
         from app import log_activity
-        log_activity('system', 'update', 'patient', patient.id, {'changes': data}, request)
+        
+        # detailed change message
+        changes_list = []
+        for k, v in data.items():
+             # skip complex objects or long fields
+             if k in ('photo', 'documents', 'notes'): continue
+             changes_list.append(f"{k}: {v}")
+        
+        change_msg = ", ".join(changes_list)
+        if len(change_msg) > 100: change_msg = change_msg[:97] + "..."
+        
+        log_activity('system', 'update', 'patient', patient.id, 
+                    {'changes': data}, 
+                    request,
+                    message=f"Hasta güncellendi: {change_msg}")
+        
         return jsonify({'success': True, 'data': patient.to_dict()}), 200
     except Exception as e:
         db.session.rollback()
@@ -881,9 +897,10 @@ def get_patient_devices(patient_id):
             if assignment.inventory_id:
                 inventory_item = db.session.get(Inventory, assignment.inventory_id)
             
+            # Start with the model's to_dict output which contains most fields
             device_dict = assignment.to_dict()
             
-            # Add inventory details
+            # Enhance with inventory details if linked
             if inventory_item:
                 device_dict['brand'] = inventory_item.brand
                 device_dict['model'] = inventory_item.model
@@ -891,35 +908,41 @@ def get_patient_devices(patient_id):
                 device_dict['category'] = inventory_item.category
                 device_dict['barcode'] = inventory_item.barcode
             else:
-                device_dict['deviceName'] = f"Device {assignment.device_id}"
+                # Fallback if no inventory link (e.g., manual entry)
+                device_dict['deviceName'] = f"{assignment.loaner_brand or 'Unknown'} {assignment.loaner_model or 'Device'}" if assignment.is_loaner else f"Device {assignment.device_id or ''}"
             
-            # Map fields for frontend compatibility
+            # Explicitly ensure frontend-required fields are present
+            # Note: assignment.to_dict() already includes keys like 'deliveryStatus', 'isLoaner'
+            # but we allow overrides here if logic differs.
+            
             device_dict['earSide'] = assignment.ear
-            device_dict['assignedDate'] = assignment.created_at.isoformat() if assignment.created_at else None
-            device_dict['status'] = 'assigned'  # Default status
-            # Provide SGK and patient payment fields for frontend cards/tables
-            try:
-                device_dict['sgkReduction'] = float(assignment.sgk_support) if getattr(assignment, 'sgk_support', None) is not None else None
-            except Exception:
-                device_dict['sgkReduction'] = None
+            device_dict['status'] = 'assigned' # Base status
+            
+            # Map delivery status explicitly if not in to_dict (safety net)
+            if 'deliveryStatus' not in device_dict:
+                 device_dict['deliveryStatus'] = getattr(assignment, 'delivery_status', 'pending')
 
+            # Ensure loaner fields are present
+            if 'isLoaner' not in device_dict:
+                device_dict['isLoaner'] = getattr(assignment, 'is_loaner', False)
+            if 'loanerInventoryId' not in device_dict:
+                device_dict['loanerInventoryId'] = getattr(assignment, 'loaner_inventory_id', None)
+            
+            # Ensure Sale ID is passed
+            device_dict['saleId'] = assignment.sale_id
+
+            # assignedDate
+            device_dict['assignedDate'] = assignment.created_at.isoformat() if assignment.created_at else None
+
+            # Pricing fields - Ensure they are float for JSON serialization
             try:
-                # net_payable is used for patient responsibility in other places
-                if hasattr(assignment, 'net_payable') and assignment.net_payable is not None:
-                    device_dict['patientPayment'] = float(assignment.net_payable)
-                elif getattr(assignment, 'sale_price', None) is not None:
-                    device_dict['patientPayment'] = float(assignment.sale_price)
-                else:
-                    device_dict['patientPayment'] = None
-            except Exception:
-                device_dict['patientPayment'] = None
-            
-            # Serial numbers are already in device_dict from to_dict()
-            # No need to override - to_dict() already includes:
-            # - serialNumber
-            # - serialNumberLeft
-            # - serialNumberRight
-            
+                device_dict['sgkReduction'] = float(assignment.sgk_support) if getattr(assignment, 'sgk_support', None) is not None else 0.0
+                device_dict['patientPayment'] = float(assignment.net_payable) if getattr(assignment, 'net_payable', None) is not None else 0.0
+                device_dict['salePrice'] = float(assignment.sale_price) if getattr(assignment, 'sale_price', None) is not None else 0.0
+                device_dict['listPrice'] = float(assignment.list_price) if getattr(assignment, 'list_price', None) is not None else 0.0
+            except (ValueError, TypeError):
+                logger.warning(f"Error converting prices for assignment {assignment.id}")
+
             devices_data.append(device_dict)
         
         return jsonify({

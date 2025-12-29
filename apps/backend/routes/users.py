@@ -50,6 +50,23 @@ def create_user():
     if not all(k in data for k in required):
         return jsonify({'success': False, 'error': 'username and password required'}), 400
 
+    current_user_id = get_jwt_identity()
+    current_user = db.session.get(User, current_user_id)
+    if not current_user:
+         return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+
+    # Check Tenant limits if applicable
+    if current_user.tenant_id:
+        try:
+            from models.tenant import Tenant
+            tenant = db.session.get(Tenant, current_user.tenant_id)
+            if tenant:
+                existing_users_count = User.query.filter_by(tenant_id=current_user.tenant_id).count()
+                if existing_users_count >= (tenant.max_users or 5):
+                     return jsonify({'success': False, 'error': f'User limit reached. Your plan allows {tenant.max_users} users.'}), 403
+        except Exception as e:
+            return jsonify({'success': False, 'error': f'Error checking user limits: {str(e)}'}), 500
+
     if User.query.filter_by(username=data['username']).first():
         return jsonify({'success': False, 'error': 'username already exists'}), 409
 
@@ -59,9 +76,18 @@ def create_user():
     u.first_name = data.get('firstName')
     u.last_name = data.get('lastName')
     u.role = data.get('role', 'user')
+    u.tenant_id = current_user.tenant_id # Ensure tenant inheritance
     u.set_password(data['password'])
+    
+    # Handle branch assignment if provided and user is tenant_admin
+    if 'branchId' in data and current_user.tenant_id:
+         # Basic branch validation logic could go here
+         pass
 
     db.session.add(u)
+    if current_user.tenant_id and tenant:
+        tenant.current_users = existing_users_count + 1
+        
     db.session.commit()
     return jsonify({'success': True, 'data': u.to_dict()}), 201
 

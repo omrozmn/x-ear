@@ -29,6 +29,7 @@ from models.inventory import Inventory, UNIT_TYPES
 from models.brand import Brand
 from models.category import Category
 from models.stock_movement import StockMovement
+from models.sales import DeviceAssignment
 from uuid import uuid4
 from services.stock_service import create_stock_movement
 
@@ -783,6 +784,7 @@ def create_brand():
         }), 500
 
 
+
 @inventory_bp.route('/<item_id>', methods=['GET'])
 @jwt_required()
 def get_inventory_item(item_id):
@@ -1302,56 +1304,179 @@ def assign_to_patient(item_id):
         serial_number = data.get('serialNumber')
         quantity = data.get('quantity', 1)
         
+        logger.info(f"🔍 Inventory assign - raw data keys: {list(data.keys())}")
+        logger.info(f"🔍 Inventory assign - patientId={patient_id}, basePrice={data.get('basePrice')}, sgkScheme={data.get('sgkScheme')}")
+        
         if not patient_id:
             return jsonify({
                 'success': False,
                 'error': 'Patient ID is required'
             }), 400
         
-        # If serial number provided, remove it from available serials
-        if serial_number:
-            if not item.remove_serial_number(serial_number):
-                return jsonify({
-                    'success': False,
-                    'error': 'Serial number not found in inventory'
-                }), 400
-            
-            create_stock_movement(
-                inventory_id=item.id,
-                movement_type="sale", # Manual assignment
-                quantity=-1,
-                tenant_id=item.tenant_id,
-                serial_number=serial_number,
-                transaction_id=f"manual-assign-{int(now_utc().timestamp())}",
-                created_by=user.id,
-                session=db.session
-            )
-        else:
-            # Otherwise, just decrease inventory count
-            if not item.update_inventory(-quantity):
-                return jsonify({
-                    'success': False,
-                    'error': 'Insufficient inventory'
-                }), 400
-            
-            create_stock_movement(
-                inventory_id=item.id,
-                movement_type="sale",
-                quantity=-quantity,
-                tenant_id=item.tenant_id,
-                serial_number=None,
-                transaction_id=f"manual-assign-{int(now_utc().timestamp())}",
-                created_by=user.id,
-                session=db.session
-            )
+        warnings = []
         
+        # Extract delivery status from request (default: pending)
+        delivery_status = data.get('deliveryStatus') or data.get('delivery_status', 'pending')
+        
+        # Only decrease stock if delivery_status is 'delivered'
+        # This allows assignment without stock decrease; stock is decreased when device is actually delivered
+        if delivery_status == 'delivered':
+            # If serial number provided, remove it from available serials
+            if serial_number:
+                if not item.remove_serial_number(serial_number):
+                    return jsonify({
+                        'success': False,
+                        'error': 'Serial number not found in inventory'
+                    }), 400
+                
+                create_stock_movement(
+                    inventory_id=item.id,
+                    movement_type="delivery",
+                    quantity=-1,
+                    tenant_id=item.tenant_id,
+                    serial_number=serial_number,
+                    transaction_id=f"delivery-{int(now_utc().timestamp())}",
+                    created_by=user.id,
+                    session=db.session
+                )
+            else:
+                # Otherwise, just decrease inventory count
+                # Strict check
+                if not item.update_inventory(-quantity, allow_negative=False):
+                    return jsonify({'success': False, 'error': f'Stok yetersiz! Mevcut stok: {item.available_inventory}'}), 400
+
+
+                create_stock_movement(
+                    inventory_id=item.id,
+                    movement_type="delivery",
+                    quantity=-quantity,
+                    tenant_id=item.tenant_id,
+                    serial_number=None,
+                    transaction_id=f"delivery-{int(now_utc().timestamp())}",
+                    created_by=user.id,
+                    session=db.session
+                )
+        else:
+            logger.info(f"📦 Device assigned but not delivered yet - stock NOT decreased")
+        
+        # Create DeviceAssignment record
+        # Extract additional fields likely sent by frontend or default
+        reason = data.get('reason', 'Sale')
+        ear = data.get('ear') # Optional
+        
+        # Extract pricing fields (support both camelCase and snake_case)
+        base_price = data.get('basePrice') or data.get('base_price') or item.price
+        sgk_scheme = data.get('sgkScheme') or data.get('sgk_scheme')
+        discount_type = data.get('discountType') or data.get('discount_type')
+        discount_value = data.get('discountValue') or data.get('discount_value')
+        payment_method = data.get('paymentMethod') or data.get('payment_method', 'cash')
+        down_payment = data.get('downPayment') or data.get('down_payment', 0)
+        
+        # Convert to proper types
+        # Convert to proper types with validation
+        try:
+            base_price = float(base_price) if base_price else float(item.price)
+        except (ValueError, TypeError):
+            base_price = float(item.price)
+            
+        try:
+            # Handle discount value which might be a string with currency symbol or comma
+            if discount_value:
+                if isinstance(discount_value, str):
+                    clean_val = discount_value.replace('TL', '').replace('₺', '').replace('.', '').replace(',', '.').strip()
+                    discount_value = float(clean_val)
+                else:
+                    discount_value = float(discount_value)
+            else:
+                discount_value = None
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Invalid discount value format: {discount_value}, error: {e}")
+            return jsonify({'success': False, 'error': f"Geçersiz indirim tutarı formatı: {discount_value}"}), 400
+            
+        try:
+            down_payment = float(down_payment) if down_payment else 0
+        except (ValueError, TypeError):
+            down_payment = 0
+        
+        logger.info(f"💰 Inventory assign pricing: base={base_price}, sgk={sgk_scheme}, discount_type={discount_type}, discount_val={discount_value}")
+        
+        # Create sale record if reason is Sale
+        sale_id = None
+        if reason == 'Sale':
+            from models.sales import Sale
+            
+            # Calculate pricing similar to sales.py logic
+            # We'll create a minimal sale record here
+            sale = Sale(
+                tenant_id=item.tenant_id,
+                branch_id=item.branch_id,
+                patient_id=patient_id,
+                product_id=item.id,
+                sale_date=now_utc(),
+                list_price_total=base_price,
+                total_amount=base_price,
+                discount_amount=0,
+                final_amount=base_price,
+                paid_amount=down_payment,
+                payment_method=payment_method,
+                status='pending',
+                notes=f"Device assignment from inventory: {item.brand} {item.model}"
+            )
+            
+            # Use provided sale price if available
+            sale_price_val = data.get('salePrice') or data.get('sale_price')
+            if sale_price_val:
+                try:
+                    sp_float = float(sale_price_val)
+                    sale.total_amount = sp_float # For simple assignment, assuming this is invalid total
+                    sale.final_amount = sp_float
+                except (ValueError, TypeError):
+                    pass
+            
+            db.session.add(sale)
+            db.session.flush()
+            sale_id = sale.id
+            logger.info(f"✅ Created sale record: {sale_id}, paid_amount={down_payment}")
+        
+        assignment = DeviceAssignment(
+            patient_id=patient_id,
+            inventory_id=item.id,
+            sale_id=sale_id,
+            tenant_id=item.tenant_id,
+            branch_id=item.branch_id,
+            reason=reason,
+            ear=ear,
+            from_inventory=True,
+            serial_number=serial_number,
+            list_price=base_price,
+            sale_price=base_price,
+            sgk_scheme=sgk_scheme,
+            discount_type=discount_type,
+            discount_value=discount_value,
+            payment_method=payment_method,
+            delivery_status=delivery_status  # Add delivery status
+        )
+        
+        if data.get('isLoaner') or data.get('is_loaner'):
+            assignment.is_loaner = True
+            assignment.loaner_inventory_id = item.id
+            assignment.loaner_serial_number = serial_number
+            assignment.loaner_brand = item.brand
+            assignment.loaner_model = item.model
+            
+        db.session.add(assignment)
+        logger.info(f"✅ Created assignment: sgk_scheme={assignment.sgk_scheme}, discount_type={assignment.discount_type}")
+
         item.updated_at = now_utc()
         db.session.commit()
         
         return jsonify({
             'success': True,
             'data': item.to_dict(),
-            'message': 'Item assigned to patient successfully'
+            'assignment': assignment.to_dict(),
+            'sale_id': sale_id,
+            'message': 'Item assigned to patient successfully',
+            'warnings': warnings
         }), 200
         
     except Exception as e:

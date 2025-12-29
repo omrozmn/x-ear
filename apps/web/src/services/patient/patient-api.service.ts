@@ -216,7 +216,7 @@ export class PatientApiService {
         phone: patientData.phone || '',
         email: patientData.email,
         birth_date: (patientData as any).birthDate || patientData.birth_date,
-        tc_number: (patientData as any).tcNumber || patientData.tc_number
+        tc_number: (patientData as any).tcNumber
       };
       const response = await patientsCreatePatient(body);
       const payload = response as unknown as { data?: { patient?: OrvalPatient } };
@@ -248,9 +248,9 @@ export class PatientApiService {
         phone: updates.phone,
         email: updates.email,
         birth_date: (updates as any).birthDate || updates.birth_date,
-        tc_number: (updates as any).tcNumber || updates.tc_number
+        tc_number: (updates as any).tcNumber
       };
-      const response = await patientsUpdatePatient(id, body);
+      const response = await patientsUpdatePatient(id, body as any);
       const payload = response as unknown as { data?: { patient?: OrvalPatient } };
       const updatedPatient = payload?.data?.patient;
       if (updatedPatient) {

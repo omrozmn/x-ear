@@ -53,9 +53,11 @@ from utils.authorization import permission_required
 app = Flask(__name__)
 
 # Enable CORS for all routes with credentials support
-CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], "allow_headers": ["Content-Type", "Authorization", "Idempotency-Key"]}})
+# CORS configuration moved to after environment variable loading
+
 
 # Configure logging early so validation and startup messages are visible
+# Force reload trigger
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -141,14 +143,27 @@ cors_origins = os.getenv('CORS_ORIGINS', '')
 if cors_origins:
     origins = [o.strip() for o in cors_origins.split(',') if o.strip()]
 else:
-    origins = ['*']
+    # Explicitly list development endpoints to support credentials
+    origins = [
+        'http://localhost:8080',
+        'http://localhost:8081',
+        'http://localhost:5173',
+        'http://127.0.0.1:8080',
+        'http://127.0.0.1:8081',
+        'http://127.0.0.1:5173'
+    ]
 # Allow CORS for all routes in development so the frontend (on another origin)
 # can fetch health/openapi and other non-/api endpoints during local testing.
 # The allowed origins are configured via the CORS_ORIGINS environment variable
 # and default to '*' for convenient local development.
-CORS(app, resources={r"/*": {"origins": origins, "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]}})
+CORS(app, resources={r"/*": {
+    "origins": origins,
+    "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    "allow_headers": ["Content-Type", "Authorization", "Idempotency-Key", "X-Request-Id", "x-request-id", "sentry-trace", "baggage"]
+}})
 # Ensure CORS exposes common headers and handles preflight headers predictably
-app.config['CORS_HEADERS'] = 'Content-Type,Authorization'
+# CRITICAL: This must match the allow_headers in CORS() above
+app.config['CORS_HEADERS'] = 'Content-Type,Authorization,Idempotency-Key,X-Request-Id,x-request-id,sentry-trace,baggage'
 app.config['CORS_SUPPORTS_CREDENTIALS'] = True
 
 # Initialize DB and extensions
@@ -175,7 +190,7 @@ def _sanitize_for_json(obj):
     except Exception:
         return None
 
-def log_activity(user_id, action, entity_type, entity_id=None, details=None, request=None, tenant_id=None):
+def log_activity(user_id, action, entity_type, entity_id=None, details=None, request=None, tenant_id=None, message=None):
     """Log user activity for audit purposes"""
     try:
         # Use a UUID and microsecond timestamp to ensure unique IDs even under
@@ -189,6 +204,7 @@ def log_activity(user_id, action, entity_type, entity_id=None, details=None, req
             entity_type=entity_type,
             entity_id=entity_id,
             details=json.dumps(_sanitize_for_json(details)) if details else None,
+            message=message,
             ip_address=request.remote_addr if request else None,
             user_agent=request.headers.get('User-Agent') if request else None
         )
@@ -909,7 +925,7 @@ def serve_openapi_yaml():
             acao = origins
         resp.headers['Access-Control-Allow-Origin'] = acao
         resp.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-        resp.headers['Access-Control-Allow-Headers'] = 'Authorization,Content-Type'
+        resp.headers['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,X-Request-Id,x-request-id'
         resp.headers['Access-Control-Max-Age'] = '3600'
         return resp
 
@@ -935,7 +951,7 @@ def serve_openapi_yaml():
             acao = origins
         resp.headers['Access-Control-Allow-Origin'] = acao
         resp.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-        resp.headers['Access-Control-Allow-Headers'] = 'Authorization,Content-Type'
+        resp.headers['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,X-Request-Id,x-request-id'
         resp.headers['Vary'] = 'Origin'
         return resp
     except Exception as e:
@@ -995,37 +1011,15 @@ def _handle_options_preflight():
             acao = origins or '*'
         resp.headers['Access-Control-Allow-Origin'] = acao
         resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-        resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, X-User-ID'
+        resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, X-User-ID, Idempotency-Key, X-Request-Id, x-request-id, sentry-trace, baggage'
         resp.headers['Access-Control-Max-Age'] = '3600'
         # When allowing credentials, reflect origin and include header
         if app.config.get('CORS_SUPPORTS_CREDENTIALS') and origin and acao != '*':
             resp.headers['Access-Control-Allow-Credentials'] = 'true'
         return resp
 
-@app.after_request
-def _ensure_cors_headers(response):
-    """Ensure CORS headers are present on all responses and allow common request headers used by the frontend.
-    Use the incoming Origin header when present to allow credentialed requests while avoiding wildcard mismatch.
-    """
-    try:
-        origin = request.headers.get('Origin')
-        if origin:
-            response.headers['Access-Control-Allow-Origin'] = origin
-        else:
-            response.headers['Access-Control-Allow-Origin'] = '*'
-
-        # Allow the common headers the frontend may send (Content-Type plus auth and small custom headers)
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, X-User-ID, Idempotency-Key'
-        # Allow the browser to cache preflight for a short period
-        response.headers['Access-Control-Max-Age'] = '3600'
-
-        # If credentials are supported by the Flask-CORS config and the origin is explicit, expose credentials
-        if app.config.get('CORS_SUPPORTS_CREDENTIALS') and origin:
-            response.headers['Access-Control-Allow-Credentials'] = 'true'
-    except Exception as e:
-        logger.debug('Failed to add CORS headers to response: %s', e)
-    return response
+# CORS headers are handled by Flask-CORS configuration above.
+# Manual @app.after_request CORS handler removed to prevent conflicts.
 
 # Ensure database tables exist in development or when explicitly requested
 if os.getenv('FORCE_CREATE_TABLES', '0') == '1' or os.getenv('FLASK_ENV', 'production') != 'production':
@@ -1064,12 +1058,7 @@ except Exception as e:
     if FLASK_ENV == 'production':
         raise RuntimeError(f'Permission middleware initialization failed: {e}')
 
-if __name__ == '__main__':
-    # When running app.py directly, default to port 5003 for local development
-    run_port = int(os.getenv('FLASK_RUN_PORT', '5003'))
-    run_host = os.getenv('FLASK_RUN_HOST', '0.0.0.0')
-    logger.info(f"Starting Flask development server on {run_host}:{run_port}")
-    app.run(host=run_host, port=run_port, debug=app.config.get('DEBUG', False))
+
 
 @app.route('/api/admin/features', methods=['GET'])
 @jwt_required()
@@ -1150,3 +1139,10 @@ def admin_patch_features():
         db.session.rollback()
         logger.exception('Failed to patch features: %s', e)
         return jsonify({'success': False, 'error': str(e)}), 500
+
+if __name__ == '__main__':
+    # When running app.py directly, default to port 5003 for local development
+    run_port = int(os.getenv('FLASK_RUN_PORT', '5003'))
+    run_host = os.getenv('FLASK_RUN_HOST', '0.0.0.0')
+    logger.info(f"Starting Flask development server on {run_host}:{run_port}")
+    app.run(host=run_host, port=run_port, debug=app.config.get('DEBUG', False))

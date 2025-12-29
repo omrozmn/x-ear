@@ -14,6 +14,7 @@ cash_records_bp = Blueprint('cash_records', __name__)
 
 
 @cash_records_bp.route('/cash-records', methods=['GET'])
+@jwt_required()
 def get_cash_records():
     """Return cash register records for cashflow.html consumption.
 
@@ -27,13 +28,20 @@ def get_cash_records():
       - status: filter by payment status (paid/pending/partial)
     """
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user or not user.tenant_id:
+            return jsonify({'success': False, 'error': 'User not found or not associated with a tenant'}), 401
+
         limit = int(request.args.get('limit', '200'))
         status = request.args.get('status')  # optional
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
         search = request.args.get('search')  # optional search term
 
-        query = PaymentRecord.query
+        # Filter by tenant!
+        query = PaymentRecord.query.filter_by(tenant_id=user.tenant_id)
+
         if status:
             query = query.filter(PaymentRecord.status == status)
         if start_date:
@@ -77,22 +85,35 @@ def get_cash_records():
                 return 'teslimat'
             return 'diger'
 
+        # Optimize patient fetching: Get all unique patient IDs involved
+        patient_ids = {r.patient_id for r in rows if r.patient_id}
+        patients_map = {}
+        if patient_ids:
+            # Batch fetch patients
+            patients = Patient.query.filter(Patient.id.in_(patient_ids)).all()
+            patients_map = {p.id: p for p in patients}
+
+        records = []
         records = []
         for r in rows:
-            patient = db.session.get(Patient, r.patient_id) if r.patient_id else None
-            patient_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
+            try:
+                patient = patients_map.get(r.patient_id) if r.patient_id else None
+                patient_name = f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}".strip() if patient else ''
 
-            record = {
-                'id': r.id,
-                'date': (r.payment_date.isoformat() if r.payment_date else datetime.now().isoformat()),
-                'transactionType': 'income' if (r.amount or 0) >= 0 else 'expense',
-                'recordType': derive_record_type(r.notes or ''),
-                'patientId': r.patient_id,
-                'patientName': patient_name,
-                'amount': float(r.amount or 0),
-                'description': r.notes or ''
-            }
-            records.append(record)
+                record = {
+                    'id': r.id,
+                    'date': (r.payment_date.isoformat() if r.payment_date else datetime.now().isoformat()),
+                    'transactionType': 'income' if (r.amount or 0) >= 0 else 'expense',
+                    'recordType': derive_record_type(r.notes or ''),
+                    'patientId': r.patient_id,
+                    'patientName': patient_name,
+                    'amount': float(r.amount or 0),
+                    'description': r.notes or ''
+                }
+                records.append(record)
+            except Exception as inner_e:
+                logger.error(f"Error processing cash record {getattr(r, 'id', 'unknown')}: {inner_e}")
+                continue
 
         # Apply search filter after processing records (for patient names and descriptions)
         if search:
@@ -104,7 +125,7 @@ def get_cash_records():
         return jsonify({'success': True, 'data': records, 'count': len(records)})
 
     except Exception as e:
-        db.session.rollback()
+        logger.error(f"Error fetching cash records: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 

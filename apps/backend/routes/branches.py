@@ -38,6 +38,20 @@ def create_branch():
     if user.role != 'tenant_admin':
         return jsonify({'success': False, 'error': 'Only tenant admins can create branches'}), 403
 
+    # Enforce detailed branch limits
+    try:
+        from models.tenant import Tenant
+        tenant = db.session.get(Tenant, user.tenant_id)
+        if not tenant:
+            return jsonify({'success': False, 'error': 'Tenant not found'}), 404
+            
+        # Count existing branches or use counter
+        existing_branch_count = Branch.query.filter_by(tenant_id=user.tenant_id).count()
+        if existing_branch_count >= (tenant.max_branches or 1):
+             return jsonify({'success': False, 'error': f'Branch limit reached. Your plan allows {tenant.max_branches} branches.'}), 403
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Error checking limits: {str(e)}'}), 500
+
     data = request.get_json()
     if not data or not data.get('name'):
         return jsonify({'success': False, 'error': 'Branch name is required'}), 400
@@ -51,6 +65,8 @@ def create_branch():
     )
 
     db.session.add(branch)
+    # Update current count cache if needed, though count() is reliable
+    tenant.current_branches = existing_branch_count + 1
     db.session.commit()
 
     return jsonify({'success': True, 'data': branch.to_dict()}), 201

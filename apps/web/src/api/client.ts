@@ -4,7 +4,7 @@
 // Re-export Patient from generated schemas for consistency
 export type { Patient } from './generated/schemas';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5003';
 
 export interface LoginCredentials {
   username: string;
@@ -124,21 +124,21 @@ class ApiClient {
 
   // Authentication methods
   async login(credentials: LoginCredentials): Promise<ApiResponse<LoginResponse>> {
-    return this.request<LoginResponse>('/auth/login', {
+    return this.request<LoginResponse>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
   }
 
   async logout(): Promise<ApiResponse<{ success: boolean }>> {
-    return this.request<{ success: boolean }>('/auth/logout', {
+    return this.request<{ success: boolean }>('/api/auth/logout', {
       method: 'POST',
     });
   }
 
   async refreshToken(): Promise<ApiResponse<LoginResponse>> {
     const refreshToken = localStorage.getItem('refresh_token');
-    return this.request<LoginResponse>('/auth/refresh', {
+    return this.request<LoginResponse>('/api/auth/refresh', {
       method: 'POST',
       body: JSON.stringify({ refreshToken }),
     });
@@ -157,55 +157,55 @@ class ApiClient {
     if (params.search) searchParams.append('search', params.search);
 
     const queryString = searchParams.toString();
-    const endpoint = `/patients${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `/api/patients${queryString ? `?${queryString}` : ''}`;
 
     return this.request<PatientsResponse>(endpoint);
   }
 
   async getPatient(id: string): Promise<ApiResponse<{ patient: LegacyPatient }>> {
-    return this.request<{ patient: LegacyPatient }>(`/patients/${id}`);
+    return this.request<{ patient: LegacyPatient }>(`/api/patients/${id}`);
   }
 
   async createPatient(patient: CreatePatientRequest): Promise<ApiResponse<{ patient: LegacyPatient }>> {
-    return this.request<{ patient: LegacyPatient }>('/patients', {
+    return this.request<{ patient: LegacyPatient }>('/api/patients', {
       method: 'POST',
       body: JSON.stringify(patient),
     });
   }
 
   async updatePatient(id: string, patient: UpdatePatientRequest): Promise<ApiResponse<{ patient: LegacyPatient }>> {
-    return this.request<{ patient: LegacyPatient }>(`/patients/${id}`, {
+    return this.request<{ patient: LegacyPatient }>(`/api/patients/${id}`, {
       method: 'PUT',
       body: JSON.stringify(patient),
     });
   }
 
   async deletePatient(id: string): Promise<ApiResponse<{ success: boolean }>> {
-    return this.request<{ success: boolean }>(`/patients/${id}`, {
+    return this.request<{ success: boolean }>(`/api/patients/${id}`, {
       method: 'DELETE',
     });
   }
 
   // Tenant User Management
   async getTenantUsers(): Promise<ApiResponse<{ data: any[] }>> {
-    return this.request<{ data: any[] }>('/tenant/users');
+    return this.request<{ data: any[] }>('/api/tenant/users');
   }
 
   async inviteTenantUser(data: { email: string; firstName: string; lastName: string; role: string }): Promise<ApiResponse<{ data: any; tempPassword?: string }>> {
-    return this.request<{ data: any; tempPassword?: string }>('/tenant/users', {
+    return this.request<{ data: any; tempPassword?: string }>('/api/tenant/users', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async deleteTenantUser(userId: string): Promise<ApiResponse<{ success: boolean }>> {
-    return this.request<{ success: boolean }>(`/tenant/users/${userId}`, {
+    return this.request<{ success: boolean }>(`/api/tenant/users/${userId}`, {
       method: 'DELETE',
     });
   }
 
   async updateTenantUser(userId: string, data: any): Promise<ApiResponse<{ data: any }>> {
-    return this.request<{ data: any }>(`/tenant/users/${userId}`, {
+    return this.request<{ data: any }>(`/api/tenant/users/${userId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });

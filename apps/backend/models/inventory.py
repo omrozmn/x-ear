@@ -198,7 +198,14 @@ class Inventory(BaseModel):
         inventory.model = data.get('model', '')
         inventory.category = data.get('category', 'hearing_aid')
         inventory.barcode = data.get('barcode')
-        inventory.stock_code = data.get('stockCode')
+        
+        # Auto-generate stock code if missing
+        stock_code = data.get('stockCode')
+        if not stock_code:
+            from uuid import uuid4
+            stock_code = f"STK-{uuid4().hex[:8].upper()}"
+        inventory.stock_code = stock_code
+        
         inventory.supplier = data.get('supplier', '')
         inventory.unit = data.get('unit', 'adet')
         inventory.description = data.get('description', '')
@@ -300,10 +307,10 @@ class Inventory(BaseModel):
             return True
         return False
 
-    def update_inventory(self, quantity_change):
+    def update_inventory(self, quantity_change, allow_negative=False):
         """Update inventory levels (for non-serialized items)"""
         new_available = self.available_inventory + quantity_change
-        if new_available < 0:
+        if new_available < 0 and not allow_negative:
             return False
         
         self.available_inventory = new_available

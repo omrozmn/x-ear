@@ -1,11 +1,26 @@
 import { Button, Input } from '@x-ear/ui-web';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 
 export function LoginForm() {
-  const [username, setUsername] = useState('seed-admin');
-  const [password, setPassword] = useState('AdminPass123!');
+  const getInitialCreds = () => {
+    const savedCreds = localStorage.getItem('xear_last_login');
+    if (savedCreds) {
+      try {
+        const { username, password } = JSON.parse(savedCreds);
+        return {
+          username: username || '',
+          password: password || '',
+        };
+      } catch {}
+    }
+    return { username: '', password: '' };
+  };
+
+  const initialCreds = getInitialCreds();
+  const [username, setUsername] = useState(initialCreds.username);
+  const [password, setPassword] = useState(initialCreds.password);
   const [showPassword, setShowPassword] = useState(false);
 
   const [otpCode, _setOtpCode] = useState('');
@@ -22,6 +37,8 @@ export function LoginForm() {
     console.log('Form submission - username:', username, 'password:', password); // Debug log
 
     try {
+      // Son giriş yapılan credentials'ı localStorage'a kaydet
+      localStorage.setItem('xear_last_login', JSON.stringify({ username, password }));
       await login({ username: username.trim(), password });
       // If login successful and no OTP required, redirect
       // If OTP required, state update will trigger re-render showing OTP form

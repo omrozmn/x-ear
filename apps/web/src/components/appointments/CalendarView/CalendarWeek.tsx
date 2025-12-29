@@ -189,9 +189,10 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
             <div
               key={day.date.toISOString()}
               className={`
-                border-r border-gray-200 bg-gray-50 p-2 text-center
+                border-r border-gray-200 bg-gray-50 p-2 text-center cursor-pointer
                 ${day.isToday ? 'bg-blue-50' : ''}
               `}
+              onClick={() => onDateChange(day.date)}
             >
               <Text className="text-sm font-medium">
                 {format(day.date, 'EEE', { locale: tr })}

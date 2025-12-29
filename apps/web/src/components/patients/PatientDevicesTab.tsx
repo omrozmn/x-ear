@@ -185,7 +185,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
 
       // Use Orval mutation hook instead of apiClient
       const response = await updateDeviceAssignmentMutation.mutateAsync({
-        assignment_id: deviceId,
+        assignmentId: deviceId,
         data: updates
       });
       console.log('📥 [handleUpdateDevice] Backend yanıtı:', response);
@@ -258,7 +258,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
 
         // Use Orval mutation hook instead of apiClient
         await createReplacementMutation.mutateAsync({
-          patientId: patient.id,
+          patient_id: patient.id!,
           data: payload
         });
       } catch (e: any) {

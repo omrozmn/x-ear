@@ -1,6 +1,8 @@
 "use client";
+"use client";
 
 import Link from "next/link";
+import AppHeader from "../AppHeader";
 import { Menu } from "lucide-react";
 
 export default function FAQ() {
@@ -11,39 +13,7 @@ export default function FAQ() {
                 <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(at_27%_37%,hsla(215,98%,61%,0.1)_0px,transparent_50%),radial-gradient(at_97%_21%,hsla(125,98%,72%,0.1)_0px,transparent_50%),radial-gradient(at_52%_99%,hsla(355,98%,61%,0.1)_0px,transparent_50%),radial-gradient(at_10%_29%,hsla(256,96%,61%,0.1)_0px,transparent_50%),radial-gradient(at_97%_96%,hsla(38,60%,74%,0.1)_0px,transparent_50%),radial-gradient(at_33%_50%,hsla(222,67%,73%,0.1)_0px,transparent_50%),radial-gradient(at_79%_53%,hsla(343,68%,79%,0.1)_0px,transparent_50%)]"></div>
             </div>
 
-            <header className="absolute top-0 left-0 right-0 z-10">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-20">
-                        <Link href="/" className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-                            X-Ear
-                        </Link>
-                        <nav className="hidden md:flex items-center space-x-8">
-                            <Link href="/pricing" className="text-gray-300 hover:text-white transition">
-                                Paketler
-                            </Link>
-                            <Link href="/faq" className="text-white font-semibold">
-                                SSS
-                            </Link>
-                        </nav>
-                        <div className="hidden md:flex items-center space-x-4">
-                            <a href={`${process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:8082'}/login`} className="text-gray-300 hover:text-white transition">
-                                Giriş Yap
-                            </a>
-                            <Link
-                                href="/register"
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition"
-                            >
-                                Kayıt Ol
-                            </Link>
-                        </div>
-                        <div className="md:hidden">
-                            <button className="text-white">
-                                <Menu className="w-6 h-6" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <AppHeader />
 
             <main className="min-h-screen flex items-center justify-center pt-20 relative z-10">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

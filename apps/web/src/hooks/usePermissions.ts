@@ -21,16 +21,16 @@ export const PERMISSION_CATEGORIES = {
 export type PermissionCategory = keyof typeof PERMISSION_CATEGORIES;
 
 // API Base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5003';
 
 // Helper function to make authenticated requests
 async function authFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   let token: string | null = null;
   try {
     if (typeof window !== 'undefined') {
-      token = (window as Window & { __AUTH_TOKEN__?: string }).__AUTH_TOKEN__ || 
-              localStorage.getItem('x-ear.auth.token@v1') || 
-              localStorage.getItem('auth_token');
+      token = (window as Window & { __AUTH_TOKEN__?: string }).__AUTH_TOKEN__ ||
+        localStorage.getItem('x-ear.auth.token@v1') ||
+        localStorage.getItem('auth_token');
     }
   } catch {
     token = localStorage.getItem('auth_token');
@@ -107,7 +107,7 @@ interface RolePermissionsResponse {
  */
 export function usePermissions() {
   const { isAuthenticated, user } = useAuthStore();
-  
+
   // Fetch current user's permissions
   const {
     data: myPermissions,
@@ -116,17 +116,17 @@ export function usePermissions() {
     refetch
   } = useQuery<MyPermissionsResponse>({
     queryKey: ['permissions', 'my'],
-    queryFn: () => authFetch<MyPermissionsResponse>('/permissions/my'),
+    queryFn: () => authFetch<MyPermissionsResponse>('/api/permissions/my'),
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  const permissions = useMemo(() => 
-    myPermissions?.data?.permissions || [], 
+  const permissions = useMemo(() =>
+    myPermissions?.data?.permissions || [],
     [myPermissions]
   );
-  
+
   const isSuperAdmin = myPermissions?.data?.isSuperAdmin || false;
   const role = myPermissions?.data?.role || user?.role;
 
@@ -176,7 +176,7 @@ export function usePermissions() {
     isSuperAdmin,
     isLoading,
     error,
-    
+
     // Methods
     hasPermission,
     hasAnyPermission,
@@ -196,7 +196,7 @@ export function useAllPermissions() {
 
   return useQuery<AllPermissionsResponse>({
     queryKey: ['permissions', 'all'],
-    queryFn: () => authFetch<AllPermissionsResponse>('/permissions'),
+    queryFn: () => authFetch<AllPermissionsResponse>('/api/permissions'),
     enabled: isAuthenticated && isAdmin,
     staleTime: 5 * 60 * 1000,
   });
@@ -211,7 +211,7 @@ export function useRolePermissions(roleName: string | null) {
 
   return useQuery<RolePermissionsResponse>({
     queryKey: ['permissions', 'role', roleName],
-    queryFn: () => authFetch<RolePermissionsResponse>(`/permissions/role/${roleName}`),
+    queryFn: () => authFetch<RolePermissionsResponse>(`/api/permissions/role/${roleName}`),
     enabled: isAuthenticated && isAdmin && !!roleName,
     staleTime: 5 * 60 * 1000,
   });
@@ -222,10 +222,10 @@ export function useRolePermissions(roleName: string | null) {
  */
 export function useUpdateRolePermissions() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ roleName, permissions }: { roleName: string; permissions: string[] }) => {
-      return authFetch(`/permissions/role/${roleName}`, {
+      return authFetch(`/api/permissions/role/${roleName}`, {
         method: 'PUT',
         body: JSON.stringify({ permissions }),
       });

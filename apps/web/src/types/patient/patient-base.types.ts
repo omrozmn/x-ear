@@ -85,6 +85,18 @@ export interface PatientDevice {
   price?: number;
   sgkScheme?: boolean;
   settings?: Record<string, unknown>;
+  saleId?: string;  // Sale ID for linking to sales history
+  listPrice?: number;
+  salePrice?: number;
+  sgkReduction?: number;
+  patientPayment?: number;
+  paymentMethod?: string;
+  ear?: string;
+  assignedDate?: string;
+  assignedBy?: string;
+  reason?: string;
+  notes?: string;
+  trialEndDate?: string;
 }
 
 export interface PatientNote {

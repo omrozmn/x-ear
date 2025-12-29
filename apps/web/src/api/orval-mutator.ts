@@ -2,8 +2,10 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { AUTH_TOKEN, REFRESH_TOKEN } from '../constants/storage-keys';
 import { outbox, OutboxOperation } from '../utils/outbox';
 
-// API Configuration
-const API_BASE_URL = ''; // Use relative URLs to go through Vite proxy
+// API Configuration - NO /api suffix because Orval paths already include it
+const API_BASE_URL = typeof window !== 'undefined' && import.meta?.env?.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') // Remove trailing /api if present
+  : 'http://localhost:5003'; // Just host+port, Orval adds /api
 
 // Connection pooling and retry configuration
 const CONNECTION_CONFIG = {
@@ -61,12 +63,12 @@ function isRetryableError(error: any): boolean {
   if (error.code && RETRY_CONFIG.retryableErrors.includes(error.code)) {
     return true;
   }
-  
+
   // Check HTTP status codes
   if (error.response?.status && RETRY_CONFIG.retryableStatusCodes.includes(error.response.status)) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -83,12 +85,12 @@ async function retryRequest<T>(
     if (attempt >= RETRY_CONFIG.maxRetries) {
       throw error;
     }
-    
+
     // Don't retry if error is not retryable
     if (!isRetryableError(error)) {
       throw error;
     }
-    
+
     // Calculate delay and wait
     const delay = calculateBackoffDelay(attempt);
     console.warn(`Request failed (attempt ${attempt}/${RETRY_CONFIG.maxRetries}), retrying in ${delay}ms:`, {
@@ -96,9 +98,9 @@ async function retryRequest<T>(
       method: config.method,
       error: error.code || error.message
     });
-    
+
     await sleep(delay);
-    
+
     // Retry the request
     return retryRequest(requestFn, config, attempt + 1);
   }
@@ -114,7 +116,7 @@ class IdempotencyManager {
 
   setCachedRequest(key: string, promise: Promise<unknown>): void {
     this.cache.set(key, promise);
-    
+
     // Clean up after 5 minutes
     setTimeout(() => {
       this.cache.delete(key);
@@ -142,9 +144,9 @@ async function queueOfflineRequest(config: AxiosRequestConfig): Promise<void> {
       headers: config.headers as Record<string, string>,
       priority: 'normal'
     };
-    
+
     await outbox.addOperation(operation);
-    
+
     // Dispatch event for UI feedback
     window.dispatchEvent(new CustomEvent('api:queued', { detail: { config } }));
   } catch (error) {
@@ -156,17 +158,17 @@ async function queueOfflineRequest(config: AxiosRequestConfig): Promise<void> {
 function handleResourceError(error: any, config: AxiosRequestConfig): Error {
   const resourceError = new Error('Resource limit exceeded. Please try again in a moment.');
   resourceError.name = 'ResourceError';
-  
+
   // Add retry suggestion
   (resourceError as any).retryAfter = 5000; // Suggest retry after 5 seconds
   (resourceError as any).originalError = error;
-  
+
   console.warn('Resource constraint detected:', {
     url: config.url,
     method: config.method,
     error: error.code || error.message
   });
-  
+
   return resourceError;
 }
 
@@ -209,7 +211,7 @@ apiClient.interceptors.request.use(
         // Mask token for logs
         const masked = token.slice(0, 8) + '...' + token.slice(-8);
         console.debug('[orval-mutator] Attaching auth token to request', { url: config.url, token: masked });
-      } catch (e) {}
+      } catch (e) { }
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     } else {
@@ -218,7 +220,7 @@ apiClient.interceptors.request.use(
 
     // Add idempotency key for non-GET requests
     if (config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
-      const idempotencyKey = config.headers['Idempotency-Key'] || 
+      const idempotencyKey = config.headers['Idempotency-Key'] ||
         `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       config.headers['Idempotency-Key'] = idempotencyKey;
     }
@@ -256,7 +258,7 @@ apiClient.interceptors.response.use(
                 try {
                   localStorage.setItem('auth_token', newToken);
                   localStorage.setItem(AUTH_TOKEN, newToken);
-                } catch (e) {}
+                } catch (e) { }
                 (window as any).__AUTH_TOKEN__ = newToken;
                 axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
                 (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(newToken));
@@ -287,7 +289,7 @@ apiClient.interceptors.response.use(
                 localStorage.removeItem('refresh_token');
                 localStorage.removeItem(AUTH_TOKEN);
                 localStorage.removeItem(REFRESH_TOKEN);
-              } catch (e) {}
+              } catch (e) { }
               delete (window as any).__AUTH_TOKEN__;
               reject(error);
             }
@@ -299,19 +301,19 @@ apiClient.interceptors.response.use(
     }
 
     // Handle resource constraint errors (ERR_INSUFFICIENT_RESOURCES, connection limits, etc.)
-    if (error.code === 'ERR_INSUFFICIENT_RESOURCES' || 
-        error.code === 'ECONNRESET' || 
-        error.code === 'ENOTFOUND' ||
-        (error.response?.status === 429) || // Too Many Requests
-        (error.response?.status === 503)) { // Service Unavailable
+    if (error.code === 'ERR_INSUFFICIENT_RESOURCES' ||
+      error.code === 'ECONNRESET' ||
+      error.code === 'ENOTFOUND' ||
+      (error.response?.status === 429) || // Too Many Requests
+      (error.response?.status === 503)) { // Service Unavailable
       return Promise.reject(handleResourceError(error, config));
     }
-    
+
     // Handle network errors (offline scenarios)
     if (!error.response && error.code === 'ERR_NETWORK') {
       console.warn('Network error detected, queuing request for offline processing');
       await queueOfflineRequest(config);
-      
+
       // Return a rejected promise with offline error
       const offlineError = new Error('Request queued for offline processing');
       offlineError.name = 'OfflineError';
@@ -367,7 +369,7 @@ axios.interceptors.request.use(
       try {
         const masked = token.slice(0, 8) + '...' + token.slice(-8);
         console.debug('[orval-mutator.global] Attaching auth token to global axios request', { url: config.url, token: masked });
-      } catch (e) {}
+      } catch (e) { }
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     } else {
@@ -376,7 +378,7 @@ axios.interceptors.request.use(
 
     // Add idempotency key for non-GET requests
     if (config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
-      const idempotencyKey = config.headers['Idempotency-Key'] || 
+      const idempotencyKey = config.headers['Idempotency-Key'] ||
         `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       config.headers['Idempotency-Key'] = idempotencyKey;
     }
@@ -415,7 +417,7 @@ axios.interceptors.response.use(
                 try {
                   localStorage.setItem('auth_token', newToken);
                   localStorage.setItem(AUTH_TOKEN, newToken);
-                } catch (e) {}
+                } catch (e) { }
                 (window as any).__AUTH_TOKEN__ = newToken;
                 axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
                 // notify subscribers
@@ -450,7 +452,7 @@ axios.interceptors.response.use(
                 localStorage.removeItem('refresh_token');
                 localStorage.removeItem(AUTH_TOKEN);
                 localStorage.removeItem(REFRESH_TOKEN);
-              } catch (e) {}
+              } catch (e) { }
               delete (window as any).__AUTH_TOKEN__;
               reject(error);
             }
@@ -463,19 +465,19 @@ axios.interceptors.response.use(
     }
 
     // Handle resource constraint errors
-    if (error.code === 'ERR_INSUFFICIENT_RESOURCES' || 
-        error.code === 'ECONNRESET' || 
-        error.code === 'ENOTFOUND' ||
-        (error.response?.status === 429) || 
-        (error.response?.status === 503)) {
+    if (error.code === 'ERR_INSUFFICIENT_RESOURCES' ||
+      error.code === 'ECONNRESET' ||
+      error.code === 'ENOTFOUND' ||
+      (error.response?.status === 429) ||
+      (error.response?.status === 503)) {
       return Promise.reject(handleResourceError(error, config));
     }
-    
+
     // Handle network errors (offline scenarios)
     if (!error.response && error.code === 'ERR_NETWORK') {
       console.warn('Network error detected, queuing request for offline processing');
       await queueOfflineRequest(config);
-      
+
       // Return a rejected promise with offline error
       const offlineError = new Error('Request queued for offline processing');
       offlineError.name = 'OfflineError';
@@ -488,12 +490,12 @@ axios.interceptors.response.use(
 );
 
 // Orval mutator function - customInstance must be a function that returns axios instance or promise
-export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> => {
+export const customInstance = <T>(config: AxiosRequestConfig): Promise<T> => {
   const source = axios.CancelToken.source();
   const promise = apiClient({
     ...config,
     cancelToken: source.token,
-  }).then(({ data }) => data) as Promise<AxiosResponse<T>> & { cancel: () => void };
+  }).then(({ data }) => data) as Promise<T> & { cancel: () => void };
 
   // Add cancel property for react-query
   promise.cancel = () => {

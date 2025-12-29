@@ -13,10 +13,10 @@ export interface Patient extends OrvalPatient {
   communications?: PatientCommunication[];
   appointments?: Appointment[];
   sales?: Sale[];
-  
+
   // Additional computed fields
   lastContactDate?: string;
-  
+
   // Address field that some components expect (OrvalPatient has addressFull, but some components expect address)
   address?: string | {
     street?: string;
@@ -26,14 +26,14 @@ export interface Patient extends OrvalPatient {
     country?: string;
     full?: string;
   };
-  
+
   // Additional fields for forms that are not in OrvalPatient
   branch?: string;
   label?: string;
-  
+
   // SGK workflow for timeline
   sgkWorkflow?: SGKWorkflow;
-  
+
   // Additional fields for timeline
   ereceiptHistory?: EReceiptRecord[];
   reports?: PatientReport[];
@@ -47,11 +47,14 @@ export interface PatientDevice {
   brand: string;
   model: string;
   serialNumber?: string;
+  serialNumberLeft?: string;
+  serialNumberRight?: string;
   side: 'left' | 'right' | 'both';
-  ear?: 'left' | 'right' | 'both' | 'bilateral' | 'L' | 'R' | 'B'; // Alternative to side for legacy compatibility
-  earSide?: 'LEFT' | 'RIGHT' | 'BOTH'; // Backend format
-  type: 'hearing_aid' | 'cochlear_implant' | 'bone_anchored';
-  status: 'active' | 'trial' | 'returned' | 'replaced' | 'assigned';
+  ear?: 'left' | 'right' | 'both' | 'bilateral' | 'L' | 'R' | 'B' | string; // Alternative to side for legacy compatibility
+  earSide?: 'LEFT' | 'RIGHT' | 'BOTH' | string; // Backend format
+  type: 'hearing_aid' | 'cochlear_implant' | 'bone_anchored' | string;
+  deviceType?: string;
+  status: 'active' | 'trial' | 'returned' | 'replaced' | 'assigned' | string;
   purchaseDate?: string;
   assignedDate?: string;
   warrantyExpiry?: string;
@@ -67,17 +70,31 @@ export interface PatientDevice {
 
   // Payment and SGK
   sgkScheme?: boolean;
-  paymentMethod?: 'cash' | 'card' | 'transfer' | 'installment';
+  paymentMethod?: 'cash' | 'card' | 'transfer' | 'installment' | string;
 
   // Trial information
+  trialStartDate?: string;
   trialEndDate?: string;
 
   // Assignment details
   assignedBy?: string;
-  reason?: 'new' | 'replacement' | 'upgrade' | 'trial' | 'warranty';
+  reason?: 'new' | 'replacement' | 'upgrade' | 'trial' | 'warranty' | 'Trial' | 'Sale' | string;
   notes?: string;
+  saleId?: string;  // Sale ID for linking to sales history
 
-  settings?: Record<string, unknown>;
+  // Delivery & Loaner
+  deliveryStatus?: 'pending' | 'delivered' | string;
+  isLoaner?: boolean;
+  loanerInventoryId?: string;
+  loanerSerialNumber?: string;
+  loanerSerialNumberLeft?: string;
+  loanerSerialNumberRight?: string;
+  loanerBrand?: string;
+  loanerModel?: string;
+  reportStatus?: 'raporlu' | 'bekleniyor' | 'raporsuz' | string;
+
+  // UI helpers
+  settings?: boolean | Record<string, unknown>;
 }
 
 export interface Installment {

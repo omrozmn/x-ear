@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import axios from 'axios';
+import { apiClient } from '../../../../api/orval-mutator';
 import { Input, Select, Textarea } from '@x-ear/ui-web';
 import { Calendar, User, FileText, AlertCircle, CheckCircle, Clock, RotateCcw } from 'lucide-react';
 
@@ -43,6 +43,8 @@ export interface DeviceAssignment {
   isLoaner?: boolean;
   loanerInventoryId?: string;
   loanerSerialNumber?: string;
+  loanerSerialNumberLeft?: string;
+  loanerSerialNumberRight?: string;
   loanerBrand?: string;
   loanerModel?: string;
 
@@ -71,16 +73,18 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
   const [loanerSearch, setLoanerSearch] = useState('');
   const [loanerResults, setLoanerResults] = useState<any[]>([]);
   const [showLoanerResults, setShowLoanerResults] = useState(false);
+  const [activeSerialInput, setActiveSerialInput] = useState<string | null>(null);
 
   // Debounced Search
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (loanerSearch.length >= 2) {
         try {
-          // Use environment variable or fallback to backend on port 8080
-          const API_URL = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5003';
-          const response = await axios.get(`${API_URL}/inventory`, {
-            params: { search: loanerSearch }
+          const response = await apiClient.get('/api/inventory', {
+            params: {
+              search: loanerSearch,
+              category: 'hearing_aid'
+            }
           });
           if (response.data?.success) {
             setLoanerResults(response.data.data);
@@ -97,7 +101,11 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
     return () => clearTimeout(timer);
   }, [loanerSearch]);
 
+  // Store selected loaner device to access its available serials
+  const [selectedLoanerInventoryItem, setSelectedLoanerInventoryItem] = useState<any>(null);
+
   const selectLoaner = (device: any) => {
+    setSelectedLoanerInventoryItem(device);
     onFormDataChange({
       loanerInventoryId: device.id,
       loanerBrand: device.brand,
@@ -381,7 +389,10 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                       className="p-2 hover:bg-purple-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                     >
                       <div className="font-medium text-sm text-gray-900">{device.brand} {device.model}</div>
-                      <div className="text-xs text-gray-500">SN: {device.serialNumber} | Stok: {device.amount}</div>
+                      <div className="text-xs text-gray-500">
+                        SN: {(device.availableSerials && device.availableSerials.length > 0) ? device.availableSerials.join(', ') : '-'} |
+                        Stok: {device.availableInventory}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -412,13 +423,91 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
               </div>
               <div className="col-span-2">
                 <label className="block text-xs font-medium text-gray-600 mb-1">Seri No</label>
-                <input
-                  type="text"
-                  value={formData.loanerSerialNumber || ''}
-                  onChange={(e) => updateFormData('loanerSerialNumber', e.target.value)}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-white"
-                  placeholder="Seri No"
-                />
+                {formData.ear === 'both' ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Left Side (Visual) -> Right Ear (Red) */}
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={formData.loanerSerialNumberRight || ''}
+                        onChange={(e) => updateFormData('loanerSerialNumberRight', e.target.value)}
+                        onFocus={() => setActiveSerialInput('right')}
+                        onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
+                        className="w-full px-2 py-1.5 text-sm border-2 border-red-400 rounded bg-white focus:outline-none focus:ring-2 focus:ring-red-200"
+                        placeholder="Sağ (R)"
+                      />
+                      {activeSerialInput === 'right' && selectedLoanerInventoryItem?.availableSerials?.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                          {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
+                            <div
+                              key={sn}
+                              className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
+                              onMouseDown={(e) => { e.preventDefault(); updateFormData('loanerSerialNumberRight', sn); setActiveSerialInput(null); }}
+                            >
+                              {sn}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="absolute right-2 top-1.5 text-xs text-red-500 font-bold">R</div>
+                    </div>
+
+                    {/* Right Side (Visual) -> Left Ear (Blue) */}
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={formData.loanerSerialNumberLeft || ''}
+                        onChange={(e) => updateFormData('loanerSerialNumberLeft', e.target.value)}
+                        onFocus={() => setActiveSerialInput('left')}
+                        onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
+                        className="w-full px-2 py-1.5 text-sm border-2 border-blue-400 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
+                        placeholder="Sol (L)"
+                      />
+                      {activeSerialInput === 'left' && selectedLoanerInventoryItem?.availableSerials?.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                          {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
+                            <div
+                              key={sn}
+                              className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
+                              onMouseDown={(e) => { e.preventDefault(); updateFormData('loanerSerialNumberLeft', sn); setActiveSerialInput(null); }}
+                            >
+                              {sn}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="absolute right-2 top-1.5 text-xs text-blue-500 font-bold">L</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={formData.loanerSerialNumber || ''}
+                      onChange={(e) => updateFormData('loanerSerialNumber', e.target.value)}
+                      onFocus={() => setActiveSerialInput('single')}
+                      onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
+                      className={`w-full px-2 py-1.5 text-sm border-2 rounded bg-white focus:outline-none focus:ring-2 ${formData.ear === 'left' ? 'border-blue-400 focus:ring-blue-200' :
+                          formData.ear === 'right' ? 'border-red-400 focus:ring-red-200' :
+                            'border-gray-300 focus:ring-gray-200'
+                        }`}
+                      placeholder="Seri No"
+                    />
+                    {activeSerialInput === 'single' && selectedLoanerInventoryItem?.availableSerials?.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                        {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
+                          <div
+                            key={sn}
+                            className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
+                            onMouseDown={(e) => { e.preventDefault(); updateFormData('loanerSerialNumber', sn); setActiveSerialInput(null); }}
+                          >
+                            {sn}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               {formData.loanerInventoryId && (
                 <div className="col-span-2 text-xs text-green-600 flex items-center">

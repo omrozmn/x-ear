@@ -57,8 +57,11 @@ export const useDashboardData = (): DashboardData => {
       return;
     }
 
-    const json: any = query.data?.data ? query.data : query.data ?? {};
-    const kpis = json?.data?.kpis || json?.data || {};
+    // Logic to correctly traverse: AxiosResponse -> Body -> data -> kpis
+    const responseBody = query.data?.data || {};
+    // Check if the body has a 'data' property (our API envelope), otherwise try to use body directly
+    const payload = (responseBody as any)?.data || responseBody || {};
+    const kpis = (payload as any)?.kpis || payload || {};
 
     const mappedStats: DashboardStats = {
       totalPatients: Number(kpis.totalPatients || kpis.totalPatientsCount || 0),
@@ -71,7 +74,7 @@ export const useDashboardData = (): DashboardData => {
       endingTrials: Number(kpis.endingTrials || 0),
     };
 
-    const recentActivity = json?.data?.recentActivity || json?.data?.activity || json?.activity || [];
+    const recentActivity = (payload as any)?.recentActivity || (payload as any)?.activity || [];
 
     setData({ stats: mappedStats, recentActivity, loading: false, error: null });
   }, [query.isLoading, query.isError, query.data]);

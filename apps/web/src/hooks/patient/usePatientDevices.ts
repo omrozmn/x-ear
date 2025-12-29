@@ -28,7 +28,8 @@ export function usePatientDevices(patientId: string) {
       setError(null);
 
       const response = await patientsGetPatientDevices(patientId);
-      const responseData = response as unknown as ApiResponse;
+      // USER_REQUEST_FIX: Unwrap data from Axios response
+      const responseData = response.data as unknown as ApiResponse;
 
       // API response structure: { success: boolean, data: Device[], meta: {...} }
       if (responseData?.success && Array.isArray(responseData.data)) {
@@ -47,17 +48,17 @@ export function usePatientDevices(patientId: string) {
         const mappedDevices: PatientDevice[] = responseData.data.map((device: unknown) => {
           const d = device as Record<string, unknown>;
           return {
+            ...d, // Preserve all backend fields (ear, serialNumberLeft, notes, etc.)
             id: (d.id as string) || (d.deviceId as string) || '',
             brand: (d.brand as string) || '',
             model: (d.model as string) || '',
-            serialNumber: (d.serialNumber as string) || (d.serial_number as string),
             side: ((d.side as string) || (d.ear as string) || 'left') as PatientDevice['side'],
+            ear: ((d.ear as string) || (d.side as string) || 'left') as PatientDevice['ear'],
             type: ((d.type as string) || (d.deviceType as string) || 'hearing_aid') as PatientDevice['type'],
             status: ((d.status as string) || 'active') as PatientDevice['status'],
             purchaseDate: (d.purchaseDate as string) || (d.purchase_date as string),
             warrantyExpiry: (d.warrantyExpiry as string) || (d.warranty_expiry as string),
             lastServiceDate: (d.lastServiceDate as string) || (d.last_service_date as string),
-            batteryType: (d.batteryType as string) || (d.battery_type as string),
             price: d.price as number | undefined,
             sgkScheme: (d.sgkScheme as boolean) || (d.sgk_scheme as boolean),
             settings: d.settings as Record<string, unknown> | undefined,

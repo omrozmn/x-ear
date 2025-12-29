@@ -28,16 +28,64 @@ def get_patient_devices(patient_id):
             'timestamp': datetime.now().isoformat()
         }), 404
 
-    # Get all devices assigned to this patient
-    devices = Device.query.filter_by(patient_id=patient_id).all()
+    # Get all device assignments (active/inactive) for this patient
+    from models.sales import DeviceAssignment
+    from models.device import Device
+    from models.inventory import InventoryItem
+
+    assignments = DeviceAssignment.query.filter_by(patient_id=patient_id).all()
     
+    # Map assignments to the structure expected by frontend PatientDevice interface
+    mapped_devices = []
+    for assignment in assignments:
+        d = assignment.to_dict()
+        
+        # Hydrate with details from linked Device or Inventory if missing
+        brand = d.get('brand')
+        model = d.get('model')
+        serial = d.get('serialNumber')
+        
+        if not brand or not model:
+            # Try to find linked device
+            if assignment.device_id:
+                device = db.session.get(Device, assignment.device_id)
+                if device:
+                    brand = brand or device.brand
+                    model = model or device.model
+                    serial = serial or device.serial_number
+            
+            # Try to find linked inventory (if no device found or still missing info)
+            if (not brand or not model) and assignment.inventory_id:
+                inv = db.session.get(InventoryItem, assignment.inventory_id)
+                if inv:
+                    brand = brand or inv.brand
+                    model = model or inv.model
+                    # Inventory might not have serial if it's a product definition, but usually does
+                    serial = serial or inv.serial_number
+
+        # Enriched data
+        mapped_devices.append({
+            **d,
+            'brand': brand or 'Bilinmiyor',
+            'model': model or 'Bilinmiyor',
+            'serialNumber': serial,
+            'status': d.get('status', 'assigned'), # Default to assigned if not present
+            'type': d.get('deviceType', 'hearing_aid'), # Default type
+            'deliveryStatus': d.get('deliveryStatus', 'pending'),
+            'isLoaner': d.get('isLoaner', False),
+            'loanerInventoryId': d.get('loanerInventoryId'),
+            'loanerSerialNumber': d.get('loanerSerialNumber'),
+            'loanerBrand': d.get('loanerBrand'),
+            'loanerModel': d.get('loanerModel')
+        })
+
     return jsonify({
         "success": True,
-        "data": [device.to_dict() for device in devices],
+        "data": mapped_devices,
         "meta": {
             "patientId": patient_id,
             "patientName": f"{patient.first_name} {patient.last_name}",
-            "deviceCount": len(devices)
+            "deviceCount": len(mapped_devices)
         },
         "timestamp": datetime.now().isoformat()
     }), 200

@@ -203,7 +203,7 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
   onSaleComplete
 }) => {
   const patientApiService = useMemo(() => new PatientApiService(), []);
-  const { success, error } = useToastHelpers();
+  const { success, error, warning } = useToastHelpers();
 
   // SGK Support Options
   const sgkSupportOptions = [
@@ -367,10 +367,14 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
         reportStatus: reportStatus
       };
 
-      await patientApiService.createSale(patientId || '', saleData);
+      const response = await patientApiService.createSale(patientId || '', saleData);
 
       // Reset form
       resetForm();
+
+      if (response.warnings && response.warnings.length > 0) {
+        response.warnings.forEach((w: string) => warning('Stok Uyarısı', w));
+      }
 
       success('Satış başarıyla kaydedildi!');
 

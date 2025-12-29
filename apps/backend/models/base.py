@@ -3,6 +3,9 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
 from uuid import uuid4
 import json
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 def now_utc():
     """Return current UTC timestamp"""

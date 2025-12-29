@@ -311,24 +311,51 @@ def update_device(device_id):
 
 @devices_bp.route('/devices/<device_id>', methods=['DELETE'])
 def delete_device(device_id):
-    """Delete a device"""
+    """Delete a device or device assignment"""
     try:
+        # 1. Try deleting standard Device
         device = db.session.get(Device, device_id)
-        if not device:
+        if device:
+            db.session.delete(device)
+            db.session.commit()
             return jsonify({
-                "success": False,
-                "error": "Device not found",
+                "success": True,
+                "message": "Device deleted successfully",
                 "timestamp": datetime.now().isoformat()
-            }), 404
+            })
 
-        db.session.delete(device)
-        db.session.commit()
+        # 2. Try deleting DeviceAssignment (for inventory items)
+        from models.sales import DeviceAssignment
+        assignment = db.session.get(DeviceAssignment, device_id)
+        
+        if assignment:
+            # Restore stock if applicable
+            if assignment.delivery_status == 'delivered' and assignment.inventory_id:
+                inventory = db.session.get(Inventory, assignment.inventory_id)
+                if inventory:
+                    inventory.update_inventory(1)
+                    # Log movement could be added here
+            
+            # Restore loaner stock if applicable
+            if assignment.is_loaner and assignment.loaner_inventory_id:
+                 loaner_inv = db.session.get(Inventory, assignment.loaner_inventory_id)
+                 if loaner_inv:
+                      loaner_inv.update_inventory(1)
+            
+            db.session.delete(assignment)
+            db.session.commit()
+            
+            return jsonify({
+                "success": True,
+                "message": "Device assignment deleted and stock restored",
+                "timestamp": datetime.now().isoformat()
+            })
 
         return jsonify({
-            "success": True,
-            "message": "Device deleted successfully",
+            "success": False,
+            "error": "Device not found",
             "timestamp": datetime.now().isoformat()
-        })
+        }), 404
 
     except Exception as e:
         db.session.rollback()

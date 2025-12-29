@@ -42,7 +42,8 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
 
     // Get SMS headers for sender selection
     const { data: headersData } = useSmsGetHeaders();
-    const headers = (headersData?.data as { data?: Array<{ id?: string; headerText?: string }> })?.data ?? [];
+    const headersRaw = (headersData?.data as { data?: Array<{ id?: string; headerText?: string; status?: string }> })?.data ?? [];
+    const headers = headersRaw.filter(h => h.status === 'approved');
 
     const smsSegments = message.trim().length > 0
         ? Math.max(1, Math.ceil(message.length / SMS_SEGMENT_LENGTH))
@@ -117,9 +118,9 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
             // TODO: Implement actual SMS sending via API
             // For now, simulate success
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             showSuccessToast('SMS Gönderildi', `${phoneNumber} numarasına SMS başarıyla gönderildi.`);
-            
+
             // Reset form
             setPhoneNumber('');
             setRecipientName('');

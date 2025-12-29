@@ -4,16 +4,6 @@ import { Search, User, Plus } from 'lucide-react';
 import { usePatients } from '../../hooks/usePatients';
 import { Patient } from '../../types/patient';
 
-interface PatientAutocompleteProps {
-  value?: string;
-  patientId?: string;
-  onSelect: (patient: Patient) => void;
-  onAddNew?: (name: string) => void;
-  placeholder?: string;
-  className?: string;
-  error?: string;
-}
-
 export function PatientAutocomplete({
   value = '',
   patientId = '',
@@ -131,14 +121,14 @@ export function PatientAutocomplete({
           onFocus={handleFocus}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`pr-10 ${error ? 'border-red-500' : ''}`}
+          className={`w-full pr-8 ${error ? 'border-red-500' : ''}`}
           autoComplete="off"
         />
-        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none">
           {isLoading ? (
-            <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-600 rounded-full" />
+            <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-blue-600 rounded-full" />
           ) : (
-            <Search className="h-4 w-4 text-gray-400" />
+            <Search className="h-5 w-5 text-gray-400" />
           )}
         </div>
       </div>

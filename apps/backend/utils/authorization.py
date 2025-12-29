@@ -163,8 +163,8 @@ def has_crm_permission(user, permission_name):
     
     effective_role = get_effective_role(user)
     
-    # tenant_admin and admin have all permissions
-    if effective_role in ('tenant_admin', 'admin'):
+    # tenant_admin, admin and super_admin have all permissions
+    if effective_role in ('tenant_admin', 'admin', 'super_admin'):
         return True
     
     # Check if permission is in JWT claims (for impersonated roles)

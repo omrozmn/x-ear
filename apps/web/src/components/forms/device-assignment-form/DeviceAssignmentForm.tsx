@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Button, Modal } from '@x-ear/ui-web';
 import { Save } from 'lucide-react';
 import { DeviceSearchForm } from './components/DeviceSearchForm';
@@ -25,6 +25,14 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
   onSave,
   onUpdate
 }) => {
+  /* Manual Device Entry State */
+  const [isManualMode, setIsManualMode] = useState(false);
+  const [manualDevice, setManualDevice] = useState({
+    brand: '',
+    model: '',
+    serialNumber: ''
+  });
+
   const {
     formData,
     updateFormData,
@@ -36,7 +44,8 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
     errors,
     validateForm,
     resetForm,
-    calculatedPricing
+    calculatedPricing,
+    setSelectedDevice
   } = useDeviceAssignment({
     patientId,
     assignment,
@@ -46,23 +55,61 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (!isManualMode && !validateForm()) {
       return;
+    }
+
+    if (isManualMode) {
+      if (!manualDevice.brand || !manualDevice.model) {
+        // Simple validation for manual mode
+        alert('Marka ve Model zorunludur.');
+        return;
+      }
     }
 
     try {
       // Merge canonical calculated pricing into submission payload to ensure saved records
       // include the SGK reduction, salePrice and patient payment values.
-      const assignmentData = ({ ...formData, ...calculatedPricing } as DeviceAssignment);
+      let assignmentData = ({ ...formData, ...calculatedPricing } as DeviceAssignment);
+
+      if (isManualMode) {
+        // If manual mode, clear deviceId (inventoryId) and attach manual info
+        // We'll use a special structure or simple fields that parent component understands
+        assignmentData = {
+          ...assignmentData,
+          deviceId: '', // No inventory ID
+          // Add these as custom fields that handleDeviceAssignment in PatientDevicesTab will need to map
+          // We cast to any to bypass strict type check for now or extend interface
+          manualBrand: manualDevice.brand,
+          manualModel: manualDevice.model,
+          serialNumber: formData.serialNumber || (formData as any).serialNumberLeft || (formData as any).serialNumberRight || manualDevice.serialNumber
+        } as any;
+
+        // Ensure pricing fields are present for manual mode (they might be 0/custom)
+        // Since we don't have a base price from inventory, we rely on user input listPrice
+        if (!assignmentData.listPrice) {
+          alert('Lütfen liste fiyatı giriniz.');
+          return;
+        }
+      }
+
+      console.log('💾 [DeviceAssignmentForm] KAYDET BAŞLANGIÇ');
+      console.log('💾 [DeviceAssignmentForm] assignment?.id:', assignment?.id);
+      console.log('💾 [DeviceAssignmentForm] assignmentData:', assignmentData);
+      console.log('💾 [DeviceAssignmentForm] deliveryStatus in formData:', formData.deliveryStatus);
+      console.log('💾 [DeviceAssignmentForm] deliveryStatus in assignmentData:', (assignmentData as any).deliveryStatus);
 
       if (assignment?.id) {
         // Update existing assignment
+        console.log('💾 [DeviceAssignmentForm] Calling onUpdate with:', assignmentData);
         onUpdate?.(assignmentData);
       } else {
         // Create new assignment
+        console.log('💾 [DeviceAssignmentForm] Calling onSave with:', assignmentData);
         onSave?.(assignmentData);
       }
 
+      console.log('💾 [DeviceAssignmentForm] onClose() çağrılıyor...');
       onClose();
     } catch (error) {
       console.error('Cihaz ataması kaydedilirken hata:', error);
@@ -71,6 +118,8 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
 
   const handleCancel = () => {
     resetForm();
+    setIsManualMode(false);
+    setManualDevice({ brand: '', model: '', serialNumber: '' });
     onClose();
   };
 
@@ -104,19 +153,65 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
         {/* Device Search - Only show in create mode or collapsed in edit mode */}
         {!assignment && (
           <div className="bg-gray-50 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Cihaz Seçimi</h3>
-            <DeviceSearchForm
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              filteredDevices={filteredDevices}
-              selectedDevice={selectedDevice}
-              onDeviceSelect={handleDeviceSelect}
-              errors={errors}
-            />
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Cihaz Seçimi</h3>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setIsManualMode(!isManualMode);
+                  setSelectedDevice(null);
+                  setSearchTerm('');
+                }}
+                className="text-blue-600 hover:text-blue-700"
+              >
+                {isManualMode ? 'Stoktan Seç' : 'Manuel Ekle'}
+              </Button>
+            </div>
+
+            {isManualMode ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Marka</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                      value={manualDevice.brand}
+                      onChange={e => setManualDevice({ ...manualDevice, brand: e.target.value })}
+                      placeholder="Örn: Phonak"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                      value={manualDevice.model}
+                      onChange={e => setManualDevice({ ...manualDevice, model: e.target.value })}
+                      placeholder="Örn: Paradise P90"
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <DeviceSearchForm
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                filteredDevices={filteredDevices}
+                selectedDevice={selectedDevice}
+                onDeviceSelect={handleDeviceSelect}
+                errors={errors}
+              />
+            )}
           </div>
         )}
 
-        {/* In edit mode, show selected device info with option to change */}
+        {/* ... existing edit mode rendering ... */}
+        {/* In edit mode, we generally don't switch to manual mode easily without breaking existing link logic. 
+            For now, manual mode is primarily for NEW assignments where stock is missing. 
+        */}
         {assignment && selectedDevice && (
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <div className="flex items-center justify-between">
@@ -159,20 +254,21 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
           </div>
         )}
 
-        {/* Assignment Details */}
-        {selectedDevice && (
+        {/* Assignment Details - Show if device selected OR isManualMode */}
+        {(selectedDevice || isManualMode) && (
           <div className="bg-gray-50 rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Atama Detayları</h3>
             <AssignmentDetailsForm
               formData={formData}
               onFormDataChange={handleFormDataChange}
               errors={errors}
+              isManualMode={isManualMode}
             />
           </div>
         )}
 
         {/* Pricing */}
-        {selectedDevice && formData.reason === 'sale' && (
+        {(selectedDevice || isManualMode) && formData.reason === 'sale' && (
           <div className="bg-gray-50 rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Fiyatlandırma</h3>
             <PricingForm
@@ -184,20 +280,21 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
         )}
 
         {/* Serial Numbers */}
-        {selectedDevice && (
+        {(selectedDevice || isManualMode) && (
           <div className="bg-gray-50 rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Seri Numarası</h3>
             <SerialNumberForm
               formData={formData}
-              selectedDevice={selectedDevice}
+              selectedDevice={selectedDevice} // Optional in manual mode
               onFormDataChange={handleFormDataChange}
               errors={errors}
+              isManualMode={isManualMode}
             />
           </div>
         )}
 
         {/* Notes - At the bottom */}
-        {selectedDevice && (
+        {(selectedDevice || isManualMode) && (
           <div className="bg-gray-50 rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Notlar</h3>
             <div className="relative">
@@ -223,7 +320,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
           </Button>
           <Button
             type="submit"
-            disabled={!selectedDevice}
+            disabled={!selectedDevice && !isManualMode}
             className="flex items-center gap-2"
           >
             <Save className="w-4 h-4" />

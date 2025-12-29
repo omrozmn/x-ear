@@ -15,7 +15,7 @@ export const branchService = {
             url: '/api/branches',
             method: 'GET',
         });
-        return response.data.data;
+        return response.data || [];
     },
 
     createBranch: async (data: Partial<Branch>): Promise<Branch> => {
@@ -24,7 +24,7 @@ export const branchService = {
             method: 'POST',
             data,
         });
-        return response.data.data;
+        return response.data;
     },
 
     updateBranch: async (id: string, data: Partial<Branch>): Promise<Branch> => {
@@ -33,7 +33,7 @@ export const branchService = {
             method: 'PUT',
             data,
         });
-        return response.data.data;
+        return response.data;
     },
 
     deleteBranch: async (id: string): Promise<void> => {

@@ -20,12 +20,14 @@ export const appointmentsApi = {
     status?: string;
     type?: string;
     branchId?: string;
+    page?: number;
+    per_page?: number;
   } = {}): Promise<Appointment[]> {
     const searchParams = new URLSearchParams();
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
-        searchParams.append(key, value);
+        searchParams.append(key, String(value));
       }
     });
 
@@ -36,7 +38,7 @@ export const appointmentsApi = {
       url: endpoint,
       method: 'GET',
     });
-    return response.data.data || [];
+    return response.data || [];
   },
 
   // Get single appointment
@@ -45,7 +47,7 @@ export const appointmentsApi = {
       url: `/api/appointments/${id}`,
       method: 'GET',
     });
-    return response.data.data!;
+    return response.data!;
   },
 
   // Get calendar appointments for date range
@@ -54,7 +56,7 @@ export const appointmentsApi = {
       url: `/api/appointments/calendar?date=${date}`,
       method: 'GET',
     });
-    return response.data.data || [];
+    return response.data || [];
   },
 
   // Create new appointment
@@ -70,7 +72,7 @@ export const appointmentsApi = {
         'Idempotency-Key': idempotencyKey,
       },
     });
-    return response.data.data!;
+    return response.data!;
   },
 
   // Update appointment
@@ -87,7 +89,7 @@ export const appointmentsApi = {
         'Idempotency-Key': idempotencyKey,
       },
     });
-    return response.data.data!;
+    return response.data!;
   },
 
   // Delete appointment
@@ -115,7 +117,7 @@ export const appointmentsApi = {
         'Idempotency-Key': idempotencyKey,
       },
     });
-    return response.data.data || [];
+    return response.data || [];
   },
 
   // Get available time slots for a date
@@ -128,7 +130,7 @@ export const appointmentsApi = {
       url: endpoint,
       method: 'GET',
     });
-    return response.data.data || [];
+    return response.data || [];
   },
 
   // Search patients for appointment booking
@@ -147,6 +149,6 @@ export const appointmentsApi = {
       url: `/api/patients/search?q=${encodeURIComponent(query)}`,
       method: 'GET',
     });
-    return response.data.data || [];
+    return response.data || [];
   },
 };

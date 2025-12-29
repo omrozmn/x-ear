@@ -14,6 +14,7 @@ import { ProductInfoSection } from './inventory/components/ProductInfoSection';
 import { StockInfoSection } from './inventory/components/StockInfoSection';
 import { PricingInfoSection } from './inventory/components/PricingInfoSection';
 import { WarrantyInfoSection } from './inventory/components/WarrantyInfoSection';
+import { InventoryMovementsTable } from '../components/patient/InventoryMovementsTable';
 
 interface InventoryDetailPageProps {
   id: string;
@@ -404,6 +405,12 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
           <WarrantyInfoSection item={item} />
         </div>
+      </div>
+
+      {/* Inventory Movements Table */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">Ürün Hareketleri</h2>
+        <InventoryMovementsTable inventoryId={id} />
       </div>
 
       {/* Serial Number Modal */}

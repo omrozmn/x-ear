@@ -1,17 +1,17 @@
 import React from 'react';
 import { Button } from '@x-ear/ui-web';
 import { Patient } from '../../types/patient';
-import { 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Calendar, 
-  User, 
-  Edit, 
-  Trash2, 
-  Printer, 
-  Download, 
-  MessageSquare, 
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Calendar,
+  User,
+  Edit,
+  Trash2,
+  Printer,
+  Download,
+  MessageSquare,
   MoreHorizontal,
   FileText,
   Copy
@@ -187,7 +187,12 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
                 <Phone className="w-4 h-4 text-gray-400" />
                 <span>{formatPhone(patient.phone)}</span>
               </div>
-              
+
+              <div className="flex items-center space-x-2">
+                <User className="w-4 h-4 text-gray-400" />
+                <span title="Hasta ID" className="font-mono text-gray-600">ID: {patient.id}</span>
+              </div>
+
               <div className="flex items-center space-x-2">
                 <User className="w-4 h-4 text-gray-400" />
                 <span>TC: {patient.tcNumber || 'Belirtilmemiş'}</span>
@@ -267,7 +272,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
               Not Ekle
             </Button>
           )}
-          
+
           {onCall && (
             <Button
               variant="outline"
@@ -279,7 +284,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
               Ara
             </Button>
           )}
-          
+
           {onSendSMS && (
             <Button
               variant="outline"
@@ -291,7 +296,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
               SMS
             </Button>
           )}
-          
+
           {onEdit && (
             <Button
               variant="primary"

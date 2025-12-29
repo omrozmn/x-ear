@@ -54,7 +54,9 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500">Varlık</label>
-                                <p className="font-medium">{log.entityType} - {log.entityId}</p>
+                                <p className="font-medium">
+                                    {log.entityType} - {log.patientName ? `${log.patientName} (${log.entityId})` : log.entityId}
+                                </p>
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500">IP Adresi</label>
@@ -65,14 +67,14 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
                                 <p className="font-medium">{log.isCritical ? 'Evet' : 'Hayır'}</p>
                             </div>
                         </div>
-                        
+
                         {log.message && (
                             <div>
                                 <label className="text-xs text-gray-500">Mesaj</label>
                                 <p className="font-medium">{log.message}</p>
                             </div>
                         )}
-                        
+
                         {log.data && Object.keys(log.data).length > 0 && (
                             <div>
                                 <label className="text-xs text-gray-500">Veri</label>
@@ -81,7 +83,7 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
                                 </pre>
                             </div>
                         )}
-                        
+
                         {log.details && Object.keys(log.details).length > 0 && (
                             <div>
                                 <label className="text-xs text-gray-500">Detaylar</label>
@@ -90,7 +92,7 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
                                 </pre>
                             </div>
                         )}
-                        
+
                         {log.userAgent && (
                             <div>
                                 <label className="text-xs text-gray-500">User Agent</label>
@@ -202,9 +204,9 @@ export default function ActivityLogsPage() {
                         <select
                             className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             value={filters.is_critical === undefined ? '' : filters.is_critical ? 'true' : 'false'}
-                            onChange={(e) => setFilters({ 
-                                ...filters, 
-                                is_critical: e.target.value === '' ? undefined : e.target.value === 'true' 
+                            onChange={(e) => setFilters({
+                                ...filters,
+                                is_critical: e.target.value === '' ? undefined : e.target.value === 'true'
                             })}
                         >
                             <option value="">Tümü</option>
@@ -306,7 +308,7 @@ export default function ActivityLogsPage() {
                                 </tbody>
                             </table>
                         </div>
-                        
+
                         {/* Pagination */}
                         {pagination && (pagination.total ?? 0) > 0 && (
                             <div className="px-4 py-3 border-t bg-gray-50 flex items-center justify-between">

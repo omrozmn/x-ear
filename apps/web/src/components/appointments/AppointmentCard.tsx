@@ -85,10 +85,14 @@ export function AppointmentCard({
   ].filter(Boolean).join(' ');
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent card click when clicking action buttons
+    // Prevent the click from bubbling up to parent calendar cells
+    e.stopPropagation();
+
+    // If an action button inside the card was clicked, don't treat as card click
     if ((e.target as HTMLElement).closest('button')) {
       return;
     }
+
     onClick?.();
   };
 

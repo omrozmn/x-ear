@@ -1,0 +1,66 @@
+WARNING:services.otp_store:Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+WARNING:__main__:Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/instance/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+DEBUG:app:REDIS_URL present; skipping local Redis auto-start.
+WARNING:app:Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+WARNING:services.otp_store:Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+INFO:__main__:Tenant security (global query filter) initialized
+WARNING:services.s3_service:S3Service running in mock mode - no actual S3 operations will be performed
+INFO:__main__:Scheduling OCR/NLP service pre-warm in background
+INFO:__main__:Ensuring database tables exist (create_all)
+INFO:__main__:Permission middleware initialized successfully
+WARNING:middleware.permission_middleware:Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'sgk.delete', 'admin.roles.view', 'admin.notifications.send', 'admin.addons.delete', 'admin.production.view', 'admin.system.backup', 'admin.scan_queue.edit', 'admin.activity_logs.view', 'admin.roles.edit', 'admin.system.manage', 'admin.tenants.create', 'admin.notifications.delete', 'admin.suppliers.delete', 'sgk.edit', 'admin.notifications.edit', 'admin.dashboard.view', 'admin.notifications.view', 'admin.addons.view', 'admin.campaigns.delete', 'admin.invoices.edit', 'admin.users.delete', 'admin.integrations.edit', 'admin.production.edit', 'admin.tickets.view', 'admin.tenants.edit', 'invoices.edit', 'admin.patients.view', 'admin.users.view', 'admin.campaigns.view', 'admin.api_keys.delete', 'admin.integrations.view', 'admin.notifications.create', 'admin.settings.view', 'admin.marketplaces.create', 'admin.plans.edit', 'admin.invoices.view', 'admin.tickets.respond', 'admin.roles.create', 'activity_logs.export', 'admin.tenants.manage', 'admin.roles.delete', 'admin.suppliers.view', 'admin.marketplaces.view', 'activity_logs.view', 'admin.birfatura.view', 'admin.tenants.delete', 'admin.sms.view', 'admin.system.logs', 'invoices.delete', 'admin.tenants.view', 'admin.tickets.create', 'admin.system.view', 'admin.marketplaces.edit', 'admin.addons.edit', 'admin.users.create', 'admin.settings.edit', 'admin.users.edit', 'admin.suppliers.edit', 'admin.plans.delete', 'admin.sms.create', 'admin.plans.create', 'admin.plans.view', 'admin.tickets.edit', 'admin.sms.edit', 'admin.campaigns.edit'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+INFO:__main__:Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'sgk.delete', 'admin.roles.view', 'admin.notifications.send', 'admin.addons.delete', 'admin.production.view', 'admin.system.backup', 'admin.scan_queue.edit', 'admin.activity_logs.view', 'admin.roles.edit', 'admin.system.manage', 'admin.tenants.create', 'admin.notifications.delete', 'admin.suppliers.delete', 'sgk.edit', 'admin.notifications.edit', 'admin.dashboard.view', 'admin.notifications.view', 'admin.addons.view', 'admin.campaigns.delete', 'admin.invoices.edit', 'admin.users.delete', 'admin.integrations.edit', 'admin.production.edit', 'admin.tickets.view', 'admin.tenants.edit', 'invoices.edit', 'admin.patients.view', 'admin.users.view', 'admin.campaigns.view', 'admin.api_keys.delete', 'admin.integrations.view', 'admin.notifications.create', 'admin.settings.view', 'admin.marketplaces.create', 'admin.plans.edit', 'admin.invoices.view', 'admin.tickets.respond', 'admin.roles.create', 'activity_logs.export', 'admin.tenants.manage', 'admin.roles.delete', 'admin.suppliers.view', 'admin.marketplaces.view', 'activity_logs.view', 'admin.birfatura.view', 'admin.tenants.delete', 'admin.sms.view', 'admin.system.logs', 'invoices.delete', 'admin.tenants.view', 'admin.tickets.create', 'admin.system.view', 'admin.marketplaces.edit', 'admin.addons.edit', 'admin.users.create', 'admin.settings.edit', 'admin.users.edit', 'admin.suppliers.edit', 'admin.plans.delete', 'admin.sms.create', 'admin.plans.create', 'admin.plans.view', 'admin.tickets.edit', 'admin.sms.edit', 'admin.campaigns.edit'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+INFO:__main__:Starting Flask development server on 0.0.0.0:5003
+
+-----
+
+WeasyPrint could not import some external libraries. Please carefully follow the installation steps before reporting an issue:
+https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation
+https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#troubleshooting 
+
+-----
+
+ * Serving Flask app 'app'
+ * Debug mode: on
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://192.168.1.102:5003
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug: * Restarting with watchdog (fsevents)
+WARNING:services.otp_store:Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+WARNING:__main__:Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/instance/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+DEBUG:app:REDIS_URL present; skipping local Redis auto-start.
+WARNING:app:Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+WARNING:services.otp_store:Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+INFO:__main__:Tenant security (global query filter) initialized
+WARNING:services.s3_service:S3Service running in mock mode - no actual S3 operations will be performed
+INFO:__main__:Scheduling OCR/NLP service pre-warm in background
+INFO:__main__:Ensuring database tables exist (create_all)
+INFO:__main__:Permission middleware initialized successfully
+WARNING:middleware.permission_middleware:Permission map validation WARNINGS: ["Permissions in map but not in DB (will be created): {'admin.tickets.create', 'admin.tenants.manage', 'admin.plans.delete', 'admin.roles.view', 'admin.suppliers.delete', 'sgk.edit', 'admin.notifications.view', 'admin.production.edit', 'admin.notifications.send', 'admin.addons.view', 'admin.integrations.edit', 'admin.system.manage', 'admin.dashboard.view', 'admin.marketplaces.view', 'admin.sms.view', 'admin.system.view', 'activity_logs.export', 'admin.notifications.edit', 'admin.roles.delete', 'admin.suppliers.view', 'admin.marketplaces.create', 'admin.invoices.view', 'admin.system.backup', 'admin.integrations.view', 'admin.invoices.edit', 'admin.addons.delete', 'admin.sms.create', 'admin.tenants.view', 'admin.system.logs', 'admin.tenants.create', 'admin.notifications.delete', 'activity_logs.view', 'admin.activity_logs.view', 'admin.roles.create', 'admin.sms.edit', 'admin.users.view', 'admin.campaigns.edit', 'admin.marketplaces.edit', 'admin.plans.create', 'admin.tenants.edit', 'admin.production.view', 'admin.tickets.respond', 'admin.roles.edit', 'admin.users.edit', 'invoices.edit', 'admin.settings.edit', 'invoices.delete', 'sgk.delete', 'admin.tenants.delete', 'admin.settings.view', 'admin.scan_queue.edit', 'admin.plans.view', 'admin.birfatura.view', 'admin.suppliers.edit', 'admin.campaigns.view', 'admin.campaigns.delete', 'admin.plans.edit', 'admin.api_keys.delete', 'admin.addons.edit', 'admin.tickets.view', 'admin.users.create', 'admin.notifications.create', 'admin.tickets.edit', 'admin.users.delete', 'admin.patients.view'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+INFO:__main__:Permission map validation passed. Warnings: ["Permissions in map but not in DB (will be created): {'admin.tickets.create', 'admin.tenants.manage', 'admin.plans.delete', 'admin.roles.view', 'admin.suppliers.delete', 'sgk.edit', 'admin.notifications.view', 'admin.production.edit', 'admin.notifications.send', 'admin.addons.view', 'admin.integrations.edit', 'admin.system.manage', 'admin.dashboard.view', 'admin.marketplaces.view', 'admin.sms.view', 'admin.system.view', 'activity_logs.export', 'admin.notifications.edit', 'admin.roles.delete', 'admin.suppliers.view', 'admin.marketplaces.create', 'admin.invoices.view', 'admin.system.backup', 'admin.integrations.view', 'admin.invoices.edit', 'admin.addons.delete', 'admin.sms.create', 'admin.tenants.view', 'admin.system.logs', 'admin.tenants.create', 'admin.notifications.delete', 'activity_logs.view', 'admin.activity_logs.view', 'admin.roles.create', 'admin.sms.edit', 'admin.users.view', 'admin.campaigns.edit', 'admin.marketplaces.edit', 'admin.plans.create', 'admin.tenants.edit', 'admin.production.view', 'admin.tickets.respond', 'admin.roles.edit', 'admin.users.edit', 'invoices.edit', 'admin.settings.edit', 'invoices.delete', 'sgk.delete', 'admin.tenants.delete', 'admin.settings.view', 'admin.scan_queue.edit', 'admin.plans.view', 'admin.birfatura.view', 'admin.suppliers.edit', 'admin.campaigns.view', 'admin.campaigns.delete', 'admin.plans.edit', 'admin.api_keys.delete', 'admin.addons.edit', 'admin.tickets.view', 'admin.users.create', 'admin.notifications.create', 'admin.tickets.edit', 'admin.users.delete', 'admin.patients.view'}", "Permissions in DB but not used in map: {'sales.approve'}"]
+INFO:__main__:Starting Flask development server on 0.0.0.0:5003
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 142-890-432
+
+-----
+
+WeasyPrint could not import some external libraries. Please carefully follow the installation steps before reporting an issue:
+https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation
+https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#troubleshooting 
+
+-----
+
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/app.py", line 1168, in <module>
+    app.run(host=run_host, port=run_port, debug=app.config.get('DEBUG', False))
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/flask/app.py", line 625, in run
+    run_simple(t.cast(str, host), port, self, **options)
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/werkzeug/serving.py", line 1115, in run_simple
+    run_with_reloader(
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/werkzeug/_reloader.py", line 459, in run_with_reloader
+    ensure_echo_on()
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/werkzeug/_reloader.py", line 439, in ensure_echo_on
+    termios.tcsetattr(sys.stdin, termios.TCSANOW, attributes)
+termios.error: (4, 'Interrupted system call')

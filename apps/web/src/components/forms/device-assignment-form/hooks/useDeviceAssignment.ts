@@ -114,9 +114,25 @@ export const useDeviceAssignment = ({
         else if (['none', 'raporsuz'].includes(rawReportStatus)) normalizedReportStatus = 'none';
         // Empty/null/undefined will stay undefined/empty, showing "Seçiniz..."
 
+        // Initialize loaner fields if present in the incoming assignment
+        // This ensures that when editing a loaner assignment, the loaner data is pre-filled
+        const loanerFields = {
+          isLoaner: (assignment as any).isLoaner || (assignment as any).is_loaner || false,
+          loanerInventoryId: (assignment as any).loanerInventoryId || (assignment as any).loaner_inventory_id,
+          loanerSerialNumber: (assignment as any).loanerSerialNumber || (assignment as any).loaner_serial_number,
+          loanerSerialNumberLeft: (assignment as any).loanerSerialNumberLeft || (assignment as any).loaner_serial_number_left,
+          loanerSerialNumberRight: (assignment as any).loanerSerialNumberRight || (assignment as any).loaner_serial_number_right,
+          loanerBrand: (assignment as any).loanerBrand || (assignment as any).loaner_brand,
+          loanerModel: (assignment as any).loanerModel || (assignment as any).loaner_model,
+          // Also capture any snake_case variants from backend just in case
+          loaner_inventory_id: (assignment as any).loaner_inventory_id,
+          loaner_serial_number: (assignment as any).loaner_serial_number
+        };
+
         // Edit mode - load assignment data
         setFormData({
           ...assignment,
+          ...loanerFields,
           assignedDate: assignment.assignedDate?.split('T')[0] || new Date().toISOString().split('T')[0],
           reportStatus: normalizedReportStatus // Explicitly set normalized value
         });

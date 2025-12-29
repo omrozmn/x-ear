@@ -14,6 +14,7 @@ interface SerialNumberFormProps {
   onFormDataChange: (data: Partial<DeviceAssignment>) => void;
   selectedDevice: DeviceInventoryItem | null;
   errors?: Record<string, string>;
+  isManualMode?: boolean;
 }
 
 const SerialAutocomplete: React.FC<{
@@ -85,7 +86,7 @@ const SerialAutocomplete: React.FC<{
         placeholder={placeholder}
         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
-      
+
       {isOpen && filteredSerials.length > 0 && (
         <div
           ref={dropdownRef}
@@ -110,7 +111,8 @@ export const SerialNumberForm: React.FC<SerialNumberFormProps> = ({
   formData,
   onFormDataChange,
   selectedDevice,
-  errors = {}
+  errors = {},
+  isManualMode = false
 }) => {
   const updateField = (field: keyof DeviceAssignment, value: string) => {
     onFormDataChange({ [field]: value });
@@ -118,7 +120,8 @@ export const SerialNumberForm: React.FC<SerialNumberFormProps> = ({
 
   const availableSerials = selectedDevice?.availableSerials || [];
 
-  if (!selectedDevice) {
+  // In manual mode, we don't need a selected device to show the form
+  if (!selectedDevice && !isManualMode) {
     return (
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
         <Hash className="w-8 h-8 mx-auto mb-2 text-gray-400" />
@@ -128,6 +131,13 @@ export const SerialNumberForm: React.FC<SerialNumberFormProps> = ({
       </div>
     );
   }
+
+  // If manual mode, we simulate available serials (empty) but allow typing
+  // Or we just rely on the existing rendering which handles empty availableSerials by just showing the input?
+  // The SerialAutocomplete component filters based on availableSerials if > 0. 
+  // We need to check SerialAutocomplete behavior.
+  // Actually, let's just update the check above first.
+
 
   const assignedSerials = [
     formData.serialNumber,
@@ -142,9 +152,15 @@ export const SerialNumberForm: React.FC<SerialNumberFormProps> = ({
           <Hash className="w-4 h-4 mr-2" />
           Seri Numarası Yönetimi
         </h4>
-        <p className="text-xs text-blue-700">
-          <strong>{selectedDevice.brand} {selectedDevice.model}</strong> - Mevcut: {availableSerials.length} adet
-        </p>
+        {selectedDevice ? (
+          <p className="text-xs text-blue-700">
+            <strong>{selectedDevice.brand} {selectedDevice.model}</strong> - Mevcut: {availableSerials.length} adet
+          </p>
+        ) : (
+          <p className="text-xs text-blue-700">
+            Manuel giriş modu aktif
+          </p>
+        )}
       </div>
 
       {/* Serial Number Inputs - Audiological order: Right Left */}

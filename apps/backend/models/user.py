@@ -190,6 +190,16 @@ class ActivityLog(BaseModel, JSONMixin):
             except Exception:
                 pass
         
+        # Get patient name if available (for patient-related logs)
+        if self.entity_type == 'patient' and self.entity_id:
+            try:
+                from .patient import Patient
+                patient = Patient.query.get(self.entity_id)
+                if patient:
+                    result['patientName'] = f"{patient.first_name} {patient.last_name}"
+            except Exception:
+                pass
+        
         return result
 
     # Composite indexes for performance
