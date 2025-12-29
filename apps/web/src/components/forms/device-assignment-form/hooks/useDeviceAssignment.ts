@@ -4,7 +4,7 @@ import { DeviceInventoryItem } from '../components/DeviceSearchForm';
 import { DeviceAssignment } from '../components/AssignmentDetailsForm';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5003'
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5003/api'
 });
 
 interface UseDeviceAssignmentProps {
@@ -18,7 +18,7 @@ interface UseDeviceAssignmentReturn {
   formData: Partial<DeviceAssignment>;
   setFormData: (data: Partial<DeviceAssignment>) => void;
   updateFormData: (field: keyof DeviceAssignment, value: any) => void;
-  
+
   // Device management
   availableDevices: DeviceInventoryItem[];
   filteredDevices: DeviceInventoryItem[];
@@ -26,11 +26,12 @@ interface UseDeviceAssignmentReturn {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   handleDeviceSelect: (device: DeviceInventoryItem) => void;
-  
+  setSelectedDevice: (device: DeviceInventoryItem | null) => void;
+
   // Validation
   errors: Record<string, string>;
   validateForm: () => boolean;
-  
+
   // Pricing calculations
   sgkAmounts: Record<string, number>;
   calculatedPricing: {
@@ -40,7 +41,7 @@ interface UseDeviceAssignmentReturn {
     remainingAmount: number;
     monthlyInstallment: number;
   };
-  
+
   // Form actions
   resetForm: () => void;
 }
@@ -66,7 +67,7 @@ export const useDeviceAssignment = ({
   const [availableDevices, setAvailableDevices] = useState<DeviceInventoryItem[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<DeviceInventoryItem | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Validation state
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -97,12 +98,29 @@ export const useDeviceAssignment = ({
   useEffect(() => {
     if (isOpen) {
       if (assignment) {
+        // Normalize reportStatus to match dropdown options
+        const rawReportStatus = String(assignment.reportStatus || (assignment as any).report_status || '').toLowerCase().trim();
+
+        console.log('🔍 [useDeviceAssignment] RELOADED DEBUG:', {
+          incomingAssignment: assignment,
+          reportStatus: assignment.reportStatus,
+          snake_report: (assignment as any).report_status,
+          rawNormalized: rawReportStatus
+        });
+
+        let normalizedReportStatus: 'received' | 'pending' | 'none' | undefined = undefined;
+        if (['raporlu', 'received', 'has_report', 'true'].includes(rawReportStatus)) normalizedReportStatus = 'received';
+        else if (['bekleniyor', 'pending'].includes(rawReportStatus)) normalizedReportStatus = 'pending';
+        else if (['none', 'raporsuz'].includes(rawReportStatus)) normalizedReportStatus = 'none';
+        // Empty/null/undefined will stay undefined/empty, showing "Seçiniz..."
+
         // Edit mode - load assignment data
         setFormData({
           ...assignment,
-          assignedDate: assignment.assignedDate?.split('T')[0] || new Date().toISOString().split('T')[0]
+          assignedDate: assignment.assignedDate?.split('T')[0] || new Date().toISOString().split('T')[0],
+          reportStatus: normalizedReportStatus // Explicitly set normalized value
         });
-        
+
         // If assignment has deviceId, find and select the device
         if (assignment.deviceId) {
           setSearchTerm(''); // Will trigger device selection after inventory loads
@@ -132,19 +150,33 @@ export const useDeviceAssignment = ({
   useEffect(() => {
     const loadInventory = async () => {
       try {
-        const response = await api.get('/api/inventory', {
+        // Get auth token from localStorage
+        const token = (window as any).__AUTH_TOKEN__ ||
+          localStorage.getItem('x-ear.auth.token@v1') ||
+          localStorage.getItem('auth_token');
+
+        if (!token) {
+          console.error('No auth token found');
+          setAvailableDevices([]);
+          return;
+        }
+
+        const response = await api.get('/inventory', {
           params: {
             category: 'hearing_aid',
             per_page: 100
+          },
+          headers: {
+            Authorization: `Bearer ${token}`
           }
         });
-        
+
         const result = response.data;
-        
+
         if (!result.success) {
           throw new Error('Envanter yüklenemedi');
         }
-        
+
         // Transform backend data to frontend format
         const devices: DeviceInventoryItem[] = result.data.map((item: any) => ({
           id: item.id.toString(),
@@ -158,10 +190,10 @@ export const useDeviceAssignment = ({
           category: item.category || 'hearing_aid',
           status: (item.availableInventory || 0) > 0 ? 'available' : 'out_of_stock'
         }));
-        
+
         console.log('✓ Loaded inventory:', devices);
         setAvailableDevices(devices);
-        
+
         // If editing and has deviceId, auto-select the device
         if (assignment?.deviceId) {
           const device = devices.find(d => d.id === assignment.deviceId);
@@ -187,7 +219,7 @@ export const useDeviceAssignment = ({
     if (!searchTerm) {
       return availableDevices;
     }
-    
+
     return availableDevices.filter(device =>
       device.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
       device.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -273,7 +305,7 @@ export const useDeviceAssignment = ({
       if (Object.keys(updates).length === 0) return prev;
       return { ...prev, ...updates };
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [calculatedPricing.salePrice, calculatedPricing.sgkReduction, calculatedPricing.patientPayment, calculatedPricing.remainingAmount, calculatedPricing.monthlyInstallment]);
 
   // Handle device selection
@@ -359,7 +391,7 @@ export const useDeviceAssignment = ({
     formData: enrichedFormData,
     setFormData,
     updateFormData,
-    
+
     // Device management
     availableDevices,
     filteredDevices,
@@ -367,15 +399,16 @@ export const useDeviceAssignment = ({
     searchTerm,
     setSearchTerm,
     handleDeviceSelect,
-    
+    setSelectedDevice,
+
     // Validation
     errors,
     validateForm,
-    
+
     // Pricing calculations
     sgkAmounts,
     calculatedPricing,
-    
+
     // Form actions
     resetForm
   };

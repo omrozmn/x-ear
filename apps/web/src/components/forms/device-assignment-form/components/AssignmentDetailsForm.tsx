@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
+import axios from 'axios';
 import { Input, Select, Textarea } from '@x-ear/ui-web';
 import { Calendar, User, FileText, AlertCircle, CheckCircle, Clock, RotateCcw } from 'lucide-react';
 
@@ -36,22 +37,76 @@ export interface DeviceAssignment {
   serialNumber?: string;
   serialNumberLeft?: string;
   serialNumberRight?: string;
+
+  // Delivery & Loaner
+  deliveryStatus?: 'pending' | 'delivered';
+  isLoaner?: boolean;
+  loanerInventoryId?: string;
+  loanerSerialNumber?: string;
+  loanerBrand?: string;
+  loanerModel?: string;
+
+  // Report
+  reportStatus?: 'received' | 'pending' | 'none';
 }
 
 interface AssignmentDetailsFormProps {
   formData: Partial<DeviceAssignment>;
   onFormDataChange: (data: Partial<DeviceAssignment>) => void;
   errors?: Record<string, string>;
+  isManualMode?: boolean;
 }
 
 export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
   formData,
   onFormDataChange,
-  errors = {}
+  errors = {},
+  isManualMode = false
 }) => {
   const updateFormData = useCallback((field: keyof DeviceAssignment, value: any) => {
     onFormDataChange({ [field]: value });
   }, [onFormDataChange]);
+
+  // Loaner Search State
+  const [loanerSearch, setLoanerSearch] = useState('');
+  const [loanerResults, setLoanerResults] = useState<any[]>([]);
+  const [showLoanerResults, setShowLoanerResults] = useState(false);
+
+  // Debounced Search
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (loanerSearch.length >= 2) {
+        try {
+          // Use environment variable or fallback to backend on port 8080
+          const API_URL = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5003';
+          const response = await axios.get(`${API_URL}/inventory`, {
+            params: { search: loanerSearch }
+          });
+          if (response.data?.success) {
+            setLoanerResults(response.data.data);
+            setShowLoanerResults(true);
+          }
+        } catch (error) {
+          console.error("Loaner search failed", error);
+        }
+      } else {
+        setLoanerResults([]);
+        setShowLoanerResults(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [loanerSearch]);
+
+  const selectLoaner = (device: any) => {
+    onFormDataChange({
+      loanerInventoryId: device.id,
+      loanerBrand: device.brand,
+      loanerModel: device.model,
+      loanerSerialNumber: device.serialNumber
+    });
+    setLoanerSearch(`${device.brand} ${device.model}`);
+    setShowLoanerResults(false);
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -82,7 +137,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.reason ? 'border-red-300' : 'border-gray-300'}`}
           >
             <option value="">Sebep seçiniz</option>
-            <option value="sale">Satış</option>
+            {!isManualMode && <option value="sale">Satış</option>}
             <option value="service">Servis</option>
             <option value="repair">Tamir</option>
             <option value="trial">Deneme</option>
@@ -234,6 +289,147 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
           />
         </div>
       )}
+
+      {/* Delivery & Report Status */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Teslimat Durumu
+          </label>
+          <div className="relative">
+            <select
+              value={formData.deliveryStatus || 'pending'}
+              onChange={(e) => {
+                console.log('📦 [AssignmentDetailsForm] Teslimat durumu değişiyor:', {
+                  old: formData.deliveryStatus,
+                  new: e.target.value
+                });
+                updateFormData('deliveryStatus', e.target.value);
+              }}
+              className="w-full appearance-none bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pr-8"
+            >
+              <option value="pending">Teslim Edilmedi</option>
+              <option value="delivered">Teslim Edildi</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+              <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {formData.reason === 'sale' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Rapor Durumu
+            </label>
+            <div className="relative">
+              <select
+                value={formData.reportStatus || ''}
+                onChange={(e) => updateFormData('reportStatus', e.target.value)}
+                className="w-full appearance-none bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pr-8"
+              >
+                <option value="">Seçiniz...</option>
+                <option value="received">Rapor Teslim Alındı</option>
+                <option value="pending">Rapor Bekleniyor</option>
+                <option value="none">Raporsuz Özel Satış</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Loaner Device Section */}
+      <div className="pt-4 border-t border-gray-200">
+        <label className="flex items-center space-x-2 cursor-pointer mb-3">
+          <input
+            type="checkbox"
+            checked={formData.isLoaner || false}
+            onChange={(e) => updateFormData('isLoaner', e.target.checked)}
+            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+          />
+          <span className="font-medium text-gray-900">Emanet Cihaz Verildi</span>
+        </label>
+
+        {formData.isLoaner && (
+          <div className="bg-purple-50 p-4 rounded-lg space-y-3 border border-purple-200">
+            <h5 className="text-sm font-medium text-purple-900 mb-2">Emanet Cihaz Seçimi</h5>
+
+            {/* Search Input */}
+            <div className="relative">
+              <input
+                type="text"
+                value={loanerSearch}
+                onChange={(e) => setLoanerSearch(e.target.value)}
+                className="w-full px-3 py-2 border border-purple-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 placeholder-purple-300"
+                placeholder="Envanterde emanet cihaz ara (Marka, Model...)"
+              />
+
+              {/* Results Dropdown */}
+              {showLoanerResults && loanerResults.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
+                  {loanerResults.map(device => (
+                    <div
+                      key={device.id}
+                      onClick={() => selectLoaner(device)}
+                      className="p-2 hover:bg-purple-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                    >
+                      <div className="font-medium text-sm text-gray-900">{device.brand} {device.model}</div>
+                      <div className="text-xs text-gray-500">SN: {device.serialNumber} | Stok: {device.amount}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Selected/Filled Details (Read Only or Editable) */}
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Marka</label>
+                <input
+                  type="text"
+                  value={formData.loanerBrand || ''}
+                  onChange={(e) => updateFormData('loanerBrand', e.target.value)}
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-white"
+                  placeholder="Marka"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Model</label>
+                <input
+                  type="text"
+                  value={formData.loanerModel || ''}
+                  onChange={(e) => updateFormData('loanerModel', e.target.value)}
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-white"
+                  placeholder="Model"
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Seri No</label>
+                <input
+                  type="text"
+                  value={formData.loanerSerialNumber || ''}
+                  onChange={(e) => updateFormData('loanerSerialNumber', e.target.value)}
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-white"
+                  placeholder="Seri No"
+                />
+              </div>
+              {formData.loanerInventoryId && (
+                <div className="col-span-2 text-xs text-green-600 flex items-center">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Envanterden seçildi
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
