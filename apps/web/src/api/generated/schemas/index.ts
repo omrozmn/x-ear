@@ -432,6 +432,8 @@ export * from './salesUpdateDeviceAssignmentBody';
 export * from './stockMovement';
 export * from './stockMovementInventory';
 export * from './stockMovementMovementType';
+export * from './tenantUsersUpdateUser200';
+export * from './tenantUsersUpdateUserBody';
 export * from './updatePaytrConfig200';
 export * from './updatePaytrConfigBody';
 export * from './updateSystemCommissionRates200';

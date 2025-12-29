@@ -35,7 +35,9 @@ import type {
   TenantUsersDelete200,
   TenantUsersInvite201,
   TenantUsersInviteBody,
-  TenantUsersList200
+  TenantUsersList200,
+  TenantUsersUpdateUser200,
+  TenantUsersUpdateUserBody
 } from '.././schemas';
 
 
@@ -190,6 +192,68 @@ export const useTenantUsersInvite = <TError = AxiosError<unknown>,
       > => {
 
       const mutationOptions = getTenantUsersInviteMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Update tenant user
+ */
+export const tenantUsersUpdateUser = (
+    userId: string,
+    tenantUsersUpdateUserBody: TenantUsersUpdateUserBody, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<TenantUsersUpdateUser200>> => {
+    
+    
+    return axios.patch(
+      `/api/tenant/users/${userId}`,
+      tenantUsersUpdateUserBody,options
+    );
+  }
+
+
+
+export const getTenantUsersUpdateUserMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantUsersUpdateUser>>, TError,{userId: string;data: TenantUsersUpdateUserBody}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof tenantUsersUpdateUser>>, TError,{userId: string;data: TenantUsersUpdateUserBody}, TContext> => {
+
+const mutationKey = ['tenantUsersUpdateUser'];
+const {mutation: mutationOptions, axios: axiosOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, axios: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof tenantUsersUpdateUser>>, {userId: string;data: TenantUsersUpdateUserBody}> = (props) => {
+          const {userId,data} = props ?? {};
+
+          return  tenantUsersUpdateUser(userId,data,axiosOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TenantUsersUpdateUserMutationResult = NonNullable<Awaited<ReturnType<typeof tenantUsersUpdateUser>>>
+    export type TenantUsersUpdateUserMutationBody = TenantUsersUpdateUserBody
+    export type TenantUsersUpdateUserMutationError = AxiosError<unknown>
+
+    /**
+ * @summary Update tenant user
+ */
+export const useTenantUsersUpdateUser = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantUsersUpdateUser>>, TError,{userId: string;data: TenantUsersUpdateUserBody}, TContext>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof tenantUsersUpdateUser>>,
+        TError,
+        {userId: string;data: TenantUsersUpdateUserBody},
+        TContext
+      > => {
+
+      const mutationOptions = getTenantUsersUpdateUserMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -4108,6 +4108,54 @@ paths:
                   data:
                     $ref: '#/components/schemas/User'
   /api/tenant/users/{user_id}:
+    patch:
+      summary: Update tenant user
+      operationId: tenant_users_update_user
+      tags:
+      - Tenant Users
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                role:
+                  type: string
+                isActive:
+                  type: boolean
+                password:
+                  type: string
+                branchIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
     delete:
       summary: Delete tenant user
       operationId: tenant_users_delete
