@@ -107,6 +107,11 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
 
   const earStyle = getEarStyle((device as any).earSide || device.ear || device.side || '');
 
+  // Normalization logic for status fields (handling backend variations)
+  const deliveryStatus = (device.deliveryStatus || (device as any).delivery_status || 'pending').toLowerCase();
+  const reportStatus = (device.reportStatus || (device as any).report_status || 'none').toLowerCase();
+  const isLoaner = device.isLoaner || (device as any).is_loaner;
+
   // DEBUG: log incoming device payload and the values we will display
   try {
     const dp: any = device as any;
@@ -151,32 +156,32 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
             {/* Delivery & Loaner Badges */}
             <div className="flex flex-wrap gap-2 mt-1">
               {/* Delivery Status */}
-              {(device as any).deliveryStatus === 'pending' && (
+              {deliveryStatus === 'pending' && !isCancelled && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                  Teslim Edilmedi
+                  Teslim Bekliyor
                 </span>
               )}
-              {(device as any).deliveryStatus === 'delivered' && (
+              {deliveryStatus === 'delivered' && !isCancelled && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 border border-green-200">
                   Teslim Edildi
                 </span>
               )}
 
               {/* Loaner Status */}
-              {(device as any).isLoaner && (
+              {isLoaner && !isCancelled && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
                   Emanet Cihaz
                 </span>
               )}
 
               {/* Report Status Badge */}
-              {device.reason === 'sale' && ((device as any).reportStatus || (device as any).report_status) && (
+              {device.reason === 'sale' && !isCancelled && (reportStatus !== 'none') && (
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border
-                  ${['raporlu', 'received', 'has_report', 'true'].includes(((device as any).reportStatus || (device as any).report_status || '').toLowerCase()) ? 'bg-green-100 text-green-800 border-green-200' :
-                    ['bekleniyor', 'pending'].includes(((device as any).reportStatus || (device as any).report_status || '').toLowerCase()) ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                  ${['raporlu', 'received', 'has_report', 'true'].includes(reportStatus) ? 'bg-green-100 text-green-800 border-green-200' :
+                    ['bekleniyor', 'pending'].includes(reportStatus) ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
                       'bg-gray-100 text-gray-800 border-gray-200'}`}>
-                  {['raporlu', 'received', 'has_report', 'true'].includes(((device as any).reportStatus || (device as any).report_status || '').toLowerCase()) ? 'Rapor Teslim Alındı' :
-                    ['bekleniyor', 'pending'].includes(((device as any).reportStatus || (device as any).report_status || '').toLowerCase()) ? 'Rapor Bekleniyor' : 'Raporsuz'}
+                  {['raporlu', 'received', 'has_report', 'true'].includes(reportStatus) ? 'Rapor Teslim Alındı' :
+                    ['bekleniyor', 'pending'].includes(reportStatus) ? 'Rapor Bekleniyor' : 'Raporsuz'}
                 </span>
               )}
             </div>

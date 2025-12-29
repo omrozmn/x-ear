@@ -69,7 +69,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
     }
   });
 
-  const replacementsList = (replacementsResponse?.data || []).map((rep: any) => {
+  const replacementsList = (Array.isArray(replacementsResponse?.data) ? replacementsResponse.data : []).map((rep: any) => {
     // Normalization logic
     const normalize = (field: any) => {
       if (!field) return null;
