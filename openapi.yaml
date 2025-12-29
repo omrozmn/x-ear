@@ -6480,6 +6480,45 @@ paths:
         required: true
         schema:
           type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deliveryStatus:
+                  type: string
+                serialNumber:
+                  type: string
+                serialNumberLeft:
+                  type: string
+                serialNumberRight:
+                  type: string
+                isLoaner:
+                  type: boolean
+                loanerSerialNumber:
+                  type: string
+                loanerSerialNumberLeft:
+                  type: string
+                loanerSerialNumberRight:
+                  type: string
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Return loaner device to stock
+      operationId: device_assignments_return_loaner
+      tags:
+      - Device-assignments
+      parameters:
+      - name: assignment_id
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: Success
@@ -6947,6 +6986,35 @@ paths:
         '200':
           description: Success
   /api/patients/{patient_id}/replacements:
+    get:
+      summary: Get replacement history for a patient
+      operationId: patients_get_patient_replacements
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: List of patient replacements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  count:
+                    type: integer
+                  timestamp:
+                    type: string
     post:
       summary: Create a replacement for a patient. Request body mirrors legacy fields.
       operationId: replacements_create_patient_replacement
@@ -10116,3 +10184,46 @@ components:
               type: array
               items:
                 type: string
+    StockMovement:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique movement identifier
+        inventoryId:
+          type: string
+          description: Inventory item ID
+        transactionId:
+          type: string
+          description: Related transaction ID (sale, refund, etc.)
+        movementType:
+          type: string
+          enum:
+          - sale
+          - return
+          - adjustment
+          - purchase
+          - production
+          - loaner_out
+          - loaner_return
+          - delivery
+          description: Type of stock movement
+        quantity:
+          type: integer
+          description: Quantity changed (negative for outbound, positive for inbound)
+        serialNumber:
+          type: string
+          description: Serial number for serialized items
+        createdBy:
+          type: string
+          description: User ID who created the movement
+        createdAt:
+          type: string
+          format: date-time
+          description: Movement creation timestamp
+        patientId:
+          type: string
+          description: Patient ID for loaner movements
+        patientName:
+          type:  string
+          description: Patient name for loaner movements

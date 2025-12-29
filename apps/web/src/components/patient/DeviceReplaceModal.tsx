@@ -10,6 +10,13 @@ import { ProductSearchInput } from '../cashflow/ProductSearchInput';
 import { apiClient } from '../../api/orval-mutator';
 import { PatientDevice } from '../../types/patient';
 
+// Orval Hooks
+import { usePatientsGetPatientReplacements } from '../../api/generated/patients/patients';
+import {
+  useReplacementsSendInvoiceToGib,
+} from '../../api/generated/return-invoices/return-invoices';
+import { useReplacementsCreateReturnInvoice as useCreateReturnInvoice } from '../../api/generated/replacements/replacements';
+
 interface InventoryItem {
   id: string;
   name?: string;
@@ -26,7 +33,7 @@ interface DeviceReplaceModalProps {
   patientId: string;
   isOpen: boolean;
   onClose: () => void;
-  // newInventoryId and newDeviceInfo are optional; when provided backend will link replacement to requested new device
+  // newInventoryId and newDeviceInfo are optional
   onReplace: (deviceId: string, reason: string, notes: string, newInventoryId?: string, newDeviceInfo?: any, selectedSerial?: string) => Promise<void>;
 }
 
@@ -40,11 +47,9 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
   const [reason, setReason] = useState('defective');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errorError, setError] = useState<string | null>(null); // renamed to avoid conflict with query error
   const [selectedInventory, setSelectedInventory] = useState<InventoryItem | null>(null);
   const [selectedSerial, setSelectedSerial] = useState<string | null>(null);
-  const [replacements, setReplacements] = useState<any[]>([]);
-  const [loadingReplacements, setLoadingReplacements] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [previewInvoice, setPreviewInvoice] = useState<any | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -56,30 +61,48 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
   const [sendLoadingMap, setSendLoadingMap] = useState<Record<string, boolean>>({});
   const { success: showSuccess, error: showError } = useToastHelpers();
 
+  // Queries & Mutations
+  const { data: replacementsResponse, refetch: refetchReplacements, isLoading: loadingReplacements } = usePatientsGetPatientReplacements(patientId, {
+    query: {
+      enabled: isOpen,
+      staleTime: 0
+    }
+  });
+
+  const replacementsList = (replacementsResponse?.data || []).map((rep: any) => {
+    // Normalization logic
+    const normalize = (field: any) => {
+      if (!field) return null;
+      if (typeof field === 'string') {
+        try { return JSON.parse(field); } catch (e) { return field; }
+      }
+      return field;
+    };
+    return {
+      ...rep,
+      old_device_info_parsed: normalize(rep.old_device_info || rep.oldDeviceInfo),
+      new_device_info_parsed: normalize(rep.new_device_info || rep.newDeviceInfo),
+    };
+  });
+
+  const sendToGibMutation = useReplacementsSendInvoiceToGib(); // Corrected usage
+  const linkInvoiceMutation = useCreateReturnInvoice();
+
   useEffect(() => {
-    // Reset selection when modal opens
     if (!isOpen) {
       setSelectedInventory(null);
       setError(null);
       setIsSubmitting(false);
     }
-    // When modal opens, load existing replacements for this patient
+    // Refetch when opening to ensure fresh data
     if (isOpen) {
-      (async () => {
-        try {
-          await refreshReplacements();
-        } catch (e) {
-          console.warn('Could not load replacements', e);
-        }
-      })();
+      refetchReplacements();
     }
-  }, [isOpen]);
-
-  // Inventory search is handled by shared ProductSearchInput component
+  }, [isOpen, refetchReplacements]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!reason) {
       setError('Değişim sebebi seçiniz');
       return;
@@ -89,7 +112,6 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
       setIsSubmitting(true);
       setError(null);
       await onReplace(device.id, reason, notes, selectedInventory?.id, selectedInventory ? { id: selectedInventory.id, brand: selectedInventory.brand, model: selectedInventory.model, category: selectedInventory.category, availableInventory: selectedInventory.availableInventory } : undefined, selectedSerial || undefined);
-      // Keep the modal open after successful replace per UX requirement
       setActionMessage('Cihaz değişimi kaydedildi');
       showSuccess('Cihaz değişimi kaydedildi');
     } catch (err: any) {
@@ -101,44 +123,10 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
     }
   };
 
-  const refreshReplacements = async () => {
-    try {
-      setLoadingReplacements(true);
-      try {
-        const { status, data: j } = await apiClient.get<any>(`/api/patients/${patientId}/replacements`);
-        if (status < 400) {
-          const items = (j.data || []).map((rep: any) => {
-            const normalize = (field: any) => {
-              if (!field) return null;
-              if (typeof field === 'string') {
-                try { return JSON.parse(field); } catch (e) { return field; }
-              }
-              return field;
-            };
-            return {
-              ...rep,
-              old_device_info_parsed: normalize(rep.old_device_info || rep.oldDeviceInfo),
-              new_device_info_parsed: normalize(rep.new_device_info || rep.newDeviceInfo),
-            };
-          });
-          setReplacements(items);
-        }
-      } catch (e) {
-        console.warn('Could not refresh replacements', e);
-      }
-    } catch (e) {
-      console.warn('Could not refresh replacements', e);
-    } finally {
-      setLoadingReplacements(false);
-    }
-  };
-
   const handleCreateReturnInvoice = async (replacementId: string) => {
-    // Instead of auto-creating on server, open invoice creation modal prefilled
     try {
       setActionMessage(null);
-      // Prepare initial data for invoice modal
-      const rep = replacements.find(r => r.id === replacementId) || {};
+      const rep = replacementsList.find((r: any) => r.id === replacementId) || {};
       const supplierName = rep.supplier || rep.new_device_info_parsed?.supplier || rep.new_device_info_parsed?.supplier_name || null;
       const initial: any = {
         invoiceType: '50', // İade
@@ -160,13 +148,9 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
 
       setInvoiceInitialData(initial);
       setCurrentReplacementForInvoice(replacementId);
-      // try to infer device id from replacement if present
       setInvoiceDeviceId(rep.old_device_id || rep.oldDeviceId || rep.deviceId || device.id || null);
-      // open quick invoice modal so user can edit all fields (pre-filled)
       setInvoiceModalMode('quick');
-      // open modal on next tick to avoid the originating click event
       setTimeout(() => setShowInvoiceModal(true), 0);
-      // keep replacementId in actionMessage so we can reference when invoice is created
       setActionMessage(`Yeni iade faturası için form açıldı (replacement ${replacementId})`);
     } catch (e: any) {
       const msg = e.message || 'Fatura oluşturma modalı açılamadı';
@@ -176,25 +160,27 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
   };
 
   const handleInvoiceCreatedAndLinked = async (createdInvoice: any, replacementId?: string) => {
-    // After invoice is created client-side, link it to replacement on server
     try {
       // link with provided invoice id to server replacement
+      if (!replacementId) throw new Error('Replacement ID missing');
+
       const body = {
         invoiceId: createdInvoice.id,
         invoiceNumber: createdInvoice.invoiceNumber || createdInvoice.id,
         supplierInvoiceNumber: createdInvoice.supplierInvoiceNumber || createdInvoice.invoiceNumber
       };
-      try {
-        const { status, data: j } = await apiClient.post<any>(`/api/replacements/${replacementId}/invoice`, body);
-        if (status >= 400 || !j?.success) throw new Error(j?.error || 'Linkleme başarısız');
-      } catch (e: any) {
-        throw e;
-      }
+
+      // Use mutation
+      await linkInvoiceMutation.mutateAsync({
+        replacementId,
+        data: body as any
+      });
+
       showSuccess('İade faturası oluşturuldu ve kayda bağlandı');
-      // refresh replacement list
-      await refreshReplacements();
+      await refetchReplacements();
     } catch (err: any) {
-      showError(err?.message || 'Fatura sunucuya bağlanamadı');
+      const msg = err?.response?.data?.message || err.message || 'Fatura sunucuya bağlanamadı';
+      showError(msg);
     } finally {
       setShowInvoiceModal(false);
       setInvoiceInitialData(undefined);
@@ -204,24 +190,23 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
   const handleSendToGib = async (invoiceId: string) => {
     try {
       setActionMessage(null);
-      try {
-        const { status, data: j } = await apiClient.post<any>(`/api/return-invoices/${invoiceId}/send-to-gib`);
-        if (status >= 400 || !j?.success) throw new Error(j?.error || 'GİB gönderimi başarısız');
-      } catch (e) {
-        throw e;
-      }
+
+      await sendToGibMutation.mutateAsync({
+        invoiceId
+      } as any);
+
       setActionMessage('Fatura GİB outbox içine yazıldı ve işlem tamamlandı');
       showSuccess("Fatura GİB'e gönderildi");
-      await refreshReplacements();
+      await refetchReplacements();
     } catch (e: any) {
-      setActionMessage(e.message || 'GİB gönderimi başarısız');
-      showError(e.message || 'GİB gönderimi başarısız');
+      const msg = e?.response?.data?.message || e.message || 'GİB gönderimi başarısız';
+      setActionMessage(msg);
+      showError(msg);
     }
   };
 
   const renderInvoiceActions = (rep: any) => {
     const invoiceId = rep.return_invoice_id || rep.returnInvoiceId || rep.return_invoice?.id || rep.return_invoice_id;
-    // determine status (gib_sent or similar)
     const invoiceStatus = rep.return_invoice?.status || rep.returnInvoiceStatus || rep.return_invoice_status || rep.returnInvoice?.status || (rep.gib_sent ? 'gib_sent' : undefined);
 
     if (invoiceId && invoiceStatus === 'gib_sent') {
@@ -237,6 +222,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
 
     if (invoiceId) {
       const isLoading = !!sendLoadingMap[invoiceId];
+
       return (
         <div className="flex items-center gap-2">
           <Button type="button" size="sm" variant="outline" className="px-3 py-1 text-sm" onClick={async () => {
@@ -246,8 +232,9 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
               setPreviewInvoice(inv);
               setPreviewOpen(true);
             } catch (err: any) {
-              setActionMessage(err.message || 'Fatura yüklenemedi');
-              showError(err.message || 'Fatura yüklenemedi');
+              const msg = err.message || 'Fatura yüklenemedi';
+              setActionMessage(msg);
+              showError(msg);
             }
           }}>
             Fatura Önizle
@@ -257,7 +244,6 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             try {
               const inv = await invoiceService.getInvoice(invoiceId);
               if (!inv) throw new Error('Fatura bulunamadı');
-              // Map invoice object to form initial data shape
               const mapped = {
                 invoiceType: inv.type || 'corporate',
                 invoice_details: {
@@ -271,7 +257,6 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
               };
               setInvoiceInitialData(mapped);
               setInvoiceModalMode('edit');
-              // open on next tick to avoid click fallout
               setTimeout(() => setShowInvoiceModal(true), 0);
             } catch (err: any) {
               showError(err?.message || 'Fatura yüklenemedi');
@@ -317,7 +302,6 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
         showFooter={false}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Current Device Info */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-900 mb-2">Mevcut Cihaz</h4>
             <p className="text-sm text-gray-700">
@@ -328,7 +312,6 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             </p>
           </div>
 
-          {/* Replacement Reason */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Değişim Sebebi *
@@ -348,7 +331,6 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             </select>
           </div>
 
-          {/* Notes */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Notlar
@@ -362,15 +344,13 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             />
           </div>
 
-          {/* Error Message */}
-          {error && (
+          {errorError && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start">
               <AlertCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700">{error}</p>
+              <p className="text-sm text-red-700">{errorError}</p>
             </div>
           )}
 
-          {/* New device selection */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-900 mb-2">Talep Edilen Yeni Cihaz (Tedarikten alınacak)</h4>
             <p className="text-xs text-gray-600 mb-2">Tedarikten temin etmek istediğiniz modeli seçin. Seri takip edilen ürünler için seri seçimi yapın.</p>
@@ -386,7 +366,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
                     setError(null);
                     await onReplace(device.id, reason, notes, item.id, item ? { id: item.id, brand: item.brand, model: item.model, supplier: item.supplier ?? null, category: item.category } : undefined);
                     showSuccess('Cihaz değişimi kaydedildi');
-                    await refreshReplacements();
+                    await refetchReplacements();
                   } catch (err: any) {
                     const msg = err?.message || 'Cihaz değiştirilemedi';
                     setError(msg);
@@ -398,7 +378,6 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
               />
             </div>
 
-            {/* Show barcode and serial selector if available */}
             {selectedInventory && (
               <div className="mt-3 grid grid-cols-1 gap-2">
                 <div className="text-sm text-gray-700">Barkod: <strong>{(selectedInventory as any).barcode || (selectedInventory as any).sku || '-'}</strong></div>
@@ -415,11 +394,8 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
                 )}
               </div>
             )}
-
-            {/* Removed serial selection — serial number is not known before procurement */}
           </div>
 
-          {/* Previous replacements for this patient (allow invoice / GİB actions inline) */}
           <div className="bg-white rounded-lg p-4 border">
             <h4 className="text-sm font-medium text-gray-900 mb-2">Önceki Değişim Kayıtları</h4>
             {actionMessage && (
@@ -428,11 +404,11 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
 
             {loadingReplacements ? (
               <div className="text-sm text-gray-500">Yükleniyor...</div>
-            ) : replacements.length === 0 ? (
+            ) : replacementsList.length === 0 ? (
               <div className="text-sm text-gray-500">Bu hasta için değişim kaydı yok.</div>
             ) : (
               <ul className="space-y-3">
-                {replacements.map((rep) => (
+                {replacementsList.map((rep: any) => (
                   <li key={rep.id} className="p-2 border rounded">
                     <div className="flex items-start justify-between">
                       <div className="text-sm">
@@ -454,7 +430,6 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             )}
           </div>
 
-          {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t">
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               İptal
@@ -467,9 +442,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
         </form>
       </Modal>
 
-      {/* Invoice preview modal */}
       <InvoicePreviewModal isOpen={previewOpen} onClose={() => setPreviewOpen(false)} invoice={previewInvoice} onError={(err) => setActionMessage(err)} />
-      {/* Invoice creation modal (used to create full invoice and then link to replacement) */}
       <InvoiceModal
         isOpen={showInvoiceModal}
         onClose={() => { setShowInvoiceModal(false); setInvoiceInitialData(undefined); setCurrentReplacementForInvoice(null); }}
@@ -479,12 +452,11 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
         patientId={patientId}
         deviceId={invoiceDeviceId || undefined}
         onSuccess={(inv) => {
-            if (invoiceModalMode === 'create' || invoiceModalMode === 'quick') {
-              handleInvoiceCreatedAndLinked(inv, currentReplacementForInvoice || undefined);
-            } else {
-            // edit: refresh replacements and close modal
+          if (invoiceModalMode === 'create' || invoiceModalMode === 'quick') {
+            handleInvoiceCreatedAndLinked(inv, currentReplacementForInvoice || undefined);
+          } else {
             showSuccess('Fatura güncellendi');
-            refreshReplacements();
+            refetchReplacements();
             setShowInvoiceModal(false);
             setInvoiceInitialData(undefined);
             setCurrentReplacementForInvoice(null);
@@ -492,7 +464,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
         }}
         onError={(err) => { setActionMessage(err); showError(err); }}
       />
-      
+
     </>
   );
 };
