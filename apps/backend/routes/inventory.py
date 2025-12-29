@@ -862,21 +862,42 @@ def get_inventory_movements(item_id):
 
         # Pagination
         page = int(request.args.get('page', 1))
-        per_page = int(request.args.get('per_page', 20))
+        per_page = int(request.args.get('limit', request.args.get('per_page', 20)))
+        paginated = query.paginate(page=page, per_page=per_page, error_out=False)
+        movements = paginated.items
 
-        # Get count before pagination
-        total = query.count()
-        movements = query.order_by(StockMovement.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+        # Enrich movements with patient information
+        enriched_movements = []
+        for movement in movements:
+            movement_dict = movement.to_dict()
+            
+            # Try to find patient info from assignment
+            if movement.transaction_id:
+                # Check if it's an assignment ID
+                from models import DeviceAssignment, Patient
+                assignment = db.session.query(DeviceAssignment).filter_by(
+                    id=movement.transaction_id
+                ).first()
+                
+                if assignment and assignment.patient_id:
+                    patient = db.session.get(Patient, assignment.patient_id)
+                    if patient:
+                        movement_dict['patientId'] = patient.id
+                        movement_dict['patientName'] = f"{patient.first_name} {patient.last_name}".strip()
+            
+            enriched_movements.append(movement_dict)
 
         return jsonify({
             'success': True,
-            'data': [m.to_dict() for m in movements],
+            'data': enriched_movements,
             'meta': {
                 'page': page,
                 'perPage': per_page,
-                'total': total
-            }
-        })
+                'total': paginated.total
+            },
+            'requestId': request_id(),
+            'timestamp': datetime.utcnow().isoformat() + 'Z'
+        }), 200
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
