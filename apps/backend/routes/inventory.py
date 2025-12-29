@@ -871,9 +871,7 @@ def get_inventory_movements(item_id):
         for movement in movements:
             movement_dict = movement.to_dict()
             
-            # Try to find patient info from assignment
-            if movement.transaction_id:
-                # Try to find patient info from assignment or sale
+            # Try to find patient info from assignment or sale
             if movement.transaction_id:
                 patient_id = None
                 
@@ -890,12 +888,15 @@ def get_inventory_movements(item_id):
                 if not patient_id:
                     from models import Sale
                     # Try direct lookup (if ID matches)
-                    sale = db.session.get(Sale, movement.transaction_id)
-                    if sale:
-                        patient_id = sale.patient_id
-                    else:
-                        # Sometimes transaction_id might be string but Sale ID is int or vice-versa
-                        # Or it might be a legacy sale ID
+                    # Sale IDs are historically integers, but transaction_id is string
+                    # Flask-SQLAlchemy/SQLAlchemy needs the correct type
+                    try:
+                        sale_id = int(movement.transaction_id)
+                        sale = db.session.get(Sale, sale_id)
+                        if sale:
+                            patient_id = sale.patient_id
+                    except (ValueError, TypeError):
+                        # Not an integer, maybe a new string ID format or just not a sale
                         pass
 
                 # If we found a patient ID, fetch patient details
@@ -905,8 +906,6 @@ def get_inventory_movements(item_id):
                     if patient:
                         movement_dict['patientId'] = patient.id
                         movement_dict['patientName'] = f"{patient.first_name} {patient.last_name}".strip()
-            
-            enriched_movements.append(movement_dict)
             
             enriched_movements.append(movement_dict)
 
