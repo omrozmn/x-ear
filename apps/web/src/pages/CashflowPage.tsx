@@ -35,10 +35,11 @@ export function CashflowPage() {
 
   // Extract and filter records from response
   const records = useMemo(() => {
-    if (!data?.data) return [];
-    
+    const recordData = Array.isArray(data) ? data : (data?.data || []);
+    if (!recordData) return [];
+
     // Parse inventory info from description if not present (backend compatibility)
-    let filtered = data.data.map(record => {
+    let filtered = recordData.map((record: any) => {
       if (!record.inventoryItemId && record.description) {
         const inventoryMatch = record.description.match(/\[INVENTORY:([^:]+):([^\]]+)\]/);
         if (inventoryMatch) {
@@ -52,24 +53,24 @@ export function CashflowPage() {
       }
       return record;
     });
-    
+
     // Client-side filtering as backup (backend should handle this)
     if (filters.transactionType) {
       filtered = filtered.filter(r => r.transactionType === filters.transactionType);
     }
-    
+
     if (filters.recordType) {
       filtered = filtered.filter(r => r.recordType === filters.recordType);
     }
-    
+
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(r => 
+      filtered = filtered.filter(r =>
         r.patientName?.toLowerCase().includes(searchLower) ||
         r.description?.toLowerCase().includes(searchLower)
       );
     }
-    
+
     return filtered;
   }, [data, filters]);
 

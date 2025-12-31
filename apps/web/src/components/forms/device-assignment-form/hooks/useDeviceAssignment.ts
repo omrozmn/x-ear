@@ -134,7 +134,10 @@ export const useDeviceAssignment = ({
           ...assignment,
           ...loanerFields,
           assignedDate: assignment.assignedDate?.split('T')[0] || new Date().toISOString().split('T')[0],
-          reportStatus: normalizedReportStatus // Explicitly set normalized value
+          reportStatus: normalizedReportStatus, // Explicitly set normalized value
+          deliveryStatus: (assignment.deliveryStatus || (assignment as any).delivery_status || 'pending').toLowerCase(),
+          // Ensure ear is normalized (backend might send LEFT/RIGHT uppercase)
+          ear: (assignment.ear || (assignment as any).ear_side || 'left').toLowerCase() as 'left' | 'right' | 'both',
         });
 
         // If assignment has deviceId, find and select the device
@@ -216,6 +219,23 @@ export const useDeviceAssignment = ({
           if (device) {
             setSelectedDevice(device);
             setSearchTerm(`${device.brand} ${device.model}`);
+          } else {
+            // Fallback: Create synthetic device from assignment data if not found in inventory
+            console.warn('Device not found in loaded inventory, using assignment data fallback');
+            const syntheticDevice: DeviceInventoryItem = {
+              id: assignment.deviceId,
+              brand: (assignment as any).brand || (assignment as any).deviceBrand || 'Bilinmiyor',
+              model: (assignment as any).model || (assignment as any).deviceModel || 'Bilinmiyor',
+              price: assignment.listPrice || 0,
+              ear: assignment.ear || 'bilateral',
+              category: 'hearing_aid',
+              barcode: '',
+              availableInventory: 0,
+              availableSerials: [],
+              status: 'out_of_stock'
+            };
+            setSelectedDevice(syntheticDevice);
+            setSearchTerm(`${syntheticDevice.brand} ${syntheticDevice.model}`);
           }
         }
       } catch (error) {

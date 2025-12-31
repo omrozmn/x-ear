@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { DatePicker } from '@x-ear/ui-web';
 import { useInventoryGetItemMovements } from '../../api/generated/inventory/inventory';
 import type { StockMovement } from '../../api/generated/schemas';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
@@ -10,15 +11,19 @@ interface InventoryMovementsTableProps {
 
 export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = ({ inventoryId }) => {
     const [page, setPage] = useState(1);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
 
     // Use orval-generated hook with CORRECT endpoint (path param, not query)
+    // Note: Backend supports startTime/endTime
     const { data: movementsResponse, isLoading } = useInventoryGetItemMovements(
         inventoryId || '', // item_id as path parameter
         {
             page,
-            limit: 20
-        }
+            limit: 20,
+            startTime: startDate ? new Date(startDate).toISOString() : undefined,
+            endTime: endDate ? new Date(endDate).toISOString() : undefined
+        } as any
     );
 
     const movements: StockMovement[] = movementsResponse?.data?.data || [];
@@ -38,6 +43,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
             'production': 'Üretim',
             'loaner_out': 'Emanet Verildi',
             'loaner_return': 'Emanet İade',
+            'manual_add': 'Manuel Eklendi',
         };
         return labels[type] || type;
     };
@@ -80,7 +86,57 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
 
     return (
         <div className="space-y-4">
-            {/* Filters could go here */}
+            {/* Filters */}
+            <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 items-end">
+                <div className="w-full sm:w-auto">
+                    <DatePicker
+                        label="Başlangıç Tarihi"
+                        value={startDate ? new Date(startDate) : null}
+                        onChange={(date: Date | null) => {
+                            if (!date) {
+                                setStartDate('');
+                            } else {
+                                const yyyy = date.getFullYear();
+                                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                                const dd = String(date.getDate()).padStart(2, '0');
+                                setStartDate(`${yyyy}-${mm}-${dd}`);
+                            }
+                            setPage(1);
+                        }}
+                        placeholder="Tarih seçin"
+                    />
+                </div>
+                <div className="w-full sm:w-auto">
+                    <DatePicker
+                        label="Bitiş Tarihi"
+                        value={endDate ? new Date(endDate) : null}
+                        onChange={(date: Date | null) => {
+                            if (!date) {
+                                setEndDate('');
+                            } else {
+                                const yyyy = date.getFullYear();
+                                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                                const dd = String(date.getDate()).padStart(2, '0');
+                                setEndDate(`${yyyy}-${mm}-${dd}`);
+                            }
+                            setPage(1);
+                        }}
+                        placeholder="Tarih seçin"
+                    />
+                </div>
+                {(startDate || endDate) && (
+                    <button
+                        onClick={() => {
+                            setStartDate('');
+                            setEndDate('');
+                            setPage(1);
+                        }}
+                        className="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-300 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 h-[38px] mb-[2px]"
+                    >
+                        Filtreyi Temizle
+                    </button>
+                )}
+            </div>
 
             <div className="overflow-x-auto rounded-lg border border-gray-200">
                 <table className="min-w-full divide-y divide-gray-200">
@@ -134,6 +190,73 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination Controls */}
+            {movementsResponse?.data?.meta && (
+                <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-lg sm:px-6">
+                    <div className="flex items-center justify-between w-full sm:hidden">
+                        <button
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            disabled={page === 1}
+                            className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${page === 1
+                                ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                                : 'text-gray-700 bg-white hover:bg-gray-50 border border-gray-300'
+                                }`}
+                        >
+                            Önceki
+                        </button>
+                        <button
+                            onClick={() => setPage((p) => p + 1)}
+                            disabled={page * 20 >= (movementsResponse?.data?.meta?.total || 0)}
+                            className={`relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium rounded-md ${page * 20 >= (movementsResponse?.data?.meta?.total || 0)
+                                ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                                : 'text-gray-700 bg-white hover:bg-gray-50 border border-gray-300'
+                                }`}
+                        >
+                            Sonraki
+                        </button>
+                    </div>
+                    <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                        <div>
+                            <p className="text-sm text-gray-700">
+                                Toplam <span className="font-medium">{movementsResponse?.data?.meta?.total}</span> sonuçtan{' '}
+                                <span className="font-medium">{(page - 1) * 20 + 1}</span> -{' '}
+                                <span className="font-medium">
+                                    {Math.min(page * 20, movementsResponse?.data?.meta?.total || 0)}
+                                </span>{' '}
+                                arası gösteriliyor
+                            </p>
+                        </div>
+                        <div>
+                            <nav className="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                <button
+                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${page === 1
+                                        ? 'text-gray-300 cursor-not-allowed'
+                                        : 'text-gray-500 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    <span className="sr-only">Önceki</span>
+                                    {/* ChevronLeft equivalent */}
+                                    &larr; Önceki
+                                </button>
+                                <button
+                                    onClick={() => setPage((p) => p + 1)}
+                                    disabled={page * 20 >= (movementsResponse?.data?.meta?.total || 0)}
+                                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${page * 20 >= (movementsResponse?.data?.meta?.total || 0)
+                                        ? 'text-gray-300 cursor-not-allowed'
+                                        : 'text-gray-500 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    Sonraki &rarr;
+                                    <span className="sr-only">Sonraki</span>
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

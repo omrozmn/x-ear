@@ -47,6 +47,8 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
     loanerBrand: string;
     loanerModel: string;
     loanerSerialNumber: string;
+    loanerSerialNumberLeft: string;
+    loanerSerialNumberRight: string;
     loanerInventoryId: string;
   }>({
     mode: 'edit',
@@ -70,6 +72,8 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
     loanerBrand: '',
     loanerModel: '',
     loanerSerialNumber: '',
+    loanerSerialNumberLeft: '',
+    loanerSerialNumberRight: '',
     loanerInventoryId: ''
   });
 
@@ -172,6 +176,8 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
         loanerBrand: device.loanerBrand || '',
         loanerModel: device.loanerModel || '',
         loanerSerialNumber: device.loanerSerialNumber || '',
+        loanerSerialNumberLeft: device.loanerSerialNumberLeft || '',
+        loanerSerialNumberRight: device.loanerSerialNumberRight || '',
         loanerInventoryId: device.loanerInventoryId || ''
       }));
 
@@ -238,6 +244,8 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
         loanerBrand: formData.loanerBrand,
         loanerModel: formData.loanerModel,
         loanerSerialNumber: formData.loanerSerialNumber,
+        loanerSerialNumberLeft: formData.loanerSerialNumberLeft,
+        loanerSerialNumberRight: formData.loanerSerialNumberRight,
         loanerInventoryId: formData.loanerInventoryId
       };
 
@@ -432,7 +440,14 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                     <div className="grid grid-cols-2 gap-2">
                       <Input placeholder="Marka" value={formData.loanerBrand} onChange={e => setFormData(p => ({ ...p, loanerBrand: e.target.value }))} className="bg-white text-sm" />
                       <Input placeholder="Model" value={formData.loanerModel} onChange={e => setFormData(p => ({ ...p, loanerModel: e.target.value }))} className="bg-white text-sm" />
-                      <Input placeholder="Seri No" value={formData.loanerSerialNumber} onChange={e => setFormData(p => ({ ...p, loanerSerialNumber: e.target.value }))} className="bg-white text-sm col-span-2" />
+                      {isBilateral ? (
+                        <div className="col-span-2 grid grid-cols-2 gap-2">
+                          <Input placeholder="Sağ Kulak SN" value={formData.loanerSerialNumberRight} onChange={e => setFormData(p => ({ ...p, loanerSerialNumberRight: e.target.value }))} className="bg-white text-sm" />
+                          <Input placeholder="Sol Kulak SN" value={formData.loanerSerialNumberLeft} onChange={e => setFormData(p => ({ ...p, loanerSerialNumberLeft: e.target.value }))} className="bg-white text-sm" />
+                        </div>
+                      ) : (
+                        <Input placeholder="Seri No" value={formData.loanerSerialNumber} onChange={e => setFormData(p => ({ ...p, loanerSerialNumber: e.target.value }))} className="bg-white text-sm col-span-2" />
+                      )}
                     </div>
                   </div>
                 )}

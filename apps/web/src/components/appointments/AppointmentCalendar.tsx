@@ -31,7 +31,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   const [currentView, setCurrentView] = useState<CalendarView>(view);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState<'view' | 'create'>('view');
+  const [modalMode, setModalMode] = useState<'view' | 'create' | 'edit'>('view');
   const [quickAppointmentData, setQuickAppointmentData] = useState<{
     date: string;
     time: string;
@@ -133,47 +133,43 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
           <div className="flex bg-gray-100 rounded-lg p-1">
             <Button
               onClick={() => setCurrentView('day')}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                currentView === 'day'
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${currentView === 'day'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
               variant='ghost'>
               Gün
             </Button>
             <Button
               onClick={() => setCurrentView('week')}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                currentView === 'week'
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${currentView === 'week'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
               variant='ghost'>
               Hafta
             </Button>
             <Button
               onClick={() => setCurrentView('month')}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                currentView === 'month'
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${currentView === 'month'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
               variant='ghost'>
               Ay
             </Button>
             <Button
               onClick={() => setCurrentView('list')}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                currentView === 'list'
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${currentView === 'list'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
               variant='ghost'>
               Liste
             </Button>
           </div>
         </div>
-        
+
         {showCreateButton && (
           <Button
             onClick={() => {
@@ -202,7 +198,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
             onDayDoubleClick={handleDayDoubleClick}
           />
         )}
-        
+
         {currentView === 'week' && (
           <CalendarWeek
             selectedDate={currentDate}
@@ -212,7 +208,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
             onTimeSlotClick={handleTimeSlotClick}
           />
         )}
-        
+
         {currentView === 'day' && (
           <CalendarDay
             selectedDate={currentDate}
@@ -222,7 +218,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
             onTimeSlotClick={handleTimeSlotClick}
           />
         )}
-        
+
         {currentView === 'list' && (
           <CalendarList
             selectedDate={currentDate}

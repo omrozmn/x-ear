@@ -4,6 +4,16 @@ import { Search, User, Plus } from 'lucide-react';
 import { usePatients } from '../../hooks/usePatients';
 import { Patient } from '../../types/patient';
 
+interface PatientAutocompleteProps {
+  value?: string;
+  patientId?: string;
+  onSelect: (patient: Patient) => void;
+  onAddNew?: (name: string) => void;
+  placeholder?: string;
+  className?: string;
+  error?: string;
+}
+
 export function PatientAutocomplete({
   value = '',
   patientId = '',

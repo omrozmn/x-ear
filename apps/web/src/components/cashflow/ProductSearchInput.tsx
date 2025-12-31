@@ -62,7 +62,7 @@ export function ProductSearchInput({
     enabled: search.length >= 2,
   });
 
-  const items = inventoryData?.data || [];
+  const items = Array.isArray(inventoryData) ? inventoryData : (inventoryData?.data || []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

@@ -36,9 +36,9 @@ export type PatientConversionStep =
   | 'delivered';
 
 // Device Types
-export type DeviceType = 'hearing_aid' | 'cochlear_implant' | 'bone_anchored';
+export type DeviceType = 'hearing_aid' | 'cochlear_implant' | 'bone_anchored' | (string & {});
 export type DeviceSide = 'left' | 'right' | 'both';
-export type DeviceStatus = 'active' | 'trial' | 'returned' | 'replaced' | 'assigned';
+export type DeviceStatus = 'active' | 'trial' | 'returned' | 'replaced' | 'assigned' | (string & {});
 
 // SGK Types
 export type SGKStatus = 'pending' | 'approved' | 'rejected' | 'paid';
@@ -84,7 +84,7 @@ export interface PatientDevice {
   batteryType?: string;
   price?: number;
   sgkScheme?: boolean;
-  settings?: Record<string, unknown>;
+  settings?: Record<string, unknown> | boolean;
   saleId?: string;  // Sale ID for linking to sales history
   listPrice?: number;
   salePrice?: number;

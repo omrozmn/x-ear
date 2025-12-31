@@ -1,15 +1,15 @@
 import { Button } from '@x-ear/ui-web';
 import React from 'react';
 import { Patient } from '../../types/patient';
-import { 
-  User, 
-  Headphones, 
-  CreditCard, 
-  Shield, 
-  FileText, 
-  Clock, 
-  StickyNote, 
-  Calendar 
+import {
+  User,
+  Headphones,
+  CreditCard,
+  Shield,
+  FileText,
+  Clock,
+  StickyNote,
+  Calendar
 } from 'lucide-react';
 
 // Geçici olarak kendi Tabs bileşenini tanımlıyorum
@@ -20,17 +20,17 @@ const Tabs: React.FC<{
   children: React.ReactNode;
 }> & {
   List: React.FC<{ className?: string; children: React.ReactNode }>;
-  Trigger: React.FC<{ 
-    value: string; 
-    disabled?: boolean; 
-    className?: string; 
+  Trigger: React.FC<{
+    value: string;
+    disabled?: boolean;
+    className?: string;
     children: React.ReactNode;
   }>;
 } = ({ value, onValueChange, className, children }) => {
   return (
     <div className={className}>
-      {React.Children.map(children, child => 
-        React.isValidElement(child) 
+      {React.Children.map(children, child =>
+        React.isValidElement(child)
           ? React.cloneElement(child, { activeValue: value, onValueChange })
           : child
       )}
@@ -38,8 +38,8 @@ const Tabs: React.FC<{
   );
 };
 
-const TabsList: React.FC<{ 
-  className?: string; 
+const TabsList: React.FC<{
+  className?: string;
   children: React.ReactNode;
   activeValue?: string;
   onValueChange?: (value: string) => void;
@@ -47,8 +47,8 @@ const TabsList: React.FC<{
   return (
     <div className={`border-b border-gray-200 ${className || ''}`}>
       <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-        {React.Children.map(children, child => 
-          React.isValidElement(child) 
+        {React.Children.map(children, child =>
+          React.isValidElement(child)
             ? React.cloneElement(child, { activeValue, onValueChange })
             : child
         )}
@@ -57,16 +57,16 @@ const TabsList: React.FC<{
   );
 };
 
-const TabsTrigger: React.FC<{ 
-  value: string; 
-  disabled?: boolean; 
-  className?: string; 
+const TabsTrigger: React.FC<{
+  value: string;
+  disabled?: boolean;
+  className?: string;
   children: React.ReactNode;
   activeValue?: string;
   onValueChange?: (value: string) => void;
 }> = ({ value, disabled, className, children, activeValue, onValueChange }) => {
   const isActive = activeValue === value;
-  
+
   return (
     <Button
       onClick={() => !disabled && onValueChange?.(value)}
@@ -76,8 +76,8 @@ const TabsTrigger: React.FC<{
         ${isActive
           ? 'border-blue-500 text-blue-600'
           : disabled
-          ? 'border-transparent text-gray-400 cursor-not-allowed'
-          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ? 'border-transparent text-gray-400 cursor-not-allowed'
+            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
         }
         ${className || ''}
       `}
@@ -90,14 +90,14 @@ const TabsTrigger: React.FC<{
 Tabs.List = TabsList;
 Tabs.Trigger = TabsTrigger;
 
-export type PatientTab = 
-  | 'general' 
-  | 'devices' 
-  | 'sales' 
-  | 'sgk' 
-  | 'documents' 
-  | 'timeline' 
-  | 'notes' 
+export type PatientTab =
+  | 'general'
+  | 'devices'
+  | 'sales'
+  | 'sgk'
+  | 'documents'
+  | 'timeline'
+  | 'notes'
   | 'appointments'
   | 'overview'
   | 'hearing-tests'
@@ -136,6 +136,7 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({
       count: 0, // TODO: Get sales count from patient data
       disabled: false,
     },
+    /* SGK Tab - v1'de aktif edilecek
     {
       id: 'sgk',
       label: 'SGK İşlemleri',
@@ -143,6 +144,7 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({
       count: null,
       disabled: false,
     },
+    */
     {
       id: 'documents',
       label: 'Belgeler',
@@ -168,7 +170,7 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({
 
   return (
     <Tabs value={activeTab} onValueChange={(value) => {
-      const allowed: PatientTab[] = ['general','devices','sales','sgk','documents','timeline','notes','appointments'];
+      const allowed: PatientTab[] = ['general', 'devices', 'sales', 'sgk', 'documents', 'timeline', 'notes', 'appointments'];
       if (allowed.includes(value as PatientTab)) onTabChange(value as PatientTab);
     }} className="w-full">
       <Tabs.List className="grid w-full grid-cols-4 lg:grid-cols-8">

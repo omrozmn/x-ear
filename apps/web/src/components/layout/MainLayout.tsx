@@ -152,6 +152,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { key: 'pos', label: 'Tahsilat (POS)', icon: CreditCard, href: '/pos' },
     { key: 'cashflow', label: 'Kasa', icon: Wallet, href: '/cashflow' },
     { key: 'campaigns', label: 'SMS Gönderimi', icon: MessageSquare, href: '/campaigns' },
+    /* SGK - v1'de aktif edilecek
     {
       key: 'sgk',
       label: 'SGK',
@@ -163,6 +164,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         { label: 'Belge Indirme', href: '/sgk/downloads' }
       ]
     },
+    */
     { key: 'reports', label: 'Raporlar', icon: PieChart, href: '/reports' },
     { key: 'automation', label: 'Otomasyon', icon: Bot, href: '/automation' },
     {

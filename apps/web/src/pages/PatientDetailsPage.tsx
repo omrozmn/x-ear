@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
-import { 
-  ArrowLeft, 
-  Calendar, 
-  Activity, 
-  Shield, 
+import {
+  ArrowLeft,
+  Calendar,
+  Activity,
+  Shield,
   CreditCard
 } from 'lucide-react';
 import { usePatient } from '../hooks/patient/usePatient';
@@ -147,8 +147,8 @@ export const PatientDetailsPage: React.FC = () => {
     return (
       <>
         {/* Patient Header */}
-        <PatientHeader 
-          patient={patient} 
+        <PatientHeader
+          patient={patient}
           isLoading={isLoading}
           onEdit={() => setShowEditModal(true)}
           onTagUpdate={() => setShowTagModal(true)}
@@ -166,7 +166,7 @@ export const PatientDetailsPage: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center space-x-2">
               <Activity className="h-5 w-5 text-green-500" />
@@ -176,7 +176,8 @@ export const PatientDetailsPage: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
+          {/* SGK Durumu - v1'de aktif edilecek
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center space-x-2">
               <Shield className="h-5 w-5 text-purple-500" />
@@ -186,7 +187,8 @@ export const PatientDetailsPage: React.FC = () => {
               </div>
             </div>
           </div>
-          
+          */}
+
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center space-x-2">
               <CreditCard className="h-5 w-5 text-red-500" />

@@ -48,7 +48,7 @@ export const companyService = {
       url: '/api/tenant/company',
       method: 'GET',
     });
-    return response.data.data;
+    return response.data;
   },
 
   /**
@@ -60,7 +60,7 @@ export const companyService = {
       method: 'PUT',
       data,
     });
-    return response.data.data;
+    return response.data;
   },
 
   /**
@@ -76,12 +76,12 @@ export const companyService = {
         method: 'POST',
         data: { data: file },
       });
-      return response.data.data;
+      return response.data;
     } else {
       // FormData upload
       const formData = new FormData();
       formData.append('file', file);
-      
+
       const response = await customInstance<{ success: boolean; data: AssetUploadResponse }>({
         url: `/api/tenant/company/upload/${type}`,
         method: 'POST',
@@ -90,7 +90,7 @@ export const companyService = {
           'Content-Type': 'multipart/form-data',
         },
       });
-      return response.data.data;
+      return response.data;
     }
   },
 

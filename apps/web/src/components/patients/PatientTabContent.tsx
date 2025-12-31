@@ -62,8 +62,8 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
     case 'overview':
       return (
         <ErrorBoundary>
-          <PatientOverviewTab 
-            patient={patient} 
+          <PatientOverviewTab
+            patient={patient}
             showNoteModal={showNoteModal}
             onCloseNoteModal={onCloseNoteModal}
           />

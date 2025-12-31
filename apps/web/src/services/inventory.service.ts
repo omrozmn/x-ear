@@ -121,7 +121,7 @@ export class InventoryService {
         data,
       });
 
-      const newItem = response.data.data;
+      const newItem = response.data;
 
       // Clear localStorage cache to force refresh from API
       localStorage.removeItem(this.storageKey);
@@ -151,7 +151,7 @@ export class InventoryService {
         data,
       });
 
-      const updatedItem = response.data.data;
+      const updatedItem = response.data;
 
       // Clear localStorage cache to force refresh from API
       localStorage.removeItem(this.storageKey);

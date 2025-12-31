@@ -25,8 +25,13 @@ export const LoanerInfoCard: React.FC<LoanerInfoCardProps> = ({ device, onReturn
                     <div className="text-sm text-amber-800 space-y-1">
                         <p><strong>Marka:</strong> {device.loanerBrand || device.brand}</p>
                         <p><strong>Model:</strong> {device.loanerModel || device.model}</p>
-                        {device.loanerSerialNumber && (
-                            <p><strong>Seri No:</strong> {device.loanerSerialNumber}</p>
+                        {(device as any).loanerSerialNumberLeft && (device as any).loanerSerialNumberRight ? (
+                            <div className="mt-1 space-y-1">
+                                <p className="text-xs"><strong className="text-blue-700">Sol SN:</strong> {(device as any).loanerSerialNumberLeft}</p>
+                                <p className="text-xs"><strong className="text-red-700">Sağ SN:</strong> {(device as any).loanerSerialNumberRight}</p>
+                            </div>
+                        ) : (
+                            device.loanerSerialNumber && <p><strong>Seri No:</strong> {device.loanerSerialNumber}</p>
                         )}
                     </div>
                 </div>

@@ -287,7 +287,7 @@ export class PatientApiService {
     }
   }
 
-  async createSale(patientId: string, saleData: unknown): Promise<ApiEnvelope<unknown>> {
+  async createSale(patientId: string, saleData: unknown): Promise<any> {
     try {
       // Extract product ID and basic fields from saleData
       let productId: string | undefined = (saleData as Record<string, unknown>)?.productId as string | undefined;

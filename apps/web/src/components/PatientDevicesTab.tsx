@@ -194,8 +194,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
       const assignmentId = deviceToReturn.id;
 
       await returnLoanerMutation.mutateAsync({
-        assignmentId,
-        data: { notes: 'Kullanıcı tarafından manuel olarak stoğa döndürüldü.' }
+        assignmentId
       });
 
       setSuccessMessage('Emanet cihaz stoğa geri alındı');
@@ -593,6 +592,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
           isOpen={showAssignmentForm}
           onClose={handleAssignmentFormClose}
           onSave={handleDeviceAssignment}
+          onUpdate={handleDeviceAssignment}
           assignment={editingDevice ? {
             ...editingDevice,
             deviceId: editingDevice.id,

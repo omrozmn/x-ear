@@ -13,8 +13,8 @@ export interface DeviceAssignmentFormProps {
   assignment?: DeviceAssignment | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave?: (assignment: DeviceAssignment) => void;
-  onUpdate?: (assignment: DeviceAssignment) => void;
+  onSave?: (assignment: DeviceAssignment) => Promise<void> | void;
+  onUpdate?: (assignment: DeviceAssignment) => Promise<void> | void;
 }
 
 export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
@@ -27,6 +27,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
 }) => {
   /* Manual Device Entry State */
   const [isManualMode, setIsManualMode] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [manualDevice, setManualDevice] = useState({
     brand: '',
     model: '',
@@ -67,6 +68,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
       }
     }
 
+    setIsSaving(true); // Set saving state to true
     try {
       // Merge canonical calculated pricing into submission payload to ensure saved records
       // include the SGK reduction, salePrice and patient payment values.
@@ -102,17 +104,19 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
       if (assignment?.id) {
         // Update existing assignment
         console.log('💾 [DeviceAssignmentForm] Calling onUpdate with:', assignmentData);
-        onUpdate?.(assignmentData);
+        await onUpdate?.(assignmentData); // Await the update
       } else {
         // Create new assignment
         console.log('💾 [DeviceAssignmentForm] Calling onSave with:', assignmentData);
-        onSave?.(assignmentData);
+        await onSave?.(assignmentData); // Await the save
       }
 
       console.log('💾 [DeviceAssignmentForm] onClose() çağrılıyor...');
       onClose();
     } catch (error) {
       console.error('Cihaz ataması kaydedilirken hata:', error);
+    } finally {
+      setIsSaving(false); // Always reset saving state
     }
   };
 
@@ -320,7 +324,8 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
           </Button>
           <Button
             type="submit"
-            disabled={!selectedDevice && !isManualMode}
+            disabled={(!selectedDevice && !isManualMode) || isSaving}
+            loading={isSaving}
             className="flex items-center gap-2"
           >
             <Save className="w-4 h-4" />
