@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.rate_limit import rate_limit
 from models.user import User
 from models.base import db
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import create_access_token, create_refresh_token, verify_jwt_in_request, get_jwt_identity, jwt_required, get_jwt
 
 def now_utc():
     """Return current UTC timestamp"""
@@ -108,7 +108,7 @@ def forgot_password():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
+
 from services.communication_service import communication_service
 
 # ... existing imports ...

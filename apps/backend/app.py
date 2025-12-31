@@ -182,7 +182,8 @@ else:
 CORS(app, resources={r"/*": {
     "origins": origins,
     "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    "allow_headers": ["Content-Type", "Authorization", "Idempotency-Key", "X-Request-Id", "x-request-id", "sentry-trace", "baggage"]
+    "allow_headers": ["Content-Type", "Authorization", "Idempotency-Key", "X-Request-Id", "x-request-id", "sentry-trace", "baggage"],
+    "supports_credentials": True
 }})
 # Ensure CORS exposes common headers and handles preflight headers predictably
 # CRITICAL: This must match the allow_headers in CORS() above
