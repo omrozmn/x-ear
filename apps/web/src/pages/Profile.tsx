@@ -10,18 +10,31 @@ import { useUsersUpdateMe, useUsersChangePassword, useUsersGetCurrentUser } from
 export const ProfilePage: React.FC = () => {
 
     const { user, token, setUser, verifyOtp, sendOtp, isInitialized } = useAuthStore();
-    const navigate = typeof window !== 'undefined' ? (window as any).__tanstack_router_navigate || (() => {}) : () => {};
+    const navigate = typeof window !== 'undefined' ? (window as any).__tanstack_router_navigate || (() => { }) : () => { };
 
-    // Eğer auth initialization tamamlandıysa ve token yoksa login'e yönlendir
+    // Fetch fresh user data on mount to validate token and ensure data consistency
+    const { data: userDataResponse, isError: userQueryError, isLoading: userQueryLoading } = useUsersGetCurrentUser({
+        query: {
+            retry: false, // Do not retry if 401, let the global handler manage it
+            refetchOnWindowFocus: true,
+            enabled: !!token // Only run query if we have a token
+        }
+    });
+
+    // Best practice: Redirect to login only when the user query fails with an auth error
+    // This allows the refresh flow to complete before making a redirect decision
     useEffect(() => {
-        if (isInitialized && !token) {
+        // If query failed (401 after refresh attempt failed), redirect to login
+        if (userQueryError && isInitialized) {
+            console.log('[Profile] User query failed, redirecting to login');
             if (typeof window !== 'undefined') {
                 window.location.href = '/login';
             }
         }
-    }, [token, isInitialized]);
+    }, [userQueryError, isInitialized]);
 
-    if (!isInitialized) return (
+    // Show loading while initializing or fetching user
+    if (!isInitialized || userQueryLoading) return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
             <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -30,13 +43,6 @@ export const ProfilePage: React.FC = () => {
         </div>
     );
 
-    // Fetch fresh user data on mount to validate token and ensure data consistency
-    const { data: userDataResponse } = useUsersGetCurrentUser({
-        query: {
-            retry: false, // Do not retry if 401, let the global handler manage it
-            refetchOnWindowFocus: true
-        }
-    });
 
     // Sync remote data to store and local state
     React.useEffect(() => {

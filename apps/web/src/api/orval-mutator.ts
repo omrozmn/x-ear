@@ -294,39 +294,25 @@ apiClient.interceptors.response.use(
               }
             } else {
               (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
-              // Force logout if refresh endpoint returns non-200
-              try {
-                // Use store to clear auth state cleanly without reload loop
-                const { logout } = useAuthStore.getState();
-                logout();
-              } catch (e) {
-                // Fallback if store access fails
-                try {
-                  localStorage.removeItem('auth_token');
-                  localStorage.removeItem('refresh_token');
-                  localStorage.removeItem(AUTH_TOKEN);
-                  localStorage.removeItem(REFRESH_TOKEN);
-                  sessionStorage.clear();
-                } catch (err) { }
-                delete (window as any).__AUTH_TOKEN__;
-              }
-            }
-          } catch (e) {
-            (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
-            // Force logout on error
-            try {
-              const { logout } = useAuthStore.getState();
-              logout();
-            } catch (err) {
+              // Clear tokens on refresh failure - UI layer will handle redirect
               try {
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('refresh_token');
                 localStorage.removeItem(AUTH_TOKEN);
                 localStorage.removeItem(REFRESH_TOKEN);
-                sessionStorage.clear();
-              } catch (storageErr) { }
+              } catch (err) { }
               delete (window as any).__AUTH_TOKEN__;
             }
+          } catch (e) {
+            (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+            // Clear tokens on error - UI layer will handle redirect
+            try {
+              localStorage.removeItem('auth_token');
+              localStorage.removeItem('refresh_token');
+              localStorage.removeItem(AUTH_TOKEN);
+              localStorage.removeItem(REFRESH_TOKEN);
+            } catch (storageErr) { }
+            delete (window as any).__AUTH_TOKEN__;
           } finally {
             (apiClient as any)._refreshing = false;
             (apiClient as any)._refreshSubscribers = [];
@@ -341,20 +327,14 @@ apiClient.interceptors.response.use(
               config.headers['Authorization'] = `Bearer ${token}`;
               resolve(apiClient(config));
             } else {
-              // Failed to refresh - logout
+              // Failed to refresh - clear tokens, UI will handle redirect
               try {
-                const { logout } = useAuthStore.getState();
-                logout();
-              } catch (err) {
-                try {
-                  localStorage.removeItem('auth_token');
-                  localStorage.removeItem('refresh_token');
-                  localStorage.removeItem(AUTH_TOKEN);
-                  localStorage.removeItem(REFRESH_TOKEN);
-                  sessionStorage.clear();
-                } catch (storageErr) { }
-                delete (window as any).__AUTH_TOKEN__;
-              }
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem(AUTH_TOKEN);
+                localStorage.removeItem(REFRESH_TOKEN);
+              } catch (storageErr) { }
+              delete (window as any).__AUTH_TOKEN__;
 
               reject(error);
             }
