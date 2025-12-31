@@ -35,7 +35,7 @@ export function CashflowPage() {
 
   // Extract and filter records from response
   const records = useMemo(() => {
-    const recordData = Array.isArray(data) ? data : (data?.data || []);
+    const recordData = Array.isArray(data) ? data : ((data as any)?.data || []);
     if (!recordData) return [];
 
     // Parse inventory info from description if not present (backend compatibility)

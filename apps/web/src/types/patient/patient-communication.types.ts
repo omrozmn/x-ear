@@ -4,9 +4,9 @@
  * @version 1.0.0
  */
 
-import type { 
-  CommunicationType, 
-  CommunicationDirection, 
+import type {
+  CommunicationType,
+  CommunicationDirection,
   CommunicationStatus,
   ReportType,
   AppointmentStatus,
@@ -75,12 +75,18 @@ export interface Sale {
   totalAmount: number; // Required in both
   listPriceTotal?: number;
   discountAmount?: number;
+  finalAmount?: number; // Total after discounts and SGK
+  paidAmount?: number; // Total amount paid so far
+  remainingAmount?: number; // Calculated: finalAmount - paidAmount
   sgkCoverage?: number;
   patientPayment?: number; // From Orval type
   paymentMethod?: string;
+  paymentStatus?: 'pending' | 'partial' | 'completed'; // Payment status
   status?: SaleStatus;
   notes?: string;
   payments?: PaymentRecord[]; // Additional field for local use
+  devices?: any[]; // Device details from assignments
+  paymentRecords?: any[]; // Payment records from PaymentRecord table
   createdAt?: string;
   updatedAt?: string;
 }

@@ -54,23 +54,8 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     }
   };
 
-  const getVatRate = (sale: PatientSale) => {
-    // Hearing aid category has 8% VAT, others have 20%
-    const hasDevices = 'devices' in sale && Array.isArray((sale as any).devices);
-    return hasDevices && sale.devices?.some(device => 
-      device.name?.toLowerCase().includes('işitme') || 
-      device.name?.toLowerCase().includes('hearing')
-    ) ? 8 : 20;
-  };
-
-  const calculateDisplayTotal = (sale: PatientSale) => {
-    const baseTotal = ('finalAmount' in sale && sale.finalAmount !== undefined)
-      ? (sale.finalAmount as number)
-      : (sale.totalAmount ?? 0) - (sale.discountAmount ?? 0) - (sale.sgkCoverage ?? 0);
-    const vatRate = getVatRate(sale);
-    const vatAmount = (baseTotal * vatRate) / 100;
-    return baseTotal + vatAmount;
-  };
+  /* Removed incorrect client-side VAT calculation. 
+     Backend's finalAmount/totalAmount is already the correct figure. */
 
   const renderDevicesSummary = (sale: PatientSale) => {
     const hasDevices = 'devices' in sale && Array.isArray((sale as any).devices);
@@ -114,7 +99,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     if (sale.paymentMethod === 'card') methods.push('Kart');
     if (sale.paymentMethod === 'installment') methods.push('Taksit');
     if (sale.sgkCoverage && sale.sgkCoverage > 0) methods.push('SGK');
-    
+
     return methods.join(', ') || 'Belirtilmemiş';
   };
 
@@ -123,15 +108,15 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     if (s === 'cancelled') {
       return <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">İptal Edildi</span>;
     }
-    
+
     if (remainingAmount <= 0) {
       return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Tamamlandı</span>;
     }
-    
+
     if (paidAmount > 0) {
       return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Kısmi Ödeme</span>;
     }
-    
+
     return <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">Bekliyor</span>;
   };
 
@@ -167,10 +152,13 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
               Liste Fiyatı
             </th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              SGK Desteği
+            </th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
               İndirim
             </th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              KDV Dahil Toplam
+              Toplam Tutar
             </th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
               Alınan Ödeme
@@ -189,17 +177,23 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
         <tbody className="bg-white divide-y divide-gray-200">
           {(!sales || sales.length === 0) ? (
             <tr>
-              <td colSpan={10} className="px-6 py-8 text-center text-gray-500">
+              <td colSpan={11} className="px-6 py-8 text-center text-gray-500">
                 Henüz satış kaydı bulunmuyor
               </td>
             </tr>
           ) : (
             sales.map((sale) => {
-              const displayTotal = calculateDisplayTotal(sale);
+              // Simpler calculation: Trust the backend's finalAmount/totalAmount
+              const displayTotal = ('finalAmount' in sale && sale.finalAmount !== undefined)
+                ? (sale.finalAmount as number)
+                : (sale.totalAmount ?? 0);
+
               const paidAmount = ('paidAmount' in sale && sale.paidAmount !== undefined) ? (sale.paidAmount as number) : 0;
               const remainingAmount = displayTotal - paidAmount;
               const discountAmount = sale.discountAmount || 0;
-              const listPrice = sale.totalAmount || 0;
+              const listPrice = sale.listPriceTotal || sale.totalAmount || 0;
+              const sgkCoverage = sale.sgkCoverage || 0;
+
               const hasInvoice = Boolean((sale as any).invoice);
               const statusStr = ('paymentStatus' in sale ? sale.paymentStatus as string | undefined : undefined);
               const cancelledClass = statusStr === 'cancelled' ? 'opacity-50 line-through pointer-events-none' : '';
@@ -223,6 +217,9 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
                     {formatCurrency(listPrice)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-blue-600">
+                    {sgkCoverage > 0 ? formatCurrency(sgkCoverage) : '-'}
                   </td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold ${discountAmount > 0 ? 'text-red-600' : 'text-gray-500'}`}>
                     {discountAmount > 0 ? '-' : ''}{formatCurrency(discountAmount)}

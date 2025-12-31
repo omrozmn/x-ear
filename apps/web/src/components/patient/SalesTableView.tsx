@@ -48,19 +48,10 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     return amount.toLocaleString('tr-TR') + ' TL';
   };
 
-  const getVatRate = (sale: PatientSale) => {
-    // Hearing aid category has 8% VAT, others have 20%
-    return sale.devices?.some(device => 
-      device.name?.toLowerCase().includes('işitme') || 
-      device.name?.toLowerCase().includes('hearing')
-    ) ? 8 : 20;
-  };
-
   const calculateDisplayTotal = (sale: PatientSale) => {
-    const patientPayment = sale.finalAmount || sale.totalAmount - (sale.discountAmount || 0) - (sale.sgkCoverage || 0);
-    const vatRate = getVatRate(sale);
-    const vatAmount = (patientPayment * vatRate) / 100;
-    return patientPayment + vatAmount;
+    // Backend now provides the correct final amount (VAT inclusive if applicable)
+    // Use nullish coalescing to accept 0 as a valid final amount
+    return sale.finalAmount ?? (sale.totalAmount - (sale.discountAmount || 0) - (sale.sgkCoverage || 0));
   };
 
   const renderDevicesSummary = (sale: PatientSale) => {
@@ -88,11 +79,44 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
       return <span className="text-gray-500">-</span>;
     }
 
-    const device = sale.devices[0];
     return (
-      <div className="text-sm">
-        {device.barcode && <div className="font-mono">{device.barcode}</div>}
-        {device.serialNumber && <div className="text-xs text-gray-500">{device.serialNumber}</div>}
+      <div className="flex flex-col gap-1 overflow-hidden">
+        {sale.devices.map((device: any, idx) => (
+          <div key={idx} className="text-sm border-b border-gray-100 last:border-0 pb-1 last:pb-0">
+            {device.barcode && (
+              <div className="font-mono text-[10px] bg-gray-100 px-1 rounded inline-block">
+                {device.barcode}
+              </div>
+            )}
+
+            {/* Standard Serial Number */}
+            {device.serialNumber && !device.serialNumberLeft && !device.serialNumberRight && (
+              <div className="text-xs text-gray-600 font-medium">
+                {device.serialNumber} {device.ear ? `(${device.ear === 'left' ? 'Sol' : device.ear === 'right' ? 'Sağ' : device.ear})` : ''}
+              </div>
+            )}
+
+            {/* Bilateral/Left Serial Number */}
+            {device.serialNumberLeft && (
+              <div className="text-xs text-gray-600 font-medium">
+                <span className="text-[10px] text-gray-400 mr-1 italic">Sol:</span>
+                {device.serialNumberLeft}
+              </div>
+            )}
+
+            {/* Bilateral/Right Serial Number */}
+            {device.serialNumberRight && (
+              <div className="text-xs text-gray-600 font-medium">
+                <span className="text-[10px] text-gray-400 mr-1 italic">Sağ:</span>
+                {device.serialNumberRight}
+              </div>
+            )}
+
+            {!device.barcode && !device.serialNumber && !device.serialNumberLeft && !device.serialNumberRight && (
+              <div className="text-xs text-gray-400 italic">Barkod/Seri No Yok</div>
+            )}
+          </div>
+        ))}
       </div>
     );
   };
@@ -103,7 +127,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     if (sale.paymentMethod === 'card') methods.push('Kart');
     if (sale.paymentMethod === 'installment') methods.push('Taksit');
     if (sale.sgkCoverage && sale.sgkCoverage > 0) methods.push('SGK');
-    
+
     return methods.join(', ') || 'Belirtilmemiş';
   };
 
@@ -111,15 +135,15 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     if (status === 'cancelled') {
       return <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">İptal Edildi</span>;
     }
-    
+
     if (remainingAmount <= 0) {
       return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Tamamlandı</span>;
     }
-    
+
     if (paidAmount > 0) {
       return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Kısmi Ödeme</span>;
     }
-    
+
     return <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">Bekliyor</span>;
   };
 
@@ -132,9 +156,16 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     setOpenMenuId(null);
   };
 
+
   console.log('📋 SalesTableView: Rendering sales table with', sales?.length || 0, 'sales');
   if (sales && sales.length > 0) {
     console.log('📋 Sales data sample:', sales[0]);
+    console.log('💰 DEBUGGING PAID AMOUNT - First sale:', JSON.stringify({
+      id: sales[0].id,
+      paidAmount: sales[0].paidAmount,
+      finalAmount: sales[0].finalAmount,
+      listPriceTotal: sales[0].listPriceTotal
+    }, null, 2));
   }
 
   return (
@@ -158,7 +189,10 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
               İndirim
             </th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              KDV Dahil Toplam
+              SGK Desteği
+            </th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Toplam Tutar
             </th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
               Alınan Ödeme
@@ -177,16 +211,28 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
         <tbody className="bg-white divide-y divide-gray-200">
           {(!sales || sales.length === 0) ? (
             <tr>
-              <td colSpan={10} className="px-6 py-8 text-center text-gray-500">
+              <td colSpan={11} className="px-6 py-8 text-center text-gray-500">
                 Henüz satış kaydı bulunmuyor
               </td>
             </tr>
           ) : (
             sales.map((sale) => {
               const displayTotal = calculateDisplayTotal(sale);
+
+              // DEBUG: Check paidAmount value
+              if (sale.id === '2512310103') {
+                console.log('🔴 RENDER - Sale 2512310103:', {
+                  'sale.paidAmount': sale.paidAmount,
+                  'typeof': typeof sale.paidAmount,
+                  'sale object keys': Object.keys(sale),
+                  'full sale': sale
+                });
+              }
+
               const paidAmount = sale.paidAmount || 0;
               const remainingAmount = displayTotal - paidAmount;
               const discountAmount = sale.discountAmount || 0;
+              const sgkAmount = sale.sgkCoverage || 0;
               const listPrice = sale.totalAmount || 0;
               const hasInvoice = !!sale.invoice;
               const cancelledClass = sale.status === 'cancelled' ? 'opacity-50 line-through pointer-events-none' : '';
@@ -213,6 +259,9 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                   </td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold ${discountAmount > 0 ? 'text-red-600' : 'text-gray-500'}`}>
                     {discountAmount > 0 ? '-' : ''}{formatCurrency(discountAmount)}
+                  </td>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold ${sgkAmount > 0 ? 'text-blue-600' : 'text-gray-500'}`}>
+                    {sgkAmount > 0 ? '-' : ''}{formatCurrency(sgkAmount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
                     {formatCurrency(displayTotal)}

@@ -155,19 +155,39 @@ def change_password():
     if not user:
         return jsonify({'success': False, 'error': 'Not found'}), 404
 
-    data = request.get_json() or {}
-    current_password = data.get('currentPassword')
-    new_password = data.get('newPassword')
+    try:
+        data = request.get_json() or {}
+        current_password = data.get('currentPassword')
+        new_password = data.get('newPassword')
 
-    if not current_password or not new_password:
-        return jsonify({'success': False, 'error': 'Missing fields'}), 400
+        # Debug logging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Password change attempt for user_id={user_id}")
 
-    if not user.check_password(current_password):
-        return jsonify({'success': False, 'error': 'Invalid current password'}), 401
+        if not current_password or not new_password:
+            return jsonify({'success': False, 'error': 'Missing fields'}), 400
 
-    user.set_password(new_password)
-    db.session.commit()
-    return jsonify({'success': True, 'message': 'Password updated'})
+        # Debug check
+        is_valid = user.check_password(current_password)
+        logger.info(f"Password check result for {user.username}: {is_valid}")
+        
+        if not is_valid:
+            # Helper to see what current hash looks like (first few chars)
+            hash_preview = user.password_hash[:10] if user.password_hash else 'NONE'
+            logger.info(f"Invalid password. Stored hash starts with: {hash_preview}")
+            return jsonify({'success': False, 'error': 'Invalid current password'}), 403
+
+        user.set_password(new_password)
+        db.session.commit()
+        logger.info("Password updated successfully.")
+        return jsonify({'success': True, 'message': 'Password updated'})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        logger.error(f"Change password error: {e}")
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @users_bp.route('/users/<user_id>', methods=['PUT'])

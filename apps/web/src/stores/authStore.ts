@@ -35,6 +35,7 @@ interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+    isInitialized: boolean;
   error: string | null;
   subscription: SubscriptionStatus | null;
   requiresOtp: boolean;
@@ -51,10 +52,14 @@ interface AuthActions {
   login: (credentials: LoginCredentials) => Promise<void>;
   verifyOtp: (otp: string) => Promise<void>;
   sendOtp: (phone: string) => Promise<void>;
+  forgotPassword: (phone: string) => Promise<void>;
+  verifyResetOtp: (phone: string, otp: string) => Promise<void>;
+  resetPassword: (phone: string, otp: string, newPassword: string) => Promise<void>;
   logout: () => void;
   refreshAuth: () => Promise<void>;
   initializeAuth: () => Promise<void>;
   checkSubscription: () => Promise<void>;
+  lookupPhone: (identifier: string) => Promise<{ maskedPhone?: string; isPhoneInput: boolean }>;
 }
 
 interface LoginCredentials {
@@ -73,6 +78,7 @@ export const useAuthStore = create<AuthStore>()(
       refreshToken: null,
       isAuthenticated: false,
       isLoading: false,
+      isInitialized: false,
       error: null,
       subscription: null,
       requiresOtp: false,
@@ -120,6 +126,7 @@ export const useAuthStore = create<AuthStore>()(
           token: null,
           refreshToken: null,
           isAuthenticated: false,
+          isInitialized: true,
           error: null,
           subscription: null,
         });
@@ -247,18 +254,31 @@ export const useAuthStore = create<AuthStore>()(
             }
           } else if (response.status === 401) {
             // Handle authentication error
-            const errorMessage = responseData?.error === 'Invalid credentials'
-              ? 'Geçersiz kullanıcı adı veya şifre'
-              : (responseData?.error || 'Giriş başarısız');
+            const errorMessage = 'Geçersiz kullanıcı adı veya şifre';
             console.error('Authentication failed:', errorMessage);
+            setError(errorMessage);
             throw new Error(errorMessage);
           } else {
             console.error('Invalid response structure:', { status: response.status, hasData: !!responseData });
             throw new Error('Sunucudan geçersiz yanıt alındı');
           }
-        } catch (error) {
+        } catch (error: any) {
+          console.log('=== LOGIN ERROR ===');
           console.error('Login error:', error);
-          setError(error instanceof Error ? error.message : 'Giriş başarısız');
+
+          let errorMessage = 'Giriş başarısız';
+
+          if (error.response?.status === 401) {
+            errorMessage = 'Geçersiz kullanıcı adı veya şifre';
+          } else if (error.response?.data?.error) {
+            errorMessage = error.response.data.error;
+          } else if (error.message && !error.message.includes('status code')) {
+            errorMessage = error.message;
+          }
+
+          console.log('Setting error message:', errorMessage);
+          setError(errorMessage);
+          throw error; // Re-throw so UI can handle it
         } finally {
           setLoading(false);
         }
@@ -377,6 +397,152 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
+      forgotPassword: async (phone: string) => {
+        const { setLoading, setError } = get();
+
+        try {
+          setLoading(true);
+          setError(null);
+
+          console.log('=== FORGOT PASSWORD DEBUG ===');
+          console.log('Phone:', phone);
+          console.log('Making request to:', '/api/auth/forgot-password');
+
+          const response = await axios.post('/api/auth/forgot-password', {
+            identifier: phone,
+            captcha_token: 'dummy' // TODO: Implement proper captcha
+          });
+
+          console.log('Response received:', response);
+          console.log('Response status:', response.status);
+          console.log('Response data:', response.data);
+
+          if (response.status === 200 && response.data?.success) {
+            // OTP sent successfully - no error, function completes successfully
+            console.log('OTP sent successfully');
+          } else {
+            console.log('Response not successful, throwing error');
+            throw new Error(response.data?.error || 'OTP gönderilemedi');
+          }
+        } catch (error: any) {
+          console.log('=== FORGOT PASSWORD ERROR ===');
+          console.error('Forgot password error:', error);
+          console.error('Error response:', error.response);
+          console.error('Error status:', error.response?.status);
+          console.error('Error data:', error.response?.data);
+
+          let errorMessage = 'OTP gönderilemedi';
+
+          if (error.response?.status === 404) {
+            errorMessage = 'Bu telefon numarasına kayıtlı kullanıcı bulunamadı';
+            console.log('404 error detected, message:', errorMessage);
+          } else if (error.response?.data?.error) {
+            // Translate common backend errors
+            const backendError = error.response.data.error;
+            if (backendError.includes('not found') || backendError.includes('User not found')) {
+              errorMessage = 'Bu telefon numarasına kayıtlı kullanıcı bulunamadı';
+            } else {
+              errorMessage = backendError;
+            }
+            console.log('Backend error message:', errorMessage);
+          } else if (error.message) {
+            errorMessage = error.message;
+            console.log('Generic error message:', errorMessage);
+          }
+
+          console.log('Final error message:', errorMessage);
+          setError(errorMessage);
+          throw new Error(errorMessage);
+        } finally {
+          setLoading(false);
+        }
+      },
+
+      lookupPhone: async (identifier: string) => {
+        const { setLoading, setError } = get();
+        try {
+          setLoading(true);
+          setError(null);
+
+          const response = await axios.post('/api/auth/lookup-phone', { identifier });
+
+          if (response.status === 200 && response.data?.success) {
+            return {
+              maskedPhone: response.data.masked_phone,
+              isPhoneInput: response.data.is_phone_input
+            };
+          } else {
+            throw new Error(response.data?.error || 'Kullanıcı bulunamadı');
+          }
+        } catch (error: any) {
+          // Handle "not found" explicitly
+          if (error.response?.status === 404) {
+            const msg = 'Kayıtlı kullanıcı bulunamadı';
+            setError(msg);
+            throw new Error(msg);
+          }
+          const msg = error.response?.data?.error || error.message || 'Bir hata oluştu';
+          setError(msg);
+          throw new Error(msg);
+        } finally {
+          setLoading(false);
+        }
+      },
+
+
+      verifyResetOtp: async (phone: string, otp: string) => {
+        const { setLoading, setError } = get();
+
+        try {
+          setLoading(true);
+          setError(null);
+
+          const response = await axios.post('/api/auth/verify-otp', {
+            identifier: phone,
+            otp: otp
+          });
+
+          if (response.status === 200 && response.data?.success) {
+            // OTP verified successfully
+          } else {
+            throw new Error('Doğrulama başarısız');
+          }
+        } catch (error: any) {
+          console.error('Verify reset OTP error:', error);
+          setError(error.response?.data?.message || error.message || 'Doğrulama başarısız');
+          throw error;
+        } finally {
+          setLoading(false);
+        }
+      },
+
+      resetPassword: async (phone: string, otp: string, newPassword: string) => {
+        const { setLoading, setError } = get();
+
+        try {
+          setLoading(true);
+          setError(null);
+
+          const response = await axios.post('/api/auth/reset-password', {
+            identifier: phone,
+            otp: otp,
+            newPassword: newPassword
+          });
+
+          if (response.status === 200 && response.data?.success) {
+            // Password reset successfully
+          } else {
+            throw new Error('Şifre sıfırlanamadı');
+          }
+        } catch (error: any) {
+          console.error('Reset password error:', error);
+          setError(error.response?.data?.error || error.message || 'Şifre sıfırlanamadı');
+          throw error;
+        } finally {
+          setLoading(false);
+        }
+      },
+
       logout: () => {
         get().clearAuth();
       },
@@ -426,16 +592,30 @@ export const useAuthStore = create<AuthStore>()(
         }
 
         // Try to restore auth from persisted tokens (always)
-        const storedToken = localStorage.getItem('auth_token');
-        const storedRefreshToken = localStorage.getItem('refresh_token');
+        let storedToken = localStorage.getItem('auth_token');
+        let storedRefreshToken = localStorage.getItem('refresh_token');
         const tokenTimestamp = localStorage.getItem('auth_token_timestamp');
 
-        if (storedToken && tokenTimestamp) {
+        // If no token in localStorage, attempt to read cookie named 'auth_token' (some dev setups use cookies)
+        try {
+          if (!storedToken && typeof document !== 'undefined') {
+            const match = document.cookie.match(new RegExp('(^| )auth_token=([^;]+)'));
+            if (match) storedToken = decodeURIComponent(match[2]);
+          }
+          if (!storedRefreshToken && typeof document !== 'undefined') {
+            const matchR = document.cookie.match(new RegExp('(^| )refresh_token=([^;]+)'));
+            if (matchR) storedRefreshToken = decodeURIComponent(matchR[2]);
+          }
+        } catch (e) {
+          // ignore cookie read errors
+        }
+
+        if (storedToken) {
           try {
             const now = Date.now();
-            const tokenAge = now - parseInt(tokenTimestamp);
+            const tokenAge = tokenTimestamp ? now - parseInt(tokenTimestamp) : 0;
 
-            if (tokenAge < DEV_CONFIG.TOKEN_PERSISTENCE_DURATION) {
+            if (!tokenTimestamp || tokenAge < DEV_CONFIG.TOKEN_PERSISTENCE_DURATION) {
               // Token is still valid, restore auth state
               if (typeof window !== 'undefined') {
                 window.__AUTH_TOKEN__ = storedToken;
@@ -462,6 +642,7 @@ export const useAuthStore = create<AuthStore>()(
                     token: storedToken,
                     refreshToken: storedRefreshToken,
                     isAuthenticated: true,
+                    isInitialized: true,
                     error: null,
                   });
 
@@ -496,6 +677,10 @@ export const useAuthStore = create<AuthStore>()(
             setLoading(false);
           }
         }
+        // Mark initialization attempt complete (success or failure)
+        try {
+          set({ isInitialized: true });
+        } catch (e) { }
       },
     }),
     {
@@ -506,6 +691,7 @@ export const useAuthStore = create<AuthStore>()(
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
         subscription: state.subscription,
+        error: state.error, // Include error in persistence
       }),
     }
   )

@@ -120,22 +120,30 @@ def calculate_device_pricing(device_assignments, accessories, services, sgk_sche
                 service_total += float(pricing_services.get(svc, 0) or 0)
 
         # Recompute totals using per-item details (quantity-aware)
+        # sale_items_total is the sum of (list - sgk - discount) * quantity
         sale_items_total = round(sum(d['sale_price_per_item'] * d['quantity'] for d in per_item_details), 2)
         sgk_coverage_amount = round(sum(d['sgk_support'] * d['quantity'] for d in per_item_details), 2)
+        
+        # total_amount: List price + accessories + services (pre-discount, pre-SGK)
         total_amount = round(sum(d['list_price'] * d['quantity'] for d in per_item_details) + accessory_total + service_total, 2)
-        sale_price_with_extras = round(sale_items_total + accessory_total + service_total, 2)
-
-        # Total discount is (list_price - sgk - sale_price_per_item) per unit, times quantity
+        
+        # total_discount: Sum of all discounts applied across items
         total_discount = round(sum(((d['list_price'] - d['sgk_support']) - d['sale_price_per_item']) * d['quantity'] for d in per_item_details), 2)
 
-        # Ensure SGK doesn't exceed sale total
-        sgk_coverage_amount = round(min(sgk_coverage_amount, sale_price_with_extras), 2)
+        # Patient responsibility: What remains after SGK and Discount from the total
+        # Since sale_items_total already has sgk subtracted per item, we don't subtract it again from the total sum
+        # patient_responsible_amount = sale_items_total + extras
+        patient_responsible_amount = round(sale_items_total + accessory_total + service_total, 2)
+        sale_price_with_extras = patient_responsible_amount
+        
+        # Ensure SGK doesn't exceed the list total (safety check)
+        sgk_coverage_amount = round(min(sgk_coverage_amount, total_amount), 2)
+        
+        # Ensure patient payment isn't negative
+        patient_responsible_amount = max(0.0, patient_responsible_amount)
 
-        # Patient responsibility is sale total minus SGK support
-        patient_responsible_amount = round(max(sale_price_with_extras - sgk_coverage_amount, 0.0), 2)
-
-        # Per-item SGK list (include quantity effect for clarity)
-        per_item_sgk = [round(d['sgk_support'] * d['quantity'], 2) for d in per_item_details] if per_item_details else [0.0 for _ in device_assignments]
+        # Per-item SGK list (per-unit for assignment storage)
+        per_item_sgk = [round(d['sgk_support'], 2) for d in per_item_details] if per_item_details else [0.0 for _ in device_assignments]
 
         per_item_avg = round(sum(per_item_sgk) / max(1, len(per_item_sgk)), 2)
 

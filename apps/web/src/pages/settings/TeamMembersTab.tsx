@@ -6,6 +6,7 @@ import { useTenantUsersUpdateUser } from '../../api/generated/tenant-users/tenan
 import { branchService, Branch } from '../../services/branch.service';
 import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
+import { generateUsername } from '../../utils/stringUtils';
 
 interface ConfirmationModal {
     isOpen: boolean;
@@ -387,7 +388,15 @@ export function TeamMembersTab() {
                                             type="text"
                                             required
                                             value={inviteData.firstName}
-                                            onChange={(e) => setInviteData({ ...inviteData, firstName: e.target.value })}
+                                            onChange={(e) => {
+                                                const newFirstName = e.target.value;
+                                                const newUsername = generateUsername(newFirstName, inviteData.lastName);
+                                                setInviteData({
+                                                    ...inviteData,
+                                                    firstName: newFirstName,
+                                                    username: newUsername
+                                                });
+                                            }}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                                         />
                                     </div>
@@ -397,7 +406,15 @@ export function TeamMembersTab() {
                                             type="text"
                                             required
                                             value={inviteData.lastName}
-                                            onChange={(e) => setInviteData({ ...inviteData, lastName: e.target.value })}
+                                            onChange={(e) => {
+                                                const newLastName = e.target.value;
+                                                const newUsername = generateUsername(inviteData.firstName, newLastName);
+                                                setInviteData({
+                                                    ...inviteData,
+                                                    lastName: newLastName,
+                                                    username: newUsername
+                                                });
+                                            }}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                                         />
                                     </div>

@@ -15,9 +15,15 @@ def gen_id(prefix):
     """Generate unique ID with prefix"""
     return f"{prefix}_{uuid4().hex[:8]}"
 
-def gen_sale_id():
-    """Generate sale ID in format YYMMDDKKNN (e.g., 2510040101)"""
+def gen_sale_id(tenant_id=None):
+    """Generate sale ID in format YYMMDDKKNN (e.g., 2510040101)
+    
+    Note: Sale IDs are globally unique across all tenants to comply with
+    database UNIQUE constraint. The tenant_id parameter is kept for backward
+    compatibility but not used in ID generation.
+    """
     from datetime import datetime
+    from sqlalchemy import func
     now = datetime.now()
     # YYMMDDKKNN format: YY=year, MM=month, DD=day, KK=category (01 for hearing aid), NN=sequence
     yy = str(now.year)[-2:]  # Last 2 digits of year
@@ -25,14 +31,21 @@ def gen_sale_id():
     dd = f"{now.day:02d}"
     kk = "01"  # Category for hearing aid sales
     
-    # For sequence number, we need to count existing sales for today
-    # This is a simple implementation - in production you'd want better sequence handling
+    # For sequence number, get the highest existing ID for today across ALL tenants
+    # (IDs must be globally unique due to database constraint)
     try:
         from .sales import Sale
-        # Count sales created today with same YYMMDD prefix
+        # Get highest sale ID created today with same YYMMDD prefix
         today_prefix = f"{yy}{mm}{dd}{kk}"
-        today_sales = Sale.query.filter(Sale.id.like(f"{today_prefix}%")).count()
-        nn = f"{today_sales + 1:02d}"  # Next sequence number
+        max_id = Sale.query.filter(Sale.id.like(f"{today_prefix}%")).with_entities(func.max(Sale.id)).scalar()
+        
+        if max_id:
+            # Extract sequence number from max_id and increment
+            last_seq = int(max_id[-2:])
+            nn = f"{last_seq + 1:02d}"
+        else:
+            # First sale of the day
+            nn = "01"
     except:
         # Fallback if database query fails
         nn = "01"

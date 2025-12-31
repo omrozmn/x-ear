@@ -47,15 +47,15 @@ export const SalesList: React.FC<SalesListProps> = ({
       <div className="text-center py-12" role="status">
         <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" aria-hidden="true" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {sales.length === 0 
-            ? 'Henüz satış yapılmamış' 
-            : hasActiveFilters 
+          {sales.length === 0
+            ? 'Henüz satış yapılmamış'
+            : hasActiveFilters
               ? 'Filtreye uygun satış bulunamadı'
               : 'Henüz satış kaydı bulunmuyor'
           }
         </h3>
         <p className="text-gray-500">
-          {sales.length === 0 
+          {sales.length === 0
             ? 'Bu hastaya henüz satış işlemi gerçekleştirilmemiş.'
             : hasActiveFilters
               ? 'Lütfen filtre kriterlerinizi kontrol edin.'
@@ -80,7 +80,7 @@ export const SalesList: React.FC<SalesListProps> = ({
         </div>
       ));
     }
-    
+
     // If no devices array but productId exists, show product info
     if (sale.productId) {
       return (
@@ -90,7 +90,7 @@ export const SalesList: React.FC<SalesListProps> = ({
         </div>
       );
     }
-    
+
     return <div className="text-gray-500 text-sm">Ürün bilgisi yok</div>;
   };
 
@@ -99,7 +99,7 @@ export const SalesList: React.FC<SalesListProps> = ({
       const device = sale.devices[0];
       const barcode = device.barcode || device.serialNumber || '-';
       const serial = device.serialNumber || '-';
-      
+
       return (
         <div>
           <div className="font-medium">{barcode}</div>
@@ -107,7 +107,7 @@ export const SalesList: React.FC<SalesListProps> = ({
         </div>
       );
     }
-    
+
     // If no devices but productId exists, show productId as barcode
     if (sale.productId) {
       return (
@@ -117,7 +117,7 @@ export const SalesList: React.FC<SalesListProps> = ({
         </div>
       );
     }
-    
+
     return '-';
   };
 
@@ -127,7 +127,7 @@ export const SalesList: React.FC<SalesListProps> = ({
       return paidRecords.map((record: any, index: number) => {
         const methodLabels: Record<string, string> = {
           'cash': 'Nakit',
-          'card': 'Kart', 
+          'card': 'Kart',
           'transfer': 'Havale',
           'installment': 'Taksit',
           'promissory_note': 'Senet'
@@ -140,16 +140,16 @@ export const SalesList: React.FC<SalesListProps> = ({
         );
       });
     }
-    
+
     const paymentMethod = sale.paymentMethod || 'cash';
     const methodLabels: Record<string, string> = {
       'cash': 'Nakit',
       'card': 'Kart',
-      'transfer': 'Havale', 
+      'transfer': 'Havale',
       'installment': 'Taksit',
       'promissory_note': 'Senet'
     };
-    
+
     return methodLabels[paymentMethod] || paymentMethod;
   };
 
@@ -159,7 +159,7 @@ export const SalesList: React.FC<SalesListProps> = ({
     } else if (paidAmount > 0 && remainingAmount === 0) {
       return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Ödendi</span>;
     }
-    
+
     const badges: Record<string, JSX.Element> = {
       'paid': <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Ödendi</span>,
       'pending': <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Beklemede</span>,
@@ -183,30 +183,27 @@ export const SalesList: React.FC<SalesListProps> = ({
   };
 
   const calculatePatientPayable = (sale: any) => {
+    // Return final amount directly as backend handles VAT logic and inclusivity
     const patientPayable = sale.patient_payment || sale.patientPayment || sale.totalPatientPayment || sale.finalAmount || sale.final_amount;
+
     if (typeof patientPayable === 'number') return patientPayable;
+
+    // Fallback calculation if finalAmount not explicit
     const total = sale.totalAmount || 0;
     const discount = sale.discountAmount || sale.discount_amount || 0;
     const sgk = sale.sgkCoverage || 0;
     return total - discount - sgk;
   };
 
-  const calculateVatAmount = (sale: any) => {
-    const patientPayable = calculatePatientPayable(sale);
-    const vatRate = sale.vatRate || 20; // Default 20%
-    return (patientPayable * vatRate) / 100;
-  };
-
+  // Deprecated client-side VAT calculation
   const calculateTotalWithVat = (sale: any) => {
-    const patientPayable = calculatePatientPayable(sale);
-    const vatAmount = calculateVatAmount(sale);
-    return patientPayable + vatAmount;
+    return calculatePatientPayable(sale);
   };
 
   const calculateRemaining = (sale: any) => {
-    const totalWithVat = calculateTotalWithVat(sale);
+    const total = calculateTotalWithVat(sale);
     const paid = calculatePaidAmount(sale);
-    return totalWithVat - paid;
+    return Math.max(0, total - paid);
   };
 
   return (
@@ -231,7 +228,10 @@ export const SalesList: React.FC<SalesListProps> = ({
                 İndirim
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                KDV Dahil Toplam
+                SGK Desteği
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Toplam Tutar
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Alınan Ödeme
@@ -252,10 +252,10 @@ export const SalesList: React.FC<SalesListProps> = ({
               const paid = calculatePaidAmount(sale);
               const remaining = calculateRemaining(sale);
               const cancelledClass = sale.status === 'cancelled' ? 'opacity-50 line-through pointer-events-none' : '';
-              
+
               return (
-                <tr 
-                  key={sale.id} 
+                <tr
+                  key={sale.id}
                   className={`hover:bg-gray-50 ${paid > 0 && remaining > 0 ? 'bg-yellow-50' : ''} ${cancelledClass} cursor-pointer transition-colors`}
                   onClick={() => onSaleClick(sale)}
                   role="row"
@@ -277,6 +277,9 @@ export const SalesList: React.FC<SalesListProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-red-600">
                     {sale.discountAmount || sale.discount_amount ? `-${formatCurrency(sale.discountAmount || sale.discount_amount)}` : formatCurrency(0)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-blue-600">
+                    {sale.sgkCoverage || sale.sgk_coverage ? `-${formatCurrency(sale.sgkCoverage || sale.sgk_coverage)}` : formatCurrency(0)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
                     {formatCurrency(calculateTotalWithVat(sale))}

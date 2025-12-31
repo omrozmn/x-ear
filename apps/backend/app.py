@@ -124,13 +124,36 @@ if os.getenv('FLASK_ENV', 'production') == 'development':
 app.config['SQLALCHEMY_DATABASE_URI'] = raw_db_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Environment-driven JWT secret
-FLASK_ENV = os.getenv('FLASK_ENV', 'production')
-JWT_SECRET = os.getenv('JWT_SECRET_KEY')
-# Only enforce JWT secret in production
-if FLASK_ENV == 'production' and not JWT_SECRET:
-    raise RuntimeError('JWT_SECRET_KEY must be set in production environments')
-app.config['JWT_SECRET_KEY'] = JWT_SECRET if JWT_SECRET else 'super-secret'
+# JWT Configuration
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'default-dev-secret-key-change-in-prod')
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
+jwt = JWTManager(app)
+
+@jwt.expired_token_loader
+def my_expired_token_callback(jwt_header, jwt_payload):
+    logger.warning(f"JWT EXPIRED: {jwt_payload.get('sub')}")
+    return jsonify({
+        'status': 401,
+        'sub_status': 42,
+        'msg': 'The token has expired'
+    }), 401
+
+@jwt.invalid_token_loader
+def my_invalid_token_callback(error_string):
+    logger.error(f"JWT INVALID: {error_string}")
+    return jsonify({
+        'status': 401,
+        'msg': f'Invalid token: {error_string}'
+    }), 401
+
+@jwt.unauthorized_loader
+def my_unauthorized_callback(error_string):
+    logger.error(f"JWT UNAUTHORIZED: {error_string}")
+    return jsonify({
+        'status': 401,
+        'msg': f'Missing Authorization Header: {error_string}'
+    }), 401
 
 # DEBUG flag
 app.config['DEBUG'] = os.getenv('DEBUG', '0') == '1'
@@ -432,6 +455,13 @@ app.register_blueprint(subscriptions_bp, url_prefix='/api/subscriptions')
 from routes.config import config_bp
 app.register_blueprint(config_bp, url_prefix='/api')
 
+# Affiliate endpoints (Flask blueprint)
+try:
+    from routes.affiliate_flask import affiliate_bp
+    app.register_blueprint(affiliate_bp, url_prefix='/api/affiliate')
+except Exception as e:
+    logger.warning(f'Affiliate blueprint not registered: {e}')
+
 # Pre-warm OCR/NLP service in development or when explicitly requested to reduce first-request latency
 try:
     PREWARM = os.getenv('PREWARM_OCR', '0') == '1' or FLASK_ENV != 'production'
@@ -572,8 +602,14 @@ app.register_blueprint(branches_bp, url_prefix='/api')
 
 # Global error handler to capture unexpected exceptions and return JSON during development
 import traceback
+from werkzeug.exceptions import HTTPException
+
 @app.errorhandler(Exception)
 def handle_unexpected_error(e):
+    # Pass through HTTP errors (404, 403, etc.)
+    if isinstance(e, HTTPException):
+        return e
+        
     logger.exception('Unhandled exception: %s', e)
     if app.config.get('DEBUG'):
         return jsonify({'success': False, 'error': str(e), 'trace': traceback.format_exc()}), 500

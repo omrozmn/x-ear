@@ -287,18 +287,32 @@ class Inventory(BaseModel):
 
     def add_serial_number(self, serial_number):
         """Add a serial number to available serials"""
-        serials = json.loads(self.available_serials) if self.available_serials else []
+        serials = []
+        if self.available_serials:
+            try:
+                serials = json.loads(self.available_serials)
+            except Exception:
+                # Fallback for legacy CSV data
+                serials = [s.strip() for s in str(self.available_serials).split(',') if s.strip()]
+        
         if serial_number not in serials:
             serials.append(serial_number)
             self.available_serials = json.dumps(serials)
             self.available_inventory = len(serials)
-            self.total_inventory = max(self.total_inventory, self.available_inventory)
+            self.total_inventory = max((self.total_inventory or 0), self.available_inventory)
             return True
         return False
 
     def remove_serial_number(self, serial_number):
         """Remove a serial number from available serials (when assigned to patient)"""
-        serials = json.loads(self.available_serials) if self.available_serials else []
+        serials = []
+        if self.available_serials:
+            try:
+                serials = json.loads(self.available_serials)
+            except Exception:
+                # Fallback for legacy CSV data
+                serials = [s.strip() for s in str(self.available_serials).split(',') if s.strip()]
+                
         if serial_number in serials:
             serials.remove(serial_number)
             self.available_serials = json.dumps(serials) if serials else None

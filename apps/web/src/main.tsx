@@ -20,6 +20,29 @@ try {
     } catch (e) {
       // ignore
     }
+  } else {
+    // If no token in localStorage, try to read common cookie names synchronously
+    try {
+      if (typeof document !== 'undefined' && document.cookie) {
+        const cookies = document.cookie.split(';').map(c => c.trim());
+        const cookieMap: Record<string, string> = {};
+        for (const c of cookies) {
+          const [k, ...v] = c.split('=');
+          cookieMap[k] = decodeURIComponent(v.join('='));
+        }
+        const possibleKeys = ['auth_token', 'x-ear.auth.token@v1', 'x-ear.auth.token', 'AUTH_TOKEN'];
+        for (const key of possibleKeys) {
+          const val = cookieMap[key];
+          if (val) {
+            (window as Window & { __AUTH_TOKEN__?: string }).__AUTH_TOKEN__ = val;
+            try { axios.defaults.headers.common['Authorization'] = `Bearer ${val}` } catch (e) { }
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      // ignore cookie read errors
+    }
   }
 } catch (e) {
   // ignore storage read errors

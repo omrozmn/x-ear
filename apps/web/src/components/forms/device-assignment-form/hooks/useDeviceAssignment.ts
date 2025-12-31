@@ -133,6 +133,13 @@ export const useDeviceAssignment = ({
         setFormData({
           ...assignment,
           ...loanerFields,
+          // Explicitly map pricing/payment fields to ensure they persist over spread
+          sgkSupportType: (assignment as any).sgkSupportType || (assignment as any).sgkScheme || (assignment as any).sgk_scheme || '',
+          downPayment: (assignment as any).downPayment || (assignment as any).down_payment || 0,
+          discountValue: (assignment as any).discountValue || (assignment as any).discount_value || 0,
+          discountType: (assignment as any).discountType || (assignment as any).discount_type || 'none',
+          listPrice: (assignment as any).listPrice || (assignment as any).list_price || 0,
+
           assignedDate: assignment.assignedDate?.split('T')[0] || new Date().toISOString().split('T')[0],
           reportStatus: normalizedReportStatus, // Explicitly set normalized value
           deliveryStatus: (assignment.deliveryStatus || (assignment as any).delivery_status || 'pending').toLowerCase(),
@@ -281,8 +288,18 @@ export const useDeviceAssignment = ({
     // Determine per-unit SGK reduction (legacy: min(sgkAmount, listPrice))
     let sgkReductionPerUnit = 0;
     if (formData.sgkSupportType && formData.sgkSupportType !== 'no_coverage') {
-      const sgkAmount = sgkAmounts[formData.sgkSupportType as keyof typeof sgkAmounts] || 0;
-      sgkReductionPerUnit = Math.min(sgkAmount, listPrice);
+      const sgkAmount = sgkAmounts[formData.sgkSupportType as keyof typeof sgkAmounts];
+
+      if (sgkAmount !== undefined) {
+        // Known scheme - use defined amount
+        sgkReductionPerUnit = Math.min(sgkAmount, listPrice);
+      } else {
+        // Unknown scheme (e.g. 'standard') - preserve existing reduction if possible
+        // Calculate per-unit from total
+        const currentTotal = formData.sgkReduction || 0;
+        // Don't recalculate if we can't determine authoritative source, stick to current
+        sgkReductionPerUnit = currentTotal / (formData.ear === 'both' ? 2 : 1);
+      }
     }
 
     // Quantity (bilateral means two units)

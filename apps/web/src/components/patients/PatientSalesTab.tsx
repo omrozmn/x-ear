@@ -108,15 +108,6 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
   const [showDeviceReplacementModal, setShowDeviceReplacementModal] = useState(false);
   const [selectedReplacement, setSelectedReplacement] = useState<DeviceReplacement | null>(null);
 
-  // Load SGK patient info
-  useEffect(() => {
-    if (patient && patient.id) {
-      loadSGKPatientInfo();
-      loadPatientSales();
-      loadDeviceReplacements();
-    }
-  }, [patient?.id]);
-
   const loadPatientSales = async () => {
     if (!patient.id) return;
 
@@ -150,26 +141,43 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
         salesData = [];
       }
 
-      const transformedSales: Sale[] = salesData.map((sale: Sale) => ({
-        id: sale.id,
-        patientId: sale.patientId,
-        saleDate: sale.saleDate,
-        totalAmount: sale.totalAmount,
-        listPriceTotal: sale.listPriceTotal,
-        discountAmount: sale.discountAmount,
-        sgkCoverage: sale.sgkCoverage,
-        status: sale.status,
-        paymentMethod: sale.paymentMethod,
-        notes: sale.notes,
-        productId: sale.productId,
-        createdAt: sale.createdAt,
-        updatedAt: sale.updatedAt,
-        payments: sale.payments || [],
-        reportStatus: (sale as any).reportStatus
-      }));
+      console.log('💎 Raw salesData before transform:', salesData);
+      if (salesData.length > 0) {
+        console.log('💎 First sale paidAmount BEFORE transform:', salesData[0].paidAmount);
+      }
+
+      // Transform sales data
+      const transformedSales: PatientSale[] = salesData.map((sale: any) => {
+        // Ensure devices, paymentRecords, etc. are preserved from the API record
+        return {
+          ...sale,
+          id: sale.id,
+          saleDate: sale.saleDate || sale.created_at,
+          totalAmount: sale.totalAmount || sale.total_amount || 0,
+          discountAmount: sale.discountAmount || sale.discount_amount || 0,
+          finalAmount: sale.finalAmount || sale.final_amount || 0,
+          paidAmount: sale.paidAmount || sale.paid_amount || 0,
+          sgkCoverage: sale.sgkCoverage || sale.sgk_coverage || 0,
+          patientPayment: sale.patientPayment || sale.patient_payment || 0,
+          status: (sale.status as any) || 'pending',
+          paymentMethod: sale.paymentMethod || sale.payment_method,
+          notes: sale.notes,
+          devices: sale.devices || [],
+          paymentRecords: sale.paymentRecords || [],
+          payments: sale.payments || [],
+          invoice: sale.invoice || null
+        };
+      });
 
       console.log('✅ Transformed sales:', transformedSales);
-      setSales(transformedSales);
+      console.log('💎 First sale paidAmount AFTER transform:', transformedSales[0]?.paidAmount);
+      console.log('💎 First transformed sale JSON:', JSON.stringify({
+        id: transformedSales[0]?.id,
+        paidAmount: transformedSales[0]?.paidAmount,
+        finalAmount: transformedSales[0]?.finalAmount
+      }, null, 2));
+
+      setSales(transformedSales as any);
 
       // Cache sales data in localStorage for offline fallback
       try {
@@ -262,6 +270,30 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
       setReplacementsLoading(false);
     }
   };
+
+  // Load SGK patient info
+  useEffect(() => {
+    if (patient && patient.id) {
+      loadSGKPatientInfo();
+      loadPatientSales();
+      loadDeviceReplacements();
+    }
+  }, [patient?.id]);
+
+  // Listen for data change events from other tabs (like Device updates)
+  useEffect(() => {
+    const handleDataChange = () => {
+      console.log('🔄 [PatientSalesTab] Received xEar:dataChanged event, reloading sales...');
+      loadPatientSales();
+    };
+
+    window.addEventListener('xEar:dataChanged', handleDataChange);
+    return () => {
+      window.removeEventListener('xEar:dataChanged', handleDataChange);
+    };
+  }, [loadPatientSales]);
+
+
 
   const calculateSGKCoverage = (sgkInfo: any) => {
     const deviceCoverage = sgkInfo.deviceEntitlement?.hasEntitlement
@@ -526,10 +558,12 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
             // console.log('📋 Rendering table view, sales count:', filteredSales.length),
             <SalesTableView
               sales={filteredSales.map((sale) => {
-                const paid = sale.payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
-                const discount = sale.discountAmount || 0;
-                const finalAmt = (sale.totalAmount ?? 0) - discount;
-                const remaining = Math.max(finalAmt - paid, 0);
+                // Use existing paidAmount and finalAmount from API transformation
+                // DO NOT recalculate as it causes data loss
+                const paidAmt = sale.paidAmount || 0;
+                const finalAmt = sale.finalAmount || 0;
+                const remaining = Math.max(finalAmt - paidAmt, 0);
+
                 return {
                   id: sale.id as string,
                   patientId: patient.id || '',
@@ -537,15 +571,21 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
                   saleDate: sale.saleDate || new Date().toISOString(),
                   listPriceTotal: sale.listPriceTotal as number | undefined,
                   totalAmount: sale.totalAmount ?? 0,
-                  discountAmount: discount,
+                  discountAmount: sale.discountAmount || 0,
                   finalAmount: finalAmt,
-                  paidAmount: paid,
+                  paidAmount: paidAmt,
                   remainingAmount: remaining,
+                  status: (sale.status === 'COMPLETED' ? 'completed' :
+                    sale.status === 'CANCELLED' ? 'cancelled' : 'pending') as 'completed' | 'pending' | 'cancelled',
                   paymentStatus: sale.status === 'COMPLETED' ? 'completed' :
                     sale.status === 'CANCELLED' ? 'cancelled' : 'pending',
                   paymentMethod: (sale as any).paymentMethod,
                   soldBy: (sale as any).soldBy,
                   sgkCoverage: (sale as any).sgkCoverage,
+                  devices: (sale as any).devices || [],
+                  paymentRecords: (sale as any).paymentRecords || [],
+                  payments: sale.payments || [],
+                  notes: sale.notes,
                   createdAt: sale.createdAt || new Date().toISOString(),
                   updatedAt: sale.updatedAt || new Date().toISOString()
                 } as PatientSale;

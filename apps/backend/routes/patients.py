@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, make_response
 from models.base import db
 from models.patient import Patient
+from models.sales import Sale
 from datetime import datetime
 import json
 import logging
@@ -928,8 +929,27 @@ def get_patient_devices(patient_id):
             if 'loanerInventoryId' not in device_dict:
                 device_dict['loanerInventoryId'] = getattr(assignment, 'loaner_inventory_id', None)
             
-            # Ensure Sale ID is passed
+            # Ensure Sale ID is passed and fetch sale details
             device_dict['saleId'] = assignment.sale_id
+            
+            # Fetch related sale to get down payment info (source from PaymentRecord for accuracy)
+            device_dict['downPayment'] = 0.0  # Default initialization
+            
+            if assignment.sale_id:
+                sale = db.session.get(Sale, assignment.sale_id)
+                if sale:
+                    # Try to get explicit down payment record first
+                    from models.sales import PaymentRecord
+                    down_payment_record = PaymentRecord.query.filter_by(
+                        sale_id=sale.id,
+                        payment_type='down_payment'
+                    ).first()
+                    
+                    if down_payment_record:
+                        device_dict['downPayment'] = float(down_payment_record.amount)
+                    else:
+                        # Fallback to sale.paid_amount if no specific record (legacy data)
+                        device_dict['downPayment'] = float(sale.paid_amount) if sale.paid_amount else 0.0
 
             # assignedDate
             device_dict['assignedDate'] = assignment.created_at.isoformat() if assignment.created_at else None
@@ -940,6 +960,10 @@ def get_patient_devices(patient_id):
                 device_dict['patientPayment'] = float(assignment.net_payable) if getattr(assignment, 'net_payable', None) is not None else 0.0
                 device_dict['salePrice'] = float(assignment.sale_price) if getattr(assignment, 'sale_price', None) is not None else 0.0
                 device_dict['listPrice'] = float(assignment.list_price) if getattr(assignment, 'list_price', None) is not None else 0.0
+                
+                # Map sgkScheme to sgkSupportType for frontend compatibility
+                device_dict['sgkSupportType'] = assignment.sgk_scheme
+                
             except (ValueError, TypeError):
                 logger.warning(f"Error converting prices for assignment {assignment.id}")
 
@@ -969,7 +993,7 @@ def get_patient_devices(patient_id):
 def get_patient_sales(patient_id):
     """Get all sales for a specific patient"""
     try:
-        from models.sales import Sale
+        from models.sales import Sale, DeviceAssignment, PaymentRecord
         
         # Get patient to verify existence
         patient = db.session.get(Patient, patient_id)
@@ -983,7 +1007,69 @@ def get_patient_sales(patient_id):
         # Get all sales for this patient
         sales = Sale.query.filter_by(patient_id=patient_id).order_by(Sale.sale_date.desc()).all()
         
-        sales_data = [sale.to_dict() for sale in sales]
+        sales_data = []
+        for sale in sales:
+            sale_dict = sale.to_dict()
+            
+            # Add devices from assignments
+            devices = []
+            assignments = DeviceAssignment.query.filter_by(sale_id=sale.id).all()
+            for assignment in assignments:
+                # Get inventory item details if available
+                inventory_item = None
+                if assignment.inventory_id:
+                    from models.inventory import Inventory
+                    inventory_item = db.session.get(Inventory, assignment.inventory_id)
+                
+                # Build device info with inventory details
+                if inventory_item:
+                    device_name = f"{inventory_item.brand} {inventory_item.model}"
+                    brand = inventory_item.brand
+                    model = inventory_item.model
+                    barcode = inventory_item.barcode
+                else:
+                    # Fallback for manual/loaner devices
+                    device_name = f"{assignment.loaner_brand or 'Unknown'} {assignment.loaner_model or 'Device'}".strip()
+                    brand = assignment.loaner_brand or ''
+                    model = assignment.loaner_model or ''
+                    barcode = None
+                
+                device_info = {
+                    'id': assignment.inventory_id or assignment.device_id,
+                    'name': device_name,
+                    'brand': brand,
+                    'model': model,
+                    'serialNumber': assignment.serial_number or assignment.serial_number_left or assignment.serial_number_right,
+                    'barcode': barcode,
+                    'ear': assignment.ear,
+                    'listPrice': float(assignment.list_price) if assignment.list_price else None,
+                    'salePrice': float(assignment.sale_price) if assignment.sale_price else None,
+                    'sgkCoverageAmount': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
+                    'patientResponsibleAmount': float(assignment.net_payable) if assignment.net_payable else None
+                }
+                devices.append(device_info)
+            
+            sale_dict['devices'] = devices
+            
+            # Add payment records
+            payment_records = []
+            payments = PaymentRecord.query.filter_by(sale_id=sale.id).all()
+            for payment in payments:
+                payment_info = {
+                    'id': payment.id,
+                    'amount': float(payment.amount) if payment.amount else 0.0,
+                    'paymentDate': payment.payment_date.isoformat() if payment.payment_date else None,
+                    'paymentMethod': payment.payment_method,
+                    'paymentType': payment.payment_type,
+                    'status': 'paid',  # PaymentRecord existence implies paid
+                    'referenceNumber': None,
+                    'notes': None
+                }
+                payment_records.append(payment_info)
+            
+            sale_dict['paymentRecords'] = payment_records
+            
+            sales_data.append(sale_dict)
         
         return jsonify({
             'success': True,

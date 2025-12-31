@@ -42,6 +42,8 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // ensure cookies (refresh-token cookies, samesite etc.) are sent with requests
+  withCredentials: true,
   maxRedirects: CONNECTION_CONFIG.maxRedirects,
   maxContentLength: CONNECTION_CONFIG.maxContentLength,
 });
@@ -251,7 +253,31 @@ apiClient.interceptors.response.use(
           (apiClient as any)._refreshing = true;
           (apiClient as any)._refreshSubscribers = [] as Array<(token: string | null) => void>;
           try {
-            const refreshResp = await apiClient.request({ url: '/auth/refresh', method: 'POST', data: JSON.stringify({ refreshToken: localStorage.getItem('refresh_token') }) } as any);
+            const refreshToken = localStorage.getItem('refresh_token');
+            if (!refreshToken) throw new Error('No refresh token available');
+
+            // Bypass apiClient to avoid attaching the expired access token
+            // Explicitly set the Authorization header with the Refresh Token
+            // Prefer sending refresh token in the request body without credentials
+            // to avoid CORS `withCredentials` network failures. Fall back to
+            // credentialed request if necessary.
+            const refreshUrl = `${API_BASE_URL}/api/auth/refresh`;
+            let refreshResp;
+            try {
+              refreshResp = await axios.post(refreshUrl, { refreshToken }, { withCredentials: false });
+            } catch (err) {
+              // If the non-credentialed attempt fails (server expects cookie-based flow),
+              // try again including credentials so cookie-based refresh can work.
+              try {
+                refreshResp = await axios.post(refreshUrl, {}, {
+                  headers: { Authorization: `Bearer ${refreshToken}` },
+                  withCredentials: true,
+                });
+              } catch (err2) {
+                throw err; // propagate original error
+              }
+            }
+
             if (refreshResp.status === 200 && refreshResp.data) {
               const newToken = (refreshResp.data as any).access_token || (refreshResp.data as any).accessToken || null;
               if (newToken) {
@@ -267,9 +293,39 @@ apiClient.interceptors.response.use(
               }
             } else {
               (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+              // Force logout if refresh endpoint returns non-200
+              try {
+                // Use store to clear auth state cleanly without reload loop
+                const { logout } = useAuthStore.getState();
+                logout();
+              } catch (e) {
+                // Fallback if store access fails
+                try {
+                  localStorage.removeItem('auth_token');
+                  localStorage.removeItem('refresh_token');
+                  localStorage.removeItem(AUTH_TOKEN);
+                  localStorage.removeItem(REFRESH_TOKEN);
+                  sessionStorage.clear();
+                } catch (err) { }
+                delete (window as any).__AUTH_TOKEN__;
+              }
             }
           } catch (e) {
             (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
+            // Force logout on error
+            try {
+              const { logout } = useAuthStore.getState();
+              logout();
+            } catch (err) {
+              try {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem(AUTH_TOKEN);
+                localStorage.removeItem(REFRESH_TOKEN);
+                sessionStorage.clear();
+              } catch (storageErr) { }
+              delete (window as any).__AUTH_TOKEN__;
+            }
           } finally {
             (apiClient as any)._refreshing = false;
             (apiClient as any)._refreshSubscribers = [];
@@ -284,13 +340,21 @@ apiClient.interceptors.response.use(
               config.headers['Authorization'] = `Bearer ${token}`;
               resolve(apiClient(config));
             } else {
+              // Failed to refresh - logout
               try {
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('refresh_token');
-                localStorage.removeItem(AUTH_TOKEN);
-                localStorage.removeItem(REFRESH_TOKEN);
-              } catch (e) { }
-              delete (window as any).__AUTH_TOKEN__;
+                const { logout } = useAuthStore.getState();
+                logout();
+              } catch (err) {
+                try {
+                  localStorage.removeItem('auth_token');
+                  localStorage.removeItem('refresh_token');
+                  localStorage.removeItem(AUTH_TOKEN);
+                  localStorage.removeItem(REFRESH_TOKEN);
+                  sessionStorage.clear();
+                } catch (storageErr) { }
+                delete (window as any).__AUTH_TOKEN__;
+              }
+
               reject(error);
             }
           });
@@ -326,10 +390,15 @@ apiClient.interceptors.response.use(
 );
 
 // Configure global axios defaults to ensure all Orval generated clients use our configuration
-axios.defaults.baseURL = API_BASE_URL;
+  axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.timeout = CONNECTION_CONFIG.timeout;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 axios.defaults.maxRedirects = CONNECTION_CONFIG.maxRedirects;
+  // NOTE: do NOT set global `axios.defaults.withCredentials` here —
+  // enabling credentials globally can trigger CORS credential checks
+  // and cause the browser to treat responses as network errors if the
+  // server does not explicitly opt-in. We set `withCredentials` on
+  // the dedicated `apiClient` and individual refresh calls instead.
 
 // Apply our interceptors to the global axios instance
 axios.interceptors.request.use(
@@ -410,7 +479,15 @@ axios.interceptors.response.use(
           (axios as any)._refreshSubscribers = [] as Array<(token: string | null) => void>;
 
           try {
-            const refreshResp = await apiClient.request({ url: '/api/auth/refresh', method: 'POST', data: JSON.stringify({ refreshToken: localStorage.getItem(REFRESH_TOKEN) || localStorage.getItem('refresh_token') }) } as any);
+            // Try refresh via POST body without credentials first to avoid CORS credential issues.
+            const refreshUrl2 = `${API_BASE_URL}/api/auth/refresh`;
+            let refreshResp2;
+            try {
+              refreshResp2 = await axios.post(refreshUrl2, { refreshToken: localStorage.getItem(REFRESH_TOKEN) || localStorage.getItem('refresh_token') }, { withCredentials: false });
+            } catch (err) {
+              // Fallback to apiClient call (which may include cookies) if body-based refresh fails
+              refreshResp2 = await apiClient.request({ url: '/api/auth/refresh', method: 'POST', data: JSON.stringify({ refreshToken: localStorage.getItem(REFRESH_TOKEN) || localStorage.getItem('refresh_token') }) } as any);
+            }
             if (refreshResp.status === 200 && refreshResp.data) {
               const newToken = (refreshResp.data as any).access_token || (refreshResp.data as any).accessToken || null;
               if (newToken) {

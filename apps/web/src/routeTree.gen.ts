@@ -14,6 +14,7 @@ import { Route as TestRouteImport } from './routes/test'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as InventoryRouteImport } from './routes/inventory'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as CashflowRouteImport } from './routes/cashflow'
 import { Route as CampaignsRouteImport } from './routes/campaigns'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
@@ -63,6 +64,11 @@ const InvoicesRoute = InvoicesRouteImport.update({
 const InventoryRoute = InventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CashflowRoute = CashflowRouteImport.update({
@@ -196,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/appointments': typeof AppointmentsRoute
   '/campaigns': typeof CampaignsRoute
   '/cashflow': typeof CashflowRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
   '/profile': typeof ProfileRoute
@@ -228,6 +235,7 @@ export interface FileRoutesByTo {
   '/appointments': typeof AppointmentsRoute
   '/campaigns': typeof CampaignsRoute
   '/cashflow': typeof CashflowRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/profile': typeof ProfileRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
@@ -259,6 +267,7 @@ export interface FileRoutesById {
   '/appointments': typeof AppointmentsRoute
   '/campaigns': typeof CampaignsRoute
   '/cashflow': typeof CashflowRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
   '/profile': typeof ProfileRoute
@@ -293,6 +302,7 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/campaigns'
     | '/cashflow'
+    | '/forgot-password'
     | '/inventory'
     | '/invoices'
     | '/profile'
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/campaigns'
     | '/cashflow'
+    | '/forgot-password'
     | '/profile'
     | '/test'
     | '/uts'
@@ -355,6 +366,7 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/campaigns'
     | '/cashflow'
+    | '/forgot-password'
     | '/inventory'
     | '/invoices'
     | '/profile'
@@ -388,6 +400,7 @@ export interface RootRouteChildren {
   AppointmentsRoute: typeof AppointmentsRoute
   CampaignsRoute: typeof CampaignsRoute
   CashflowRoute: typeof CashflowRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   InventoryRoute: typeof InventoryRouteWithChildren
   InvoicesRoute: typeof InvoicesRouteWithChildren
   ProfileRoute: typeof ProfileRoute
@@ -446,6 +459,13 @@ declare module '@tanstack/react-router' {
       path: '/inventory'
       fullPath: '/inventory'
       preLoaderRoute: typeof InventoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cashflow': {
@@ -661,6 +681,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppointmentsRoute: AppointmentsRoute,
   CampaignsRoute: CampaignsRoute,
   CashflowRoute: CashflowRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   InventoryRoute: InventoryRouteWithChildren,
   InvoicesRoute: InvoicesRouteWithChildren,
   ProfileRoute: ProfileRoute,

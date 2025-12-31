@@ -55,8 +55,15 @@ export const PricingForm: React.FC<PricingFormProps> = ({
     { value: 'age13_18_parent_working', label: '13-18 Yaş (Veli Çalışan)' },
     { value: 'age13_18_parent_retired', label: '13-18 Yaş (Veli Emekli)' },
     { value: 'over18_working', label: '18+ Yaş (Çalışan)' },
+    { value: 'over18_working', label: '18+ Yaş (Çalışan)' },
     { value: 'over18_retired', label: '18+ Yaş (Emekli)' }
   ];
+
+  // Only show 'Standard (Legacy)' if it is the currently selected value
+  // This prevents it from being a choice for new assignments, but preserves it for existing ones
+  if (formData.sgkSupportType === 'standard') {
+    sgkSupportOptions.push({ value: 'standard', label: 'Standart (Eski)' });
+  }
 
   // Map select values to settings scheme keys (settings may use PascalCase)
   const selectToSettingsKey: Record<string, string> = {
@@ -138,7 +145,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
     // Do NOT write back to parent formData here to avoid conflicting updates.
     // The canonical source of truth for sgkReduction is the `useDeviceAssignment` hook
     // which computes pricing. We only show the computed scheme amount in this component.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.sgkSupportType, formData.listPrice, settingsSchemes]);
 
   return (
@@ -293,8 +300,8 @@ export const PricingForm: React.FC<PricingFormProps> = ({
               {formData.discountValue && formData.discountValue > 0 && (
                 <div className="flex justify-between text-blue-600">
                   <span>İndirim ({formData.discountType === 'percentage' ? '%' : '₺'}):</span>
-                  <span>-{formData.discountType === 'percentage' ? 
-                    `${formData.discountValue}%` : 
+                  <span>-{formData.discountType === 'percentage' ?
+                    `${formData.discountValue}%` :
                     formatCurrency(formData.discountValue)}</span>
                 </div>
               )}

@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './components/AuthProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalErrorProvider } from './components/GlobalErrorHandler';
@@ -66,6 +67,7 @@ function App() {
             <AuthProvider>
               <RouterProvider router={router} />
               <PhoneVerificationModal />
+              <Toaster position="top-right" />
               <ReactQueryDevtools initialIsOpen={false} />
             </AuthProvider>
           </GlobalErrorProvider>

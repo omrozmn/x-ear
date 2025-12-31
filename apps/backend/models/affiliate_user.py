@@ -10,12 +10,17 @@ class AffiliateUser(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
-    iban = Column(String(34), nullable=False)
+    iban = Column(String(34), nullable=True)
+    # Unique short code for referrals
+    code = Column(String(32), unique=True, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     @validates('iban')
     def validate_iban(self, key, iban):
+        # If no IBAN provided, skip validation
+        if not iban:
+            return None
         # IBAN validation (basic, can be extended)
         iban = iban.replace(' ', '').upper()
         if not re.match(r'^[A-Z0-9]{15,34}$', iban):

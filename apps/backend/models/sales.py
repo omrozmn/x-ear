@@ -109,6 +109,8 @@ class DeviceAssignment(BaseModel):
     is_loaner = db.Column(db.Boolean, default=False)  # Is this assignment using a loaner device
     loaner_inventory_id = db.Column(db.String(50), db.ForeignKey('inventory.id'), nullable=True)  # Loaner device from inventory
     loaner_serial_number = db.Column(db.String(100))  # Serial number of loaner device
+    loaner_serial_number_left = db.Column(db.String(100))  # Serial number of loaner device (Left)
+    loaner_serial_number_right = db.Column(db.String(100))  # Serial number of loaner device (Right)
     loaner_brand = db.Column(db.String(100))  # Brand of loaner device
     loaner_model = db.Column(db.String(100))  # Model of loaner device
     
@@ -147,6 +149,8 @@ class DeviceAssignment(BaseModel):
             'isLoaner': self.is_loaner,
             'loanerInventoryId': self.loaner_inventory_id,
             'loanerSerialNumber': self.loaner_serial_number,
+            'loanerSerialNumberLeft': self.loaner_serial_number_left,
+            'loanerSerialNumberRight': self.loaner_serial_number_right,
             'loanerBrand': self.loaner_brand,
             'loanerModel': self.loaner_model,
             'reportStatus': self.report_status

@@ -860,6 +860,9 @@ def get_inventory_movements(item_id):
         if created_by:
             query = query.filter(StockMovement.created_by == created_by)
 
+        # Sort by date descending (newest first)
+        query = query.order_by(None).order_by(StockMovement.created_at.desc())
+
         # Pagination
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('limit', request.args.get('per_page', 20)))
@@ -871,7 +874,7 @@ def get_inventory_movements(item_id):
         for movement in movements:
             movement_dict = movement.to_dict()
             
-            # Try to find patient info from assignment or sale
+            # Enrich with patient info
             if movement.transaction_id:
                 patient_id = None
                 
@@ -887,16 +890,12 @@ def get_inventory_movements(item_id):
                 # If not found yet, try Sale
                 if not patient_id:
                     from models import Sale
-                    # Try direct lookup (if ID matches)
-                    # Sale IDs are historically integers, but transaction_id is string
-                    # Flask-SQLAlchemy/SQLAlchemy needs the correct type
                     try:
                         sale_id = int(movement.transaction_id)
                         sale = db.session.get(Sale, sale_id)
                         if sale:
                             patient_id = sale.patient_id
                     except (ValueError, TypeError):
-                        # Not an integer, maybe a new string ID format or just not a sale
                         pass
 
                 # If we found a patient ID, fetch patient details
@@ -905,7 +904,7 @@ def get_inventory_movements(item_id):
                     patient = db.session.get(Patient, patient_id)
                     if patient:
                         movement_dict['patientId'] = patient.id
-                        movement_dict['patientName'] = f"{patient.first_name} {patient.last_name}".strip()
+                        movement_dict['patientName'] = f"{patient.first_name or ''} {patient.last_name or ''}".strip()
             
             enriched_movements.append(movement_dict)
 
@@ -917,7 +916,7 @@ def get_inventory_movements(item_id):
                 'perPage': per_page,
                 'total': paginated.total
             },
-            'requestId': request_id(),
+            'requestId': request.headers.get('X-Request-Id'),
             'timestamp': datetime.utcnow().isoformat() + 'Z'
         }), 200
     except Exception as e:
@@ -1463,6 +1462,7 @@ def assign_to_patient(item_id):
                 paid_amount=down_payment,
                 payment_method=payment_method,
                 status='pending',
+                sgk_coverage=data.get('sgkReduction') or data.get('sgk_reduction', 0),
                 notes=f"Device assignment from inventory: {item.brand} {item.model}"
             )
             
@@ -1471,15 +1471,56 @@ def assign_to_patient(item_id):
             if sale_price_val:
                 try:
                     sp_float = float(sale_price_val)
-                    sale.total_amount = sp_float # For simple assignment, assuming this is invalid total
-                    sale.final_amount = sp_float
+                    
+                    # Calculate true discount amount
+                    eff_discount_amount = float(discount_value or 0)
+                    if discount_type == 'percentage' and eff_discount_amount > 0:
+                         # Calculate percentage on price AFTER SGK (standard practice in this system)
+                         price_after_sgk = float(base_price) - float(sale.sgk_coverage or 0)
+                         eff_discount_amount = (price_after_sgk * eff_discount_amount) / 100.0
+
+                    # Recalculate expected final amount to prevent frontend VAT errors
+                    # Formula: Base Price - SGK - Discount
+                    calc_final = float(base_price) - float(sale.sgk_coverage or 0) - eff_discount_amount
+                    
+                    # Update sale.discount_amount with the calculated amount
+                    sale.discount_amount = eff_discount_amount
+                    
+                    # If frontend sends a value significantly higher (e.g. +20% VAT), override it
+                    if abs(sp_float - calc_final) > 1.0:
+                         logger.warning(f"⚠️ Price Mismatch! Frontend sent {sp_float}, Backend calc {calc_final}. Overriding to {calc_final} to prevent VAT errors.")
+                         sale.final_amount = calc_final
+                         sale.total_amount = calc_final
+                    else:
+                        sale.total_amount = sp_float # accurate total amount before discount
+                        sale.final_amount = sp_float # accurate final claim
                 except (ValueError, TypeError):
                     pass
+            
+
             
             db.session.add(sale)
             db.session.flush()
             sale_id = sale.id
-            logger.info(f"✅ Created sale record: {sale_id}, paid_amount={down_payment}")
+            logger.info(f"✅ Created sale record: {sale_id}, paid_amount={down_payment}, sgk={sale.sgk_coverage}")
+
+            # Create PaymentRecord for down payment if exists
+            if down_payment > 0:
+                from models.sales import PaymentRecord
+                payment = PaymentRecord(
+                    tenant_id=item.tenant_id,
+                    branch_id=item.branch_id,
+                    patient_id=patient_id,
+                    sale_id=sale_id,
+                    amount=down_payment,
+                    payment_date=now_utc(),
+                    payment_method=payment_method,
+                    payment_type='down_payment',
+                    status='paid',
+                    notes='Peşinat (Cihaz Ataması)'
+                )
+                db.session.add(payment)
+                logger.info(f"✅ Created down payment record: {payment.id} for {down_payment}")
         
         assignment = DeviceAssignment(
             patient_id=patient_id,

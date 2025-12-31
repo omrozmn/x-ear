@@ -33,7 +33,7 @@ def send_test_otp(phone_number):
             "api_key": VATANSMS_PASSWORD,  # Using password as api_key
             "sender": VATANSMS_SENDER,
             "message_type": "turkce",
-            "message": f"X-Ear TEST OTP kodunuz: {otp_code}",
+            "message": f"X-EAR dogrulama kodunuz: {otp_code}. Bu kodu kimseyle paylasmayiniz.",
             "phones": [phone_number]
         }
 

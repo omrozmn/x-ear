@@ -192,11 +192,10 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
 
       // Refresh devices
       console.log('🔄 [handleUpdateDevice] refetchDevices çağrılıyor...');
-      const refetchResult = await refetchDevices();
-      console.log('📥 [handleUpdateDevice] refetchDevices sonucu:', {
-        dataCount: refetchResult?.data?.length || 0,
-        firstDevice: refetchResult?.data?.[0]
-      });
+      await refetchDevices();
+
+      // Dispatch custom event to notify other tabs (e.g., Sales)
+      window.dispatchEvent(new CustomEvent('xEar:dataChanged'));
 
       // If modal was open, handle closing/resetting
       if (showEditModal) {
