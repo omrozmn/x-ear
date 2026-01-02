@@ -8,6 +8,7 @@ from models.user import User
 from utils.admin_permissions import require_admin_permission, AdminPermissions
 import logging
 import json
+from utils.tenant_security import UnboundSession
 
 logger = logging.getLogger(__name__)
 
@@ -70,16 +71,17 @@ def get_notifications():
         user_id = request.args.get('user_id')
         type_filter = request.args.get('type')
         
-        query = Notification.query
-        
-        if user_id:
-            query = query.filter(Notification.user_id == user_id)
+        with UnboundSession():
+            query = Notification.query
             
-        if type_filter:
-            query = query.filter(Notification.notification_type == type_filter)
-            
-        total = query.count()
-        notifications = query.order_by(Notification.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            if user_id:
+                query = query.filter(Notification.user_id == user_id)
+                
+            if type_filter:
+                query = query.filter(Notification.notification_type == type_filter)
+                
+            total = query.count()
+            notifications = query.order_by(Notification.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         return jsonify({
             'success': True,
@@ -156,12 +158,13 @@ def send_notification():
         # For push notifications (existing logic)
         recipients = []
         
-        if target_type == 'tenant':
-            users = User.query.filter_by(tenant_id=target_id).all()
-            recipients = [u.id for u in users]
-        elif target_type == 'all':
-            users = User.query.all()
-            recipients = [u.id for u in users]
+        with UnboundSession():
+            if target_type == 'tenant':
+                users = User.query.filter_by(tenant_id=target_id).all()
+                recipients = [u.id for u in users]
+            elif target_type == 'all':
+                users = User.query.all()
+                recipients = [u.id for u in users]
             
         count = 0
         for user_id in recipients:

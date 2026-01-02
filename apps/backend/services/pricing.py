@@ -29,8 +29,8 @@ def calculate_device_pricing(device_assignments, accessories, services, sgk_sche
             inventory_id = assignment.get('inventoryId')
             inventory_item = None
             if inventory_id:
-                from models.inventory import Inventory
-                inventory_item = db.session.get(Inventory, inventory_id)
+                from models.inventory import InventoryItem
+                inventory_item = db.session.get(InventoryItem, inventory_id)
 
             if assignment.get('base_price') is not None:
                 list_price = float(assignment.get('base_price') or 0)

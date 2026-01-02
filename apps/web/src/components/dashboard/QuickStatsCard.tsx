@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, DollarSign, Calendar, Clock } from 'lucide-react';
+import { Users, DollarSign, Calendar, Clock, ChevronRight } from 'lucide-react';
 
 interface QuickStatsCardProps {
   stats: {
@@ -25,60 +25,65 @@ export const QuickStatsCard: React.FC<QuickStatsCardProps> = ({ stats }) => {
       label: 'Aktif Hastalar',
       value: stats.activePatients,
       icon: Users,
-      color: 'blue'
+      color: 'blue',
+      bgColor: 'bg-blue-50',
+      textColor: 'text-blue-600',
     },
     {
       label: 'Günlük Ciro',
       value: formatCurrency(stats.dailyRevenue),
       icon: DollarSign,
-      color: 'green'
+      color: 'emerald',
+      bgColor: 'bg-emerald-50',
+      textColor: 'text-emerald-600',
     },
     {
       label: 'Bekleyen Randevular',
       value: stats.pendingAppointments,
       icon: Calendar,
-      color: 'orange'
+      color: 'violet',
+      bgColor: 'bg-violet-50',
+      textColor: 'text-violet-600',
     },
     {
       label: 'Biten Denemeler',
       value: stats.endingTrials,
       icon: Clock,
-      color: 'yellow'
+      color: 'amber',
+      bgColor: 'bg-amber-50',
+      textColor: 'text-amber-600',
     }
   ];
 
-  const getColorClasses = (color: string) => {
-    const colorMap = {
-      blue: 'bg-blue-100 text-blue-600',
-      green: 'bg-green-100 text-green-600',
-      orange: 'bg-orange-100 text-orange-600',
-      yellow: 'bg-yellow-100 text-yellow-600'
-    };
-    return colorMap[color as keyof typeof colorMap] || 'bg-gray-100 text-gray-600';
-  };
-
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Hızlı İstatistikler</h3>
-      <div className="space-y-4">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-full flex flex-col justify-center">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-bold text-gray-900 tracking-tight">Hızlı İstatistikler</h3>
+        <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">Bugün</span>
+      </div>
+
+      <div className="space-y-3">
         {quickStats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <div key={index} className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className={`p-2 rounded-full ${getColorClasses(stat.color)}`}>
-                  <Icon className="w-4 h-4" />
+            <div
+              key={index}
+              className="group flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-100 cursor-default"
+            >
+              <div className="flex items-center space-x-4">
+                <div className={`p-2.5 rounded-xl ${stat.bgColor} ${stat.textColor} group-hover:scale-110 transition-transform`}>
+                  <Icon className="w-5 h-5" />
                 </div>
-                <span className="text-sm text-gray-600">{stat.label}</span>
+                <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">
+                  {stat.label}
+                </span>
               </div>
-              <span className={`text-lg font-semibold ${
-                stat.color === 'green' ? 'text-green-600' : 
-                stat.color === 'orange' ? 'text-orange-600' :
-                stat.color === 'yellow' ? 'text-yellow-600' :
-                'text-gray-900'
-              }`}>
-                {stat.value}
-              </span>
+
+              <div className="flex items-center gap-2">
+                <span className={`text-lg font-bold ${stat.textColor}`}>
+                  {stat.value}
+                </span>
+              </div>
             </div>
           );
         })}

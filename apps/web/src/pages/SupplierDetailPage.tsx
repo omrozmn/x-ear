@@ -3,7 +3,6 @@ import { useParams, useNavigate } from '@tanstack/react-router';
 import { Button, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Loading } from '@x-ear/ui-web';
 import { ArrowLeft, Building2, Mail, Phone, MapPin, Globe, Edit, Trash2 } from 'lucide-react';
 import { useSupplier, useDeleteSupplier, useUpdateSupplier, useSupplierProducts } from '../hooks/useSuppliers';
-import { useSupplierInvoices, useSyncInvoices } from '../hooks/useSupplierInvoices';
 import { SupplierFormModal } from '../components/suppliers/SupplierFormModal';
 import { SupplierExtended } from '../components/suppliers/supplier-search.types';
 
@@ -16,19 +15,6 @@ export function SupplierDetailPage() {
   const { data: productsData, isLoading: productsLoading, error: productsError } = useSupplierProducts(supplierId);
   const deleteSupplierMutation = useDeleteSupplier();
   const updateSupplierMutation = useUpdateSupplier();
-  const [invoiceType, setInvoiceType] = useState<'incoming' | 'outgoing' | 'all'>('all');
-  const [invoicePage, setInvoicePage] = useState(1);
-  const [invoicePerPage, setInvoicePerPage] = useState(20);
-  const [dateRange, setDateRange] = useState<{ startDate?: string; endDate?: string }>({});
-  const { data: invoicesData, isLoading: invoicesLoading, error: invoicesError, refetch: refetchInvoices } = useSupplierInvoices({
-    supplierId,
-    page: invoicePage,
-    per_page: invoicePerPage,
-    type: invoiceType,
-    start_date: dateRange.startDate,
-    end_date: dateRange.endDate,
-  } as any);
-  const syncInvoicesMutation = useSyncInvoices();
 
   const handleBack = () => {
     navigate({ to: '/suppliers' });
@@ -114,9 +100,6 @@ export function SupplierDetailPage() {
             <Button variant="outline" onClick={handleEdit}>
               <Edit className="h-4 w-4 mr-2" />
               Düzenle
-            </Button>
-            <Button variant="default" onClick={() => navigate({ to: '/suppliers/$supplierId', params: { supplierId }, search: {} as any })}>
-              Alışlarda Görüntüle
             </Button>
             <Button variant="danger" onClick={handleDelete}>
               <Trash2 className="h-4 w-4 mr-2" />
@@ -270,74 +253,9 @@ export function SupplierDetailPage() {
                   )}
                 </TabsContent>
                 <TabsContent value="orders">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex gap-2">
-                        <Button variant={invoiceType === 'all' ? 'default' : 'outline'} onClick={() => setInvoiceType('all')}>Tümü</Button>
-                        <Button variant={invoiceType === 'incoming' ? 'default' : 'outline'} onClick={() => setInvoiceType('incoming')}>Gelen</Button>
-                        <Button variant={invoiceType === 'outgoing' ? 'default' : 'outline'} onClick={() => setInvoiceType('outgoing')}>Giden</Button>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => refetchInvoices()}
-                          disabled={invoicesLoading}
-                        >Yenile</Button>
-                        <Button
-                          onClick={async () => {
-                            try {
-                              await syncInvoicesMutation.mutateAsync({ startDate: dateRange.startDate, endDate: dateRange.endDate });
-                              refetchInvoices();
-                            } catch (e) {
-                              console.error('Fatura senkronizasyonu başarısız', e);
-                            }
-                          }}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >BirFatura'dan Senkronize Et</Button>
-                      </div>
-                    </div>
-
-                    {invoicesLoading ? (
-                      <div className="flex justify-center py-8">
-                        <Loading size="md" />
-                      </div>
-                    ) : invoicesError ? (
-                      <div className="text-red-500 text-center py-8">Siparişler yüklenirken hata oluştu.</div>
-                    ) : (invoicesData as any)?.data?.invoices?.length ? (
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead>
-                            <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fatura No</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tür</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tutar</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {(invoicesData as any).data.invoices.map((inv: any) => (
-                              <tr key={inv.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{inv.invoiceNumber || '-'}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{inv.invoiceDate ? new Date(inv.invoiceDate).toLocaleDateString() : '-'}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{inv.invoiceType}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{typeof inv.totalAmount === 'number' ? inv.totalAmount.toFixed(2) : inv.totalAmount} {inv.currency || 'TRY'}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{inv.status || '-'}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                        <div className="flex justify-end items-center mt-4 gap-2">
-                          <Button variant="outline" onClick={() => setInvoicePage(Math.max(1, invoicePage - 1))} disabled={invoicePage <= 1}>Önceki</Button>
-                          <span className="text-sm text-gray-600">Sayfa {invoicePage}</span>
-                          <Button variant="outline" onClick={() => setInvoicePage(invoicePage + 1)} disabled={(invoicesData as any)?.data?.pagination && invoicePage >= ((invoicesData as any).data.pagination.totalPages || 1)}>Sonraki</Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 text-gray-500">
-                        <p>Bu tedarikçiye ait sipariş/fatura bulunamadı.</p>
-                      </div>
-                    )}
+                  <div className="text-center py-12 text-gray-500">
+                    <p>Sipariş geçmişi özelliği yakında eklenecektir.</p>
+                    <p className="text-xs mt-2">(Tedarikçi faturaları entegrasyonu bekleniyor)</p>
                   </div>
                 </TabsContent>
                 <TabsContent value="notes">

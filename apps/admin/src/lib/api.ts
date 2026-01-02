@@ -1,115 +1,70 @@
-import axios from 'axios';
-import { useAuthStore } from '../stores/authStore';
+import axios, { AxiosRequestConfig } from 'axios';
 
-// Create axios instance for admin routes
-// NOTE: baseURL is empty because Vite dev server proxy already handles /api prefix
-// Vite config: proxy: { '/api': { target: 'http://localhost:5003' } }
-// So /api/admin/tenants -> http://localhost:5003/api/admin/tenants
-export const adminApiInstance = axios.create({
-    baseURL: '', // Empty - Vite proxy handles /api prefix
-    timeout: 30000,
+// API Configuration
+// API Configuration
+// Ensure base URL doesn't end with /api/ to prevent double prefixing with Orval mutator
+const rawBaseUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5003';
+const API_BASE_URL = rawBaseUrl.endsWith('/api') ? rawBaseUrl.slice(0, -4) : rawBaseUrl.endsWith('/api/') ? rawBaseUrl.slice(0, -5) : rawBaseUrl;
+
+export const apiClient = axios.create({
+    baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-// Generic wrapper for Orval
-export const adminApi = <T>(config: any): Promise<T> => {
-    return adminApiInstance(config).then(response => response.data);
-};
-
-
-// Request interceptor to add auth token from the main app's store
-adminApiInstance.interceptors.request.use(
+// Request Interceptor
+apiClient.interceptors.request.use(
     (config) => {
-        const storeToken = useAuthStore.getState().token;
-        const localToken = localStorage.getItem('admin_token');
-        const token = storeToken || localToken;
-
-        console.log('API Request:', config.url, 'Token:', token ? 'Present' : 'Missing', '(Store:', !!storeToken, 'Local:', !!localToken, ')');
+        const token = localStorage.getItem('admin_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },
-    (error) => {
-        console.error('API Request Error:', error);
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
-// Response interceptor
-// Token manager for handling auth tokens
-export const tokenManager = {
-    setToken: (token: string) => {
-        localStorage.setItem('admin_token', token);
-    },
-    getToken: () => {
-        return localStorage.getItem('admin_token');
-    },
-    clearToken: () => {
-        localStorage.removeItem('admin_token');
-    },
-    setRefreshToken: (token: string) => {
-        localStorage.setItem('admin_refresh_token', token);
-    },
-    getRefreshToken: () => {
-        return localStorage.getItem('admin_refresh_token');
-    },
-    clearRefreshToken: () => {
-        localStorage.removeItem('admin_refresh_token');
-    }
-};
-
-// Response interceptor
-adminApiInstance.interceptors.response.use(
+// Response Interceptor
+apiClient.interceptors.response.use(
     (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
+    (error) => {
+        if (error.response?.status === 401) {
+            // Check if it's a real authentication error or just authorization
+            const errorMessage = error.response?.data?.error?.message || error.response?.data?.error || '';
+            const isAuthError =
+                errorMessage.includes('token') ||
+                errorMessage.includes('JWT') ||
+                errorMessage.includes('expired') ||
+                errorMessage.includes('invalid') ||
+                errorMessage.includes('authentication') ||
+                !localStorage.getItem('admin_token'); // No token at all
 
-        // If error is 401 and we haven't tried to refresh yet
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-
-            try {
-                const refreshToken = tokenManager.getRefreshToken();
-                if (!refreshToken) {
-                    throw new Error('No refresh token available');
-                }
-
-                // Try to refresh token
-                // We use axios directly to avoid infinite loops if this fails
-                const response = await axios.post('/api/auth/refresh', {}, {
-                    headers: {
-                        'Authorization': `Bearer ${refreshToken}`
-                    }
-                });
-
-                const { access_token } = response.data;
-
-                if (access_token) {
-                    // Update token in storage
-                    tokenManager.setToken(access_token);
-
-                    // Update token in store
-                    useAuthStore.getState().setToken(access_token);
-
-                    // Update header for original request
-                    originalRequest.headers.Authorization = `Bearer ${access_token}`;
-
-                    // Retry original request
-                    return adminApiInstance(originalRequest);
-                }
-            } catch (refreshError) {
-                console.error('Token refresh failed:', refreshError);
-                // Clear tokens and redirect to login
-                tokenManager.clearToken();
-                tokenManager.clearRefreshToken();
+            // Only logout if it's a real auth error, not just missing permissions
+            if (isAuthError) {
+                console.warn('Authentication error detected, logging out:', errorMessage);
+                localStorage.removeItem('admin_token');
                 window.location.href = '/login';
-                return Promise.reject(refreshError);
+            } else {
+                // Just log the authorization error, don't logout
+                console.warn('Authorization error (not logging out):', errorMessage);
             }
         }
-
         return Promise.reject(error);
     }
 );
+
+// Export instances expected by manual/generated code
+export const adminApiInstance = apiClient;
+
+export const adminApi = <T>(config: AxiosRequestConfig): Promise<T> => {
+    return apiClient(config).then((response) => response.data);
+};
+
+// Token manager (kept from previous version)
+export const tokenManager = {
+    setToken: (token: string) => localStorage.setItem('admin_token', token),
+    getToken: () => localStorage.getItem('admin_token'),
+    clearToken: () => localStorage.removeItem('admin_token'),
+    clearRefreshToken: () => localStorage.removeItem('admin_refresh_token'),
+};

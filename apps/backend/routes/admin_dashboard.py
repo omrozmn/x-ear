@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 admin_dashboard_bp = Blueprint('admin_dashboard', __name__, url_prefix='/api/admin/dashboard')
 
-@admin_dashboard_bp.route('/metrics', methods=['GET'])
+@admin_dashboard_bp.route('/', methods=['GET'])
 @jwt_required()
 @require_admin_permission(AdminPermissions.DASHBOARD_VIEW)
 def get_dashboard_metrics():

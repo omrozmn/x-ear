@@ -197,7 +197,8 @@ def report_financial():
         revenue_trend = {int(month): float(amount) for month, amount in monthly_revenue}
 
         # Ürün satış dağılımı (DeviceAssignment üzerinden)
-        from models import DeviceAssignment, Device
+        from models.sales import DeviceAssignment
+        from models.device import Device
         product_query = db.session.query(
             Device.brand,
             func.count(DeviceAssignment.id),

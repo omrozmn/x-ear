@@ -1,32 +1,89 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Plus, Trash2, Edit2, Shield, Lock, Save, X, AlertCircle, CheckCircle2, Search } from 'lucide-react';
-import axios from 'axios';
-
-interface Permission {
-    id: string;
-    name: string;
-    resource: string;
-    action: string;
-}
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { customInstance } from '../../api/orval-mutator';
+import { unwrapArray, unwrapObject } from '../../utils/response-unwrap';
 
 interface Role {
     id: string;
     name: string;
     description?: string;
-    permissions?: Permission[];
-    created_at?: string;
+    is_system?: boolean;
+    permissions?: string[];
 }
+
+/**
+ * TODO: BACKEND SWAGGER REQUIRED
+ * /roles endpoints need to be added to OpenAPI spec
+ * Required endpoints:
+ * - GET /roles -> List all roles
+ * - POST /roles -> Create new role
+ * - PUT /roles/{roleId} -> Update role
+ * - DELETE /roles/{roleId} -> Delete role
+ * 
+ * After swagger update: npm run generate:api
+ * Then replace these manual hooks with ORVAL-generated:
+ * - useRolesListRoles
+ * - useRolesCreateRole  
+ * - useRolesUpdateRole
+ * - useRolesDeleteRole
+ */
+
+// Temporary hooks using customInstance (maintains auth + retry logic)
+const useRolesListRoles = () => {
+    return useQuery({
+        queryKey: ['roles'],
+        queryFn: async () => {
+            const response = await customInstance({ url: '/roles', method: 'GET' });
+            return unwrapArray<Role>(response);
+        }
+    });
+};
+
+const useRolesCreateRole = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (variables: { data: { name: string; description?: string } }) => {
+            const response = await customInstance({ url: '/roles', method: 'POST', data: variables.data });
+            return unwrapObject<Role>(response);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['roles'] });
+        }
+    });
+};
+
+const useRolesUpdateRole = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ roleId, data }: { roleId: string; data: any }) => {
+            const response = await customInstance({ url: `/roles/${roleId}`, method: 'PUT', data });
+            return unwrapObject<Role>(response);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['roles'] });
+        }
+    });
+};
+
+const useRolesDeleteRole = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ roleId }: { roleId: string }) => {
+            const response = await customInstance({ url: `/roles/${roleId}`, method: 'DELETE' });
+            return unwrapObject<any>(response);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['roles'] });
+        }
+    });
+};
 
 export default function RolesSettings() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<Role | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-
-    // State for roles
-    const [roles, setRoles] = useState<Role[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     // Create Role Form State
     const [roleData, setRoleData] = useState({
@@ -35,45 +92,33 @@ export default function RolesSettings() {
     });
     const [createSuccess, setCreateSuccess] = useState('');
     const [createError, setCreateError] = useState('');
-    const [isCreating, setIsCreating] = useState(false);
 
-    // Fetch roles on mount
-    useEffect(() => {
-        fetchRoles();
-    }, []);
+    // React Query hooks
+    const { data: rolesData, isLoading: loading, error: fetchError, refetch } = useRolesListRoles();
+    const createRoleMutation = useRolesCreateRole();
+    const updateRoleMutation = useRolesUpdateRole();
+    const deleteRoleMutation = useRolesDeleteRole();
 
-    const fetchRoles = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await axios.get('/api/roles');
-            setRoles(response.data?.data || []);
-        } catch (err: any) {
-            setError(err.response?.data?.error || 'Roller yüklenemedi');
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Extract roles from response
+    const roles = rolesData?.data || [];
+    const error = fetchError ? 'Roller yüklenemedi' : null;
 
     const handleCreateRole = async (e: React.FormEvent) => {
         e.preventDefault();
         setCreateError('');
         setCreateSuccess('');
-        setIsCreating(true);
 
         try {
-            const response = await axios.post('/api/roles', roleData);
+            await createRoleMutation.mutateAsync({ data: roleData });
             setCreateSuccess('Rol başarıyla oluşturuldu!');
-            setRoles([...roles, response.data.data]);
             setRoleData({ name: '', description: '' });
+            refetch();
             setTimeout(() => {
                 setIsCreateModalOpen(false);
                 setCreateSuccess('');
             }, 2000);
         } catch (err: any) {
             setCreateError(err.response?.data?.error || 'Rol oluşturulamadı.');
-        } finally {
-            setIsCreating(false);
         }
     };
 
@@ -90,19 +135,19 @@ export default function RolesSettings() {
         e.preventDefault();
         if (!selectedRole) return;
 
-        setIsCreating(true);
         setCreateError('');
 
         try {
-            const response = await axios.put(`/api/roles/${selectedRole.id}`, roleData);
-            setRoles(roles.map(r => r.id === selectedRole.id ? response.data.data : r));
+            await updateRoleMutation.mutateAsync({
+                roleId: selectedRole.id,
+                data: roleData
+            });
+            await refetch();
             setIsEditModalOpen(false);
             setSelectedRole(null);
             setRoleData({ name: '', description: '' });
         } catch (err: any) {
             setCreateError(err.response?.data?.error || 'Rol güncellenemedi.');
-        } finally {
-            setIsCreating(false);
         }
     };
 
@@ -110,8 +155,8 @@ export default function RolesSettings() {
         if (!window.confirm('Bu rolü silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) return;
 
         try {
-            await axios.delete(`/api/roles/${roleId}`);
-            setRoles(roles.filter(r => r.id !== roleId));
+            await deleteRoleMutation.mutateAsync({ roleId });
+            await refetch();
         } catch (err: any) {
             alert(err.response?.data?.error || 'Rol silinemedi.');
         }
@@ -246,9 +291,9 @@ export default function RolesSettings() {
                                 </div>
                             )}
 
-                            {role.created_at && (
+                            {role.createdAt && (
                                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500">
-                                    Oluşturulma: {new Date(role.created_at).toLocaleDateString('tr-TR')}
+                                    Oluşturulma: {new Date(role.createdAt).toLocaleDateString('tr-TR')}
                                 </div>
                             )}
                         </div>
@@ -343,10 +388,10 @@ export default function RolesSettings() {
                                     </button>
                                     <button
                                         type="submit"
-                                        disabled={isCreating}
+                                        disabled={createRoleMutation.isPending}
                                         className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center"
                                     >
-                                        {isCreating ? (
+                                        {createRoleMutation.isPending ? (
                                             'Oluşturuluyor...'
                                         ) : (
                                             <>
@@ -429,10 +474,10 @@ export default function RolesSettings() {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={isCreating}
+                                    disabled={updateRoleMutation.isPending}
                                     className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
                                 >
-                                    {isCreating ? 'Güncelleniyor...' : 'Güncelle'}
+                                    {updateRoleMutation.isPending ? 'Güncelleniyor...' : 'Güncelle'}
                                 </button>
                             </div>
                         </form>

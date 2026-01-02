@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import { X, Settings, RefreshCw, DollarSign, Shield, CreditCard } from 'lucide-react';
-import type { Device, InventoryItem } from '../../../api/generated/schemas';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003/api';
+import type { Device, InventoryItem } from '@/api/generated/schemas';
+import { inventoryGetInventoryItems } from '@/api/generated';
 
 interface DeviceEditModalProps {
   isOpen: boolean;
@@ -87,11 +85,11 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
     const timer = setTimeout(async () => {
       if (loanerSearch.length >= 2) {
         try {
-          const response = await axios.get(`${API_URL}/inventory`, {
-            params: { search: loanerSearch }
-          });
-          if (response.data?.success) {
-            setLoanerResults(response.data.data);
+          const response = await inventoryGetInventoryItems({ search: loanerSearch });
+          const result = (response as any).data || response;
+
+          if (result.success) {
+            setLoanerResults(result.data);
             setShowLoanerResults(true);
           }
         } catch (error) {

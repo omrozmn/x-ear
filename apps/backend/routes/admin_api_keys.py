@@ -7,6 +7,7 @@ from models.user import User
 from utils.admin_permissions import require_admin_permission, AdminPermissions
 import logging
 from datetime import datetime
+from utils.tenant_security import UnboundSession
 
 logger = logging.getLogger(__name__)
 
@@ -35,13 +36,14 @@ def get_api_keys():
         limit = request.args.get('limit', 10, type=int)
         tenant_id = request.args.get('tenant_id')
         
-        query = ApiKey.query
-        
-        if tenant_id:
-            query = query.filter(ApiKey.tenant_id == tenant_id)
+        with UnboundSession():
+            query = ApiKey.query
             
-        total = query.count()
-        keys = query.order_by(ApiKey.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            if tenant_id:
+                query = query.filter(ApiKey.tenant_id == tenant_id)
+                
+            total = query.count()
+            keys = query.order_by(ApiKey.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         return jsonify({
             'success': True,

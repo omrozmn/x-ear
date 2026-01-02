@@ -25,7 +25,7 @@ def now_utc():
     return datetime.now(timezone.utc)
 
 # Add models directory to path to import inventory
-from models.inventory import Inventory, UNIT_TYPES
+from models.inventory import InventoryItem as Inventory, UNIT_TYPES
 from models.brand import Brand
 from models.category import Category
 from models.stock_movement import StockMovement
@@ -247,14 +247,14 @@ def bulk_upload_inventory():
                 else:
                     normalized_row = row
 
-                # Map common headers to Inventory fields
+                # Map common headers to InventoryItem fields
                 payload = {}
                 # Prefer camelCase and snake_case mappings
                 payload['name'] = normalized_row.get('name') or normalized_row.get('productName') or normalized_row.get('Ürün Adı') or normalized_row.get('product_name')
                 payload['brand'] = normalized_row.get('brand') or normalized_row.get('Marka')
                 payload['model'] = normalized_row.get('model') or normalized_row.get('Model')
                 payload['category'] = normalized_row.get('category') or normalized_row.get('Kategori')
-                payload['availableInventory'] = normalized_row.get('availableInventory') or normalized_row.get('available_inventory') or normalized_row.get('stock') or normalized_row.get('Stok')
+                payload['availableInventoryItem'] = normalized_row.get('availableInventoryItem') or normalized_row.get('available_inventory') or normalized_row.get('stock') or normalized_row.get('Stok')
                 payload['price'] = normalized_row.get('price') or normalized_row.get('Fiyat')
                 payload['barcode'] = normalized_row.get('barcode') or normalized_row.get('Barkod')
                 payload['supplier'] = normalized_row.get('supplier') or normalized_row.get('Tedarikçi')
@@ -277,7 +277,7 @@ def bulk_upload_inventory():
                         if v is None:
                             continue
                         # convert inventory model expected fields
-                        if k == 'availableInventory':
+                        if k == 'availableInventoryItem':
                             try:
                                 existing.available_inventory = int(v)
                             except Exception:
@@ -301,7 +301,7 @@ def bulk_upload_inventory():
                             'brand': payload.get('brand'),
                             'model': payload.get('model'),
                             'category': payload.get('category'),
-                            'availableInventory': int(payload.get('availableInventory')) if payload.get('availableInventory') not in (None, '') else 0,
+                            'availableInventoryItem': int(payload.get('availableInventoryItem')) if payload.get('availableInventoryItem') not in (None, '') else 0,
                             'price': float(payload.get('price')) if payload.get('price') not in (None, '') else 0,
                             'barcode': payload.get('barcode'),
                             'supplier': payload.get('supplier'),
@@ -1778,7 +1778,10 @@ def create_category():
     try:
         data = request.get_json()
         
-        if not data or 'category' not in data:
+        # Support both 'name' and 'category' parameters
+        category_name = data.get('name') or data.get('category')
+        
+        if not category_name:
             return jsonify({
                 'success': False,
                 'error': 'Category name is required',
@@ -1786,7 +1789,7 @@ def create_category():
                 'timestamp': now_utc().isoformat()
             }), 400
         
-        category_name = data['category'].strip()
+        category_name = category_name.strip()
         
         if not category_name:
             return jsonify({

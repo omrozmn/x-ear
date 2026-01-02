@@ -69,12 +69,13 @@ UNIT_TYPES = [
 ]
 
 
-class Inventory(BaseModel):
+class InventoryItem(BaseModel):
     """
     Inventory model represents products in stock.
     Supports both serial-numbered items (hearing aids) and bulk items (batteries, accessories).
     """
     __tablename__ = 'inventory'
+
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.String(50), primary_key=True)
@@ -191,7 +192,7 @@ class Inventory(BaseModel):
         """Create inventory item from dictionary (for API requests)"""
         from uuid import uuid4
         
-        inventory = Inventory()
+        inventory = InventoryItem()
         inventory.id = data.get('id') or f"item_{now_utc().strftime('%d%m%Y%H%M%S')}_{uuid4().hex[:6]}"
         inventory.name = data.get('name', '')
         inventory.brand = data.get('brand', '')

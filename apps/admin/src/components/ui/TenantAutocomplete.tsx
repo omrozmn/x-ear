@@ -19,7 +19,7 @@ interface TenantAutocompleteProps {
 export function TenantAutocomplete({
     value = '',
     onSelect,
-    placeholder = 'Kiracı Seçin',
+    placeholder = 'Abone Seçin',
     className = '',
     error
 }: TenantAutocompleteProps) {

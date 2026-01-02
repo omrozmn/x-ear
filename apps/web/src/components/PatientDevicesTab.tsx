@@ -16,16 +16,14 @@ import { PatientDevice } from '../types/patient';
 // Orval Hooks
 import {
   useSalesUpdateDeviceAssignment,
-  useDeviceAssignmentsReturnLoaner
-} from '../api/generated/device-assignments/device-assignments';
-import {
+  useSalesReturnLoanerToStock,
   useSalesAssignDevicesExtended,
   useReplacementsCreatePatientReplacement
-} from '../api/generated/patients/patients';
+} from '@/api/generated';
 import {
   SalesAssignDevicesExtendedBody,
   ReplacementsCreatePatientReplacementBody
-} from '../api/generated/schemas';
+} from '@/api/generated/schemas';
 
 // Local interface
 interface DeviceAssignment {
@@ -102,7 +100,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
 
   // Mutations
   const updateDeviceMutation = useSalesUpdateDeviceAssignment();
-  const returnLoanerMutation = useDeviceAssignmentsReturnLoaner();
+  const returnLoanerMutation = useSalesReturnLoanerToStock();
   const createReplacementMutation = useReplacementsCreatePatientReplacement();
   const assignDevicesMutation = useSalesAssignDevicesExtended();
 
@@ -158,12 +156,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
       setActionError(null);
 
       // Update device status to cancelled using mutation
-      await updateDeviceMutation.mutateAsync({
-        assignmentId: deviceToCancel,
-        data: {
-          status: 'cancelled'
-        } as any
-      });
+      await updateDeviceMutation.mutateAsync({ assignmentId: deviceToCancel });
 
       setSuccessMessage('Cihaz ataması iptal edildi');
       await refetch();
@@ -193,9 +186,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
 
       const assignmentId = deviceToReturn.id;
 
-      await returnLoanerMutation.mutateAsync({
-        assignmentId
-      });
+      await returnLoanerMutation.mutateAsync({ assignmentId });
 
       setSuccessMessage('Emanet cihaz stoğa geri alındı');
       await refetch();
@@ -262,16 +253,16 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
       const response = await createReplacementMutation.mutateAsync({
         patientId,
         data: payload
-      });
+      }) as any;
 
       console.log('📥 Replacement create response:', response);
 
-      if (response.status >= 400) {
+      if (response?.status >= 400) {
         throw new Error(`Backend error: ${response.status}`);
       }
 
       setSuccessMessage('Değişim bildirimi oluşturuldu');
-      window.dispatchEvent(new CustomEvent('replacement:created', { detail: response.data }));
+      window.dispatchEvent(new CustomEvent('replacement:created', { detail: response?.data }));
       await refetch();
 
       if (newInventoryId) {

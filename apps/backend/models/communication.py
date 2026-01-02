@@ -275,3 +275,5 @@ class CommunicationHistory(BaseModel, JSONMixin):
         db.Index('ix_comm_history_status', 'status'),
         db.Index('ix_comm_history_created', 'created_at'),
     )
+
+Communication = CommunicationHistory

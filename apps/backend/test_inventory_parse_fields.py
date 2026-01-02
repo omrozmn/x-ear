@@ -1,6 +1,6 @@
 import json
 from app import app
-from models.inventory import Inventory
+from models.inventory import InventoryItem
 from .conftest import db_session
 from models.base import db
 
@@ -8,7 +8,7 @@ from models.base import db
 def test_to_dict_handles_malformed_json():
     # Create a malformed inventory item directly in DB
     with app.app_context():
-        item = Inventory()
+        item = InventoryItem()
         item.id = 'item_malformed_001'
         item.name = 'Malformed Test'
         item.brand = 'TestBrand'
@@ -19,7 +19,7 @@ def test_to_dict_handles_malformed_json():
         db.session.add(item)
         db.session.commit()
 
-        fetched = db.session.get(Inventory, item.id)
+        fetched = db.session.get(InventoryItem, item.id)
         assert fetched is not None
         d = fetched.to_dict()
         assert isinstance(d['availableSerials'], list)

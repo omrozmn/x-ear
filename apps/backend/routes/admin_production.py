@@ -4,6 +4,7 @@ from models.base import db
 from models.production_order import ProductionOrder
 from utils.admin_permissions import require_admin_permission, AdminPermissions
 import logging
+from utils.tenant_security import UnboundSession
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +31,12 @@ def get_orders():
     try:
         status = request.args.get('status')
         
-        query = ProductionOrder.query
-        if status:
-            query = query.filter(ProductionOrder.status == status)
-            
-        orders = query.order_by(ProductionOrder.created_at.desc()).all()
+        with UnboundSession():
+            query = ProductionOrder.query
+            if status:
+                query = query.filter(ProductionOrder.status == status)
+                
+            orders = query.order_by(ProductionOrder.created_at.desc()).all()
         
         return jsonify({
             'success': True,

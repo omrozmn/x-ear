@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 admin_inventory_bp = Blueprint('admin_inventory', __name__, url_prefix='/api/admin/inventory')
 
+from utils.tenant_security import UnboundSession
+
 @admin_inventory_bp.route('', methods=['GET'])
 @jwt_required()
 @require_admin_permission(AdminPermissions.INVENTORY_READ)
@@ -24,28 +26,29 @@ def get_all_inventory():
         status = request.args.get('status')
         category = request.args.get('category')
         
-        query = Device.query
-        
-        if search:
-            query = query.filter(
-                (Device.brand.ilike(f'%{search}%')) |
-                (Device.model.ilike(f'%{search}%')) |
-                (Device.serial_number.ilike(f'%{search}%')) |
-                (Device.serial_number_left.ilike(f'%{search}%')) |
-                (Device.serial_number_right.ilike(f'%{search}%'))
-            )
+        with UnboundSession():
+            query = Device.query
             
-        if tenant_id:
-            query = query.filter(Device.tenant_id == tenant_id)
-            
-        if status:
-            query = query.filter(Device.status == status)
-            
-        if category:
-            query = query.filter(Device.category == category)
-            
-        total = query.count()
-        devices = query.order_by(Device.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            if search:
+                query = query.filter(
+                    (Device.brand.ilike(f'%{search}%')) |
+                    (Device.model.ilike(f'%{search}%')) |
+                    (Device.serial_number.ilike(f'%{search}%')) |
+                    (Device.serial_number_left.ilike(f'%{search}%')) |
+                    (Device.serial_number_right.ilike(f'%{search}%'))
+                )
+                
+            if tenant_id:
+                query = query.filter(Device.tenant_id == tenant_id)
+                
+            if status:
+                query = query.filter(Device.status == status)
+                
+            if category:
+                query = query.filter(Device.category == category)
+                
+            total = query.count()
+            devices = query.order_by(Device.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         devices_list = []
         for dev in devices:

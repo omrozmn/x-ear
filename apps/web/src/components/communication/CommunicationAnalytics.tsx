@@ -15,6 +15,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { Card, Button, Badge, Select } from '@x-ear/ui-web';
+import { communicationsCommunicationStats } from '@/api/generated';
 
 interface CommunicationStats {
   totalMessages: number;
@@ -100,7 +101,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
   const [channelData, setChannelData] = useState<ChannelData[]>([]);
   const [templateUsage, setTemplateUsage] = useState<TemplateUsage[]>([]);
   const [campaignPerformance, setCampaignPerformance] = useState<CampaignPerformance[]>([]);
-  
+
   const [selectedMetric, setSelectedMetric] = useState<'volume' | 'delivery' | 'cost'>('volume');
   const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d' | 'custom'>('30d');
 
@@ -108,62 +109,15 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock data - in real implementation, this would come from API
-      const mockStats: CommunicationStats = {
-        totalMessages: 15420,
-        totalSMS: 9850,
-        totalEmails: 5570,
-        deliveryRate: 94.2,
-        openRate: 68.5,
-        clickRate: 12.3,
-        failureRate: 5.8,
-        avgResponseTime: 2.4,
-        totalCost: 1250.75,
-        activeTemplates: 24,
-        activeCampaigns: 8
-      };
+      // Real API call using Orval
+      const response = await communicationsCommunicationStats() as any;
 
-      const mockTimeSeriesData: TimeSeriesData[] = Array.from({ length: 30 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (29 - i));
-        return {
-          date: date.toISOString().split('T')[0],
-          sms: Math.floor(Math.random() * 200) + 100,
-          email: Math.floor(Math.random() * 150) + 50,
-          delivered: Math.floor(Math.random() * 300) + 200,
-          failed: Math.floor(Math.random() * 20) + 5,
-          cost: Math.random() * 50 + 20
-        };
-      });
-
-      const mockChannelData: ChannelData[] = [
-        { name: 'SMS', value: mockStats.totalSMS, color: COLORS.primary },
-        { name: 'E-posta', value: mockStats.totalEmails, color: COLORS.success }
-      ];
-
-      const mockTemplateUsage: TemplateUsage[] = [
-        { templateName: 'Randevu Hatırlatması', usageCount: 2450, successRate: 96.2, category: 'Randevu' },
-        { templateName: 'Ödeme Bildirimi', usageCount: 1890, successRate: 94.8, category: 'Ödeme' },
-        { templateName: 'Hoş Geldiniz Mesajı', usageCount: 1650, successRate: 98.1, category: 'Karşılama' },
-        { templateName: 'Tedavi Sonrası Takip', usageCount: 1420, successRate: 92.5, category: 'Takip' },
-        { templateName: 'Kampanya Bildirimi', usageCount: 980, successRate: 87.3, category: 'Pazarlama' }
-      ];
-
-      const mockCampaignPerformance: CampaignPerformance[] = [
-        { campaignName: 'Yaz Kampanyası 2024', totalSent: 5000, delivered: 4750, opened: 3200, clicked: 640, cost: 450, roi: 2.8 },
-        { campaignName: 'Randevu Hatırlatma', totalSent: 3200, delivered: 3100, opened: 2800, clicked: 420, cost: 280, roi: 1.9 },
-        { campaignName: 'Yeni Hasta Karşılama', totalSent: 2800, delivered: 2650, opened: 2100, clicked: 315, cost: 220, roi: 2.1 },
-        { campaignName: 'Tedavi Takip', totalSent: 2100, delivered: 2000, opened: 1680, clicked: 252, cost: 180, roi: 1.6 }
-      ];
-
-      setStats(mockStats);
-      setTimeSeriesData(mockTimeSeriesData);
-      setChannelData(mockChannelData);
-      setTemplateUsage(mockTemplateUsage);
-      setCampaignPerformance(mockCampaignPerformance);
+      // Response is direct data, no wrapper
+      setStats((response?.stats || stats) as CommunicationStats);
+      setTimeSeriesData((response?.timeSeries || []) as any);
+      setChannelData((response?.channels || []) as any);
+      setTemplateUsage((response?.templates || []) as any);
+      setCampaignPerformance((response?.campaigns || []) as any);
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
     } finally {
@@ -178,20 +132,20 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
   // Calculate trends
   const trends = useMemo(() => {
     if (timeSeriesData.length < 2) return {};
-    
+
     const recent = timeSeriesData.slice(-7);
     const previous = timeSeriesData.slice(-14, -7);
-    
+
     const recentAvg = recent.reduce((sum, item) => sum + item.sms + item.email, 0) / recent.length;
     const previousAvg = previous.reduce((sum, item) => sum + item.sms + item.email, 0) / previous.length;
-    
+
     const volumeTrend = ((recentAvg - previousAvg) / previousAvg) * 100;
-    
+
     const recentDeliveryRate = recent.reduce((sum, item) => sum + (item.delivered / (item.sms + item.email)), 0) / recent.length * 100;
     const previousDeliveryRate = previous.reduce((sum, item) => sum + (item.delivered / (item.sms + item.email)), 0) / previous.length * 100;
-    
+
     const deliveryTrend = recentDeliveryRate - previousDeliveryRate;
-    
+
     return {
       volume: volumeTrend,
       delivery: deliveryTrend,
@@ -199,13 +153,13 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
     };
   }, [timeSeriesData]);
 
-  const StatCard = ({ 
-    title, 
-    value, 
-    icon: Icon, 
-    trend, 
+  const StatCard = ({
+    title,
+    value,
+    icon: Icon,
+    trend,
     format = 'number',
-    color = 'blue' 
+    color = 'blue'
   }: {
     title: string;
     value: number;
@@ -274,7 +228,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
             İletişim performansınızı izleyin ve optimize edin
           </p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <Select
             value={selectedPeriod}
@@ -286,7 +240,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
               { value: 'custom', label: 'Özel' }
             ]}
           />
-          
+
           <Button
             variant="outline"
             onClick={() => {
@@ -299,7 +253,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Yenile
           </Button>
-          
+
           <Button variant="outline" className="flex items-center">
             <Download className="h-4 w-4 mr-2" />
             Dışa Aktar
@@ -357,7 +311,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
               ]}
             />
           </div>
-          
+
           {/* Simple Chart Placeholders */}
           <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
             <div className="text-center">
@@ -377,7 +331,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
         {/* Channel Distribution */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Kanal Dağılımı</h3>
-          
+
           {/* Simple Pie Chart Placeholder */}
           <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 mb-4">
             <div className="text-center">
@@ -388,13 +342,13 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
               </p>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             {channelData.map((item, index) => (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div 
-                    className="w-3 h-3 rounded-full mr-2" 
+                  <div
+                    className="w-3 h-3 rounded-full mr-2"
                     style={{ backgroundColor: item.color }}
                   />
                   <span className="text-sm text-gray-600">{item.name}</span>
@@ -409,7 +363,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
       {/* Template Usage */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Şablon Kullanım İstatistikleri</h3>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -449,15 +403,15 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                        <div 
-                          className="bg-green-600 h-2 rounded-full" 
+                        <div
+                          className="bg-green-600 h-2 rounded-full"
                           style={{ width: `${template.successRate}%` }}
                         />
                       </div>
                       <span className="text-sm text-gray-600">
-                        {template.successRate > 95 ? 'Mükemmel' : 
-                         template.successRate > 90 ? 'İyi' : 
-                         template.successRate > 80 ? 'Orta' : 'Düşük'}
+                        {template.successRate > 95 ? 'Mükemmel' :
+                          template.successRate > 90 ? 'İyi' :
+                            template.successRate > 80 ? 'Orta' : 'Düşük'}
                       </span>
                     </div>
                   </td>
@@ -471,7 +425,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
       {/* Campaign Performance */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Kampanya Performansı</h3>
-        
+
         {/* Simple Bar Chart Placeholder */}
         <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 mb-4">
           <div className="text-center">

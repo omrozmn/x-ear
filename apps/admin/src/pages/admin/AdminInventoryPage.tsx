@@ -47,7 +47,7 @@ const AdminInventoryPage: React.FC = () => {
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Global Cihaz & Stok Yönetimi</h1>
                     <p className="mt-1 text-sm text-gray-500">
-                        Tüm kiracılardaki cihaz ve stokları görüntüleyin
+                        Tüm abonelerdeki cihaz ve stokları görüntüleyin
                     </p>
                 </div>
                 <button

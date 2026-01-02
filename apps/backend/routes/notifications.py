@@ -95,7 +95,7 @@ def notification_stats():
         if not user_id:
             return jsonify({"success": False, "error": "user_id required"}), 400
         total = Notification.query.filter_by(user_id=user_id).count()
-        unread = Notification.query.filter_by(user_id=user_id, read=False).count()
+        unread = Notification.query.filter_by(user_id=user_id, is_read=False).count()
         return jsonify({"success": True, "data": {"total": total, "unread": unread}, "timestamp": datetime.now().isoformat()}), 200
     except Exception as e:
         logger.error(f"Notification stats error: {str(e)}")
@@ -120,7 +120,9 @@ def delete_notification(notification_id):
 @notifications_bp.route('/notifications/settings', methods=['GET'])
 def get_user_notification_settings():
     try:
-        user_id = request.args.get('user_id') or request.json and request.json.get('userId')
+        user_id = request.args.get('user_id')
+        if not user_id and request.is_json:
+            user_id = request.get_json().get('userId')
         if not user_id:
             return jsonify({'success': False, 'error': 'user_id required'}), 400
 

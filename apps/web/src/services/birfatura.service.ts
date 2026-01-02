@@ -6,6 +6,7 @@
  */
 
 import { InvoiceFormData } from '../types/invoice';
+import { apiClient } from '../api/orval-mutator';
 import { getOutEBelgeV2API } from '../generated/birfatura/outEBelgeV2API';
 
 export interface BirFaturaResponse {
@@ -139,17 +140,17 @@ class BirFaturaService {
         systemTypeCodes: 'EFATURA',
         fileExtension: 'XML'
       } as any);
-      
+
       const content = resp?.data?.Result?.content;
       if (!content) return null;
-      
+
       // Decode base64 and decompress if needed
       const binary = atob(content);
       const bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) {
         bytes[i] = binary.charCodeAt(i);
       }
-      
+
       // Try to decompress (gzip)
       try {
         const ds = new DecompressionStream('gzip');
@@ -177,17 +178,17 @@ class BirFaturaService {
         systemTypeCodes: 'EFATURA',
         fileExtension: 'XML'
       } as any);
-      
+
       const content = resp?.data?.Result?.content;
       if (!content) return null;
-      
+
       // Decode base64 and decompress
       const binary = atob(content);
       const bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) {
         bytes[i] = binary.charCodeAt(i);
       }
-      
+
       // Try to decompress (gzip)
       try {
         const ds = new DecompressionStream('gzip');
@@ -226,8 +227,8 @@ class BirFaturaService {
    * Gelen faturaya yanıt gönder (KABUL/RED/IPTAL)
    */
   async sendInBoxInvoiceAnswer(
-    uuid: string, 
-    answer: 'KABUL' | 'RED' | 'IPTAL', 
+    uuid: string,
+    answer: 'KABUL' | 'RED' | 'IPTAL',
     reason?: string
   ): Promise<BirFaturaResponse> {
     try {
@@ -238,7 +239,7 @@ class BirFaturaService {
         acceptOrRejectReason: reason,
         systemTypeCodes: 'EFATURA'
       } as any);
-      
+
       const data = resp?.data || {};
       return {
         success: !!data?.Success,
@@ -285,23 +286,17 @@ class BirFaturaService {
    */
   async create(invoiceData: InvoiceFormData): Promise<BirFaturaResponse> {
     try {
-      const response = await fetch(`${this.baseURL}/Create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(invoiceData),
-      });
+      const api = getOutEBelgeV2API();
+      const response = await api.postApiOutEBelgeV2Create({ body: invoiceData as any });
+      const data = unwrapObject<any>(response);
 
-      if (!response.ok) {
+      if (!data.Success) {
         throw new Error('Fatura oluşturulamadı');
       }
 
-      const data = await response.json();
-
       return {
         success: true,
-        invoiceId: data.id || data.invoiceId,
+        invoiceId: data.Result?.id || data.Result?.invoiceId,
         message: 'Fatura başarıyla oluşturuldu',
       };
     } catch (error) {
@@ -380,23 +375,17 @@ class BirFaturaService {
    */
   async retry(invoiceId: string): Promise<BirFaturaResponse> {
     try {
-      const response = await fetch(`${this.baseURL}/Retry/${invoiceId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const api = getOutEBelgeV2API();
+      const response = await api.postApiOutEBelgeV2ReEnvelopeAndSend({ uuid: invoiceId });
+      const data = unwrapObject<any>(response);
 
-      if (!response.ok) {
+      if (!data.Success) {
         throw new Error('Yeniden gönderilemedi');
       }
-
-      const data = await response.json();
 
       return {
         success: true,
         invoiceId,
-        birfaturaId: data.birfaturaId,
         message: 'Fatura yeniden gönderildi',
       };
     } catch (error) {
@@ -414,15 +403,11 @@ class BirFaturaService {
    */
   async cancel(invoiceId: string, reason?: string): Promise<BirFaturaResponse> {
     try {
-      const response = await fetch(`${this.baseURL}/Cancel/${invoiceId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ reason }),
-      });
+      const api = getOutEBelgeV2API();
+      const response = await api.postApiOutEBelgeV2Cancel({ uuid: invoiceId, body: reason ? { reason } : {} as any });
+      const data = unwrapObject<any>(response);
 
-      if (!response.ok) {
+      if (!data.Success) {
         throw new Error('Fatura iptal edilemedi');
       }
 
@@ -456,7 +441,7 @@ class BirFaturaService {
     for (const invoiceId of invoiceIds) {
       const result = await this.send(invoiceId);
       results.push(result);
-      
+
       if (result.success) {
         success++;
       } else {

@@ -120,7 +120,7 @@ const Users: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     if (formData.user_type === 'tenant' && !formData.tenant_id) {
-      toast.error('Lütfen bir kiracı seçin');
+      toast.error('Lütfen bir abone seçin');
       setIsSubmitting(false);
       return;
     }
@@ -485,17 +485,17 @@ const Users: React.FC = () => {
                       checked={formData.user_type === 'tenant'}
                       onChange={(e) => setFormData({ ...formData, user_type: e.target.value })}
                     />
-                    <span className="ml-2">Kiracı Kullanıcısı</span>
+                    <span className="ml-2">Abone Kullanıcısı</span>
                   </label>
                 </div>
               </div>
 
               {formData.user_type === 'tenant' && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Kiracı Seçimi</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Abone Seçimi</label>
                   <TenantAutocomplete
                     onSelect={(tenant) => setFormData({ ...formData, tenant_id: tenant.id })}
-                    error={(!formData.tenant_id && isSubmitting) ? 'Kiracı seçimi zorunludur' : undefined}
+                    error={(!formData.tenant_id && isSubmitting) ? 'Abone seçimi zorunludur' : undefined}
                   />
                 </div>
               )}

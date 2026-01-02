@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { LoginForm } from './LoginForm';
 import { ForgotPasswordPage } from '../pages/ForgotPasswordPage';
-import axios from 'axios';
 import { useNavigate } from '@tanstack/react-router';
 
 interface AuthProviderProps {

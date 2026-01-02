@@ -24,7 +24,7 @@ import {
   Plus,
   Trash2
 } from 'lucide-react';
-import type { Sale } from '../../api/generated/schemas/sale';
+import type { Sale } from '@/api/generated/schemas/sale';
 
 interface PaymentRecord {
   id: string;

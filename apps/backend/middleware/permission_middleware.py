@@ -85,38 +85,28 @@ def init_permission_middleware(app):
         ADMIN_ROLES = {'tenant_admin', 'admin', 'super_admin'}
         
         # Admin Panel Endpoint'leri için özel kontrol
-        if request.path.startswith('/api/admin/') and not request.path.startswith('/api/admin/debug/'):
-            # Admin panel endpoint'leri sadece super admin (platform admin) erişebilir
+        # Best Practice: Admin panel has its own RBAC via @require_admin_permission decorator
+        # Middleware should skip admin endpoints when admin JWT is present
+        if request.path.startswith('/api/admin/'):
             jwt_type = jwt_data.get('type')
-            user_email = None
             
-            # Super admin kontrolü
+            # Admin JWT varsa middleware'i atla, decorator kontrol etsin
             if jwt_type == 'admin':
-                # Admin panel JWT'si - izin ver
-                logger.debug(f"Admin panel access granted: user={current_user}, type=admin")
+                # Admin panel JWT'si - middleware'i atla, @require_admin_permission decorator'ı kontrol edecek
+                logger.debug(f"Admin panel middleware bypass: user={current_user}, type=admin")
                 return None
             
-            # Email kontrolü (admin@x-ear.com)
-            try:
-                from models.user import User
-                user = User.query.get(current_user)
-                if user and user.email == 'admin@x-ear.com':
-                    logger.debug(f"Super admin access granted: user={current_user}")
-                    return None
-            except Exception:
-                pass
-            
-            # Admin değilse reddet
+            # Admin JWT yoksa reddet (decorator bile kontrol etmesin)
             logger.warning(
-                f"Admin panel access denied: user={current_user}, "
-                f"path={request.path}, required=super_admin"
+                f"Admin panel access denied - no admin JWT: user={current_user}, "
+                f"path={request.path}, jwt_type={jwt_type}"
             )
             from flask import jsonify
             return jsonify({
-                'error': 'Bu sayfaya erişim yetkiniz yok. Sadece platform yöneticileri erişebilir.',
-                'required': 'super_admin',
+                'error': 'Bu sayfaya erişim için admin paneli giriş tokenı gereklidir.',
+                'required': 'admin_jwt',
                 'path': request.path
-            }), 403
+            }), 401
         
         # CRM endpoint'leri için normal admin bypass
         if effective_role in ADMIN_ROLES:

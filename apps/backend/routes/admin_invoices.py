@@ -7,6 +7,7 @@ from models.invoice import Invoice
 from models.tenant import Tenant
 import uuid
 import logging
+from utils.tenant_security import UnboundSession
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,45 @@ admin_invoices_bp = Blueprint('admin_invoices', __name__, url_prefix='/api/admin
 @jwt_required()
 @require_admin_permission(AdminPermissions.INVOICES_READ)
 def get_admin_invoices():
+    """
+    Get paginated list of admin invoices
+    ---
+    tags:
+      - AdminInvoices
+    parameters:
+      - name: page
+        in: query
+        type: integer
+        default: 1
+      - name: limit
+        in: query
+        type: integer
+        default: 10
+      - name: tenant_id
+        in: query
+        type: string
+      - name: status
+        in: query
+        type: string
+      - name: search
+        in: query
+        type: string
+    responses:
+      200:
+        description: List of invoices with pagination
+        schema:
+          type: object
+          properties:
+            data:
+              type: object
+              properties:
+                invoices:
+                  type: array
+                  items:
+                    type: object
+                pagination:
+                  type: object
+    """
     try:
         page = request.args.get('page', 1, type=int)
         limit = request.args.get('limit', 10, type=int)
@@ -23,31 +63,32 @@ def get_admin_invoices():
         status = request.args.get('status')
         search = request.args.get('search')
         
-        query = Invoice.query
-        
-        if tenant_id:
-            query = query.filter(Invoice.tenant_id == tenant_id)
+        with UnboundSession():
+            query = Invoice.query
             
-        if status:
-            query = query.filter(Invoice.status == status)
+            if tenant_id:
+                query = query.filter(Invoice.tenant_id == tenant_id)
+                
+            if status:
+                query = query.filter(Invoice.status == status)
+                
+            if search:
+                query = query.filter(Invoice.invoice_number.ilike(f'%{search}%'))
+                
+            # Join with Tenant to get tenant name
+            # query = query.join(Tenant).add_columns(Tenant.name.label('tenant_name'))
             
-        if search:
-            query = query.filter(Invoice.invoice_number.ilike(f'%{search}%'))
+            total = query.count()
+            invoices = query.order_by(Invoice.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
             
-        # Join with Tenant to get tenant name
-        # query = query.join(Tenant).add_columns(Tenant.name.label('tenant_name'))
-        
-        total = query.count()
-        invoices = query.order_by(Invoice.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
-        
-        invoice_list = []
-        for inv in invoices:
-            inv_dict = inv.to_dict()
-            # Add tenant info manually since lazy loading might be an issue or simpler
-            tenant = db.session.get(Tenant, inv.tenant_id)
-            if tenant:
-                inv_dict['tenant_name'] = tenant.name
-            invoice_list.append(inv_dict)
+            invoice_list = []
+            for inv in invoices:
+                inv_dict = inv.to_dict()
+                # Add tenant info manually since lazy loading might be an issue or simpler
+                tenant = db.session.get(Tenant, inv.tenant_id)
+                if tenant:
+                    inv_dict['tenant_name'] = tenant.name
+                invoice_list.append(inv_dict)
             
         return jsonify({
             'data': {

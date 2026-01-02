@@ -170,7 +170,7 @@ export function usePricingCalculator(initialOptions: PricingOptions = {}) {
     discount?: number,
     discountType?: 'percentage' | 'fixed'
   ) => {
-    let itemTotal = listPrice * quantity;
+    const itemTotal = listPrice * quantity;
     let itemDiscount = 0;
 
     if (discount && discount > 0) {

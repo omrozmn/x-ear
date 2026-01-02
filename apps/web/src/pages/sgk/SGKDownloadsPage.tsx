@@ -75,6 +75,9 @@ export const SGKDownloadsPage: React.FC = () => {
   const loadPatients = async () => {
     setLoading(true);
     try {
+      // TODO: Backend endpoint '/api/sgk/e-receipts/delivered' is not implemented/documented in OpenAPI.
+      // Manual fetch is banned. Using mock data until endpoint is available via generated client.
+      /*
       // Gerçek API çağrısı - backend'den e-reçeteleri çek
       const response = await fetch('/api/sgk/e-receipts/delivered', {
         method: 'GET',
@@ -87,8 +90,9 @@ export const SGKDownloadsPage: React.FC = () => {
         const data = await response.json();
         setPatients(data.patients || []);
       } else {
+      */
         // API başarısız olursa mock data kullan
-        console.warn('API çağrısı başarısız, mock data kullanılıyor');
+        console.warn('API endpoint not available, using mock data');
         const mockPatients: PatientWithEReceipts[] = [
           {
             id: 'pat1',
@@ -151,7 +155,7 @@ export const SGKDownloadsPage: React.FC = () => {
         ];
 
         setPatients(mockPatients);
-      }
+      // }
     } catch (error) {
       console.error('Error loading patients:', error);
       showError('Hata', 'Hastalar yüklenirken bir hata oluştu');

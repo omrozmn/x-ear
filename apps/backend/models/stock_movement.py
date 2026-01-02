@@ -24,7 +24,7 @@ class StockMovement(BaseModel):
     # We will rely on BaseModel's created_at or override if needed. BaseModel usually has it.
     
     # Relationships
-    inventory = db.relationship('Inventory', back_populates='movements')
+    inventory = db.relationship('InventoryItem', back_populates='movements')
 
     def to_dict(self):
         base_dict = self.to_dict_base()

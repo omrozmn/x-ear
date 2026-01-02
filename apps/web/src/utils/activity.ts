@@ -20,7 +20,7 @@ export function formatActivitySentence(act: any): string {
   const user = act?.userName || act?.fullName || act?.user?.fullName || act?.user?.username || act?.user || act?.userId || 'Sistem';
 
   // Clean up raw action
-  let rawAction = (act?.action || act?.type || act?.message || '').toString();
+  const rawAction = (act?.action || act?.type || act?.message || '').toString();
 
   // Try to parse dot notation (e.g. auth.login -> entity=auth, verb=login)
   let derivedVerb = rawAction;
@@ -78,7 +78,7 @@ export function formatActivitySentence(act: any): string {
   const verb = verbMap[cleanVerb] || cleanVerb;
 
   // Use provided entity type or derived one
-  let entityType = act?.entityType || act?.entity || derivedEntity || '';
+  const entityType = act?.entityType || act?.entity || derivedEntity || '';
   // Translate entity type if possible
   const displayEntityType = entityMap[entityType.toLowerCase()] || entityType;
 

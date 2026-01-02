@@ -33,6 +33,10 @@ class Tenant(db.Model):
     owner_email = Column(String(255), nullable=False)
     billing_email = Column(String(255), nullable=False)
     
+    # Referral
+    affiliate_id = Column(db.Integer, db.ForeignKey('affiliate_user.id'), nullable=True, index=True)
+    referral_code = Column(String(50), nullable=True)
+    
     # Status
     status = Column(String(20), default=TenantStatus.TRIAL.value, nullable=False, index=True)
     
@@ -85,22 +89,22 @@ class Tenant(db.Model):
             'name': self.name,
             'slug': self.slug,
             'description': self.description,
-            'owner_email': self.owner_email,
-            'billing_email': self.billing_email,
+            'ownerEmail': self.owner_email,
+            'billingEmail': self.billing_email,
             'status': self.status,
-            'current_plan': self.current_plan,
-            'current_plan_id': self.current_plan_id,
-            'subscription_start_date': self.subscription_start_date.isoformat() if self.subscription_start_date else None,
-            'subscription_end_date': self.subscription_end_date.isoformat() if self.subscription_end_date else None,
-            'feature_usage': self.feature_usage,
-            'max_users': self.max_users,
-            'current_users': self.current_users,
-            'company_info': self.company_info,
+            'currentPlan': self.current_plan,
+            'currentPlanId': self.current_plan_id,
+            'subscriptionStartDate': self.subscription_start_date.isoformat() if self.subscription_start_date else None,
+            'subscriptionEndDate': self.subscription_end_date.isoformat() if self.subscription_end_date else None,
+            'featureUsage': self.feature_usage,
+            'maxUsers': self.max_users,
+            'currentUsers': self.current_users,
+            'companyInfo': self.company_info,
             'settings': self.settings,
-            'is_active': self.is_active(),
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
-            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None
+            'isActive': self.is_active(),
+            'createdAt': self.created_at.isoformat(),
+            'updatedAt': self.updated_at.isoformat(),
+            'deletedAt': self.deleted_at.isoformat() if self.deleted_at else None
         }
     
     def __repr__(self):

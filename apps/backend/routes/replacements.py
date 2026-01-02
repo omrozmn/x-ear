@@ -8,7 +8,7 @@ import time
 import os
 from models.efatura_outbox import EFaturaOutbox
 from utils.efatura import build_return_invoice_xml, write_outbox_file
-from models.inventory import Inventory
+from models.inventory import InventoryItem
 from models.patient import Patient
 from models.user import ActivityLog, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -204,7 +204,7 @@ def send_invoice_to_gib(invoice_id):
             inventory_note = None
             try:
                 if r.new_device_id:
-                    inv = db.session.get(Inventory, r.new_device_id)
+                    inv = db.session.get(InventoryItem, r.new_device_id)
                     # parse new device info for serial if stored as JSON/text
                     new_info = r.new_device_info
                     if isinstance(new_info, str):

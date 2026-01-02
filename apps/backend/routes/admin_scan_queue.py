@@ -5,6 +5,7 @@ from models.scan_queue import ScanQueue
 from utils.admin_permissions import require_admin_permission, AdminPermissions
 import logging
 from datetime import datetime
+from utils.tenant_security import UnboundSession
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +32,12 @@ def get_scan_queue():
     try:
         status = request.args.get('status')
         
-        query = ScanQueue.query
-        if status:
-            query = query.filter(ScanQueue.status == status)
-            
-        items = query.order_by(ScanQueue.created_at.desc()).all()
+        with UnboundSession():
+            query = ScanQueue.query
+            if status:
+                query = query.filter(ScanQueue.status == status)
+                
+            items = query.order_by(ScanQueue.created_at.desc()).all()
         
         return jsonify({
             'success': True,

@@ -21,15 +21,22 @@ import { outbox } from '../utils/outbox';
 class AppointmentService {
   private appointments: Appointment[] = [];
   private listeners: Set<() => void> = new Set();
+  private bootstrapAttempted = false;
 
   constructor() {
     this.loadAppointments();
     this.setupStorageListener();
-    // If there are no local appointments, try to bootstrap from server
-    if (!this.appointments || this.appointments.length === 0) {
-      // Fire-and-forget bootstrap; failures should not block app
-      this.bootstrapFromServer();
-    }
+    // Don't bootstrap from server in constructor!
+    // API calls should only happen after auth is confirmed.
+    // Use triggerServerSync() explicitly when auth is ready.
+  }
+
+  // Call this after login is confirmed to sync from server
+  public async triggerServerSync(): Promise<void> {
+    if (this.bootstrapAttempted) return; // Only try once per session
+    this.bootstrapAttempted = true;
+
+    await this.bootstrapFromServer();
   }
 
   // Try to load appointments from backend and populate local storage

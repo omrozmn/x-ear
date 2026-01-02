@@ -9,13 +9,14 @@ import { CheckCircle } from 'lucide-react';
 import { ProductSearchInput } from '../cashflow/ProductSearchInput';
 import { apiClient } from '../../api/orval-mutator';
 import { PatientDevice } from '../../types/patient';
+import { unwrapArray } from '../../utils/response-unwrap';
 
 // Orval Hooks
-import { usePatientsGetPatientReplacements } from '../../api/generated/patients/patients';
+import { useReplacementsGetReplacement } from '@/api/generated';
 import {
   useReplacementsSendInvoiceToGib,
-} from '../../api/generated/return-invoices/return-invoices';
-import { useReplacementsCreateReturnInvoice as useCreateReturnInvoice } from '../../api/generated/replacements/replacements';
+} from '@/api/generated/return-invoices/return-invoices';
+import { useReplacementsCreateReturnInvoice as useCreateReturnInvoice } from '@/api/generated/replacements/replacements';
 
 interface InventoryItem {
   id: string;
@@ -69,7 +70,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
     }
   });
 
-  const replacementsList = (Array.isArray(replacementsResponse?.data) ? replacementsResponse.data : []).map((rep: any) => {
+  const replacementsList = unwrapArray<any>(replacementsResponse).map((rep: any) => {
     // Normalization logic
     const normalize = (field: any) => {
       if (!field) return null;

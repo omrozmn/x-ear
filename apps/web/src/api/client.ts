@@ -2,7 +2,7 @@
 // API Client for X-Ear Web Application
 
 // Re-export Patient from generated schemas for consistency
-export type { Patient } from './generated/schemas';
+export type { Patient } from '@/api/generated/schemas';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5003';
 

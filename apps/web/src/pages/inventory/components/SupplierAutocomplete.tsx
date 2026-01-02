@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
-import axios from 'axios';
 import { Input, Button } from '@x-ear/ui-web';
+import { useAuthStore } from '../../../stores/authStore';
 
-const api = axios.create({
-  baseURL: 'http://localhost:5003'
-});
+import {
+  useSuppliersGetSuppliers,
+  useInventoryGetInventoryItems,
+  useSuppliersCreateSupplier
+} from '@/api/generated';
+
 
 interface SupplierAutocompleteProps {
   value: string;
@@ -69,40 +72,69 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     'Hearing Care Turkey'
   ];
 
-  // Load suppliers from API
-  useEffect(() => {
-    const loadSuppliers = async () => {
-      try {
-        // Try to load from suppliers endpoint first
-        const suppliersResponse = await api.get('/api/suppliers?per_page=1000');
-        if (suppliersResponse.data.success && Array.isArray(suppliersResponse.data.data)) {
-          const suppliers = suppliersResponse.data.data.map((s: any) => s.companyName).filter(Boolean);
-          const combined = [...new Set([...suppliers, ...defaultSuppliers])];
-          setAllSuppliers(combined.sort());
-          return;
-        }
-      } catch (error) {
-        console.warn('Failed to load from suppliers endpoint, trying inventory:', error);
-      }
+  const { token } = useAuthStore();
 
-      // Fallback to inventory endpoint
-      try {
-        const response = await api.get('/api/inventory');
-        if (response.data.success && Array.isArray(response.data.data)) {
-          const items = response.data.data;
-          const suppliers = [...new Set(items.map((item: any) => item.supplier).filter(Boolean))] as string[];
-          const combined = [...new Set([...suppliers, ...defaultSuppliers])];
-          setAllSuppliers(combined.sort());
-        } else {
-          setAllSuppliers(defaultSuppliers);
+  // React Query hooks for data fetching - only fetch if authenticated
+  const { data: suppliersData } = useSuppliersGetSuppliers(
+    { per_page: 1000 },
+    { query: { enabled: !!token } }
+  );
+  const { data: inventoryData } = useInventoryGetInventoryItems(
+    {},
+    { query: { enabled: !!token } }
+  );
+
+  // Load suppliers from API data
+  useEffect(() => {
+    const suppliers: string[] = [];
+
+    // Try suppliers endpoint first - handle response structure
+    if (suppliersData) {
+      let supplierArray: any[] = [];
+      if (Array.isArray(suppliersData)) {
+        supplierArray = suppliersData;
+      } else if ((suppliersData as any)?.data) {
+        const innerData = (suppliersData as any).data;
+        if (Array.isArray(innerData)) {
+          supplierArray = innerData;
+        } else if (innerData?.data && Array.isArray(innerData.data)) {
+          supplierArray = innerData.data;
         }
-      } catch (error) {
-        console.warn('Failed to load suppliers from API, using defaults:', error);
-        setAllSuppliers(defaultSuppliers);
       }
-    };
-    loadSuppliers();
-  }, []);
+      
+      const supplierNames = supplierArray
+        .map((s: any) => s.companyName || s.company_name)
+        .filter(Boolean);
+      suppliers.push(...supplierNames);
+    }
+
+    // Fallback to inventory data
+    if (inventoryData && suppliers.length === 0) {
+      let inventoryArray: any[] = [];
+      if (Array.isArray(inventoryData)) {
+        inventoryArray = inventoryData;
+      } else if ((inventoryData as any)?.data) {
+        const innerData = (inventoryData as any).data;
+        if (Array.isArray(innerData)) {
+          inventoryArray = innerData;
+        } else if (innerData?.data && Array.isArray(innerData.data)) {
+          inventoryArray = innerData.data;
+        }
+      }
+      
+      const inventorySuppliers = [...new Set(
+        inventoryArray.map((item: any) => item.supplier).filter(Boolean)
+      )] as string[];
+      suppliers.push(...inventorySuppliers);
+    }
+
+    // Combine with defaults
+    const combined = suppliers.length > 0
+      ? [...new Set([...suppliers, ...defaultSuppliers])]
+      : defaultSuppliers;
+
+    setAllSuppliers(combined.sort());
+  }, [suppliersData, inventoryData]);
 
   useEffect(() => {
     const suppliers = allSuppliers.length > 0 ? allSuppliers : defaultSuppliers;
@@ -118,13 +150,13 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
           .replace(/ö/g, 'o')
           .replace(/ç/g, 'c');
       };
-      
+
       const normalizedValue = normalizeTurkish(value);
-      
+
       const scored = suppliers.map(supplier => {
         const normalizedSupplier = normalizeTurkish(supplier);
         let score = 0;
-        
+
         if (normalizedSupplier === normalizedValue) score = 100;
         else if (normalizedSupplier.startsWith(normalizedValue)) score = 90;
         else if (normalizedSupplier.includes(normalizedValue)) score = 70;
@@ -135,16 +167,16 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
           }
           score = (matches / normalizedValue.length) * 50;
         }
-        
+
         return { supplier, score };
       });
-      
+
       const filtered = scored
         .filter(item => item.score > 30)
         .sort((a, b) => b.score - a.score)
         .slice(0, 8)
         .map(item => item.supplier);
-      
+
       setFilteredSuppliers(filtered);
     } else if (isOpen) {
       setFilteredSuppliers(suppliers.slice(0, 8));
@@ -231,12 +263,14 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     inputRef.current?.blur();
   };
 
+  const createSupplierMutation = useSuppliersCreateSupplier();
+
   const handleCreateNew = async () => {
     const newSupplier = value.trim();
     if (!newSupplier) return;
 
     try {
-      const response = await api.post('/api/suppliers', { company_name: newSupplier });
+      await createSupplierMutation.mutateAsync({ data: { company_name: newSupplier } } as any);
       console.log('✅ New supplier created:', newSupplier);
       // Add to local list immediately
       setAllSuppliers(prev => [...new Set([...prev, newSupplier])].sort());
@@ -251,7 +285,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
         setAllSuppliers(prev => [...new Set([...prev, newSupplier])].sort());
       }
     }
-    
+
     onChange(newSupplier);
     setIsOpen(false);
     inputRef.current?.blur();
@@ -284,13 +318,12 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
           error={error}
           className="pr-8"
         />
-        
+
         {/* Dropdown arrow */}
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none mt-6">
           <svg
-            className={`w-4 h-4 text-gray-400 transition-transform ${
-              isOpen ? 'rotate-180' : ''
-            }`}
+            className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''
+              }`}
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -330,8 +363,8 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
             >
               <div className="flex items-center">
                 <svg className="w-4 h-4 text-gray-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z" clipRule="evenodd"/>
-                  <path d="M6 8h8v2H6V8zm0 4h8v2H6v-2z"/>
+                  <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z" clipRule="evenodd" />
+                  <path d="M6 8h8v2H6V8zm0 4h8v2H6v-2z" />
                 </svg>
                 <span>{supplier}</span>
               </div>
@@ -361,7 +394,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
             </div>
           )}
         </div>
-      , portalRef.current)}
+        , portalRef.current)}
     </div>
   );
 };

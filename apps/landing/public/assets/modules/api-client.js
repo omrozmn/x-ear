@@ -3,13 +3,33 @@ class ApiClient {
         // Prefer explicit baseUrl, otherwise use configured global, otherwise use relative path
         // NOTE: baseUrl should not end with /api - the endpoint paths will include it
         let base = baseUrl || (typeof window !== 'undefined' && window.API_BASE_URL) || '';
-        
+
         // Remove trailing slash if present
         if (base.endsWith('/')) {
             base = base.slice(0, -1);
         }
-        
+
         this.baseUrl = base;
+    }
+    _getHeaders(additionalHeaders = {}) {
+        const headers = {
+            'Content-Type': 'application/json',
+            ...additionalHeaders
+        };
+
+        // Attempt to get token from various sources
+        let token = null;
+        if (typeof window !== 'undefined') {
+            token = window.__AUTH_TOKEN__ ||
+                localStorage.getItem('auth_token') ||
+                localStorage.getItem('x-ear-auth-token');
+        }
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        return headers;
     }
 
     async handleResponse(response) {
@@ -77,15 +97,12 @@ class ApiClient {
     async get(endpoint, params = {}) {
         const url = new URL(`${this.baseUrl}${endpoint}`);
         Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-        
+
         const response = await fetch(url, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                // Add authorization headers if needed
-            }
+            headers: this._getHeaders()
         });
-        
+
         return this.handleResponse(response);
     }
 

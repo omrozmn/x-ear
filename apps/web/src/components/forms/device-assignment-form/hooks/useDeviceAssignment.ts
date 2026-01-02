@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import axios from 'axios';
 import { DeviceInventoryItem } from '../components/DeviceSearchForm';
 import { DeviceAssignment } from '../components/AssignmentDetailsForm';
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5003/api'
-});
+import { inventoryGetInventoryItems } from '@/api/generated';
+
 
 interface UseDeviceAssignmentProps {
   patientId: string;
@@ -176,35 +174,34 @@ export const useDeviceAssignment = ({
   useEffect(() => {
     const loadInventory = async () => {
       try {
-        // Get auth token from localStorage
-        const token = (window as any).__AUTH_TOKEN__ ||
-          localStorage.getItem('x-ear.auth.token@v1') ||
-          localStorage.getItem('auth_token');
-
-        if (!token) {
-          console.error('No auth token found');
-          setAvailableDevices([]);
-          return;
-        }
-
-        const response = await api.get('/inventory', {
-          params: {
-            category: 'hearing_aid',
-            per_page: 100
-          },
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        const response = await inventoryGetInventoryItems({
+          category: 'hearing_aid',
+          per_page: 100
         });
 
-        const result = response.data;
+        // Extract data array from response
+        let itemsArray: any[] = [];
+        if (response && typeof response === 'object') {
+          // Case 1: { data: { data: [...] } }
+          if ('data' in response && response.data && typeof response.data === 'object' && 'data' in response.data && Array.isArray(response.data.data)) {
+            itemsArray = response.data.data;
+          }
+          // Case 2: { data: [...] }
+          else if ('data' in response && Array.isArray(response.data)) {
+            itemsArray = response.data;
+          }
+          // Case 3: Direct array
+          else if (Array.isArray(response)) {
+            itemsArray = response;
+          }
+        }
 
-        if (!result.success) {
-          throw new Error('Envanter yüklenemedi');
+        if (itemsArray.length === 0) {
+          console.warn('No inventory items found');
         }
 
         // Transform backend data to frontend format
-        const devices: DeviceInventoryItem[] = result.data.map((item: any) => ({
+        const devices: DeviceInventoryItem[] = itemsArray.map((item: any) => ({
           id: item.id.toString(),
           brand: item.brand || '',
           model: item.model || '',

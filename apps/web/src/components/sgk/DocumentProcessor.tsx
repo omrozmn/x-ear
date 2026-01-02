@@ -418,7 +418,7 @@ Tanı: Kronik otitis media
       pdf.text(splitText, 20, 230);
     }
     
-    return pdf.output('bloburl');
+    return pdf.output('bloburl') as string;
   }, []);
 
   // Handle completion

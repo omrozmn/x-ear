@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, FileText, Edit, Trash2, Search } from 'lucide-react';
 import { Button, Card, Badge, Input, Select } from '@x-ear/ui-web';
+import { useCommunicationOfflineSync } from '../../hooks/useCommunicationOfflineSync';
 
 interface CommunicationTemplate {
   id: string;
@@ -16,7 +17,13 @@ interface CommunicationTemplate {
 }
 
 const CommunicationTemplates: React.FC = () => {
+  const { getTemplates, syncStatus } = useCommunicationOfflineSync();
   const [templates, setTemplates] = useState<CommunicationTemplate[]>([]);
+
+  useEffect(() => {
+    setTemplates(getTemplates() as any);
+  }, [getTemplates, syncStatus]);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'sms' | 'email'>('all');
   const [filterCategory, setFilterCategory] = useState<'all' | 'appointment' | 'reminder' | 'marketing' | 'notification' | 'custom'>('all');
@@ -56,7 +63,7 @@ const CommunicationTemplates: React.FC = () => {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Tip
@@ -72,7 +79,7 @@ const CommunicationTemplates: React.FC = () => {
               fullWidth
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Kategori
@@ -127,17 +134,17 @@ const CommunicationTemplates: React.FC = () => {
                       <Badge variant="danger">Pasif</Badge>
                     )}
                   </div>
-                  
+
                   {template.subject && (
                     <p className="text-sm text-gray-600 mb-2">
                       <strong>Konu:</strong> {template.subject}
                     </p>
                   )}
-                  
+
                   <p className="text-sm text-gray-700 line-clamp-2 mb-2">
                     {template.content}
                   </p>
-                  
+
                   {template.variables.length > 0 && (
                     <div className="flex items-center space-x-2 mb-2">
                       <span className="text-xs text-gray-500">Değişkenler:</span>
@@ -148,12 +155,12 @@ const CommunicationTemplates: React.FC = () => {
                       ))}
                     </div>
                   )}
-                  
+
                   <p className="text-xs text-gray-500">
                     Oluşturulma: {new Date(template.createdAt).toLocaleString('tr-TR')}
                   </p>
                 </div>
-                
+
                 <div className="flex items-center space-x-2 ml-4">
                   <Button variant="outline" size="sm">
                     <Edit className="w-4 h-4" />

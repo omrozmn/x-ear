@@ -1261,7 +1261,7 @@ export type appointmentsCreateAppointmentResponse201 = {
 export type appointmentsCreateAppointmentResponseSuccess = (appointmentsCreateAppointmentResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type appointmentsCreateAppointmentResponse = (appointmentsCreateAppointmentResponseSuccess)
 
@@ -1305,7 +1305,7 @@ export type appointmentsDeleteAppointmentResponse204 = {
 export type appointmentsDeleteAppointmentResponseSuccess = (appointmentsDeleteAppointmentResponse204) & {
   headers: Headers;
 };
-;
+
 
 export type appointmentsDeleteAppointmentResponse = (appointmentsDeleteAppointmentResponseSuccess)
 
@@ -1348,7 +1348,7 @@ export type appointmentsCancelAppointmentResponse201 = {
 export type appointmentsCancelAppointmentResponseSuccess = (appointmentsCancelAppointmentResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type appointmentsCancelAppointmentResponse = (appointmentsCancelAppointmentResponseSuccess)
 
@@ -1393,7 +1393,7 @@ export type appointmentsCompleteAppointmentResponse201 = {
 export type appointmentsCompleteAppointmentResponseSuccess = (appointmentsCompleteAppointmentResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type appointmentsCompleteAppointmentResponse = (appointmentsCompleteAppointmentResponseSuccess)
 
@@ -1438,7 +1438,7 @@ export type appointmentsRescheduleAppointmentResponse201 = {
 export type appointmentsRescheduleAppointmentResponseSuccess = (appointmentsRescheduleAppointmentResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type appointmentsRescheduleAppointmentResponse = (appointmentsRescheduleAppointmentResponseSuccess)
 
@@ -1483,7 +1483,7 @@ export type appointmentsGetAvailabilityResponse200 = {
 export type appointmentsGetAvailabilityResponseSuccess = (appointmentsGetAvailabilityResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type appointmentsGetAvailabilityResponse = (appointmentsGetAvailabilityResponseSuccess)
 
@@ -1526,7 +1526,7 @@ export type appointmentsListAppointmentsResponse200 = {
 export type appointmentsListAppointmentsResponseSuccess = (appointmentsListAppointmentsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type appointmentsListAppointmentsResponse = (appointmentsListAppointmentsResponseSuccess)
 
@@ -1569,7 +1569,7 @@ export type automationTriggerBackupResponse201 = {
 export type automationTriggerBackupResponseSuccess = (automationTriggerBackupResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type automationTriggerBackupResponse = (automationTriggerBackupResponseSuccess)
 
@@ -1613,7 +1613,7 @@ export type automationGetAutomationLogsResponse200 = {
 export type automationGetAutomationLogsResponseSuccess = (automationGetAutomationLogsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type automationGetAutomationLogsResponse = (automationGetAutomationLogsResponseSuccess)
 
@@ -1656,7 +1656,7 @@ export type automationTriggerSgkProcessingResponse201 = {
 export type automationTriggerSgkProcessingResponseSuccess = (automationTriggerSgkProcessingResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type automationTriggerSgkProcessingResponse = (automationTriggerSgkProcessingResponseSuccess)
 
@@ -1700,7 +1700,7 @@ export type automationGetAutomationStatusResponse200 = {
 export type automationGetAutomationStatusResponseSuccess = (automationGetAutomationStatusResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type automationGetAutomationStatusResponse = (automationGetAutomationStatusResponseSuccess)
 
@@ -1743,7 +1743,7 @@ export type campaignsCreateCampaignResponse201 = {
 export type campaignsCreateCampaignResponseSuccess = (campaignsCreateCampaignResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type campaignsCreateCampaignResponse = (campaignsCreateCampaignResponseSuccess)
 
@@ -1842,7 +1842,7 @@ export type campaignsSendCampaignResponse201 = {
 export type campaignsSendCampaignResponseSuccess = (campaignsSendCampaignResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type campaignsSendCampaignResponse = (campaignsSendCampaignResponseSuccess)
 
@@ -1887,7 +1887,7 @@ export type registrationGetTurnstileConfigResponse200 = {
 export type registrationGetTurnstileConfigResponseSuccess = (registrationGetTurnstileConfigResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type registrationGetTurnstileConfigResponse = (registrationGetTurnstileConfigResponseSuccess)
 
@@ -1930,7 +1930,7 @@ export type dashboardPatientTrendsResponse200 = {
 export type dashboardPatientTrendsResponseSuccess = (dashboardPatientTrendsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type dashboardPatientTrendsResponse = (dashboardPatientTrendsResponseSuccess)
 
@@ -1973,7 +1973,7 @@ export type dashboardRevenueTrendsResponse200 = {
 export type dashboardRevenueTrendsResponseSuccess = (dashboardRevenueTrendsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type dashboardRevenueTrendsResponse = (dashboardRevenueTrendsResponseSuccess)
 
@@ -2016,7 +2016,7 @@ export type dashboardGetKpisResponse200 = {
 export type dashboardGetKpisResponseSuccess = (dashboardGetKpisResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type dashboardGetKpisResponse = (dashboardGetKpisResponseSuccess)
 
@@ -2059,7 +2059,7 @@ export type dashboardRecentActivityResponse200 = {
 export type dashboardRecentActivityResponseSuccess = (dashboardRecentActivityResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type dashboardRecentActivityResponse = (dashboardRecentActivityResponseSuccess)
 
@@ -2164,7 +2164,7 @@ export type devicesCreateDeviceResponse201 = {
 export type devicesCreateDeviceResponseSuccess = (devicesCreateDeviceResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type devicesCreateDeviceResponse = (devicesCreateDeviceResponseSuccess)
 
@@ -2208,7 +2208,7 @@ export type devicesDeleteDeviceResponse204 = {
 export type devicesDeleteDeviceResponseSuccess = (devicesDeleteDeviceResponse204) & {
   headers: Headers;
 };
-;
+
 
 export type devicesDeleteDeviceResponse = (devicesDeleteDeviceResponseSuccess)
 
@@ -2252,7 +2252,7 @@ export type devicesUpdateDeviceStockResponse201 = {
 export type devicesUpdateDeviceStockResponseSuccess = (devicesUpdateDeviceStockResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type devicesUpdateDeviceStockResponse = (devicesUpdateDeviceStockResponseSuccess)
 
@@ -2297,7 +2297,7 @@ export type devicesGetDeviceBrandsResponse200 = {
 export type devicesGetDeviceBrandsResponseSuccess = (devicesGetDeviceBrandsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type devicesGetDeviceBrandsResponse = (devicesGetDeviceBrandsResponseSuccess)
 
@@ -2340,7 +2340,7 @@ export type devicesGetDeviceCategoriesResponse200 = {
 export type devicesGetDeviceCategoriesResponseSuccess = (devicesGetDeviceCategoriesResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type devicesGetDeviceCategoriesResponse = (devicesGetDeviceCategoriesResponseSuccess)
 
@@ -2383,7 +2383,7 @@ export type devicesGetLowStockDevicesResponse200 = {
 export type devicesGetLowStockDevicesResponseSuccess = (devicesGetLowStockDevicesResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type devicesGetLowStockDevicesResponse = (devicesGetLowStockDevicesResponseSuccess)
 
@@ -2426,7 +2426,7 @@ export type healthCheckResponse200 = {
 export type healthCheckResponseSuccess = (healthCheckResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type healthCheckResponse = (healthCheckResponseSuccess)
 
@@ -2531,7 +2531,7 @@ export type inventoryCreateInventoryItemResponse201 = {
 export type inventoryCreateInventoryItemResponseSuccess = (inventoryCreateInventoryItemResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type inventoryCreateInventoryItemResponse = (inventoryCreateInventoryItemResponseSuccess)
 
@@ -2575,7 +2575,7 @@ export type inventoryDeleteInventoryItemResponse204 = {
 export type inventoryDeleteInventoryItemResponseSuccess = (inventoryDeleteInventoryItemResponse204) & {
   headers: Headers;
 };
-;
+
 
 export type inventoryDeleteInventoryItemResponse = (inventoryDeleteInventoryItemResponseSuccess)
 
@@ -2618,7 +2618,7 @@ export type inventoryGetInventoryActivitiesResponse200 = {
 export type inventoryGetInventoryActivitiesResponseSuccess = (inventoryGetInventoryActivitiesResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type inventoryGetInventoryActivitiesResponse = (inventoryGetInventoryActivitiesResponseSuccess)
 
@@ -2661,7 +2661,7 @@ export type inventoryAssignToPatientResponse201 = {
 export type inventoryAssignToPatientResponseSuccess = (inventoryAssignToPatientResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type inventoryAssignToPatientResponse = (inventoryAssignToPatientResponseSuccess)
 
@@ -2706,7 +2706,7 @@ export type inventoryAddSerialNumbersResponse201 = {
 export type inventoryAddSerialNumbersResponseSuccess = (inventoryAddSerialNumbersResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type inventoryAddSerialNumbersResponse = (inventoryAddSerialNumbersResponseSuccess)
 
@@ -2751,7 +2751,7 @@ export type inventoryGetLowStockItemsResponse200 = {
 export type inventoryGetLowStockItemsResponseSuccess = (inventoryGetLowStockItemsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type inventoryGetLowStockItemsResponse = (inventoryGetLowStockItemsResponseSuccess)
 
@@ -2794,7 +2794,7 @@ export type inventoryGetInventoryStatsResponse200 = {
 export type inventoryGetInventoryStatsResponseSuccess = (inventoryGetInventoryStatsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type inventoryGetInventoryStatsResponse = (inventoryGetInventoryStatsResponseSuccess)
 
@@ -2837,7 +2837,7 @@ export type notificationsListNotificationsResponse200 = {
 export type notificationsListNotificationsResponseSuccess = (notificationsListNotificationsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type notificationsListNotificationsResponse = (notificationsListNotificationsResponseSuccess)
 
@@ -2880,7 +2880,7 @@ export type notificationsDeleteNotificationResponse204 = {
 export type notificationsDeleteNotificationResponseSuccess = (notificationsDeleteNotificationResponse204) & {
   headers: Headers;
 };
-;
+
 
 export type notificationsDeleteNotificationResponse = (notificationsDeleteNotificationResponseSuccess)
 
@@ -2923,7 +2923,7 @@ export type notificationsMarkNotificationReadResponse200 = {
 export type notificationsMarkNotificationReadResponseSuccess = (notificationsMarkNotificationReadResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type notificationsMarkNotificationReadResponse = (notificationsMarkNotificationReadResponseSuccess)
 
@@ -2968,7 +2968,7 @@ export type notificationsNotificationStatsResponse200 = {
 export type notificationsNotificationStatsResponseSuccess = (notificationsNotificationStatsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type notificationsNotificationStatsResponse = (notificationsNotificationStatsResponseSuccess)
 
@@ -3011,7 +3011,7 @@ export type sgkProcessOcrResponse201 = {
 export type sgkProcessOcrResponseSuccess = (sgkProcessOcrResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type sgkProcessOcrResponse = (sgkProcessOcrResponseSuccess)
 
@@ -3056,7 +3056,7 @@ export type serveOpenapiYamlResponse200 = {
 export type serveOpenapiYamlResponseSuccess = (serveOpenapiYamlResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type serveOpenapiYamlResponse = (serveOpenapiYamlResponseSuccess)
 
@@ -3161,7 +3161,7 @@ export type patientsCreatePatientResponse201 = {
 export type patientsCreatePatientResponseSuccess = (patientsCreatePatientResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type patientsCreatePatientResponse = (patientsCreatePatientResponseSuccess)
 
@@ -3205,7 +3205,7 @@ export type patientsDeletePatientResponse204 = {
 export type patientsDeletePatientResponseSuccess = (patientsDeletePatientResponse204) & {
   headers: Headers;
 };
-;
+
 
 export type patientsDeletePatientResponse = (patientsDeletePatientResponseSuccess)
 
@@ -3248,7 +3248,7 @@ export type salesAssignDevicesExtendedResponse201 = {
 export type salesAssignDevicesExtendedResponseSuccess = (salesAssignDevicesExtendedResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type salesAssignDevicesExtendedResponse = (salesAssignDevicesExtendedResponseSuccess)
 
@@ -3293,7 +3293,7 @@ export type patientSubresourcesCreatePatientEreceiptResponse201 = {
 export type patientSubresourcesCreatePatientEreceiptResponseSuccess = (patientSubresourcesCreatePatientEreceiptResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type patientSubresourcesCreatePatientEreceiptResponse = (patientSubresourcesCreatePatientEreceiptResponseSuccess)
 
@@ -3338,7 +3338,7 @@ export type patientSubresourcesDeletePatientEreceiptResponse204 = {
 export type patientSubresourcesDeletePatientEreceiptResponseSuccess = (patientSubresourcesDeletePatientEreceiptResponse204) & {
   headers: Headers;
 };
-;
+
 
 export type patientSubresourcesDeletePatientEreceiptResponse = (patientSubresourcesDeletePatientEreceiptResponseSuccess)
 
@@ -3383,7 +3383,7 @@ export type patientSubresourcesAddPatientHearingTestResponse201 = {
 export type patientSubresourcesAddPatientHearingTestResponseSuccess = (patientSubresourcesAddPatientHearingTestResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type patientSubresourcesAddPatientHearingTestResponse = (patientSubresourcesAddPatientHearingTestResponseSuccess)
 
@@ -3428,7 +3428,7 @@ export type patientSubresourcesDeletePatientHearingTestResponse204 = {
 export type patientSubresourcesDeletePatientHearingTestResponseSuccess = (patientSubresourcesDeletePatientHearingTestResponse204) & {
   headers: Headers;
 };
-;
+
 
 export type patientSubresourcesDeletePatientHearingTestResponse = (patientSubresourcesDeletePatientHearingTestResponseSuccess)
 
@@ -3473,7 +3473,7 @@ export type patientSubresourcesCreatePatientNoteResponse201 = {
 export type patientSubresourcesCreatePatientNoteResponseSuccess = (patientSubresourcesCreatePatientNoteResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type patientSubresourcesCreatePatientNoteResponse = (patientSubresourcesCreatePatientNoteResponseSuccess)
 
@@ -3518,7 +3518,7 @@ export type patientSubresourcesDeletePatientNoteResponse204 = {
 export type patientSubresourcesDeletePatientNoteResponseSuccess = (patientSubresourcesDeletePatientNoteResponse204) & {
   headers: Headers;
 };
-;
+
 
 export type patientSubresourcesDeletePatientNoteResponse = (patientSubresourcesDeletePatientNoteResponseSuccess)
 
@@ -3563,7 +3563,7 @@ export type salesGetPatientSalesResponse200 = {
 export type salesGetPatientSalesResponseSuccess = (salesGetPatientSalesResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type salesGetPatientSalesResponse = (salesGetPatientSalesResponseSuccess)
 
@@ -3606,7 +3606,7 @@ export type sgkGetPatientSgkDocumentsResponse200 = {
 export type sgkGetPatientSgkDocumentsResponseSuccess = (sgkGetPatientSgkDocumentsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type sgkGetPatientSgkDocumentsResponse = (sgkGetPatientSgkDocumentsResponseSuccess)
 
@@ -3887,7 +3887,7 @@ export type patientsBulkUploadPatientsResponse201 = {
 export type patientsBulkUploadPatientsResponseSuccess = (patientsBulkUploadPatientsResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type patientsBulkUploadPatientsResponse = (patientsBulkUploadPatientsResponseSuccess)
 
@@ -3931,7 +3931,7 @@ export type patientsExportPatientsCsvResponse200 = {
 export type patientsExportPatientsCsvResponseSuccess = (patientsExportPatientsCsvResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type patientsExportPatientsCsvResponse = (patientsExportPatientsCsvResponseSuccess)
 
@@ -3974,7 +3974,7 @@ export type patientsSearchPatientsResponse200 = {
 export type patientsSearchPatientsResponseSuccess = (patientsSearchPatientsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type patientsSearchPatientsResponse = (patientsSearchPatientsResponseSuccess)
 
@@ -4017,7 +4017,7 @@ export type salesPricingPreviewResponse201 = {
 export type salesPricingPreviewResponseSuccess = (salesPricingPreviewResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type salesPricingPreviewResponse = (salesPricingPreviewResponseSuccess)
 
@@ -4061,7 +4061,7 @@ export type suppliersDeleteProductSupplierResponse204 = {
 export type suppliersDeleteProductSupplierResponseSuccess = (suppliersDeleteProductSupplierResponse204) & {
   headers: Headers;
 };
-;
+
 
 export type suppliersDeleteProductSupplierResponse = (suppliersDeleteProductSupplierResponseSuccess)
 
@@ -4104,7 +4104,7 @@ export type suppliersAddProductSupplierResponse201 = {
 export type suppliersAddProductSupplierResponseSuccess = (suppliersAddProductSupplierResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type suppliersAddProductSupplierResponse = (suppliersAddProductSupplierResponseSuccess)
 
@@ -4149,7 +4149,7 @@ export type registrationRegisterPhoneResponse201 = {
 export type registrationRegisterPhoneResponseSuccess = (registrationRegisterPhoneResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type registrationRegisterPhoneResponse = (registrationRegisterPhoneResponseSuccess)
 
@@ -4193,7 +4193,7 @@ export type reportsReportAppointmentsResponse200 = {
 export type reportsReportAppointmentsResponseSuccess = (reportsReportAppointmentsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type reportsReportAppointmentsResponse = (reportsReportAppointmentsResponseSuccess)
 
@@ -4236,7 +4236,7 @@ export type reportsReportCampaignsResponse200 = {
 export type reportsReportCampaignsResponseSuccess = (reportsReportCampaignsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type reportsReportCampaignsResponse = (reportsReportCampaignsResponseSuccess)
 
@@ -4279,7 +4279,7 @@ export type reportsReportFinancialResponse200 = {
 export type reportsReportFinancialResponseSuccess = (reportsReportFinancialResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type reportsReportFinancialResponse = (reportsReportFinancialResponseSuccess)
 
@@ -4322,7 +4322,7 @@ export type reportsReportOverviewResponse200 = {
 export type reportsReportOverviewResponseSuccess = (reportsReportOverviewResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type reportsReportOverviewResponse = (reportsReportOverviewResponseSuccess)
 
@@ -4365,7 +4365,7 @@ export type reportsReportPatientsResponse200 = {
 export type reportsReportPatientsResponseSuccess = (reportsReportPatientsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type reportsReportPatientsResponse = (reportsReportPatientsResponseSuccess)
 
@@ -4408,7 +4408,7 @@ export type reportsReportRevenueResponse200 = {
 export type reportsReportRevenueResponseSuccess = (reportsReportRevenueResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type reportsReportRevenueResponse = (reportsReportRevenueResponseSuccess)
 
@@ -4451,7 +4451,7 @@ export type salesListSalesResponse200 = {
 export type salesListSalesResponseSuccess = (salesListSalesResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type salesListSalesResponse = (salesListSalesResponseSuccess)
 
@@ -4702,7 +4702,7 @@ export type salesCreateSalePaymentPlanResponse201 = {
 export type salesCreateSalePaymentPlanResponseSuccess = (salesCreateSalePaymentPlanResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type salesCreateSalePaymentPlanResponse = (salesCreateSalePaymentPlanResponseSuccess)
 
@@ -4747,7 +4747,7 @@ export type updateSettingsResponse200 = {
 export type updateSettingsResponseSuccess = (updateSettingsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type updateSettingsResponse = (updateSettingsResponseSuccess)
 
@@ -4791,7 +4791,7 @@ export type sgkUploadSgkDocumentResponse201 = {
 export type sgkUploadSgkDocumentResponseSuccess = (sgkUploadSgkDocumentResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type sgkUploadSgkDocumentResponse = (sgkUploadSgkDocumentResponseSuccess)
 
@@ -4835,7 +4835,7 @@ export type sgkDeleteSgkDocumentResponse204 = {
 export type sgkDeleteSgkDocumentResponseSuccess = (sgkDeleteSgkDocumentResponse204) & {
   headers: Headers;
 };
-;
+
 
 export type sgkDeleteSgkDocumentResponse = (sgkDeleteSgkDocumentResponseSuccess)
 
@@ -4878,7 +4878,7 @@ export type smsMonitoringResponse200 = {
 export type smsMonitoringResponseSuccess = (smsMonitoringResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type smsMonitoringResponse = (smsMonitoringResponseSuccess)
 
@@ -4983,7 +4983,7 @@ export type suppliersCreateSupplierResponse201 = {
 export type suppliersCreateSupplierResponseSuccess = (suppliersCreateSupplierResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type suppliersCreateSupplierResponse = (suppliersCreateSupplierResponseSuccess)
 
@@ -5027,7 +5027,7 @@ export type suppliersDeleteSupplierResponse204 = {
 export type suppliersDeleteSupplierResponseSuccess = (suppliersDeleteSupplierResponse204) & {
   headers: Headers;
 };
-;
+
 
 export type suppliersDeleteSupplierResponse = (suppliersDeleteSupplierResponseSuccess)
 
@@ -5070,7 +5070,7 @@ export type suppliersGetSupplierProductsResponse200 = {
 export type suppliersGetSupplierProductsResponseSuccess = (suppliersGetSupplierProductsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type suppliersGetSupplierProductsResponse = (suppliersGetSupplierProductsResponseSuccess)
 
@@ -5113,7 +5113,7 @@ export type suppliersGetSupplierStatsResponse200 = {
 export type suppliersGetSupplierStatsResponseSuccess = (suppliersGetSupplierStatsResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type suppliersGetSupplierStatsResponse = (suppliersGetSupplierStatsResponseSuccess)
 
@@ -5156,7 +5156,7 @@ export type registrationVerifyRegistrationOtpResponse201 = {
 export type registrationVerifyRegistrationOtpResponseSuccess = (registrationVerifyRegistrationOtpResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type registrationVerifyRegistrationOtpResponse = (registrationVerifyRegistrationOtpResponseSuccess)
 
@@ -5200,7 +5200,7 @@ export type usersListUsersResponse200 = {
 export type usersListUsersResponseSuccess = (usersListUsersResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type usersListUsersResponse = (usersListUsersResponseSuccess)
 
@@ -5501,7 +5501,7 @@ export type ocrExtractEntitiesResponse201 = {
 export type ocrExtractEntitiesResponseSuccess = (ocrExtractEntitiesResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type ocrExtractEntitiesResponse = (ocrExtractEntitiesResponseSuccess)
 
@@ -5545,7 +5545,7 @@ export type ocrExtractPatientNameResponse201 = {
 export type ocrExtractPatientNameResponseSuccess = (ocrExtractPatientNameResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type ocrExtractPatientNameResponse = (ocrExtractPatientNameResponseSuccess)
 
@@ -5589,7 +5589,7 @@ export type ocrHealthCheckResponse200 = {
 export type ocrHealthCheckResponseSuccess = (ocrHealthCheckResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type ocrHealthCheckResponse = (ocrHealthCheckResponseSuccess)
 
@@ -5632,7 +5632,7 @@ export type ocrInitDatabaseResponse201 = {
 export type ocrInitDatabaseResponseSuccess = (ocrInitDatabaseResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type ocrInitDatabaseResponse = (ocrInitDatabaseResponseSuccess)
 
@@ -5676,7 +5676,7 @@ export type ocrInitializeNlpEndpointResponse201 = {
 export type ocrInitializeNlpEndpointResponseSuccess = (ocrInitializeNlpEndpointResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type ocrInitializeNlpEndpointResponse = (ocrInitializeNlpEndpointResponseSuccess)
 
@@ -5720,7 +5720,7 @@ export type ocrProcessDocumentResponse201 = {
 export type ocrProcessDocumentResponseSuccess = (ocrProcessDocumentResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type ocrProcessDocumentResponse = (ocrProcessDocumentResponseSuccess)
 
@@ -5764,7 +5764,7 @@ export type ocrCalculateSimilarityResponse201 = {
 export type ocrCalculateSimilarityResponseSuccess = (ocrCalculateSimilarityResponse201) & {
   headers: Headers;
 };
-;
+
 
 export type ocrCalculateSimilarityResponse = (ocrCalculateSimilarityResponseSuccess)
 
@@ -5809,7 +5809,7 @@ export type serveSwaggerUiResponse200 = {
 export type serveSwaggerUiResponseSuccess = (serveSwaggerUiResponse200) & {
   headers: Headers;
 };
-;
+
 
 export type serveSwaggerUiResponse = (serveSwaggerUiResponseSuccess)
 

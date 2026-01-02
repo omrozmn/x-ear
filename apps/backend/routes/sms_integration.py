@@ -6,6 +6,8 @@ from utils.authorization import admin_required, role_required
 from datetime import datetime, timezone
 import logging
 import os
+from utils.tenant_security import UnboundSession
+from utils.admin_permissions import require_admin_permission, AdminPermissions
 
 logger = logging.getLogger(__name__)
 
@@ -393,15 +395,17 @@ def upload_audience_excel():
 # ============================================================================
 
 @sms_bp.route('/admin/sms/packages', methods=['GET'])
-@admin_required
+@jwt_required()
+@require_admin_permission(AdminPermissions.SMS_PACKAGES_READ)
 def admin_list_packages():
     page = int(request.args.get('page', 1))
     limit = int(request.args.get('limit', 10))
     offset = (page - 1) * limit
 
-    query = SMSPackage.query.order_by(SMSPackage.created_at.desc())
-    total = query.count()
-    packages = query.offset(offset).limit(limit).all()
+    with UnboundSession():
+        query = SMSPackage.query.order_by(SMSPackage.created_at.desc())
+        total = query.count()
+        packages = query.offset(offset).limit(limit).all()
     
     return jsonify({
         'success': True, 
@@ -415,7 +419,8 @@ def admin_list_packages():
     })
 
 @sms_bp.route('/admin/sms/packages', methods=['POST'])
-@admin_required
+@jwt_required()
+@require_admin_permission(AdminPermissions.SMS_PACKAGES_MANAGE)
 def admin_create_package():
     data = request.get_json() or {}
     required = ['name', 'smsCount', 'price']
@@ -435,7 +440,8 @@ def admin_create_package():
     return jsonify({'success': True, 'data': pkg.to_dict()}), 201
 
 @sms_bp.route('/admin/sms/packages/<pkg_id>', methods=['PUT'])
-@admin_required
+@jwt_required()
+@require_admin_permission(AdminPermissions.SMS_PACKAGES_MANAGE)
 def admin_update_package(pkg_id):
     pkg = db.session.get(SMSPackage, pkg_id)
     if not pkg:
@@ -452,29 +458,32 @@ def admin_update_package(pkg_id):
     return jsonify({'success': True, 'data': pkg.to_dict()})
 
 @sms_bp.route('/admin/sms/headers', methods=['GET'])
-@admin_required
+@jwt_required()
+@require_admin_permission(AdminPermissions.SMS_HEADERS_READ)
 def admin_list_headers():
     # List all pending headers or all headers
     status = request.args.get('status')
-    query = SMSHeaderRequest.query
-    if status:
-        query = query.filter_by(status=status)
     
     page = int(request.args.get('page', 1))
     limit = int(request.args.get('limit', 10))
     offset = (page - 1) * limit
 
-    total = query.count()
-    headers = query.order_by(SMSHeaderRequest.created_at.desc()).offset(offset).limit(limit).all()
-    
-    # We might want to include tenant info here
-    results = []
-    for h in headers:
-        d = h.to_dict()
-        tenant = db.session.get(Tenant, h.tenant_id)
-        if tenant:
-            d['tenantName'] = tenant.name
-        results.append(d)
+    with UnboundSession():
+        query = SMSHeaderRequest.query
+        if status:
+            query = query.filter_by(status=status)
+
+        total = query.count()
+        headers = query.order_by(SMSHeaderRequest.created_at.desc()).offset(offset).limit(limit).all()
+        
+        # We might want to include tenant info here
+        results = []
+        for h in headers:
+            d = h.to_dict()
+            tenant = db.session.get(Tenant, h.tenant_id)
+            if tenant:
+                d['tenantName'] = tenant.name
+            results.append(d)
         
     return jsonify({
         'success': True, 
@@ -488,7 +497,8 @@ def admin_list_headers():
     })
 
 @sms_bp.route('/admin/sms/headers/<header_id>/status', methods=['PUT'])
-@admin_required
+@jwt_required()
+@require_admin_permission(AdminPermissions.SMS_HEADERS_MANAGE)
 def admin_update_header_status(header_id):
     header = db.session.get(SMSHeaderRequest, header_id)
     if not header:

@@ -1,6 +1,6 @@
 from models.base import db
 from models.stock_movement import StockMovement
-from models.inventory import Inventory
+from models.inventory import InventoryItem
 from datetime import datetime
 
 def create_stock_movement(

@@ -126,7 +126,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # JWT Configuration
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'default-dev-secret-key-change-in-prod')
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=8)  # Extended for admin panel
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 jwt = JWTManager(app)
 
@@ -168,11 +168,15 @@ if cors_origins:
 else:
     # Explicitly list development endpoints to support credentials
     origins = [
+        'http://localhost:3000',  # Landing app
         'http://localhost:8080',
         'http://localhost:8081',
+        'http://localhost:8082',  # Admin Panel specific port
         'http://localhost:5173',
+        'http://127.0.0.1:3000',
         'http://127.0.0.1:8080',
         'http://127.0.0.1:8081',
+        'http://127.0.0.1:8082',
         'http://127.0.0.1:5173'
     ]
 # Allow CORS for all routes in development so the frontend (on another origin)
@@ -431,6 +435,10 @@ from routes.permissions import permissions_bp
 app.register_blueprint(roles_bp, url_prefix='/api')
 app.register_blueprint(permissions_bp, url_prefix='/api')
 
+# UTS (Ulusal Takip Sistemi) blueprint
+from routes.uts import uts_bp
+app.register_blueprint(uts_bp, url_prefix='/api')
+
 # ===== PATIENT SUBRESOURCES ENDPOINTS =====
 # Patient subresources: hearing-tests, notes, ereceipts, devices
 from routes.patient_subresources import patient_subresources_bp
@@ -462,6 +470,13 @@ try:
     app.register_blueprint(affiliate_bp, url_prefix='/api/affiliate')
 except Exception as e:
     logger.warning(f'Affiliate blueprint not registered: {e}')
+
+# Affiliate admin endpoints for admin panel
+try:
+    from routes.affiliate_admin import affiliate_admin_bp
+    app.register_blueprint(affiliate_admin_bp)
+except Exception as e:
+    logger.warning(f'Affiliate admin blueprint not registered: {e}')
 
 # Pre-warm OCR/NLP service in development or when explicitly requested to reduce first-request latency
 try:
@@ -554,6 +569,9 @@ app.register_blueprint(admin_settings_bp)
 from routes.admin_invoices import admin_invoices_bp
 app.register_blueprint(admin_invoices_bp)
 
+from routes.admin_payments import admin_payments_bp
+app.register_blueprint(admin_payments_bp)
+
 from routes.admin_suppliers import admin_suppliers_bp
 app.register_blueprint(admin_suppliers_bp)
 
@@ -587,6 +605,15 @@ app.register_blueprint(admin_patients_bp)
 # ===== CHECKOUT / COMMERCE ENDPOINTS =====
 from routes.checkout import checkout_bp
 app.register_blueprint(checkout_bp)
+
+# ===== SMS PACKAGES ENDPOINTS =====
+from routes.sms_packages import sms_packages_public_bp, admin_sms_packages_bp
+app.register_blueprint(sms_packages_public_bp)
+app.register_blueprint(admin_sms_packages_bp)
+
+# ===== AFFILIATES PUBLIC ENDPOINTS =====
+from routes.affiliates_public import affiliate_public_bp
+app.register_blueprint(affiliate_public_bp)
 
 # ===== TENANT USER MANAGEMENT ENDPOINTS =====
 from routes.tenant_users import tenant_users_bp
@@ -921,7 +948,7 @@ def startup_checks():
     if not writable:
         logger.critical('Database is not writable at startup. Application will continue in degraded mode.')
         # Fail fast in production to avoid serving a broken instance
-        if FLASK_ENV == 'production':
+        if os.getenv('FLASK_ENV') == 'production':
             raise RuntimeError('Database is not writable. Exiting to prevent degraded production run.')
 
 # Simple rate limiting in-memory store: {identifier: (count, reset_ts)}
@@ -1024,7 +1051,7 @@ with app.app_context():
             logger.warning('startup_checks not found; skipping startup DB checks')
     except Exception as e:
         logger.exception('Startup checks failed during initialization: %s', e)
-        if FLASK_ENV == 'production':
+        if os.getenv('FLASK_ENV') == 'production':
             raise
 
 @app.before_request
@@ -1092,7 +1119,7 @@ try:
             logger.info(f"Permission map validation passed. Warnings: {validation['warnings']}")
 except Exception as e:
     logger.error(f'Failed to initialize permission middleware: {e}')
-    if FLASK_ENV == 'production':
+    if os.getenv('FLASK_ENV') == 'production':
         raise RuntimeError(f'Permission middleware initialization failed: {e}')
 
 

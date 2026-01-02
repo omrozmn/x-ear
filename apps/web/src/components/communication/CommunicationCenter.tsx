@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { 
-  MessageSquare, 
-  Mail, 
-  Send, 
-  Users, 
-  Calendar, 
-  Filter, 
-  Search, 
+import {
+  MessageSquare,
+  Mail,
+  Send,
+  Users,
+  Calendar,
+  Filter,
+  Search,
   Plus,
   Settings,
   History,
@@ -90,16 +90,16 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
   onRefresh
 }) => {
   // Offline sync hook
-  const { 
-    syncStatus, 
-    saveMessage, 
-    updateMessage, 
-    getMessages, 
-    saveTemplate, 
-    updateTemplate, 
-    deleteTemplate, 
-    getTemplates, 
-    forcSync 
+  const {
+    syncStatus,
+    saveMessage,
+    updateMessage,
+    getMessages,
+    saveTemplate,
+    updateTemplate,
+    deleteTemplate,
+    getTemplates,
+    forcSync
   } = useCommunicationOfflineSync();
 
   const [activeTab, setActiveTab] = useState<'messages' | 'templates' | 'campaigns' | 'analytics'>('messages');
@@ -109,24 +109,24 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
   const [selectedMessage, setSelectedMessage] = useState<CommunicationMessage | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<CommunicationTemplate | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<CommunicationCampaign | null>(null);
-  
+
   // Filters
   const [filterType, setFilterType] = useState<'all' | 'sms' | 'email'>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'draft' | 'scheduled' | 'sent' | 'delivered' | 'failed'>('all');
   const [filterMessageType, setFilterMessageType] = useState<'all' | 'manual' | 'appointment_reminder' | 'campaign' | 'automated'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
-  
+
   // Loading states
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  
+
   // Modals
   const composeModal = useModal();
   const campaignModal = useModal();
   const detailModal = useModal();
   const settingsModal = useModal();
-  
+
   const { success, error } = useToastHelpers();
 
   // Filtrelenmiş mesajlar
@@ -134,28 +134,28 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
     return messages.filter(message => {
       // Tip filtresi
       if (filterType !== 'all' && message.type !== filterType) return false;
-      
+
       // Durum filtresi
       if (filterStatus !== 'all' && message.status !== filterStatus) return false;
-      
+
       // Mesaj tipi filtresi
       if (filterMessageType !== 'all' && message.messageType !== filterMessageType) return false;
-      
+
       // Arama filtresi
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           message.recipient?.toLowerCase().includes(searchLower) ||
           message.recipientName?.toLowerCase().includes(searchLower) ||
           message.content?.toLowerCase().includes(searchLower) ||
           message.subject?.toLowerCase().includes(searchLower);
         if (!matchesSearch) return false;
       }
-      
+
       // Tarih aralığı filtresi
       if (dateRange.start && message.createdAt < dateRange.start) return false;
       if (dateRange.end && message.createdAt > dateRange.end) return false;
-      
+
       return true;
     });
   }, [messages, filterType, filterStatus, filterMessageType, searchTerm, dateRange]);
@@ -214,7 +214,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
     const delivered = messages.filter(m => m.status === 'delivered').length;
     const failed = messages.filter(m => m.status === 'failed').length;
     const scheduled = messages.filter(m => m.status === 'scheduled').length;
-    
+
     return {
       total,
       sent,
@@ -232,7 +232,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
       try {
         const offlineMessages = getMessages({});
         const offlineTemplates = getTemplates({});
-        
+
         // Convert hook's CommunicationTemplate to component's CommunicationTemplate
         const convertedTemplates: CommunicationTemplate[] = offlineTemplates.map(template => ({
           id: template.id,
@@ -246,7 +246,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
           createdAt: template.createdAt,
           updatedAt: template.updatedAt
         }));
-        
+
         setMessages(offlineMessages);
         setTemplates(convertedTemplates);
       } catch (err) {
@@ -266,18 +266,40 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
     }
 
     setIsLoading(true);
-    
+
     try {
-      // Simulate API calls
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      // Trigger sync if online
+      if (syncStatus.isOnline) {
+        await forcSync();
+      }
+
+      const offlineMessages = getMessages({});
+      const offlineTemplates = getTemplates({});
+
+      // Convert hook's CommunicationTemplate to component's CommunicationTemplate
+      const convertedTemplates: CommunicationTemplate[] = offlineTemplates.map(template => ({
+        id: template.id,
+        name: template.name,
+        type: template.templateType,
+        subject: template.subject,
+        content: template.bodyText,
+        variables: template.variables,
+        category: template.category as 'appointment' | 'reminder' | 'marketing' | 'notification' | 'custom',
+        isActive: template.isActive,
+        createdAt: template.createdAt,
+        updatedAt: template.updatedAt
+      }));
+
+      setMessages(offlineMessages);
+      setTemplates(convertedTemplates);
+
       // In a real implementation, these would be actual API calls
       // const [messagesData, templatesData, campaignsData] = await Promise.all([
       //   fetchMessages(),
       //   fetchTemplates(),
       //   fetchCampaigns()
       // ]);
-      
+
       success('Veriler başarıyla yüklendi');
     } catch (err) {
       console.error('Failed to fetch data:', err);
@@ -290,7 +312,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
   // Mesaj gönder
   const sendMessage = useCallback(async (messageData: Partial<CommunicationMessage>) => {
     setIsSending(true);
-    
+
     try {
       const newMessage: CommunicationMessage = {
         id: Date.now().toString(),
@@ -307,14 +329,14 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
         createdAt: new Date().toISOString(),
         sentAt: messageData.scheduledAt ? undefined : new Date().toISOString()
       };
-      
+
       // Save to offline storage
       await saveMessage(newMessage);
-      
+
       setMessages(prev => [newMessage, ...prev]);
       success('Mesaj başarıyla gönderildi');
       composeModal.closeModal();
-      
+
     } catch (err) {
       error('Mesaj gönderme sırasında hata oluştu');
     } finally {
@@ -333,7 +355,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
               SMS ve e-posta iletişimlerini yönetin
             </p>
           </div>
-          
+
           {/* Sync Status Indicator */}
           <div className="flex items-center space-x-2">
             {syncStatus.isOnline ? (
@@ -347,27 +369,27 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
                 <span className="text-sm">Çevrimdışı</span>
               </div>
             )}
-            
+
             {syncStatus.isSyncing && (
               <div className="flex items-center text-blue-600">
                 <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
                 <span className="text-sm">Senkronize ediliyor...</span>
               </div>
             )}
-            
-            {(syncStatus.pendingCount.messages > 0 || 
-              syncStatus.pendingCount.templates > 0 || 
+
+            {(syncStatus.pendingCount.messages > 0 ||
+              syncStatus.pendingCount.templates > 0 ||
               syncStatus.pendingCount.outbox > 0) && (
-              <div className="flex items-center text-amber-600">
-                <AlertCircle className="h-4 w-4 mr-1" />
-                <span className="text-sm">
-                  {syncStatus.pendingCount.messages + syncStatus.pendingCount.templates + syncStatus.pendingCount.outbox} bekleyen değişiklik
-                </span>
-              </div>
-            )}
+                <div className="flex items-center text-amber-600">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  <span className="text-sm">
+                    {syncStatus.pendingCount.messages + syncStatus.pendingCount.templates + syncStatus.pendingCount.outbox} bekleyen değişiklik
+                  </span>
+                </div>
+              )}
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           {/* Force Sync Button */}
           <Button
@@ -380,7 +402,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
             <RefreshCw className={`h-4 w-4 mr-2 ${syncStatus.isSyncing ? 'animate-spin' : ''}`} />
             Senkronize Et
           </Button>
-          
+
           <Button
             variant="outline"
             onClick={() => settingsModal.openModal()}
@@ -388,7 +410,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
             <Settings className="w-4 h-4 mr-2" />
             Ayarlar
           </Button>
-          
+
           <Button
             onClick={() => composeModal.openModal()}
           >
@@ -411,7 +433,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
             </div>
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-yellow-100 rounded-lg">
@@ -423,7 +445,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
             </div>
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-green-100 rounded-lg">
@@ -435,7 +457,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
             </div>
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-red-100 rounded-lg">
@@ -447,7 +469,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
             </div>
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-purple-100 rounded-lg">
@@ -459,7 +481,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
             </div>
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-indigo-100 rounded-lg">
@@ -514,7 +536,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Tip
@@ -529,7 +551,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
                     ]}
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Durum
@@ -547,7 +569,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
                     ]}
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Mesaj Tipi
@@ -564,7 +586,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
                     ]}
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Tarih Aralığı
@@ -603,19 +625,19 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
                             )}
                             <span className="font-medium">{message.type.toUpperCase()}</span>
                           </div>
-                          
+
                           <Badge className={getStatusColor(message.status)}>
                             <div className="flex items-center space-x-1">
                               {getStatusIcon(message.status)}
                               <span>{getStatusLabel(message.status)}</span>
                             </div>
                           </Badge>
-                          
+
                           <Badge variant="secondary">
                             {getMessageTypeLabel(message.messageType)}
                           </Badge>
                         </div>
-                        
+
                         <div className="space-y-1">
                           <div className="flex items-center space-x-2">
                             <span className="text-sm text-gray-600">Alıcı:</span>
@@ -626,18 +648,18 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
                               <span className="text-sm text-gray-500">({message.recipient})</span>
                             )}
                           </div>
-                          
+
                           {message.subject && (
                             <div className="flex items-center space-x-2">
                               <span className="text-sm text-gray-600">Konu:</span>
                               <span className="font-medium">{message.subject}</span>
                             </div>
                           )}
-                          
+
                           <div className="text-sm text-gray-700 line-clamp-2">
                             {message.content}
                           </div>
-                          
+
                           <div className="flex items-center space-x-4 text-xs text-gray-500">
                             <span>Oluşturulma: {new Date(message.createdAt).toLocaleString('tr-TR')}</span>
                             {message.sentAt && (
@@ -649,7 +671,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center space-x-2 ml-4">
                         <Button
                           variant="outline"
@@ -661,7 +683,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
                         >
                           Detay
                         </Button>
-                        
+
                         {message.status === 'failed' && (
                           <Button
                             variant="outline"
@@ -710,7 +732,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
                 Yeni Kampanya
               </Button>
             </div>
-            
+
             <Card className="p-8 text-center">
               <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -729,7 +751,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
 
         {/* Analitik Sekmesi */}
         <Tabs.Content value="analytics">
-          <CommunicationAnalytics 
+          <CommunicationAnalytics
             dateRange={{
               startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
               endDate: new Date().toISOString()
@@ -750,7 +772,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
           <p className="text-gray-600">
             Mesaj oluşturma formu yakında eklenecek.
           </p>
-          
+
           <div className="flex justify-end space-x-3">
             <Button
               variant="outline"
@@ -783,19 +805,19 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
               <div><strong>Alıcı:</strong> {selectedMessage.recipientName || selectedMessage.recipient}</div>
               <div><strong>Mesaj Tipi:</strong> {getMessageTypeLabel(selectedMessage.messageType)}</div>
             </div>
-            
+
             {selectedMessage.subject && (
               <div>
                 <strong>Konu:</strong>
                 <p className="mt-1">{selectedMessage.subject}</p>
               </div>
             )}
-            
+
             <div>
               <strong>İçerik:</strong>
               <p className="mt-1 whitespace-pre-wrap">{selectedMessage.content}</p>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
               <div><strong>Oluşturulma:</strong> {new Date(selectedMessage.createdAt).toLocaleString('tr-TR')}</div>
               {selectedMessage.sentAt && (

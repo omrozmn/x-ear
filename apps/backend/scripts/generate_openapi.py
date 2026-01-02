@@ -48,6 +48,58 @@ def tag_from_rule(rule):
     return 'Default'
 
 
+def endpoint_to_camel_case(endpoint):
+    """Convert blueprint.function_name to camelCase operationId with REST conventions"""
+    # Remove _bp suffix from blueprint name
+    parts = endpoint.split('.')
+    if len(parts) == 2:
+        blueprint, func = parts
+        # Remove _bp suffix
+        blueprint = blueprint.replace('_bp', '')
+        
+        # Normalize function names to REST conventions
+        # list_patients → get_patients (list = GET collection)
+        # get_patient → get_patient (get = GET single)
+        func = normalize_function_name(func)
+        
+        # Convert to camelCase: sales_bp.create_sale -> salesCreateSale
+        blueprint_camel = to_camel_case(blueprint)
+        func_camel = to_camel_case(func, capitalize_first=True)
+        return blueprint_camel + func_camel
+    else:
+        # Fallback: just convert underscores
+        return to_camel_case(endpoint, capitalize_first=False)
+
+
+def normalize_function_name(func_name):
+    """Normalize function names to REST conventions for operationId"""
+    # list_* → get_* (collection endpoint)
+    if func_name.startswith('list_'):
+        return func_name.replace('list_', 'get_', 1)
+    
+    # fetch_* → get_*
+    if func_name.startswith('fetch_'):
+        return func_name.replace('fetch_', 'get_', 1)
+    
+    # retrieve_* → get_*
+    if func_name.startswith('retrieve_'):
+        return func_name.replace('retrieve_', 'get_', 1)
+    
+    return func_name
+
+
+def to_camel_case(text, capitalize_first=False):
+    """Convert snake_case to camelCase"""
+    parts = text.split('_')
+    if not parts:
+        return text
+    
+    if capitalize_first:
+        return ''.join(p.capitalize() for p in parts)
+    else:
+        return parts[0].lower() + ''.join(p.capitalize() for p in parts[1:])
+
+
 def generate_spec():
     spec = {}
     spec['openapi'] = '3.0.3'
@@ -85,8 +137,8 @@ def generate_spec():
             if description:
                 op['description'] = description
 
-            # Add operationId to help client generation
-            op['operationId'] = rule.endpoint.replace('.', '_')
+            # Add operationId to help client generation (camelCase for Orval)
+            op['operationId'] = endpoint_to_camel_case(rule.endpoint)
 
             op['tags'] = [tag_from_rule(rule.rule)]
 

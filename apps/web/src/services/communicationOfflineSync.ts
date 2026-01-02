@@ -1,4 +1,5 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { apiClient } from '../api/orval-mutator';
 
 // Database schema interfaces
 interface CommunicationMessage {
@@ -146,7 +147,7 @@ class CommunicationOfflineSync {
 
       // Start periodic sync
       this.startPeriodicSync();
-      
+
       // Listen for online/offline events
       window.addEventListener('online', () => this.handleOnline());
       window.addEventListener('offline', () => this.handleOffline());
@@ -361,21 +362,21 @@ class CommunicationOfflineSync {
 
     try {
       const outboxItems = await this.db.getAll('outbox');
-      
+
       for (const item of outboxItems) {
         try {
           await this.syncOutboxItem(item);
           await this.db.delete('outbox', item.id);
         } catch (error) {
           console.error('Failed to sync outbox item:', item.id, error);
-          
+
           // Update retry count and schedule retry
           item.retryCount++;
           item.lastRetryAt = new Date().toISOString();
           item.error = error instanceof Error ? error.message : 'Unknown error';
-          
+
           await this.db.put('outbox', item);
-          
+
           // Schedule retry with exponential backoff
           this.scheduleRetry(item);
         }
@@ -387,7 +388,7 @@ class CommunicationOfflineSync {
 
   private async syncOutboxItem(item: OutboxItem): Promise<void> {
     const baseUrl = '/api/communications';
-    
+
     switch (item.entityType) {
       case 'message':
         await this.syncMessageItem(item, baseUrl);
@@ -399,24 +400,24 @@ class CommunicationOfflineSync {
   }
 
   private async syncMessageItem(item: OutboxItem, baseUrl: string): Promise<void> {
-    const url = item.action === 'create' 
+    const url = item.action === 'create'
       ? `${baseUrl}/messages`
       : `${baseUrl}/messages/${item.entityId}`;
-    
-    const method = item.action === 'create' ? 'POST' : 
-                   item.action === 'update' ? 'PUT' : 'DELETE';
 
-    const response = await fetch(url, {
+    const method = item.action === 'create' ? 'POST' :
+      item.action === 'update' ? 'PUT' : 'DELETE';
+
+    const response = await apiClient.request({
+      url,
       method,
       headers: {
-        'Content-Type': 'application/json',
         'Idempotency-Key': `offline_${item.id}`
       },
-      body: item.action !== 'delete' ? JSON.stringify(item.data) : undefined
-    });
+      data: item.action !== 'delete' ? item.data : undefined
+    }) as any;
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    if (!response.data && !response.Success && !response.success && response.status >= 400) {
+      throw new Error(`Request failed with status ${response.status}`);
     }
 
     // Update local sync status
@@ -430,24 +431,24 @@ class CommunicationOfflineSync {
   }
 
   private async syncTemplateItem(item: OutboxItem, baseUrl: string): Promise<void> {
-    const url = item.action === 'create' 
+    const url = item.action === 'create'
       ? `${baseUrl}/templates`
       : `${baseUrl}/templates/${item.entityId}`;
-    
-    const method = item.action === 'create' ? 'POST' : 
-                   item.action === 'update' ? 'PUT' : 'DELETE';
 
-    const response = await fetch(url, {
+    const method = item.action === 'create' ? 'POST' :
+      item.action === 'update' ? 'PUT' : 'DELETE';
+
+    const response = await apiClient.request({
+      url,
       method,
       headers: {
-        'Content-Type': 'application/json',
         'Idempotency-Key': `offline_${item.id}`
       },
-      body: item.action !== 'delete' ? JSON.stringify(item.data) : undefined
-    });
+      data: item.action !== 'delete' ? item.data : undefined
+    }) as any;
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    if (!response.data && !response.Success && !response.success && response.status >= 400) {
+      throw new Error(`Request failed with status ${response.status}`);
     }
 
     // Update local sync status
@@ -480,13 +481,13 @@ class CommunicationOfflineSync {
     const metadata = await this.db.get('syncMetadata', 'messages');
     const since = metadata?.lastSyncTimestamp || new Date(0).toISOString();
 
-    const response = await fetch(`/api/communications/messages?since=${since}&limit=1000`);
-    if (!response.ok) return;
+    const { communicationsGetMessages } = await import('@/api/generated');
+    const response = await communicationsGetMessages({ since, limit: 1000 } as any);
 
-    const result = await response.json();
-    if (!result.success) return;
+    const result = (response as any).data || response;
+    if (!(result as any).success) return;
 
-    const messages: CommunicationMessage[] = result.data.map((msg: any) => ({
+    const messages: CommunicationMessage[] = (result as any).data.map((msg: any) => ({
       ...msg,
       syncStatus: 'synced' as const
     }));
@@ -510,14 +511,14 @@ class CommunicationOfflineSync {
     const metadata = await this.db.get('syncMetadata', 'templates');
     const since = metadata?.lastSyncTimestamp || new Date(0).toISOString();
 
-    const response = await fetch(`/api/communications/templates?since=${since}&limit=1000`);
-    if (!response.ok) return;
+    const { communicationsListTemplates } = await import('@/api/generated');
+    const response = await communicationsListTemplates({ since, limit: 1000 } as any);
 
-    const result = await response.json();
-    if (!result.success) return;
+    const result = (response as any).data || response;
+    if (!(result as any).success) return;
 
-    const templates: CommunicationTemplate[] = result.data.map((tmpl: any) => ({
-      ...tmpl,
+    const templates: CommunicationTemplate[] = (result as any).data.map((tpl: any) => ({
+      ...tpl,
       syncStatus: 'synced' as const
     }));
 
@@ -537,7 +538,7 @@ class CommunicationOfflineSync {
   // Retry management
   private scheduleRetry(item: OutboxItem): void {
     const delay = Math.min(1000 * Math.pow(2, item.retryCount), 300000); // Max 5 minutes
-    
+
     const timeoutId = setTimeout(() => {
       this.syncOutbox();
       this.retryTimeouts.delete(item.id);

@@ -50,7 +50,7 @@ def test_device_assignment_with_discount():
         print(f"   Tenant: {admin.tenant_id}")
         
         # Find an inventory item
-        from models.inventory import Inventory
+        from models.inventory import InventoryItem
         item = Inventory.query.filter_by(tenant_id=admin.tenant_id).first()
         
         if not item:
@@ -150,8 +150,8 @@ def test_bilateral_sgk():
     with app.app_context():
         admin = User.query.filter_by(email=ADMIN_EMAIL).first()
         patient = Patient.query.filter_by(tenant_id=admin.tenant_id).first()
-        from models.inventory import Inventory
-        item = Inventory.query.filter_by(tenant_id=admin.tenant_id).first()
+        from models.inventory import InventoryItem
+        item = InventoryItem.query.filter_by(tenant_id=admin.tenant_id).first()
         
         if not patient or not item:
             print("❌ Missing patient or inventory")

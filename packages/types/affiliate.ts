@@ -2,6 +2,8 @@ export interface Affiliate {
   id: number;
   email: string;
   iban: string;
+  account_holder_name?: string;
+  phone_number?: string;
   is_active: boolean;
   created_at: string;
 }

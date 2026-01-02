@@ -10,6 +10,8 @@ import json
 import logging
 from datetime import datetime
 import os
+from utils.tenant_security import UnboundSession
+from utils.admin_permissions import require_admin_permission, AdminPermissions
 
 logger = logging.getLogger(__name__)
 
@@ -348,6 +350,7 @@ def paytr_callback():
 
 @payment_integrations_bp.route('/transactions', methods=['GET'])
 @jwt_required()
+@require_admin_permission(AdminPermissions.PAYMENTS_READ)
 def get_pos_transactions():
     """Report Endpoint for POS Transactions"""
     current_user_id = get_jwt_identity()
@@ -360,20 +363,21 @@ def get_pos_transactions():
     end_date = request.args.get('end_date')
     limit = int(request.args.get('limit', 50))
     
-    query = PaymentRecord.query.filter_by(tenant_id=user.tenant_id).filter(PaymentRecord.pos_provider.isnot(None))
-    
-    if provider:
-        query = query.filter_by(pos_provider=provider)
+    with UnboundSession():
+        query = PaymentRecord.query.filter(PaymentRecord.pos_provider.isnot(None))
         
-    # Date filters...
-    if start_date:
-        try:
-             s_dt = datetime.fromisoformat(start_date)
-             query = query.filter(PaymentRecord.payment_date >= s_dt)
-        except: pass
-        
-    query = query.order_by(PaymentRecord.payment_date.desc()).limit(limit)
-    records = query.all()
+        if provider:
+            query = query.filter_by(pos_provider=provider)
+            
+        # Date filters...
+        if start_date:
+            try:
+                 s_dt = datetime.fromisoformat(start_date)
+                 query = query.filter(PaymentRecord.payment_date >= s_dt)
+            except: pass
+            
+        query = query.order_by(PaymentRecord.payment_date.desc()).limit(limit)
+        records = query.all()
     
     return jsonify({
         'success': True,

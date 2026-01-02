@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-import { Patient } from '../../api/generated/schemas';
+import type { Patient } from '@/api/generated';
 import { PatientFilters } from '../../types/patient';
 import Fuse from 'fuse.js';
 

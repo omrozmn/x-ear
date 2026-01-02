@@ -43,7 +43,7 @@ const AdminAppointmentsPage: React.FC = () => {
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Global Randevu Yönetimi</h1>
                     <p className="mt-1 text-sm text-gray-500">
-                        Tüm kiracılardaki randevuları görüntüleyin ve yönetin
+                        Tüm abonelerdeki randevuları görüntüleyin ve yönetin
                     </p>
                 </div>
                 <button

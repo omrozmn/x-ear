@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
-import axios from 'axios';
 import { Input } from '@x-ear/ui-web';
 import { getCategoryDisplay, getCategoryValue } from '../../../utils/category-mapping';
+import { useAuthStore } from '../../../stores/authStore';
 
-const api = axios.create({
-  baseURL: 'http://localhost:5003'
-});
+import {
+  useInventoryGetCategories,
+  useInventoryCreateCategory
+} from '@/api/generated';
+
 
 
 interface CategoryAutocompleteProps {
@@ -37,7 +39,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement | null>(null);
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
-  
+
   // Update display value when value changes
   useEffect(() => {
     setDisplayValue(getCategoryDisplay(value));
@@ -72,25 +74,38 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
     'Koruma Kılıfı'
   ];
 
-  // Load categories from API
+  const { token } = useAuthStore();
+
+  // React Query hook for categories - only fetch if authenticated
+  const { data: categoriesData } = useInventoryGetCategories({
+    query: { enabled: !!token }
+  });
+
+  // Load categories from API data
   useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const response = await api.get('/api/inventory/categories');
-        if (response.data.success && response.data.data?.categories) {
-          const apiCategories = response.data.data.categories;
-          const combined = [...new Set([...apiCategories, ...defaultCategories])];
-          setAllCategories(combined.sort());
-        } else {
-          setAllCategories(defaultCategories);
+    let apiCategories: string[] = [];
+    
+    // Handle different response structures
+    if (categoriesData) {
+      if (Array.isArray(categoriesData)) {
+        apiCategories = categoriesData;
+      } else if ((categoriesData as any)?.data) {
+        const innerData = (categoriesData as any).data;
+        if (Array.isArray(innerData)) {
+          apiCategories = innerData;
+        } else if (innerData?.data && Array.isArray(innerData.data)) {
+          apiCategories = innerData.data;
         }
-      } catch (error) {
-        console.warn('Failed to load categories from API, using defaults:', error);
-        setAllCategories(defaultCategories);
       }
-    };
-    loadCategories();
-  }, []);
+    }
+    
+    if (apiCategories.length > 0) {
+      const combined = [...new Set([...apiCategories, ...defaultCategories])];
+      setAllCategories(combined.sort());
+    } else {
+      setAllCategories(defaultCategories);
+    }
+  }, [categoriesData]);
 
   useEffect(() => {
     const categories = allCategories.length > 0 ? allCategories : defaultCategories;
@@ -106,13 +121,13 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
           .replace(/ö/g, 'o')
           .replace(/ç/g, 'c');
       };
-      
+
       const normalizedValue = normalizeTurkish(displayValue);
-      
+
       const scored = categories.map(cat => {
         const normalizedCat = normalizeTurkish(cat);
         let score = 0;
-        
+
         if (normalizedCat === normalizedValue) score = 100;
         else if (normalizedCat.startsWith(normalizedValue)) score = 90;
         else if (normalizedCat.includes(normalizedValue)) score = 70;
@@ -123,16 +138,16 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
           }
           score = (matches / normalizedValue.length) * 50;
         }
-        
+
         return { cat, score };
       });
-      
+
       const filtered = scored
         .filter(item => item.score > 30)
         .sort((a, b) => b.score - a.score)
         .slice(0, 10)
         .map(item => item.cat);
-      
+
       setFilteredCategories(filtered);
     } else if (isOpen) {
       setFilteredCategories(categories.slice(0, 10));
@@ -208,12 +223,14 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
     setIsOpen(false);
   };
 
+  const createCategoryMutation = useInventoryCreateCategory();
+
   const handleCreateNew = async () => {
     const newCategory = displayValue.trim();
     if (!newCategory) return;
 
     try {
-      await api.post('/api/inventory/categories', { category: newCategory });
+      await createCategoryMutation.mutateAsync({ data: { name: newCategory } } as any);
       console.log('✅ New category created:', newCategory);
       // Add to local list immediately
       setAllCategories(prev => [...new Set([...prev, newCategory])].sort());
@@ -226,7 +243,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
       // Add to local list anyway
       setAllCategories(prev => [...new Set([...prev, newCategory])].sort());
     }
-    
+
     onChange(newCategory);
     setDisplayValue(newCategory);
     setIsOpen(false);
@@ -262,7 +279,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      
+
       <div className="relative">
         <Input
           ref={inputRef}
@@ -272,14 +289,13 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            error ? 'border-red-300' : 'border-gray-300'
-          }`}
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${error ? 'border-red-300' : 'border-gray-300'
+            }`}
           aria-autocomplete="list"
           aria-expanded={isOpen}
           aria-controls="category-autocomplete-list"
         />
-        
+
         {isOpen && (filteredCategories.length > 0 || showCreateNew) && portalRef.current && ReactDOM.createPortal(
           <div
             ref={dropdownRef}
@@ -330,9 +346,9 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
               </div>
             )}
           </div>
-        , portalRef.current)}
+          , portalRef.current)}
       </div>
-      
+
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );

@@ -29,7 +29,7 @@ import {
 const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'Raporlar', href: '/analytics', icon: BarChart3 },
-    { name: 'Kiracılar', href: '/tenants', icon: Building2 },
+    { name: 'Aboneler', href: '/tenants', icon: Building2 },
     { name: 'Kullanıcılar', href: '/users', icon: Users },
     { name: 'Hastalar', href: '/patients', icon: User },
     { name: 'Randevular', href: '/appointments', icon: Calendar },
@@ -42,6 +42,7 @@ const navigation = [
     { name: 'API Anahtarları', href: '/api-keys', icon: Key },
     { name: 'Roller', href: '/roles', icon: Shield },
     { name: 'Planlar', href: '/plans', icon: CreditCard },
+    { name: 'Affiliateler', href: '/affiliates', icon: Users },
     { name: 'Eklentiler', href: '/addons', icon: PlusCircle },
     { name: 'SMS Başlıkları', href: '/sms/headers', icon: MessageSquare },
     { name: 'SMS Paketleri', href: '/sms/packages', icon: Package },
@@ -59,7 +60,7 @@ export function AdminSidebar() {
     const location = useLocation()
 
     return (
-        <div className="flex flex-col w-64 bg-gray-900 border-r border-gray-800 min-h-screen">
+        <div className="flex flex-col w-64 bg-gray-900 border-r border-gray-800 h-screen">
             <div className="flex items-center justify-center h-16 bg-gray-900 border-b border-gray-800 gap-2">
                 <img src="/logo/x.svg" alt="X-Ear Logo" className="w-8 h-8" />
                 <span className="text-xl font-bold text-white">X-Ear Admin</span>
@@ -89,6 +90,20 @@ export function AdminSidebar() {
                         )
                     })}
                 </nav>
+            </div>
+            <div className="p-4 border-t border-gray-800">
+                <button
+                    onClick={() => {
+                        localStorage.removeItem('admin_token');
+                        window.location.href = '/login';
+                    }}
+                    className="flex items-center w-full px-2 py-2 text-sm font-medium text-red-400 rounded-md hover:bg-gray-800 hover:text-red-300"
+                >
+                    <svg className="w-6 h-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Çıkış Yap
+                </button>
             </div>
         </div>
     )

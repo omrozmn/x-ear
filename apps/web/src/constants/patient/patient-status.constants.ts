@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-import { PatientStatus } from '../../api/generated/schemas';
+import { PatientStatus } from '@/api/generated/schemas';
 import type { 
   PatientSegment, 
   PatientLabel 

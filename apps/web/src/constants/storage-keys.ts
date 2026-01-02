@@ -8,16 +8,16 @@
  * SHOULD: Version changes in storage key format increment @vN suffix and include a migration rule
  */
 
-// Import generated storage keys from OpenAPI
-import {
-  ALL_GENERATED_STORAGE_KEYS,
-  STORAGE_KEYS_METADATA,
-  type GeneratedStorageKey,
-  type StorageKeyDefinition
-} from './generated-storage-keys'
+// TODO: Import generated storage keys from OpenAPI when available
+// import {
+//   ALL_GENERATED_STORAGE_KEYS,
+//   STORAGE_KEYS_METADATA,
+//   type GeneratedStorageKey,
+//   type StorageKeyDefinition
+// } from '@/api/generated-storage-keys'
 
 // Re-export generated keys for convenience
-export * from './generated-storage-keys'
+// export * from '@/api/generated-storage-keys'
 
 // Authentication & Session
 export const AUTH_TOKEN = 'x-ear.auth.token@v1'
@@ -39,16 +39,25 @@ export const PATIENT_FORM_DRAFT = 'x-ear.forms.patient.draft@v1'
 export const APPOINTMENT_FORM_DRAFT = 'x-ear.forms.appointment.draft@v1'
 export const INVOICE_FORM_DRAFT = 'x-ear.forms.invoice.draft@v1'
 
-// Patient-specific Storage Keys (Legacy - now generated from OpenAPI)
-// NOTE: These are kept for backward compatibility but should be replaced with generated keys
-export const PATIENT_SEARCH_FILTERS_LEGACY = 'x-ear.patients.searchFilters@v1'
-export const PATIENT_PAGINATION_STATE_LEGACY = 'x-ear.patients.paginationState@v1'
-export const PATIENT_SORT_PREFERENCES_LEGACY = 'x-ear.patients.sortPreferences@v1'
-export const PATIENT_VIEW_MODE_LEGACY = 'x-ear.patients.viewMode@v1'
-export const PATIENT_SELECTED_COLUMNS_LEGACY = 'x-ear.patients.selectedColumns@v1'
-export const PATIENT_BULK_ACTIONS_STATE_LEGACY = 'x-ear.patients.bulkActionsState@v1'
-export const PATIENT_DETAILS_TAB_LEGACY = 'x-ear.patients.detailsTab@v1'
-export const PATIENT_FORM_VALIDATION_STATE_LEGACY = 'x-ear.patients.formValidationState@v1'
+// Patient-specific Storage Keys
+export const PATIENT_SEARCH_FILTERS = 'x-ear.patients.searchFilters@v1'
+export const PATIENT_PAGINATION_STATE = 'x-ear.patients.paginationState@v1'
+export const PATIENT_SORT_PREFERENCES = 'x-ear.patients.sortPreferences@v1'
+export const PATIENT_VIEW_MODE = 'x-ear.patients.viewMode@v1'
+export const PATIENT_SELECTED_COLUMNS = 'x-ear.patients.selectedColumns@v1'
+export const PATIENT_BULK_ACTIONS_STATE = 'x-ear.patients.bulkActionsState@v1'
+export const PATIENT_DETAILS_TAB = 'x-ear.patients.detailsTab@v1'
+export const PATIENT_FORM_VALIDATION_STATE = 'x-ear.patients.formValidationState@v1'
+
+// Legacy aliases for backward compatibility
+export const PATIENT_SEARCH_FILTERS_LEGACY = PATIENT_SEARCH_FILTERS
+export const PATIENT_PAGINATION_STATE_LEGACY = PATIENT_PAGINATION_STATE
+export const PATIENT_SORT_PREFERENCES_LEGACY = PATIENT_SORT_PREFERENCES
+export const PATIENT_VIEW_MODE_LEGACY = PATIENT_VIEW_MODE
+export const PATIENT_SELECTED_COLUMNS_LEGACY = PATIENT_SELECTED_COLUMNS
+export const PATIENT_BULK_ACTIONS_STATE_LEGACY = PATIENT_BULK_ACTIONS_STATE
+export const PATIENT_DETAILS_TAB_LEGACY = PATIENT_DETAILS_TAB
+export const PATIENT_FORM_VALIDATION_STATE_LEGACY = PATIENT_FORM_VALIDATION_STATE
 
 // Cache & Performance
 export const API_CACHE_PREFIX = 'x-ear.cache.api@v1'
@@ -114,8 +123,8 @@ export const ALL_STORAGE_KEYS = [
   PATIENT_FORM_DRAFT,
   APPOINTMENT_FORM_DRAFT,
   INVOICE_FORM_DRAFT,
-  // Use generated keys from OpenAPI instead of legacy ones
-  ...ALL_GENERATED_STORAGE_KEYS,
+  // TODO: Use generated keys from OpenAPI when available
+  // ...ALL_GENERATED_STORAGE_KEYS,
   API_CACHE_PREFIX,
   QUERY_CACHE_TIMESTAMP,
   DEMO_MODE_ENABLED,

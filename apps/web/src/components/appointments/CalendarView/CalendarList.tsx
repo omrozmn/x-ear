@@ -49,7 +49,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
 
   // Filter appointments and group by month -> date
   const groupedByMonth = useMemo((): MonthGroup[] => {
-    let filtered = appointments.filter(apt => {
+    const filtered = appointments.filter(apt => {
       const aptDate = parseISO(apt.date);
       const isInWeek = aptDate >= weekStart && aptDate <= weekEnd;
       

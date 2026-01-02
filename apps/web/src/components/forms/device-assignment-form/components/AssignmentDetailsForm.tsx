@@ -1,5 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { apiClient } from '../../../../api/orval-mutator';
+import { inventoryGetInventoryItems } from '@/api/generated';
+import { unwrapObject } from '@/utils/response-unwrap';
 import { Input, Select, Textarea } from '@x-ear/ui-web';
 import { Calendar, User, FileText, AlertCircle, CheckCircle, Clock, RotateCcw } from 'lucide-react';
 
@@ -80,18 +81,18 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
     const timer = setTimeout(async () => {
       if (loanerSearch.length >= 2) {
         try {
-          const response = await apiClient.get('/api/inventory', {
-            params: {
-              search: loanerSearch,
-              category: 'hearing_aid'
-            }
+          const response = await inventoryGetInventoryItems({
+            search: loanerSearch,
+            category: 'hearing_aid'
           });
-          if (response.data?.success) {
-            setLoanerResults(response.data.data);
-            setShowLoanerResults(true);
-          }
+          const unwrapped = unwrapObject(response);
+          const items = unwrapped?.data || unwrapped || [];
+          setLoanerResults(Array.isArray(items) ? items : []);
+          setShowLoanerResults(true);
         } catch (error) {
           console.error("Loaner search failed", error);
+          setLoanerResults([]);
+          setShowLoanerResults(false);
         }
       } else {
         setLoanerResults([]);

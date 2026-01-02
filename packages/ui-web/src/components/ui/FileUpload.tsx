@@ -143,7 +143,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     if (disabled) return;
     
     const currentFiles = value;
-    let newFiles: FileUploadFile[] = [];
+    const newFiles: FileUploadFile[] = [];
     
     // Check max files limit
     if (maxFiles && currentFiles.length + files.length > maxFiles) {

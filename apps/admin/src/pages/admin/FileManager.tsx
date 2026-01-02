@@ -10,7 +10,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { useListFiles, useGetPresignedUploadUrl, useProcessDocumentOcr, useDeleteFile } from '@/lib/api-client';
 import toast from 'react-hot-toast';
-import axios from 'axios';
 
 const FileManager: React.FC = () => {
     const [currentFolder, setCurrentFolder] = useState('uploads');
@@ -63,10 +62,10 @@ const FileManager: React.FC = () => {
             // Add file last
             formData.append('file', file);
 
-            await axios.post(url, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
+            // Use fetch for presigned POST to S3 (avoid central API instance since this posts to external URL)
+            await fetch(url, {
+                method: 'POST',
+                body: formData
             });
 
             toast.success('Dosya yüklendi', { id: toastId });

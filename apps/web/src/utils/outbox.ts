@@ -3,6 +3,8 @@
  * Handles offline operations, retry logic, and data synchronization
  */
 
+import { customInstance } from '../api/orval-mutator';
+
 export interface OutboxOperation {
   id?: string;
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -31,19 +33,21 @@ export interface OutboxStats {
 }
 
 export interface OutboxEvent {
-  type: 'operation-added' | 'operation-updated' | 'operation-removed' | 'operation-succeeded' | 'operation-duplicate' | 'sync-started' | 'sync-completed' | 'sync-failed' | 'failed-operations-cleared';
+  type: 'operation-added' | 'operation-updated' | 'operation-removed' | 'operation-succeeded' | 'operation-duplicate' | 'sync-started' | 'sync-completed' | 'sync-failed' | 'failed-operations-cleared' | 'storage-quota-exceeded';
   data: unknown;
   timestamp: number;
 }
 
 export class IndexedDBOutbox {
   private dbName = 'XEarOutbox';
-  private dbVersion = 1;
+  private dbVersion = 2; // Incremented for schema migration
   private storeName = 'operations';
   private db: IDBDatabase | null = null;
   private isOnline = navigator.onLine;
   private syncInProgress = false;
   private syncInterval: number | null = null;
+  private lastQuotaCheck: number = 0;
+  private quotaCheckInterval = 30000; // Cache quota check for 30s
 
   constructor() {
     this.initDB();
@@ -54,7 +58,11 @@ export class IndexedDBOutbox {
   private setupEventListeners(): void {
     window.addEventListener('online', () => {
       this.isOnline = true;
-      this.syncPendingOperations();
+      // Add jitter (0-30s) to prevent sync storm when many users reconnect simultaneously
+      const jitter = Math.random() * 30000;
+      setTimeout(() => {
+        this.syncPendingOperations();
+      }, jitter);
     });
 
     window.addEventListener('offline', () => {
@@ -85,21 +93,123 @@ export class IndexedDBOutbox {
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
+        const oldVersion = event.oldVersion;
+        const transaction = (event.target as IDBOpenDBRequest).transaction!;
 
-        // Create operations store
-        if (!db.objectStoreNames.contains(this.storeName)) {
-          const store = db.createObjectStore(this.storeName, {
-            keyPath: 'id',
-            autoIncrement: true
-          });
+        // v0 → v1: Create initial store
+        if (oldVersion < 1) {
+          if (!db.objectStoreNames.contains(this.storeName)) {
+            const store = db.createObjectStore(this.storeName, {
+              keyPath: 'id',
+              autoIncrement: true
+            });
 
-          // Create indexes
-          store.createIndex('timestamp', 'timestamp', { unique: false });
-          store.createIndex('endpoint', 'endpoint', { unique: false });
-          store.createIndex('status', 'status', { unique: false });
-          store.createIndex('priority', 'priority', { unique: false });
+            // Create indexes
+            store.createIndex('timestamp', 'timestamp', { unique: false });
+            store.createIndex('endpoint', 'endpoint', { unique: false });
+            store.createIndex('status', 'status', { unique: false });
+            store.createIndex('priority', 'priority', { unique: false });
+          }
+        }
+
+        // v1 → v2: Add retryCount and failureReason to existing records
+        if (oldVersion < 2 && db.objectStoreNames.contains(this.storeName)) {
+          const store = transaction.objectStore(this.storeName);
+          const cursorRequest = store.openCursor();
+
+          cursorRequest.onsuccess = (e) => {
+            const cursor = (e.target as IDBRequest<IDBCursorWithValue>).result;
+            if (cursor) {
+              const record = cursor.value;
+              // Add default values for new fields if not present
+              if (record.retryCount === undefined) {
+                record.retryCount = 0;
+              }
+              cursor.update(record);
+              cursor.continue();
+            }
+          };
         }
       };
+    });
+  }
+
+  /**
+   * Check storage quota before adding operations
+   */
+  private async checkStorageQuota(): Promise<{ hasSpace: boolean; usage: number; quota: number }> {
+    // Cache quota check to avoid excessive API calls
+    const now = Date.now();
+    if (now - this.lastQuotaCheck < this.quotaCheckInterval) {
+      return { hasSpace: true, usage: 0, quota: 0 }; // Assume OK if recently checked
+    }
+    this.lastQuotaCheck = now;
+
+    if (!navigator.storage || !navigator.storage.estimate) {
+      // Fallback: assume space available if API not supported
+      return { hasSpace: true, usage: 0, quota: 0 };
+    }
+
+    try {
+      const estimate = await navigator.storage.estimate();
+      const usage = estimate.usage || 0;
+      const quota = estimate.quota || 0;
+      const percentUsed = quota > 0 ? (usage / quota) * 100 : 0;
+
+      if (percentUsed > 90) {
+        console.warn(`Storage quota ${percentUsed.toFixed(1)}% full, attempting cleanup...`);
+        await this.cleanupLowPriorityOperations();
+
+        // Recheck after cleanup
+        const recheck = await navigator.storage.estimate();
+        const newUsage = recheck.usage || 0;
+        const newPercentUsed = quota > 0 ? (newUsage / quota) * 100 : 0;
+
+        return {
+          hasSpace: newPercentUsed < 95, // Allow up to 95% after cleanup
+          usage: newUsage,
+          quota
+        };
+      }
+
+      return { hasSpace: true, usage, quota };
+    } catch (error) {
+      console.error('Storage quota check failed:', error);
+      return { hasSpace: true, usage: 0, quota: 0 }; // Fail open
+    }
+  }
+
+  /**
+   * Cleanup low-priority completed operations to free space
+   */
+  private async cleanupLowPriorityOperations(): Promise<number> {
+    if (!this.db) return 0;
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([this.storeName], 'readwrite');
+      const store = transaction.objectStore(this.storeName);
+      const request = store.openCursor();
+      let deletedCount = 0;
+
+      request.onsuccess = (event) => {
+        const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result;
+        if (cursor) {
+          const op = cursor.value;
+          // Delete completed low-priority operations older than 24h
+          if (op.status === 'completed' && op.priority === 'low') {
+            const age = Date.now() - (op.timestamp || 0);
+            if (age > 24 * 60 * 60 * 1000) {
+              cursor.delete();
+              deletedCount++;
+            }
+          }
+          cursor.continue();
+        } else {
+          console.log(`Cleaned up ${deletedCount} low-priority operations`);
+          resolve(deletedCount);
+        }
+      };
+      request.onerror = () => reject(request.error);
     });
   }
 
@@ -108,6 +218,18 @@ export class IndexedDBOutbox {
    */
   async addOperation(operation: OutboxOperation): Promise<OutboxOperation> {
     if (!this.db) await this.initDB();
+
+    // Check storage quota before adding
+    const { hasSpace, usage, quota } = await this.checkStorageQuota();
+    if (!hasSpace) {
+      const percentUsed = quota > 0 ? ((usage / quota) * 100).toFixed(1) : 'unknown';
+      const error = new Error(
+        `Storage quota exceeded (${percentUsed}% full). Please clear browser data or sync pending operations.`
+      );
+      // Emit event so UI can show appropriate message
+      this.emitOutboxEvent('storage-quota-exceeded', { usage, quota });
+      throw error;
+    }
 
     const operationData: OutboxOperation = {
       ...operation,
@@ -123,22 +245,22 @@ export class IndexedDBOutbox {
     // Deduplication: if Idempotency-Key provided and there is already a pending
     // operation with same endpoint+method+idempotency key, return the existing one
     try {
-      const idempotencyKey = operationData.headers?.['Idempotency-Key'] || 
-                            operationData.headers?.['idempotency-key'] || 
-                            operationData.headers?.['Idempotency-key'];
-      
+      const idempotencyKey = operationData.headers?.['Idempotency-Key'] ||
+        operationData.headers?.['idempotency-key'] ||
+        operationData.headers?.['Idempotency-key'];
+
       if (idempotencyKey) {
         const pendingOps = await this.getPendingOperations();
         const existing = pendingOps.find(op => {
           if (!op || !op.headers) return false;
-          const existingKey = op.headers['Idempotency-Key'] || 
-                             op.headers['idempotency-key'] || 
-                             op.headers['Idempotency-key'];
-          return op.endpoint === operationData.endpoint && 
-                 (op.method || 'GET') === (operationData.method || 'GET') && 
-                 existingKey === idempotencyKey;
+          const existingKey = op.headers['Idempotency-Key'] ||
+            op.headers['idempotency-key'] ||
+            op.headers['Idempotency-key'];
+          return op.endpoint === operationData.endpoint &&
+            (op.method || 'GET') === (operationData.method || 'GET') &&
+            existingKey === idempotencyKey;
         });
-        
+
         if (existing) {
           this.emitOutboxEvent('operation-duplicate', existing);
           return existing;
@@ -311,13 +433,13 @@ export class IndexedDBOutbox {
 
     // Resolve relative endpoints against the correct API base URL
     const API_BASE_URL = 'http://localhost:5003';
-    const resolvedEndpoint = endpoint.startsWith('http') 
-      ? endpoint 
+    const resolvedEndpoint = endpoint.startsWith('http')
+      ? endpoint
       : `${API_BASE_URL}${endpoint}`;
 
     // If operation references a stored blob, retrieve it and send multipart/form-data
     if (data && (data as any).blobId) {
-      const { indexedDBManager } = await import('@/utils/indexeddb');
+      const { indexedDBManager } = await import('./indexeddb');
       const blobRef = await indexedDBManager.getFileBlob((data as any).blobId);
       if (!blobRef) throw new Error('Blob not found for outbox operation');
 
@@ -328,20 +450,15 @@ export class IndexedDBOutbox {
       if ((data as any).mime) form.append('mime', (data as any).mime);
 
       try {
-        const response = await fetch(resolvedEndpoint, {
+        // Use customInstance for blob upload - maintains auth + retry logic
+        const response = await customInstance({
+          url: resolvedEndpoint,
           method,
-          headers: {
-            // Let the browser set Content-Type with boundary for FormData
-            ...headers
-          },
-          body: form
+          headers,
+          data: form
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        return await response.json();
+        return response;
       } catch (error) {
         if (error instanceof TypeError && error.message === 'Failed to fetch') {
           throw new Error('Network error: Failed to fetch. Please check your connection and ensure the server is running.');
@@ -351,20 +468,18 @@ export class IndexedDBOutbox {
     }
 
     try {
-      const response = await fetch(resolvedEndpoint, {
+      // Use customInstance instead of fetch - maintains auth + retry logic
+      const response = await customInstance({
+        url: resolvedEndpoint,
         method,
         headers: {
           'Content-Type': 'application/json',
           ...headers
         },
-        body: data ? JSON.stringify(data) : undefined
+        data
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      return await response.json();
+      return response;
     } catch (error) {
       if (error instanceof TypeError && error.message === 'Failed to fetch') {
         throw new Error('Network error: Failed to fetch. Please check your connection and ensure the server is running.');
@@ -488,7 +603,7 @@ class InMemoryOutbox {
   private ops: OutboxOperation[] = [];
 
   async addOperation(operation: OutboxOperation): Promise<OutboxOperation> {
-  const op: OutboxOperation = { ...operation, id: this.generateOperationId(), timestamp: Date.now(), status: 'pending', retryCount: 0, maxRetries: operation.maxRetries || 3 };
+    const op: OutboxOperation = { ...operation, id: this.generateOperationId(), timestamp: Date.now(), status: 'pending', retryCount: 0, maxRetries: operation.maxRetries || 3 };
     this.ops.push(op);
     return op;
   }

@@ -1,23 +1,34 @@
-from app import app, db
-from models.admin_user import AdminUser, AdminRole
+
+from app import app
+from models.base import db
+from models.admin_user import AdminUser
+import uuid
 
 def seed_admin():
     with app.app_context():
-        if not AdminUser.query.filter_by(email='admin@x-ear.com').first():
-            admin = AdminUser(
-                id='admin-1',
-                email='admin@x-ear.com',
-                first_name='Super',
-                last_name='Admin',
-                role=AdminRole.SUPER_ADMIN.value,
-                is_active=True
-            )
-            admin.set_password('admin123')
-            db.session.add(admin)
-            db.session.commit()
-            print("Admin user created: admin@x-ear.com / admin123")
-        else:
-            print("Admin user already exists")
+        print("Seeding admin user...")
+        email = "admin@x-ear.com"
+        
+        # Check if already exists
+        existing = AdminUser.query.filter_by(email=email).first()
+        if existing:
+            print(f"Admin user {email} already exists.")
+            return
+
+        # Create new admin
+        admin = AdminUser(
+            id=str(uuid.uuid4()),
+            email=email,
+            first_name="Admin",
+            last_name="User",
+            role="super_admin",
+            is_active=True
+        )
+        admin.set_password("password123")
+        
+        db.session.add(admin)
+        db.session.commit()
+        print(f"✅ Successfully created admin user: {email} / password123")
 
 if __name__ == "__main__":
     seed_admin()

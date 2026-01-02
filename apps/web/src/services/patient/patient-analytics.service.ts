@@ -4,8 +4,7 @@
  * @version 1.0.0
  */
 
-import { Patient, Device, Sale } from '../../api/generated/schemas';
-import { PatientStatus } from '../../api/generated/schemas';
+import type { Patient, Device, Sale, PatientStatus } from '@/api/generated';
 
 export interface AnalyticsTimeRange {
   start: string;

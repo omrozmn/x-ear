@@ -33,11 +33,14 @@ import { Route as BillingRouteImport } from './routes/billing'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as ApiKeysRouteImport } from './routes/api-keys'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as AffiliatesRouteImport } from './routes/affiliates'
 import { Route as AddonsRouteImport } from './routes/addons'
 import { Route as ActivityLogsRouteImport } from './routes/activity-logs'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SmsPackagesRouteImport } from './routes/sms/packages'
 import { Route as SmsHeadersRouteImport } from './routes/sms/headers'
+import { Route as IntegrationsVatanSmsRouteImport } from './routes/integrations/vatan-sms'
+import { Route as AffiliatesAffiliateIdRouteImport } from './routes/affiliates.$affiliateId'
 import { Route as AuthenticatedAdminIntegrationsVatanSmsRouteImport } from './routes/_authenticated/admin/integrations/vatan-sms'
 
 const UsersRoute = UsersRouteImport.update({
@@ -160,6 +163,11 @@ const AnalyticsRoute = AnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AffiliatesRoute = AffiliatesRouteImport.update({
+  id: '/affiliates',
+  path: '/affiliates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AddonsRoute = AddonsRouteImport.update({
   id: '/addons',
   path: '/addons',
@@ -185,6 +193,16 @@ const SmsHeadersRoute = SmsHeadersRouteImport.update({
   path: '/sms/headers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IntegrationsVatanSmsRoute = IntegrationsVatanSmsRouteImport.update({
+  id: '/integrations/vatan-sms',
+  path: '/integrations/vatan-sms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AffiliatesAffiliateIdRoute = AffiliatesAffiliateIdRouteImport.update({
+  id: '/$affiliateId',
+  path: '/$affiliateId',
+  getParentRoute: () => AffiliatesRoute,
+} as any)
 const AuthenticatedAdminIntegrationsVatanSmsRoute =
   AuthenticatedAdminIntegrationsVatanSmsRouteImport.update({
     id: '/_authenticated/admin/integrations/vatan-sms',
@@ -196,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity-logs': typeof ActivityLogsRoute
   '/addons': typeof AddonsRoute
+  '/affiliates': typeof AffiliatesRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
@@ -220,6 +239,8 @@ export interface FileRoutesByFullPath {
   '/tenants': typeof TenantsRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/users': typeof UsersRoute
+  '/affiliates/$affiliateId': typeof AffiliatesAffiliateIdRoute
+  '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
   '/sms/headers': typeof SmsHeadersRoute
   '/sms/packages': typeof SmsPackagesRoute
   '/admin/integrations/vatan-sms': typeof AuthenticatedAdminIntegrationsVatanSmsRoute
@@ -228,6 +249,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity-logs': typeof ActivityLogsRoute
   '/addons': typeof AddonsRoute
+  '/affiliates': typeof AffiliatesRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
@@ -252,6 +274,8 @@ export interface FileRoutesByTo {
   '/tenants': typeof TenantsRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/users': typeof UsersRoute
+  '/affiliates/$affiliateId': typeof AffiliatesAffiliateIdRoute
+  '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
   '/sms/headers': typeof SmsHeadersRoute
   '/sms/packages': typeof SmsPackagesRoute
   '/admin/integrations/vatan-sms': typeof AuthenticatedAdminIntegrationsVatanSmsRoute
@@ -261,6 +285,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/activity-logs': typeof ActivityLogsRoute
   '/addons': typeof AddonsRoute
+  '/affiliates': typeof AffiliatesRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
@@ -285,6 +310,8 @@ export interface FileRoutesById {
   '/tenants': typeof TenantsRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/users': typeof UsersRoute
+  '/affiliates/$affiliateId': typeof AffiliatesAffiliateIdRoute
+  '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
   '/sms/headers': typeof SmsHeadersRoute
   '/sms/packages': typeof SmsPackagesRoute
   '/_authenticated/admin/integrations/vatan-sms': typeof AuthenticatedAdminIntegrationsVatanSmsRoute
@@ -295,6 +322,7 @@ export interface FileRouteTypes {
     | '/'
     | '/activity-logs'
     | '/addons'
+    | '/affiliates'
     | '/analytics'
     | '/api-keys'
     | '/appointments'
@@ -319,6 +347,8 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/unauthorized'
     | '/users'
+    | '/affiliates/$affiliateId'
+    | '/integrations/vatan-sms'
     | '/sms/headers'
     | '/sms/packages'
     | '/admin/integrations/vatan-sms'
@@ -327,6 +357,7 @@ export interface FileRouteTypes {
     | '/'
     | '/activity-logs'
     | '/addons'
+    | '/affiliates'
     | '/analytics'
     | '/api-keys'
     | '/appointments'
@@ -351,6 +382,8 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/unauthorized'
     | '/users'
+    | '/affiliates/$affiliateId'
+    | '/integrations/vatan-sms'
     | '/sms/headers'
     | '/sms/packages'
     | '/admin/integrations/vatan-sms'
@@ -359,6 +392,7 @@ export interface FileRouteTypes {
     | '/'
     | '/activity-logs'
     | '/addons'
+    | '/affiliates'
     | '/analytics'
     | '/api-keys'
     | '/appointments'
@@ -383,6 +417,8 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/unauthorized'
     | '/users'
+    | '/affiliates/$affiliateId'
+    | '/integrations/vatan-sms'
     | '/sms/headers'
     | '/sms/packages'
     | '/_authenticated/admin/integrations/vatan-sms'
@@ -392,6 +428,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivityLogsRoute: typeof ActivityLogsRoute
   AddonsRoute: typeof AddonsRoute
+  AffiliatesRoute: typeof AffiliatesRouteWithChildren
   AnalyticsRoute: typeof AnalyticsRoute
   ApiKeysRoute: typeof ApiKeysRoute
   AppointmentsRoute: typeof AppointmentsRoute
@@ -416,6 +453,7 @@ export interface RootRouteChildren {
   TenantsRoute: typeof TenantsRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
   UsersRoute: typeof UsersRoute
+  IntegrationsVatanSmsRoute: typeof IntegrationsVatanSmsRoute
   SmsHeadersRoute: typeof SmsHeadersRoute
   SmsPackagesRoute: typeof SmsPackagesRoute
   AuthenticatedAdminIntegrationsVatanSmsRoute: typeof AuthenticatedAdminIntegrationsVatanSmsRoute
@@ -591,6 +629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/affiliates': {
+      id: '/affiliates'
+      path: '/affiliates'
+      fullPath: '/affiliates'
+      preLoaderRoute: typeof AffiliatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/addons': {
       id: '/addons'
       path: '/addons'
@@ -626,6 +671,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SmsHeadersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/integrations/vatan-sms': {
+      id: '/integrations/vatan-sms'
+      path: '/integrations/vatan-sms'
+      fullPath: '/integrations/vatan-sms'
+      preLoaderRoute: typeof IntegrationsVatanSmsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/affiliates/$affiliateId': {
+      id: '/affiliates/$affiliateId'
+      path: '/$affiliateId'
+      fullPath: '/affiliates/$affiliateId'
+      preLoaderRoute: typeof AffiliatesAffiliateIdRouteImport
+      parentRoute: typeof AffiliatesRoute
+    }
     '/_authenticated/admin/integrations/vatan-sms': {
       id: '/_authenticated/admin/integrations/vatan-sms'
       path: '/admin/integrations/vatan-sms'
@@ -636,10 +695,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AffiliatesRouteChildren {
+  AffiliatesAffiliateIdRoute: typeof AffiliatesAffiliateIdRoute
+}
+
+const AffiliatesRouteChildren: AffiliatesRouteChildren = {
+  AffiliatesAffiliateIdRoute: AffiliatesAffiliateIdRoute,
+}
+
+const AffiliatesRouteWithChildren = AffiliatesRoute._addFileChildren(
+  AffiliatesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivityLogsRoute: ActivityLogsRoute,
   AddonsRoute: AddonsRoute,
+  AffiliatesRoute: AffiliatesRouteWithChildren,
   AnalyticsRoute: AnalyticsRoute,
   ApiKeysRoute: ApiKeysRoute,
   AppointmentsRoute: AppointmentsRoute,
@@ -664,6 +736,7 @@ const rootRouteChildren: RootRouteChildren = {
   TenantsRoute: TenantsRoute,
   UnauthorizedRoute: UnauthorizedRoute,
   UsersRoute: UsersRoute,
+  IntegrationsVatanSmsRoute: IntegrationsVatanSmsRoute,
   SmsHeadersRoute: SmsHeadersRoute,
   SmsPackagesRoute: SmsPackagesRoute,
   AuthenticatedAdminIntegrationsVatanSmsRoute:

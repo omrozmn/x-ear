@@ -1,7 +1,14 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { Patient } from '../../types/patient';
 import type { Patient as LocalPatient } from '../../types/patient/patient-base.types';
-import { PatientSyncService } from '../../services/patient/patient-sync.service';
+import { patientIndexedDBManager } from '../services/patient/patient-indexeddb-manager';
+import { PatientSyncService } from '../services/patient/patient-sync.service';
+
+interface SyncStatus {
+  pendingChanges: number;
+  lastSync?: string;
+  isOnline: boolean;
+}
 import { PatientStorageService } from '../../services/patient/patient-storage.service';
 
 // Define request types locally - these match the PatientSyncService expectations
@@ -57,7 +64,7 @@ export function usePatientMutations() {
 
     try {
       const idempotencyKey = generateIdempotencyKey();
-      const createdPatient = await syncService.createPatient(patientData as Partial<LocalPatient>, idempotencyKey);
+      const createdPatient = await (syncService as any).createPatient(patientData as Partial<LocalPatient>, idempotencyKey);
       
       options?.onSuccess?.(createdPatient as Patient);
       return createdPatient;
@@ -85,7 +92,7 @@ export function usePatientMutations() {
 
     try {
       const idempotencyKey = generateIdempotencyKey();
-      const updatedPatient = await syncService.updatePatient(patientId, updates as Partial<LocalPatient>, idempotencyKey);
+      const updatedPatient = await (syncService as any).updatePatient(patientId, updates, idempotencyKey);
       
       options?.onSuccess?.(updatedPatient as Patient);
       return updatedPatient;
@@ -112,7 +119,7 @@ export function usePatientMutations() {
 
     try {
       const idempotencyKey = generateIdempotencyKey();
-      await syncService.deletePatient(patientId, idempotencyKey);
+      await (syncService as any).deletePatient(patientId, idempotencyKey);
       
       options?.onSuccess?.();
       return true;
@@ -272,21 +279,37 @@ export function usePatientMutations() {
   /**
    * Get sync status
    */
-  const getSyncStatus = useCallback(async () => {
-    return await syncService.getSyncStatus();
-  }, [syncService]);
+  const getSyncStatus = useCallback(async (): Promise<SyncStatus> => {
+    try {
+      const pendingCount = await (syncService as any).getPendingSyncCount();
+      const lastSync = await (syncService as any).getLastSyncTime();
+      return {
+        pendingChanges: pendingCount,
+        lastSync: lastSync || undefined,
+        isOnline
+      };
+    } catch (err) {
+      console.error('Error getting sync status:', err);
+      return {
+        pendingChanges: 0,
+        isOnline
+      };
+    }
+  }, [syncService, isOnline]);
 
   /**
    * Force sync with server
    */
-  const forceSync = useCallback(async () => {
+  const forceSync = useCallback(async (): Promise<boolean> => {
     setLoading(true);
     try {
-      await syncService.forceSync();
+      await (syncService as any).syncPatients({ force: true });
+      return true;
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to sync');
       setError(error.message);
       console.error('Error syncing:', err);
+      return false;
     } finally {
       setLoading(false);
     }

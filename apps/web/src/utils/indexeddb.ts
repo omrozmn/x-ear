@@ -248,6 +248,37 @@ class IndexedDBManager {
     });
   }
 
+  // Clear all data from all stores (for tenant change or logout)
+  async clearAll(): Promise<void> {
+    const db = await this.ensureDB();
+    const transaction = db.transaction([PATIENTS_STORE, CACHE_STORE, BLOBS_STORE], 'readwrite');
+
+    const promises = [
+      new Promise<void>((resolve, reject) => {
+        const request = transaction.objectStore(PATIENTS_STORE).clear();
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      }),
+      new Promise<void>((resolve, reject) => {
+        const request = transaction.objectStore(CACHE_STORE).clear();
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      }),
+      new Promise<void>((resolve, reject) => {
+        const request = transaction.objectStore(BLOBS_STORE).clear();
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      })
+    ];
+
+    await Promise.all(promises);
+
+    await new Promise<void>((resolve, reject) => {
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+  }
+
   // Fallback to localStorage for critical UI state only
   async fallbackToLocalStorage(key: string): Promise<unknown | null> {
     try {

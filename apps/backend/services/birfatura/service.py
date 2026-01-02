@@ -166,3 +166,42 @@ class BirfaturaClient:
                 '_mock': True
             }
         return self.post('/api/OutEBelgeV2/DocumentDownloadByUUID', payload)
+    
+    def create_invoice(self, payload: dict) -> dict:
+        """Create invoice (draft mode, not sent to GİB yet)"""
+        if self._use_mock:
+            import uuid
+            return {
+                'Success': True,
+                'Message': 'Mocked create_invoice',
+                'Result': {
+                    'id': str(uuid.uuid4()),
+                    'invoiceId': 'XER2024' + str(uuid.uuid4().int)[:6]
+                },
+                '_mock': True
+            }
+        return self.post('/api/EFatura/Create', payload)
+    
+    def retry_invoice(self, invoice_id: str) -> dict:
+        """Retry sending a failed invoice to GİB"""
+        if self._use_mock:
+            return {
+                'Success': True,
+                'Message': f'Mocked retry_invoice for {invoice_id}',
+                '_mock': True
+            }
+        return self.post(f'/api/EFatura/Retry/{invoice_id}', {})
+    
+    def cancel_invoice(self, invoice_id: str, reason: str = None) -> dict:
+        """Cancel an invoice (send cancellation to GİB)"""
+        if self._use_mock:
+            return {
+                'Success': True,
+                'Message': f'Mocked cancel_invoice for {invoice_id}',
+                'Reason': reason,
+                '_mock': True
+            }
+        payload = {}
+        if reason:
+            payload['reason'] = reason
+        return self.post(f'/api/EFatura/Cancel/{invoice_id}', payload)

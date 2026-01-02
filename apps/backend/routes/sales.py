@@ -581,8 +581,8 @@ def update_device_assignment(assignment_id):
             
             # Stock Return Logic
             if status_val in ['cancelled', 'returned'] and assignment.inventory_id:
-                from models.inventory import Inventory
-                inv_item = db.session.get(Inventory, assignment.inventory_id)
+                from models.inventory import InventoryItem
+                inv_item = db.session.get(InventoryItem, assignment.inventory_id)
                 if inv_item:
                     # Decide if serial or quantity
                     serial_to_restore = assignment.serial_number or assignment.serial_number_left or assignment.serial_number_right
@@ -891,8 +891,8 @@ def update_device_assignment(assignment_id):
             # If changing from pending to delivered, decrease stock
             if old_delivery_status != 'delivered' and new_delivery_status == 'delivered':
                 if assignment.inventory_id:
-                    from models.inventory import Inventory
-                    inv_item = db.session.get(Inventory, assignment.inventory_id)
+                    from models.inventory import InventoryItem
+                    inv_item = db.session.get(InventoryItem, assignment.inventory_id)
                     if inv_item:
                         # Determine quantity based on ear
                         ear_val = str(assignment.ear or '').upper()
@@ -930,8 +930,8 @@ def update_device_assignment(assignment_id):
                 loaner_inventory_id = data.get('loaner_inventory_id') or data.get('loanerInventoryId')
                 
                 if loaner_inventory_id:
-                    from models.inventory import Inventory
-                    loaner_item = db.session.get(Inventory, loaner_inventory_id)
+                    from models.inventory import InventoryItem
+                    loaner_item = db.session.get(InventoryItem, loaner_inventory_id)
                     
                     if loaner_item:
                         # 1. Update assignment with loaner info FIRST so helper can access it
@@ -1031,8 +1031,8 @@ def update_device_assignment(assignment_id):
             # If removing loaner device (returning to stock)
             elif old_is_loaner and not new_is_loaner:
                 if assignment.loaner_inventory_id:
-                    from models.inventory import Inventory
-                    loaner_item = db.session.get(Inventory, assignment.loaner_inventory_id)
+                    from models.inventory import InventoryItem
+                    loaner_item = db.session.get(InventoryItem, assignment.loaner_inventory_id)
                     
                     if loaner_item:
                         # Return loaner to stock
@@ -1243,8 +1243,8 @@ def _create_single_device_assignment(assignment_data, patient_id, sale_id, sgk_s
     warning = None
     
     if inventory_id:
-        from models.inventory import Inventory
-        inventory_item = db.session.get(Inventory, inventory_id)
+        from models.inventory import InventoryItem
+        inventory_item = db.session.get(InventoryItem, inventory_id)
         if not inventory_item:
             return None, f"Inventory item not found: {inventory_id}", None
     else:
@@ -1455,8 +1455,8 @@ def _create_single_device_assignment(assignment_data, patient_id, sale_id, sgk_s
             # This handles the case where a user types a new serial number for a loaner
             _ensure_loaner_serials_in_inventory(assignment, created_by)
 
-            from models.inventory import Inventory
-            loaner_item = db.session.get(Inventory, assignment.loaner_inventory_id)
+            from models.inventory import InventoryItem
+            loaner_item = db.session.get(InventoryItem, assignment.loaner_inventory_id)
             if loaner_item:
                 # Determine quantity and serials
                 ear_val = str(assignment.ear or '').lower()
@@ -1524,8 +1524,8 @@ def _ensure_loaner_serials_in_inventory(assignment, created_by='system'):
         return
 
     try:
-        from models.inventory import Inventory
-        loaner_item = db.session.get(Inventory, assignment.loaner_inventory_id)
+        from models.inventory import InventoryItem
+        loaner_item = db.session.get(InventoryItem, assignment.loaner_inventory_id)
         if not loaner_item:
             return
 
@@ -1979,8 +1979,8 @@ def _load_product_from_inventory(product_id):
     """Load product from inventory with ORM fallback to raw SQL."""
     product = None
     try:
-        from models.inventory import Inventory
-        product = db.session.get(Inventory, product_id)
+        from models.inventory import InventoryItem
+        product = db.session.get(InventoryItem, product_id)
     except Exception as orm_err:
         logger.warning('ORM Inventory lookup failed, falling back to raw SQL: %s', orm_err)
         try:
@@ -2406,8 +2406,8 @@ def _build_device_info(assignment):
     device_name = None
     barcode = None
     if device.inventory_id:
-        from models.inventory import Inventory
-        inventory_item = db.session.get(Inventory, device.inventory_id)
+        from models.inventory import InventoryItem
+        inventory_item = db.session.get(InventoryItem, device.inventory_id)
         if inventory_item:
             device_name = inventory_item.name
             barcode = inventory_item.barcode
@@ -2637,8 +2637,8 @@ def return_loaner_to_stock(assignment_id):
         if not assignment.loaner_inventory_id:
              return jsonify({'success': False, 'error': 'No loaner inventory link found'}), 400
 
-        from models.inventory import Inventory
-        loaner_item = db.session.get(Inventory, assignment.loaner_inventory_id)
+        from models.inventory import InventoryItem
+        loaner_item = db.session.get(InventoryItem, assignment.loaner_inventory_id)
         if not loaner_item:
              return jsonify({'success': False, 'error': 'Loaner inventory item not found'}), 404
 
@@ -2705,8 +2705,8 @@ def _process_inventory_restoration(assignment, sale_id):
     if not assignment.inventory_id:
         return
 
-    from models.inventory import Inventory
-    inventory_item = db.session.get(Inventory, assignment.inventory_id)
+    from models.inventory import InventoryItem
+    inventory_item = db.session.get(InventoryItem, assignment.inventory_id)
     if not inventory_item:
         return
 

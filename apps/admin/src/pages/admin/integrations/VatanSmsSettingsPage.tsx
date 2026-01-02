@@ -78,7 +78,7 @@ const VatanSmsSettingsPage: React.FC = () => {
                                 placeholder="belgeler@vatansms.com.tr"
                             />
                             <p className="mt-1 text-xs text-gray-500">
-                                Kiracılar tarafından yüklenen SMS sözleşme belgeleri bu adrese otomatik gönderilir
+                                Aboneler tarafından yüklenen SMS sözleşme belgeleri bu adrese otomatik gönderilir
                             </p>
                         </div>
                     </div>

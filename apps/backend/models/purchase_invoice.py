@@ -119,7 +119,7 @@ class PurchaseInvoiceItem(BaseModel):
     
     # Match with our inventory if exists
     inventory_id = db.Column(db.String(100), db.ForeignKey('inventory.id'), nullable=True)
-    inventory = db.relationship('Inventory')
+    inventory = db.relationship('InventoryItem')
     
     def __repr__(self):
         return f'<PurchaseInvoiceItem {self.product_name} x {self.quantity}>'

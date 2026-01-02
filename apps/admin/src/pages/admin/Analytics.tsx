@@ -153,7 +153,7 @@ const Analytics: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Aktif Kiracılar</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Aktif Aboneler</dt>
                   <dd className="flex items-baseline">
                     <div className="text-2xl font-semibold text-gray-900">
                       {formatNumber(data?.overview?.active_tenants || 0)}
@@ -396,14 +396,14 @@ const Analytics: React.FC = () => {
         {/* Top Tenants Table */}
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-200">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">En İyi Performans Gösteren Kiracılar</h3>
+            <h3 className="text-lg font-medium leading-6 text-gray-900">En İyi Performans Gösteren Aboneler</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Kiracı
+                    Abone
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Gelir

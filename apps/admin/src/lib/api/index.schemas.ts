@@ -333,6 +333,20 @@ export interface DashboardMetrics {
   revenue?: DashboardMetricsRevenue;
   alerts?: DashboardMetricsAlerts;
   health_metrics?: DashboardMetricsHealthMetrics;
+  daily_stats?: {
+    today_appointments: number;
+    fitted_patients: number;
+    daily_uploads: number;
+    pending_ocr: number;
+    sgk_processed: number;
+  };
+  recent_errors?: {
+    id: string;
+    action: string;
+    details: string;
+    created_at: string;
+    user_id: string;
+  }[];
 }
 
 export interface AnalyticsOverview {
@@ -567,28 +581,34 @@ export interface AddOnInput {
   is_active?: boolean;
 }
 
-export type AdminGetFeatures200Features = {[key: string]: {
-  mode?: string;
-  plans?: string[];
-}};
+export type AdminGetFeatures200Features = {
+  [key: string]: {
+    mode?: string;
+    plans?: string[];
+  }
+};
 
 export type AdminGetFeatures200 = {
   features?: AdminGetFeatures200Features;
 };
 
-export type AdminUpdateFeaturesBodyFeatures = {[key: string]: {
-  mode?: string;
-  plans?: string[];
-}};
+export type AdminUpdateFeaturesBodyFeatures = {
+  [key: string]: {
+    mode?: string;
+    plans?: string[];
+  }
+};
 
 export type AdminUpdateFeaturesBody = {
   features?: AdminUpdateFeaturesBodyFeatures;
 };
 
-export type AdminUpdateFeatures200Features = {[key: string]: {
-  mode?: string;
-  plans?: string[];
-}};
+export type AdminUpdateFeatures200Features = {
+  [key: string]: {
+    mode?: string;
+    plans?: string[];
+  }
+};
 
 export type AdminUpdateFeatures200 = {
   features?: AdminUpdateFeatures200Features;
@@ -619,10 +639,10 @@ export type GetAdminTenantsIdUsers200 = {
 };
 
 export type GetAdminUsersParams = {
-page?: number;
-limit?: number;
-search?: string;
-role?: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: string;
 };
 
 export type GetAdminUsers200Data = {
@@ -635,10 +655,10 @@ export type GetAdminUsers200 = {
 };
 
 export type GetAdminInvoicesParams = {
-page?: number;
-limit?: number;
-search?: string;
-status?: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
 };
 
 export type GetAdminInvoices200Data = {
@@ -663,10 +683,10 @@ export type PostAdminInvoicesIdPaymentBody = {
 };
 
 export type GetAdminSuppliersParams = {
-page?: number;
-limit?: number;
-search?: string;
-status?: GetAdminSuppliersStatus;
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: GetAdminSuppliersStatus;
 };
 
 export type GetAdminSuppliersStatus = typeof GetAdminSuppliersStatus[keyof typeof GetAdminSuppliersStatus];
@@ -712,10 +732,10 @@ export type PutAdminSuppliersId200 = {
 };
 
 export type GetAdminCampaignsParams = {
-page?: number;
-limit?: number;
-search?: string;
-status?: GetAdminCampaignsStatus;
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: GetAdminCampaignsStatus;
 };
 
 export type GetAdminCampaignsStatus = typeof GetAdminCampaignsStatus[keyof typeof GetAdminCampaignsStatus];
@@ -761,9 +781,9 @@ export type PutAdminCampaignsId200 = {
 };
 
 export type GetAdminPlansParams = {
-page?: number;
-limit?: number;
-type?: string;
+  page?: number;
+  limit?: number;
+  type?: string;
 };
 
 export type GetAdminPlans200Data = {
@@ -776,9 +796,9 @@ export type GetAdminPlans200 = {
 };
 
 export type GetAdminAddonsParams = {
-page?: number;
-limit?: number;
-type?: string;
+  page?: number;
+  limit?: number;
+  type?: string;
 };
 
 export type GetAdminAddons200Data = {
@@ -799,10 +819,10 @@ export type GetAdminAddonsId200 = {
 };
 
 export type GetAdminTenantsParams = {
-page?: number;
-limit?: number;
-status?: string;
-search?: string;
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
 };
 
 export type GetAdminTenants200Data = {
@@ -843,9 +863,9 @@ export type GetAdminDashboardMetrics200 = {
 };
 
 export type GetAdminAnalyticsParams = {
-start_date?: string;
-end_date?: string;
-metric?: string;
+  start_date?: string;
+  end_date?: string;
+  metric?: string;
 };
 
 export type GetAdminAnalytics200Data = {
@@ -877,11 +897,11 @@ export type PostAdminSettings200 = {
 };
 
 export type GetAdminTicketsParams = {
-page?: number;
-limit?: number;
-search?: string;
-status?: string;
-priority?: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  priority?: string;
 };
 
 export type GetAdminTickets200Data = {
@@ -899,58 +919,58 @@ export type PutAdminTicketsIdBody = {
 };
 
 export type AdminGetActivityLogsParams = {
-/**
- * Filter by tenant ID
- */
-tenant_id?: string;
-/**
- * Filter by branch ID
- */
-branch_id?: string;
-/**
- * Filter by user ID
- */
-user_id?: string;
-/**
- * Filter by user role
- */
-role?: string;
-/**
- * Filter by entity type (patient, device, etc.)
- */
-entity_type?: string;
-/**
- * Filter by entity ID
- */
-entity_id?: string;
-/**
- * Filter by action type (create, update, delete, etc.)
- */
-action?: string;
-/**
- * Filter by critical status
- */
-is_critical?: boolean;
-/**
- * Filter by start date (ISO format)
- */
-start_date?: string;
-/**
- * Filter by end date (ISO format)
- */
-end_date?: string;
-/**
- * Search in message and action
- */
-search?: string;
-/**
- * Page number for pagination
- */
-page?: number;
-/**
- * Items per page
- */
-per_page?: number;
+  /**
+   * Filter by tenant ID
+   */
+  tenant_id?: string;
+  /**
+   * Filter by branch ID
+   */
+  branch_id?: string;
+  /**
+   * Filter by user ID
+   */
+  user_id?: string;
+  /**
+   * Filter by user role
+   */
+  role?: string;
+  /**
+   * Filter by entity type (patient, device, etc.)
+   */
+  entity_type?: string;
+  /**
+   * Filter by entity ID
+   */
+  entity_id?: string;
+  /**
+   * Filter by action type (create, update, delete, etc.)
+   */
+  action?: string;
+  /**
+   * Filter by critical status
+   */
+  is_critical?: boolean;
+  /**
+   * Filter by start date (ISO format)
+   */
+  start_date?: string;
+  /**
+   * Filter by end date (ISO format)
+   */
+  end_date?: string;
+  /**
+   * Search in message and action
+   */
+  search?: string;
+  /**
+   * Page number for pagination
+   */
+  page?: number;
+  /**
+   * Items per page
+   */
+  per_page?: number;
 };
 
 export type AdminGetActivityLogs200 = {
@@ -960,19 +980,19 @@ export type AdminGetActivityLogs200 = {
 };
 
 export type AdminGetActivityLogsStatsParams = {
-/**
- * Filter by tenant ID
- */
-tenant_id?: string;
-start_date?: string;
-end_date?: string;
+  /**
+   * Filter by tenant ID
+   */
+  tenant_id?: string;
+  start_date?: string;
+  end_date?: string;
 };
 
-export type AdminGetActivityLogsStats200DataLogsByAction = {[key: string]: number};
+export type AdminGetActivityLogsStats200DataLogsByAction = { [key: string]: number };
 
-export type AdminGetActivityLogsStats200DataLogsByEntityType = {[key: string]: number};
+export type AdminGetActivityLogsStats200DataLogsByEntityType = { [key: string]: number };
 
-export type AdminGetActivityLogsStats200DataLogsByTenant = {[key: string]: number};
+export type AdminGetActivityLogsStats200DataLogsByTenant = { [key: string]: number };
 
 export type AdminGetActivityLogsStats200Data = {
   total_logs?: number;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CheckCircle2, Menu } from "lucide-react";
 import AppHeader from "../AppHeader";
 import { useState, useEffect } from "react";
+import { apiClient } from "@/lib/api/api-client";
 
 export default function Pricing() {
     const [plans, setPlans] = useState<any[]>([]);
@@ -13,13 +14,14 @@ export default function Pricing() {
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5003/api'}/plans`);
-                const data = await res.json();
+                const res = await apiClient.get('/api/plans');
+                const data = res.data;
                 if (data.success) {
                     setPlans(data.data);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to fetch plans:', error);
+                // Silently fail - just show loading as failed
             } finally {
                 setLoading(false);
             }
@@ -36,8 +38,8 @@ export default function Pricing() {
 
             <AppHeader />
 
-            <main className="min-h-screen flex items-center justify-center pt-20 relative z-10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <main className="min-h-screen flex items-center justify-center pt-20 sm:pt-24 relative z-10 scroll-mt-24">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
                     <div className="text-center mb-16 pt-20">
                         <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-4 text-white">
                             <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
@@ -58,7 +60,7 @@ export default function Pricing() {
                     {loading ? (
                         <div className="text-center text-white">Yükleniyor...</div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
                             {plans.map((plan) => {
                                 // Calculate monthly price for display
                                 const monthlyPrice = plan.price / 12;
@@ -150,8 +152,9 @@ function PricingCard({
 }) {
     return (
         <div
-            className={`bg-white/5 backdrop-blur-xl rounded-2xl p-8 flex flex-col relative ${isPopular ? "border-2 border-blue-400" : "border border-white/10"
-                }`}
+            className={`bg-white/5 backdrop-blur-xl rounded-2xl p-6 sm:p-8 flex flex-col relative ${
+                isPopular ? "border-2 border-blue-400" : "border border-white/10"
+            }`}
         >
             {isPopular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm">
@@ -174,10 +177,11 @@ function PricingCard({
             </ul>
             <Link
                 href={`/checkout?plan=${planId}&billing=${billingCycle}`}
-                className={`w-full block text-center font-semibold py-3 px-4 rounded-lg text-sm transition-all duration-300 ${isPopular
-                    ? "bg-gradient-to-r from-[#38BDF8] to-[#818CF8] text-white shadow-[0_4px_15px_-5px_rgba(56,189,248,0.4)] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-8px_rgba(56,189,248,0.6)]"
-                    : "bg-transparent border border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10"
-                    }`}
+                className={`w-full block text-center font-semibold py-4 px-4 rounded-xl text-base transition-all duration-300 min-h-[56px] flex items-center justify-center active:scale-95 ${
+                    isPopular
+                        ? "bg-gradient-to-r from-[#38BDF8] to-[#818CF8] text-white shadow-[0_4px_15px_-5px_rgba(56,189,248,0.4)] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-8px_rgba(56,189,248,0.6)] active:shadow-[0_4px_12px_-4px_rgba(56,189,248,0.5)]"
+                        : "bg-transparent border-2 border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10 active:bg-[#38BDF8]/20"
+                }`}
             >
                 {buttonText}
             </Link>
@@ -203,8 +207,8 @@ function AddOnsList() {
     useEffect(() => {
         const fetchAddons = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5003/api'}/addons`);
-                const data = await res.json();
+                const res = await apiClient.get('/api/addons');
+                const data = res.data;
                 if (data.success) {
                     setAddons(data.data.filter((a: any) => a.is_active));
                 }
@@ -253,8 +257,8 @@ function SmsPackagesList() {
     useEffect(() => {
         const fetchPackages = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5003/api'}/sms/packages`);
-                const data = await res.json();
+                const res = await apiClient.get('/api/sms/packages');
+                const data = res.data;
                 if (data.success) {
                     setPackages(data.data);
                 }
@@ -286,7 +290,7 @@ function SmsPackagesList() {
                     </div>
                     <Link
                         href={`/register?package=${pkg.id}`}
-                        className="mt-auto w-full block text-center bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                        className="mt-auto w-full block text-center bg-white/10 hover:bg-white/20 active:bg-white/25 text-white font-semibold py-3 px-4 rounded-lg transition-colors min-h-[56px] flex items-center justify-center active:scale-95"
                     >
                         Satın Al
                     </Link>

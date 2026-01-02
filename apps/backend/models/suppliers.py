@@ -126,7 +126,7 @@ class ProductSupplier(BaseModel):
     
     # Relationships
     supplier = db.relationship('Supplier', back_populates='products')
-    product = db.relationship('Inventory', backref='suppliers')
+    product = db.relationship('InventoryItem', backref='suppliers')
     
     # Unique constraint: one product can have only one entry per supplier
     __table_args__ = (
@@ -142,21 +142,21 @@ class ProductSupplier(BaseModel):
         result = {
             'id': self.id,
             'tenantId': self.tenant_id,
-            'product_id': self.product_id,
-            'supplier_id': self.supplier_id,
-            'supplier_product_code': self.supplier_product_code,
-            'supplier_product_name': self.supplier_product_name,
-            'unit_cost': float(self.unit_cost) if self.unit_cost else None,
+            'productId': self.product_id,
+            'supplierId': self.supplier_id,
+            'supplierProductCode': self.supplier_product_code,
+            'supplierProductName': self.supplier_product_name,
+            'unitCost': float(self.unit_cost) if self.unit_cost else None,
             'currency': self.currency,
-            'minimum_order_quantity': self.minimum_order_quantity,
-            'lead_time_days': self.lead_time_days,
-            'is_primary': self.is_primary,
+            'minimumOrderQuantity': self.minimum_order_quantity,
+            'leadTimeDays': self.lead_time_days,
+            'isPrimary': self.is_primary,
             'priority': self.priority,
-            'is_active': self.is_active,
+            'isActive': self.is_active,
             'notes': self.notes,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'last_order_date': self.last_order_date.isoformat() if self.last_order_date else None
+            'createdAt': self.created_at.isoformat() if self.created_at else None,
+            'updatedAt': self.updated_at.isoformat() if self.updated_at else None,
+            'lastOrderDate': self.last_order_date.isoformat() if self.last_order_date else None
         }
         
         if include_supplier and self.supplier:

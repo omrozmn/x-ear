@@ -1,22 +1,25 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './styles/index.css'
+import App from './App.tsx'
 import { storageMigrator } from './utils/storage-migrator'
 import { useAuthStore } from './stores/authStore'
-import axios from 'axios'
 import { AUTH_TOKEN } from './constants/storage-keys'
 import { MantineProvider } from '@mantine/core';
+
+console.log('main.tsx loaded');
 
 // Synchronously restore persisted token (hard-refresh safe)
 try {
   const persisted = localStorage.getItem(AUTH_TOKEN) || localStorage.getItem('auth_token')
-  if (persisted) {
+    if (persisted) {
     if (typeof window !== 'undefined') {
       // ensure in-memory helper is set for non-axios callers
       (window as Window & { __AUTH_TOKEN__?: string }).__AUTH_TOKEN__ = persisted
     }
     try {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${persisted}`
+      // `apiClient`'s interceptor reads `window.__AUTH_TOKEN__` so setting that is sufficient
+      // Avoid global axios.defaults usage; centralized interceptor will handle auth headers.
     } catch (e) {
       // ignore
     }
@@ -33,9 +36,9 @@ try {
         const possibleKeys = ['auth_token', 'x-ear.auth.token@v1', 'x-ear.auth.token', 'AUTH_TOKEN'];
         for (const key of possibleKeys) {
           const val = cookieMap[key];
-          if (val) {
+            if (val) {
             (window as Window & { __AUTH_TOKEN__?: string }).__AUTH_TOKEN__ = val;
-            try { axios.defaults.headers.common['Authorization'] = `Bearer ${val}` } catch (e) { }
+            // Avoid setting global axios.defaults here; central interceptor will attach Authorization header.
             break;
           }
         }
@@ -45,22 +48,23 @@ try {
     }
   }
 } catch (e) {
-  // ignore storage read errors
+  console.error('Token restore error:', e);
 }
 
-// Run storage migration before app initialization
-storageMigrator.migrate().then(async () => {
-  try {
-    // Initialize auth before rendering to ensure token is available for interceptors
-    await useAuthStore.getState().initializeAuth();
-  } catch (e) {
-    console.warn('initializeAuth failed before render:', e);
-  }
+console.log('Starting migration and auth init...');
 
-  // Dynamically import App after token restore so module-level axios instances
-  // pick up the `axios.defaults.headers.common['Authorization']` we set above.
+// Simplified: Just render the app directly without waiting for async operations
+(async () => {
   try {
-    const { default: App } = await import('./App.tsx');
+    // Run migration in background (non-blocking)
+    storageMigrator.migrate().catch(e => console.warn('Migration failed:', e));
+    
+    // Initialize auth in background (non-blocking)
+    useAuthStore.getState().initializeAuth().catch(e => console.warn('Auth init failed:', e));
+    
+    console.log('Rendering App...');
+    
+    // Render immediately
     ReactDOM.createRoot(document.getElementById('root')!).render(
       <React.StrictMode>
         <MantineProvider>
@@ -68,27 +72,22 @@ storageMigrator.migrate().then(async () => {
         </MantineProvider>
       </React.StrictMode>,
     );
-  } catch (e) {
-    console.error('Failed to load App after token restore:', e);
-  }
-}).catch(async (error) => {
-  console.error('Storage migration failed:', error)
-  try {
-    await useAuthStore.getState().initializeAuth();
-  } catch (e) {
-    console.warn('initializeAuth failed in migration catch:', e);
-  }
-  // Still render the app even if migration fails
-  try {
-    const { default: App } = await import('./App.tsx');
+    
+    console.log('App rendered');
+  } catch (error) {
+    console.error('Fatal error:', error);
+    
+    // Fallback render
     ReactDOM.createRoot(document.getElementById('root')!).render(
       <React.StrictMode>
-        <MantineProvider>
-          <App />
-        </MantineProvider>
-      </React.StrictMode>,
+        <div style={{ padding: '20px', color: 'red' }}>
+          <h1>Error Loading App</h1>
+          <pre>{String(error)}</pre>
+        </div>
+      </React.StrictMode>
     );
-  } catch (e) {
-    console.error('Failed to load App in migration catch:', e);
   }
-})
+})();
+
+
+

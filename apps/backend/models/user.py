@@ -19,7 +19,7 @@ class User(BaseModel):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone = db.Column(db.String(20), unique=True, nullable=True)
-    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=True, index=True)
+    tenant_id = db.Column(db.String(36), db.ForeignKey('tenants.id'), nullable=False, index=True)  # Every user MUST belong to a tenant
     password_hash = db.Column(db.String(255), nullable=False)
     
     # User details
@@ -37,10 +37,11 @@ class User(BaseModel):
     last_login = db.Column(db.DateTime)
     password_reset_token = db.Column(db.String(100))
     password_reset_expires = db.Column(db.DateTime)
+    affiliate_code = db.Column(db.String(50), nullable=True, index=True)
 
     def set_password(self, password):
         """Hash and set password"""
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = generate_password_hash(password, method='pbkdf2:sha256')
 
     def check_password(self, password):
         """Check password against hash"""

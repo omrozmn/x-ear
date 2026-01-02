@@ -1,5 +1,5 @@
 import React from 'react';
-import { Affiliate } from 'x-ear/packages/types/affiliate';
+import { Affiliate } from '@/lib/api-client';
 
 interface AffiliateCardProps {
   affiliate: Affiliate;

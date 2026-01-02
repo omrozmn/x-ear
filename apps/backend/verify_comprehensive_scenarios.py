@@ -11,7 +11,7 @@ from app import app
 from models.base import db
 from models.sales import DeviceAssignment, Sale
 from models.patient import Patient
-from models.inventory import Inventory
+from models.inventory import InventoryItem
 
 def run_comprehensive_tests():
     client = app.test_client()
@@ -139,7 +139,7 @@ def run_comprehensive_tests():
              
         db.session.expire_all()
         a_db = db.session.get(DeviceAssignment, assignment_id)
-        inv_check = db.session.get(Inventory, inv_id_main)
+        inv_check = db.session.get(InventoryItem, inv_id_main)
         
         print(f"   DB Check: Delivery={a_db.delivery_status}, Report={a_db.report_status}")
         print(f"   Stock Check: Available={inv_check.available_inventory} (Exp: 9)")
@@ -166,7 +166,7 @@ def run_comprehensive_tests():
              
         db.session.expire_all()
         a_db = db.session.get(DeviceAssignment, assignment_id)
-        inv_loan_check = db.session.get(Inventory, inv_id_loaner)
+        inv_loan_check = db.session.get(InventoryItem, inv_id_loaner)
         
         print(f"   DB Check: Is Loaner={a_db.is_loaner}, Loaner Inv ID={a_db.loaner_inventory_id}")
         print(f"   Loaner Stock: Available={inv_loan_check.available_inventory} (Exp: 4)")

@@ -1,23 +1,29 @@
-// NOTE: Prefer Orval-generated client; fallback to direct fetch if Orval operation
-// names are not present in the generated client. Replace these with Orval calls
-// once OpenAPI includes the UTS paths.
+// TODO: UTS endpoints swagger'a eklenmeli ve ORVAL generate edilmeli
+// Backend /api/uts/* endpoints için OpenAPI spec gerekli
+// Şu an için customInstance kullanarak geçici çözüm:
+
+import { customInstance } from '../../api/orval-mutator';
+import { unwrapObject, unwrapArray } from '../../utils/response-unwrap';
 
 const base = '/api/uts';
 
-async function handleJson(resp: Response) {
-  if (!resp.ok) throw new Error(`UTS request failed: ${resp.status}`);
-  return resp.json();
-}
-
 export const utsService = {
-  listRegistrations: (params?: Record<string, any>) => {
-    const query = params ? '?' + new URLSearchParams(params).toString() : '';
-    return fetch(`${base}/registrations${query}`).then(handleJson);
+  listRegistrations: async (params?: Record<string, any>) => {
+    const response = await customInstance({ url: `${base}/registrations`, method: 'GET', params });
+    return unwrapArray<any>(response);
   },
-  startBulkRegistration: (body: any, opts?: any) =>
-    fetch(`${base}/registrations/bulk`, { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json', ...(opts?.headers || {}) } }).then(handleJson),
-  getJobStatus: (jobId: string) => fetch(`${base}/jobs/${encodeURIComponent(jobId)}`).then(handleJson),
-  cancelJob: (jobId: string) => fetch(`${base}/jobs/${encodeURIComponent(jobId)}/cancel`, { method: 'POST' }).then(handleJson),
+  startBulkRegistration: async (body: any) => {
+    const response = await customInstance({ url: `${base}/registrations/bulk`, method: 'POST', data: body });
+    return unwrapObject<any>(response);
+  },
+  getJobStatus: async (jobId: string) => {
+    const response = await customInstance({ url: `${base}/jobs/${encodeURIComponent(jobId)}`, method: 'GET' });
+    return unwrapObject<any>(response);
+  },
+  cancelJob: async (jobId: string) => {
+    const response = await customInstance({ url: `${base}/jobs/${encodeURIComponent(jobId)}/cancel`, method: 'POST' });
+    return unwrapObject<any>(response);
+  },
 };
 
 export default utsService;

@@ -4,21 +4,21 @@
  */
 
 // Top-Right Toast Notification System
-window.showTopRightToast = function(title, message, type = 'info', duration = 5000) {
+window.showTopRightToast = function (title, message, type = 'info', duration = 5000) {
     const icons = {
         success: '<svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
         error: '<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
         warning: '<svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
         info: '<svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
     };
-    
+
     const colors = {
         success: 'border-green-500 bg-green-50',
         error: 'border-red-500 bg-red-50',
         warning: 'border-amber-500 bg-amber-50',
         info: 'border-blue-500 bg-blue-50'
     };
-    
+
     const toastId = `toast-${Date.now()}`;
     const toastHtml = `
         <div id="${toastId}" class="fixed top-4 right-4 z-[10000] max-w-sm w-full bg-white border-l-4 ${colors[type]} rounded-lg shadow-2xl transform translate-x-full transition-transform duration-300 ease-out">
@@ -40,22 +40,22 @@ window.showTopRightToast = function(title, message, type = 'info', duration = 50
             </div>
         </div>
     `;
-    
+
     document.body.insertAdjacentHTML('beforeend', toastHtml);
-    
+
     // Slide in
     setTimeout(() => {
         const toast = document.getElementById(toastId);
         if (toast) toast.style.transform = 'translateX(0)';
     }, 10);
-    
+
     // Auto close
     if (duration > 0) {
         setTimeout(() => closeTopRightToast(toastId), duration);
     }
 };
 
-window.closeTopRightToast = function(toastId) {
+window.closeTopRightToast = function (toastId) {
     const toast = document.getElementById(toastId);
     if (toast) {
         toast.style.transform = 'translateX(150%)';
@@ -64,21 +64,21 @@ window.closeTopRightToast = function(toastId) {
 };
 
 // Custom Alert/Confirm Modal System
-window.showCustomAlert = function(title, message, type = 'info') {
+window.showCustomAlert = function (title, message, type = 'info') {
     const icons = {
         success: '<svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
         error: '<svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
         warning: '<svg class="w-12 h-12 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
         info: '<svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
     };
-    
+
     const colors = {
         success: 'bg-green-100',
         error: 'bg-red-100',
         warning: 'bg-amber-100',
         info: 'bg-blue-100'
     };
-    
+
     const modalHtml = `
         <div id="customAlertModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4 animate-fade-in">
             <div class="bg-white rounded-lg shadow-2xl max-w-md w-full transform transition-all animate-scale-in">
@@ -100,15 +100,15 @@ window.showCustomAlert = function(title, message, type = 'info') {
             </div>
         </div>
     `;
-    
+
     // Remove existing alert
     const existingAlert = document.getElementById('customAlertModal');
     if (existingAlert) existingAlert.remove();
-    
+
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 };
 
-window.closeCustomAlert = function() {
+window.closeCustomAlert = function () {
     const modal = document.getElementById('customAlertModal');
     if (modal) {
         modal.classList.add('animate-fade-out');
@@ -116,19 +116,19 @@ window.closeCustomAlert = function() {
     }
 };
 
-window.showCustomConfirm = function(title, message, onConfirm, type = 'warning') {
+window.showCustomConfirm = function (title, message, onConfirm, type = 'warning') {
     const icons = {
         danger: '<svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
         warning: '<svg class="w-12 h-12 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
         info: '<svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
     };
-    
+
     const colors = {
         danger: 'bg-red-100',
         warning: 'bg-amber-100',
         info: 'bg-blue-100'
     };
-    
+
     const modalHtml = `
         <div id="customConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4 animate-fade-in">
             <div class="bg-white rounded-lg shadow-2xl max-w-md w-full transform transition-all animate-scale-in">
@@ -154,18 +154,18 @@ window.showCustomConfirm = function(title, message, onConfirm, type = 'warning')
             </div>
         </div>
     `;
-    
+
     // Remove existing confirm
     const existingConfirm = document.getElementById('customConfirmModal');
     if (existingConfirm) existingConfirm.remove();
-    
+
     document.body.insertAdjacentHTML('beforeend', modalHtml);
-    
+
     // Store callback
     window._customConfirmCallback = onConfirm;
 };
 
-window.closeCustomConfirm = function() {
+window.closeCustomConfirm = function () {
     const modal = document.getElementById('customConfirmModal');
     if (modal) {
         modal.classList.add('animate-fade-out');
@@ -174,7 +174,7 @@ window.closeCustomConfirm = function() {
     window._customConfirmCallback = null;
 };
 
-window.confirmCustomAction = function() {
+window.confirmCustomAction = function () {
     if (window._customConfirmCallback) {
         window._customConfirmCallback();
         window._customConfirmCallback = null;
@@ -183,20 +183,20 @@ window.confirmCustomAction = function() {
 };
 
 // Custom Prompt Modal
-window.showCustomPrompt = function(title, message, defaultValue = '', onConfirm, type = 'info') {
+window.showCustomPrompt = function (title, message, defaultValue = '', onConfirm, type = 'info') {
     // Remove existing prompt modal if any
     const existingModal = document.getElementById('customPromptModal');
     if (existingModal) {
         existingModal.remove();
     }
-    
+
     const iconMap = {
         'info': '<svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
         'warning': '<svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"/></svg>',
         'error': '<svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
         'success': '<svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
     };
-    
+
     const modalHtml = `
         <div id="customPromptModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div class="bg-white rounded-lg shadow-xl max-w-md w-full animate-fade-in">
@@ -223,12 +223,12 @@ window.showCustomPrompt = function(title, message, defaultValue = '', onConfirm,
             </div>
         </div>
     `;
-    
+
     document.body.insertAdjacentHTML('beforeend', modalHtml);
-    
+
     // Store callback
     window._customPromptCallback = onConfirm;
-    
+
     // Focus on input
     setTimeout(() => {
         const input = document.getElementById('customPromptInput');
@@ -237,14 +237,14 @@ window.showCustomPrompt = function(title, message, defaultValue = '', onConfirm,
             input.select();
         }
     }, 100);
-    
+
     // Handle Enter key
-    document.getElementById('customPromptInput').addEventListener('keypress', function(e) {
+    document.getElementById('customPromptInput').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
             confirmCustomPrompt();
         }
     });
-    
+
     // Handle Escape key
     document.addEventListener('keydown', function escapeHandler(e) {
         if (e.key === 'Escape') {
@@ -254,7 +254,7 @@ window.showCustomPrompt = function(title, message, defaultValue = '', onConfirm,
     });
 };
 
-window.closeCustomPrompt = function() {
+window.closeCustomPrompt = function () {
     const modal = document.getElementById('customPromptModal');
     if (modal) {
         modal.classList.add('animate-fade-out');
@@ -263,10 +263,10 @@ window.closeCustomPrompt = function() {
     window._customPromptCallback = null;
 };
 
-window.confirmCustomPrompt = function() {
+window.confirmCustomPrompt = function () {
     const input = document.getElementById('customPromptInput');
     const value = input ? input.value : '';
-    
+
     if (window._customPromptCallback) {
         window._customPromptCallback(value);
         window._customPromptCallback = null;
@@ -275,19 +275,19 @@ window.confirmCustomPrompt = function() {
 };
 
 // Global modal functions
-window.editDeviceModal = async function(deviceId, patientId) {
+window.editDeviceModal = async function (deviceId, patientId) {
     try {
         // Fetch device details
         const apiClient = new ApiClient();
         const devicesResponse = await apiClient.getPatientDevices(patientId);
         const devices = Array.isArray(devicesResponse) ? devicesResponse : (devicesResponse?.data || []);
         const device = devices.find(d => d.id === deviceId);
-        
+
         if (!device) {
             showCustomAlert('Hata', 'Cihaz bulunamadı', 'error');
             return;
         }
-        
+
         const modalHtml = `
             <div id="editDeviceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
@@ -348,61 +348,60 @@ window.editDeviceModal = async function(deviceId, patientId) {
                 </div>
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
+
         // Form submit handler
         document.getElementById('editDeviceForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             await saveDeviceEditNew(deviceId, patientId);
         });
-        
+
     } catch (error) {
         console.error('Error opening edit modal:', error);
         showCustomAlert('Hata', 'Cihaz düzenleme modalı açılırken hata oluştu', 'error');
     }
 };
 
-window.selectEar = function(ear) {
+window.selectEar = function (ear) {
     // Update visual state
     ['LEFT', 'RIGHT'].forEach(e => {
         const btn = document.getElementById(`ear_${e}`);
         if (e === ear) {
-            btn.className = `px-4 py-3 border-2 rounded-lg font-medium transition-all ${
-                ear === 'LEFT' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-red-500 bg-red-50 text-red-700'
-            }`;
+            btn.className = `px-4 py-3 border-2 rounded-lg font-medium transition-all ${ear === 'LEFT' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-red-500 bg-red-50 text-red-700'
+                }`;
         } else {
             btn.className = 'px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-medium transition-all hover:border-gray-400';
         }
     });
-    
+
     // Update hidden input
     document.getElementById('edit_ear').value = ear;
 };
 
-window.closeEditDeviceModal = function() {
+window.closeEditDeviceModal = function () {
     const modal = document.getElementById('editDeviceModal');
     if (modal) modal.remove();
 };
 
-window.saveDeviceEditNew = async function(deviceId, patientId) {
+window.saveDeviceEditNew = async function (deviceId, patientId) {
     try {
         const serialNumber = document.getElementById('edit_serialNumber').value.trim();
         const ear = document.getElementById('edit_ear').value;
-        
+
         if (!ear) {
             showCustomAlert('Uyarı', 'Lütfen kulak seçimi yapınız', 'warning');
             return;
         }
-        
+
         const apiClient = new ApiClient();
-        
+
         // Update device
         await apiClient.put(`/api/devices/${deviceId}`, {
             serialNumber: serialNumber || null,
             ear: ear
         });
-        
+
         // Add to timeline
         await apiClient.addPatientTimelineEvent(patientId, {
             type: 'device_update',
@@ -410,9 +409,9 @@ window.saveDeviceEditNew = async function(deviceId, patientId) {
             description: `Cihaz bilgileri güncellendi: ${ear === 'LEFT' ? 'Sol' : 'Sağ'} kulak${serialNumber ? `, Seri: ${serialNumber}` : ''}`,
             timestamp: new Date().toISOString()
         });
-        
+
         closeEditDeviceModal();
-        
+
         // Refresh only the Devices tab content without changing tabs
         if (window.patientTabContentComponent && window.currentPatientData) {
             const devicesTab = document.querySelector('[data-tab="devices"]');
@@ -422,7 +421,7 @@ window.saveDeviceEditNew = async function(deviceId, patientId) {
                 document.getElementById('tab-content').innerHTML = content;
             }
         }
-        
+
     } catch (error) {
         console.error('Error saving device edit:', error);
         showCustomAlert('Hata', 'Cihaz güncellenirken hata oluştu: ' + (error.message || 'Bilinmeyen hata'), 'error');
@@ -430,7 +429,7 @@ window.saveDeviceEditNew = async function(deviceId, patientId) {
 };
 
 // Remove Device Modal
-window.removeDeviceModal = function(deviceId, patientId) {
+window.removeDeviceModal = function (deviceId, patientId) {
     const modalHtml = `
         <div id="removeDeviceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
@@ -463,27 +462,27 @@ window.removeDeviceModal = function(deviceId, patientId) {
             </div>
         </div>
     `;
-    
+
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 };
 
-window.closeRemoveDeviceModal = function() {
+window.closeRemoveDeviceModal = function () {
     const modal = document.getElementById('removeDeviceModal');
     if (modal) modal.remove();
 };
 
-window.confirmRemoveDevice = async function(deviceId, patientId) {
+window.confirmRemoveDevice = async function (deviceId, patientId) {
     try {
         const apiClient = new ApiClient();
-        
+
         // Get device info before deleting for timeline
         const devicesResponse = await apiClient.getPatientDevices(patientId);
         const devices = Array.isArray(devicesResponse) ? devicesResponse : (devicesResponse?.data || []);
         const device = devices.find(d => d.id === deviceId);
-        
+
         // Delete device
         await apiClient.delete(`/api/devices/${deviceId}`);
-        
+
         // Add to timeline
         if (device) {
             await apiClient.addPatientTimelineEvent(patientId, {
@@ -493,10 +492,10 @@ window.confirmRemoveDevice = async function(deviceId, patientId) {
                 timestamp: new Date().toISOString()
             });
         }
-        
+
         closeRemoveDeviceModal();
         showCustomAlert('Başarılı', 'Cihaz başarıyla kaldırıldı', 'success');
-        
+
         // Refresh only the Devices tab content without changing tabs
         const devicesTab = document.querySelector('[data-tab="devices"]');
         if (devicesTab && devicesTab.classList.contains('active')) {
@@ -509,7 +508,7 @@ window.confirmRemoveDevice = async function(deviceId, patientId) {
                 document.getElementById('tab-content').innerHTML = content;
             }
         }
-        
+
     } catch (error) {
         console.error('Error removing device:', error);
         showCustomAlert('Hata', 'Cihaz kaldırılırken hata oluştu: ' + (error.message || 'Bilinmeyen hata'), 'error');
@@ -517,20 +516,20 @@ window.confirmRemoveDevice = async function(deviceId, patientId) {
 };
 
 // Report Device Replacement Modal
-window.reportDeviceReplacement = async function(oldDeviceId, patientId) {
+window.reportDeviceReplacement = async function (oldDeviceId, patientId) {
     try {
         const apiClient = new ApiClient();
-        
+
         // Fetch old device info
         const devicesResponse = await apiClient.getPatientDevices(patientId);
         const devices = Array.isArray(devicesResponse) ? devicesResponse : (devicesResponse?.data || []);
         const oldDevice = devices.find(d => d.id === oldDeviceId);
-        
+
         if (!oldDevice) {
             showCustomAlert('Hata', 'Cihaz bulunamadı', 'error');
             return;
         }
-        
+
         // Fetch inventory (hearing aids ONLY) from /api/inventory
         let inventoryData;
         try {
@@ -539,9 +538,10 @@ window.reportDeviceReplacement = async function(oldDeviceId, patientId) {
             } else if (window.APIConfig) {
                 inventoryData = await window.APIConfig.makeRequest(`${apiClient.baseUrl}/api/inventory`);
             } else {
-                console.warn('No API client available for inventory fetch');
-                const inventoryResponse = await fetch(`${apiClient.baseUrl}/api/inventory`);
-                inventoryData = await inventoryResponse.json();
+                // Use authenticating ApiClient
+                const response = await apiClient.get('/api/inventory');
+                // ApiClient.get returns normalized response body or data wrapper
+                inventoryData = response;
             }
         } catch (error) {
             console.error('Error fetching inventory:', error);
@@ -550,7 +550,7 @@ window.reportDeviceReplacement = async function(oldDeviceId, patientId) {
         }
 
         const allInventory = inventoryData.data || inventoryData.items || [];
-        
+
         // STRICT FILTER: Only hearing_aid category
         const inventory = allInventory.filter(item => {
             const cat = (item.category || '').toLowerCase();
@@ -583,9 +583,9 @@ window.reportDeviceReplacement = async function(oldDeviceId, patientId) {
                     <!-- Inventory Grid -->
                     <div class="p-6 max-h-[60vh] overflow-y-auto">
                         <div id="replacementDeviceGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            ${inventory.length === 0 ? 
-                                '<div class="col-span-full text-center py-8 text-gray-500">Envanterde işitme cihazı bulunamadı</div>' :
-                                inventory.map(item => `
+                            ${inventory.length === 0 ?
+                '<div class="col-span-full text-center py-8 text-gray-500">Envanterde işitme cihazı bulunamadı</div>' :
+                inventory.map(item => `
                                 <div class="replacement-device-card border-2 border-gray-300 rounded-lg p-4 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all"
                                     data-search="${([item.brand, item.name, item.model, item.barcode].filter(Boolean).join(' ') + ' ' + (item.availableSerials || []).join(' ')).toLowerCase()}"
                                     onclick="selectReplacementDevice('${item.id}', '${oldDeviceId}', '${patientId}', this)">
@@ -617,19 +617,19 @@ window.reportDeviceReplacement = async function(oldDeviceId, patientId) {
                 </div>
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
+
     } catch (error) {
         console.error('Error opening replacement modal:', error);
         showCustomAlert('Hata', 'Değişim modalı açılırken hata oluştu', 'error');
     }
 };
 
-window.filterReplacementDevices = function() {
+window.filterReplacementDevices = function () {
     const searchTerm = document.getElementById('replacementSearch').value.toLowerCase();
     const cards = document.querySelectorAll('.replacement-device-card');
-    
+
     cards.forEach(card => {
         const searchData = card.getAttribute('data-search');
         if (searchData.includes(searchTerm)) {
@@ -640,47 +640,47 @@ window.filterReplacementDevices = function() {
     });
 };
 
-window.selectReplacementDevice = function(deviceId, oldDeviceId, patientId, element) {
+window.selectReplacementDevice = function (deviceId, oldDeviceId, patientId, element) {
     // Remove previous selection
     document.querySelectorAll('.replacement-device-card').forEach(card => {
         card.classList.remove('border-blue-500', 'bg-blue-50');
         card.classList.add('border-gray-300');
     });
-    
+
     // Mark as selected
     element.classList.remove('border-gray-300');
     element.classList.add('border-blue-500', 'bg-blue-50');
-    
+
     // Store selection
     document.getElementById('selectedReplacementDevice').value = deviceId;
 };
 
-window.closeReplacementModal = function() {
+window.closeReplacementModal = function () {
     const modal = document.getElementById('replacementModal');
     if (modal) modal.remove();
 };
 
-window.saveReplacement = async function(oldDeviceId, patientId) {
+window.saveReplacement = async function (oldDeviceId, patientId) {
     try {
         const newInventoryId = document.getElementById('selectedReplacementDevice').value;
-        
+
         if (!newInventoryId) {
             showCustomAlert('Uyarı', 'Lütfen bir ürün seçiniz', 'warning');
             return;
         }
-        
+
         const apiClient = new ApiClient();
-        
+
         // Get device details
         const devicesResponse = await apiClient.getPatientDevices(patientId);
         const devices = Array.isArray(devicesResponse) ? devicesResponse : (devicesResponse?.data || []);
         const oldDevice = devices.find(d => d.id === oldDeviceId);
-        
+
         const inventoryResponse = await fetch(`${apiClient.baseUrl}/api/inventory`);
         const inventoryData = await inventoryResponse.json();
         const inventory = inventoryData.data || inventoryData.items || [];
         const newInventoryItem = inventory.find(i => i.id === newInventoryId);
-        
+
         // Create replacement via API
         const replacementData = {
             oldDeviceId: oldDeviceId,
@@ -688,7 +688,7 @@ window.saveReplacement = async function(oldDeviceId, patientId) {
             oldDeviceInfo: `${oldDevice.brand} ${oldDevice.model}`,
             newDeviceInfo: `${newInventoryItem.brand} ${newInventoryItem.name}`
         };
-        
+
         try {
             let result;
             if (window.patientsCreatePatientReplacement) {
@@ -701,15 +701,10 @@ window.saveReplacement = async function(oldDeviceId, patientId) {
                     { headers: { 'Content-Type': 'application/json' } }
                 );
             } else {
-                console.warn('No API client available for replacement creation');
-                const response = await fetch(`${apiClient.baseUrl}/api/patients/${patientId}/replacements`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(replacementData)
-                });
-                result = await response.json();
+                // Use authenticating ApiClient
+                result = await apiClient.post(`/api/patients/${patientId}/replacements`, replacementData);
             }
-            
+
             if (!result.success) {
                 throw new Error(result.error || 'Değişim kaydedilemedi');
             }
@@ -726,11 +721,11 @@ window.saveReplacement = async function(oldDeviceId, patientId) {
             description: `${oldDevice.brand} ${oldDevice.model} → ${newInventoryItem.brand} ${newInventoryItem.name}`,
             timestamp: new Date().toISOString()
         });
-        
+
         closeReplacementModal();
-        
+
         showCustomAlert('Başarılı', 'Değişim kaydedildi! Satışlar sekmesinden değişimi tamamlayabilirsiniz.', 'success');
-        
+
         // Refresh current tab content
         if (window.patientTabContentComponent && window.currentPatientData) {
             const currentTab = document.querySelector('[data-tab].active');
@@ -739,7 +734,7 @@ window.saveReplacement = async function(oldDeviceId, patientId) {
                 document.getElementById('tab-content').innerHTML = content;
             }
         }
-        
+
         // Show info toast
         if (typeof showTopRightToast === 'function') {
             setTimeout(() => {
@@ -751,7 +746,7 @@ window.saveReplacement = async function(oldDeviceId, patientId) {
                 );
             }, 500);
         }
-        
+
     } catch (error) {
         console.error('Error saving replacement:', error);
         showCustomAlert('Hata', 'Değişim kaydedilirken hata oluştu: ' + (error.message || 'Bilinmeyen hata'), 'error');

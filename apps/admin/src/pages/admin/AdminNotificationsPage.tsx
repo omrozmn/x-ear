@@ -56,7 +56,7 @@ const AdminNotificationsPage: React.FC = () => {
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-900">Bildirim Yönetimi</h1>
                 <p className="mt-1 text-sm text-gray-500">
-                    Kullanıcılara ve kiracılara bildirim gönderin ve şablonları yönetin
+                    Kullanıcılara ve abonelere bildirim gönderin ve şablonları yönetin
                 </p>
             </div>
 

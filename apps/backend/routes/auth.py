@@ -211,8 +211,15 @@ def verify_otp():
                 db.session.commit()
                 
                 # Issue full tokens
-                access_token = create_access_token(identity=user.id)
-                refresh_token = create_access_token(identity=user.id, expires_delta=timedelta(days=30))
+                access_token = create_access_token(
+                    identity=user.id,
+                    additional_claims={'tenant_id': user.tenant_id}
+                )
+                refresh_token = create_access_token(
+                    identity=user.id,
+                    additional_claims={'tenant_id': user.tenant_id},
+                    expires_delta=timedelta(days=30)
+                )
                 
                 return jsonify({
                     "success": True, 
@@ -290,7 +297,7 @@ def login():
         data = request.get_json() or {}
         logger.info(f"Login attempt with data: {data}")  # Debug log
         
-        identifier = data.get('username') or data.get('email') or data.get('phone')
+        identifier = data.get('identifier') or data.get('username') or data.get('email') or data.get('phone')
         password = data.get('password')
         
         logger.info(f"Login attempt - identifier: {identifier}, password_provided: {bool(password)}")  # Debug log
@@ -306,6 +313,14 @@ def login():
                 user = User.query.filter_by(email=identifier).first()
             if not user:
                 user = User.query.filter_by(phone=identifier).first()
+        
+        logger.info(f"DEBUG: Found user: {user} (ID: {user.id if user else 'None'}, Email: {user.email if user else 'None'})")
+        if user:
+             logger.info(f"DEBUG: Checking password for user {user.username}...")
+             is_valid = user.check_password(password)
+             logger.info(f"DEBUG: Password valid: {is_valid}")
+        else:
+             logger.info(f"DEBUG: No user found for identifier: {identifier}")
 
         if not user or not user.check_password(password):
             # Log failed login attempt
@@ -368,24 +383,10 @@ def login():
 
 
 @auth_bp.route('/auth/refresh', methods=['POST'])
+@jwt_required(refresh=True)
 def refresh():
     """Refresh access token using refresh token"""
     try:
-        # DEBUG: Inspect the token manually
-        auth_header = request.headers.get('Authorization', '')
-        logger.info(f"REFRESH ENDPOINT HIT. Header: {auth_header[:20]}...")
-        if auth_header.startswith('Bearer '):
-            token = auth_header.split(' ')[1]
-            try:
-                import jwt
-                # Use verify=False to just see what's inside, even if expired/invalid signature
-                payload = jwt.decode(token, options={"verify_signature": False})
-                logger.info(f"REFRESH TOKEN PAYLOAD: {payload}")
-            except Exception as e:
-                logger.error(f"Failed to decode token manually: {e}")
-
-        # Manually verify
-        verify_jwt_in_request(refresh=True)
         
         user_id = get_jwt_identity()
         user = db.session.get(User, user_id)
@@ -406,4 +407,30 @@ def refresh():
         
     except Exception as e:
         logger.error(f"Token refresh error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@auth_bp.route('/auth/set-password', methods=['POST'])
+@jwt_required()
+def set_password():
+    """Set password for authenticated user (Post-Registration Flow)"""
+    try:
+        user_id = get_jwt_identity()
+        user = db.session.get(User, user_id)
+        
+        if not user:
+            return jsonify({'success': False, 'error': 'User not found'}), 404
+            
+        data = request.get_json() or {}
+        password = data.get('password')
+        
+        if not password or len(password) < 6:
+            return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
+            
+        user.set_password(password)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Password set successfully'}), 200
+        
+    except Exception as e:
+        logger.error(f"Set password error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500

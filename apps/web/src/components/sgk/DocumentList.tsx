@@ -25,7 +25,7 @@ export default function DocumentList({ patientId }: Props) {
   const { data, isLoading, isError } = useSgkDocuments(patientId);
   const deleteMutation = useDeleteSgkDocument(patientId);
 
-  const docs = (data as DocumentData)?.data || [];
+  const docs = (data as unknown as DocumentData)?.data || [];
 
   return (
     <div>

@@ -8,6 +8,8 @@ from datetime import datetime
 
 admin_suppliers_bp = Blueprint('admin_suppliers', __name__, url_prefix='/api/admin/suppliers')
 
+from utils.tenant_security import UnboundSession
+
 @admin_suppliers_bp.route('', methods=['GET'])
 @jwt_required()
 @require_admin_permission(AdminPermissions.SUPPLIERS_READ)
@@ -18,35 +20,36 @@ def get_suppliers():
         search = request.args.get('search', '')
         status = request.args.get('status')
 
-        query = Supplier.query
+        with UnboundSession():
+            query = Supplier.query
 
-        if search:
-            query = query.filter(
-                or_(
-                    Supplier.company_name.ilike(f'%{search}%'),
-                    Supplier.contact_name.ilike(f'%{search}%'),
-                    Supplier.email.ilike(f'%{search}%')
+            if search:
+                query = query.filter(
+                    or_(
+                        Supplier.company_name.ilike(f'%{search}%'),
+                        Supplier.contact_name.ilike(f'%{search}%'),
+                        Supplier.email.ilike(f'%{search}%')
+                    )
                 )
-            )
-        
-        if status:
-            query = query.filter(Supplier.status == status)
+            
+            if status:
+                query = query.filter(Supplier.status == status)
 
-        total = query.count()
-        suppliers = query.order_by(Supplier.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            total = query.count()
+            suppliers = query.order_by(Supplier.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
 
-        return jsonify({
-            'success': True,
-            'data': {
-                'suppliers': [s.to_dict() for s in suppliers],
-                'pagination': {
-                    'page': page,
-                    'limit': limit,
-                    'total': total,
-                    'totalPages': (total + limit - 1) // limit
+            return jsonify({
+                'success': True,
+                'data': {
+                    'suppliers': [s.to_dict() for s in suppliers],
+                    'pagination': {
+                        'page': page,
+                        'limit': limit,
+                        'total': total,
+                        'totalPages': (total + limit - 1) // limit
+                    }
                 }
-            }
-        }), 200
+            }), 200
 
     except Exception as e:
         return jsonify({'success': False, 'error': {'message': str(e)}}), 500

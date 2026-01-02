@@ -1,8 +1,16 @@
 import React from 'react';
-import InvoiceManagementPage from './InvoiceManagementPage';
+import { DesktopInvoicesPage } from './DesktopInvoicesPage';
+import { useIsMobile } from '../hooks/useBreakpoint';
+import { MobileInvoicesPage } from './invoices/MobileInvoicesPage';
 
 export function InvoicesPage() {
-  return <InvoiceManagementPage />;
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return <MobileInvoicesPage />;
+  }
+
+  return <DesktopInvoicesPage />;
 }
 
 export default InvoicesPage;

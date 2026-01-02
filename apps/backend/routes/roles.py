@@ -11,6 +11,15 @@ roles_bp = Blueprint('roles', __name__)
 @roles_bp.route('/roles', methods=['GET'])
 @admin_required
 def list_roles():
+    """
+    Get all roles
+    ---
+    tags:
+      - Roles
+    responses:
+      200:
+        description: List of roles
+    """
     roles = Role.query.order_by(Role.name).all()
     return jsonify({'success': True, 'data': [r.to_dict() for r in roles]})
 
@@ -18,6 +27,26 @@ def list_roles():
 @roles_bp.route('/roles', methods=['POST'])
 @admin_required
 def create_role():
+    """
+    Create a new role
+    ---
+    tags:
+      - Roles
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+    responses:
+      201:
+        description: Role created
+    """
     data = request.get_json() or {}
     if not data.get('name'):
         return jsonify({'success': False, 'error': 'name required'}), 400
@@ -37,6 +66,24 @@ def create_role():
 @roles_bp.route('/roles/<role_id>', methods=['PUT'])
 @admin_required
 def update_role(role_id):
+    """
+    Update a role
+    ---
+    tags:
+      - Roles
+    parameters:
+      - name: role_id
+        in: path
+        type: string
+        required: true
+      - name: body
+        in: body
+        schema:
+          type: object
+    responses:
+      200:
+        description: Role updated
+    """
     role = db.session.get(Role, role_id)
     if not role:
         return jsonify({'success': False, 'error': 'role not found'}), 404
@@ -62,6 +109,20 @@ def update_role(role_id):
 @roles_bp.route('/roles/<role_id>', methods=['DELETE'])
 @admin_required
 def delete_role(role_id):
+    """
+    Delete a role
+    ---
+    tags:
+      - Roles
+    parameters:
+      - name: role_id
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: Role deleted
+    """
     role = db.session.get(Role, role_id)
     if not role:
         return jsonify({'success': False, 'error': 'role not found'}), 404
@@ -77,6 +138,24 @@ def delete_role(role_id):
 @roles_bp.route('/roles/<role_id>/permissions', methods=['POST'])
 @admin_required
 def add_permission_to_role(role_id):
+    """
+    Add permission to role
+    ---
+    tags:
+      - Roles
+    parameters:
+      - name: role_id
+        in: path
+        type: string
+        required: true
+      - name: body
+        in: body
+        schema:
+          type: object
+    responses:
+      200:
+        description: Permission added
+    """
     data = request.get_json() or {}
     pname = data.get('permission')
     if not pname:
@@ -99,6 +178,24 @@ def add_permission_to_role(role_id):
 @roles_bp.route('/roles/<role_id>/permissions/<permission_id>', methods=['DELETE'])
 @admin_required
 def remove_permission_from_role(role_id, permission_id):
+    """
+    Remove permission from role
+    ---
+    tags:
+      - Roles
+    parameters:
+      - name: role_id
+        in: path
+        type: string
+        required: true
+      - name: permission_id
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: Permission removed
+    """
     role = db.session.get(Role, role_id)
     if not role:
         return jsonify({'success': False, 'error': 'role not found'}), 404

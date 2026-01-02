@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { paymentsCreatePaymentRecord } from '@/api/generated';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { Receipt, CreditCard, Banknote, DollarSign, Calendar } from 'lucide-react';
-import type { PaymentRecord, Sale } from '../../api/generated/schemas';
+import type { PaymentRecord, Sale } from '@/api/generated/schemas';
 import { Input, Select, Textarea } from '@x-ear/ui-web';
 
 interface CollectionModalProps {
@@ -76,30 +77,19 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
         paymentType: 'COLLECTION'
       };
 
-      // Use direct fetch call since the API method might not be generated
-      const response = await fetch('http://localhost:8084/api/payment-records', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          patient_id: sale.patientId,
-          sale_id: sale.id,
-          amount: paymentData.amount,
-          payment_method: paymentData.paymentMethod,
-          payment_date: paymentData.paymentDate,
-          reference_number: paymentData.referenceNumber,
-          notes: paymentData.notes,
-          payment_type: 'COLLECTION'
-        })
+      // Use Orval-generated function
+      const resp = await paymentsCreatePaymentRecord({
+        patient_id: sale.patientId,
+        sale_id: sale.id,
+        amount: paymentData.amount,
+        payment_method: paymentData.paymentMethod,
+        payment_date: paymentData.paymentDate,
+        reference_number: paymentData.referenceNumber,
+        notes: paymentData.notes,
+        payment_type: 'payment'
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-
-      const result = await response.json();
+      const result = (resp as any)?.data || resp;
 
       // Call the callback if provided
       if (onCollectPayment) {

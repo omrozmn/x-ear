@@ -1,0 +1,358 @@
+WARNING:services.otp_store:Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+WARNING:__main__:Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/instance/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+DEBUG:app:REDIS_URL present; skipping local Redis auto-start.
+WARNING:app:Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+WARNING:services.otp_store:Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+INFO:__main__:Tenant security (global query filter) initialized
+WARNING:services.s3_service:S3Service running in mock mode - no actual S3 operations will be performed
+DEBUG:passlib.registry:registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+INFO:__main__:Ensuring database tables exist (create_all)
+INFO:__main__:Permission middleware initialized successfully
+INFO:__main__:Permission map validation passed. Warnings: []
+INFO:__main__:Starting Flask development server on 0.0.0.0:5003
+ * Serving Flask app 'app'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://192.168.1.102:5003
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:05] "POST /api/admin/auth/login HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:05] "GET /api/admin/users HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:05] "GET /api/admin/tenants HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:05] "GET /api/admin/roles HTTP/1.1" 200 -
+INFO:routes.auth:Login attempt with data: {'email': 'admin@x-ear.com', 'password': 'password123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.failed_login by user None
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:05] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+ERROR:routes.affiliate_flask:Failed to register affiliate: Invalid IBAN checksum
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/routes/affiliate_flask.py", line 20, in register_affiliate
+    affiliate = AffiliateService.create_affiliate(db.session, email, password, iban)
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/services/affiliate_service.py", line 28, in create_affiliate
+    affiliate = AffiliateUser(email=email, password_hash=password_hash, iban=iban, code=code)
+  File "<string>", line 4, in __init__
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/state.py", line 571, in _initialize_instance
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/state.py", line 569, in _initialize_instance
+    manager.original_init(*mixed[1:], **kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/decl_base.py", line 2182, in _declarative_constructor
+    setattr(self, k, kwargs[k])
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/attributes.py", line 540, in __set__
+    self.impl.set(
+    ~~~~~~~~~~~~~^
+        instance_state(instance), instance_dict(instance), value, None
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/attributes.py", line 1287, in set
+    value = self.fire_replace_event(
+        state, dict_, value, old, initiator
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/attributes.py", line 1302, in fire_replace_event
+    value = fn(
+        state, value, previous, initiator or self._replace_token
+    )
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/events.py", line 2560, in wrap
+    return fn(target, *arg)
+  File "/Users/omerozmen/Desktop/x-ear web app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/util.py", line 307, in set_
+    return validator(state.obj(), key, value)
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/models/affiliate_user.py", line 32, in validate_iban
+    raise ValueError('Invalid IBAN checksum')
+ValueError: Invalid IBAN checksum
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:05] "[31m[1mPOST /api/affiliate/register HTTP/1.1[0m" 400 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:35] "POST /api/admin/auth/login HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:35] "GET /api/admin/users HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:35] "GET /api/admin/tenants HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:35] "GET /api/admin/roles HTTP/1.1" 200 -
+INFO:routes.auth:Login attempt with data: {'email': 'admin@x-ear.com', 'password': 'password123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.login by user usr_8117769e
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:35] "POST /api/auth/login HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin bypass: user=usr_8117769e, role=tenant_admin, permission=patients.view
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:35] "GET /api/patients HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:56] "POST /api/admin/auth/login HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:56] "GET /api/admin/users HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:56] "GET /api/admin/tenants HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:56] "GET /api/admin/roles HTTP/1.1" 200 -
+INFO:routes.auth:Login attempt with data: {'email': 'admin@x-ear.com', 'password': 'password123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.login by user usr_8117769e
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:56] "POST /api/auth/login HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin bypass: user=usr_8117769e, role=tenant_admin, permission=patients.view
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:51:56] "GET /api/patients HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:52:25] "POST /api/admin/auth/login HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:52:25] "GET /api/admin/users HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:52:25] "GET /api/admin/tenants HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:52:25] "GET /api/admin/roles HTTP/1.1" 200 -
+INFO:routes.auth:Login attempt with data: {'email': 'admin@x-ear.com', 'password': 'password123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.login by user usr_8117769e
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:52:25] "POST /api/auth/login HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin bypass: user=usr_8117769e, role=tenant_admin, permission=patients.view
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:52:25] "GET /api/patients HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:53:00] "POST /api/admin/auth/login HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:53:00] "GET /api/admin/users HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:53:00] "GET /api/admin/tenants HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:53:00] "GET /api/admin/roles HTTP/1.1" 200 -
+INFO:routes.auth:Login attempt with data: {'email': 'admin@x-ear.com', 'password': 'password123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.login by user usr_8117769e
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:53:00] "POST /api/auth/login HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin bypass: user=usr_8117769e, role=tenant_admin, permission=patients.view
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:53:00] "GET /api/patients HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin bypass: user=usr_8117769e, role=tenant_admin, permission=patients.create
+INFO:app:idempotent check: idempotency_key=None endpoint=patients.create_patient user_id=None
+INFO:routes.patients:🔍 CREATE PATIENT - Received data: {'firstName': 'Test', 'lastName': 'Patient', 'phone': '0555165300', 'email': 'test_165300@example.com', 'gender': 'male', 'birthDate': '1990-01-01'}
+INFO:routes.patients:🔍 CREATE PATIENT - city: None, addressCity: None
+INFO:routes.patients:🔍 CREATE PATIENT - district: None, addressDistrict: None
+INFO:routes.patients:🔍 CREATE PATIENT - address: None
+INFO:models.patient:🔍 Patient.from_dict - Input data keys: ['firstName', 'lastName', 'phone', 'email', 'gender', 'birthDate']
+INFO:models.patient:🔍 Patient.from_dict - city: None, addressCity: None
+INFO:models.patient:🔍 Patient.from_dict - district: None, addressDistrict: None
+INFO:models.patient:🔍 Patient.from_dict - address: None
+INFO:models.patient:🔍 Patient.from_dict - After processing:
+INFO:models.patient:🔍   address_city: None
+INFO:models.patient:🔍   address_district: None
+INFO:models.patient:🔍   address_full: None
+INFO:routes.patients:🔍 CREATE PATIENT - After from_dict:
+INFO:routes.patients:🔍   address_full: None
+INFO:routes.patients:🔍   address_city: None
+INFO:routes.patients:🔍   address_district: None
+WARNING:services.otp_store:Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+WARNING:app:Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/instance/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+DEBUG:app:REDIS_URL present; skipping local Redis auto-start.
+WARNING:app:Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+WARNING:services.otp_store:Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+INFO:app:Tenant security (global query filter) initialized
+WARNING:app:Prometheus initialization skipped: Duplicated timeseries in CollectorRegistry: {'http_requests', 'http_requests_created', 'http_requests_total'}
+INFO:app:Ensuring database tables exist (create_all)
+INFO:app:Permission middleware initialized successfully
+INFO:app:Permission map validation passed. Warnings: []
+INFO:utils.activity_logging:Activity logged: patient.created by user usr_8117769e
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:53:00] "[35m[1mPOST /api/patients HTTP/1.1[0m" 201 -
+DEBUG:middleware.permission_middleware:Admin bypass: user=usr_8117769e, role=tenant_admin, permission=patients.edit
+INFO:app:idempotent check: idempotency_key=None endpoint=patients.update_patient user_id=None
+WARNING:utils.optimistic_locking:No If-Match header provided for optimistic locking
+INFO:routes.patients:🔍 UPDATE PATIENT - Patient ID: pat_bd96dad9
+INFO:routes.patients:🔍 UPDATE PATIENT - Received data: {'firstName': 'Updated'}
+INFO:routes.patients:🔍 UPDATE PATIENT - branchId in data: None
+INFO:routes.patients:🔍 UPDATE PATIENT - Current branch_id: None
+INFO:routes.patients:🔍 Setting first_name = Updated
+INFO:routes.patients:🔍 UPDATE PATIENT - After processing:
+INFO:routes.patients:🔍   address_full: None
+INFO:routes.patients:🔍   address_city: None
+INFO:routes.patients:🔍   address_district: None
+INFO:routes.patients:🔍   branch_id: None
+INFO:utils.activity_logging:Activity logged: patient.updated by user usr_8117769e
+DEBUG:utils.optimistic_locking:Transaction committed successfully
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:53:00] "PUT /api/patients/pat_bd96dad9 HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin bypass: user=usr_8117769e, role=tenant_admin, permission=inventory.view
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:53:00] "GET /api/inventory HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin bypass: user=usr_8117769e, role=tenant_admin, permission=inventory.view
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:53:00] "GET /api/suppliers HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:53:00] "[35m[1mPOST /api/affiliate/register HTTP/1.1[0m" 201 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:53:00] "POST /api/affiliate/login HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:57:36] "POST /api/admin/auth/login HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:57:36] "GET /api/admin/users HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:57:36] "GET /api/admin/tenants HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin panel access granted: user=b9a259a3-6572-4854-9149-aef89840b941, type=admin
+DEBUG:utils.admin_permissions:SuperAdmin bypass: user=admin@x-ear.com
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:57:36] "GET /api/admin/roles HTTP/1.1" 200 -
+INFO:routes.auth:Login attempt with data: {'email': 'admin@x-ear.com', 'password': 'password123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.login by user usr_8117769e
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:57:36] "POST /api/auth/login HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin bypass: user=usr_8117769e, role=tenant_admin, permission=patients.view
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:57:36] "GET /api/patients HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin bypass: user=usr_8117769e, role=tenant_admin, permission=patients.create
+INFO:app:idempotent check: idempotency_key=None endpoint=patients.create_patient user_id=None
+INFO:routes.patients:🔍 CREATE PATIENT - Received data: {'firstName': 'Test', 'lastName': 'Patient', 'phone': '0555165736', 'email': 'test_165736@example.com', 'gender': 'male', 'birthDate': '1990-01-01'}
+INFO:routes.patients:🔍 CREATE PATIENT - city: None, addressCity: None
+INFO:routes.patients:🔍 CREATE PATIENT - district: None, addressDistrict: None
+INFO:routes.patients:🔍 CREATE PATIENT - address: None
+INFO:models.patient:🔍 Patient.from_dict - Input data keys: ['firstName', 'lastName', 'phone', 'email', 'gender', 'birthDate']
+INFO:models.patient:🔍 Patient.from_dict - city: None, addressCity: None
+INFO:models.patient:🔍 Patient.from_dict - district: None, addressDistrict: None
+INFO:models.patient:🔍 Patient.from_dict - address: None
+INFO:models.patient:🔍 Patient.from_dict - After processing:
+INFO:models.patient:🔍   address_city: None
+INFO:models.patient:🔍   address_district: None
+INFO:models.patient:🔍   address_full: None
+INFO:routes.patients:🔍 CREATE PATIENT - After from_dict:
+INFO:routes.patients:🔍   address_full: None
+INFO:routes.patients:🔍   address_city: None
+INFO:routes.patients:🔍   address_district: None
+INFO:utils.activity_logging:Activity logged: patient.created by user usr_8117769e
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:57:36] "[35m[1mPOST /api/patients HTTP/1.1[0m" 201 -
+DEBUG:middleware.permission_middleware:Admin bypass: user=usr_8117769e, role=tenant_admin, permission=patients.edit
+INFO:app:idempotent check: idempotency_key=None endpoint=patients.update_patient user_id=None
+WARNING:utils.optimistic_locking:No If-Match header provided for optimistic locking
+INFO:routes.patients:🔍 UPDATE PATIENT - Patient ID: pat_75958655
+INFO:routes.patients:🔍 UPDATE PATIENT - Received data: {'firstName': 'Updated'}
+INFO:routes.patients:🔍 UPDATE PATIENT - branchId in data: None
+INFO:routes.patients:🔍 UPDATE PATIENT - Current branch_id: None
+INFO:routes.patients:🔍 Setting first_name = Updated
+INFO:routes.patients:🔍 UPDATE PATIENT - After processing:
+INFO:routes.patients:🔍   address_full: None
+INFO:routes.patients:🔍   address_city: None
+INFO:routes.patients:🔍   address_district: None
+INFO:routes.patients:🔍   branch_id: None
+INFO:utils.activity_logging:Activity logged: patient.updated by user usr_8117769e
+DEBUG:utils.optimistic_locking:Transaction committed successfully
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:57:36] "PUT /api/patients/pat_75958655 HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin bypass: user=usr_8117769e, role=tenant_admin, permission=inventory.view
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:57:36] "GET /api/inventory HTTP/1.1" 200 -
+DEBUG:middleware.permission_middleware:Admin bypass: user=usr_8117769e, role=tenant_admin, permission=inventory.view
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:57:36] "GET /api/suppliers HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:57:36] "[35m[1mPOST /api/affiliate/register HTTP/1.1[0m" 201 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 16:57:36] "POST /api/affiliate/login HTTP/1.1" 200 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:03:56] "[35m[1mOPTIONS /api/patients?per_page=100 HTTP/1.1[0m" 204 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:03:56] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:07:34] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:08:03] "[35m[1mOPTIONS /api/auth/login HTTP/1.1[0m" 204 -
+INFO:routes.auth:Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'admin123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.failed_login by user None
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:08:03] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:09:34] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:09:49] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+INFO:routes.auth:Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'admin123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.failed_login by user None
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:09:53] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+INFO:routes.auth:Login attempt with data: {'identifier': 'admin', 'password': 'password123'}
+INFO:routes.auth:Login attempt - identifier: None, password_provided: True
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:11:24] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 400 -
+INFO:routes.auth:Login attempt with data: {'username': 'admin', 'password': 'password123'}
+INFO:routes.auth:Login attempt - identifier: admin, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.failed_login by user None
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:11:24] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+INFO:routes.auth:Login attempt with data: {'email': 'admin@x-ear.com', 'password': 'password123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.login by user usr_8117769e
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:11:24] "POST /api/auth/login HTTP/1.1" 200 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:12:52] "[35m[1mOPTIONS /api/dashboard HTTP/1.1[0m" 204 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:12:52] "[31m[1mGET /api/dashboard HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:12:59] "[35m[1mOPTIONS /api/auth/login HTTP/1.1[0m" 204 -
+INFO:routes.auth:Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'admin123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.failed_login by user None
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:12:59] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:05] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:05] "[35m[1mOPTIONS /api/patients?per_page=100 HTTP/1.1[0m" 204 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:05] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:05] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:16] "[35m[1mOPTIONS /api/patients?per_page=100 HTTP/1.1[0m" 204 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:16] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:19] "[35m[1mOPTIONS /api/auth/login HTTP/1.1[0m" 204 -
+INFO:routes.auth:Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'admin123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.failed_login by user None
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:19] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:28] "[35m[1mOPTIONS /api/patients?per_page=100 HTTP/1.1[0m" 204 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:28] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:43] "[35m[1mOPTIONS /api/auth/login HTTP/1.1[0m" 204 -
+INFO:routes.auth:Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'admin12'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.failed_login by user None
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:43] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:54] "[35m[1mOPTIONS /api/patients?per_page=100 HTTP/1.1[0m" 204 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:13:54] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:03] "[35m[1mOPTIONS /api/auth/login HTTP/1.1[0m" 204 -
+INFO:routes.auth:Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'admin'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.failed_login by user None
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:03] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:26] "[35m[1mOPTIONS /api/patients?per_page=100 HTTP/1.1[0m" 204 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:26] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:31] "[35m[1mOPTIONS /api/auth/login HTTP/1.1[0m" 204 -
+INFO:routes.auth:Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'admin1235'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.failed_login by user None
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:31] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:34] "[35m[1mOPTIONS /api/patients?per_page=100 HTTP/1.1[0m" 204 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:34] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:37] "[35m[1mOPTIONS /api/auth/login HTTP/1.1[0m" 204 -
+INFO:routes.auth:Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'admin123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.failed_login by user None
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:37] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:52] "[35m[1mOPTIONS /api/patients?per_page=100 HTTP/1.1[0m" 204 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:52] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:56] "[35m[1mOPTIONS /api/auth/login HTTP/1.1[0m" 204 -
+INFO:routes.auth:Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'admin123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.failed_login by user None
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:14:56] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+INFO:routes.auth:Login attempt with data: {'username': 'admin', 'password': 'password123'}
+INFO:routes.auth:Login attempt - identifier: admin, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.login by user usr_8117769e
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:15:20] "POST /api/auth/login HTTP/1.1" 200 -
+INFO:routes.auth:Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'password123'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.login by user usr_8117769e
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:15:20] "POST /api/auth/login HTTP/1.1" 200 -
+INFO:routes.auth:Login attempt with data: {'username': 'admin@x-ear.com', 'password': 'wrongpassword'}
+INFO:routes.auth:Login attempt - identifier: admin@x-ear.com, password_provided: True
+INFO:utils.activity_logging:Activity logged: auth.failed_login by user None
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:15:33] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:15:47] "[35m[1mOPTIONS /api/patients?per_page=100 HTTP/1.1[0m" 204 -
+INFO:werkzeug:127.0.0.1 - - [01/Jan/2026 17:15:47] "[31m[1mGET /api/patients?per_page=100 HTTP/1.1[0m" 401 -

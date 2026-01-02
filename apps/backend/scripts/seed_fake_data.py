@@ -287,7 +287,7 @@ def seed_suppliers(faker, count: int, ctx: Dict[str, Any]) -> List[Any]:
 
 
 def seed_inventories(faker, count: int, ctx: Dict[str, Any]) -> List[Any]:
-    Inventory = ctx['Inventory']
+    InventoryItem = ctx['InventoryItem']
     session = ctx['session']
     Supplier = ctx.get('Supplier')
     suppliers = ctx.get('suppliers') or (session.query(Supplier).limit(20).all() if Supplier else [])
@@ -309,15 +309,15 @@ def seed_inventories(faker, count: int, ctx: Dict[str, Any]) -> List[Any]:
             'barcode': (faker.unique.ean13() if hasattr(faker, 'unique') else faker.ean13()),
             'supplier': supplier.company_name if supplier else None,
             'description': faker.sentence(nb_words=6),
-            'availableInventory': available_inventory,
-            'totalInventory': total_inventory,
+            'availableInventoryItem': available_inventory,
+            'totalInventoryItem': total_inventory,
             'availableSerials': serials,
             'features': [faker.word() for __ in range(random.randint(0, 3))],
             'price': round(random.uniform(50.0, 25000.0), 2),
             'warranty': random.choice([0, 6, 12, 24])
         }
         try:
-            item = Inventory.from_dict(data)
+            item = InventoryItem.from_dict(data)
             session.add(item)
             created.append(item)
             if len(created) % COMMIT_BATCH == 0:
@@ -844,7 +844,7 @@ def main():
     with app_obj.app_context():
         # Import models the same way application modules do (absolute model names)
         from models import (
-            Supplier, ProductSupplier, Inventory, Patient, Device, Appointment, Sale,
+            Supplier, ProductSupplier, InventoryItem, Patient, Device, Appointment, Sale,
             DeviceAssignment, PaymentPlan, PaymentInstallment, PaymentRecord, Invoice, Proforma
         )
 
@@ -862,7 +862,7 @@ def main():
             'session': session,
             'Supplier': Supplier,
             'ProductSupplier': ProductSupplier,
-            'Inventory': Inventory,
+            'InventoryItem': InventoryItem,
             'Patient': Patient,
             'Device': Device,
             'Appointment': Appointment,
@@ -900,7 +900,7 @@ def main():
 
         if 'devices' in tables:
             logger.info('Seeding devices...')
-            ctx['inventories'] = created_summary.get('inventories') or Inventory.query.limit(100).all()
+            ctx['inventories'] = created_summary.get('inventories') or InventoryItem.query.limit(100).all()
             ctx['patients'] = created_summary.get('patients') or Patient.query.limit(100).all()
             created_summary['devices'] = seed_devices(faker, args.count, ctx) if args.apply else []
             if not args.apply:
@@ -916,7 +916,7 @@ def main():
         if 'sales' in tables:
             logger.info('Seeding sales...')
             ctx['patients'] = created_summary.get('patients') or Patient.query.limit(200).all()
-            ctx['inventories'] = created_summary.get('inventories') or Inventory.query.limit(200).all()
+            ctx['inventories'] = created_summary.get('inventories') or InventoryItem.query.limit(200).all()
             created_summary['sales'] = seed_sales(faker, args.count, ctx) if args.apply else []
             if not args.apply:
                 logger.info('(dry-run) would create %d sales', args.count)
@@ -963,7 +963,7 @@ def main():
 
         if 'product_suppliers' in tables:
             logger.info('Seeding product_suppliers...')
-            ctx['inventories'] = created_summary.get('inventories') or Inventory.query.limit(200).all()
+            ctx['inventories'] = created_summary.get('inventories') or InventoryItem.query.limit(200).all()
             ctx['suppliers'] = created_summary.get('suppliers') or Supplier.query.limit(200).all()
             created_summary['product_suppliers'] = seed_product_suppliers(faker, args.count, ctx) if args.apply else []
             if not args.apply:

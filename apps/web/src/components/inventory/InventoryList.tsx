@@ -5,13 +5,14 @@ import WarningModal from '../../pages/inventory/components/WarningModal';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
+import { unwrapArray } from '../../utils/response-unwrap';
 import {
   useInventoryGetInventoryItems,
   useInventoryDeleteInventoryItem,
   useInventoryUpdateInventoryItem,
   getInventoryGetInventoryItemsQueryKey
-} from '../../api/generated/inventory/inventory';
-import { InventoryItem as InventoryItemSchema, InventoryGetInventoryItemsParams } from '../../api/generated/schemas';
+} from '@/api/generated';
+import { InventoryItem as InventoryItemSchema, InventoryGetInventoryItemsParams } from '@/api/generated/schemas';
 import { AlertTriangle, Eye, Edit, Trash2 } from 'lucide-react';
 import { InventoryItem as FrontendInventoryItem, InventoryFilters, InventoryStatus, InventoryCategory } from '../../types/inventory';
 import type { AxiosError } from 'axios';
@@ -110,12 +111,10 @@ export const InventoryList: React.FC<InventoryListProps> = ({
 
   // Transform Data
   const { items, totalItems } = useMemo(() => {
-    // Check if data exists
-    if (!fetchResponse?.data?.data || !Array.isArray(fetchResponse.data.data)) {
+    const rawItems = unwrapArray<any>(fetchResponse);
+    if (!rawItems || rawItems.length === 0) {
       return { items: [], totalItems: 0 };
     }
-
-    const rawItems = fetchResponse.data.data;
     const mappedItems: FrontendInventoryItem[] = rawItems.map((item: any) => {
       // Handle features
       let features: string[] = [];
@@ -189,8 +188,8 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       };
     });
 
-    // Pagination info from schema: pagination.total
-    const total = fetchResponse.data.pagination?.total || mappedItems.length;
+    // Pagination info - backend may include in response or we estimate from array length
+    const total = (fetchResponse as any).pagination?.total || mappedItems.length;
     return { items: mappedItems, totalItems: total };
   }, [fetchResponse]);
 
@@ -502,7 +501,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
   }
 
   if (fetchError) {
-    const errorMsg = (fetchError as AxiosError<any>)?.response?.data?.message || fetchError.message || 'Bir hata oluştu';
+    const errorMsg = (fetchError as any)?.message || 'Bir hata oluştu';
     return (
       <div className={`bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 ${className}`}>
         <div className="flex">

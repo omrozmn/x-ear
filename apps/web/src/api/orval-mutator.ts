@@ -180,6 +180,8 @@ apiClient.interceptors.request.use(
   (config) => {
     // Add auth token if available. Support global window token, persisted zustand storage, new key, and legacy key.
     let token: string | null = null;
+    let tokenSource = 'none';
+
     try {
       const tryParse = (raw: string | null) => {
         if (!raw) return null;
@@ -205,20 +207,30 @@ apiClient.interceptors.request.use(
         } catch (e) { /* ignore */ }
       }
 
-      token = (typeof window !== 'undefined' ? (window as any).__AUTH_TOKEN__ : null) || persistedToken || localStorage.getItem(AUTH_TOKEN) || (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null);
+      // PRIORITY ORDER (freshest first):
+      // 1. window.__AUTH_TOKEN__ - set immediately on login
+      // 2. localStorage 'auth_token' - set immediately on login  
+      // 3. localStorage AUTH_TOKEN constant
+      // 4. Zustand persist storage (may be stale due to async persistence)
+      const windowToken = (typeof window !== 'undefined' ? (window as any).__AUTH_TOKEN__ : null);
+      const localStorageToken = (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null);
+      const authTokenConstant = (typeof window !== 'undefined' ? localStorage.getItem(AUTH_TOKEN) : null);
+
+      if (windowToken) { token = windowToken; tokenSource = 'window.__AUTH_TOKEN__'; }
+      else if (localStorageToken) { token = localStorageToken; tokenSource = 'localStorage.auth_token'; }
+      else if (authTokenConstant) { token = authTokenConstant; tokenSource = 'localStorage.AUTH_TOKEN'; }
+      else if (persistedToken) { token = persistedToken; tokenSource = 'zustand-persist'; }
     } catch (e) {
       // ignore storage access or JSON parse errors
     }
+
     if (token) {
-      try {
-        // Mask token for logs
-        const masked = token.slice(0, 8) + '...' + token.slice(-8);
-        console.debug('[orval-mutator] Attaching auth token to request', { url: config.url, token: masked });
-      } catch (e) { }
+      const masked = token.slice(0, 8) + '...' + token.slice(-8);
+      console.log('[orval-mutator] Attaching auth token', { url: config.url, source: tokenSource, token: masked });
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     } else {
-      console.debug('[orval-mutator] No auth token found for request', { url: config.url });
+      console.log('[orval-mutator] No auth token found for request', { url: config.url });
     }
 
     // Add idempotency key for non-GET requests
@@ -247,9 +259,15 @@ apiClient.interceptors.response.use(
   async (error) => {
     const config = error.config;
 
+    // Skip 401 handling for auth endpoints where 401 is expected (login, register, etc.)
+    const isAuthEndpoint = config?.url?.includes('/auth/login') ||
+      config?.url?.includes('/auth/register') ||
+      config?.url?.includes('/auth/verify-otp') ||
+      config?.url?.includes('/auth/forgot-password');
+
     // Handle 401 by attempting a silent refresh and replaying the original request
     try {
-      if (error.response?.status === 401 && config && !config.__isRetryRequest) {
+      if (error.response?.status === 401 && config && !config.__isRetryRequest && !isAuthEndpoint) {
         if (!(apiClient as any)._refreshing) {
           (apiClient as any)._refreshing = true;
           (apiClient as any)._refreshSubscribers = [] as Array<(token: string | null) => void>;
@@ -372,6 +390,12 @@ apiClient.interceptors.response.use(
 
 // Orval mutator function - customInstance must be a function that returns axios instance or promise
 export const customInstance = <T>(config: AxiosRequestConfig): Promise<T> => {
+  // Fix for FormData: If data is FormData, remove Content-Type: application/json
+  // so that axios can set the correct multipart/form-data header with boundary.
+  if (config.data instanceof FormData && config.headers?.['Content-Type'] === 'application/json') {
+    delete config.headers['Content-Type'];
+  }
+
   const source = axios.CancelToken.source();
   const promise = apiClient({
     ...config,

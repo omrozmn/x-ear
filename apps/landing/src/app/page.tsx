@@ -16,7 +16,7 @@ export default function Home() {
 
       <main className="relative z-10">
         {/* Hero Section */}
-        <section id="hero" className="min-h-screen flex items-center justify-center text-center pt-20">
+        <section id="hero" className="min-h-screen flex items-center justify-center text-center pt-24 sm:pt-20 px-4">
           <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 text-white">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
@@ -28,16 +28,16 @@ export default function Home() {
               X-Ear, hasta yönetiminden SGK entegrasyonuna kadar tüm süreçlerinizi tek bir platformda birleştirerek
               kliniğinizin verimliliğini ve hasta memnuniyetini en üst düzeye çıkarır.
             </p>
-            <div className="flex justify-center items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full max-w-md mx-auto sm:max-w-none">
               <Link
                 href="/pricing"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition text-lg"
+                className="bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-4 px-10 rounded-xl transition text-lg shadow-lg hover:shadow-xl active:scale-95 w-full sm:w-auto text-center min-h-[56px] flex items-center justify-center"
               >
                 Hemen Başla
               </Link>
               <a
                 href="#features"
-                className="border border-slate-600 hover:bg-slate-800 text-white font-bold py-3 px-8 rounded-lg transition text-lg"
+                className="border-2 border-slate-600 hover:bg-slate-800 active:bg-slate-700 text-white font-bold py-4 px-10 rounded-xl transition text-lg w-full sm:w-auto text-center min-h-[56px] flex items-center justify-center active:scale-95"
               >
                 Özellikleri Keşfet
               </a>
@@ -46,7 +46,7 @@ export default function Home() {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-20">
+        <section id="features" className="py-16 sm:py-20 scroll-mt-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
@@ -57,7 +57,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               <FeatureCard
                 icon={<Users className="w-7 h-7" />}
                 title="Kapsamlı Hasta Yönetimi"
@@ -101,15 +101,15 @@ export default function Home() {
 
 
         {/* Call to Action Section */}
-        <section className="py-20">
+        <section className="py-16 sm:py-20 pb-24">
           <div className="container mx-auto px-6 text-center">
-            <h2 className="text-4xl font-bold mb-4 text-white">Hazır mısınız?</h2>
-            <p className="text-lg text-gray-300 mb-8">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-white">Hazır mısınız?</h2>
+            <p className="text-base sm:text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
               X-Ear'ın sunduğu yenilikçi çözümlerle işinizi bir üst seviyeye taşıyın.
             </p>
             <Link
               href="/pricing"
-              className="bg-blue-600 text-white font-bold rounded-full py-4 px-8 hover:bg-blue-700 transition duration-300"
+              className="inline-block bg-blue-600 text-white font-bold rounded-full py-4 px-10 hover:bg-blue-700 active:bg-blue-800 transition duration-300 shadow-lg hover:shadow-xl active:scale-95 min-h-[56px] flex items-center justify-center mx-auto max-w-xs sm:max-w-none"
             >
               Hemen Başla
             </Link>
@@ -131,12 +131,12 @@ function FeatureCard({ icon, title, description, color }: { icon: React.ReactNod
   };
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 transform hover:-translate-y-2 transition-transform duration-300">
-      <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-6 ${colorClasses[color]}`}>
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 transform hover:-translate-y-2 active:scale-98 transition-all duration-300 active:shadow-lg">
+      <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center mb-4 sm:mb-6 ${colorClasses[color]}`}>
         {icon}
       </div>
-      <h3 className="text-2xl font-bold text-white mb-3">{title}</h3>
-      <p className="text-slate-400">{description}</p>
+      <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">{title}</h3>
+      <p className="text-sm sm:text-base text-slate-400">{description}</p>
     </div>
   );
 }

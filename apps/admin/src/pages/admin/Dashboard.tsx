@@ -78,7 +78,7 @@ const Dashboard = () => {
                     <div className="ml-5 w-0 flex-1">
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">
-                          Aktif Kiracılar
+                          Aktif Aboneler
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
                           {isLoading ? '-' : formatNumber(overview?.active_tenants)}

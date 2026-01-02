@@ -1,37 +1,88 @@
-import React from 'react';
-import { Affiliate } from 'x-ear/packages/types/affiliate';
+import React, { useState } from 'react';
+import { Link } from '@tanstack/react-router';
+import { useListAffiliates, Affiliate } from '@/lib/api-client';
+import AffiliateDetailModal from '../../components/admin/AffiliateDetailModal';
 
-interface AffiliatesPageProps {
-  affiliates: Affiliate[];
-}
+const AffiliatesPage: React.FC = () => {
+  const { data: affiliatesData, isLoading, error, refetch } = useListAffiliates();
+  const [selectedAffiliateId, setSelectedAffiliateId] = useState<number | null>(null);
 
-const AffiliatesPage: React.FC<AffiliatesPageProps> = ({ affiliates }) => {
+  // Backend returns array directly, not wrapped
+  const affiliates = Array.isArray(affiliatesData) ? affiliatesData : [];
+
+  if (isLoading) return <div className="p-4">Yükleniyor...</div>;
+  if (error) return <div className="p-4 text-red-600">Hata oluştu: {(error as any).message}</div>;
+
   return (
-    <div>
-      <h1>Affiliate Listesi</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Email</th>
-            <th>IBAN</th>
-            <th>Aktif</th>
-            <th>Oluşturulma</th>
-          </tr>
-        </thead>
-        <tbody>
-          {affiliates.map((a) => (
-            <tr key={a.id}>
-              <td>{a.id}</td>
-              <td>{a.email}</td>
-              <td>{a.iban}</td>
-              <td>{a.is_active ? 'Evet' : 'Hayır'}</td>
-              <td>{a.created_at}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-6">Affiliate Listesi</h1>
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad Soyad</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefon</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IBAN</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aktif</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oluşturulma</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {affiliates.map((a: Affiliate) => (
+                <tr
+                  key={a.id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => setSelectedAffiliateId(a.id)}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-indigo-600">
+                    {a.display_id || a.id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{a.account_holder_name || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{a.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.phone_number || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.iban || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${a.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      {a.is_active ? 'Evet' : 'Hayır'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.created_at ? new Date(a.created_at).toLocaleDateString('tr-TR') : '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedAffiliateId(a.id);
+                      }}
+                      className="text-indigo-600 hover:text-indigo-900"
+                    >
+                      Detaylar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {(!affiliates || affiliates.length === 0) && (
+                <tr>
+                  <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">Kayıt bulunamadı.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {selectedAffiliateId && (
+        <AffiliateDetailModal
+          affiliateId={selectedAffiliateId}
+          isOpen={!!selectedAffiliateId}
+          onClose={() => setSelectedAffiliateId(null)}
+          onStatusChange={() => refetch()}
+        />
+      )}
+    </>
   );
 };
 

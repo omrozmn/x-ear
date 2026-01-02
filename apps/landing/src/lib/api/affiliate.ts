@@ -1,19 +1,48 @@
-import axios from 'axios';
-import { Affiliate, AffiliateRegisterRequest, AffiliateLoginRequest } from 'x-ear/packages/types/affiliate';
+import { apiClient } from './api-client';
+import { Affiliate, AffiliateRegisterRequest, AffiliateLoginRequest } from '@packages/types/affiliate';
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5003/api') + '/affiliate';
+const API_BASE = '/api/affiliate';
 
-export const registerAffiliate = async (data: AffiliateRegisterRequest): Promise<Affiliate> => {
-  const res = await axios.post(`${API_BASE}/register`, data);
-  return res.data;
+// Helper to unwrap backend response format { success: true, data: ... }
+const unwrap = (responseBody: any) => {
+  if (responseBody && responseBody.success && responseBody.data) {
+    return responseBody.data;
+  }
+  return responseBody;
+};
+
+export const registerAffiliate = async (data: Omit<AffiliateRegisterRequest, 'iban'> & { iban?: string }): Promise<Affiliate> => {
+  const res = await apiClient.post(`${API_BASE}/register`, {
+    ...data,
+    iban: data.iban || undefined
+  });
+  return unwrap(res.data);
 };
 
 export const loginAffiliate = async (data: AffiliateLoginRequest): Promise<Affiliate> => {
-  const res = await axios.post(`${API_BASE}/login`, data);
-  return res.data;
+  const res = await apiClient.post(`${API_BASE}/login`, data);
+  return unwrap(res.data);
 };
 
 export const getAffiliate = async (affiliate_id: number): Promise<Affiliate> => {
-  const res = await axios.get(`${API_BASE}/me`, { params: { affiliate_id } });
-  return res.data;
+  const res = await apiClient.get(`${API_BASE}/me`, { params: { affiliate_id } });
+  return unwrap(res.data);
+};
+
+export const updateAffiliatePaymentInfo = async (affiliate_id: number, iban: string, account_holder_name?: string, phone_number?: string): Promise<Affiliate> => {
+  const res = await apiClient.patch(`${API_BASE}/${affiliate_id}`, { iban, account_holder_name, phone_number });
+  return unwrap(res.data);
+};
+
+export interface Commission {
+  id: number;
+  event: string;
+  amount: number;
+  status: string;
+  created_at: string;
+}
+
+export const getAffiliateCommissions = async (affiliate_id: number): Promise<Commission[]> => {
+  const res = await apiClient.get(`${API_BASE}/${affiliate_id}/commissions`);
+  return unwrap(res.data);
 };

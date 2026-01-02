@@ -34,7 +34,7 @@ class AdminUser(db.Model):
     
     def set_password(self, password):
         """Set password hash"""
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = generate_password_hash(password, method='pbkdf2:sha256')
     
     def check_password(self, password):
         """Check password"""

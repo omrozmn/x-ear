@@ -141,7 +141,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const handleDateSelect = (date: Date) => {
     if (isDateDisabled(date)) return;
     
-    let selectedDate = new Date(date);
+    const selectedDate = new Date(date);
     
     if (showTime && timeValue) {
       const [hours, minutes] = timeValue.split(':').map(Number);

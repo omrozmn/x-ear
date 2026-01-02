@@ -7,6 +7,7 @@ from datetime import datetime
 from models.base import db
 from models.tenant import Tenant, TenantStatus
 from utils.admin_permissions import require_admin_permission, AdminPermissions
+from utils.tenant_security import UnboundSession
 import logging
 import uuid
 
@@ -46,12 +47,13 @@ def list_tenants():
         
         tenant_ids = [t.id for t in tenants]
         if tenant_ids:
-            user_counts = db.session.query(
-                User.tenant_id, 
-                func.count(User.id)
-            ).filter(
-                User.tenant_id.in_(tenant_ids)
-            ).group_by(User.tenant_id).all()
+            with UnboundSession():
+                user_counts = db.session.query(
+                    User.tenant_id, 
+                    func.count(User.id)
+                ).filter(
+                    User.tenant_id.in_(tenant_ids)
+                ).group_by(User.tenant_id).all()
             
             counts_map = {t_id: count for t_id, count in user_counts}
             
@@ -191,6 +193,8 @@ def update_tenant(tenant_id):
             tenant.company_info = data['company_info']
         if 'settings' in data:
             tenant.settings = data['settings']
+        if 'feature_usage' in data:
+            tenant.feature_usage = data['feature_usage']
         
         tenant.updated_at = datetime.utcnow()
         db.session.commit()
@@ -252,7 +256,8 @@ def get_tenant_users(tenant_id):
                 'error': {'message': 'Tenant not found'}
             }), 404
             
-        users = User.query.filter_by(tenant_id=tenant_id).all()
+        with UnboundSession():
+            users = User.query.filter_by(tenant_id=tenant_id).all()
         
         return jsonify({
             'success': True,
@@ -392,11 +397,12 @@ def create_tenant_user(tenant_id):
                 'error': {'message': 'Email and password are required'}
             }), 400
             
-        if User.query.filter_by(email=data['email']).first():
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Email already exists'}
-            }), 400
+        with UnboundSession():
+            if User.query.filter_by(email=data['email']).first():
+                return jsonify({
+                    'success': False,
+                    'error': {'message': 'Email already exists'}
+                }), 400
             
         user = User(
             email=data['email'],
@@ -450,7 +456,8 @@ def update_tenant_user(tenant_id, user_id):
                 'error': {'message': 'Tenant not found'}
             }), 404
             
-        user = User.query.filter_by(id=user_id, tenant_id=tenant_id).first()
+        with UnboundSession():
+            user = User.query.filter_by(id=user_id, tenant_id=tenant_id).first()
         if not user:
             return jsonify({
                 'success': False,
@@ -461,7 +468,8 @@ def update_tenant_user(tenant_id, user_id):
         
         if 'email' in data:
             # Check if email is taken by another user
-            existing = User.query.filter(User.email == data['email'], User.id != user_id).first()
+            with UnboundSession():
+                existing = User.query.filter(User.email == data['email'], User.id != user_id).first()
             if existing:
                 return jsonify({
                     'success': False,
@@ -471,7 +479,8 @@ def update_tenant_user(tenant_id, user_id):
             
         if 'username' in data:
             # Check if username is taken by another user
-            existing = User.query.filter(User.username == data['username'], User.id != user_id).first()
+            with UnboundSession():
+                existing = User.query.filter(User.username == data['username'], User.id != user_id).first()
             if existing:
                 return jsonify({
                     'success': False,
@@ -547,8 +556,26 @@ def add_tenant_addon(tenant_id):
             }), 404
             
         # Update feature usage based on addon
-        key = addon.unit_name or addon.slug
+        key = addon.unit_name or addon.slug or 'unknown'
         
+        # Ensure tenant.settings exists and is a dict
+        settings = dict(tenant.settings or {})
+        purchased_addons = list(settings.get('addons', []))
+        
+        # Add to purchased addons list tracking
+        purchased_addons.append({
+            'addon_id': addon.id,
+            'name': addon.name,
+            'price': float(addon.price) if addon.price else 0,
+            'limit_amount': addon.limit_amount,
+            'unit_name': addon.unit_name,
+            'added_at': datetime.utcnow().isoformat(),
+            'added_by_admin': True
+        })
+        
+        settings['addons'] = purchased_addons
+        tenant.settings = settings
+
         if not tenant.feature_usage:
             tenant.feature_usage = {}
             
@@ -570,7 +597,10 @@ def add_tenant_addon(tenant_id):
         return jsonify({
             'success': True,
             'message': 'Addon added successfully',
-            'data': {'tenant': tenant.to_dict()}
+            'data': {
+                'tenant': tenant.to_dict(),
+                'added_addon': purchased_addons[-1]
+            }
         }), 200
         
     except Exception as e:
@@ -580,6 +610,74 @@ def add_tenant_addon(tenant_id):
             'success': False,
             'error': {'message': str(e)}
         }), 500
+
+@admin_tenants_bp.route('/<tenant_id>/addons', methods=['DELETE'])
+@jwt_required()
+@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
+def remove_tenant_addon(tenant_id):
+    """Remove addon from tenant (decrease limits)"""
+    try:
+        from models.addon import AddOn
+        
+        tenant = Tenant.query.get(tenant_id)
+        if not tenant or tenant.deleted_at:
+            return jsonify({'success': False, 'error': {'message': 'Tenant not found'}}), 404
+            
+        data = request.get_json()
+        addon_id = data.get('addon_id')
+        
+        # Also support removing by index/timestamp if needed, but for now ID match
+        # If no Body provided, try query param
+        if not addon_id:
+             addon_id = request.args.get('addon_id')
+             
+        if not addon_id:
+            return jsonify({'success': False, 'error': {'message': 'Addon ID required'}}), 400
+            
+        addon = AddOn.query.get(addon_id)
+        if not addon:
+             return jsonify({'success': False, 'error': {'message': 'Addon definition not found'}}), 404
+
+        # 1. Update Settings (Remove from list)
+        settings = dict(tenant.settings or {})
+        purchased_addons = list(settings.get('addons', []))
+        
+        # Remove ONE instance of this addon (the most recent one or matching one)
+        removed_addon = None
+        for i, a in enumerate(purchased_addons):
+            if a.get('addon_id') == addon_id or a.get('id') == addon_id:
+                removed_addon = purchased_addons.pop(i)
+                break
+        
+        if not removed_addon:
+             return jsonify({'success': False, 'error': {'message': 'This addon is not active for this tenant'}}), 400
+             
+        settings['addons'] = purchased_addons
+        tenant.settings = settings
+        
+        # 2. Decrease Feature Usage
+        key = addon.unit_name or addon.slug or 'unknown'
+        usage = dict(tenant.feature_usage or {})
+        
+        if key in usage:
+            current_limit = usage[key].get('limit', 0)
+            reduction = addon.limit_amount or 0
+            new_limit = max(0, current_limit - reduction)
+            usage[key]['limit'] = new_limit
+            tenant.feature_usage = usage
+            
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Addon removed and limits decreased',
+            'data': {'tenant': tenant.to_dict()}
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Remove tenant addon error: {e}")
+        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
 
 @admin_tenants_bp.route('/<tenant_id>/status', methods=['PUT'])
 @jwt_required()

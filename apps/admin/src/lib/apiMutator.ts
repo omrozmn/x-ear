@@ -20,5 +20,7 @@ export const adminApi = <T>(requestConfig: any): Promise<T> => {
         requestConfig.url = `/api${requestConfig.url}`;
     }
 
-    return adminApiInstance(requestConfig).then(response => response.data);
+    return adminApiInstance(requestConfig).then(response => {
+        return response.data;
+    });
 };

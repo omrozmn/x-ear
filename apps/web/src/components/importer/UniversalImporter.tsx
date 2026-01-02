@@ -3,9 +3,9 @@ import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { Modal, Button, Input, Select, Alert } from '@x-ear/ui-web';
 import { z } from 'zod';
-import axios from 'axios';
 
-const api = axios.create({ baseURL: 'http://localhost:5003' });
+import { apiClient } from '../../api/orval-mutator';
+
 
 export type FieldDef = { key: string; label: string };
 
@@ -191,7 +191,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
           form.append('file', blob, 'import.csv');
 
           const endpoint = (uploadEndpoint && uploadEndpoint.length > 0) ? uploadEndpoint : '/api/patients/bulk_upload';
-          const resp = await api.post(endpoint, form, {
+          const resp = await apiClient.post(endpoint, form, {
             headers: { 'Content-Type': 'multipart/form-data' }
           });
 

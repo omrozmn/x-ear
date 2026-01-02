@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
-import axios from 'axios';
 import { Input } from '@x-ear/ui-web';
+import { useAuthStore } from '../../../stores/authStore';
 
-const api = axios.create({
-  baseURL: 'http://localhost:5003'
-});
+import {
+  useDevicesGetDeviceBrands,
+  useDevicesCreateDeviceBrand
+} from '@/api/generated';
+
 
 interface BrandAutocompleteProps {
   value: string;
@@ -79,26 +81,38 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
     'MDHearing'
   ];
 
-  // Load brands from API on mount
+  const { token } = useAuthStore();
+
+  // React Query hook for brands - only fetch if authenticated
+  const { data: brandsData } = useDevicesGetDeviceBrands({
+    query: { enabled: !!token }
+  });
+
+  // Load brands from API data
   useEffect(() => {
-    const loadBrands = async () => {
-      try {
-        const response = await api.get('/api/inventory/brands');
-        if (response.data.success && response.data.data?.brands) {
-          // Combine API brands with default brands
-          const apiBrands = response.data.data.brands;
-          const combined = [...new Set([...apiBrands, ...defaultBrands])];
-          setAllBrands(combined.sort());
-        } else {
-          setAllBrands(defaultBrands);
+    let apiBrands: string[] = [];
+    
+    // Handle different response structures
+    if (brandsData) {
+      if (Array.isArray(brandsData)) {
+        apiBrands = brandsData;
+      } else if ((brandsData as any)?.data) {
+        const innerData = (brandsData as any).data;
+        if (Array.isArray(innerData)) {
+          apiBrands = innerData;
+        } else if (innerData?.data && Array.isArray(innerData.data)) {
+          apiBrands = innerData.data;
         }
-      } catch (error) {
-        console.warn('Failed to load brands from API, using defaults:', error);
-        setAllBrands(defaultBrands);
       }
-    };
-    loadBrands();
-  }, []);
+    }
+    
+    if (apiBrands.length > 0) {
+      const combined = [...new Set([...apiBrands, ...defaultBrands])];
+      setAllBrands(combined.sort());
+    } else {
+      setAllBrands(defaultBrands);
+    }
+  }, [brandsData]);
 
   useEffect(() => {
     const brands = allBrands.length > 0 ? allBrands : defaultBrands;
@@ -114,14 +128,14 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
           .replace(/ö/g, 'o')
           .replace(/ç/g, 'c');
       };
-      
+
       const normalizedValue = normalizeTurkish(value);
-      
+
       // Score each brand
       const scored = brands.map(brand => {
         const normalizedBrand = normalizeTurkish(brand);
         let score = 0;
-        
+
         // Exact match
         if (normalizedBrand === normalizedValue) score = 100;
         // Starts with
@@ -136,17 +150,17 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
           }
           score = (matches / normalizedValue.length) * 50;
         }
-        
+
         return { brand, score };
       });
-      
+
       // Filter and sort by score
       const filtered = scored
         .filter(item => item.score > 30)
         .sort((a, b) => b.score - a.score)
         .slice(0, 10)
         .map(item => item.brand);
-      
+
       setFilteredBrands(filtered);
     } else if (isOpen) {
       setFilteredBrands(brands.slice(0, 10));
@@ -218,12 +232,14 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
     setIsOpen(false);
   };
 
+  const createBrandMutation = useDevicesCreateDeviceBrand();
+
   const handleCreateNew = async () => {
     const newBrand = value.trim();
     if (!newBrand) return;
 
     try {
-      const response = await api.post('/api/inventory/brands', { name: newBrand });
+      await createBrandMutation.mutateAsync({ data: { name: newBrand } });
       console.log('✅ New brand created:', newBrand);
       // Add to local list immediately
       setAllBrands(prev => [...new Set([...prev, newBrand])].sort());
@@ -238,7 +254,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
         setAllBrands(prev => [...new Set([...prev, newBrand])].sort());
       }
     }
-    
+
     onChange(newBrand);
     setIsOpen(false);
   };
@@ -269,7 +285,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      
+
       <div className="relative">
         <Input
           ref={inputRef}
@@ -279,14 +295,13 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            error ? 'border-red-300' : 'border-gray-300'
-          }`}
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${error ? 'border-red-300' : 'border-gray-300'
+            }`}
           aria-autocomplete="list"
           aria-expanded={isOpen}
           aria-controls="brand-autocomplete-list"
         />
-        
+
         {isOpen && (filteredBrands.length > 0 || showCreateNew) && portalRef.current && ReactDOM.createPortal(
           <div
             ref={dropdownRef}
@@ -337,9 +352,9 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
               </div>
             )}
           </div>
-        , portalRef.current)}
+          , portalRef.current)}
       </div>
-      
+
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );

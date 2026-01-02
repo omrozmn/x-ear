@@ -6,6 +6,7 @@ from models.tenant import Tenant
 from utils.admin_permissions import require_admin_permission, AdminPermissions
 import logging
 from datetime import datetime
+from utils.tenant_security import UnboundSession
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +34,12 @@ def get_integrations():
     try:
         tenant_id = request.args.get('tenant_id')
         
-        query = MarketplaceIntegration.query
-        if tenant_id:
-            query = query.filter(MarketplaceIntegration.tenant_id == tenant_id)
-            
-        integrations = query.all()
+        with UnboundSession():
+            query = MarketplaceIntegration.query
+            if tenant_id:
+                query = query.filter(MarketplaceIntegration.tenant_id == tenant_id)
+                
+            integrations = query.all()
         
         return jsonify({
             'success': True,

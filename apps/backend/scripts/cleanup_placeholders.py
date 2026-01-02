@@ -13,7 +13,7 @@ backend_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_dir))
 
 from models.base import db
-from models.inventory import Inventory
+from models.inventory import InventoryItem
 
 # Import the Flask app directly
 import sys

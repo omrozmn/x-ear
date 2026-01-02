@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
 from uuid import uuid4
 import json
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
@@ -223,6 +223,36 @@ class TenantQuery(BaseQuery):
         q = self._apply_tenant_filter()
         return BaseQuery.count(q)
     
+    def get_or_404(self, ident, description=None):
+        """Override get_or_404 to apply tenant filter.
+        
+        Args:
+            ident: The identifier to fetch
+            description: Optional custom error message
+            
+        Returns:
+            The entity if found and belongs to tenant
+            
+        Raises:
+            404 if not found or mismatch
+        """
+        # We need to manually handle this because session.get() patch handles 
+        # the singleton fetch, but get_or_404 on a query usually calls 
+        # session.get or similar but we want to ensure tenant filter is applied.
+        
+        # apply_tenant_filter returns a query object if filtering is possible
+        q = self._apply_tenant_filter()
+        
+        # Use simple filter if it's a query, or session.get if it's raw
+        # Actually, for get_or_404(ident), we can just do:
+        entity = self.column_descriptions[0]['entity']
+        obj = q.filter(entity.id == ident).first()
+        
+        if obj is None:
+            from flask import abort
+            abort(404, description=description)
+        return obj
+
     def paginate(self, page=1, per_page=20, error_out=True, max_per_page=None):
         """Manual paginate implementation for TenantQuery.
         

@@ -1,7 +1,7 @@
 import yaml
 import os
 
-openapi_path = '/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/openapi.yaml'
+openapi_path = '/Users/omerozmen/Desktop/x-ear web app/x-ear/openapi.yaml'
 
 with open(openapi_path, 'r') as f:
     spec = yaml.safe_load(f)
@@ -176,6 +176,34 @@ new_schemas = {
             'isActive': {'type': 'boolean'},
             'createdAt': {'type': 'string', 'format': 'date-time'},
             'updatedAt': {'type': 'string', 'format': 'date-time'}
+        }
+    },
+    'Affiliate': {
+        'type': 'object',
+        'properties': {
+            'id': {'type': 'integer'},
+            'email': {'type': 'string'},
+            'iban': {'type': 'string'},
+            'code': {'type': 'string'},
+            'is_active': {'type': 'boolean'},
+            'created_at': {'type': 'string', 'format': 'date-time'}
+        }
+    },
+    'AffiliateRegisterRequest': {
+        'type': 'object',
+        'required': ['email', 'password'],
+        'properties': {
+            'email': {'type': 'string'},
+            'password': {'type': 'string'},
+            'iban': {'type': 'string'}
+        }
+    },
+    'AffiliateLoginRequest': {
+        'type': 'object',
+        'required': ['email', 'password'],
+        'properties': {
+            'email': {'type': 'string'},
+            'password': {'type': 'string'}
         }
     }
 }
@@ -779,6 +807,104 @@ new_paths = {
                                     'data': {'type': 'array', 'items': {'$ref': '#/components/schemas/ActivityLog'}},
                                     'count': {'type': 'integer'}
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    '/api/affiliate/register': {
+        'post': {
+            'summary': 'Register Affiliate',
+            'tags': ['Affiliate'],
+            'requestBody': {
+                'content': {
+                    'application/json': {
+                        'schema': {'$ref': '#/components/schemas/AffiliateRegisterRequest'}
+                    }
+                }
+            },
+            'responses': {
+                '201': {
+                    'description': 'Created',
+                    'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Affiliate'}}}
+                }
+            }
+        }
+    },
+    '/api/affiliate/login': {
+        'post': {
+            'summary': 'Login Affiliate',
+            'tags': ['Affiliate'],
+            'requestBody': {
+                'content': {
+                    'application/json': {
+                        'schema': {'$ref': '#/components/schemas/AffiliateLoginRequest'}
+                    }
+                }
+            },
+            'responses': {
+                '200': {
+                    'description': 'Success',
+                    'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Affiliate'}}}
+                }
+            }
+        }
+    },
+    '/api/affiliate/me': {
+        'get': {
+            'summary': 'Get Affiliate Profile',
+            'tags': ['Affiliate'],
+            'parameters': [{'name': 'affiliate_id', 'in': 'query', 'required': True, 'schema': {'type': 'integer'}}],
+            'responses': {
+                '200': {
+                    'description': 'Success',
+                    'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Affiliate'}}}
+                }
+            }
+        }
+    },
+    '/api/affiliate/{affiliate_id}': {
+        'patch': {
+            'summary': 'Update Affiliate IBAN',
+            'tags': ['Affiliate'],
+            'parameters': [{'name': 'affiliate_id', 'in': 'path', 'required': True, 'schema': {'type': 'integer'}}],
+            'requestBody': {
+                'content': {
+                    'application/json': {
+                        'schema': {
+                            'type': 'object',
+                            'required': ['iban'],
+                            'properties': {'iban': {'type': 'string'}}
+                        }
+                    }
+                }
+            },
+            'responses': {
+                '200': {
+                    'description': 'Success',
+                    'content': {'application/json': {'schema': {'$ref': '#/components/schemas/Affiliate'}}}
+                }
+            }
+        }
+    },
+    '/api/affiliate/list': {
+        'get': {
+            'summary': 'List Affiliates',
+            'tags': ['Affiliate'],
+            'parameters': [
+                {'name': 'skip', 'in': 'query', 'schema': {'type': 'integer'}},
+                {'name': 'limit', 'in': 'query', 'schema': {'type': 'integer'}}
+            ],
+            'responses': {
+                '200': {
+                    'description': 'Success',
+                    'content': {
+                        'application/json': {
+                            'schema': {
+                                'type': 'array',
+                                'items': {'$ref': '#/components/schemas/Affiliate'}
                             }
                         }
                     }

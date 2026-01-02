@@ -23,6 +23,7 @@ import {
 export * from './api/activity-logs/activity-logs';
 export * from './api/add-ons/add-ons';
 export * from './api/admin/admin';
+export * from './api/affiliate/affiliate';
 export * from './api/analytics/analytics';
 export * from './api/auth/auth';
 export * from './api/billing/billing';
@@ -312,7 +313,7 @@ export const markNotificationRead = (id: string) => adminApi<any>({ url: `/api/a
 export const usePutApiNotificationsNotificationIdRead = (options?: any) => useMutation({ mutationFn: ({ id }: { id: string }) => markNotificationRead(id), ...options?.mutation });
 
 // Auth
-export const adminLogin = (credentials: any) => adminApi<any>({ url: '/api/auth/login', method: 'POST', data: credentials });
+export const adminLogin = (credentials: any) => adminApi<any>({ url: '/admin/auth/login', method: 'POST', data: credentials });
 export const useAdminLogin = (options?: any) => useMutation({ mutationFn: (credentials: any) => adminLogin(credentials), ...options?.mutation });
 
 

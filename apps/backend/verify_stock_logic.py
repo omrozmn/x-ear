@@ -11,7 +11,7 @@ from app import app
 from models.base import db
 from models.sales import DeviceAssignment, Sale
 from models.patient import Patient
-from models.inventory import Inventory
+from models.inventory import InventoryItem
 
 def run_stock_tests():
     client = app.test_client()
@@ -79,7 +79,7 @@ def run_stock_tests():
         
         # Verify Stock (Should still be 10)
         db.session.expire_all()
-        inv_check = db.session.get(Inventory, inv_id_main)
+        inv_check = db.session.get(InventoryItem, inv_id_main)
         print(f"   Stock Check (Pending): {inv_check.available_inventory} (Exp: 10)")
         if inv_check.available_inventory != 10:
              print("❌ FAIL: Stock dropped on pending assignment!")
@@ -95,7 +95,7 @@ def run_stock_tests():
         resp = client.patch(f'/api/device-assignments/{assignment_id}', json=payload_deliver)
         
         db.session.expire_all()
-        inv_check = db.session.get(Inventory, inv_id_main)
+        inv_check = db.session.get(InventoryItem, inv_id_main)
         print(f"   Stock Check (Delivered): {inv_check.available_inventory} (Exp: 9)")
         if inv_check.available_inventory != 9:
              print("❌ FAIL: Stock did not drop correctly on delivery!")
@@ -133,7 +133,7 @@ def run_stock_tests():
         resp = client.patch(f'/api/device-assignments/{assignment_id}', json=payload_loaner_update)
         
         db.session.expire_all()
-        inv_loan_check = db.session.get(Inventory, inv_id_loaner)
+        inv_loan_check = db.session.get(InventoryItem, inv_id_loaner)
         # Start 5. Drop 1 (Right ear). Exp 4.
         # Note: If manual serial 'L-TEST-1' is auto-added, total goes to 6, then drops 1 -> 5 available?
         # Let's check available count specifically.

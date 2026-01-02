@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Numeric, DateTime, func
 from sqlalchemy.orm import relationship
-from .base import Base
+from .base import db
 
 
-class CommissionLedger(Base):
+class CommissionLedger(db.Model):
     __tablename__ = 'commission_ledger'
 
     id = Column(Integer, primary_key=True, autoincrement=True)

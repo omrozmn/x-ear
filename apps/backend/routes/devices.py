@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify, make_response
 from models.base import db
 from models.device import Device
-from models.inventory import Inventory
+from models.inventory import InventoryItem
+from models.user import User
 from models.enums import DeviceSide, DeviceStatus, DeviceCategory
 from constants import CANONICAL_CATEGORY_HEARING_AID
 from datetime import datetime
@@ -9,6 +10,7 @@ from sqlalchemy.orm import load_only
 import logging
 from utils.idempotency import idempotent
 from utils.optimistic_locking import optimistic_lock, with_transaction
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 logger = logging.getLogger(__name__)
 
@@ -331,14 +333,14 @@ def delete_device(device_id):
         if assignment:
             # Restore stock if applicable
             if assignment.delivery_status == 'delivered' and assignment.inventory_id:
-                inventory = db.session.get(Inventory, assignment.inventory_id)
+                inventory = db.session.get(InventoryItem, assignment.inventory_id)
                 if inventory:
                     inventory.update_inventory(1)
                     # Log movement could be added here
             
             # Restore loaner stock if applicable
             if assignment.is_loaner and assignment.loaner_inventory_id:
-                 loaner_inv = db.session.get(Inventory, assignment.loaner_inventory_id)
+                 loaner_inv = db.session.get(InventoryItem, assignment.loaner_inventory_id)
                  if loaner_inv:
                       loaner_inv.update_inventory(1)
             
@@ -452,7 +454,7 @@ def get_device_categories():
 def get_device_brands():
     """Get available device brands from inventory"""
     try:
-        brands = db.session.query(Inventory.brand).distinct().filter(Inventory.brand.isnot(None)).all()
+        brands = db.session.query(InventoryItem.brand).distinct().filter(InventoryItem.brand.isnot(None)).all()
         # Convert to list of strings
         brand_list = [str(brand[0]) for brand in brands if brand[0]]
 
@@ -472,10 +474,16 @@ def get_device_brands():
 
 
 @devices_bp.route('/devices/brands', methods=['POST'])
+@jwt_required()
 @idempotent(methods=['POST'])
 def create_device_brand():
     """Create a new device brand by creating a placeholder device"""
     try:
+        current_user_id = get_jwt_identity()
+        user = db.session.get(User, current_user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 401
+        
         data = request.get_json()
         if not data or 'name' not in data:
             return jsonify({
@@ -492,8 +500,11 @@ def create_device_brand():
                 "timestamp": datetime.now().isoformat()
             }), 400
 
-        # Check if brand already exists
-        existing_brand = db.session.query(Device.brand).filter(Device.brand == brand_name).first()
+        # Check if brand already exists for this tenant
+        existing_brand = db.session.query(Device.brand).filter(
+            Device.brand == brand_name,
+            Device.tenant_id == user.tenant_id
+        ).first()
         if existing_brand:
             return jsonify({
                 "success": False,
@@ -503,12 +514,13 @@ def create_device_brand():
 
         # Create a placeholder device to establish the brand
         placeholder_device = Device(
+            tenant_id=user.tenant_id,
             serial_number=f"BRAND_PLACEHOLDER_{brand_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             brand=brand_name,
             model=f"Placeholder for {brand_name}",
             category="aksesuar",  # Use a generic category
             device_type="aksesuar",
-            status=DeviceStatus.AVAILABLE,
+            status='IN_STOCK',  # String value instead of enum
             patient_id="inventory",  # Mark as inventory item
             created_at=datetime.now(),
             updated_at=datetime.now()
@@ -541,7 +553,7 @@ def create_device_brand():
 def get_low_stock_devices():
     """Get devices with low stock levels"""
     try:
-        devices = Device.query.filter(Device.status == 'available').limit(10).all()
+        devices = Device.query.filter(Device.status == 'IN_STOCK').limit(10).all()
 
         return jsonify({
             "success": True,

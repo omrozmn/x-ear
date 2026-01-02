@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from models.base import db
 from models.patient import Patient
 from models.sales import Sale
-from models.sales import PaymentRecord as SalesPaymentRecord
+from models.sales import PaymentRecord
 import logging
 
 logger = logging.getLogger(__name__)
@@ -80,17 +80,17 @@ def get_unified_cash_records():
                 
                 record = {
                     'id': f"sale_{sale.id}",
-                    'original_id': sale.id,
-                    'record_type': 'sale',
+                    'originalId': sale.id,
+                    'recordType': 'sale',
                     'date': sale.created_at.isoformat() if sale.created_at else datetime.now().isoformat(),
-                    'transaction_type': 'income',
-                    'patient_id': sale.patient_id,
-                    'patient_name': patient_name,
+                    'transactionType': 'income',
+                    'patientId': sale.patient_id,
+                    'patientName': patient_name,
                     'amount': float(sale.total_amount or 0),
                     'status': sale.status or 'pending',
                     'description': f"Satış - {sale.notes or ''}",
-                    'payment_method': 'mixed',  # Satışlar genelde karışık ödeme
-                    'reference_number': None,
+                    'paymentMethod': 'mixed',  # Satışlar genelde karışık ödeme
+                    'referenceNumber': None,
                     'category': 'sale'
                 }
                 unified_records.append(record)
@@ -119,17 +119,17 @@ def get_unified_cash_records():
                 
                 record = {
                     'id': f"payment_{payment.id}",
-                    'original_id': payment.id,
-                    'record_type': 'payment',
+                    'originalId': payment.id,
+                    'recordType': 'payment',
                     'date': payment.payment_date.isoformat() if payment.payment_date else datetime.now().isoformat(),
-                    'transaction_type': transaction_type,
-                    'patient_id': payment.patient_id,
-                    'patient_name': patient_name,
+                    'transactionType': transaction_type,
+                    'patientId': payment.patient_id,
+                    'patientName': patient_name,
                     'amount': float(payment.amount or 0),
                     'status': payment.status or 'paid',
                     'description': payment.notes or f"{payment.payment_type or 'Ödeme'} - {payment.payment_method or ''}",
-                    'payment_method': payment.payment_method or 'unknown',
-                    'reference_number': payment.reference_number,
+                    'paymentMethod': payment.payment_method or 'unknown',
+                    'referenceNumber': payment.reference_number,
                     'category': 'payment'
                 }
                 unified_records.append(record)
@@ -179,17 +179,17 @@ def get_unified_cash_records():
                 
                 record = {
                     'id': f"cash_{cash_record.id}",
-                    'original_id': cash_record.id,
-                    'record_type': 'cash',
+                    'originalId': cash_record.id,
+                    'recordType': 'cash',
                     'date': cash_record.payment_date.isoformat() if cash_record.payment_date else datetime.now().isoformat(),
-                    'transaction_type': transaction_type,
-                    'patient_id': cash_record.patient_id,
-                    'patient_name': patient_name,
+                    'transactionType': transaction_type,
+                    'patientId': cash_record.patient_id,
+                    'patientName': patient_name,
                     'amount': float(cash_record.amount or 0),
                     'status': cash_record.status or 'paid',
                     'description': cash_record.notes or 'Nakit işlem',
-                    'payment_method': 'cash',
-                    'reference_number': cash_record.reference_number,
+                    'paymentMethod': 'cash',
+                    'referenceNumber': cash_record.reference_number,
                     'category': derive_record_type(cash_record.notes)
                 }
                 unified_records.append(record)
@@ -208,15 +208,15 @@ def get_unified_cash_records():
         return jsonify({
             'success': True,
             'data': unified_records,
-            'count': len(unified_records),
+            'totalCount': len(unified_records),
             'summary': {
-                'total_income': total_income,
-                'total_expense': total_expense,
-                'net_amount': net_amount,
-                'record_types': {
-                    'sales': len([r for r in unified_records if r['record_type'] == 'sale']),
-                    'payments': len([r for r in unified_records if r['record_type'] == 'payment']),
-                    'cash': len([r for r in unified_records if r['record_type'] == 'cash'])
+                'totalIncome': total_income,
+                'totalExpense': total_expense,
+                'netAmount': net_amount,
+                'recordTypes': {
+                    'sales': len([r for r in unified_records if r['recordType'] == 'sale']),
+                    'payments': len([r for r in unified_records if r['recordType'] == 'payment']),
+                    'cash': len([r for r in unified_records if r['recordType'] == 'cash'])
                 }
             }
         })
@@ -315,18 +315,18 @@ def get_cash_summary():
         return jsonify({
             'success': True,
             'period': period,
-            'start_date': start_dt.isoformat(),
-            'end_date': end_dt.isoformat(),
+            'startDate': start_dt.isoformat(),
+            'endDate': end_dt.isoformat(),
             'summary': {
-                'total_income': total_income,
-                'total_expense': total_expense,
-                'net_amount': net_amount,
+                'totalIncome': total_income,
+                'totalExpense': total_expense,
+                'netAmount': net_amount,
                 'breakdown': {
                     'sales': float(sales_total),
-                    'payments_income': float(payments_income),
-                    'payments_expense': abs(float(payments_expense)),
-                    'cash_income': float(cash_income),
-                    'cash_expense': abs(float(cash_expense))
+                    'paymentsIncome': float(payments_income),
+                    'paymentsExpense': abs(float(payments_expense)),
+                    'cashIncome': float(cash_income),
+                    'cashExpense': abs(float(cash_expense))
                 }
             }
         })

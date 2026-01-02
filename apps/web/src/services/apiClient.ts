@@ -1,5 +1,6 @@
 // Minimal Orval wrapper / api client adapter
 // Keep this file small: only basic fetch wrapper and example method used by Inventory
+import { apiClient } from '../api/orval-mutator';
 
 export type InventoryItem = {
   id: string;
@@ -10,67 +11,38 @@ export type InventoryItem = {
   status?: 'in_stock' | 'low_stock' | 'out_of_stock';
 };
 
-const BASE = '/api'; // assume API proxy
-
-async function fetchJson<T>(path: string, opts: RequestInit = {}): Promise<T> {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(opts.headers || {}),
-  };
-
-  // Prefer global in-memory token, then new key, then legacy key
-  let token: string | null = null;
-  try {
-    if (typeof window !== 'undefined') {
-      token = window.__AUTH_TOKEN__ || localStorage.getItem('x-ear.auth.token@v1') || localStorage.getItem('auth_token');
-    }
-  } catch (e) {
-    token = null;
-  }
-  if (token) {
-    (headers as any)['Authorization'] = `Bearer ${token}`;
-  }
-
-  const res = await fetch(`${BASE}${path}`, {
-    credentials: 'same-origin',
-    ...opts,
-    headers,
-  });
-  if (!res.ok) throw new Error(`API ${res.status} ${res.statusText}`);
-  return res.json();
-}
-
-export const apiClient = {
+export const apiClientExtended = {
   async getInventoryItems(): Promise<InventoryItem[]> {
     // In real app wrap orval client calls here
-    return fetchJson<InventoryItem[]>('/inventory');
+    // Since customInstance unwraps data, we just return it
+    const response = await apiClient.get<InventoryItem[]>('/inventory');
+    return response.data;
   },
 
   async get<T>(path: string): Promise<{ data: T }> {
-    const data = await fetchJson<T>(path);
-    return { data };
+    const response = await apiClient.get<T>(path);
+    // Maintain legacy { data: T } structure for compatibility if needed, 
+    // butOrval usually returns data directly. 
+    // Here we wrap it back for call-sites that expect it.
+    return { data: response.data };
   },
 
   async post<T>(path: string, body: any): Promise<{ data: T }> {
-    const data = await fetchJson<T>(path, {
-      method: 'POST',
-      body: JSON.stringify(body),
-    });
-    return { data };
+    const response = await apiClient.post<T>(path, body);
+    return { data: response.data };
   },
 
   async put<T>(path: string, body: any): Promise<{ data: T }> {
-    const data = await fetchJson<T>(path, {
-      method: 'PUT',
-      body: JSON.stringify(body),
-    });
-    return { data };
+    const response = await apiClient.put<T>(path, body);
+    return { data: response.data };
   },
 
   async delete(path: string): Promise<{ data: any }> {
-    const data = await fetchJson<any>(path, {
-      method: 'DELETE',
-    });
-    return { data };
+    const response = await apiClient.delete<any>(path);
+    return { data: response.data };
   },
 };
+
+// For backward compatibility while we refactor imports
+export const apiClientLegacy = apiClientExtended;
+export { apiClientLegacy as apiClient };

@@ -1,7 +1,11 @@
 import React, { useState, useRef } from 'react';
 import PdfPreviewModal from './PdfPreviewModal';
 
-export const SgkMultiUpload: React.FC = () => {
+export interface SgkMultiUploadProps {
+  onUpload: (files: File[]) => Promise<{ files: any[] }>;
+}
+
+export const SgkMultiUpload: React.FC<SgkMultiUploadProps> = ({ onUpload }) => {
   const [files, setFiles] = useState<File[]>([]);
   const [results, setResults] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -22,11 +26,8 @@ export const SgkMultiUpload: React.FC = () => {
     if (!files.length) return;
     setUploading(true);
     try {
-      const fd = new FormData();
-      files.forEach(f => fd.append('files', f, f.name));
-      const res = await fetch('/api/sgk/upload', { method: 'POST', body: fd });
-      const json = await res.json();
-      setResults(json.files || []);
+      const result = await onUpload(files);
+      setResults(result.files || []);
     } catch (e) {
       console.error('Upload failed', e);
       alert('Upload failed, check console');

@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from models.base import db
 from models.admin_user import AdminUser
 from utils.admin_permissions import require_admin_permission, AdminPermissions
+from utils.tenant_security import UnboundSession
 import logging
 import uuid
 import traceback
@@ -234,21 +235,22 @@ def get_all_tenant_users():
         from models.user import User
         from models.tenant import Tenant
         
-        query = User.query
-        
-        if search:
-            query = query.filter(
-                (User.email.ilike(f'%{search}%')) |
-                (User.first_name.ilike(f'%{search}%')) |
-                (User.last_name.ilike(f'%{search}%')) |
-                (User.username.ilike(f'%{search}%'))
-            )
+        with UnboundSession():
+            query = User.query
             
-        # Join with Tenant to get tenant name if needed, or just return tenant_id
-        # query = query.join(Tenant) 
-        
-        total = query.count()
-        users = query.order_by(User.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            if search:
+                query = query.filter(
+                    (User.email.ilike(f'%{search}%')) |
+                    (User.first_name.ilike(f'%{search}%')) |
+                    (User.last_name.ilike(f'%{search}%')) |
+                    (User.username.ilike(f'%{search}%'))
+                )
+                
+            # Join with Tenant to get tenant name if needed, or just return tenant_id
+            # query = query.join(Tenant) 
+            
+            total = query.count()
+            users = query.order_by(User.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         users_list = []
         for u in users:

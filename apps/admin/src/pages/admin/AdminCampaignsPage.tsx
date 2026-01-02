@@ -245,8 +245,8 @@ const AdminCampaignsPage: React.FC = () => {
                                             key={i}
                                             onClick={() => setPage(i + 1)}
                                             className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${page === i + 1
-                                                    ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
-                                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                                ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
+                                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                                                 }`}
                                         >
                                             {i + 1}
@@ -436,7 +436,7 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+                            className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
                         >
                             {isLoading ? 'Kaydediliyor...' : 'Kaydet'}
                         </button>

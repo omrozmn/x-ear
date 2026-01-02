@@ -1,5 +1,5 @@
 from app import app, db
-from models.inventory import Inventory
+from models.inventory import InventoryItem
 from models.user import User
 from models.tenant import Tenant
 import uuid

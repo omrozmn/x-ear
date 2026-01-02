@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 admin_appointments_bp = Blueprint('admin_appointments', __name__, url_prefix='/api/admin/appointments')
 
+from utils.tenant_security import UnboundSession
+
 @admin_appointments_bp.route('', methods=['GET'])
 @jwt_required()
 @require_admin_permission(AdminPermissions.APPOINTMENTS_READ)
@@ -27,40 +29,41 @@ def get_all_appointments():
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
         
-        query = Appointment.query
-        
-        # Join with Patient to search by patient name
-        query = query.join(Patient)
-        
-        if search:
-            query = query.filter(
-                (Patient.first_name.ilike(f'%{search}%')) |
-                (Patient.last_name.ilike(f'%{search}%')) |
-                (Patient.phone.ilike(f'%{search}%'))
-            )
+        with UnboundSession():
+            query = Appointment.query
             
-        if tenant_id:
-            query = query.filter(Appointment.tenant_id == tenant_id)
+            # Join with Patient to search by patient name
+            query = query.join(Patient)
             
-        if status:
-            query = query.filter(Appointment.status == status)
-            
-        if start_date:
-            try:
-                start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
-                query = query.filter(Appointment.date >= start)
-            except ValueError:
-                pass
+            if search:
+                query = query.filter(
+                    (Patient.first_name.ilike(f'%{search}%')) |
+                    (Patient.last_name.ilike(f'%{search}%')) |
+                    (Patient.phone.ilike(f'%{search}%'))
+                )
                 
-        if end_date:
-            try:
-                end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
-                query = query.filter(Appointment.date <= end)
-            except ValueError:
-                pass
-            
-        total = query.count()
-        appointments = query.order_by(Appointment.date.desc(), Appointment.time.desc()).offset((page - 1) * limit).limit(limit).all()
+            if tenant_id:
+                query = query.filter(Appointment.tenant_id == tenant_id)
+                
+            if status:
+                query = query.filter(Appointment.status == status)
+                
+            if start_date:
+                try:
+                    start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+                    query = query.filter(Appointment.date >= start)
+                except ValueError:
+                    pass
+                    
+            if end_date:
+                try:
+                    end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                    query = query.filter(Appointment.date <= end)
+                except ValueError:
+                    pass
+                
+            total = query.count()
+            appointments = query.order_by(Appointment.date.desc(), Appointment.time.desc()).offset((page - 1) * limit).limit(limit).all()
         
         appointments_list = []
         for appt in appointments:

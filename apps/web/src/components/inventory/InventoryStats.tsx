@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: 'http://localhost:5003'
-});
+import { inventoryGetInventoryStats } from '@/api/generated';
 
 interface InventoryStatsProps {
   className?: string;
@@ -31,8 +27,8 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
     const loadStats = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/api/inventory/stats');
-        const data = response.data?.data || {};
+        const response = await inventoryGetInventoryStats() as any;
+        const data = response?.data || response || {};
 
         const calculatedStats: InventoryStats = {
           // Use DB-level totals returned by the stats endpoint (avoids pagination limits)

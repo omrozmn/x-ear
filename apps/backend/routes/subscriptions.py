@@ -10,7 +10,9 @@ from datetime import datetime, timedelta
 subscriptions_bp = Blueprint('subscriptions', __name__)
 
 
-def serialize_tenant(tenant: Tenant | None) -> dict | None:
+from typing import Union, Optional
+
+def serialize_tenant(tenant: Optional[Tenant]) -> Optional[dict]:
     if not tenant:
         return None
 
@@ -31,7 +33,7 @@ def serialize_tenant(tenant: Tenant | None) -> dict | None:
     }
 
 
-def serialize_plan(plan: Plan | None) -> dict | None:
+def serialize_plan(plan: Optional[Plan]) -> Optional[dict]:
     if not plan:
         return None
 
@@ -83,11 +85,28 @@ def subscribe():
     if not plan:
         return error_response('Plan not found', 404)
         
-    tenant = Tenant.query.get(user.tenant_id)
+    tenant = None
+    if user.tenant_id:
+        tenant = Tenant.query.get(user.tenant_id)
+    
+    # If no tenant, create one (Self-Service Onboarding flow)
     if not tenant:
-        return error_response('Tenant not found', 404)
+        company_name = data.get('company_name') or f"{user.username}'s Clinic"
+        tenant = Tenant(
+            name=company_name,
+            slug=Tenant.generate_slug(company_name),
+            owner_email=user.email or f"{user.phone}@mobile.x-ear.com", # Fallback if email placeholder
+            billing_email=user.email or f"{user.phone}@mobile.x-ear.com",
+            status=TenantStatus.ACTIVE.value
+        )
+        db.session.add(tenant)
+        db.session.flush() # Get ID
         
-    # Calculate subscription dates
+        # Link user to tenant
+        user.tenant_id = tenant.id
+        user.role = 'tenant_admin' # Upgrade role
+        db.session.add(user) # Update user
+        
     start_date = datetime.utcnow()
     if billing_interval == 'YEARLY':
         end_date = start_date + timedelta(days=365)
@@ -96,7 +115,7 @@ def subscribe():
     else:
         end_date = start_date + timedelta(days=365) # Default
         
-    # Update Tenant
+    # Update Tenant Subscription
     tenant.current_plan_id = plan.id
     tenant.current_plan = plan.slug # Legacy support
     tenant.subscription_start_date = start_date
@@ -104,7 +123,141 @@ def subscribe():
     tenant.status = TenantStatus.ACTIVE.value
     
     # Initialize feature usage from plan features
-    # We assume plan.features is a list of dicts: [{'key': 'sms', 'limit': 1000}, ...]
+    feature_usage = tenant.feature_usage or {}
+    
+    # Process Plan Features
+    if plan.features and isinstance(plan.features, list):
+        for feature in plan.features:
+            key = feature.get('key')
+            limit = feature.get('limit', 0)
+            if key:
+                # If feature already exists (e.g. from previous addon), add to it or overwrite?
+                # For basic plan features, usually reset.
+                feature_usage[key] = {
+                    'limit': limit,
+                    'used': 0,
+                    'last_reset': start_date.isoformat()
+                }
+
+    # Process Addons
+    addon_ids = data.get('addon_ids', [])
+    if addon_ids:
+        # Assuming we would fetch addons and add their limits to feature_usage
+        pass
+
+    # Process SMS Package
+    sms_package_id = data.get('sms_package_id')
+    if sms_package_id:
+        from models.sms_package import SmsPackage
+        sms_pkg = SmsPackage.query.get(sms_package_id)
+        if sms_pkg:
+            # Add SMS credits directly to feature_usage 'sms_credits'
+            # Note: This is an accumulator, not a reset.
+            current_credits = feature_usage.get('sms_credits', 0)
+            # If stored as dict {limit, used}, handle that. If simple int, handle that.
+            # Let's standardize on simple int for "credits" vs {limit, used} for "quotas"
+            if isinstance(current_credits, dict):
+                 current_credits = current_credits.get('limit', 0) # Fallback if mixed types
+            
+            feature_usage['sms_credits'] = current_credits + sms_pkg.sms_count
+    
+    tenant.feature_usage = feature_usage
+    
+    # Explicitly mark modified if JSON
+    from sqlalchemy.orm.attributes import flag_modified
+    flag_modified(tenant, "feature_usage")
+    
+    db.session.commit()
+    
+    return success_response({
+        'message': 'Subscription successful',
+        'tenant': tenant.to_dict(),
+        'plan': plan.to_dict()
+    })
+@subscriptions_bp.route('/complete-signup', methods=['POST'])
+@jwt_required()
+def complete_signup():
+    """
+    Complete user signup and subscribe.
+    Used for both:
+    1. Users coming from /register (already have phone verified)
+    2. Users verifying phone inline at checkout
+    """
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    
+    if not user:
+        return error_response('User not found', 404)
+        
+    data = request.get_json()
+    
+    # Update User Profile
+    if data.get('email'):
+        # Check if email is already taken by ANOTHER user
+        existing = User.query.filter_by(email=data['email']).first()
+        if existing and existing.id != user.id:
+            return error_response('Bu e-posta adresi zaten kullanımda', 400)
+        user.email = data['email']
+        
+    if data.get('password'):
+        user.set_password(data['password'])
+        
+    if data.get('first_name'):
+        user.first_name = data['first_name']
+        
+    if data.get('last_name'):
+        user.last_name = data['last_name']
+
+    # Create Tenant if not exists
+    tenant = None
+    if user.tenant_id:
+        tenant = Tenant.query.get(user.tenant_id)
+    
+    if not tenant:
+        company_name = data.get('company_name') or f"{user.first_name}'s Clinic"
+        
+        # Check if tenant name exists? Slug generation handles duplicates usually
+        slug = Tenant.generate_slug(company_name)
+        
+        tenant = Tenant(
+            name=company_name,
+            slug=slug,
+            owner_email=user.email or f"{user.phone}@mobile.x-ear.com",
+            billing_email=user.email or f"{user.phone}@mobile.x-ear.com",
+            status=TenantStatus.ACTIVE.value
+        )
+        db.session.add(tenant)
+        db.session.flush() # Get ID
+        
+        # Link user
+        user.tenant_id = tenant.id
+        user.role = 'tenant_admin'
+    
+    # Handle Subscription
+    plan_id = data.get('plan_id')
+    if not plan_id:
+        return error_response('Plan seçimi zorunludur', 400)
+        
+    plan = Plan.query.get(plan_id)
+    if not plan:
+        return error_response('Geçersiz plan', 404)
+        
+    billing_interval = data.get('billing_interval', 'YEARLY')
+    
+    start_date = datetime.utcnow()
+    # Simple logic for now
+    if billing_interval == 'YEARLY':
+        end_date = start_date + timedelta(days=365)
+    else:
+        end_date = start_date + timedelta(days=30)
+        
+    tenant.current_plan_id = plan.id
+    tenant.current_plan = plan.slug
+    tenant.subscription_start_date = start_date
+    tenant.subscription_end_date = end_date
+    tenant.status = TenantStatus.ACTIVE.value
+    
+    # Initialize features
     feature_usage = {}
     if plan.features and isinstance(plan.features, list):
         for feature in plan.features:
@@ -116,16 +269,17 @@ def subscribe():
                     'used': 0,
                     'last_reset': start_date.isoformat()
                 }
-    
     tenant.feature_usage = feature_usage
     
     db.session.commit()
     
     return success_response({
-        'message': 'Subscription successful',
+        'message': 'Hesap oluşturma ve abonelik başarılı',
         'tenant': tenant.to_dict(),
-        'plan': plan.to_dict()
+        'user': user.to_dict(),
+        'token': data.get('token') # Just echo back or ignore
     })
+
 
 @subscriptions_bp.route('/current', methods=['GET'])
 @jwt_required()
@@ -185,7 +339,7 @@ def register_and_subscribe():
         return error_response('Email already registered', 400)
         
     # Check plan
-    plan = Plan.query.get(plan_id)
+    plan = db.session.get(Plan, plan_id)
     if not plan:
         return error_response('Plan not found', 404)
         
@@ -225,6 +379,16 @@ def register_and_subscribe():
                     }
         tenant.feature_usage = feature_usage
         
+        # Handle Referral Code
+        referral_code = data.get('referral_code')
+        affiliate = None
+        if referral_code:
+            from models.affiliate_user import AffiliateUser
+            affiliate = AffiliateUser.query.filter_by(code=referral_code).first()
+            if affiliate and affiliate.is_active:
+                tenant.affiliate_id = affiliate.id
+                tenant.referral_code = referral_code
+
         db.session.add(tenant)
         db.session.flush() # Get ID
         
@@ -240,6 +404,23 @@ def register_and_subscribe():
         db.session.add(user)
         
         db.session.commit()
+        
+        # Generate Referral Commission
+        if affiliate and plan.price and float(plan.price) > 0:
+            try:
+                from services.commission_service import CommissionService
+                commission_amount = float(plan.price) * 0.10  # 10% commission
+                CommissionService.create_commission(
+                    db=db.session,
+                    affiliate_id=affiliate.id,
+                    tenant_id=tenant.id,
+                    event='signup_subscription',
+                    amount=commission_amount,
+                    status='pending'
+                )
+            except Exception as e:
+                # Log error but don't fail registration
+                print(f"Failed to create commission: {e}")
         
         # Generate Token
         from flask_jwt_extended import create_access_token

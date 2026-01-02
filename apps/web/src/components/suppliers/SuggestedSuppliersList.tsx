@@ -1,8 +1,12 @@
 import React from 'react';
 import { DataTable, Badge, Button, Modal } from '@x-ear/ui-web';
 import { Building2, CheckCircle, XCircle, Eye } from 'lucide-react';
-import { useAcceptSuggestedSupplier, useRejectSuggestedSupplier, useSupplierInvoices } from '../../hooks/useSupplierInvoices';
-import type { SuggestedSupplier } from '@/api/generated/schemas';
+import {
+    SuggestedSupplier,
+    useAcceptSuggestedSupplier,
+    useRejectSuggestedSupplier,
+    useSupplierInvoices
+} from '../../hooks/useSupplierInvoices';
 
 interface SuggestedSuppliersListProps {
     suppliers: SuggestedSupplier[];
@@ -15,7 +19,7 @@ function InvoiceListSection({ supplierId }: { supplierId: number }) {
     const { data, isLoading, error } = useSupplierInvoices({
         supplierId: String(supplierId),
         page: 1,
-        per_page: 10,
+        perPage: 10,
         type: 'all',
     });
 
@@ -25,7 +29,7 @@ function InvoiceListSection({ supplierId }: { supplierId: number }) {
     if (error) {
         return <p className="text-sm text-red-600">Faturalar yüklenirken bir hata oluştu.</p>;
     }
-    const invoices = (data as any)?.data?.invoices || (data as any)?.invoices || [];
+    const invoices = data?.invoices || [];
     if (invoices.length === 0) {
         return <p className="text-sm text-gray-500">Bu tedarikçi için fatura bulunamadı.</p>;
     }
@@ -82,9 +86,10 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
         }
     };
 
-    const handleReject = async (supplierId: number) => {
+    const handleReject = async (supplierId: number | undefined) => {
+        if (!supplierId) return;
         try {
-            await rejectMutation.mutateAsync(supplierId ?? 0);
+            await rejectMutation.mutateAsync(supplierId);
         } catch (error) {
             console.error('Failed to reject supplier:', error);
         }
@@ -303,7 +308,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                             variant="outline"
                             className="text-red-600 hover:bg-red-50"
                             onClick={() => {
-                                handleReject(selectedSupplier.id ?? 0);
+                                handleReject(selectedSupplier.id);
                                 setSelectedSupplier(null);
                             }}
                             disabled={rejectMutation.isPending}

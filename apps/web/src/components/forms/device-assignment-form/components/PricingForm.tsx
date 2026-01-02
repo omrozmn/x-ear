@@ -1,3 +1,4 @@
+import { useGetPricingSettings } from '@/api/generated/settings/settings';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Input, Select } from '@x-ear/ui-web';
 import { CreditCard, Calculator, Percent, DollarSign } from 'lucide-react';
@@ -55,7 +56,6 @@ export const PricingForm: React.FC<PricingFormProps> = ({
     { value: 'age13_18_parent_working', label: '13-18 Yaş (Veli Çalışan)' },
     { value: 'age13_18_parent_retired', label: '13-18 Yaş (Veli Emekli)' },
     { value: 'over18_working', label: '18+ Yaş (Çalışan)' },
-    { value: 'over18_working', label: '18+ Yaş (Çalışan)' },
     { value: 'over18_retired', label: '18+ Yaş (Emekli)' }
   ];
 
@@ -82,21 +82,25 @@ export const PricingForm: React.FC<PricingFormProps> = ({
   const [settingsSchemes, setSettingsSchemes] = useState<Record<string, any>>({});
   const [schemeAmount, setSchemeAmount] = useState<number>(0);
 
-  useEffect(() => {
-    let mounted = true;
-    // Fetch settings once to get SGK schemes data (defensive - some backends embed under different keys)
-    fetch('/api/settings')
-      .then(r => r.ok ? r.json() : Promise.resolve({}))
-      .then(j => {
-        if (!mounted) return;
-        const schemes = (j && (j.schemes || j.sgk?.schemes || j.sgkSchemes)) || {};
-        setSettingsSchemes(schemes);
-      }).catch(() => {
-        // ignore errors - leave schemes empty
-      });
+  const { data: settingsData } = useGetPricingSettings();
 
-    return () => { mounted = false; };
-  }, []);
+  useEffect(() => {
+    if (settingsData) {
+      // Handle different possible response structures or fallback
+      // The generated hook returns void or specific type, but we treat it as any for safety here
+      // consistent with previous logic
+      const j = settingsData as any;
+      const schemes = (j && (j.schemes || j.sgk?.schemes || j.sgkSchemes || j.data?.schemes)) || (j?.data || {});
+      // Note: Backend seems to return { success: true, data: { ... } }
+      // If generated hook unwraps it, we get data directly. 
+      // If not, we check .data
+
+      // Based on previous fetch: r.json() -> j
+      // j.schemes ...
+      // If useGetPricingSettings returns the full response object:
+      setSettingsSchemes(schemes);
+    }
+  }, [settingsData]);
 
   // Recompute scheme amount when selection or list price changes
   useEffect(() => {

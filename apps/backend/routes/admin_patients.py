@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 admin_patients_bp = Blueprint('admin_patients', __name__, url_prefix='/api/admin/patients')
 
+from utils.tenant_security import UnboundSession
+
 @admin_patients_bp.route('', methods=['GET'])
 @jwt_required()
 @require_admin_permission(AdminPermissions.PATIENTS_READ)
@@ -20,18 +22,19 @@ def get_all_patients():
         limit = request.args.get('limit', 10, type=int)
         search = request.args.get('search', '')
         
-        query = Patient.query
-        
-        if search:
-            query = query.filter(
-                (Patient.first_name.ilike(f'%{search}%')) |
-                (Patient.last_name.ilike(f'%{search}%')) |
-                (Patient.tc_kimlik.ilike(f'%{search}%')) |
-                (Patient.phone.ilike(f'%{search}%'))
-            )
+        with UnboundSession():
+            query = Patient.query
             
-        total = query.count()
-        patients = query.order_by(Patient.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            if search:
+                query = query.filter(
+                    (Patient.first_name.ilike(f'%{search}%')) |
+                    (Patient.last_name.ilike(f'%{search}%')) |
+                    (Patient.tc_kimlik.ilike(f'%{search}%')) |
+                    (Patient.phone.ilike(f'%{search}%'))
+                )
+                
+            total = query.count()
+            patients = query.order_by(Patient.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         patients_list = []
         for p in patients:

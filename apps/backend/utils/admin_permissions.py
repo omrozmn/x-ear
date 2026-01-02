@@ -290,3 +290,13 @@ class AdminPermissions:
     CAMPAIGNS_READ = 'platform.campaigns.read'
     CAMPAIGNS_MANAGE = 'platform.campaigns.manage'
 
+    # SMS Packages & Headers
+    SMS_PACKAGES_READ = 'platform.sms_packages.read'
+    SMS_PACKAGES_MANAGE = 'platform.sms_packages.manage'
+    SMS_HEADERS_READ = 'platform.sms_headers.read'
+    SMS_HEADERS_MANAGE = 'platform.sms_headers.manage'
+
+    # Payments
+    PAYMENTS_READ = 'platform.payments.read'
+    PAYMENTS_MANAGE = 'platform.payments.manage'
+

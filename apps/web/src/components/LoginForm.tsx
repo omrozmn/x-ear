@@ -29,9 +29,13 @@ export function LoginForm() {
 
   const { login, verifyOtp, sendOtp, isLoading, error, requiresOtp: _requiresOtp, requiresPhone: _requiresPhone, maskedPhone: _maskedPhone, setError } = useAuthStore();
 
+  // Debug: Log error state changes
+  console.log('LoginForm error state:', error);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) {
+      setError('Kullanıcı adı ve şifre gereklidir');
       return;
     }
 
@@ -47,9 +51,16 @@ export function LoginForm() {
       if (!useAuthStore.getState().requiresOtp) {
         window.location.replace('/');
       }
-    } catch (error) {
-      // Error is already set by the store
+    } catch (error: any) {
+      // Error is already set by the store, but ensure it's displayed
       console.error('Login failed:', error);
+
+      // If store didn't set an error, set a generic one
+      const currentError = useAuthStore.getState().error;
+
+      if (!currentError) {
+        setError('Giriş başarısız oldu. Lütfen tekrar deneyin.');
+      }
     }
   };
 

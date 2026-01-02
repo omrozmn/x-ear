@@ -1,10 +1,12 @@
-import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
+import { apiClient } from './orval-mutator';
 
-export const fetchPatientDistribution = async () => {
-  const res = await axios.get('/api/dashboard/charts/patient-distribution');
-  return res.data;
-};
+import { dashboardPatientDistribution } from '@/api/generated';
+
+export async function fetchPatientDistribution() {
+  const res = await dashboardPatientDistribution() as any; // API returns data despite void type
+  return res || [];
+}
 
 export function usePatientDistribution(options?: any) {
   // Accept either a raw options object or the generated wrapper shape { query: {...}, axios: ... }

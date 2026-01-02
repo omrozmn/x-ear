@@ -845,7 +845,10 @@ ENDPOINT_PERMISSIONS = {
 # HELPER FUNCTIONS
 # =============================================================================
 
-def get_permission_for_endpoint(method: str, path: str) -> str | None:
+
+from typing import Optional
+
+def get_permission_for_endpoint(method: str, path: str) -> Optional[str]:
     """
     Verilen HTTP method ve path için gerekli permission'ı döndürür.
     

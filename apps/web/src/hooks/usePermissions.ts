@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import { useCallback, useMemo } from 'react';
+import { customInstance } from '../api/orval-mutator';
+import { API_BASE_URL } from '../constants/api';
 
 // Permission categories
 export const PERMISSION_CATEGORIES = {
@@ -45,17 +47,15 @@ async function authFetch<T>(endpoint: string, options: RequestInit = {}): Promis
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    credentials: 'same-origin',
-    ...options,
+  // Use customInstance instead of fetch - maintains auth + retry logic
+  const response = await customInstance({
+    url: endpoint,
+    method: options.method || 'GET',
     headers,
+    data: options.body ? JSON.parse(options.body as string) : undefined
   });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  return response.json();
+  return response;
 }
 
 // Permission response from API

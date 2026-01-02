@@ -50,7 +50,7 @@ export default function AdminPaymentsPage() {
             if (filter.end_date) params.end_date = filter.end_date
 
             const response = await adminApi<{ success: boolean, data: PaymentTransaction[] }>({
-                url: '/payments/pos/transactions',
+                url: '/admin/payments/pos/transactions',
                 params
             })
 

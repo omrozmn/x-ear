@@ -9,6 +9,7 @@ from models.addon import AddOn, AddOnType
 from utils.admin_permissions import require_admin_permission, AdminPermissions
 import logging
 import uuid
+from utils.tenant_security import UnboundSession
 
 logger = logging.getLogger(__name__)
 
@@ -25,17 +26,18 @@ def list_addons():
         addon_type = request.args.get('type', '')
         is_active = request.args.get('is_active', '')
         
-        query = AddOn.query
-        
-        if addon_type:
-            query = query.filter_by(addon_type=AddOnType[addon_type.upper()])
-        if is_active:
-            query = query.filter_by(is_active=is_active.lower() == 'true')
+        with UnboundSession():
+            query = AddOn.query
             
-        query = query.order_by(AddOn.created_at.desc())
-        
-        total = query.count()
-        addons = query.offset((page - 1) * limit).limit(limit).all()
+            if addon_type:
+                query = query.filter_by(addon_type=AddOnType[addon_type.upper()])
+            if is_active:
+                query = query.filter_by(is_active=is_active.lower() == 'true')
+                
+            query = query.order_by(AddOn.created_at.desc())
+            
+            total = query.count()
+            addons = query.offset((page - 1) * limit).limit(limit).all()
         
         return jsonify({
             'success': True,

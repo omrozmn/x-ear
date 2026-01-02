@@ -548,7 +548,7 @@ const Billing: React.FC = () => {
                           Fatura No
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Kiracı
+                          Abone
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Durum
@@ -742,7 +742,7 @@ const Billing: React.FC = () => {
                     <h4 className="text-sm font-medium text-gray-900 mb-2">Müşteri Bilgileri</h4>
                     <dl className="space-y-1 text-sm">
                       <div className="flex justify-between">
-                        <dt className="text-gray-500">Kiracı:</dt>
+                        <dt className="text-gray-500">Abone:</dt>
                         <dd className="text-gray-900">{selectedInvoice.tenantName}</dd>
                       </div>
                       <div className="flex justify-between">
@@ -1114,14 +1114,14 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Kiracı</label>
+              <label className="block text-sm font-medium text-gray-700">Abone</label>
               <select
                 value={formData.tenant_id}
                 onChange={(e) => setFormData(prev => ({ ...prev, tenant_id: e.target.value }))}
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
               >
-                <option value="">Kiracı seçin</option>
+                <option value="">Abone seçin</option>
                 {tenants.map((tenant) => (
                   <option key={tenant.id} value={tenant.id}>
                     {tenant.name || tenant.company_name}

@@ -334,8 +334,9 @@ def export_patients_csv():
         output.close()
 
         # Log export
-        from app import log_activity
-        log_activity(user_id or 'unknown', 'export', 'patient', None, {'count': len(patients)}, request)
+        from app import log_activity        
+        # Log activity
+        log_activity(current_user_id or 'unknown', 'export', 'patient', None, {'count': len(patients)}, request)
 
         response = make_response(csv_bytes)
         response.headers.set('Content-Type', 'text/csv; charset=utf-8')
@@ -877,7 +878,7 @@ def get_patient_devices(patient_id):
             return jsonify({'success': False, 'error': 'User not found'}), 401
 
         from models.sales import DeviceAssignment
-        from models.inventory import Inventory
+        from models.inventory import InventoryItem as Inventory
         
         # Get patient to verify existence
         patient = db.session.get(Patient, patient_id)
@@ -896,7 +897,8 @@ def get_patient_devices(patient_id):
             # Get inventory item details if available
             inventory_item = None
             if assignment.inventory_id:
-                inventory_item = db.session.get(Inventory, assignment.inventory_id)
+                from models.inventory import InventoryItem
+                inventory_item = db.session.get(InventoryItem, assignment.inventory_id)
             
             # Start with the model's to_dict output which contains most fields
             device_dict = assignment.to_dict()
@@ -1018,7 +1020,7 @@ def get_patient_sales(patient_id):
                 # Get inventory item details if available
                 inventory_item = None
                 if assignment.inventory_id:
-                    from models.inventory import Inventory
+                    from models.inventory import InventoryItem as Inventory
                     inventory_item = db.session.get(Inventory, assignment.inventory_id)
                 
                 # Build device info with inventory details

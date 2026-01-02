@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from app import create_app
 from models import db
 from models.patient import Patient
-from models.inventory import Inventory
+from models.inventory import InventoryItem
 from models.sale import Sale
 from models.device_assignment import DeviceAssignment
 import json

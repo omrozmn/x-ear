@@ -70,20 +70,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             const response = await adminLogin(credentials) as any;
 
+            console.log('Login response after unwrap:', response);
+
+            // Handle MFA requirement - response is already unwrapped to {token, user, requires_mfa}
             if (response.requires_mfa) {
                 return { requires_mfa: true };
             }
 
-            if (response.access_token && response.data) {
-                const { data: user, access_token: token } = response;
-                // Cast to TypeAdminUser because generated type might differ slightly (e.g. optional id)
+            // After envelope unwrapping, response is directly {token, user, requires_mfa}
+            if (response.token && response.user) {
+                const { token, user } = response;
                 setAuth(user as unknown as TypeAdminUser, token);
                 tokenManager.setToken(token);
                 toast.success('Giriş başarılı');
                 return { user: user as unknown as TypeAdminUser, token };
             }
 
-            return response as any;
+            // Fallback: if response still has nested structure (shouldn't happen after unwrap fix)
+            if (response.data && response.data.token && response.data.user) {
+                const { token, user } = response.data;
+                setAuth(user as unknown as TypeAdminUser, token);
+                tokenManager.setToken(token);
+                toast.success('Giriş başarılı');
+                return { user: user as unknown as TypeAdminUser, token };
+            }
+
+            console.error('Unexpected login response format:', response);
+            throw new Error('Invalid login response format');
         } catch (error: any) {
             console.error('Login error:', error);
             throw error;

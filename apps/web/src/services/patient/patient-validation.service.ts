@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-import type { Patient as OrvalPatient } from '../../api/generated/schemas';
+import type { Patient as OrvalPatient } from '@/api/generated';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -134,8 +134,7 @@ export class PatientValidationService {
   }
 
   private validateRequiredFields(patient: Partial<OrvalPatient>, errors: ValidationError[]): void {
-    // Phone is optional now for quick creation
-    /*
+    // Phone is required
     if (!patient.phone || !patient.phone.trim()) {
       errors.push({
         field: 'phone',
@@ -144,7 +143,6 @@ export class PatientValidationService {
         severity: 'error'
       });
     }
-    */
 
     // Name is required (firstName and lastName)
     if (!patient.firstName || !patient.firstName.trim()) {
