@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import { Input } from '@x-ear/ui-web';
 import { useAuthStore } from '../../../stores/authStore';
-
+import { useQueryClient } from '@tanstack/react-query';
 import {
-  useDevicesGetDeviceBrands,
-  getDevicesGetDeviceBrandsQueryKey,
-  useDevicesCreateDeviceBrand
-} from '@/api/generated';
+  useInventoryGetBrands,
+  getInventoryGetBrandsQueryKey,
+  useInventoryCreateBrand
+} from '../../../api/generated/index';
 
 
 interface BrandAutocompleteProps {
@@ -83,35 +83,19 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
   ];
 
   const { token } = useAuthStore();
+  const queryClient = useQueryClient();
 
   // React Query hook for brands - only fetch if authenticated
-  const { data: brandsData, isLoading, isError } = useDevicesGetDeviceBrands({
+  const { data: brandsData, isLoading, isError } = useInventoryGetBrands({
     query: {
-      queryKey: getDevicesGetDeviceBrandsQueryKey(),
       enabled: !!token
     }
   });
 
   // Load brands from API data
   useEffect(() => {
-    let apiBrands: string[] = [];
-
-    // Handle different response structures
-    if (brandsData) {
-      if (Array.isArray(brandsData)) {
-        apiBrands = brandsData;
-      } else if ((brandsData as any)?.data) {
-        const innerData = (brandsData as any).data;
-        if (Array.isArray(innerData)) {
-          apiBrands = innerData;
-        } else if (innerData?.data && Array.isArray(innerData.data)) {
-          apiBrands = innerData.data;
-        }
-      }
-    }
-
-    if (apiBrands.length > 0) {
-      const combined = [...new Set([...apiBrands, ...defaultBrands])];
+    if (brandsData && Array.isArray(brandsData)) {
+      const combined = [...new Set([...brandsData, ...defaultBrands])];
       setAllBrands(combined.sort());
     } else {
       setAllBrands(defaultBrands);
@@ -236,7 +220,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
     setIsOpen(false);
   };
 
-  const createBrandMutation = useDevicesCreateDeviceBrand();
+  const createBrandMutation = useInventoryCreateBrand();
 
   const handleCreateNew = async () => {
     const newBrand = value.trim();
@@ -247,11 +231,17 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
       console.log('✅ New brand created:', newBrand);
       // Add to local list immediately
       setAllBrands(prev => [...new Set([...prev, newBrand])].sort());
+      
+      // Invalidate React Query cache to refetch brands
+      queryClient.invalidateQueries({ queryKey: getInventoryGetBrandsQueryKey() });
     } catch (error: any) {
       if (error.response?.status === 409) {
         console.log('Brand already exists, using existing:', newBrand);
         // Still add to local list
         setAllBrands(prev => [...new Set([...prev, newBrand])].sort());
+        
+        // Invalidate cache
+        queryClient.invalidateQueries({ queryKey: getInventoryGetBrandsQueryKey() });
       } else {
         console.warn('Failed to persist brand to API, using locally:', error);
         // Add to local list anyway

@@ -55,6 +55,7 @@ class Patient(BaseModel, JSONMixin):
     ereceipts = db.relationship('EReceipt', backref='patient', lazy=True, cascade='all, delete-orphan')
     hearing_tests = db.relationship('HearingTest', backref='patient', lazy=True, cascade='all, delete-orphan')
     proformas = db.relationship('Proforma', back_populates='patient', lazy=True, cascade='all, delete-orphan')
+    branch = db.relationship('Branch', backref='patients', lazy=True)
 
     # JSON properties for safe access
     @property
@@ -111,6 +112,7 @@ class Patient(BaseModel, JSONMixin):
             'referredBy': self.referred_by,
             'priorityScore': self.priority_score,
             'branchId': self.branch_id,
+            'branchName': self.branch.name if self.branch else None,
             'tags': self.tags_json,
             'sgkInfo': self.sgk_info_json
         }

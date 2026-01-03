@@ -749,7 +749,28 @@ export class PatientService {
       .filter(patient => this.calculatePriorityScore(patient) >= 50)
       .sort((a, b) => this.calculatePriorityScore(b) - this.calculatePriorityScore(a));
   }
+
+  /**
+   * Reset service state - clears in-memory cache and IndexedDB
+   * MUST be called when user switches roles or tenants to prevent data leakage
+   */
+  async reset(): Promise<void> {
+    console.log('🧹 PatientService.reset() - Clearing all patient cache for tenant isolation');
+
+    // Clear in-memory cache
+    this.patients = [];
+    this.initialized = false;
+
+    // Clear IndexedDB
+    try {
+      await indexedDBManager.clearAll();
+      console.log('✅ IndexedDB cleared successfully');
+    } catch (error) {
+      console.error('Failed to clear IndexedDB:', error);
+    }
+  }
 }
 
 // Singleton instance
 export const patientService = new PatientService();
+

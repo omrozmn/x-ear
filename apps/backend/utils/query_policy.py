@@ -57,6 +57,7 @@ def tenant_scoped_query(ctx: AccessContext, model_class: Type[T]) -> Query:
     
     # Apply tenant filtering
     if ctx.tenant_id:
+        logger.info(f"DEBUG: tenant_scoped_query filtering {model_class.__name__} by tenant_id={ctx.tenant_id}")
         # Either tenant user OR super admin with context switch
         query = query.filter_by(tenant_id=ctx.tenant_id)
     elif not ctx.is_super_admin:

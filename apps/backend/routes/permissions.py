@@ -28,7 +28,7 @@ PERMISSION_CATEGORIES = {
 }
 
 @permissions_bp.route('/permissions', methods=['GET'])
-@unified_access(permission=AdminPermissions.ROLES_READ)
+@unified_access(permission='role:read')
 def list_permissions(ctx):
     """List all permissions, grouped by category (Admin)"""
     # This seems to be for managing system global permissions
@@ -126,7 +126,7 @@ def get_my_permissions(ctx):
 
 
 @permissions_bp.route('/permissions/role/<role_name>', methods=['GET'])
-@unified_access(permission=AdminPermissions.ROLES_READ)
+@unified_access(permission='role:read')
 def get_role_permissions(ctx, role_name):
     """Get permissions for a specific role (Admin Panel)"""
     role = Role.query.filter_by(name=role_name).one_or_none()
@@ -140,7 +140,7 @@ def get_role_permissions(ctx, role_name):
 
 
 @permissions_bp.route('/permissions/role/<role_name>', methods=['PUT'])
-@unified_access(permission=AdminPermissions.ROLES_MANAGE)
+@unified_access(permission='role:write')
 def update_role_permissions(ctx, role_name):
     """Update permissions for a role (Admin Panel)"""
     role = Role.query.filter_by(name=role_name).one_or_none()

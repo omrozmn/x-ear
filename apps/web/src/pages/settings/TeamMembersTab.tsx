@@ -107,7 +107,7 @@ export function TeamMembersTab() {
         e.preventDefault();
         setInviteError('');
         setInviteSuccess('');
-        inviteMutation.mutate({ data: inviteData });
+        inviteMutation.mutate(inviteData);
     };
 
     const handleDelete = (userId: string) => {

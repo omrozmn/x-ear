@@ -33,6 +33,7 @@ import type {
   InventoryCreateCategory201,
   InventoryCreateCategoryBody,
   InventoryCreateInventoryItemBody,
+  InventoryGetBrands200,
   InventoryGetCategories200,
   InventoryGetInventoryItem200,
   InventoryGetInventoryItems200,
@@ -995,6 +996,98 @@ export const useInventoryCreateCategory = <TError = ErrorResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * @summary Get all brands
+ */
+export const inventoryGetBrands = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<InventoryGetBrands200>(
+      {url: `/api/inventory/brands`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getInventoryGetBrandsQueryKey = () => {
+    return [
+    `/api/inventory/brands`
+    ] as const;
+    }
+
+    
+export const getInventoryGetBrandsQueryOptions = <TData = Awaited<ReturnType<typeof inventoryGetBrands>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof inventoryGetBrands>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getInventoryGetBrandsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof inventoryGetBrands>>> = ({ signal }) => inventoryGetBrands(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof inventoryGetBrands>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type InventoryGetBrandsQueryResult = NonNullable<Awaited<ReturnType<typeof inventoryGetBrands>>>
+export type InventoryGetBrandsQueryError = unknown
+
+
+export function useInventoryGetBrands<TData = Awaited<ReturnType<typeof inventoryGetBrands>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof inventoryGetBrands>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof inventoryGetBrands>>,
+          TError,
+          Awaited<ReturnType<typeof inventoryGetBrands>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useInventoryGetBrands<TData = Awaited<ReturnType<typeof inventoryGetBrands>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof inventoryGetBrands>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof inventoryGetBrands>>,
+          TError,
+          Awaited<ReturnType<typeof inventoryGetBrands>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useInventoryGetBrands<TData = Awaited<ReturnType<typeof inventoryGetBrands>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof inventoryGetBrands>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get all brands
+ */
+
+export function useInventoryGetBrands<TData = Awaited<ReturnType<typeof inventoryGetBrands>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof inventoryGetBrands>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getInventoryGetBrandsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * @summary Create a new brand
  */
 export const inventoryCreateBrand = (

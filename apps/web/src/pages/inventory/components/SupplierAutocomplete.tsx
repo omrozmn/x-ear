@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import { Input, Button } from '@x-ear/ui-web';
 import { useAuthStore } from '../../../stores/authStore';
+import { useQueryClient } from '@tanstack/react-query';
 
 import {
   useSuppliersGetSuppliers,
@@ -75,6 +76,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
   ];
 
   const { token } = useAuthStore();
+  const queryClient = useQueryClient();
 
   // React Query hooks for data fetching - only fetch if authenticated
   const { data: suppliersData, isLoading: isLoadingSuppliers, isError: isErrorSuppliers } = useSuppliersGetSuppliers(
@@ -289,11 +291,19 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
       console.log('✅ New supplier created:', newSupplier);
       // Add to local list immediately
       setAllSuppliers(prev => [...new Set([...prev, newSupplier])].sort());
+      
+      // Invalidate React Query cache to refetch suppliers
+      queryClient.invalidateQueries({ queryKey: getSuppliersGetSuppliersQueryKey() });
+      queryClient.invalidateQueries({ queryKey: getInventoryGetInventoryItemsQueryKey() });
     } catch (error: any) {
       if (error.response?.status === 409) {
         console.log('Supplier already exists, using existing:', newSupplier);
         // Still add to local list
         setAllSuppliers(prev => [...new Set([...prev, newSupplier])].sort());
+        
+        // Invalidate cache
+        queryClient.invalidateQueries({ queryKey: getSuppliersGetSuppliersQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getInventoryGetInventoryItemsQueryKey() });
       } else {
         console.warn('Failed to persist supplier to API, using locally:', error);
         // Add to local list anyway

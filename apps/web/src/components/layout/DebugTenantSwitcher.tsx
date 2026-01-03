@@ -8,6 +8,7 @@ import {
   useAdminDebugExitImpersonation,
 } from '@/api/generated/admin/admin';
 import { useAuthStore } from '../../stores/authStore';
+import { patientService } from '../../services/patient.service';
 
 const DEBUG_ADMIN_EMAIL = 'admin@x-ear.com';
 
@@ -49,6 +50,11 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
     mutation: {
       onSuccess: async (response) => {
         console.log('[DebugTenantSwitcher] Tenant switch success:', response);
+
+        // CRITICAL: Clear patient cache to prevent data leakage between tenants
+        console.log('[DebugTenantSwitcher] Clearing patient cache for tenant isolation...');
+        await patientService.reset();
+
         const data = (response as any)?.data;
 
         if (data?.accessToken && user) {
@@ -87,6 +93,11 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
     mutation: {
       onSuccess: async (response) => {
         console.log('[DebugTenantSwitcher] Exit impersonation success');
+
+        // CRITICAL: Clear patient cache to prevent data leakage between tenants
+        console.log('[DebugTenantSwitcher] Clearing patient cache for tenant isolation...');
+        await patientService.reset();
+
         const data = (response as any)?.data;
 
         if (data?.accessToken && user) {

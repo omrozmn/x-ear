@@ -376,11 +376,41 @@ def get_device_categories(ctx):
 def get_device_brands(ctx):
     """Get available device brands"""
     try:
-        query = db.session.query(InventoryItem.brand).distinct().filter(InventoryItem.brand.isnot(None))
+        # Get brands from both Brand table and Device/Inventory tables
+        brands_set = set()
+        
+        # From Brand table
+        from models.brand import Brand
+        brand_models = Brand.query.all()
+        for brand in brand_models:
+            if brand.name:
+                brands_set.add(brand.name)
+        
+        # From Device table
+        device_query = db.session.query(Device.brand).distinct().filter(
+            Device.brand.isnot(None),
+            Device.brand != ''
+        )
         if ctx.tenant_id:
-            query = query.filter(InventoryItem.tenant_id == ctx.tenant_id)
-        brands = query.all()
-        brand_list = [str(brand[0]) for brand in brands if brand[0]]
+            device_query = device_query.filter(Device.tenant_id == ctx.tenant_id)
+        
+        for brand in device_query.all():
+            if brand[0]:
+                brands_set.add(brand[0])
+        
+        # From Inventory table (for backward compatibility)
+        inv_query = db.session.query(InventoryItem.brand).distinct().filter(
+            InventoryItem.brand.isnot(None),
+            InventoryItem.brand != ''
+        )
+        if ctx.tenant_id:
+            inv_query = inv_query.filter(InventoryItem.tenant_id == ctx.tenant_id)
+        
+        for brand in inv_query.all():
+            if brand[0]:
+                brands_set.add(brand[0])
+        
+        brand_list = sorted(list(brands_set))
         return success_response(data={'brands': brand_list})
     except Exception as e:
         logger.error(f"Get device brands error: {str(e)}")

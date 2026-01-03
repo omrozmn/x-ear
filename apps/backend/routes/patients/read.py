@@ -27,9 +27,20 @@ def list_patients(ctx):
         
         query = Patient.query
         
+        # Debug Log - Detailed Context Inspection
+        try:
+           claims_debug = {k: v for k, v in ctx.claims.items() if k in ['tenant_id', 'role', 'is_impersonating', 'effective_role', 'effective_tenant_id']}
+           logger.info(f"DEBUG: list_patients CONTEXT: tenant_id={ctx.tenant_id} is_super={ctx.is_super_admin} principal={ctx.principal_id}")
+           logger.info(f"DEBUG: list_patients CLAIMS: {claims_debug}")
+        except Exception as e:
+           logger.error(f"DEBUG LOG ERROR: {e}")
+
         # 1. Tenant Scope (ABAC)
         if ctx.tenant_id:
+            logger.info(f"DEBUG: list_patients Filtering by tenant_id={ctx.tenant_id}")
             query = query.filter_by(tenant_id=ctx.tenant_id)
+        else:
+            logger.info("DEBUG: list_patients NO TENANT ID FILTER APPLIED - POTENTIAL LEAK")
 
         # 2. Branch Logic (Legacy preservation for Tenant Admin)
         # Using ctx._principal to access the underlying user object

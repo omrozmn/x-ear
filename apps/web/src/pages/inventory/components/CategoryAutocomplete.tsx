@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react';
 import { Input } from '@x-ear/ui-web';
 import { getCategoryDisplay, getCategoryValue } from '../../../utils/category-mapping';
 import { useAuthStore } from '../../../stores/authStore';
+import { useQueryClient } from '@tanstack/react-query';
 
 import {
   useInventoryGetCategories,
@@ -76,6 +77,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
   ];
 
   const { token } = useAuthStore();
+  const queryClient = useQueryClient();
 
   // React Query hook for categories - only fetch if authenticated
   const { data: categoriesData, isLoading, isError } = useInventoryGetCategories({
@@ -238,9 +240,15 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
       console.log('✅ New category created:', newCategory);
       // Add to local list immediately
       setAllCategories(prev => [...new Set([...prev, newCategory])].sort());
+      
+      // Invalidate React Query cache to refetch categories
+      queryClient.invalidateQueries({ queryKey: getInventoryGetCategoriesQueryKey() });
     } catch (error: any) {
       if (error.response?.status === 409) {
         console.log('Category already exists, using existing:', newCategory);
+        
+        // Invalidate cache
+        queryClient.invalidateQueries({ queryKey: getInventoryGetCategoriesQueryKey() });
       } else {
         console.warn('Failed to persist category to API, using locally:', error);
       }

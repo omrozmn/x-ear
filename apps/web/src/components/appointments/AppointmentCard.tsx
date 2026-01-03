@@ -106,18 +106,13 @@ export function AppointmentCard({
           <HStack spacing="xs" className="items-center">
             <div className="flex-1 min-w-0">
               <Text className="text-sm font-medium truncate">
-                {appointment.patientName}
+                {appointment.patientName || 'Hasta bilgisi yok'}
               </Text>
               <Text className="text-xs text-gray-500">
                 {appointment.time}
               </Text>
             </div>
-            <Badge 
-              variant={statusVariant}
-              className="text-xs"
-            >
-              {statusLabels[appointment.status]}
-            </Badge>
+            {/* Status badge removed for compact view - show patient name instead */}
           </HStack>
         </div>
       </Card>

@@ -5,7 +5,6 @@ import { useDroppable } from '@dnd-kit/core';
 import { Button, Card, Text, VStack } from '@x-ear/ui-web';
 import { Appointment } from '../../../types/appointment';
 import { useCalendarKeyboardNavigation } from '../../../hooks/useKeyboardNavigation';
-import { AppointmentCard as SharedAppointmentCard } from '../AppointmentCard';
 
 interface CalendarDayProps {
   selectedDate: Date;
@@ -109,12 +108,21 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           </div>
           <div className="flex-1 space-y-1">
             {slot.appointments.map((appointment) => (
-              <SharedAppointmentCard
+              <div
                 key={appointment.id}
-                appointment={appointment}
-                onClick={() => onAppointmentClick(appointment)}
-                isCompact={isCompactView}
-              />
+                className="text-sm p-2 rounded bg-blue-50 border border-blue-200 cursor-pointer hover:bg-blue-100"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAppointmentClick(appointment);
+                }}
+              >
+                <div className="font-medium">
+                  {appointment.patientName || 'Hasta bilgisi yok'}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {appointment.time} ({appointment.duration} dk)
+                </div>
+              </div>
             ))}
           </div>
         </div>

@@ -6,4 +6,14 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SalesUpdateSaleBody = { [key: string]: unknown };
+export type SalesUpdateSaleBody = {
+  discount_amount?: number;
+  payment_method?: string;
+  notes?: string;
+  status?: string;
+  sgk_coverage?: number;
+  patient_payment?: number;
+  sale_date?: string;
+  report_status?: string;
+  paid_amount?: number;
+};

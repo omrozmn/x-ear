@@ -151,14 +151,20 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
                 ))}
               </div>
             ) : (
-              // Full view - show appointment cards
+              // Full view - show appointment cards with patient names
               day.appointments.slice(0, 3).map((appointment) => (
-                <AppointmentCard
+                <div
                   key={appointment.id}
-                  appointment={appointment}
-                  onClick={() => onAppointmentClick(appointment)}
-                  isCompact={true}
-                />
+                  className="text-xs p-1 rounded bg-blue-50 border border-blue-200 cursor-pointer hover:bg-blue-100 truncate"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAppointmentClick(appointment);
+                  }}
+                >
+                  <div className="font-medium truncate">
+                    {appointment.time} {appointment.patientName || 'Hasta bilgisi yok'}
+                  </div>
+                </div>
               ))
             )}
             
@@ -236,7 +242,5 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
     </div>
   );
 };
-
-import { AppointmentCard } from '../AppointmentCard';
 
 export default CalendarMonth;

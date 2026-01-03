@@ -146,11 +146,13 @@ class AppointmentService {
         time: data.time,
         duration: data.duration || 30,
         type: data.type,
-        title: data.title,
+        title: data.title || this.generateTitle(data.type), // Auto-generate title if not provided
         notes: data.notes,
         clinicianId: data.clinicianId,
         branchId: data.branchId
       };
+
+      console.log('📤 Sending to backend:', backendData);
 
       const backendAppointment = await appointmentsApi.createAppointment(backendData, idempotencyKey);
       console.log('✅ Backend created appointment:', backendAppointment);

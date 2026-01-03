@@ -129,7 +129,7 @@ def get_activity_logs(ctx):
         if ctx.tenant_id:
             # Tenant user - always filter by their tenant
             tenant_filter = ctx.tenant_id
-        elif ctx.is_admin:
+        elif ctx.is_super_admin:
             # Super Admin - can optionally filter by tenant
             tenant_filter = request.args.get('tenant_id')
         
@@ -332,7 +332,7 @@ def admin_get_activity_logs(ctx):
     Legacy admin endpoint - redirects to unified endpoint.
     Kept for backward compatibility with admin panel.
     """
-    if not ctx.is_admin:
+    if not ctx.is_super_admin:
         return error_response('Bu endpoint sadece platform yöneticileri için kullanılabilir', 403)
     
     # Delegate to unified endpoint

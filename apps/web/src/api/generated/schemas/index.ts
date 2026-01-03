@@ -171,6 +171,8 @@ export * from './inventoryCreateCategory201';
 export * from './inventoryCreateCategory201Data';
 export * from './inventoryCreateCategoryBody';
 export * from './inventoryCreateInventoryItemBody';
+export * from './inventoryGetBrands200';
+export * from './inventoryGetBrands200Data';
 export * from './inventoryGetCategories200';
 export * from './inventoryGetCategories200Data';
 export * from './inventoryGetCategories200Meta';

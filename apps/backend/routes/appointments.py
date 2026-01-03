@@ -81,9 +81,12 @@ def create_appointment(ctx):
         if not data:
             return error_response("No data provided", status_code=400)
 
+        logger.info(f"Creating appointment with data: {data}")
+
         required_fields = ['patientId', 'date', 'time']
         for field in required_fields:
             if field not in data:
+                logger.error(f"Missing required field: {field}")
                 return error_response(f"Missing required field: {field}", status_code=400)
 
         if 'id' not in data:
@@ -94,7 +97,27 @@ def create_appointment(ctx):
         appointment.patient_id = data['patientId']
         appointment.clinician_id = data.get('clinicianId')
         appointment.branch_id = data.get('branchId')
-        appointment.tenant_id = ctx.tenant_id
+        
+        # Handle tenant_id - if not provided by context, try to get from patient or use a default
+        if ctx.tenant_id:
+            appointment.tenant_id = ctx.tenant_id
+        else:
+            # Try to get tenant from patient
+            from models.patient import Patient
+            patient = Patient.query.get(data['patientId'])
+            if patient and patient.tenant_id:
+                appointment.tenant_id = patient.tenant_id
+                logger.warning(f"Using tenant_id from patient: {patient.tenant_id}")
+            else:
+                # Fallback: get first tenant or create a default one
+                from models.tenant import Tenant
+                tenant = Tenant.query.first()
+                if tenant:
+                    appointment.tenant_id = tenant.id
+                    logger.warning(f"Using first tenant: {tenant.id}")
+                else:
+                    logger.error("No tenant found and ctx.tenant_id is None")
+                    return error_response("Tenant not found", status_code=400)
         
         # Parse date - handle both YYYY-MM-DD and ISO format
         date_str = data['date']
@@ -116,8 +139,12 @@ def create_appointment(ctx):
             
         appointment.notes = data.get('notes')
 
+        logger.info(f"Appointment object created: {appointment.to_dict()}")
+
         db.session.add(appointment)
         db.session.commit()
+
+        logger.info(f"Appointment saved successfully: {appointment.id}")
 
         from app import log_activity
         log_activity('system', 'create', 'appointment', appointment.id, {
@@ -133,7 +160,7 @@ def create_appointment(ctx):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create appointment error: {str(e)}")
-        traceback.print_exc()
+        logger.error(f"Traceback: {traceback.format_exc()}")
         
         # Handle idempotency
         from sqlalchemy.exc import IntegrityError

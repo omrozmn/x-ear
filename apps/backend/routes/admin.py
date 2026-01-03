@@ -490,8 +490,20 @@ def debug_switch_role(ctx):
         if not role:
             return error_response(f'Role "{target_role}" not found', 404)
         
-        # Get role permissions
-        role_permissions = [p.name for p in role.permissions]
+        # Get role permissions (DB)
+        role_permissions_set = {p.name for p in role.permissions}
+
+        # Merge with hardcoded tenant permissions (Code)
+        try:
+            from config.tenant_permissions import get_permissions_for_role
+            code_permissions = get_permissions_for_role(target_role)
+            logger.info(f"DEBUG: Found {len(code_permissions)} code permissions for {target_role}")
+            role_permissions_set.update(code_permissions)
+        except ImportError:
+            logger.warning("Could not import get_permissions_for_role")
+        
+        role_permissions = list(role_permissions_set)
+        logger.info(f"DEBUG: Final role permissions for token: {role_permissions}")
         
         # Always include debug permission for impersonating admin
         if 'platform.debug.use' not in role_permissions:
@@ -499,7 +511,6 @@ def debug_switch_role(ctx):
         
         # Create new JWT with impersonation claims
         additional_claims = {
-            'tenant_id': user.tenant_id if hasattr(user, 'tenant_id') and user.tenant_id else 'debug_tenant', # Mock tenant context
             'effective_role': target_role,
             'real_user_id': user.id,
             'real_user_email': user.email,
@@ -509,6 +520,20 @@ def debug_switch_role(ctx):
             'user_type': 'admin',
             'role': user.role or 'super_admin',
         }
+        
+        # Determine tenant context
+        tenant_id = user.tenant_id if hasattr(user, 'tenant_id') and user.tenant_id else None
+        if not tenant_id:
+            # Try to find a real tenant to use as context
+            try:
+                from models.tenant import Tenant
+                first_tenant = Tenant.query.first()
+                if first_tenant:
+                    tenant_id = first_tenant.id
+            except Exception as e:
+                logger.warning(f"Could not fetch tenant for context: {e}")
+        
+        additional_claims['tenant_id'] = tenant_id or 'debug_tenant'
         
         # Preserve admin_ prefix for proper principal resolution
         admin_identity = user.id if user.id.startswith('admin_') else f'admin_{user.id}'

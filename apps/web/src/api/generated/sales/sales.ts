@@ -36,7 +36,8 @@ import type {
   SalesCreateSalesLogBody,
   SalesPayInstallmentBody,
   SalesRecalcSalesBody,
-  SalesRecordSalePaymentBody
+  SalesRecordSalePaymentBody,
+  SalesUpdateSaleBody
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -296,68 +297,6 @@ export function useSalesGetSale<TData = Awaited<ReturnType<typeof salesGetSale>>
 
 
 /**
- * Used when device assignments are edited (price change, discount change).
- * @summary Update sale details, specifically pricing and financial info.
- */
-export const salesUpdateSale = (
-    saleId: string,
- ) => {
-      
-      
-      return customInstance<void>(
-      {url: `/api/sales/${saleId}`, method: 'PATCH'
-    },
-      );
-    }
-  
-
-
-export const getSalesUpdateSaleMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof salesUpdateSale>>, TError,{saleId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof salesUpdateSale>>, TError,{saleId: string}, TContext> => {
-
-const mutationKey = ['salesUpdateSale'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof salesUpdateSale>>, {saleId: string}> = (props) => {
-          const {saleId} = props ?? {};
-
-          return  salesUpdateSale(saleId,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type SalesUpdateSaleMutationResult = NonNullable<Awaited<ReturnType<typeof salesUpdateSale>>>
-    
-    export type SalesUpdateSaleMutationError = unknown
-
-    /**
- * @summary Update sale details, specifically pricing and financial info.
- */
-export const useSalesUpdateSale = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof salesUpdateSale>>, TError,{saleId: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof salesUpdateSale>>,
-        TError,
-        {saleId: string},
-        TContext
-      > => {
-
-      const mutationOptions = getSalesUpdateSaleMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * Delete a sale
  * @summary DELETE /api/sales/{sale_id}
  */
@@ -416,6 +355,71 @@ export const useSalesDeleteSale = <TError = ErrorResponse,
       > => {
 
       const mutationOptions = getSalesDeleteSaleMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Used when device assignments are edited (price change, discount change).
+ * @summary Update sale details, specifically pricing and financial info.
+ */
+export const salesUpdateSale = (
+    saleId: string,
+    salesUpdateSaleBody: SalesUpdateSaleBody,
+ ) => {
+      
+      
+      return customInstance<Sale>(
+      {url: `/api/sales/${saleId}`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: salesUpdateSaleBody
+    },
+      );
+    }
+  
+
+
+export const getSalesUpdateSaleMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof salesUpdateSale>>, TError,{saleId: string;data: SalesUpdateSaleBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof salesUpdateSale>>, TError,{saleId: string;data: SalesUpdateSaleBody}, TContext> => {
+
+const mutationKey = ['salesUpdateSale'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof salesUpdateSale>>, {saleId: string;data: SalesUpdateSaleBody}> = (props) => {
+          const {saleId,data} = props ?? {};
+
+          return  salesUpdateSale(saleId,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SalesUpdateSaleMutationResult = NonNullable<Awaited<ReturnType<typeof salesUpdateSale>>>
+    export type SalesUpdateSaleMutationBody = SalesUpdateSaleBody
+    export type SalesUpdateSaleMutationError = unknown
+
+    /**
+ * @summary Update sale details, specifically pricing and financial info.
+ */
+export const useSalesUpdateSale = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof salesUpdateSale>>, TError,{saleId: string;data: SalesUpdateSaleBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof salesUpdateSale>>,
+        TError,
+        {saleId: string;data: SalesUpdateSaleBody},
+        TContext
+      > => {
+
+      const mutationOptions = getSalesUpdateSaleMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

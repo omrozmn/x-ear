@@ -74,6 +74,13 @@ class TenantPermissions:
     OCR_READ = "ocr:read"
     OCR_WRITE = "ocr:write"
 
+    # Role Permissions
+    ROLE_READ = "role:read"
+    ROLE_WRITE = "role:write"
+
+    # Activity Logs
+    ACTIVITY_LOGS_READ = "activity_logs:read"
+
 
 # Full admin permissions set
 _FULL_ADMIN_PERMISSIONS = {
@@ -112,6 +119,9 @@ _FULL_ADMIN_PERMISSIONS = {
     TenantPermissions.CAMPAIGN_WRITE,
     TenantPermissions.OCR_READ,
     TenantPermissions.OCR_WRITE,
+    TenantPermissions.ROLE_READ,
+    TenantPermissions.ROLE_WRITE,
+    TenantPermissions.ACTIVITY_LOGS_READ,
 }
 
 # Role-to-Permission Mapping

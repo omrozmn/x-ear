@@ -1,5 +1,5 @@
-import { Button, Input, Textarea, Select, useToastHelpers, DatePicker, Autocomplete, AutocompleteOption } from '@x-ear/ui-web';
-import React, { useState, useEffect, useMemo } from 'react';
+import { Button, Input, Textarea, Select, useToastHelpers, DatePicker } from '@x-ear/ui-web';
+import React, { useState, useEffect } from 'react';
 import { Appointment, CreateAppointmentData, UpdateAppointmentData, AppointmentType, AppointmentStatus } from '../../types/appointment';
 import { useAppointments } from '../../hooks/useAppointments';
 import { usePatients } from '../../hooks/usePatients';
@@ -70,19 +70,6 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Time options (09:00 - 19:00, 15 min intervals)
-  const timeOptions = useMemo<AutocompleteOption[]>(() => {
-    const options: AutocompleteOption[] = [];
-    for (let i = 9; i < 19; i++) {
-      const hour = i.toString().padStart(2, '0');
-      ['00', '15', '30', '45'].forEach(minute => {
-        const time = `${hour}:${minute}`;
-        options.push({ id: time, value: time, label: time });
-      });
-    }
-    return options;
-  }, []);
 
   // Update patient name when patient is selected
   useEffect(() => {
@@ -155,9 +142,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
       newErrors.type = 'Randevu türü zorunludur';
     }
 
-    if (!formData.title.trim()) {
-      newErrors.title = 'Başlık zorunludur';
-    }
+    // Title is no longer required - auto-generated from type
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -321,14 +306,15 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
 
               {/* Time */}
               <div>
-                <Autocomplete
-                  label="Saat *"
-                  options={timeOptions}
-                  value={timeOptions.find(t => t.value === formData.time) || (formData.time ? { id: formData.time, value: formData.time, label: formData.time } : null)}
-                  onChange={(option) => handleInputChange('time', option?.value || '')}
-                  placeholder="09:00"
-                  allowClear
-                  className={`w-full ${errors.time ? 'border-red-300' : ''}`}
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Saat *
+                </label>
+                <Input
+                  type="time"
+                  value={formData.time}
+                  onChange={(e) => handleInputChange('time', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.time ? 'border-red-300' : 'border-gray-300'
+                    }`}
                 />
                 {errors.time && (
                   <p className="mt-1 text-sm text-red-600">{errors.time}</p>
@@ -381,8 +367,8 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                 )}
               </div>
 
-              {/* Status */}
-              <div>
+              {/* Status - COMMENTED OUT */}
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Durum
                 </label>
@@ -399,10 +385,10 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   ]}
                   className="w-full"
                 />
-              </div>
+              </div> */}
 
-              {/* Title */}
-              <div>
+              {/* Title - COMMENTED OUT */}
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Başlık *
                 </label>
@@ -417,10 +403,10 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                 {errors.title && (
                   <p className="mt-1 text-sm text-red-600">{errors.title}</p>
                 )}
-              </div>
+              </div> */}
 
-              {/* Clinician */}
-              <div>
+              {/* Clinician - COMMENTED OUT */}
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Doktor
                 </label>
@@ -431,10 +417,10 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   placeholder="Doktor adı"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-              </div>
+              </div> */}
 
-              {/* Location */}
-              <div>
+              {/* Location - COMMENTED OUT */}
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Lokasyon
                 </label>
@@ -445,7 +431,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   placeholder="Muayene odası, şube vb."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-              </div>
+              </div> */}
 
               {/* Notes */}
               <div className="md:col-span-2">

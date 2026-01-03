@@ -29,7 +29,75 @@ logger = logging.getLogger(__name__)
 @log_action(action="patient.created", entity_id_from_response="data.id")
 def create_patient(ctx):
     """Create a new patient - Unified Access"""
-    # ... (code continues)
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+        
+        # Validate required fields
+        if not data.get('firstName') or not data.get('lastName'):
+            return jsonify({'success': False, 'error': 'First name and last name are required'}), 400
+
+        # Create new patient with tenant context
+        patient = Patient(
+            tenant_id=ctx.tenant_id
+        )
+        
+        # Key mapping and Normalization
+        key_map = {
+            'firstName': 'first_name', 'lastName': 'last_name', 'tcNumber': 'tc_number', 'identityNumber': 'identity_number',
+            'birthDate': 'birth_date', 'gender': 'gender', 'address': 'address', 'status': 'status', 'segment': 'segment',
+            'acquisitionType': 'acquisition_type', 'conversionStep': 'conversion_step', 'referredBy': 'referred_by',
+            'priorityScore': 'priority_score', 'branchId': 'branch_id', 'tags': 'tags', 'sgkInfo': 'sgk_info',
+            'phone': 'phone', 'email': 'email', 'city': 'address_city', 'district': 'address_district',
+            'addressCity': 'address_city', 'addressDistrict': 'address_district'
+        }
+        allowed_attrs = {'first_name','last_name','tc_number','identity_number','phone','email','gender','status','segment','acquisition_type','conversion_step','referred_by','priority_score','branch_id','address_city','address_district','address_full'}
+
+        # Apply data
+        for k, v in data.items():
+            if k == 'tags':
+                patient.tags = json.dumps(v) if v is not None else json.dumps([])
+                continue
+            if k == 'sgkInfo':
+                patient.sgk_info = json.dumps(v) if v is not None else json.dumps({'rightEarDevice': 'available', 'leftEarDevice': 'available', 'rightEarBattery': 'available', 'leftEarBattery': 'available'})
+                continue
+            if k == 'birthDate' and v:
+                try:
+                    patient.birth_date = datetime.fromisoformat(v)
+                except (ValueError, TypeError): pass
+                continue
+            if k == 'address' or k == 'addressFull':
+                if isinstance(v, dict):
+                    patient.address_city = v.get('city')
+                    patient.address_district = v.get('district')
+                    patient.address_full = v.get('fullAddress') or v.get('address')
+                elif isinstance(v, str):
+                    patient.address_full = v
+                continue
+
+            normalized = key_map.get(k, k)
+            if normalized in allowed_attrs and hasattr(patient, normalized):
+                setattr(patient, normalized, v)
+                continue
+        
+        # Set default values if missing
+        if not patient.status: patient.status = 'new'
+        if not patient.tags: patient.tags = '[]'
+        if not patient.sgk_info: patient.sgk_info = json.dumps({'rightEarDevice': 'available', 'leftEarDevice': 'available', 'rightEarBattery': 'available', 'leftEarBattery': 'available'})
+
+        db.session.add(patient)
+        db.session.commit()
+        
+        # Log persistence
+        logger.info(f"Patient created: {patient.id} by {ctx.principal_id}")
+        
+        return jsonify({'success': True, 'data': patient.to_dict()}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating patient: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @patients_bp.route('/patients/<patient_id>', methods=['PUT','PATCH'])
 @unified_access(resource='patients', action='edit')

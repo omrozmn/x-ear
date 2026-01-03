@@ -4,6 +4,8 @@ import { Bug, ChevronDown, Check, Loader2, Shield, LogOut } from 'lucide-react';
 import { useAdminDebugAvailableRoles, useAdminDebugSwitchRole, useAdminDebugExitImpersonation, getAdminDebugAvailableRolesQueryKey } from '@/api/generated/admin/admin';
 import { useAuthStore } from '../../stores/authStore';
 import { AUTH_TOKEN, REFRESH_TOKEN } from '../../constants/storage-keys';
+import { patientService } from '../../services/patient.service';
+import { indexedDBManager } from '../../utils/indexeddb';
 
 // Debug rol switcher sadece admin@x-ear.com için gösterilir
 const DEBUG_ADMIN_EMAIL = 'admin@x-ear.com';
@@ -23,7 +25,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
   const { data: rolesResponse, isLoading: rolesLoading } = useAdminDebugAvailableRoles({
     query: {
       queryKey: getAdminDebugAvailableRolesQueryKey(),
-      enabled: isDebugAdmin,
+      enabled: isDebugAdmin && isOpen,
       staleTime: 5 * 60 * 1000, // 5 dakika
     }
   });
@@ -38,6 +40,11 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
       },
       onSuccess: async (response) => {
         console.log('[DebugRoleSwitcher] ===== ROLE SWITCH SUCCESS =====');
+
+        // CRITICAL: Clear patient cache to prevent data leakage between tenant contexts
+        console.log('[DebugRoleSwitcher] Clearing patient cache for tenant isolation...');
+        await patientService.reset();
+
         console.log('[DebugRoleSwitcher] Raw response:', response);
 
         const data = (response as any)?.data || response;
@@ -85,6 +92,11 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
     mutation: {
       onSuccess: async (response) => {
         console.log('[DebugRoleSwitcher] Exit impersonation success:', response);
+
+        // CRITICAL: Clear patient cache to prevent data leakage between tenant contexts
+        console.log('[DebugRoleSwitcher] Clearing patient cache for tenant isolation...');
+        await patientService.reset();
+
         const data = (response as any)?.data || response;
 
         if (data?.accessToken && user) {

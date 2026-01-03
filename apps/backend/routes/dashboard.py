@@ -31,12 +31,15 @@ def get_dashboard(ctx):
         # Get KPIs with tenant scoping
         try:
             total_patients = tenant_scoped_query(ctx, Patient).count()
-        except Exception:
+            logger.info(f"DEBUG: Dashboard total_patients count: {total_patients}")
+        except Exception as e:
+            logger.error(f"KPI total_patients error: {e}")
             total_patients = 0
 
         try:
             total_devices = tenant_scoped_query(ctx, Device).count()
-        except Exception:
+        except Exception as e:
+            logger.error(f"KPI total_devices error: {e}")
             total_devices = 0
 
         try:

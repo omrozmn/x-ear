@@ -51,7 +51,7 @@ def _get_local_upload_folder():
 # ============================================================================
 
 @tenant_users_bp.route('/tenant/users', methods=['GET'])
-@unified_access(resource='tenant_users', action='read')
+@unified_access(resource='users', action='read')
 def list_tenant_users(ctx):
     """
     List users belonging to the current user's tenant.
@@ -83,7 +83,7 @@ def list_tenant_users(ctx):
 
 
 @tenant_users_bp.route('/tenant/users', methods=['POST'])
-@unified_access(resource='tenant_users', action='write')
+@unified_access(resource='users', action='write')
 def invite_tenant_user(ctx):
     """
     Create a new user for the tenant with username and password.
@@ -144,7 +144,7 @@ def invite_tenant_user(ctx):
 
 
 @tenant_users_bp.route('/tenant/users/<user_id>', methods=['DELETE'])
-@unified_access(resource='tenant_users', action='delete')
+@unified_access(resource='users', action='delete')
 def delete_tenant_user(ctx, user_id):
     """
     Remove a user from the tenant.
@@ -176,7 +176,7 @@ def delete_tenant_user(ctx, user_id):
 
 
 @tenant_users_bp.route('/tenant/users/<user_id>', methods=['PUT'])
-@unified_access(resource='tenant_users', action='write')
+@unified_access(resource='users', action='write')
 def update_tenant_user(ctx, user_id):
     """
     Update a user in the tenant.
@@ -247,7 +247,7 @@ def update_tenant_user(ctx, user_id):
 # ============================================================================
 
 @tenant_users_bp.route('/tenant/company', methods=['GET'])
-@unified_access(resource='tenant_users', action='read')
+@unified_access(resource='users', action='read')
 def get_tenant_company(ctx):
     """
     Get the current tenant's company information and settings.
@@ -286,7 +286,7 @@ def get_tenant_company(ctx):
 
 
 @tenant_users_bp.route('/tenant/company', methods=['PUT'])
-@unified_access(resource='tenant_users', action='write')
+@unified_access(resource='users', action='write')
 def update_tenant_company(ctx):
     """
     Update the current tenant's company information.
@@ -338,7 +338,7 @@ def update_tenant_company(ctx):
 # ============================================================================
 
 @tenant_users_bp.route('/tenant/company/upload/<asset_type>', methods=['POST'])
-@unified_access(resource='tenant_users', action='write')
+@unified_access(resource='users', action='write')
 def upload_tenant_asset(ctx, asset_type):
     """
     Upload a company asset (logo, stamp, or signature).
@@ -503,7 +503,7 @@ def upload_tenant_asset(ctx, asset_type):
 
 
 @tenant_users_bp.route('/tenant/company/upload/<asset_type>', methods=['DELETE'])
-@unified_access(resource='tenant_users', action='delete')
+@unified_access(resource='users', action='delete')
 def delete_tenant_asset(ctx, asset_type):
     """
     Delete a company asset (logo, stamp, or signature).
@@ -564,7 +564,7 @@ def delete_tenant_asset(ctx, asset_type):
 # ============================================================================
 
 @tenant_users_bp.route('/tenant/assets/<tenant_id>/<filename>', methods=['GET'])
-@unified_access(resource='tenant_users', action='read')
+@unified_access(resource='users', action='read')
 def serve_tenant_asset(ctx, tenant_id, filename):
     """
     Serve tenant assets with authentication.
@@ -610,7 +610,7 @@ def serve_tenant_asset(ctx, tenant_id, filename):
 # ============================================================================
 
 @tenant_users_bp.route('/tenant/company/assets/<asset_type>/url', methods=['GET'])
-@unified_access(resource='tenant_users', action='read')
+@unified_access(resource='users', action='read')
 def get_asset_url(ctx, asset_type):
     """
     Get a temporary URL for accessing an asset.

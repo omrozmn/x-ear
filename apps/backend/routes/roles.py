@@ -2,15 +2,15 @@ from flask import Blueprint, request, jsonify
 from models.base import db
 from models.role import Role
 from models.permission import Permission
-from utils.authorization import admin_required
+from utils.decorators import unified_access
 from utils.validation import is_valid_role_name
 
 roles_bp = Blueprint('roles', __name__)
 
 
 @roles_bp.route('/roles', methods=['GET'])
-@admin_required
-def list_roles():
+@unified_access(permission='role:read')
+def list_roles(ctx):
     """
     Get all roles
     ---
@@ -25,8 +25,8 @@ def list_roles():
 
 
 @roles_bp.route('/roles', methods=['POST'])
-@admin_required
-def create_role():
+@unified_access(permission='role:write')
+def create_role(ctx):
     """
     Create a new role
     ---
@@ -64,8 +64,8 @@ def create_role():
 
 
 @roles_bp.route('/roles/<role_id>', methods=['PUT'])
-@admin_required
-def update_role(role_id):
+@unified_access(permission='role:write')
+def update_role(ctx, role_id):
     """
     Update a role
     ---
@@ -107,8 +107,8 @@ def update_role(role_id):
 
 
 @roles_bp.route('/roles/<role_id>', methods=['DELETE'])
-@admin_required
-def delete_role(role_id):
+@unified_access(permission='role:write')
+def delete_role(ctx, role_id):
     """
     Delete a role
     ---
@@ -128,6 +128,7 @@ def delete_role(role_id):
         return jsonify({'success': False, 'error': 'role not found'}), 404
     
     if role.is_system:
+        # Prevent deletion of system roles, even by admin
         return jsonify({'success': False, 'error': 'cannot delete system role'}), 403
     
     db.session.delete(role)
@@ -136,8 +137,8 @@ def delete_role(role_id):
 
 
 @roles_bp.route('/roles/<role_id>/permissions', methods=['POST'])
-@admin_required
-def add_permission_to_role(role_id):
+@unified_access(permission='role:write')
+def add_permission_to_role(ctx, role_id):
     """
     Add permission to role
     ---
@@ -176,8 +177,8 @@ def add_permission_to_role(role_id):
 
 
 @roles_bp.route('/roles/<role_id>/permissions/<permission_id>', methods=['DELETE'])
-@admin_required
-def remove_permission_from_role(role_id, permission_id):
+@unified_access(permission='role:write')
+def remove_permission_from_role(ctx, role_id, permission_id):
     """
     Remove permission from role
     ---

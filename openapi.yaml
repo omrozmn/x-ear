@@ -5081,6 +5081,28 @@ paths:
         '200':
           description: Success
   /api/inventory/brands:
+    get:
+      summary: Get all brands
+      operationId: inventoryGetBrands
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      brands:
+                        type: array
+                        items:
+                          type: string
     post:
       summary: Create a new brand
       operationId: inventoryCreateBrand
