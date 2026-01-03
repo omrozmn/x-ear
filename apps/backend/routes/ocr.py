@@ -4,13 +4,17 @@ import logging
 import os
 import uuid
 import threading
+from typing import Optional
 
 from models.base import db
 from models.patient import Patient
 from models.ocr_job import OCRJob, OCRJobStatus
 from services.ocr_service import get_nlp_service, initialize_nlp_service
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from utils.tenant_security import get_current_tenant_id
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
+from utils.tenant_security import UnboundSession
+from config.tenant_permissions import TenantPermissions
+from utils.admin_permissions import AdminPermissions
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +22,7 @@ ocr_bp = Blueprint('ocr', __name__)
 
 @ocr_bp.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint (moved from app.py)"""
+    """Health check endpoint (Public)"""
     try:
         svc = get_nlp_service(init_if_missing=False)
         ocr_available = svc.paddleocr_available if svc and hasattr(svc, 'paddleocr_available') else False
@@ -30,7 +34,7 @@ def health_check():
             redis_available = bool(otp_store.is_healthy()) if otp_store else False
         except Exception:
             redis_available = False
-        return jsonify({
+        return success_response({
             "status": "healthy",
             "ocr_available": ocr_available,
             "spacy_available": spacy_available,
@@ -41,37 +45,34 @@ def health_check():
         })
     except Exception as e:
         logger.error(f"Health check error: {e}")
-        return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
+        return error_response(str(e), code='HEALTH_CHECK_FAILED', status_code=500)
 
 
 @ocr_bp.route('/init-db', methods=['POST'])
-def init_database():
-    """Initialize database and create tables"""
+@unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
+def init_database(ctx):
+    """Initialize database and create tables (System Admin)"""
     try:
         with current_app.app_context():
             db.create_all()
-        return jsonify({
-            "success": True,
+        return success_response({
             "message": "Database initialized successfully",
             "timestamp": datetime.now().isoformat()
         })
     except Exception as e:
         logger.error(f"Init DB error: {e}")
-        return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
+        return error_response(str(e), code='INIT_DB_FAILED', status_code=500)
 
 
 @ocr_bp.route('/initialize', methods=['POST'])
-def initialize_nlp_endpoint():
-    """Initialize NLP/OCR service (non-blocking).
-
-    Starts model initialization in a background thread so the HTTP request
-    can return quickly and heavy imports/downloads happen asynchronously.
-    """
+@unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
+def initialize_nlp_endpoint(ctx):
+    """Initialize NLP/OCR service (System Admin)"""
     try:
         def _init_background():
             try:
                 svc = initialize_nlp_service()
-                # Pre-warm external OCR worker in background to reduce first-request latency
+                # Pre-warm external OCR worker
                 try:
                     import tempfile
                     from PIL import Image
@@ -95,44 +96,40 @@ def initialize_nlp_endpoint():
         t = threading.Thread(target=_init_background, daemon=True)
         t.start()
 
-        return jsonify({
-            "success": True,
+        return success_response({
             "message": "NLP service initialization started (background)",
             "timestamp": datetime.now().isoformat()
         })
     except Exception as e:
         logger.error(f"Initialize NLP error: {e}")
-        return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
+        return error_response(str(e), code='INIT_NLP_FAILED', status_code=500)
 
 
 @ocr_bp.route('/process', methods=['POST'])
-def process_document():
-    """Process document with OCR
-
-    Accepts either JSON with {'image_path': '/abs/path/to/file'} or
-    {'text': 'raw extracted text'} so frontend clients can send text-only
-    NLP requests without uploading images to the backend.
-    """
+@unified_access(permission=TenantPermissions.OCR_WRITE)
+def process_document(ctx):
+    """Process document with OCR"""
     try:
         svc = get_nlp_service()
         if not svc.initialized:
             try:
                 svc.initialize()
             except Exception as e:
-                return jsonify({"success": False, "error": f"OCR service not available: {e}", "timestamp": datetime.now().isoformat()}), 503
+                return error_response(f"OCR service not available: {e}", code='OCR_UNAVAILABLE', status_code=503)
 
         data = request.get_json() or {}
         image_path = data.get('image_path', '')
         text = data.get('text') or data.get('ocr_text')
         doc_type = data.get('type', 'medical')
-        # default to auto_crop for local SGK documents to improve accuracy
         auto_crop = bool(data.get('auto_crop', True))
+        
         if not image_path and not text:
-            return jsonify({"error": "No image path or text provided"}), 400
+            return error_response("No image path or text provided", code='MISSING_INPUT', status_code=400)
 
         temp_file_path = None
         try:
             # Handle URL
+            image_path_to_process = image_path
             if image_path and (image_path.startswith('http://') or image_path.startswith('https://')):
                 try:
                     import requests
@@ -141,12 +138,8 @@ def process_document():
                     response = requests.get(image_path, stream=True, timeout=30)
                     response.raise_for_status()
                     
-                    # Create temp file
-                    # Extract extension from URL path (ignoring query params)
                     path_part = image_path.split('?')[0]
-                    suffix = os.path.splitext(path_part)[1]
-                    if not suffix:
-                        suffix = '.jpg' # Default to jpg if no extension found
+                    suffix = os.path.splitext(path_part)[1] or '.jpg'
                         
                     fd, temp_file_path = tempfile.mkstemp(suffix=suffix)
                     os.close(fd)
@@ -155,25 +148,25 @@ def process_document():
                         for chunk in response.iter_content(chunk_size=8192):
                             f.write(chunk)
                     
-                    # Use the temp file path for processing
                     image_path_to_process = temp_file_path
                 except Exception as e:
                     logger.error(f"Failed to download image from URL: {e}")
-                    return jsonify({"success": False, "error": f"Failed to download image: {str(e)}"}), 400
-            else:
-                image_path_to_process = image_path
+                    return error_response(f"Failed to download image: {str(e)}", code='DOWNLOAD_FAILED', status_code=400)
 
             result = svc.process_document(image_path=image_path_to_process or None, doc_type=doc_type, text=text, auto_crop=auto_crop)
-            # Attempt to extract patient name as part of the processing result for convenience
+            
             try:
                 patient_info = svc.extract_patient_name(image_path=image_path_to_process or None, text=text)
                 result['patient_info'] = patient_info
             except Exception:
                 result['patient_info'] = None
-            return jsonify({"success": True, "result": result, "timestamp": datetime.now().isoformat()})
+                
+            return success_response({
+                "result": result, 
+                "timestamp": datetime.now().isoformat()
+            })
             
         finally:
-            # Cleanup temp file
             if temp_file_path and os.path.exists(temp_file_path):
                 try:
                     os.remove(temp_file_path)
@@ -182,22 +175,20 @@ def process_document():
                     
     except Exception as e:
         logger.error(f"OCR processing error: {e}")
-        return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
+        return error_response(str(e), code='PROCESSING_FAILED', status_code=500)
 
 
 @ocr_bp.route('/similarity', methods=['POST'])
-def calculate_similarity():
-    """Calculate similarity between two images or between two pieces of text
-
-    Accepts either {'image_path1':..., 'image_path2':...} or {'text1':..., 'text2':...}
-    """
+@unified_access(permission=TenantPermissions.OCR_READ)
+def calculate_similarity(ctx):
+    """Calculate similarity"""
     try:
         svc = get_nlp_service()
         if not svc.initialized:
             try:
                 svc.initialize()
             except Exception as e:
-                return jsonify({"success": False, "error": f"OCR service not available: {e}", "timestamp": datetime.now().isoformat()}), 503
+                return error_response(f"OCR service not available: {e}", code='OCR_UNAVAILABLE', status_code=503)
 
         data = request.get_json() or {}
         image_path1 = data.get('image_path1')
@@ -205,19 +196,19 @@ def calculate_similarity():
         text1 = data.get('text1') or data.get('textA') or data.get('text')
         text2 = data.get('text2') or data.get('textB') or data.get('text2')
 
-        # Validate inputs
         if not ((image_path1 and image_path2) or (text1 and text2)):
-            return jsonify({"error": "Provide either both image paths or both text1 and text2"}), 400
+            return error_response("Provide either both image paths or both text1 and text2", code='MISSING_INPUT', status_code=400)
 
         result = svc.calculate_similarity(image_path1=image_path1, image_path2=image_path2, text1=text1, text2=text2)
-        return jsonify({"success": True, "result": result, "timestamp": datetime.now().isoformat()})
+        return success_response({"result": result, "timestamp": datetime.now().isoformat()})
     except Exception as e:
         logger.error(f"Similarity calculation error: {e}")
-        return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
+        return error_response(str(e), code='SIMILARITY_FAILED', status_code=500)
 
 
 @ocr_bp.route('/entities', methods=['POST'])
-def extract_entities():
+@unified_access(permission=TenantPermissions.OCR_READ)
+def extract_entities(ctx):
     """Extract entities from image using OCR"""
     try:
         svc = get_nlp_service()
@@ -225,23 +216,26 @@ def extract_entities():
             try:
                 svc.initialize()
             except Exception as e:
-                return jsonify({"success": False, "error": f"OCR service not available: {e}", "timestamp": datetime.now().isoformat()}), 503
+                return error_response(f"OCR service not available: {e}", code='OCR_UNAVAILABLE', status_code=503)
 
         data = request.get_json() or {}
         image_path = data.get('image_path', '')
         text = data.get('text') or data.get('ocr_text')
         auto_crop = bool(data.get('auto_crop', False))
+        
         if not image_path and not text:
-            return jsonify({"error": "No image path or text provided"}), 400
+            return error_response("No image path or text provided", code='MISSING_INPUT', status_code=400)
+            
         result = svc.process_document(image_path=image_path or None, text=text, auto_crop=auto_crop)
-        return jsonify({"success": True, "entities": result["entities"], "timestamp": datetime.now().isoformat()})
+        return success_response({"entities": result["entities"], "timestamp": datetime.now().isoformat()})
     except Exception as e:
         logger.error(f"Entity extraction error: {e}")
-        return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
+        return error_response(str(e), code='EXTRACTION_FAILED', status_code=500)
 
 
 @ocr_bp.route('/extract_patient', methods=['POST'])
-def extract_patient_name():
+@unified_access(permission=TenantPermissions.OCR_READ)
+def extract_patient_name(ctx):
     """Extract patient name from image using OCR"""
     try:
         svc = get_nlp_service()
@@ -249,23 +243,20 @@ def extract_patient_name():
             try:
                 svc.initialize()
             except Exception as e:
-                return jsonify({"success": False, "error": f"OCR service not available: {e}", "timestamp": datetime.now().isoformat()}), 503
+                return error_response(f"OCR service not available: {e}", code='OCR_UNAVAILABLE', status_code=503)
 
         data = request.get_json() or {}
         image_path = data.get('image_path', '')
         text = data.get('text')
         auto_crop = bool(data.get('auto_crop', False))
+        
         if not image_path and not text:
-            return jsonify({"error": "No image path or text provided"}), 400
-        # If text provided, let the service attempt extraction from text; otherwise run OCR
+            return error_response("No image path or text provided", code='MISSING_INPUT', status_code=400)
+            
         if text:
-            # Try to extract name heuristically from text
-            # Reuse process_document to get custom entities
             res = svc.process_document(text=text, auto_crop=auto_crop)
-            # Attempt to find patient name in custom entities first
             custom = res.get('custom_entities') or []
             patient_matches = [e for e in custom if e.get('label') == 'PATIENT_NAME']
-            patient_info = None
             if patient_matches:
                 patient_info = {"name": patient_matches[0]['text'], "confidence": patient_matches[0].get('confidence', 0.9)}
             else:
@@ -273,19 +264,16 @@ def extract_patient_name():
         else:
             patient_info = svc.extract_patient_name(image_path) if hasattr(svc, 'extract_patient_name') else None
 
-        return jsonify({"success": True, "patient_info": patient_info, "timestamp": datetime.now().isoformat()})
+        return success_response({"patient_info": patient_info, "timestamp": datetime.now().isoformat()})
     except Exception as e:
         logger.error(f"Patient extraction error: {e}")
-        return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
+        return error_response(str(e), code='EXTRACTION_FAILED', status_code=500)
 
 
 @ocr_bp.route('/debug_ner', methods=['POST'])
-def debug_ner():
-    """Debug endpoint to run HF NER and spaCy on provided text and return detailed outputs.
-
-    Request JSON: { "text": "..." }
-    Returns: { hf_ner: [...], spacy_entities: [...], tokens: [...] }
-    """
+@unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
+def debug_ner(ctx):
+    """Debug endpoint (System Admin)"""
     try:
         svc = get_nlp_service()
         if svc is None:
@@ -293,12 +281,12 @@ def debug_ner():
             try:
                 svc.initialize()
             except Exception as e:
-                return jsonify({"success": False, "error": f"NLP init failed: {e}"}), 503
+                return error_response(f"NLP init failed: {e}", code='OCR_UNAVAILABLE', status_code=503)
 
         data = request.get_json() or {}
         text = data.get('text') or data.get('ocr_text')
         if not text:
-            return jsonify({"success": False, "error": "No text provided"}), 400
+            return error_response("No text provided", code='MISSING_INPUT', status_code=400)
 
         response = {"hf_ner": None, "spacy_entities": None, "tokens": None}
 
@@ -306,6 +294,11 @@ def debug_ner():
         try:
             if getattr(svc, 'hf_ner', None):
                 hf_out = svc.hf_ner(text)
+                # Convert float32 to float for json serialization
+                if hf_out:
+                    for item in hf_out:
+                         if 'score' in item:
+                             item['score'] = float(item['score'])
                 response['hf_ner'] = hf_out
         except Exception as e:
             response['hf_ner_error'] = str(e)
@@ -318,7 +311,6 @@ def debug_ner():
                 for ent in getattr(doc, 'ents', []):
                     sp_entities.append({"text": ent.text, "label": ent.label_, "start": ent.start_char, "end": ent.end_char})
                 response['spacy_entities'] = sp_entities
-                # tokens (sample)
                 tokens = []
                 for t in list(doc)[:500]:
                     tokens.append({"text": t.text, "pos": t.pos_, "tag": t.tag_, "lemma": t.lemma_})
@@ -326,19 +318,22 @@ def debug_ner():
         except Exception as e:
             response['spacy_error'] = str(e)
 
-        return jsonify({"success": True, "result": response, "timestamp": datetime.now().isoformat()})
+        return success_response({"result": response, "timestamp": datetime.now().isoformat()})
     except Exception as e:
         logger.error(f"debug_ner error: {e}")
-        return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
+        return error_response(str(e), code='DEBUG_FAILED', status_code=500)
 
 # ==================== OCR JOB MANAGEMENT ====================
 
 @ocr_bp.route('/jobs', methods=['GET'])
-@jwt_required()
-def list_jobs():
+@unified_access(permission=TenantPermissions.OCR_READ)
+def list_jobs(ctx):
     """List OCR jobs"""
     try:
-        tenant_id = get_current_tenant_id()
+        tenant_id = ctx.tenant_id
+        if not tenant_id:
+             return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
+
         status = request.args.get('status')
         
         query = OCRJob.query.filter_by(tenant_id=tenant_id)
@@ -346,26 +341,29 @@ def list_jobs():
             try:
                 query = query.filter_by(status=OCRJobStatus(status))
             except ValueError:
-                pass # Ignore invalid status
+                pass
             
         jobs = query.order_by(OCRJob.created_at.desc()).limit(100).all()
-        return jsonify({'success': True, 'data': [job.to_dict() for job in jobs]}), 200
+        return success_response(data=[job.to_dict() for job in jobs])
     except Exception as e:
         logger.error(f"List jobs error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @ocr_bp.route('/jobs', methods=['POST'])
-@jwt_required()
-def create_job():
+@unified_access(permission=TenantPermissions.OCR_WRITE)
+def create_job(ctx):
     """Create a new OCR job"""
     try:
-        tenant_id = get_current_tenant_id()
+        tenant_id = ctx.tenant_id
+        if not tenant_id:
+             return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
+             
         data = request.get_json()
         file_path = data.get('file_path')
         doc_type = data.get('type', 'medical')
         
         if not file_path:
-            return jsonify({'error': 'file_path is required'}), 400
+            return error_response('file_path is required', code='MISSING_FIELD', status_code=400)
             
         job = OCRJob(
             id=str(uuid.uuid4()),
@@ -396,7 +394,6 @@ def create_job():
                     job.result = result
                     job.status = OCRJobStatus.COMPLETED
                     
-                    # Try to extract patient name
                     if 'patient_info' in result and result['patient_info']:
                         job.patient_name = result['patient_info'].get('name')
                         
@@ -407,15 +404,12 @@ def create_job():
                 
                 db.session.commit()
         
-        # Pass the actual app object to the thread
-        # Note: current_app is a proxy, we need the real app object
-        # But current_app._get_current_object() works
         app = current_app._get_current_object()
         t = threading.Thread(target=process_job, args=(job.id, app))
         t.start()
         
-        return jsonify({'success': True, 'data': job.to_dict()}), 201
+        return success_response(data=job.to_dict(), status_code=201)
         
     except Exception as e:
         logger.error(f"Create job error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return error_response(str(e), code='CREATE_FAILED', status_code=500)

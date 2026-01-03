@@ -2,13 +2,21 @@ import React, { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useListAffiliates, Affiliate } from '@/lib/api-client';
 import AffiliateDetailModal from '../../components/admin/AffiliateDetailModal';
+import CreateAffiliateModal from '../../components/admin/CreateAffiliateModal';
+import { PlusIcon } from 'lucide-react';
 
 const AffiliatesPage: React.FC = () => {
   const { data: affiliatesData, isLoading, error, refetch } = useListAffiliates();
   const [selectedAffiliateId, setSelectedAffiliateId] = useState<number | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Backend returns array directly, not wrapped
-  const affiliates = Array.isArray(affiliatesData) ? affiliatesData : [];
+  // Backend returns array directly, but response envelope might wrap it
+  const affiliates = Array.isArray(affiliatesData)
+    ? affiliatesData
+    : (affiliatesData as any)?.data && Array.isArray((affiliatesData as any).data)
+      ? (affiliatesData as any).data
+      : [];
 
   if (isLoading) return <div className="p-4">Yükleniyor...</div>;
   if (error) return <div className="p-4 text-red-600">Hata oluştu: {(error as any).message}</div>;
@@ -16,7 +24,16 @@ const AffiliatesPage: React.FC = () => {
   return (
     <>
       <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Affiliate Listesi</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Affiliate Listesi</h1>
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <PlusIcon className="w-5 h-5 mr-2" />
+            Yeni Affiliate Ekle
+          </button>
+        </div>
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -82,6 +99,11 @@ const AffiliatesPage: React.FC = () => {
           onStatusChange={() => refetch()}
         />
       )}
+
+      <CreateAffiliateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
     </>
   );
 };

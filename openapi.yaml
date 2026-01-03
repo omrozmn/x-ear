@@ -2333,11 +2333,6 @@ paths:
                 isPrivate:
                   type: boolean
                   description: Whether the note is private
-                tags:
-                  type: array
-                  items:
-                    type: string
-                  description: Tags for the note
                 createdBy:
                   type: string
                   description: Author ID

@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
-from utils.admin_permissions import require_admin_permission, AdminPermissions
+from utils.admin_permissions import AdminPermissions
 from models.base import db
 from models.device import Device
 from models.tenant import Tenant
 from sqlalchemy import or_
 import logging
+from utils.decorators import unified_access
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +14,8 @@ admin_inventory_bp = Blueprint('admin_inventory', __name__, url_prefix='/api/adm
 from utils.tenant_security import UnboundSession
 
 @admin_inventory_bp.route('', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.INVENTORY_READ)
-def get_all_inventory():
+@unified_access(permission=AdminPermissions.INVENTORY_READ)
+def get_all_inventory(ctx):
     """Get list of ALL devices/inventory from ALL tenants"""
     try:
         page = request.args.get('page', 1, type=int)

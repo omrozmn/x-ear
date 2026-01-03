@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
 from models.plan import Plan, PlanType, BillingInterval
 from models.user import User
 from models.base import db
-from utils.response_envelope import success_response, error_response
+from utils.admin_permissions import AdminPermissions
 from datetime import datetime
 
 plans_bp = Blueprint('plans', __name__)
@@ -11,18 +12,9 @@ plans_bp = Blueprint('plans', __name__)
 @plans_bp.route('', methods=['GET'])
 def get_plans():
     """Get all active plans (Public)"""
-    # If admin, maybe show inactive too? For now, let's just show active public plans for public endpoint
-    # We can add query params to filter
-    
-    is_admin = False
-    # Check if user is admin (optional, if we want to show hidden plans to admin)
-    # For now, let's keep it simple: Public endpoint returns active public plans
+    # Public endpoint returns active public plans
     
     plans = Plan.query.filter_by(is_active=True, is_public=True).all()
-    
-    # We might want to filter features based on visibility here if we want to be strict
-    # But usually it's fine to send all and hide in frontend, unless it's sensitive.
-    # The user requirement says "görünmez ise kapanmalı", so we should probably filter.
     
     results = []
     for plan in plans:
@@ -35,30 +27,18 @@ def get_plans():
     return success_response(results)
 
 @plans_bp.route('/admin', methods=['GET'])
-@jwt_required()
-def get_admin_plans():
+@unified_access(permission=AdminPermissions.PLANS_READ)
+def get_admin_plans(ctx):
     """Get all plans for admin (including inactive/private)"""
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-    
-    if not user or user.role not in ['super_admin', 'tenant_admin']: # Assuming tenant_admin might see them? No, probably super_admin only for creating plans.
-        # Wait, who creates plans? Super Admin.
-        if user.role != 'super_admin':
-             return error_response('Unauthorized', 403)
-
+    # Requires Plans Read permission (usually admin or super admin)
     plans = Plan.query.all()
     return success_response([p.to_dict() for p in plans])
 
 @plans_bp.route('', methods=['POST'])
-@jwt_required()
-def create_plan():
-    """Create a new plan (Super Admin only)"""
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-    
-    if not user or user.role != 'super_admin':
-        return error_response('Unauthorized', 403)
-        
+@unified_access(permission=AdminPermissions.PLANS_MANAGE)
+def create_plan(ctx):
+    """Create a new plan (Super Admin only - via Permission)"""
+    # Using AdminPermissions.PLANS_MANAGE covers authorization
     data = request.get_json()
     
     try:
@@ -78,24 +58,18 @@ def create_plan():
         db.session.add(plan)
         db.session.commit()
         
-        return success_response(plan.to_dict(), 201)
+        return success_response(data=plan.to_dict(), status_code=201)
     except Exception as e:
         db.session.rollback()
-        return error_response(str(e), 400)
+        return error_response(str(e), code='CREATE_FAILED', status_code=400)
 
 @plans_bp.route('/<plan_id>', methods=['PUT'])
-@jwt_required()
-def update_plan(plan_id):
-    """Update a plan (Super Admin only)"""
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-    
-    if not user or user.role != 'super_admin':
-        return error_response('Unauthorized', 403)
-        
+@unified_access(permission=AdminPermissions.PLANS_MANAGE)
+def update_plan(ctx, plan_id):
+    """Update a plan (Super Admin only - via Permission)"""
     plan = Plan.query.get(plan_id)
     if not plan:
-        return error_response('Plan not found', 404)
+        return error_response('Plan not found', code='NOT_FOUND', status_code=404)
         
     data = request.get_json()
     
@@ -109,7 +83,7 @@ def update_plan(plan_id):
         if 'max_users' in data: plan.max_users = data['max_users']
         
         db.session.commit()
-        return success_response(plan.to_dict())
+        return success_response(data=plan.to_dict())
     except Exception as e:
         db.session.rollback()
-        return error_response(str(e), 400)
+        return error_response(str(e), code='UPDATE_FAILED', status_code=400)

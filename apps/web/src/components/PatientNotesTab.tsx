@@ -13,7 +13,7 @@ interface PatientNotesTabProps {
 export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({
   patientId
 }) => {
-  const { notes, isLoading: notesLoading, error: notesError } = usePatientNotes(patientId);
+  const { notes, isLoading: notesLoading, error: notesError, fetchNotes } = usePatientNotes(patientId);
   const [showNoteForm, setShowNoteForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -155,9 +155,8 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({
       await patientApiService.createNote(patientId, noteData);
       setShowNoteForm(false);
       
-      // Refresh notes data by refetching
-      // Since we don't have a refresh prop, we'll need to refetch the data
-      // This would typically be handled by the parent component or a data fetching hook
+      // Refetch notes to show the new note immediately
+      await fetchNotes(patientId);
       console.log('Note saved successfully');
     } catch (error) {
       console.error('Note save failed:', error);
@@ -252,6 +251,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({
         </div>
       </div>
 
+      {/* KPI Cards - TEMPORARILY COMMENTED OUT - Will be added in future version
       {filteredNotes.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-blue-50 p-4 rounded-lg">
@@ -302,6 +302,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({
           </div>
         </div>
       )}
+      */}
 
       {filteredNotes.length === 0 ? (
         <div className="text-center py-12" role="status">

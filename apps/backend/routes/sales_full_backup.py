@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask import make_response
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from models.base import db, gen_sale_id
 from models.patient import Patient
 from models.device import Device
@@ -14,6 +14,8 @@ from services.pricing import (
 from services.stock_service import create_stock_movement
 from utils.idempotency import idempotent
 from utils.authorization import crm_permission_required
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
 from datetime import datetime
 import logging
 import json
@@ -23,6 +25,40 @@ from uuid import uuid4
 from decimal import Decimal
 
 logger = logging.getLogger(__name__)
+
+# ============= TENANT CONTEXT HELPER =============
+def _get_tenant_context():
+    """
+    Get current user's tenant context for tenant scoping.
+    Returns (user, tenant_id, is_admin) tuple.
+    """
+    try:
+        user_id = get_jwt_identity()
+        jwt_claims = get_jwt()
+        
+        # Check if this is an admin panel JWT
+        is_admin = jwt_claims.get('type') == 'admin'
+        if is_admin:
+            # Super Admin - tenant_id from header or None for all
+            tenant_id = request.headers.get('X-Tenant-ID')
+            return None, tenant_id, True
+        
+        # Regular user
+        user = db.session.get(User, user_id)
+        if not user:
+            return None, None, False
+        
+        return user, user.tenant_id, False
+    except Exception:
+        return None, None, False
+
+def _check_sale_access(sale, tenant_id, is_admin):
+    """Check if current context can access the sale."""
+    if is_admin:
+        return True  # Super Admin can access all
+    if not tenant_id:
+        return False
+    return sale.tenant_id == tenant_id
 
 # Constants
 ERROR_SALE_NOT_FOUND = "Sale not found"
@@ -390,38 +426,42 @@ def get_sale_payment_plan(sale_id):
 # ============= ORIGINAL SALES ENDPOINTS =============
 
 @sales_bp.route('/sales', methods=['GET'])
-@jwt_required()
-def get_sales():
-    """Get all sales with pagination and filtering"""
+@unified_access(resource='sales', action='read')
+def get_sales(ctx):
+    """Get all sales with pagination and filtering
+    
+    Access:
+    - Super Admin: All tenants (or specific tenant via X-Tenant-ID header)
+    - Tenant Admin: All sales in tenant
+    - Tenant User: Sales filtered by assigned branches
+    """
     try:
-        current_user_id = get_jwt_identity()
-        user = db.session.get(User, current_user_id)
-        if not user:
-            return jsonify({'success': False, 'error': 'User not found'}), 401
-
         page = int(request.args.get('page', 1))
         per_page = min(int(request.args.get('per_page', 50)), 100)
         search = request.args.get('search', '').strip()
         
-        query = Sale.query.filter_by(tenant_id=user.tenant_id)
-
-        # If user is admin (branch admin), filter by assigned branches
-        if user.role == 'admin':
-            user_branch_ids = [b.id for b in user.branches]
-            if user_branch_ids:
-                query = query.filter(Sale.branch_id.in_(user_branch_ids))
-            else:
-                return jsonify({
-                    'success': True,
-                    'data': [],
-                    'meta': {
-                        'page': page,
-                        'perPage': per_page,
-                        'total': 0,
-                        'totalPages': 0
-                    },
-                    'timestamp': datetime.now().isoformat()
-                }), 200
+        query = Sale.query
+        
+        # Tenant scoping
+        if ctx.tenant_id:
+            query = query.filter_by(tenant_id=ctx.tenant_id)
+            
+            # Branch-level filtering for tenant users with 'admin' role
+            if ctx.user and ctx.user.role == 'admin':
+                user_branch_ids = [b.id for b in ctx.user.branches]
+                if user_branch_ids:
+                    query = query.filter(Sale.branch_id.in_(user_branch_ids))
+                else:
+                    return success_response(
+                        data=[],
+                        meta={
+                            'page': page,
+                            'perPage': per_page,
+                            'total': 0,
+                            'totalPages': 0,
+                            'tenantScope': ctx.tenant_id
+                        }
+                    )
         
         # Search functionality
         if search:
@@ -455,95 +495,98 @@ def get_sales():
                 }
             sales_data.append(sale_dict)
         
-        return jsonify({
-            'success': True,
-            'data': sales_data,
-            'meta': {
+        return success_response(
+            data=sales_data,
+            meta={
                 'page': page,
                 'perPage': per_page,
                 'total': paginated.total,
-                'totalPages': paginated.pages
-            },
-            'timestamp': datetime.now().isoformat()
-        }), 200
+                'totalPages': paginated.pages,
+                'tenantScope': ctx.tenant_id
+            }
+        )
         
     except Exception as e:
         logger.error(f"Get sales error: {str(e)}")
-        return jsonify({
-            'success': False, 
-            'error': str(e),
-            'timestamp': datetime.now().isoformat()
-        }), 500
+        return error_response(str(e), code='SALES_READ_ERROR', status_code=500)
 
 @sales_bp.route('/sales', methods=['POST'])
-@jwt_required()
+@unified_access(resource='sales', action='write')
 @idempotent(methods=['POST'])
-def create_sale():
-    """Create a new sale directly (e.g. from frontend form)."""
+def create_sale(ctx):
+    """Create a new sale directly (e.g. from frontend form).
+    
+    Access:
+    - Requires write permission on sales
+    - Sale created in user's tenant context
+    """
     try:
-        current_user_id = get_jwt_identity()
-        user = db.session.get(User, current_user_id)
-        if not user:
-            return jsonify({'success': False, 'error': 'User not found'}), 401
-
         data = request.get_json()
         if not data:
-            return jsonify({"success": False, "error": ERROR_NO_DATA_PROVIDED}), 400
+            return error_response(ERROR_NO_DATA_PROVIDED, code='NO_DATA', status_code=400)
 
         patient_id = data.get('patientId') or data.get('patient_id')
         if not patient_id:
-             return jsonify({"success": False, "error": "Patient ID required"}), 400
+            return error_response("Patient ID required", code='PATIENT_ID_REQUIRED', status_code=400)
 
         patient = db.session.get(Patient, patient_id)
-        if not patient or patient.tenant_id != user.tenant_id:
-            return jsonify({"success": False, "error": ERROR_PATIENT_NOT_FOUND}), 404
+        if not patient:
+            return error_response(ERROR_PATIENT_NOT_FOUND, code='PATIENT_NOT_FOUND', status_code=404)
+        
+        # Tenant scope check
+        if ctx.tenant_id and patient.tenant_id != ctx.tenant_id:
+            return error_response(ERROR_PATIENT_NOT_FOUND, code='FORBIDDEN', status_code=404)
 
         product_id = data.get('productId') or data.get('product_id')
         if not product_id:
-             return jsonify({"success": False, "error": "Product ID required"}), 400
+            return error_response("Product ID required", code='PRODUCT_ID_REQUIRED', status_code=400)
 
         product = _load_product_from_inventory(product_id)
         if not product:
-             return jsonify({"success": False, "error": "Product not found"}), 404
+            return error_response("Product not found", code='PRODUCT_NOT_FOUND', status_code=404)
 
         # Warning check for stock
         warnings = []
         if product.available_inventory <= 0:
             warnings.append(f"Stok uyarısı: {getattr(product, 'name', 'Ürün')} stoğu yetersiz ({product.available_inventory}).")
         elif product.available_inventory <= (getattr(product, 'reorder_level', 5) or 5):
-             warnings.append(f"Stok uyarısı: {getattr(product, 'name', 'Ürün')} kritik seviyede ({product.available_inventory}).")
+            warnings.append(f"Stok uyarısı: {getattr(product, 'name', 'Ürün')} kritik seviyede ({product.available_inventory}).")
 
         # Calculate pricing
         base_price, discount, final_price = _calculate_product_pricing(product, data)
+        
+        # Determine tenant_id for sale
+        sale_tenant_id = ctx.tenant_id or patient.tenant_id
 
         # Create sale record
-        sale, error_response = _create_product_sale_record(patient_id, product.id, base_price, discount, final_price, data, user.tenant_id)
-        if error_response:
-             return error_response
+        sale, sale_error = _create_product_sale_record(patient_id, product.id, base_price, discount, final_price, data, sale_tenant_id)
+        if sale_error:
+            return sale_error
 
         # Device assignment
-        _create_product_device_assignment(patient_id, product.id, sale.id, base_price, final_price, product, data, user.tenant_id)
+        _create_product_device_assignment(patient_id, product.id, sale.id, base_price, final_price, product, data, sale_tenant_id)
 
-        # Inventory update (handles logic for negative stock allow via update_inventory call logic which we fixed)
-        _update_product_inventory(product, transaction_id=sale.id, created_by=user.id)
+        # Inventory update
+        _update_product_inventory(product, transaction_id=sale.id, created_by=ctx.principal_id)
 
         db.session.commit()
 
-        return jsonify({
-            "success": True,
-            "sale": sale.to_dict(),
-            "message": "Sale created successfully",
-            "warnings": warnings 
-        }), 201
+        return success_response(
+            data={
+                'sale': sale.to_dict(),
+                'warnings': warnings
+            },
+            status_code=201
+        )
 
     except Exception as e:
         import traceback
         try:
-             db.session.rollback()
+            db.session.rollback()
         except:
-             pass
+            pass
         logger.exception('Error creating sale')
-        return jsonify({"success": False, "error": str(e), "trace": traceback.format_exc()}), 500
+        return error_response(str(e), code='SALE_CREATE_ERROR', status_code=500)
 
 
 @sales_bp.route('/device-assignments/<assignment_id>', methods=['PATCH'])
@@ -1108,10 +1151,14 @@ def update_device_assignment(assignment_id):
         
     except Exception as e:
         db.session.rollback()
+        import traceback
+        error_trace = traceback.format_exc()
         logger.error(f"Update device assignment error: {str(e)}")
+        logger.error(f"Full traceback:\n{error_trace}")
         return jsonify({
             'success': False,
             'error': str(e),
+            'detail': error_trace,
             'timestamp': datetime.now().isoformat()
         }), 500
 
@@ -1906,21 +1953,26 @@ def _assign_devices_extended_impl(patient_id, data):
 
 
 @sales_bp.route('/sales/<sale_id>/payment-plan', methods=['POST'])
-@jwt_required()
-def create_sale_payment_plan(sale_id):
+@unified_access(resource='sales', action='write')
+def create_sale_payment_plan(ctx, sale_id):
+    """Create payment plan for a sale.
+    
+    Access:
+    - Requires write permission on sales
+    - Tenant scoped
+    """
     try:
-        current_user_id = get_jwt_identity()
-        user = db.session.get(User, current_user_id)
-        if not user:
-            return jsonify({'success': False, 'error': 'User not found'}), 401
-
         data = request.get_json()
         if not data:
-            return jsonify({"success": False, "error": ERROR_NO_DATA_PROVIDED, "timestamp": datetime.now().isoformat()}), 400
+            return error_response(ERROR_NO_DATA_PROVIDED, code='NO_DATA', status_code=400)
 
         sale = db.session.get(Sale, sale_id)
-        if not sale or sale.tenant_id != user.tenant_id:
-            return jsonify({"success": False, "error": ERROR_SALE_NOT_FOUND, "timestamp": datetime.now().isoformat()}), 404
+        if not sale:
+            return error_response(ERROR_SALE_NOT_FOUND, code='SALE_NOT_FOUND', status_code=404)
+        
+        # Tenant scope check
+        if ctx.tenant_id and sale.tenant_id != ctx.tenant_id:
+            return error_response(ERROR_SALE_NOT_FOUND, code='FORBIDDEN', status_code=404)
 
         from app import get_settings
         settings_response = get_settings()
@@ -2222,25 +2274,30 @@ def _handle_product_sale_idempotency(e, patient_id, data, idempotency_key):
 
 
 @sales_bp.route('/patients/<patient_id>/product-sales', methods=['POST'])
-@jwt_required()
+@unified_access(resource='sales', action='write')
 @idempotent(methods=['POST'])
-def create_product_sale(patient_id):
-    """Create a new product sale from inventory"""
+def create_product_sale(ctx, patient_id):
+    """Create a new product sale from inventory.
+    
+    Access:
+    - Requires write permission on sales
+    - Tenant scoped
+    """
     try:
-        current_user_id = get_jwt_identity()
-        user = db.session.get(User, current_user_id)
-        if not user:
-            return jsonify({'success': False, 'error': 'User not found'}), 401
-
         # Validate input
-        data, error_response, status_code = _validate_product_sale_input(request.get_json())
-        if error_response:
-            return error_response, status_code
+        data, validation_error, status_code = _validate_product_sale_input(request.get_json())
+        if validation_error:
+            return validation_error, status_code
 
         # Validate patient
         patient = db.session.get(Patient, patient_id)
-        if not patient or patient.tenant_id != user.tenant_id:
-            return jsonify({"success": False, "error": ERROR_PATIENT_NOT_FOUND}), 404
+        if not patient:
+            return error_response(ERROR_PATIENT_NOT_FOUND, code='PATIENT_NOT_FOUND', status_code=404)
+        
+        # Tenant scope check
+        if ctx.tenant_id and patient.tenant_id != ctx.tenant_id:
+            return error_response(ERROR_PATIENT_NOT_FOUND, code='FORBIDDEN', status_code=404)
+
 
         # Setup logging
         idempotency_key = request.headers.get('Idempotency-Key')
@@ -2294,18 +2351,17 @@ def create_product_sale(patient_id):
 
 
 @sales_bp.route('/sales/logs', methods=['POST'])
-@jwt_required()
-def create_sales_log():
-    """Create a sales log entry for cashflow.html page"""
+@unified_access(resource='sales', action='write')
+def create_sales_log(ctx):
+    """Create a sales log entry for cashflow.html page.
+    
+    Access:
+    - Requires write permission on sales
+    """
     try:
-        current_user_id = get_jwt_identity()
-        user = db.session.get(User, current_user_id)
-        if not user:
-            return jsonify({'success': False, 'error': 'User not found'}), 401
-
         data = request.get_json()
         if not data:
-            return jsonify({"success": False, "error": ERROR_NO_DATA_PROVIDED}), 400
+            return error_response(ERROR_NO_DATA_PROVIDED, code='NO_DATA', status_code=400)
 
         # Get patient information for proper formatting
         patient = Patient.query.get(data.get('patient_id'))
@@ -2617,30 +2673,31 @@ def _restore_serial_numbers(inventory_item, serial_number):
 
 
 @sales_bp.route('/device-assignments/<assignment_id>/return-loaner', methods=['POST'])
-@jwt_required()
-def return_loaner_to_stock(assignment_id):
-    """Return a loaner device to stock."""
+@unified_access(resource='sales', action='write')
+def return_loaner_to_stock(ctx, assignment_id):
+    """Return a loaner device to stock.
+    
+    Access:
+    - Requires write permission on sales
+    - Tenant scoped
+    """
     try:
-        current_user_id = get_jwt_identity()
-        user = db.session.get(User, current_user_id)
-        if not user:
-            return jsonify({'success': False, 'error': 'User not found'}), 401
-        
         assignment = db.session.get(DeviceAssignment, assignment_id)
         if not assignment:
-            return jsonify({'success': False, 'error': 'Assignment not found'}), 404
+            return error_response('Assignment not found', code='ASSIGNMENT_NOT_FOUND', status_code=404)
         
         # Verify it is a loaner
         if not assignment.is_loaner:
-             return jsonify({'success': False, 'error': 'This is not a loaner assignment'}), 400
+            return error_response('This is not a loaner assignment', code='NOT_LOANER', status_code=400)
 
         if not assignment.loaner_inventory_id:
-             return jsonify({'success': False, 'error': 'No loaner inventory link found'}), 400
+            return error_response('No loaner inventory link found', code='NO_LOANER_LINK', status_code=400)
 
         from models.inventory import InventoryItem
         loaner_item = db.session.get(InventoryItem, assignment.loaner_inventory_id)
         if not loaner_item:
-             return jsonify({'success': False, 'error': 'Loaner inventory item not found'}), 404
+            return error_response('Loaner inventory item not found', code='LOANER_NOT_FOUND', status_code=404)
+
 
         # Calculate quantity to return
         ear_val = str(assignment.ear or '').lower()
@@ -2931,26 +2988,27 @@ def recalc_sales():
 
 
 @sales_bp.route('/sales/<sale_id>', methods=['PUT', 'PATCH'])
-@jwt_required()
-def update_sale(sale_id):
+@unified_access(resource='sales', action='write')
+def update_sale(ctx, sale_id):
     """
     Update sale details, specifically pricing and financial info.
     Used when device assignments are edited (price change, discount change).
+    
+    Access:
+    - Requires write permission on sales
+    - Tenant scoped
     """
     try:
-        current_user_id = get_jwt_identity()
-        user = db.session.get(User, current_user_id)
-        if not user:
-            return jsonify({'success': False, 'error': 'User not found'}), 401
-
         sale = db.session.get(Sale, sale_id)
         if not sale:
-             return jsonify({'success': False, 'error': 'Sale not found'}), 404
+            return error_response('Sale not found', code='SALE_NOT_FOUND', status_code=404)
         
-        if sale.tenant_id != user.tenant_id:
-             return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+        # Tenant scope check
+        if ctx.tenant_id and sale.tenant_id != ctx.tenant_id:
+            return error_response('Unauthorized', code='FORBIDDEN', status_code=403)
 
         data = request.get_json()
+
         
         # Update financial fields if provided
         if 'listPriceTotal' in data:

@@ -4,10 +4,11 @@ Handles installment-based commission calculations
 """
 
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.base import db
 from models.user import User
 from models.tenant import Tenant
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
 import logging
 
 logger = logging.getLogger(__name__)
@@ -50,6 +51,8 @@ def get_system_commission_rates():
 
 def get_tenant_commission_rates(tenant_id):
     """Get tenant-specific commission rates (overrides system defaults)"""
+    if not tenant_id:
+        return None
     tenant = db.session.get(Tenant, tenant_id)
     if not tenant or not tenant.settings:
         return None
@@ -59,13 +62,7 @@ def get_tenant_commission_rates(tenant_id):
 def calculate_commission(amount, installment_count, provider='xear_pos', tenant_id=None):
     """
     Calculate commission for a given amount and installment count
-    Returns: {
-        'gross_amount': original amount,
-        'commission_rate': rate percentage,
-        'commission_amount': calculated commission,
-        'net_amount': amount after commission,
-        'provider': provider name
-    }
+    Returns detailed calculation result
     """
     # Get rates (tenant overrides system)
     rates = None
@@ -96,13 +93,11 @@ def calculate_commission(amount, installment_count, provider='xear_pos', tenant_
     }
 
 @pos_commission_bp.route('/calculate', methods=['POST'])
-@jwt_required()
-def calculate_commission_endpoint():
+@unified_access(resource='pos', action='read')
+def calculate_commission_endpoint(ctx):
     """Calculate commission for given amount and installments"""
-    current_user_id = get_jwt_identity()
-    user = db.session.get(User, current_user_id)
-    if not user:
-        return jsonify({'success': False, 'error': 'User not found'}), 401
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
     
     data = request.get_json()
     amount = float(data.get('amount', 0))
@@ -110,84 +105,70 @@ def calculate_commission_endpoint():
     provider = data.get('provider', 'xear_pos')
     
     if amount <= 0:
-        return jsonify({'success': False, 'error': 'Invalid amount'}), 400
+        return error_response('Invalid amount', code='INVALID_AMOUNT', status_code=400)
     
-    result = calculate_commission(amount, installment_count, provider, user.tenant_id)
+    result = calculate_commission(amount, installment_count, provider, ctx.tenant_id)
     
-    return jsonify({
-        'success': True,
-        'data': result
-    })
+    return success_response(data=result)
 
 @pos_commission_bp.route('/rates', methods=['GET'])
-@jwt_required()
-def get_commission_rates():
+@unified_access(resource='pos', action='read')
+def get_commission_rates(ctx):
     """Get commission rates for current tenant"""
-    current_user_id = get_jwt_identity()
-    user = db.session.get(User, current_user_id)
-    if not user:
-        return jsonify({'success': False, 'error': 'User not found'}), 401
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
     
     # Get tenant rates (or system defaults)
-    tenant_rates = get_tenant_commission_rates(user.tenant_id)
+    tenant_rates = get_tenant_commission_rates(ctx.tenant_id)
     system_rates = get_system_commission_rates()
     
     # Use tenant rates if available, otherwise system rates
     active_rates = tenant_rates if tenant_rates else system_rates
     
-    return jsonify({
-        'success': True,
-        'data': {
-            'rates': active_rates,
-            'is_custom': tenant_rates is not None,
-            'available_providers': list(active_rates.keys())
-        }
+    return success_response(data={
+        'rates': active_rates,
+        'is_custom': tenant_rates is not None,
+        'available_providers': list(active_rates.keys())
     })
 
 @pos_commission_bp.route('/rates/tenant/<tenant_id>', methods=['GET'])
-@jwt_required()
-def get_tenant_rates_admin(tenant_id):
+@unified_access(resource='admin.pos', action='read')
+def get_tenant_rates_admin(ctx, tenant_id):
     """Get tenant-specific rates (admin only)"""
-    current_user_id = get_jwt_identity()
-    user = db.session.get(User, current_user_id)
-    if not user or user.role not in ['admin', 'super_admin']:
-        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    # Check permissions
+    if not ctx.is_admin and (not ctx.user or ctx.user.role not in ['admin', 'super_admin']):
+        return error_response('Unauthorized', code='FORBIDDEN', status_code=403)
     
     tenant_rates = get_tenant_commission_rates(tenant_id)
     system_rates = get_system_commission_rates()
     
-    return jsonify({
-        'success': True,
-        'data': {
-            'tenant_rates': tenant_rates,
-            'system_rates': system_rates,
-            'effective_rates': tenant_rates if tenant_rates else system_rates
-        }
+    return success_response(data={
+        'tenant_rates': tenant_rates,
+        'system_rates': system_rates,
+        'effective_rates': tenant_rates if tenant_rates else system_rates
     })
 
 @pos_commission_bp.route('/rates/tenant/<tenant_id>', methods=['PUT'])
-@jwt_required()
-def update_tenant_rates_admin(tenant_id):
+@unified_access(resource='admin.pos', action='write')
+def update_tenant_rates_admin(ctx, tenant_id):
     """Update tenant-specific rates (admin only)"""
-    current_user_id = get_jwt_identity()
-    user = db.session.get(User, current_user_id)
-    if not user or user.role not in ['admin', 'super_admin']:
-        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    if not ctx.is_admin and (not ctx.user or ctx.user.role not in ['admin', 'super_admin']):
+        return error_response('Unauthorized', code='FORBIDDEN', status_code=403)
     
     tenant = db.session.get(Tenant, tenant_id)
     if not tenant:
-        return jsonify({'success': False, 'error': 'Tenant not found'}), 404
+        return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
     
     data = request.get_json()
     rates = data.get('rates')
     
     if not rates:
-        return jsonify({'success': False, 'error': 'Rates required'}), 400
+        return error_response('Rates required', code='MISSING_RATES', status_code=400)
     
     # Validate rates structure
     for provider, provider_rates in rates.items():
         if not isinstance(provider_rates, dict):
-            return jsonify({'success': False, 'error': f'Invalid rates for {provider}'}), 400
+            return error_response(f'Invalid rates for {provider}', code='INVALID_FORMAT', status_code=400)
     
     # Update tenant settings
     if not tenant.settings:
@@ -200,76 +181,71 @@ def update_tenant_rates_admin(tenant_id):
     
     db.session.commit()
     
-    return jsonify({'success': True, 'message': 'Tenant rates updated'})
+    return success_response(message='Tenant rates updated')
 
 @pos_commission_bp.route('/rates/system', methods=['GET'])
-@jwt_required()
-def get_system_rates_endpoint():
+@unified_access(resource='admin.pos', action='read')
+def get_system_rates_endpoint(ctx):
     """Get system-wide default rates (admin only)"""
-    current_user_id = get_jwt_identity()
-    user = db.session.get(User, current_user_id)
-    if not user or user.role not in ['admin', 'super_admin']:
-        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    if not ctx.is_admin and (not ctx.user or ctx.user.role not in ['admin', 'super_admin']):
+        return error_response('Unauthorized', code='FORBIDDEN', status_code=403)
     
     rates = get_system_commission_rates()
     
-    return jsonify({
-        'success': True,
-        'data': {
-            'rates': rates,
-            'defaults': DEFAULT_COMMISSION_RATES
-        }
+    return success_response(data={
+        'rates': rates,
+        'defaults': DEFAULT_COMMISSION_RATES
     })
 
 @pos_commission_bp.route('/rates/system', methods=['PUT'])
-@jwt_required()
-def update_system_rates():
+@unified_access(resource='admin.pos', action='write')
+def update_system_rates(ctx):
     """Update system-wide default rates (super admin only)"""
-    current_user_id = get_jwt_identity()
-    user = db.session.get(User, current_user_id)
-    if not user or user.role != 'super_admin':
-        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    # Strict super admin check
+    is_super_admin = False
+    if ctx.is_admin and str(ctx.principal_id).startswith('admin_'):
+         # Additional check could be done here if needed, but ctx.is_admin usually implies it
+         is_super_admin = True
+    elif ctx.user and ctx.user.role == 'super_admin':
+         is_super_admin = True
+
+    if not is_super_admin:
+        return error_response('Unauthorized. Super admin required.', code='FORBIDDEN', status_code=403)
     
     data = request.get_json()
     rates = data.get('rates')
     
     if not rates:
-        return jsonify({'success': False, 'error': 'Rates required'}), 400
+        return error_response('Rates required', code='MISSING_RATES', status_code=400)
     
     # Validate rates structure
     for provider, provider_rates in rates.items():
         if not isinstance(provider_rates, dict):
-            return jsonify({'success': False, 'error': f'Invalid rates for {provider}'}), 400
+            return error_response(f'Invalid rates for {provider}', code='INVALID_FORMAT', status_code=400)
     
     # Update system settings
-    # TODO: Integrate with Settings model
-    # For now, return error - use tenant-level rates instead
-    return jsonify({'success': False, 'error': 'System-level rates update not yet implemented. Use tenant-level rates.'}), 501
-    
-    return jsonify({'success': True, 'message': 'System rates updated'})
+    return error_response('System-level rates update not yet implemented. Use tenant-level rates.', code='NOT_IMPLEMENTED', status_code=501)
 
 @pos_commission_bp.route('/installment-options', methods=['POST'])
-@jwt_required()
-def get_installment_options():
+@unified_access(resource='pos', action='read')
+def get_installment_options(ctx):
     """Get installment options with calculated amounts for each"""
-    current_user_id = get_jwt_identity()
-    user = db.session.get(User, current_user_id)
-    if not user:
-        return jsonify({'success': False, 'error': 'User not found'}), 401
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
     
     data = request.get_json()
     amount = float(data.get('amount', 0))
     provider = data.get('provider', 'xear_pos')
     
     if amount <= 0:
-        return jsonify({'success': False, 'error': 'Invalid amount'}), 400
+        return error_response('Invalid amount', code='INVALID_AMOUNT', status_code=400)
     
     # Get available installment counts
     installments = [1, 2, 3, 6, 9, 12]
     
     options = []
     for inst_count in installments:
-        calc = calculate_commission(amount, inst_count, provider, user.tenant_id)
+        calc = calculate_commission(amount, inst_count, provider, ctx.tenant_id)
         options.append({
             'installment_count': inst_count,
             'label': 'Tek Çekim' if inst_count == 1 else f'{inst_count} Taksit',
@@ -280,10 +256,7 @@ def get_installment_options():
             'monthly_payment': round(calc['gross_amount'] / inst_count, 2) if inst_count > 1 else None
         })
     
-    return jsonify({
-        'success': True,
-        'data': {
-            'options': options,
-            'provider': provider
-        }
+    return success_response(data={
+        'options': options,
+        'provider': provider
     })

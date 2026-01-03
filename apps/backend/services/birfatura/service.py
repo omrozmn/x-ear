@@ -13,17 +13,18 @@ class BirfaturaClient:
     error normalization as needed.
     """
 
-    def __init__(self, base_url: str = None):
+    def __init__(self, base_url: str = None, api_key: str = None, secret_key: str = None, integration_key: str = None):
         # Support a local mock mode to avoid calling the real provider during
         # development or CI. Enable by setting BIRFATURA_MOCK=1 in the env.
         # Also enable mock automatically when FLASK_ENV != 'production' so
         # local dev runs don't hit the external provider by accident.
         self._use_mock = os.getenv('BIRFATURA_MOCK', '0') == '1' or os.getenv('FLASK_ENV', 'production') != 'production'
         self.base_url = base_url or os.getenv('BIRFATURA_BASE_URL', 'https://uygulama.edonustur.com')
+        
         self.headers = {
-            'X-Api-Key': os.getenv('BIRFATURA_X_API_KEY', ''),
-            'X-Secret-Key': os.getenv('BIRFATURA_X_SECRET_KEY', ''),
-            'X-Integration-Key': os.getenv('BIRFATURA_X_INTEGRATION_KEY', ''),
+            'X-Api-Key': api_key or os.getenv('BIRFATURA_X_API_KEY', ''),
+            'X-Secret-Key': secret_key or os.getenv('BIRFATURA_X_SECRET_KEY', ''),
+            'X-Integration-Key': integration_key or os.getenv('BIRFATURA_X_INTEGRATION_KEY', ''),
             'Content-Type': 'application/json'
         }
 

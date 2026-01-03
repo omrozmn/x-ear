@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify, make_response
 from models.base import db
 from models.device import Device
 from models.inventory import InventoryItem
-from models.user import User
 from models.enums import DeviceSide, DeviceStatus, DeviceCategory
 from constants import CANONICAL_CATEGORY_HEARING_AID
 from datetime import datetime
@@ -10,14 +9,16 @@ from sqlalchemy.orm import load_only
 import logging
 from utils.idempotency import idempotent
 from utils.optimistic_locking import optimistic_lock, with_transaction
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
 
 logger = logging.getLogger(__name__)
 
 devices_bp = Blueprint('devices', __name__, url_prefix='/api')
 
 @devices_bp.route('/devices', methods=['GET'])
-def get_devices():
+@unified_access(resource='devices', action='read')
+def get_devices(ctx):
     """Get devices with filtering"""
     try:
         category = request.args.get('category')
@@ -29,6 +30,10 @@ def get_devices():
         per_page = int(request.args.get('per_page', 20))
 
         query = Device.query
+        
+        # Apply tenant scope - CRITICAL SECURITY
+        if ctx.tenant_id:
+            query = query.filter_by(tenant_id=ctx.tenant_id)
 
         # Filter for inventory devices only if requested
         if inventory_only:
@@ -68,51 +73,36 @@ def get_devices():
             pass
 
         query = query.order_by(Device.created_at.desc())
-
         devices = query.paginate(page=page, per_page=per_page, error_out=False)
 
-        return jsonify({
-            "success": True,
-            "data": [device.to_dict() for device in devices.items],
-            "devices": [device.to_dict() for device in devices.items],
-            "meta": {
+        return success_response(
+            data=[device.to_dict() for device in devices.items],
+            meta={
                 "total": devices.total,
                 "page": page,
                 "perPage": per_page,
-                "totalPages": devices.pages
-            },
-            "timestamp": datetime.now().isoformat()
-        })
-
+                "totalPages": devices.pages,
+                "tenant_scope": ctx.tenant_id
+            }
+        )
     except Exception as e:
         logger.error(f"Get devices error: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }), 500
+        return error_response(str(e), status_code=500)
 
 
 @devices_bp.route('/devices', methods=['POST'])
-def create_device():
+@unified_access(resource='devices', action='create')
+def create_device(ctx):
     """Create a new device"""
     try:
         data = request.get_json()
         if not data:
-            return jsonify({
-                "success": False,
-                "error": "No data provided",
-                "timestamp": datetime.now().isoformat()
-            }), 400
+            return error_response("No data provided", status_code=400)
 
         required_fields = ['patientId', 'brand', 'model', 'type']
         for field in required_fields:
             if field not in data:
-                return jsonify({
-                    "success": False,
-                    "error": f"Missing required field: {field}",
-                    "timestamp": datetime.now().isoformat()
-                }), 400
+                return error_response(f"Missing required field: {field}", status_code=400)
 
         if 'id' not in data:
             import random
@@ -120,15 +110,15 @@ def create_device():
 
         device = Device()
         device.id = data['id']
+        device.tenant_id = ctx.tenant_id  # Set tenant_id from context
         device.patient_id = data['patientId']
         device.inventory_id = data.get('inventoryId')
-        # Handle serial number: convert empty string to None for UNIQUE constraint
         serial_num = data.get('serialNumber')
         device.serial_number = serial_num if serial_num and serial_num.strip() else None
         device.brand = data['brand']
         device.model = data['model']
         device.device_type = data['type']
-        # Handle enum conversions
+        
         if 'category' in data:
             device.category = DeviceCategory.from_legacy(data['category'])
         elif data['type'] in ['hearing_aid']:
@@ -140,7 +130,6 @@ def create_device():
         device.status = DeviceStatus.from_legacy(data.get('status', 'in_stock'))
         device.price = data.get('price')
         
-        # Handle serial numbers for left and right ear
         if 'serialNumberLeft' in data:
             serial_left = data['serialNumberLeft']
             device.serial_number_left = serial_left if serial_left and serial_left.strip() else None
@@ -148,7 +137,6 @@ def create_device():
             serial_right = data['serialNumberRight']
             device.serial_number_right = serial_right if serial_right and serial_right.strip() else None
         
-        # Handle notes: convert empty string to None
         notes_val = data.get('notes')
         device.notes = notes_val if notes_val and notes_val.strip() else None
 
@@ -172,7 +160,6 @@ def create_device():
         db.session.add(device)
         db.session.commit()
 
-        # Log device creation
         from app import log_activity
         log_activity('system', 'create', 'device', device.id, {
             'patientId': device.patient_id,
@@ -181,74 +168,44 @@ def create_device():
             'type': device.device_type
         }, request)
 
-        resp = make_response(jsonify({
-            "success": True,
-            "data": device.to_dict(),
-            "message": "Device created successfully",
-            "timestamp": datetime.now().isoformat()
-        }), 201)
+        resp = make_response(success_response(data=device.to_dict(), status_code=201))
         resp.headers['Location'] = f"/api/devices/{device.id}"
         return resp
-
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create device error: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }), 500
+        return error_response(str(e), status_code=500)
 
 
 @devices_bp.route('/devices/<device_id>', methods=['GET'])
-def get_device(device_id):
+@unified_access(resource='devices', action='read')
+def get_device(ctx, device_id):
     """Get a specific device"""
     try:
         device = db.session.get(Device, device_id)
-        if not device:
-            return jsonify({
-                "success": False,
-                "error": "Device not found",
-                "timestamp": datetime.now().isoformat()
-            }), 404
-
-        return jsonify({
-            "success": True,
-            "data": device.to_dict(),
-            "timestamp": datetime.now().isoformat()
-        })
-
+        if not device or (ctx.tenant_id and device.tenant_id != ctx.tenant_id):
+            return error_response("Device not found", status_code=404)
+        return success_response(data=device.to_dict())
     except Exception as e:
         logger.error(f"Get device error: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }), 500
+        return error_response(str(e), status_code=500)
 
 
-@devices_bp.route('/devices/<device_id>', methods=['PUT','PATCH'])
+@devices_bp.route('/devices/<device_id>', methods=['PUT', 'PATCH'])
+@unified_access(resource='devices', action='edit')
 @idempotent(methods=['PUT', 'PATCH'])
 @optimistic_lock(Device, id_param='device_id')
 @with_transaction
-def update_device(device_id):
-    """Update a device (PUT full update or PATCH partial update)"""
+def update_device(ctx, device_id):
+    """Update a device"""
     try:
         data = request.get_json()
         if not data:
-            return jsonify({
-                "success": False,
-                "error": "No data provided",
-                "timestamp": datetime.now().isoformat()
-            }), 400
+            return error_response("No data provided", status_code=400)
 
         device = db.session.get(Device, device_id)
-        if not device:
-            return jsonify({
-                "success": False,
-                "error": "Device not found",
-                "timestamp": datetime.now().isoformat()
-            }), 404
+        if not device or (ctx.tenant_id and device.tenant_id != ctx.tenant_id):
+            return error_response("Device not found", status_code=404)
 
         if 'brand' in data:
             device.brand = data['brand']
@@ -293,88 +250,58 @@ def update_device(device_id):
             device.warranty_terms = warranty.get('terms')
 
         db.session.commit()
-
-        return jsonify({
-            "success": True,
-            "data": device.to_dict(),
-            "message": "Device updated successfully",
-            "timestamp": datetime.now().isoformat()
-        })
-
+        return success_response(data=device.to_dict())
     except Exception as e:
         db.session.rollback()
         logger.error(f"Update device error: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }), 500
+        return error_response(str(e), status_code=500)
 
 
 @devices_bp.route('/devices/<device_id>', methods=['DELETE'])
-def delete_device(device_id):
+@unified_access(resource='devices', action='delete')
+def delete_device(ctx, device_id):
     """Delete a device or device assignment"""
     try:
-        # 1. Try deleting standard Device
         device = db.session.get(Device, device_id)
         if device:
+            if ctx.tenant_id and device.tenant_id != ctx.tenant_id:
+                return error_response("Device not found", status_code=404)
             db.session.delete(device)
             db.session.commit()
-            return jsonify({
-                "success": True,
-                "message": "Device deleted successfully",
-                "timestamp": datetime.now().isoformat()
-            })
+            return success_response(data={'message': 'Device deleted successfully'})
 
-        # 2. Try deleting DeviceAssignment (for inventory items)
         from models.sales import DeviceAssignment
         assignment = db.session.get(DeviceAssignment, device_id)
         
         if assignment:
-            # Restore stock if applicable
+            if ctx.tenant_id and assignment.tenant_id != ctx.tenant_id:
+                return error_response("Device not found", status_code=404)
+                
             if assignment.delivery_status == 'delivered' and assignment.inventory_id:
                 inventory = db.session.get(InventoryItem, assignment.inventory_id)
                 if inventory:
                     inventory.update_inventory(1)
-                    # Log movement could be added here
             
-            # Restore loaner stock if applicable
             if assignment.is_loaner and assignment.loaner_inventory_id:
-                 loaner_inv = db.session.get(InventoryItem, assignment.loaner_inventory_id)
-                 if loaner_inv:
-                      loaner_inv.update_inventory(1)
+                loaner_inv = db.session.get(InventoryItem, assignment.loaner_inventory_id)
+                if loaner_inv:
+                    loaner_inv.update_inventory(1)
             
             db.session.delete(assignment)
             db.session.commit()
-            
-            return jsonify({
-                "success": True,
-                "message": "Device assignment deleted and stock restored",
-                "timestamp": datetime.now().isoformat()
-            })
+            return success_response(data={'message': 'Device assignment deleted and stock restored'})
 
-        return jsonify({
-            "success": False,
-            "error": "Device not found",
-            "timestamp": datetime.now().isoformat()
-        }), 404
-
+        return error_response("Device not found", status_code=404)
     except Exception as e:
         db.session.rollback()
         logger.error(f"Delete device error: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }), 500
+        return error_response(str(e), status_code=500)
 
 
 @devices_bp.route('/devices/<device_id>/stock-update', methods=['POST'])
-def update_device_stock(device_id):
-    """Update device stock levels (simplified).
-    This endpoint is intentionally permissive for tests — real inventory logic
-    should live in a dedicated inventory table/service.
-    """
+@unified_access(resource='devices', action='edit')
+def update_device_stock(ctx, device_id):
+    """Update device stock levels"""
     try:
         data = request.get_json() or {}
         operation = data.get('operation')
@@ -383,19 +310,11 @@ def update_device_stock(device_id):
         notes = data.get('notes', '')
 
         if not operation:
-            return jsonify({"success": False, "error": "Operation required", "timestamp": datetime.now().isoformat()}), 400
+            return error_response("Operation required", status_code=400)
 
         device = db.session.get(Device, device_id)
-        if not device:
-            return jsonify({"success": False, "error": "Device not found", "timestamp": datetime.now().isoformat()}), 404
-
-        log_details = {
-            'deviceId': device_id,
-            'operation': operation,
-            'quantity': quantity,
-            'reason': reason,
-            'notes': notes
-        }
+        if not device or (ctx.tenant_id and device.tenant_id != ctx.tenant_id):
+            return error_response("Device not found", status_code=404)
 
         if notes:
             device.notes = (device.notes or '') + f"\n[stock-update] {operation} x{quantity}: {notes}"
@@ -404,26 +323,37 @@ def update_device_stock(device_id):
         db.session.commit()
 
         from app import log_activity
-        log_activity('system', 'device_stock_update', 'device', device_id, log_details, request)
+        log_activity('system', 'device_stock_update', 'device', device_id, {
+            'operation': operation,
+            'quantity': quantity,
+            'reason': reason,
+            'notes': notes
+        }, request)
 
-        return jsonify({"success": True, "message": "Stock update applied (simulated)", "timestamp": datetime.now().isoformat()}), 200
-
+        return success_response(data={'message': 'Stock update applied'})
     except Exception as e:
         db.session.rollback()
         logger.error(f"Update device stock error: {str(e)}")
-        return jsonify({"success": False, "error": str(e), "timestamp": datetime.now().isoformat()}), 500
+        return error_response(str(e), status_code=500)
 
 
 @devices_bp.route('/devices/categories', methods=['GET'])
-def get_device_categories():
+@unified_access(resource='devices', action='read')
+def get_device_categories(ctx):
     """Get available device categories"""
     try:
-        categories = db.session.query(Device.category).distinct().filter(Device.category.isnot(None), Device.category != '').all()
-        # Convert enum values to strings for JSON serialization
+        query = db.session.query(Device.category).distinct().filter(Device.category.isnot(None), Device.category != '')
+        if ctx.tenant_id:
+            query = query.filter(Device.tenant_id == ctx.tenant_id)
+        categories = query.all()
+        
         category_list = [cat[0].value if hasattr(cat[0], 'value') else str(cat[0]) for cat in categories if cat[0]]
 
         if not category_list:
-            types = db.session.query(Device.device_type).distinct().filter(Device.device_type.isnot(None)).all()
+            type_query = db.session.query(Device.device_type).distinct().filter(Device.device_type.isnot(None))
+            if ctx.tenant_id:
+                type_query = type_query.filter(Device.tenant_id == ctx.tenant_id)
+            types = type_query.all()
             type_list = [t[0] for t in types if t[0]]
 
             hearing_types = ['BTE', 'ITE', 'RIC', 'CIC', 'RIC-BTE', 'HEARING_AID', 'hearing_aid']
@@ -435,93 +365,61 @@ def get_device_categories():
                 if t not in category_list:
                     category_list.append(t)
 
-        return jsonify({
-            "success": True,
-            "categories": category_list,
-            "timestamp": datetime.now().isoformat()
-        })
-
+        return success_response(data={'categories': category_list})
     except Exception as e:
         logger.error(f"Get device categories error: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }), 500
+        return error_response(str(e), status_code=500)
 
 
 @devices_bp.route('/devices/brands', methods=['GET'])
-def get_device_brands():
-    """Get available device brands from inventory"""
+@unified_access(resource='devices', action='read')
+def get_device_brands(ctx):
+    """Get available device brands"""
     try:
-        brands = db.session.query(InventoryItem.brand).distinct().filter(InventoryItem.brand.isnot(None)).all()
-        # Convert to list of strings
+        query = db.session.query(InventoryItem.brand).distinct().filter(InventoryItem.brand.isnot(None))
+        if ctx.tenant_id:
+            query = query.filter(InventoryItem.tenant_id == ctx.tenant_id)
+        brands = query.all()
         brand_list = [str(brand[0]) for brand in brands if brand[0]]
-
-        return jsonify({
-            "success": True,
-            "brands": brand_list,
-            "timestamp": datetime.now().isoformat()
-        })
-
+        return success_response(data={'brands': brand_list})
     except Exception as e:
         logger.error(f"Get device brands error: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }), 500
+        return error_response(str(e), status_code=500)
 
 
 @devices_bp.route('/devices/brands', methods=['POST'])
-@jwt_required()
+@unified_access(resource='devices', action='create')
 @idempotent(methods=['POST'])
-def create_device_brand():
-    """Create a new device brand by creating a placeholder device"""
+def create_device_brand(ctx):
+    """Create a new device brand"""
     try:
-        current_user_id = get_jwt_identity()
-        user = db.session.get(User, current_user_id)
-        if not user:
-            return jsonify({'error': 'User not found'}), 401
-        
         data = request.get_json()
         if not data or 'name' not in data:
-            return jsonify({
-                "success": False,
-                "error": "Brand name is required",
-                "timestamp": datetime.now().isoformat()
-            }), 400
+            return error_response("Brand name is required", status_code=400)
 
         brand_name = data['name'].strip()
         if not brand_name:
-            return jsonify({
-                "success": False,
-                "error": "Brand name cannot be empty",
-                "timestamp": datetime.now().isoformat()
-            }), 400
+            return error_response("Brand name cannot be empty", status_code=400)
 
-        # Check if brand already exists for this tenant
-        existing_brand = db.session.query(Device.brand).filter(
-            Device.brand == brand_name,
-            Device.tenant_id == user.tenant_id
-        ).first()
+        # Check if brand already exists
+        query = db.session.query(Device.brand).filter(Device.brand == brand_name)
+        if ctx.tenant_id:
+            query = query.filter(Device.tenant_id == ctx.tenant_id)
+        existing_brand = query.first()
+        
         if existing_brand:
-            return jsonify({
-                "success": False,
-                "error": "Brand already exists",
-                "timestamp": datetime.now().isoformat()
-            }), 409
+            return error_response("Brand already exists", status_code=409)
 
-        # Create a placeholder device to establish the brand
+        # Create placeholder device
         placeholder_device = Device(
-            tenant_id=user.tenant_id,
+            tenant_id=ctx.tenant_id,
             serial_number=f"BRAND_PLACEHOLDER_{brand_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             brand=brand_name,
             model=f"Placeholder for {brand_name}",
-            category="aksesuar",  # Use a generic category
+            category="aksesuar",
             device_type="aksesuar",
-            status='IN_STOCK',  # String value instead of enum
-            patient_id="inventory",  # Mark as inventory item
+            status='IN_STOCK',
+            patient_id="inventory",
             created_at=datetime.now(),
             updated_at=datetime.now()
         )
@@ -529,43 +427,37 @@ def create_device_brand():
         db.session.add(placeholder_device)
         db.session.commit()
 
-        return jsonify({
-            "success": True,
-            "brand": {
-                "name": brand_name,
-                "created_at": datetime.now().isoformat()
+        return success_response(
+            data={
+                'brand': {
+                    'name': brand_name,
+                    'created_at': datetime.now().isoformat()
+                }
             },
-            "message": f"Brand '{brand_name}' created successfully",
-            "timestamp": datetime.now().isoformat()
-        }), 201
-
+            status_code=201
+        )
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create device brand error: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": "Internal server error",
-            "timestamp": datetime.now().isoformat()
-        }), 500
+        return error_response("Internal server error", status_code=500)
 
 
 @devices_bp.route('/devices/low-stock', methods=['GET'])
-def get_low_stock_devices():
+@unified_access(resource='devices', action='read')
+def get_low_stock_devices(ctx):
     """Get devices with low stock levels"""
     try:
-        devices = Device.query.filter(Device.status == 'IN_STOCK').limit(10).all()
+        query = Device.query.filter(Device.status == 'IN_STOCK')
+        if ctx.tenant_id:
+            query = query.filter_by(tenant_id=ctx.tenant_id)
+        devices = query.limit(10).all()
 
-        return jsonify({
-            "success": True,
-            "devices": [device.to_dict() for device in devices],
-            "count": len(devices),
-            "timestamp": datetime.now().isoformat()
-        })
-
+        return success_response(
+            data={
+                'devices': [device.to_dict() for device in devices],
+                'count': len(devices)
+            }
+        )
     except Exception as e:
         logger.error(f"Get low stock devices error: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }), 500
+        return error_response(str(e), status_code=500)

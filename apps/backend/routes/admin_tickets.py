@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
-from utils.admin_permissions import require_admin_permission, AdminPermissions
+from flask import Blueprint, request, jsonify
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
+from utils.admin_permissions import AdminPermissions
 from datetime import datetime
 import uuid
 
@@ -24,9 +25,8 @@ MOCK_TICKETS = [
 ]
 
 @admin_tickets_bp.route('', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.TICKETS_READ)
-def get_admin_tickets():
+@unified_access(permission=AdminPermissions.TICKETS_READ)
+def get_admin_tickets(ctx):
     page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 10, type=int)
     status = request.args.get('status')
@@ -48,23 +48,19 @@ def get_admin_tickets():
     end = start + limit
     paginated = filtered[start:end]
     
-    return jsonify({
-        'success': True,
-        'data': {
-            'tickets': paginated,
-            'pagination': {
-                'page': page,
-                'limit': limit,
-                'total': total,
-                'totalPages': (total + limit - 1) // limit
-            }
+    return success_response(data={
+        'tickets': paginated,
+        'pagination': {
+            'page': page,
+            'limit': limit,
+            'total': total,
+            'totalPages': (total + limit - 1) // limit
         }
     })
 
 @admin_tickets_bp.route('', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.TICKETS_MANAGE)
-def create_admin_ticket():
+@unified_access(permission=AdminPermissions.TICKETS_MANAGE)
+def create_admin_ticket(ctx):
     data = request.get_json()
     new_ticket = {
         'id': str(uuid.uuid4()),
@@ -73,16 +69,15 @@ def create_admin_ticket():
         **data
     }
     MOCK_TICKETS.append(new_ticket)
-    return jsonify({'success': True, 'data': {'ticket': new_ticket}}), 201
+    return success_response(data={'ticket': new_ticket}, status_code=201)
 
 @admin_tickets_bp.route('/<id>', methods=['PUT'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.TICKETS_MANAGE)
-def update_admin_ticket(id):
+@unified_access(permission=AdminPermissions.TICKETS_MANAGE)
+def update_admin_ticket(ctx, id):
     ticket = next((t for t in MOCK_TICKETS if t['id'] == id), None)
     if not ticket:
-        return jsonify({'success': False, 'error': {'message': 'Ticket not found'}}), 404
+        return error_response('Ticket not found', code='NOT_FOUND', status_code=404)
     
     data = request.get_json()
     ticket.update(data)
-    return jsonify({'success': True, 'data': {'ticket': ticket}})
+    return success_response(data={'ticket': ticket})

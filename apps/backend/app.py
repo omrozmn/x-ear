@@ -1124,9 +1124,12 @@ except Exception as e:
 
 
 
+from utils.decorators import unified_access
+from utils.admin_permissions import AdminPermissions
+
 @app.route('/api/admin/features', methods=['GET'])
-@jwt_required()
-def admin_get_features():
+@unified_access(permission=AdminPermissions.SETTINGS_READ)
+def admin_get_features(ctx):
     """Return the current feature flags for admin UI.
 
     Requires JWT; access to the admin panel itself is verified client-side, but
@@ -1150,8 +1153,8 @@ def admin_get_features():
 
 
 @app.route('/api/admin/features', methods=['PATCH'])
-@jwt_required()
-def admin_patch_features():
+@unified_access(permission=AdminPermissions.SETTINGS_MANAGE)
+def admin_patch_features(ctx):
     """Patch feature flags. Body: { features: { 'integrations_ui': true } }
 
     Authorization: user must have `settings.update` or `features.toggle`.
@@ -1209,4 +1212,5 @@ if __name__ == '__main__':
     run_port = int(os.getenv('FLASK_RUN_PORT', '5003'))
     run_host = os.getenv('FLASK_RUN_HOST', '0.0.0.0')
     logger.info(f"Starting Flask development server on {run_host}:{run_port}")
-    app.run(host=run_host, port=run_port, debug=app.config.get('DEBUG', False))
+    app.run(host=run_host, port=run_port, debug=app.config.get('DEBUG', False))# Reload trigger
+# Force Reload 2

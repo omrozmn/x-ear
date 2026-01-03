@@ -235,7 +235,7 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
   // Group events by date
   const groupedEvents = useMemo(() => {
     return filteredEvents.reduce((groups, event) => {
-      const date = new Date(event.date).toLocaleDateString('tr-TR');
+      const date = formatDate(event.date);
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -287,6 +287,30 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
       case 'medium': return 'bg-yellow-100 text-yellow-800';
       case 'low': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatDate = (dateStr: string): string => {
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        return 'Tarih belirtilmemiş';
+      }
+      return date.toLocaleDateString('tr-TR');
+    } catch {
+      return 'Tarih belirtilmemiş';
+    }
+  };
+
+  const formatTime = (dateStr: string): string => {
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        return '';
+      }
+      return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return '';
     }
   };
 
@@ -451,10 +475,7 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
                             <div className="flex items-center space-x-4 text-xs text-gray-500">
                               <span className="flex items-center">
                                 <Clock className="h-3 w-3 mr-1" />
-                                {new Date(event.date).toLocaleTimeString('tr-TR', {
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
+                                {formatTime(event.date)}
                               </span>
                             </div>
                             

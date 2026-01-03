@@ -3,6 +3,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from models import db, SMSProviderConfig, SMSHeaderRequest, SMSPackage, TenantSMSCredit, TargetAudience, User, Tenant, ActivityLog, Notification
 from utils.authorization import admin_required, role_required
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
 from datetime import datetime, timezone
 import logging
 import os
@@ -22,35 +24,36 @@ sms_bp = Blueprint('sms_integration', __name__)
 # ============================================================================
 
 @sms_bp.route('/sms/config', methods=['GET'])
-@jwt_required()
-def get_sms_config():
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(resource='sms', action='read')
+def get_sms_config(ctx):
+    """Get SMS configuration for tenant."""
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
         
-    config = SMSProviderConfig.query.filter_by(tenant_id=user.tenant_id).first()
+    config = SMSProviderConfig.query.filter_by(tenant_id=ctx.tenant_id).first()
     if not config:
         # Create default empty config
-        config = SMSProviderConfig(tenant_id=user.tenant_id)
+        config = SMSProviderConfig(tenant_id=ctx.tenant_id)
         db.session.add(config)
         db.session.commit()
         
-    return jsonify({'success': True, 'data': config.to_dict()})
+    return success_response(data=config.to_dict())
 
 @sms_bp.route('/sms/config', methods=['PUT'])
-@jwt_required()
-@role_required(['admin', 'tenant_admin'])
-def update_sms_config():
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(resource='sms', action='write')
+def update_sms_config(ctx):
+    """Update SMS configuration for tenant."""
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
+    
+    # Check if user has admin permissions within tenant
+    if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
+        return error_response('Admin access required', code='FORBIDDEN', status_code=403)
         
     data = request.get_json() or {}
-    config = SMSProviderConfig.query.filter_by(tenant_id=user.tenant_id).first()
+    config = SMSProviderConfig.query.filter_by(tenant_id=ctx.tenant_id).first()
     if not config:
-        config = SMSProviderConfig(tenant_id=user.tenant_id)
+        config = SMSProviderConfig(tenant_id=ctx.tenant_id)
         db.session.add(config)
     
     if 'apiUsername' in data: config.api_username = data['apiUsername']
@@ -59,42 +62,39 @@ def update_sms_config():
     
     db.session.commit()
     
-    # TODO: Add proper activity logging when ActivityLog.log is implemented
-    # ActivityLog.log(user.tenant_id, user_id, 'update_sms_config', 'Updated SMS configuration')
-    
-    return jsonify({'success': True, 'data': config.to_dict()})
+    return success_response(data=config.to_dict())
 
 
 @sms_bp.route('/sms/headers', methods=['GET'])
-@jwt_required()
-def list_sms_headers():
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(resource='sms', action='read')
+def list_sms_headers(ctx):
+    """List SMS headers for tenant."""
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
         
-    headers = SMSHeaderRequest.query.filter_by(tenant_id=user.tenant_id).order_by(SMSHeaderRequest.created_at.desc()).all()
-    return jsonify({'success': True, 'data': [h.to_dict() for h in headers]})
+    headers = SMSHeaderRequest.query.filter_by(tenant_id=ctx.tenant_id).order_by(SMSHeaderRequest.created_at.desc()).all()
+    return success_response(data=[h.to_dict() for h in headers])
 
 @sms_bp.route('/sms/headers', methods=['POST'])
-@jwt_required()
-@role_required(['admin', 'tenant_admin'])
-def request_sms_header():
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(resource='sms', action='write')
+def request_sms_header(ctx):
+    """Request a new SMS header for tenant."""
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
+    
+    if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
+        return error_response('Admin access required', code='FORBIDDEN', status_code=403)
         
     data = request.get_json() or {}
     required = ['headerText', 'headerType']
     if not all(k in data for k in required):
-        return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+        return error_response('Missing required fields', code='MISSING_FIELDS', status_code=400)
         
     if len(data['headerText']) > 11:
-        return jsonify({'success': False, 'error': 'Header text max 11 chars'}), 400
+        return error_response('Header text max 11 chars', code='INVALID_LENGTH', status_code=400)
         
     header = SMSHeaderRequest(
-        tenant_id=user.tenant_id,
+        tenant_id=ctx.tenant_id,
         header_text=data['headerText'],
         header_type=data['headerType'],
         documents_json=data.get('documents', [])
@@ -103,96 +103,85 @@ def request_sms_header():
     db.session.add(header)
     db.session.commit()
     
-    # TODO: Add proper activity logging when ActivityLog.log is implemented
-    # ActivityLog.log(user.tenant_id, user_id, 'request_sms_header', f"Requested SMS header: {data['headerText']}")
-    
     # Notify admins
     try:
         admins = User.query.filter(User.role.in_(['admin', 'super_admin'])).all()
         for admin in admins:
             notif = Notification(
                 user_id=admin.id,
-                tenant_id=admin.tenant_id or user.tenant_id, # Fallback to requester's tenant if admin has no tenant
+                tenant_id=admin.tenant_id or ctx.tenant_id,
                 title="Yeni SMS Başlık Talebi",
-                message=f"{user.username} (Tenant: {user.tenant_id}) yeni bir SMS başlığı talep etti: {data['headerText']}",
+                message=f"Yeni SMS başlığı talep edildi: {data['headerText']}",
                 notification_type="info",
                 is_read=False
             )
             db.session.add(notif)
         db.session.commit()
     except Exception as e:
-        print(f"Failed to create notifications: {e}")
+        logger.warning(f"Failed to create notifications: {e}")
     
-    return jsonify({'success': True, 'data': header.to_dict()}), 201
+    return success_response(data=header.to_dict(), status_code=201)
 
 @sms_bp.route('/sms/packages', methods=['GET'])
 def list_sms_packages():
-    # Public endpoint or authenticated? Let's make it public or at least accessible to all logged in
+    """List available SMS packages (public endpoint)."""
     packages = SMSPackage.query.filter_by(is_active=True).order_by(SMSPackage.price).all()
     return jsonify({'success': True, 'data': [p.to_dict() for p in packages]})
 
 @sms_bp.route('/sms/credit', methods=['GET'])
-@jwt_required()
-def get_sms_credit():
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(resource='sms', action='read')
+def get_sms_credit(ctx):
+    """Get SMS credit balance for tenant."""
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
         
-    credit = TenantSMSCredit.query.filter_by(tenant_id=user.tenant_id).first()
+    credit = TenantSMSCredit.query.filter_by(tenant_id=ctx.tenant_id).first()
     if not credit:
-        credit = TenantSMSCredit(tenant_id=user.tenant_id)
+        credit = TenantSMSCredit(tenant_id=ctx.tenant_id)
         db.session.add(credit)
         db.session.commit()
         
-    return jsonify({'success': True, 'data': credit.to_dict()})
+    return success_response(data=credit.to_dict())
 
 from services.s3_service import s3_service
 
 @sms_bp.route('/sms/documents/upload', methods=['POST'])
-@jwt_required()
-@role_required(['admin', 'tenant_admin'])
-def upload_sms_document():
-    """Upload SMS document to S3"""
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(resource='sms', action='write')
+def upload_sms_document(ctx):
+    """Upload SMS document to S3."""
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
+    
+    if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
+        return error_response('Admin access required', code='FORBIDDEN', status_code=403)
     
     if 'file' not in request.files:
-        return jsonify({'success': False, 'error': 'No file provided'}), 400
+        return error_response('No file provided', code='NO_FILE', status_code=400)
     
     file = request.files['file']
-    document_type = request.form.get('documentType')  # contract, id_card, residence, etc.
+    document_type = request.form.get('documentType')
     
     if not file or file.filename == '':
-        return jsonify({'success': False, 'error': 'No file selected'}), 400
+        return error_response('No file selected', code='NO_FILE', status_code=400)
     
     if not document_type:
-        return jsonify({'success': False, 'error': 'Document type required'}), 400
+        return error_response('Document type required', code='MISSING_TYPE', status_code=400)
     
     try:
-        # Upload to S3
         upload_result = s3_service.upload_file(
             file_obj=file,
             folder='sms_documents',
-            tenant_id=user.tenant_id,
+            tenant_id=ctx.tenant_id,
             original_filename=file.filename
         )
         
-        # Get or create config
-        config = SMSProviderConfig.query.filter_by(tenant_id=user.tenant_id).first()
+        config = SMSProviderConfig.query.filter_by(tenant_id=ctx.tenant_id).first()
         if not config:
-            config = SMSProviderConfig(tenant_id=user.tenant_id)
+            config = SMSProviderConfig(tenant_id=ctx.tenant_id)
             db.session.add(config)
         
-        # Add document metadata
         docs = config.documents_json or []
-        
-        # Remove existing document of same type (replace)
         docs = [d for d in docs if d.get('type') != document_type]
-        
-        # Add new document
         docs.append({
             'type': document_type,
             's3_key': upload_result['key'],
@@ -204,113 +193,96 @@ def upload_sms_document():
         config.documents_json = docs
         db.session.commit()
         
-        # TODO: Add proper activity logging when ActivityLog.log is implemented
-        # ActivityLog.log(user.tenant_id, user_id, 'sms_document_upload', f'Uploaded {document_type} document')
-        
-        return jsonify({
-            'success': True,
-            'data': {
-                'type': document_type,
-                'filename': upload_result['filename'],
-                'size': upload_result['size']
-            }
+        return success_response(data={
+            'type': document_type,
+            'filename': upload_result['filename'],
+            'size': upload_result['size']
         })
         
     except Exception as e:
         logger.error(f"Document upload failed: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return error_response(str(e), code='UPLOAD_FAILED', status_code=500)
 
 @sms_bp.route('/sms/documents/<document_type>/download', methods=['GET'])
-@jwt_required()
-def download_sms_document(document_type):
-    """Generate presigned URL for document download"""
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(resource='sms', action='read')
+def download_sms_document(ctx, document_type):
+    """Generate presigned URL for document download."""
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
     
-    config = SMSProviderConfig.query.filter_by(tenant_id=user.tenant_id).first()
+    config = SMSProviderConfig.query.filter_by(tenant_id=ctx.tenant_id).first()
     if not config:
-        return jsonify({'success': False, 'error': 'No configuration found'}), 404
+        return error_response('No configuration found', code='NOT_FOUND', status_code=404)
     
     docs = config.documents_json or []
     doc = next((d for d in docs if d.get('type') == document_type), None)
     
     if not doc:
-        return jsonify({'success': False, 'error': 'Document not found'}), 404
+        return error_response('Document not found', code='NOT_FOUND', status_code=404)
     
     try:
-        # Generate presigned URL (1 hour expiry)
         presigned_url = s3_service.generate_presigned_url(doc['s3_key'], expiration=3600)
-        return jsonify({'success': True, 'url': presigned_url})
+        return success_response(data={'url': presigned_url})
     except Exception as e:
         logger.error(f"Failed to generate download URL: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return error_response(str(e), code='URL_FAILED', status_code=500)
 
 @sms_bp.route('/sms/documents/<document_type>', methods=['DELETE'])
-@jwt_required()
-@role_required(['admin', 'tenant_admin'])
-def delete_sms_document(document_type):
-    """Delete an uploaded document"""
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(resource='sms', action='write')
+def delete_sms_document(ctx, document_type):
+    """Delete an uploaded document."""
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
     
-    config = SMSProviderConfig.query.filter_by(tenant_id=user.tenant_id).first()
+    if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
+        return error_response('Admin access required', code='FORBIDDEN', status_code=403)
+    
+    config = SMSProviderConfig.query.filter_by(tenant_id=ctx.tenant_id).first()
     if not config:
-        return jsonify({'success': False, 'error': 'No configuration found'}), 404
+        return error_response('No configuration found', code='NOT_FOUND', status_code=404)
     
     docs = config.documents_json or []
     doc = next((d for d in docs if d.get('type') == document_type), None)
     
     if not doc:
-        return jsonify({'success': False, 'error': 'Document not found'}), 404
+        return error_response('Document not found', code='NOT_FOUND', status_code=404)
     
     try:
-        # Delete from S3
         s3_service.delete_file(doc['s3_key'])
-        
-        # Remove from config
         docs = [d for d in docs if d.get('type') != document_type]
         config.documents_json = docs
         db.session.commit()
         
-        # TODO: Add proper activity logging when ActivityLog.log is implemented
-        # ActivityLog.log(user.tenant_id, user_id, 'sms_document_delete', f'Deleted {document_type} document')
-        
-        return jsonify({'success': True, 'message': 'Document deleted'})
+        return success_response(message='Document deleted')
     except Exception as e:
         logger.error(f"Document deletion failed: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return error_response(str(e), code='DELETE_FAILED', status_code=500)
 
 
 @sms_bp.route('/sms/audiences', methods=['GET'])
-@jwt_required()
-def list_target_audiences():
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(resource='sms', action='read')
+def list_target_audiences(ctx):
+    """List target audiences for tenant."""
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
         
-    audiences = TargetAudience.query.filter_by(tenant_id=user.tenant_id).order_by(TargetAudience.created_at.desc()).all()
-    return jsonify({'success': True, 'data': [a.to_dict() for a in audiences]})
+    audiences = TargetAudience.query.filter_by(tenant_id=ctx.tenant_id).order_by(TargetAudience.created_at.desc()).all()
+    return success_response(data=[a.to_dict() for a in audiences])
 
 @sms_bp.route('/sms/audiences', methods=['POST'])
-@jwt_required()
-def create_target_audience():
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(resource='sms', action='write')
+def create_target_audience(ctx):
+    """Create a new target audience."""
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
         
     data = request.get_json() or {}
     required = ['name', 'sourceType']
     if not all(k in data for k in required):
-        return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+        return error_response('Missing required fields', code='MISSING_FIELDS', status_code=400)
         
     audience = TargetAudience(
-        tenant_id=user.tenant_id,
+        tenant_id=ctx.tenant_id,
         name=data['name'],
         source_type=data['sourceType'],
         file_path=data.get('filePath'),
@@ -321,61 +293,51 @@ def create_target_audience():
     db.session.add(audience)
     db.session.commit()
     
-    return jsonify({'success': True, 'data': audience.to_dict()}), 201
+    return success_response(data=audience.to_dict(), status_code=201)
 
 @sms_bp.route('/sms/audiences/upload', methods=['POST'])
-@jwt_required()
-def upload_audience_excel():
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(resource='sms', action='write')
+def upload_audience_excel(ctx):
+    """Upload Excel file for audience."""
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
         
     if 'file' not in request.files:
-        return jsonify({'success': False, 'error': 'No file part'}), 400
+        return error_response('No file part', code='NO_FILE', status_code=400)
         
     file = request.files['file']
     if file.filename == '':
-        return jsonify({'success': False, 'error': 'No selected file'}), 400
+        return error_response('No selected file', code='NO_FILE', status_code=400)
         
     if not file.filename.endswith(('.xlsx', '.xls')):
-        return jsonify({'success': False, 'error': 'Invalid file type. Only Excel files allowed.'}), 400
+        return error_response('Invalid file type. Only Excel files allowed.', code='INVALID_TYPE', status_code=400)
 
     try:
         import pandas as pd
-        import os
         
-        filename = secure_filename(f"aud_{user.tenant_id}_{int(datetime.now().timestamp())}_{file.filename}")
+        filename = secure_filename(f"aud_{ctx.tenant_id}_{int(datetime.now().timestamp())}_{file.filename}")
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
         
-        # Parse Excel
         df = pd.read_excel(filepath)
-        
-        # Normalize columns
         df.columns = [c.strip().lower() for c in df.columns]
         
-        # Check required columns (flexible matching)
         required_cols = ['telefon']
         if not any(col in df.columns for col in required_cols):
-             # Try to find a column that looks like phone
-             phone_col = next((c for c in df.columns if 'tel' in c or 'gsm' in c or 'mobile' in c), None)
-             if not phone_col:
-                 os.remove(filepath)
-                 return jsonify({'success': False, 'error': 'Excel dosyasında "Telefon" sütunu bulunamadı.'}), 400
-             # Rename to standard
-             df.rename(columns={phone_col: 'telefon'}, inplace=True)
+            phone_col = next((c for c in df.columns if 'tel' in c or 'gsm' in c or 'mobile' in c), None)
+            if not phone_col:
+                os.remove(filepath)
+                return error_response('Excel dosyasında "Telefon" sütunu bulunamadı.', code='INVALID_FORMAT', status_code=400)
+            df.rename(columns={phone_col: 'telefon'}, inplace=True)
 
-        # Count valid records (non-empty phone)
         total_records = df['telefon'].notna().sum()
         
         if total_records == 0:
             os.remove(filepath)
-            return jsonify({'success': False, 'error': 'Dosyada geçerli telefon numarası bulunamadı.'}), 400
+            return error_response('Dosyada geçerli telefon numarası bulunamadı.', code='NO_RECORDS', status_code=400)
 
-        # Create Audience
         audience = TargetAudience(
-            tenant_id=user.tenant_id,
+            tenant_id=ctx.tenant_id,
             name=f"Excel Yükleme - {datetime.now().strftime('%d.%m.%Y %H:%M')}",
             source_type='excel',
             file_path=filename,
@@ -385,47 +347,45 @@ def upload_audience_excel():
         db.session.add(audience)
         db.session.commit()
         
-        return jsonify({'success': True, 'data': audience.to_dict()}), 201
+        return success_response(data=audience.to_dict(), status_code=201)
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return error_response(str(e), code='UPLOAD_FAILED', status_code=500)
 
 # ============================================================================
 # ADMIN ROUTES
 # ============================================================================
 
 @sms_bp.route('/admin/sms/packages', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SMS_PACKAGES_READ)
-def admin_list_packages():
+@unified_access(resource='admin.sms', action='read')
+def admin_list_packages(ctx):
+    """List all SMS packages (admin)."""
     page = int(request.args.get('page', 1))
     limit = int(request.args.get('limit', 10))
     offset = (page - 1) * limit
 
-    with UnboundSession():
-        query = SMSPackage.query.order_by(SMSPackage.created_at.desc())
-        total = query.count()
-        packages = query.offset(offset).limit(limit).all()
+    query = SMSPackage.query.order_by(SMSPackage.created_at.desc())
+    total = query.count()
+    packages = query.offset(offset).limit(limit).all()
     
-    return jsonify({
-        'success': True, 
-        'data': [p.to_dict() for p in packages],
-        'pagination': {
+    return success_response(
+        data=[p.to_dict() for p in packages],
+        meta={
             'total': total,
             'page': page,
             'limit': limit,
             'totalPages': (total + limit - 1) // limit
         }
-    })
+    )
 
 @sms_bp.route('/admin/sms/packages', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SMS_PACKAGES_MANAGE)
-def admin_create_package():
+@unified_access(resource='admin.sms', action='write')
+def admin_create_package(ctx):
+    """Create a new SMS package (admin)."""
     data = request.get_json() or {}
     required = ['name', 'smsCount', 'price']
     if not all(k in data for k in required):
-        return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+        return error_response('Missing required fields', code='MISSING_FIELDS', status_code=400)
         
     pkg = SMSPackage(
         name=data['name'],
@@ -437,15 +397,15 @@ def admin_create_package():
     )
     db.session.add(pkg)
     db.session.commit()
-    return jsonify({'success': True, 'data': pkg.to_dict()}), 201
+    return success_response(data=pkg.to_dict(), status_code=201)
 
 @sms_bp.route('/admin/sms/packages/<pkg_id>', methods=['PUT'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SMS_PACKAGES_MANAGE)
-def admin_update_package(pkg_id):
+@unified_access(resource='admin.sms', action='write')
+def admin_update_package(ctx, pkg_id):
+    """Update an SMS package (admin)."""
     pkg = db.session.get(SMSPackage, pkg_id)
     if not pkg:
-        return jsonify({'success': False, 'error': 'Not found'}), 404
+        return error_response('Not found', code='NOT_FOUND', status_code=404)
         
     data = request.get_json() or {}
     if 'name' in data: pkg.name = data['name']
@@ -455,59 +415,54 @@ def admin_update_package(pkg_id):
     if 'isActive' in data: pkg.is_active = data['isActive']
     
     db.session.commit()
-    return jsonify({'success': True, 'data': pkg.to_dict()})
+    return success_response(data=pkg.to_dict())
 
 @sms_bp.route('/admin/sms/headers', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SMS_HEADERS_READ)
-def admin_list_headers():
-    # List all pending headers or all headers
+@unified_access(resource='admin.sms', action='read')
+def admin_list_headers(ctx):
+    """List all SMS header requests (admin)."""
     status = request.args.get('status')
-    
     page = int(request.args.get('page', 1))
     limit = int(request.args.get('limit', 10))
     offset = (page - 1) * limit
 
-    with UnboundSession():
-        query = SMSHeaderRequest.query
-        if status:
-            query = query.filter_by(status=status)
+    query = SMSHeaderRequest.query
+    if status:
+        query = query.filter_by(status=status)
 
-        total = query.count()
-        headers = query.order_by(SMSHeaderRequest.created_at.desc()).offset(offset).limit(limit).all()
+    total = query.count()
+    headers = query.order_by(SMSHeaderRequest.created_at.desc()).offset(offset).limit(limit).all()
+    
+    results = []
+    for h in headers:
+        d = h.to_dict()
+        tenant = db.session.get(Tenant, h.tenant_id)
+        if tenant:
+            d['tenantName'] = tenant.name
+        results.append(d)
         
-        # We might want to include tenant info here
-        results = []
-        for h in headers:
-            d = h.to_dict()
-            tenant = db.session.get(Tenant, h.tenant_id)
-            if tenant:
-                d['tenantName'] = tenant.name
-            results.append(d)
-        
-    return jsonify({
-        'success': True, 
-        'data': results,
-        'pagination': {
+    return success_response(
+        data=results,
+        meta={
             'total': total,
             'page': page,
             'limit': limit,
             'totalPages': (total + limit - 1) // limit
         }
-    })
+    )
 
 @sms_bp.route('/admin/sms/headers/<header_id>/status', methods=['PUT'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SMS_HEADERS_MANAGE)
-def admin_update_header_status(header_id):
+@unified_access(resource='admin.sms', action='write')
+def admin_update_header_status(ctx, header_id):
+    """Update SMS header request status (admin)."""
     header = db.session.get(SMSHeaderRequest, header_id)
     if not header:
-        return jsonify({'success': False, 'error': 'Not found'}), 404
+        return error_response('Not found', code='NOT_FOUND', status_code=404)
         
     data = request.get_json() or {}
     status = data.get('status')
     if status not in ['pending', 'approved', 'rejected']:
-        return jsonify({'success': False, 'error': 'Invalid status'}), 400
+        return error_response('Invalid status', code='INVALID_STATUS', status_code=400)
         
     header.status = status
     if status == 'rejected':
@@ -515,6 +470,4 @@ def admin_update_header_status(header_id):
         
     db.session.commit()
     
-    # Notify tenant (TODO: Implement notification system)
-    
-    return jsonify({'success': True, 'data': header.to_dict()})
+    return success_response(data=header.to_dict())

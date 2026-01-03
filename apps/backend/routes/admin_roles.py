@@ -21,28 +21,14 @@ Endpoints:
 """
 import logging
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
 
 from models import db, AdminUser
 from models.admin_permission import AdminRoleModel, AdminPermissionModel
-from utils.admin_permissions import (
-    require_admin_permission,
-    require_super_admin,
-    AdminPermissions
-)
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
+from utils.admin_permissions import AdminPermissions
 
 logger = logging.getLogger(__name__)
-
-
-def success_response(data: dict, status: int = 200):
-    """Standard success response wrapper"""
-    return jsonify({'success': True, 'data': data}), status
-
-
-def error_response(message: str, status: int = 400):
-    """Standard error response wrapper"""
-    return jsonify({'success': False, 'error': {'message': message}}), status
-
 
 admin_roles_bp = Blueprint('admin_roles', __name__)
 
@@ -52,9 +38,8 @@ admin_roles_bp = Blueprint('admin_roles', __name__)
 # =============================================================================
 
 @admin_roles_bp.route('/api/admin/roles', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.ROLES_READ)
-def get_admin_roles():
+@unified_access(permission=AdminPermissions.ROLES_READ)
+def get_admin_roles(ctx):
     """
     Tüm admin rollerini listele
     
@@ -72,9 +57,8 @@ def get_admin_roles():
 
 
 @admin_roles_bp.route('/api/admin/roles/<role_id>', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.ROLES_READ)
-def get_admin_role(role_id):
+@unified_access(permission=AdminPermissions.ROLES_READ)
+def get_admin_role(ctx, role_id):
     """Tek bir rol detayını getir"""
     role = AdminRoleModel.query.get(role_id)
     
@@ -87,9 +71,8 @@ def get_admin_role(role_id):
 
 
 @admin_roles_bp.route('/api/admin/roles', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.ROLES_MANAGE)
-def create_admin_role():
+@unified_access(permission=AdminPermissions.ROLES_MANAGE)
+def create_admin_role(ctx):
     """
     Yeni rol oluştur
     
@@ -125,7 +108,7 @@ def create_admin_role():
     db.session.add(role)
     db.session.commit()
     
-    logger.info(f"Admin role created: {role.name} by user")
+    logger.info(f"Admin role created: {role.name} by user {ctx.principal_id}")
     
     return success_response({
         'message': 'Rol oluşturuldu',
@@ -134,9 +117,8 @@ def create_admin_role():
 
 
 @admin_roles_bp.route('/api/admin/roles/<role_id>', methods=['PUT'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.ROLES_MANAGE)
-def update_admin_role(role_id):
+@unified_access(permission=AdminPermissions.ROLES_MANAGE)
+def update_admin_role(ctx, role_id):
     """
     Rol güncelle
     
@@ -179,14 +161,17 @@ def update_admin_role(role_id):
 
 
 @admin_roles_bp.route('/api/admin/roles/<role_id>', methods=['DELETE'])
-@jwt_required()
-@require_super_admin
-def delete_admin_role(role_id):
+@unified_access() # No explicit permission needed as we check super admin below, but unified checks authn
+def delete_admin_role(ctx, role_id):
     """
     Rol sil
     
     Not: System role'ler silinemez
     """
+    # Strict Super Admin Check
+    if not ctx.is_super_admin:
+        return error_response('Bu işlem için Super Admin yetkisi gereklidir', 403)
+
     role = AdminRoleModel.query.get(role_id)
     
     if not role:
@@ -217,9 +202,8 @@ def delete_admin_role(role_id):
 # =============================================================================
 
 @admin_roles_bp.route('/api/admin/roles/<role_id>/permissions', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.ROLES_READ)
-def get_admin_role_permissions(role_id):
+@unified_access(permission=AdminPermissions.ROLES_READ)
+def get_admin_role_permissions(ctx, role_id):
     """Rol izinlerini getir"""
     role = AdminRoleModel.query.get(role_id)
     
@@ -235,9 +219,8 @@ def get_admin_role_permissions(role_id):
 
 
 @admin_roles_bp.route('/api/admin/roles/<role_id>/permissions', methods=['PUT'])
-@jwt_required()
-@require_super_admin
-def update_admin_role_permissions(role_id):
+@unified_access() # Super Admin Check only
+def update_admin_role_permissions(ctx, role_id):
     """
     Rol izinlerini güncelle
     
@@ -246,6 +229,10 @@ def update_admin_role_permissions(role_id):
     
     Not: SuperAdmin rolünün izinleri değiştirilemez
     """
+    # Strict Super Admin Check
+    if not ctx.is_super_admin:
+        return error_response('Bu işlem için Super Admin yetkisi gereklidir', 403)
+
     role = AdminRoleModel.query.get(role_id)
     
     if not role:
@@ -283,15 +270,30 @@ def update_admin_role_permissions(role_id):
 # =============================================================================
 
 @admin_roles_bp.route('/api/admin/permissions', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.ROLES_READ)
-def get_admin_permissions():
+@unified_access(permission=AdminPermissions.ROLES_READ)
+def get_admin_permissions(ctx):
     """
     Tüm izinleri listele
     
     Query params:
         category: str - Kategoriye göre filtrele
     """
+    # Permission categories for frontend grouping (Same as legacy permissions.py to support UI)
+    PERMISSION_CATEGORIES = {
+        'patients': {'label': 'Hastalar', 'icon': 'users'},
+        'sales': {'label': 'Satışlar', 'icon': 'shopping-cart'},
+        'finance': {'label': 'Finans', 'icon': 'dollar-sign'},
+        'invoices': {'label': 'Faturalar', 'icon': 'file-text'},
+        'devices': {'label': 'Cihazlar', 'icon': 'headphones'},
+        'inventory': {'label': 'Stok', 'icon': 'package'},
+        'campaigns': {'label': 'Kampanyalar', 'icon': 'megaphone'},
+        'sgk': {'label': 'SGK', 'icon': 'shield'},
+        'settings': {'label': 'Ayarlar', 'icon': 'settings'},
+        'team': {'label': 'Ekip', 'icon': 'users-round'},
+        'reports': {'label': 'Raporlar', 'icon': 'bar-chart'},
+        'dashboard': {'label': 'Dashboard', 'icon': 'layout-dashboard'},
+    }
+
     query = AdminPermissionModel.query
     
     category = request.args.get('category')
@@ -300,18 +302,45 @@ def get_admin_permissions():
     
     permissions = query.order_by(AdminPermissionModel.category, AdminPermissionModel.code).all()
     
-    # Kategorilere göre grupla
+    # Group permissions by category with UI metadata
     grouped = {}
+    ungrouped = []
+    
     for perm in permissions:
-        cat = perm.category or 'other'
-        if cat not in grouped:
-            grouped[cat] = []
-        grouped[cat].append(perm.to_dict())
+        # Use existing category field or infer from code
+        cat = perm.category
+        if not cat and '.' in perm.code:
+             cat = perm.code.split('.')[0]
+        
+        # Fallback
+        cat = cat or 'other'
+        
+        pdict = perm.to_dict()
+        
+        if cat in PERMISSION_CATEGORIES:
+            if cat not in grouped:
+                grouped[cat] = {
+                    'category': cat,
+                    'label': PERMISSION_CATEGORIES[cat]['label'],
+                    'icon': PERMISSION_CATEGORIES[cat]['icon'],
+                    'permissions': []
+                }
+            grouped[cat]['permissions'].append(pdict)
+        else:
+            ungrouped.append(pdict)
+    
+    result = list(grouped.values())
+    if ungrouped:
+        result.append({
+            'category': 'other',
+            'label': 'Diğer',
+            'icon': 'more-horizontal',
+            'permissions': ungrouped
+        })
     
     return success_response({
-        'permissions': [p.to_dict() for p in permissions],
-        'grouped': grouped,
-        'categories': list(grouped.keys()),
+        'data': result,  # Frontend expects list of groups in 'data'
+        'all': [p.to_dict() for p in permissions], # Frontend expects 'all'
         'total': len(permissions)
     })
 
@@ -321,9 +350,8 @@ def get_admin_permissions():
 # =============================================================================
 
 @admin_roles_bp.route('/api/admin/admin-users', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.USERS_READ)
-def get_admin_users_with_roles():
+@unified_access(permission=AdminPermissions.USERS_READ)
+def get_admin_users_with_roles(ctx):
     """Admin kullanıcıları rolleriyle birlikte listele"""
     users = AdminUser.query.filter_by(is_active=True).order_by(AdminUser.email).all()
     
@@ -334,9 +362,8 @@ def get_admin_users_with_roles():
 
 
 @admin_roles_bp.route('/api/admin/admin-users/<user_id>', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.USERS_READ)
-def get_admin_user_detail(user_id):
+@unified_access(permission=AdminPermissions.USERS_READ)
+def get_admin_user_detail(ctx, user_id):
     """Admin kullanıcı detayı"""
     user = AdminUser.query.get(user_id)
     
@@ -349,9 +376,8 @@ def get_admin_user_detail(user_id):
 
 
 @admin_roles_bp.route('/api/admin/admin-users/<user_id>/roles', methods=['PUT'])
-@jwt_required()
-@require_super_admin
-def update_admin_user_roles(user_id):
+@unified_access()
+def update_admin_user_roles(ctx, user_id):
     """
     Kullanıcıya rol ata
     
@@ -360,6 +386,10 @@ def update_admin_user_roles(user_id):
     
     Not: admin@x-ear.com kullanıcısından SuperAdmin rolü kaldırılamaz
     """
+    # Strict Super Admin Check
+    if not ctx.is_super_admin:
+        return error_response('Bu işlem için Super Admin yetkisi gereklidir', 403)
+
     user = AdminUser.query.get(user_id)
     
     if not user:
@@ -398,26 +428,33 @@ def update_admin_user_roles(user_id):
 
 
 @admin_roles_bp.route('/api/admin/my-permissions', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.ROLES_READ)
-def get_my_admin_permissions():
+@unified_access(permission=AdminPermissions.ROLES_READ)
+def get_my_admin_permissions(ctx):
     """
     Mevcut admin kullanıcısının izinlerini döndürür.
     Frontend için - sidebar, buton gizleme vb.
     """
-    from flask_jwt_extended import get_jwt_identity, get_jwt
+    # Context'ten principal'ı al
+    user_id = ctx.principal_id
     
-    jwt_data = get_jwt()
+    # ctx ensures we have a valid principal.
+    # We must ensure it's an admin user (already handled by permissions check if ROLES_READ is admin only)
+    # But for safety and type checking:
     
-    # Admin token mu? (claim name is 'type' from login)
-    token_type = jwt_data.get('type') or jwt_data.get('token_type')
-    if token_type != 'admin':
-        return error_response('Bu endpoint sadece admin panel kullanıcıları için', 403)
+    user = AdminUser.query.get(user_id)
     
-    admin_user_id = get_jwt_identity()
-    user = AdminUser.query.get(admin_user_id)
-    
+    # If not found in AdminUser, check standard User table for super_admin role
     if not user:
+        from models.user import User
+        standard_user = User.query.get(user_id)
+        if standard_user and standard_user.role == 'super_admin':
+            all_permissions = AdminPermissionModel.query.all()
+            return success_response({
+                'is_super_admin': True,
+                'permissions': [p.code for p in all_permissions],
+                'roles': ['SuperAdmin']
+            })
+            
         return error_response('Kullanıcı bulunamadı', 404)
     
     # SuperAdmin tüm izinlere sahip

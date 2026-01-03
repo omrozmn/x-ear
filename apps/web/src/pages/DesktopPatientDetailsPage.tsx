@@ -17,14 +17,15 @@ import { PatientTabs, type PatientTab } from '../components/patients/PatientTabs
 import { PatientTabContent } from '../components/patients/PatientTabContent';
 import { PatientFormModal } from '../components/patients/PatientFormModal';
 import { PatientTagUpdateModal } from '../components/patients/PatientTagUpdateModal';
+import { PatientNoteForm } from '../components/forms/PatientNoteForm';
 import { ErrorMessage, NetworkError, NotFoundError } from '../components/ErrorMessage';
-import { Modal, Textarea } from '@x-ear/ui-web';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useGlobalError } from '../components/GlobalErrorHandler';
 import { PATIENT_DETAILS_TAB_LEGACY } from '../constants/storage-keys';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { Button } from '@x-ear/ui-web';
 import { useUpdatePatient } from '../hooks/usePatients';
+import { patientApiService } from '../services/patient/patient-api.service';
 import type { Patient } from '../types/patient';
 
 
@@ -42,7 +43,6 @@ export const DesktopPatientDetailsPage: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTagModal, setShowTagModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
-  const [noteText, setNoteText] = useState('');
 
   const { patient, isLoading, error, loadPatient } = usePatient(patientId);
   const refetch = () => patientId ? loadPatient(patientId) : Promise.resolve();
@@ -291,59 +291,17 @@ export const DesktopPatientDetailsPage: React.FC = () => {
       )}
 
       {/* Note Modal */}
-      <Modal
-        isOpen={showNoteModal}
-        onClose={() => {
-          setShowNoteModal(false);
-          setNoteText('');
-        }}
-        title="Not Ekle"
-        size="md"
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Not
-            </label>
-            <Textarea
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
-              rows={5}
-              placeholder="Hasta hakkında not ekleyin..."
-              className="w-full"
-            />
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowNoteModal(false);
-                setNoteText('');
-              }}
-            >
-              İptal
-            </Button>
-            <Button
-              variant="primary"
-              onClick={async () => {
-                if (!noteText.trim() || !patient) return;
-                try {
-                  // TODO: API endpoint for adding notes
-                  console.log('Adding note:', noteText);
-                  alert('Not ekleme özelliği henüz API\'ye bağlanmadı. Backend endpoint hazırlanmalı.');
-                  setShowNoteModal(false);
-                  setNoteText('');
-                } catch (error) {
-                  console.error('Failed to add note:', error);
-                }
-              }}
-              disabled={!noteText.trim()}
-            >
-              Kaydet
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      {showNoteModal && patient && (
+        <PatientNoteForm
+          patientId={patient.id!}
+          isOpen={showNoteModal}
+          onClose={() => setShowNoteModal(false)}
+          onSave={async (noteData) => {
+            await patientApiService.createNote(patient.id!, noteData);
+            await refetch?.();
+          }}
+        />
+      )}
     </div>
   );
 };

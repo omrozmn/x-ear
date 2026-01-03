@@ -8,6 +8,7 @@ import {
   authSendVerificationOtp,
   authForgotPassword
 } from '@/api/generated/auth/auth';
+import { adminAdminLogin } from '@/api/generated/admin/admin';
 import { AUTH_TOKEN, REFRESH_TOKEN } from '../constants/storage-keys';
 import { DEV_CONFIG } from '../config/dev-config';
 import { subscriptionService } from '../services/subscription.service';
@@ -201,33 +202,37 @@ export const useAuthStore = create<AuthStore>()(
           setLoading(true);
           setError(null);
 
-          console.log('Attempting login with credentials:', { username: credentials.username, password: '***' }); // Debug log
+          // Use admin login endpoint for admin panel
+          const response = await adminAdminLogin({ email: credentials.username, password: credentials.password });
 
-          const response = await authLogin({ username: credentials.username, password: credentials.password });
-
-          // customInstance returns response.data directly
+          // customInstance extracts axios response.data, which contains our backend response
           const responseData = response as any;
-          console.log('Response data:', responseData); // Debug log
 
-          // Check if we have the expected data structure
-          if (responseData && (responseData.access_token || responseData.accessToken)) {
-            // Even if phone is not verified, we proceed with login
-            // The UI will handle the unverified state via a modal
+          // Backend response: { success, data: { token, user, requires_mfa } }
+          if (responseData && responseData.success && responseData.data) {
+            const { token, user: userData, requires_mfa } = responseData.data;
+            
+            if (requires_mfa) {
+              // Handle MFA requirement
+              set({ requiresOtp: true, isLoading: false });
+              return;
+            }
 
-            if (responseData.data) {
-              const userData = responseData.data;
+            if (token && userData) {
               const user: User = {
                 id: userData.id,
                 email: userData.email,
-                name: userData.fullName || userData.firstName || userData.username,
+                name: userData.first_name && userData.last_name 
+                  ? `${userData.first_name} ${userData.last_name}`.trim()
+                  : userData.email,
                 role: userData.role || 'user',
-                phone: userData.phone,
-                isPhoneVerified: userData.isPhoneVerified
+                phone: undefined, // Admin users don't have phone
+                isPhoneVerified: true // Admin users are always verified
               };
 
               // Check if tenant has changed (extract from JWT token)
               const previousTenantId = localStorage.getItem('current_tenant_id');
-              const newToken = responseData.access_token;
+              const newToken = token;
               let newTenantId: string | null = null;
               
               try {
@@ -254,11 +259,11 @@ export const useAuthStore = create<AuthStore>()(
                 console.error('Failed to decode JWT or clear IndexedDB:', error);
               }
 
-              // Store tokens (now includes refresh token from backend)
+              // Store tokens
               set({
                 user,
                 token: newToken,
-                refreshToken: responseData.refreshToken || null,
+                refreshToken: null, // Admin login doesn't return refresh token
                 isAuthenticated: true,
                 error: null,
                 requiresOtp: false,
@@ -270,10 +275,6 @@ export const useAuthStore = create<AuthStore>()(
               try {
                 localStorage.setItem('auth_token', newToken);
                 localStorage.setItem(AUTH_TOKEN, newToken);
-                if (responseData.refreshToken) {
-                  localStorage.setItem('refresh_token', responseData.refreshToken);
-                  localStorage.setItem(REFRESH_TOKEN, responseData.refreshToken);
-                }
                 localStorage.setItem('auth_token_timestamp', Date.now().toString());
               } catch (e) {
                 // ignore storage errors
@@ -292,18 +293,16 @@ export const useAuthStore = create<AuthStore>()(
                 const { appointmentService } = await import('../services/appointment.service');
                 appointmentService.triggerServerSync();
               } catch (e) { /* ignore */ }
-
-              console.log('Login successful, user authenticated'); // Debug log
             } else {
               console.error('Missing required fields:', {
                 success: responseData?.success,
-                token: !!(responseData?.access_token || responseData?.accessToken),
-                userData: !!responseData?.data
+                token: !!token,
+                userData: !!userData
               });
               throw new Error('Sunucudan geçersiz yanıt alındı - eksik token veya kullanıcı bilgisi');
             }
           } else {
-            console.error('Invalid response structure:', { hasData: !!responseData });
+            console.error('Invalid response structure:', { responseData });
             throw new Error('Sunucudan geçersiz yanıt alındı');
           }
         } catch (error: any) {

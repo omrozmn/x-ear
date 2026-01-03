@@ -2,11 +2,12 @@
 Admin Tenants routes for customer/organization management
 """
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
 from datetime import datetime
 from models.base import db
 from models.tenant import Tenant, TenantStatus
-from utils.admin_permissions import require_admin_permission, AdminPermissions
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
+from utils.admin_permissions import AdminPermissions
 from utils.tenant_security import UnboundSession
 import logging
 import uuid
@@ -16,9 +17,8 @@ logger = logging.getLogger(__name__)
 admin_tenants_bp = Blueprint('admin_tenants', __name__, url_prefix='/api/admin/tenants')
 
 @admin_tenants_bp.route('', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.TENANTS_READ)
-def list_tenants():
+@unified_access(permission=AdminPermissions.TENANTS_READ)
+def list_tenants(ctx):
     """List all tenants"""
     try:
         page = request.args.get('page', 1, type=int)
@@ -46,6 +46,8 @@ def list_tenants():
         from sqlalchemy import func
         
         tenant_ids = [t.id for t in tenants]
+        tenants_list = []
+        
         if tenant_ids:
             with UnboundSession():
                 user_counts = db.session.query(
@@ -57,8 +59,6 @@ def list_tenants():
             
             counts_map = {t_id: count for t_id, count in user_counts}
             
-            # Update current_users in the response (not DB, to avoid write overhead on GET)
-            tenants_list = []
             for t in tenants:
                 t_dict = t.to_dict()
                 t_dict['current_users'] = counts_map.get(t.id, 0)
@@ -66,39 +66,29 @@ def list_tenants():
         else:
             tenants_list = []
         
-        return jsonify({
-            'success': True,
-            'data': {
-                'tenants': tenants_list,
-                'pagination': {
-                    'page': page,
-                    'limit': limit,
-                    'total': total,
-                    'totalPages': (total + limit - 1) // limit
-                }
+        return success_response(data={
+            'tenants': tenants_list,
+            'pagination': {
+                'page': page,
+                'limit': limit,
+                'total': total,
+                'totalPages': (total + limit - 1) // limit
             }
-        }), 200
+        })
         
     except Exception as e:
         logger.error(f"List tenants error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': 'Internal server error'}
-        }), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_tenants_bp.route('', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
-def create_tenant():
+@unified_access(permission=AdminPermissions.TENANTS_MANAGE)
+def create_tenant(ctx):
     """Create tenant"""
     try:
         data = request.get_json()
         
         if not data.get('name') or not data.get('owner_email'):
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Name and owner email are required'}
-            }), 400
+            return error_response('Name and owner email are required', code='MISSING_FIELDS', status_code=400)
         
         tenant = Tenant(
             id=str(uuid.uuid4()),
@@ -118,56 +108,36 @@ def create_tenant():
         db.session.add(tenant)
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'data': {'tenant': tenant.to_dict()}
-        }), 201
+        return success_response(data={'tenant': tenant.to_dict()}, status_code=201)
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create tenant error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': str(e)}
-        }), 500
+        return error_response(str(e), code='CREATE_FAILED', status_code=500)
 
 @admin_tenants_bp.route('/<tenant_id>', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.TENANTS_READ)
-def get_tenant(tenant_id):
+@unified_access(permission=AdminPermissions.TENANTS_READ)
+def get_tenant(ctx, tenant_id):
     """Get tenant details"""
     try:
         tenant = Tenant.query.get(tenant_id)
         if not tenant or tenant.deleted_at:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Tenant not found'}
-            }), 404
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
         
-        return jsonify({
-            'success': True,
-            'data': {'tenant': tenant.to_dict()}
-        }), 200
+        return success_response(data={'tenant': tenant.to_dict()})
         
     except Exception as e:
         logger.error(f"Get tenant error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': 'Internal server error'}
-        }), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_tenants_bp.route('/<tenant_id>', methods=['PUT'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
-def update_tenant(tenant_id):
+@unified_access(permission=AdminPermissions.TENANTS_MANAGE)
+def update_tenant(ctx, tenant_id):
     """Update tenant"""
     try:
         tenant = Tenant.query.get(tenant_id)
         if not tenant or tenant.deleted_at:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Tenant not found'}
-            }), 404
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
         
         data = request.get_json()
         
@@ -199,93 +169,67 @@ def update_tenant(tenant_id):
         tenant.updated_at = datetime.utcnow()
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'data': {'tenant': tenant.to_dict()}
-        }), 200
+        return success_response(data={'tenant': tenant.to_dict()})
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Update tenant error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': str(e)}
-        }), 500
+        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
 
 @admin_tenants_bp.route('/<tenant_id>', methods=['DELETE'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
-def delete_tenant(tenant_id):
+@unified_access(permission=AdminPermissions.TENANTS_MANAGE)
+def delete_tenant(ctx, tenant_id):
     """Delete tenant (soft delete)"""
     try:
         tenant = Tenant.query.get(tenant_id)
         if not tenant:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Tenant not found'}
-            }), 404
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
         
         tenant.soft_delete()
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'message': 'Tenant deleted successfully'
-        }), 200
+        return success_response(message='Tenant deleted successfully')
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Delete tenant error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': 'Internal server error'}
-        }), 500
+        return error_response(str(e), code='DELETE_FAILED', status_code=500)
 
 @admin_tenants_bp.route('/<tenant_id>/users', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.USERS_READ)
-def get_tenant_users(tenant_id):
+@unified_access(permission=AdminPermissions.USERS_READ)
+def get_tenant_users(ctx, tenant_id):
     """Get users for a specific tenant"""
     try:
         from models.user import User
         
         tenant = Tenant.query.get(tenant_id)
         if not tenant:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Tenant not found'}
-            }), 404
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
             
         with UnboundSession():
             users = User.query.filter_by(tenant_id=tenant_id).all()
         
-        return jsonify({
-            'success': True,
-            'data': {
-                'users': [{
-                    'id': u.id,
-                    'username': u.username,
-                    'email': u.email,
-                    'first_name': u.first_name,
-                    'last_name': u.last_name,
-                    'role': u.role,
-                    'is_active': u.is_active,
-                    'last_login': u.last_login.isoformat() if u.last_login else None,
-                    'tenant_id': u.tenant_id
-                } for u in users]
-            }
-        }), 200
+        return success_response(data={
+            'users': [{
+                'id': u.id,
+                'username': u.username,
+                'email': u.email,
+                'first_name': u.first_name,
+                'last_name': u.last_name,
+                'role': u.role,
+                'is_active': u.is_active,
+                'last_login': u.last_login.isoformat() if u.last_login else None,
+                'tenant_id': u.tenant_id
+            } for u in users]
+        })
         
     except Exception as e:
         logger.error(f"Get tenant users error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': 'Internal server error'}
-        }), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
+
 @admin_tenants_bp.route('/<tenant_id>/subscribe', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
-def subscribe_tenant(tenant_id):
+@unified_access(permission=AdminPermissions.TENANTS_MANAGE)
+def subscribe_tenant(ctx, tenant_id):
     """Subscribe tenant to a plan (Admin override)"""
     try:
         from models.plan import Plan
@@ -293,27 +237,18 @@ def subscribe_tenant(tenant_id):
         
         tenant = Tenant.query.get(tenant_id)
         if not tenant or tenant.deleted_at:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Tenant not found'}
-            }), 404
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
             
         data = request.get_json()
         plan_id = data.get('plan_id')
         billing_interval = data.get('billing_interval', 'YEARLY')
         
         if not plan_id:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Plan ID is required'}
-            }), 400
+            return error_response('Plan ID is required', code='MISSING_FIELD', status_code=400)
             
         plan = Plan.query.get(plan_id)
         if not plan:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Plan not found'}
-            }), 404
+            return error_response('Plan not found', code='NOT_FOUND', status_code=404)
             
         # Calculate subscription dates
         start_date = datetime.utcnow()
@@ -335,7 +270,8 @@ def subscribe_tenant(tenant_id):
         if plan.features:
             if isinstance(plan.features, list):
                 for feature in plan.features:
-                    key = feature.get('key')
+                    raw_key = feature.get('key', '')
+                    key = raw_key.lower() if raw_key else ''
                     limit = feature.get('limit', 0)
                     if key:
                         feature_usage[key] = {
@@ -344,7 +280,8 @@ def subscribe_tenant(tenant_id):
                             'last_reset': start_date.isoformat()
                         }
             elif isinstance(plan.features, dict):
-                for key, value in plan.features.items():
+                for raw_key, value in plan.features.items():
+                    key = raw_key.lower()
                     limit = 0
                     if isinstance(value, dict):
                         limit = value.get('limit', 0)
@@ -360,49 +297,32 @@ def subscribe_tenant(tenant_id):
         tenant.feature_usage = feature_usage
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'message': 'Subscription updated successfully',
-            'data': {'tenant': tenant.to_dict()}
-        }), 200
+        return success_response(message='Subscription updated successfully', data={'tenant': tenant.to_dict()})
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Subscribe tenant error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': str(e)}
-        }), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_tenants_bp.route('/<tenant_id>/users', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.USERS_MANAGE)
-def create_tenant_user(tenant_id):
+@unified_access(permission=AdminPermissions.USERS_MANAGE)
+def create_tenant_user(ctx, tenant_id):
     """Create a user for a specific tenant"""
     try:
         from models.user import User
         
         tenant = Tenant.query.get(tenant_id)
         if not tenant or tenant.deleted_at:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Tenant not found'}
-            }), 404
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
             
         data = request.get_json()
         
         if not data.get('email') or not data.get('password'):
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Email and password are required'}
-            }), 400
+            return error_response('Email and password are required', code='MISSING_FIELDS', status_code=400)
             
         with UnboundSession():
             if User.query.filter_by(email=data['email']).first():
-                return jsonify({
-                    'success': False,
-                    'error': {'message': 'Email already exists'}
-                }), 400
+                return error_response('Email already exists', code='CONFLICT', status_code=400)
             
         user = User(
             email=data['email'],
@@ -418,151 +338,107 @@ def create_tenant_user(tenant_id):
         db.session.add(user)
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'data': {'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'role': user.role,
-                'is_active': user.is_active,
-                'last_login': user.last_login.isoformat() if user.last_login else None,
-                'tenant_id': user.tenant_id
-            }}
-        }), 201
+        return success_response(data={'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': user.role,
+            'is_active': user.is_active,
+            'last_login': user.last_login.isoformat() if user.last_login else None,
+            'tenant_id': user.tenant_id
+        }}, status_code=201)
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create tenant user error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': str(e)}
-        }), 500
+        return error_response(str(e), code='CREATE_FAILED', status_code=500)
 
 @admin_tenants_bp.route('/<tenant_id>/users/<user_id>', methods=['PUT'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.USERS_MANAGE)
-def update_tenant_user(tenant_id, user_id):
+@unified_access(permission=AdminPermissions.USERS_MANAGE)
+def update_tenant_user(ctx, tenant_id, user_id):
     """Update a tenant user"""
     try:
         from models.user import User
         
         tenant = Tenant.query.get(tenant_id)
         if not tenant or tenant.deleted_at:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Tenant not found'}
-            }), 404
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
             
         with UnboundSession():
             user = User.query.filter_by(id=user_id, tenant_id=tenant_id).first()
         if not user:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'User not found in this tenant'}
-            }), 404
+            return error_response('User not found in this tenant', code='NOT_FOUND', status_code=404)
             
         data = request.get_json()
         
         if 'email' in data:
-            # Check if email is taken by another user
             with UnboundSession():
                 existing = User.query.filter(User.email == data['email'], User.id != user_id).first()
             if existing:
-                return jsonify({
-                    'success': False,
-                    'error': {'message': 'Email already in use'}
-                }), 400
+                return error_response('Email already in use', code='CONFLICT', status_code=400)
             user.email = data['email']
             
         if 'username' in data:
-            # Check if username is taken by another user
             with UnboundSession():
                 existing = User.query.filter(User.username == data['username'], User.id != user_id).first()
             if existing:
-                return jsonify({
-                    'success': False,
-                    'error': {'message': 'Username already in use'}
-                }), 400
+                return error_response('Username already in use', code='CONFLICT', status_code=400)
             user.username = data['username']
             
-        if 'first_name' in data:
-            user.first_name = data['first_name']
-        if 'last_name' in data:
-            user.last_name = data['last_name']
-        if 'role' in data:
-            user.role = data['role']
-        if 'is_active' in data:
-            user.is_active = data['is_active']
-        if 'password' in data and data['password']:
-            user.set_password(data['password'])
+        if 'first_name' in data: user.first_name = data['first_name']
+        if 'last_name' in data: user.last_name = data['last_name']
+        if 'role' in data: user.role = data['role']
+        if 'is_active' in data: user.is_active = data['is_active']
+        if 'password' in data and data['password']: user.set_password(data['password'])
             
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'data': {'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'role': user.role,
-                'is_active': user.is_active,
-                'last_login': user.last_login.isoformat() if user.last_login else None,
-                'tenant_id': user.tenant_id
-            }}
-        }), 200
+        return success_response(data={'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': user.role,
+            'is_active': user.is_active,
+            'last_login': user.last_login.isoformat() if user.last_login else None,
+            'tenant_id': user.tenant_id
+        }})
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Update tenant user error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': str(e)}
-        }), 500
+        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
 
 @admin_tenants_bp.route('/<tenant_id>/addons', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
-def add_tenant_addon(tenant_id):
+@unified_access(permission=AdminPermissions.TENANTS_MANAGE)
+def add_tenant_addon(ctx, tenant_id):
     """Add addon to tenant (Admin override)"""
     try:
         from models.addon import AddOn
         
         tenant = Tenant.query.get(tenant_id)
         if not tenant or tenant.deleted_at:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Tenant not found'}
-            }), 404
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
             
         data = request.get_json()
         addon_id = data.get('addon_id')
         
         if not addon_id:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Addon ID is required'}
-            }), 400
+            return error_response('Addon ID is required', code='MISSING_FIELD', status_code=400)
             
         addon = AddOn.query.get(addon_id)
         if not addon:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Addon not found'}
-            }), 404
+            return error_response('Addon not found', code='NOT_FOUND', status_code=404)
             
         # Update feature usage based on addon
         key = addon.unit_name or addon.slug or 'unknown'
         
-        # Ensure tenant.settings exists and is a dict
         settings = dict(tenant.settings or {})
         purchased_addons = list(settings.get('addons', []))
         
-        # Add to purchased addons list tracking
         purchased_addons.append({
             'addon_id': addon.id,
             'name': addon.name,
@@ -594,55 +470,44 @@ def add_tenant_addon(tenant_id):
         tenant.feature_usage = usage
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'message': 'Addon added successfully',
-            'data': {
-                'tenant': tenant.to_dict(),
-                'added_addon': purchased_addons[-1]
-            }
-        }), 200
+        return success_response(message='Addon added successfully', data={
+            'tenant': tenant.to_dict(),
+            'added_addon': purchased_addons[-1]
+        })
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Add tenant addon error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': str(e)}
-        }), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_tenants_bp.route('/<tenant_id>/addons', methods=['DELETE'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
-def remove_tenant_addon(tenant_id):
+@unified_access(permission=AdminPermissions.TENANTS_MANAGE)
+def remove_tenant_addon(ctx, tenant_id):
     """Remove addon from tenant (decrease limits)"""
     try:
         from models.addon import AddOn
         
         tenant = Tenant.query.get(tenant_id)
         if not tenant or tenant.deleted_at:
-            return jsonify({'success': False, 'error': {'message': 'Tenant not found'}}), 404
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
             
-        data = request.get_json()
+        data = request.get_json() or {} # Handle potential empty body if using args
         addon_id = data.get('addon_id')
         
-        # Also support removing by index/timestamp if needed, but for now ID match
-        # If no Body provided, try query param
         if not addon_id:
              addon_id = request.args.get('addon_id')
              
         if not addon_id:
-            return jsonify({'success': False, 'error': {'message': 'Addon ID required'}}), 400
+            return error_response('Addon ID required', code='MISSING_FIELD', status_code=400)
             
         addon = AddOn.query.get(addon_id)
         if not addon:
-             return jsonify({'success': False, 'error': {'message': 'Addon definition not found'}}), 404
+             return error_response('Addon definition not found', code='NOT_FOUND', status_code=404)
 
         # 1. Update Settings (Remove from list)
         settings = dict(tenant.settings or {})
         purchased_addons = list(settings.get('addons', []))
         
-        # Remove ONE instance of this addon (the most recent one or matching one)
         removed_addon = None
         for i, a in enumerate(purchased_addons):
             if a.get('addon_id') == addon_id or a.get('id') == addon_id:
@@ -650,7 +515,7 @@ def remove_tenant_addon(tenant_id):
                 break
         
         if not removed_addon:
-             return jsonify({'success': False, 'error': {'message': 'This addon is not active for this tenant'}}), 400
+             return error_response('This addon is not active for this tenant', code='INVALID_OPERATION', status_code=400)
              
         settings['addons'] = purchased_addons
         tenant.settings = settings
@@ -668,52 +533,35 @@ def remove_tenant_addon(tenant_id):
             
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'message': 'Addon removed and limits decreased',
-            'data': {'tenant': tenant.to_dict()}
-        }), 200
+        return success_response(message='Addon removed and limits decreased', data={'tenant': tenant.to_dict()})
 
     except Exception as e:
         db.session.rollback()
         logger.error(f"Remove tenant addon error: {e}")
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_tenants_bp.route('/<tenant_id>/status', methods=['PUT'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.TENANTS_MANAGE)
-def update_tenant_status(tenant_id):
+@unified_access(permission=AdminPermissions.TENANTS_MANAGE)
+def update_tenant_status(ctx, tenant_id):
     """Update tenant status"""
     try:
         tenant = Tenant.query.get(tenant_id)
         if not tenant or tenant.deleted_at:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Tenant not found'}
-            }), 404
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
             
         data = request.get_json()
         status = data.get('status')
         
         if not status:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Status is required'}
-            }), 400
+            return error_response('Status is required', code='MISSING_FIELD', status_code=400)
             
         tenant.status = status
         tenant.updated_at = datetime.utcnow()
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'data': {'tenant': tenant.to_dict()}
-        }), 200
+        return success_response(data={'tenant': tenant.to_dict()})
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Update tenant status error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': str(e)}
-        }), 500
+        return error_response(str(e), code='UPDATE_FAILED', status_code=500)

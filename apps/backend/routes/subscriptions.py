@@ -1,16 +1,14 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
 from models.tenant import Tenant, TenantStatus
 from models.plan import Plan, BillingInterval
 from models.user import User
 from models.base import db
-from utils.response_envelope import success_response, error_response
 from datetime import datetime, timedelta
+from typing import Optional
 
 subscriptions_bp = Blueprint('subscriptions', __name__)
-
-
-from typing import Union, Optional
 
 def serialize_tenant(tenant: Optional[Tenant]) -> Optional[dict]:
     if not tenant:
@@ -31,7 +29,6 @@ def serialize_tenant(tenant: Optional[Tenant]) -> Optional[dict]:
         'maxUsers': tenant.max_users,
         'currentUsers': tenant.current_users,
     }
-
 
 def serialize_plan(plan: Optional[Plan]) -> Optional[dict]:
     if not plan:
@@ -55,18 +52,14 @@ def serialize_plan(plan: Optional[Plan]) -> Optional[dict]:
     }
 
 @subscriptions_bp.route('/subscribe', methods=['POST'])
-@jwt_required()
-def subscribe():
+@unified_access()
+def subscribe(ctx):
     """Subscribe to a plan (Mock Payment)"""
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
+    user = ctx.user
     
-    if not user:
-        return error_response('User not found', 404)
-        
     # Only tenant admin or super admin can subscribe
     if user.role not in ['tenant_admin', 'super_admin']:
-        return error_response('Unauthorized', 403)
+        return error_response('Unauthorized', code='FORBIDDEN', status_code=403)
         
     data = request.get_json()
     plan_id = data.get('plan_id')
@@ -75,15 +68,14 @@ def subscribe():
     # Mock Payment Validation
     card_number = data.get('card_number')
     if not card_number or len(card_number) < 16:
-        # Simple mock validation: if card number is short, fail
-        return error_response('Invalid card number', 400)
+        return error_response('Invalid card number', code='INVALID_CARD', status_code=400)
         
     if card_number.endswith('0000'):
-        return error_response('Payment failed (Mock Failure)', 400)
+        return error_response('Payment failed (Mock Failure)', code='PAYMENT_FAILED', status_code=400)
         
     plan = Plan.query.get(plan_id)
     if not plan:
-        return error_response('Plan not found', 404)
+        return error_response('Plan not found', code='NOT_FOUND', status_code=404)
         
     tenant = None
     if user.tenant_id:
@@ -131,33 +123,24 @@ def subscribe():
             key = feature.get('key')
             limit = feature.get('limit', 0)
             if key:
-                # If feature already exists (e.g. from previous addon), add to it or overwrite?
-                # For basic plan features, usually reset.
                 feature_usage[key] = {
                     'limit': limit,
                     'used': 0,
                     'last_reset': start_date.isoformat()
                 }
 
-    # Process Addons
+    # Process Addons (placeholder)
     addon_ids = data.get('addon_ids', [])
-    if addon_ids:
-        # Assuming we would fetch addons and add their limits to feature_usage
-        pass
-
+    
     # Process SMS Package
     sms_package_id = data.get('sms_package_id')
     if sms_package_id:
         from models.sms_package import SmsPackage
         sms_pkg = SmsPackage.query.get(sms_package_id)
         if sms_pkg:
-            # Add SMS credits directly to feature_usage 'sms_credits'
-            # Note: This is an accumulator, not a reset.
             current_credits = feature_usage.get('sms_credits', 0)
-            # If stored as dict {limit, used}, handle that. If simple int, handle that.
-            # Let's standardize on simple int for "credits" vs {limit, used} for "quotas"
             if isinstance(current_credits, dict):
-                 current_credits = current_credits.get('limit', 0) # Fallback if mixed types
+                 current_credits = current_credits.get('limit', 0)
             
             feature_usage['sms_credits'] = current_credits + sms_pkg.sms_count
     
@@ -174,21 +157,18 @@ def subscribe():
         'tenant': tenant.to_dict(),
         'plan': plan.to_dict()
     })
+
 @subscriptions_bp.route('/complete-signup', methods=['POST'])
-@jwt_required()
-def complete_signup():
+@unified_access()
+def complete_signup(ctx):
     """
     Complete user signup and subscribe.
     Used for both:
     1. Users coming from /register (already have phone verified)
     2. Users verifying phone inline at checkout
     """
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
+    user = ctx.user
     
-    if not user:
-        return error_response('User not found', 404)
-        
     data = request.get_json()
     
     # Update User Profile
@@ -196,7 +176,7 @@ def complete_signup():
         # Check if email is already taken by ANOTHER user
         existing = User.query.filter_by(email=data['email']).first()
         if existing and existing.id != user.id:
-            return error_response('Bu e-posta adresi zaten kullanımda', 400)
+            return error_response('Bu e-posta adresi zaten kullanımda', code='EMAIL_TAKEN', status_code=400)
         user.email = data['email']
         
     if data.get('password'):
@@ -216,7 +196,6 @@ def complete_signup():
     if not tenant:
         company_name = data.get('company_name') or f"{user.first_name}'s Clinic"
         
-        # Check if tenant name exists? Slug generation handles duplicates usually
         slug = Tenant.generate_slug(company_name)
         
         tenant = Tenant(
@@ -236,16 +215,15 @@ def complete_signup():
     # Handle Subscription
     plan_id = data.get('plan_id')
     if not plan_id:
-        return error_response('Plan seçimi zorunludur', 400)
+        return error_response('Plan seçimi zorunludur', code='MISSING_PLAN', status_code=400)
         
     plan = Plan.query.get(plan_id)
     if not plan:
-        return error_response('Geçersiz plan', 404)
+        return error_response('Geçersiz plan', code='INVALID_PLAN', status_code=404)
         
     billing_interval = data.get('billing_interval', 'YEARLY')
     
     start_date = datetime.utcnow()
-    # Simple logic for now
     if billing_interval == 'YEARLY':
         end_date = start_date + timedelta(days=365)
     else:
@@ -280,20 +258,15 @@ def complete_signup():
         'token': data.get('token') # Just echo back or ignore
     })
 
-
 @subscriptions_bp.route('/current', methods=['GET'])
-@jwt_required()
-def get_current():
+@unified_access()
+def get_current(ctx):
     """Get current subscription details"""
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
+    user = ctx.user
     
-    if not user:
-        return error_response('User not found', 404)
-        
     tenant = Tenant.query.get(user.tenant_id)
     if not tenant:
-        return error_response('Tenant not found', 404)
+        return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
         
     plan = None
     if tenant.current_plan_id:
@@ -325,23 +298,21 @@ def register_and_subscribe():
     # Extract data
     company_name = data.get('company_name')
     email = data.get('email')
-    phone = data.get('phone')
     password = data.get('password')
     plan_id = data.get('plan_id')
     billing_interval = data.get('billing_interval', 'YEARLY')
-    card_number = data.get('card_number', '1234123412341234') # Default mock
     
     if not all([company_name, email, password, plan_id]):
-        return error_response('Missing required fields', 400)
+        return error_response('Missing required fields', code='MISSING_FIELDS', status_code=400)
         
     # Check if user exists
     if User.query.filter_by(email=email).first():
-        return error_response('Email already registered', 400)
+        return error_response('Email already registered', code='EMAIL_TAKEN', status_code=400)
         
     # Check plan
     plan = db.session.get(Plan, plan_id)
     if not plan:
-        return error_response('Plan not found', 404)
+        return error_response('Plan not found', code='PLAN_NOT_FOUND', status_code=404)
         
     try:
         # Create Tenant
@@ -431,8 +402,8 @@ def register_and_subscribe():
             'token': access_token,
             'user': user.to_dict(),
             'tenant': tenant.to_dict()
-        }, 201)
+        }, status_code=201)
         
     except Exception as e:
         db.session.rollback()
-        return error_response(str(e), 500)
+        return error_response(str(e), code='REGISTRATION_FAILED', status_code=500)

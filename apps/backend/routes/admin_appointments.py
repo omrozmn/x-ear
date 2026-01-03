@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
-from utils.admin_permissions import require_admin_permission, AdminPermissions
+from utils.admin_permissions import AdminPermissions
 from models.base import db
 from models.appointment import Appointment
 from models.patient import Patient
@@ -11,14 +10,15 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+from utils.decorators import unified_access
+
 admin_appointments_bp = Blueprint('admin_appointments', __name__, url_prefix='/api/admin/appointments')
 
 from utils.tenant_security import UnboundSession
 
 @admin_appointments_bp.route('', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.APPOINTMENTS_READ)
-def get_all_appointments():
+@unified_access(permission=AdminPermissions.APPOINTMENTS_READ)
+def get_all_appointments(ctx):
     """Get list of ALL appointments from ALL tenants"""
     try:
         page = request.args.get('page', 1, type=int)

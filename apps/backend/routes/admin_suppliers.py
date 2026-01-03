@@ -1,19 +1,18 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
+from utils.admin_permissions import AdminPermissions
 from models.base import db
 from models.suppliers import Supplier
-from utils.admin_permissions import require_admin_permission, AdminPermissions
 from sqlalchemy import or_
 from datetime import datetime
+from utils.tenant_security import UnboundSession
 
 admin_suppliers_bp = Blueprint('admin_suppliers', __name__, url_prefix='/api/admin/suppliers')
 
-from utils.tenant_security import UnboundSession
-
 @admin_suppliers_bp.route('', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SUPPLIERS_READ)
-def get_suppliers():
+@unified_access(permission=AdminPermissions.SUPPLIERS_READ)
+def get_suppliers(ctx):
     try:
         page = request.args.get('page', 1, type=int)
         limit = request.args.get('limit', 10, type=int)
@@ -38,32 +37,28 @@ def get_suppliers():
             total = query.count()
             suppliers = query.order_by(Supplier.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
 
-            return jsonify({
-                'success': True,
-                'data': {
-                    'suppliers': [s.to_dict() for s in suppliers],
-                    'pagination': {
-                        'page': page,
-                        'limit': limit,
-                        'total': total,
-                        'totalPages': (total + limit - 1) // limit
-                    }
+            return success_response(data={
+                'suppliers': [s.to_dict() for s in suppliers],
+                'pagination': {
+                    'page': page,
+                    'limit': limit,
+                    'total': total,
+                    'totalPages': (total + limit - 1) // limit
                 }
-            }), 200
+            })
 
     except Exception as e:
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_suppliers_bp.route('', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SUPPLIERS_MANAGE)
-def create_supplier():
+@unified_access(permission=AdminPermissions.SUPPLIERS_MANAGE)
+def create_supplier(ctx):
     try:
         data = request.get_json()
         
         # Basic validation
         if not data.get('company_name'):
-            return jsonify({'success': False, 'error': {'message': 'Company name is required'}}), 400
+            return error_response('Company name is required', code='MISSING_FIELD', status_code=400)
 
         new_supplier = Supplier(
             company_name=data['company_name'],
@@ -80,40 +75,32 @@ def create_supplier():
         db.session.add(new_supplier)
         db.session.commit()
 
-        return jsonify({
-            'success': True,
-            'data': {'supplier': new_supplier.to_dict()}
-        }), 201
+        return success_response(data={'supplier': new_supplier.to_dict()}, status_code=201)
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='CREATE_FAILED', status_code=500)
 
 @admin_suppliers_bp.route('/<int:id>', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SUPPLIERS_READ)
-def get_supplier(id):
+@unified_access(permission=AdminPermissions.SUPPLIERS_READ)
+def get_supplier(ctx, id):
     try:
         supplier = db.session.get(Supplier, id)
         if not supplier:
-            return jsonify({'success': False, 'error': {'message': 'Supplier not found'}}), 404
+            return error_response('Supplier not found', code='NOT_FOUND', status_code=404)
 
-        return jsonify({
-            'success': True,
-            'data': {'supplier': supplier.to_dict()}
-        }), 200
+        return success_response(data={'supplier': supplier.to_dict()})
 
     except Exception as e:
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_suppliers_bp.route('/<int:id>', methods=['PUT'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SUPPLIERS_MANAGE)
-def update_supplier(id):
+@unified_access(permission=AdminPermissions.SUPPLIERS_MANAGE)
+def update_supplier(ctx, id):
     try:
         supplier = db.session.get(Supplier, id)
         if not supplier:
-            return jsonify({'success': False, 'error': {'message': 'Supplier not found'}}), 404
+            return error_response('Supplier not found', code='NOT_FOUND', status_code=404)
 
         data = request.get_json()
         
@@ -137,33 +124,26 @@ def update_supplier(id):
         supplier.updated_at = datetime.utcnow()
         db.session.commit()
 
-        return jsonify({
-            'success': True,
-            'data': {'supplier': supplier.to_dict()}
-        }), 200
+        return success_response(data={'supplier': supplier.to_dict()})
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
 
 @admin_suppliers_bp.route('/<int:id>', methods=['DELETE'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SUPPLIERS_MANAGE)
-def delete_supplier(id):
+@unified_access(permission=AdminPermissions.SUPPLIERS_MANAGE)
+def delete_supplier(ctx, id):
     try:
         supplier = db.session.get(Supplier, id)
         if not supplier:
-            return jsonify({'success': False, 'error': {'message': 'Supplier not found'}}), 404
+            return error_response('Supplier not found', code='NOT_FOUND', status_code=404)
 
         # Hard delete or Soft delete? Usually soft delete is better but for now hard delete
         db.session.delete(supplier)
         db.session.commit()
 
-        return jsonify({
-            'success': True,
-            'message': 'Supplier deleted successfully'
-        }), 200
+        return success_response(message='Supplier deleted successfully')
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='DELETE_FAILED', status_code=500)

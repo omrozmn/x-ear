@@ -339,31 +339,39 @@ export default function AdminDashboardPage() {
                         <span className="text-xs font-medium text-gray-500 bg-white px-2 py-1 rounded-md border border-gray-200 shadow-sm">Son 24 Saat</span>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-100">
+                        <table className="min-w-full divide-y divide-gray-100 table-fixed">
                             <thead className="bg-gray-50/50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tarih</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksiyon</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Detay</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kullanıcı</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Tarih</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Aksiyon</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">Detay</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kullanıcı / Sistem</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-50">
-                                {recentErrors.map((error) => (
+                                {(recentErrors as any[]).map((error) => (
                                     <tr key={error.id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                             {new Date(error.created_at).toLocaleString('tr-TR')}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            <span className="px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs border border-gray-200">
+                                            <span className="px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs border border-gray-200 truncate block max-w-[150px]" title={error.action}>
                                                 {error.action}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-red-600/80 max-w-md truncate font-medium">
+                                        <td className="px-6 py-4 text-sm text-red-600/80 font-medium break-words">
                                             {error.details}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {error.user_id}
+                                            <div className="flex flex-col">
+                                                <span className="font-medium text-gray-900">{error.user_name || 'System'}</span>
+                                                {error.tenant_name && error.tenant_name !== 'System' && (
+                                                    <span className="text-xs text-gray-400">{error.tenant_name}</span>
+                                                )}
+                                                {error.user_email && (
+                                                    <span className="text-xs text-gray-400">{error.user_email}</span>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

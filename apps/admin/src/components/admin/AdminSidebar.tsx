@@ -91,20 +91,7 @@ export function AdminSidebar() {
                     })}
                 </nav>
             </div>
-            <div className="p-4 border-t border-gray-800">
-                <button
-                    onClick={() => {
-                        localStorage.removeItem('admin_token');
-                        window.location.href = '/login';
-                    }}
-                    className="flex items-center w-full px-2 py-2 text-sm font-medium text-red-400 rounded-md hover:bg-gray-800 hover:text-red-300"
-                >
-                    <svg className="w-6 h-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    Çıkış Yap
-                </button>
-            </div>
+
         </div>
     )
 }

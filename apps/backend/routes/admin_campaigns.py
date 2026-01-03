@@ -1,19 +1,22 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
+from utils.admin_permissions import AdminPermissions
 from models.base import db
 from models.campaign import Campaign
-from utils.admin_permissions import require_admin_permission, AdminPermissions
 from sqlalchemy import or_
 from datetime import datetime
+from models.user import User
+from utils.tenant_security import UnboundSession
+import logging
+
+logger = logging.getLogger(__name__)
 
 admin_campaigns_bp = Blueprint('admin_campaigns', __name__, url_prefix='/api/admin/campaigns')
 
-from utils.tenant_security import UnboundSession
-
 @admin_campaigns_bp.route('', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.CAMPAIGNS_READ)
-def get_campaigns():
+@unified_access(permission=AdminPermissions.CAMPAIGNS_READ)
+def get_campaigns(ctx):
     try:
         page = request.args.get('page', 1, type=int)
         limit = request.args.get('limit', 10, type=int)
@@ -40,39 +43,34 @@ def get_campaigns():
             total = query.count()
             campaigns = query.order_by(Campaign.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
 
-            return jsonify({
-                'success': True,
-                'data': {
-                    'campaigns': [c.to_dict() for c in campaigns],
-                    'pagination': {
-                        'page': page,
-                        'limit': limit,
-                        'total': total,
-                        'totalPages': (total + limit - 1) // limit
-                    }
+            return success_response(data={
+                'campaigns': [c.to_dict() for c in campaigns],
+                'pagination': {
+                    'page': page,
+                    'limit': limit,
+                    'total': total,
+                    'totalPages': (total + limit - 1) // limit
                 }
-            }), 200
+            })
 
     except Exception as e:
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_campaigns_bp.route('', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.CAMPAIGNS_MANAGE)
-def create_campaign():
+@unified_access(permission=AdminPermissions.CAMPAIGNS_MANAGE)
+def create_campaign(ctx):
     try:
-        from flask_jwt_extended import get_jwt_identity
-        from models.user import User
-        
         data = request.get_json()
         
         if not data.get('name'):
-            return jsonify({'success': False, 'error': {'message': 'Campaign name is required'}}), 400
+            return error_response('Campaign name is required', code='MISSING_FIELD', status_code=400)
 
         # Get current user to determine tenant_id
-        current_user_id = get_jwt_identity()
-        current_user = User.query.get(current_user_id)
-        tenant_id = current_user.tenant_id if current_user else None
+        # ctx.principal_id is the user ID. We need to fetch the User object to get tenant_id safely.
+        # Although ctx.tenant_id might be set, let's follow the existing logic which fetches User.
+        with UnboundSession():
+             current_user = db.session.get(User, ctx.principal_id)
+             tenant_id = current_user.tenant_id if current_user else None
 
         scheduled_at = datetime.fromisoformat(data['scheduled_at'].replace('Z', '+00:00')) if data.get('scheduled_at') else None
 
@@ -91,42 +89,34 @@ def create_campaign():
         db.session.add(new_campaign)
         db.session.commit()
 
-        return jsonify({
-            'success': True,
-            'data': {'campaign': new_campaign.to_dict()}
-        }), 201
+        return success_response(data={'campaign': new_campaign.to_dict()}, status_code=201)
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='CREATE_FAILED', status_code=500)
 
 @admin_campaigns_bp.route('/<string:id>', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.CAMPAIGNS_READ)
-def get_campaign(id):
+@unified_access(permission=AdminPermissions.CAMPAIGNS_READ)
+def get_campaign(ctx, id):
     try:
         with UnboundSession():
             campaign = Campaign.query.get(id)
             if not campaign:
-                return jsonify({'success': False, 'error': {'message': 'Campaign not found'}}), 404
+                return error_response('Campaign not found', code='NOT_FOUND', status_code=404)
 
-        return jsonify({
-            'success': True,
-            'data': {'campaign': campaign.to_dict()}
-        }), 200
+        return success_response(data={'campaign': campaign.to_dict()})
 
     except Exception as e:
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_campaigns_bp.route('/<string:id>', methods=['PUT'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.CAMPAIGNS_MANAGE)
-def update_campaign(id):
+@unified_access(permission=AdminPermissions.CAMPAIGNS_MANAGE)
+def update_campaign(ctx, id):
     try:
         with UnboundSession():
             campaign = Campaign.query.get(id)
             if not campaign:
-                return jsonify({'success': False, 'error': {'message': 'Campaign not found'}}), 404
+                return error_response('Campaign not found', code='NOT_FOUND', status_code=404)
 
         data = request.get_json()
         
@@ -151,33 +141,26 @@ def update_campaign(id):
         campaign.updated_at = datetime.utcnow()
         db.session.commit()
 
-        return jsonify({
-            'success': True,
-            'data': {'campaign': campaign.to_dict()}
-        }), 200
+        return success_response(data={'campaign': campaign.to_dict()})
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
 
 @admin_campaigns_bp.route('/<string:id>', methods=['DELETE'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.CAMPAIGNS_MANAGE)
-def delete_campaign(id):
+@unified_access(permission=AdminPermissions.CAMPAIGNS_MANAGE)
+def delete_campaign(ctx, id):
     try:
         with UnboundSession():
             campaign = Campaign.query.get(id)
             if not campaign:
-                return jsonify({'success': False, 'error': {'message': 'Campaign not found'}}), 404
+                return error_response('Campaign not found', code='NOT_FOUND', status_code=404)
 
         db.session.delete(campaign)
         db.session.commit()
 
-        return jsonify({
-            'success': True,
-            'message': 'Campaign deleted successfully'
-        }), 200
+        return success_response(message='Campaign deleted successfully')
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='DELETE_FAILED', status_code=500)

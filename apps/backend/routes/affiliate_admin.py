@@ -14,6 +14,47 @@ from utils.tenant_security import UnboundSession
 
 affiliate_admin_bp = Blueprint('affiliate_admin', __name__, url_prefix='/api/affiliate')
 
+@affiliate_admin_bp.route('', methods=['POST'])
+def create_affiliate():
+    """Create a new affiliate user"""
+    try:
+        data = request.get_json()
+        if not data.get('email') or not data.get('password'):
+            return jsonify({'success': False, 'error': 'Email and password are required'}), 400
+            
+        with UnboundSession():
+            # Check if email exists
+            from models.affiliate_user import AffiliateUser
+            existing = db.session.query(AffiliateUser).filter_by(email=data['email']).first()
+            if existing:
+                return jsonify({'success': False, 'error': 'Email already in use'}), 400
+                
+            affiliate = AffiliateService.create_affiliate(
+                db.session, 
+                email=data['email'], 
+                password=data['password'],
+                iban=data.get('iban'),
+                account_holder_name=data.get('account_holder_name'),
+                phone_number=data.get('phone_number')
+            )
+            
+            return jsonify({
+                "success": True,
+                "data": {
+                    "id": affiliate.id,
+                    "email": affiliate.email,
+                    "code": affiliate.code,
+                    "account_holder_name": affiliate.account_holder_name,
+                    "phone_number": affiliate.phone_number,
+                    "created_at": affiliate.created_at.isoformat()
+                }
+            }), 201
+            
+    except Exception as e:
+        print(f"Create Affiliate Error: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @affiliate_admin_bp.route('/<int:affiliate_id>/details', methods=['GET'])
 def get_affiliate_details(affiliate_id: int):
     """Get detailed affiliate information with referrals"""

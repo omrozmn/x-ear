@@ -249,6 +249,7 @@ export const PatientNoteForm: React.FC<PatientNoteFormProps> = ({
         </div>
 
         {/* Öncelik ve Kategori */}
+        {/* TEMPORARILY COMMENTED OUT - Will be added in future version
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -299,6 +300,20 @@ export const PatientNoteForm: React.FC<PatientNoteFormProps> = ({
             </select>
           </div>
         </div>
+        */}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Kategori
+          </label>
+          <select
+            value={formData.category || 'general'}
+            onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as any }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="general">Genel</option>
+          </select>
+        </div>
 
         {/* Gizlilik */}
         <div>
@@ -316,7 +331,7 @@ export const PatientNoteForm: React.FC<PatientNoteFormProps> = ({
           </label>
         </div>
 
-        {/* Etiketler */}
+        {/* Etiketler - TEMPORARILY COMMENTED OUT - Will be added in future version
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Etiketler
@@ -360,6 +375,7 @@ export const PatientNoteForm: React.FC<PatientNoteFormProps> = ({
             Enter tuşuna basarak veya "Ekle" butonuna tıklayarak etiket ekleyin
           </p>
         </div>
+        */}
 
         {/* Form Actions */}
         <div className="flex justify-end space-x-3 pt-6 border-t">

@@ -31,20 +31,33 @@ apiClient.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             // Check if it's a real authentication error or just authorization
-            const errorMessage = error.response?.data?.error?.message || error.response?.data?.error || '';
+            let message = '';
+            if (error.response?.data?.error) {
+                if (typeof error.response.data.error === 'string') {
+                    message = error.response.data.error;
+                } else if (typeof error.response.data.error.message === 'string') {
+                    message = error.response.data.error.message;
+                }
+            }
+
+            const errorMessage = message.toLowerCase();
+
             const isAuthError =
                 errorMessage.includes('token') ||
-                errorMessage.includes('JWT') ||
+                errorMessage.includes('jwt') ||
                 errorMessage.includes('expired') ||
                 errorMessage.includes('invalid') ||
                 errorMessage.includes('authentication') ||
+                errorMessage.includes('bu sayfaya erişim') || // Catch specific backend message
                 !localStorage.getItem('admin_token'); // No token at all
 
             // Only logout if it's a real auth error, not just missing permissions
             if (isAuthError) {
                 console.warn('Authentication error detected, logging out:', errorMessage);
                 localStorage.removeItem('admin_token');
-                window.location.href = '/login';
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
             } else {
                 // Just log the authorization error, don't logout
                 console.warn('Authorization error (not logging out):', errorMessage);

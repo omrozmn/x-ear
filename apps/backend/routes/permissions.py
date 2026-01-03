@@ -1,14 +1,15 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
 from models.base import db
 from models.permission import Permission
 from models.user import User
 from models.role import Role
-from utils.authorization import admin_required
 from utils.validation import is_valid_permission_name
+from utils.admin_permissions import AdminPermissions
+from config.tenant_permissions import TenantPermissions, get_permissions_for_role
 
 permissions_bp = Blueprint('permissions', __name__)
-
 
 # Permission categories for frontend grouping
 PERMISSION_CATEGORIES = {
@@ -26,12 +27,15 @@ PERMISSION_CATEGORIES = {
     'dashboard': {'label': 'Dashboard', 'icon': 'layout-dashboard'},
 }
 
-
 @permissions_bp.route('/permissions', methods=['GET'])
-@admin_required
-def list_permissions():
-    """List all permissions, grouped by category"""
-    perms = Permission.query.order_by(Permission.name).all()
+@unified_access(permission=AdminPermissions.ROLES_READ)
+def list_permissions(ctx):
+    """List all permissions, grouped by category (Admin)"""
+    # This seems to be for managing system global permissions
+    # Filter out admin permissions for tenant context (Python side for reliability)
+    # Only return permissions relevant to tenant operations
+    all_perms = Permission.query.order_by(Permission.name).all()
+    perms = [p for p in all_perms if not p.name.startswith('admin.') and not p.name.startswith('system.') and not p.name.startswith('activity_logs.')]
     
     # Group permissions by category
     grouped = {}
@@ -39,7 +43,6 @@ def list_permissions():
     
     for p in perms:
         pdict = p.to_dict()
-        # Extract category from permission name (e.g., 'patients.view' -> 'patients')
         if '.' in p.name:
             category = p.name.split('.')[0]
             if category in PERMISSION_CATEGORIES:
@@ -56,7 +59,6 @@ def list_permissions():
         else:
             ungrouped.append(pdict)
     
-    # Convert to list
     result = list(grouped.values())
     if ungrouped:
         result.append({
@@ -66,81 +68,73 @@ def list_permissions():
             'permissions': ungrouped
         })
     
-    return jsonify({
-        'success': True, 
+    return success_response({
         'data': result,
-        'all': [p.to_dict() for p in perms]  # Also return flat list
+        'all': [p.to_dict() for p in perms]
     })
 
-
 @permissions_bp.route('/permissions/my', methods=['GET'])
-@jwt_required()
-def get_my_permissions():
+@unified_access()
+def get_my_permissions(ctx):
     """Get current user's permissions based on their role"""
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
+    user = ctx.user
     
     if not user:
-        return jsonify({'success': False, 'error': 'User not found'}), 404
+        # Should not happen with unified_access unless token payload issue
+        return error_response('User not found', code='USER_NOT_FOUND', status_code=404)
     
-    # Super admin has all permissions
+    # Super admin checks
+    if user.role == 'super_admin':
+         # Force Super Admin response regardless of tenant_id
+         perms = Permission.query.order_by(Permission.name).all()
+         return success_response({
+             'permissions': [p.name for p in perms],
+             'role': user.role,
+             'isSuperAdmin': True
+         })
+
     if user.role == 'admin':
-        perms = Permission.query.order_by(Permission.name).all()
-        return jsonify({
-            'success': True,
-            'data': {
-                'permissions': [p.name for p in perms],
-                'role': user.role,
-                'isSuperAdmin': True
-            }
-        })
-    
-    # Get role and its permissions
-    role = Role.query.filter_by(name=user.role).one_or_none()
-    if not role:
-        return jsonify({
-            'success': True,
-            'data': {
-                'permissions': [],
-                'role': user.role,
-                'isSuperAdmin': False
-            }
-        })
-    
-    return jsonify({
-        'success': True,
-        'data': {
-            'permissions': [p.name for p in role.permissions],
+        # Tenant Admin
+        # Return full tenant permissions
+        from config.tenant_permissions import _FULL_ADMIN_PERMISSIONS
+        return success_response({
+            'permissions': list(_FULL_ADMIN_PERMISSIONS),
             'role': user.role,
             'isSuperAdmin': False
-        }
+        })
+
+    # For Tenant Users, verify against role map in code
+    # This is safer than DB permission list if we are moving to code-based permissions
+    mapped_perms = get_permissions_for_role(user.role)
+    
+    return success_response({
+        'permissions': list(mapped_perms),
+        'role': user.role,
+        'isSuperAdmin': False
     })
 
 
 @permissions_bp.route('/permissions/role/<role_name>', methods=['GET'])
-@admin_required
-def get_role_permissions(role_name):
-    """Get permissions for a specific role"""
+@unified_access(permission=AdminPermissions.ROLES_READ)
+def get_role_permissions(ctx, role_name):
+    """Get permissions for a specific role (Admin Panel)"""
     role = Role.query.filter_by(name=role_name).one_or_none()
     if not role:
-        return jsonify({'success': False, 'error': 'Role not found'}), 404
+        return error_response('Role not found', code='NOT_FOUND', status_code=404)
     
-    return jsonify({
-        'success': True,
-        'data': {
-            'role': role.to_dict(),
-            'permissions': [p.name for p in role.permissions]
-        }
+    return success_response({
+        'role': role.to_dict(),
+        'permissions': [p.name for p in role.permissions]
     })
 
 
 @permissions_bp.route('/permissions/role/<role_name>', methods=['PUT'])
-@admin_required
-def update_role_permissions(role_name):
-    """Update permissions for a role (bulk update)"""
+@unified_access(permission=AdminPermissions.ROLES_MANAGE)
+def update_role_permissions(ctx, role_name):
+    """Update permissions for a role (Admin Panel)"""
     role = Role.query.filter_by(name=role_name).one_or_none()
     if not role:
-        return jsonify({'success': False, 'error': 'Role not found'}), 404
+        return error_response('Role not found', code='NOT_FOUND', status_code=404)
     
     data = request.get_json() or {}
     permission_names = data.get('permissions', [])
@@ -156,28 +150,28 @@ def update_role_permissions(role_name):
     
     db.session.commit()
     
-    return jsonify({
-        'success': True,
-        'data': {
-            'role': role.to_dict(),
-            'permissions': [p.name for p in role.permissions]
-        }
+    return success_response({
+        'role': role.to_dict(),
+        'permissions': [p.name for p in role.permissions]
     })
 
 
 @permissions_bp.route('/permissions', methods=['POST'])
-@admin_required
-def create_permission():
+@unified_access(permission=AdminPermissions.ROLES_MANAGE)
+def create_permission(ctx):
+    """Create a new permission (System Admin)"""
+    # This might be rarely used if we define permissions in code
     data = request.get_json() or {}
     if not data.get('name'):
-        return jsonify({'success': False, 'error': 'name required'}), 400
+        return error_response('name required', code='MISSING_FIELD', status_code=400)
     if not is_valid_permission_name(data['name']):
-        return jsonify({'success': False, 'error': 'invalid permission name'}), 400
+        return error_response('invalid permission name', code='INVALID_NAME', status_code=400)
     if Permission.query.filter_by(name=data['name']).first():
-        return jsonify({'success': False, 'error': 'permission exists'}), 409
+        return error_response('permission exists', code='ALREADY_EXISTS', status_code=409)
+        
     p = Permission()
     p.name = data['name']
     p.description = data.get('description')
     db.session.add(p)
     db.session.commit()
-    return jsonify({'success': True, 'data': p.to_dict()}), 201
+    return success_response(data=p.to_dict(), status_code=201)

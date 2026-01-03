@@ -132,8 +132,15 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
   };
 
   const handleEditDevice = (device: PatientDevice) => {
+    console.log('🔧 [handleEditDevice] Incoming device:', device);
     // CRITICAL: Always find the original device from the main list.
     const originalDevice = devicesList.find(d => d.id === device.id) || device;
+    console.log('🔧 [handleEditDevice] Original device from list:', originalDevice);
+    console.log('🔧 [handleEditDevice] Has loaner fields?', {
+      loanerBrand: (originalDevice as any).loanerBrand,
+      loanerModel: (originalDevice as any).loanerModel,
+      isLoaner: (originalDevice as any).isLoaner
+    });
     setEditingDevice(originalDevice);
     setShowAssignmentForm(true);
   };
@@ -325,8 +332,11 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
           serial_number_right: assignmentData.serialNumberRight,
           sgk_scheme: assignmentData.sgkSupportType || 'no_coverage',
           down_payment: assignmentData.downPayment || 0,
-          device_id: assignmentData.deviceId,
-          inventory_id: assignmentData.deviceId,
+          // Only include device_id/inventory_id if it's actually changing
+          ...(assignmentData.deviceId !== editingDevice.id && assignmentData.deviceId ? {
+            device_id: assignmentData.deviceId,
+            inventory_id: assignmentData.deviceId
+          } : {}),
           delivery_status: assignmentData.deliveryStatus || 'pending',
           is_loaner: assignmentData.isLoaner || false,
           report_status: assignmentData.reportStatus || undefined,
@@ -340,10 +350,13 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
 
         console.log('📤 Sending device update data:', updateData);
 
-        await updateDeviceMutation.mutateAsync({
+        const updateResponse = await updateDeviceMutation.mutateAsync({
           assignmentId: editingDevice.id,
           data: updateData
         });
+        
+        console.log('✅ Update response from backend:', updateResponse);
+        console.log('✅ Update response data:', updateResponse?.data);
 
         setSuccessMessage('Cihaz ataması başarıyla güncellendi');
         console.log('🔄 Waiting 500ms before refetch...');
@@ -403,8 +416,28 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
       setEditingDevice(null);
     } catch (error: any) {
       console.error('Error in device assignment:', error);
-      const msg = error?.response?.data?.message || error.message || 'Hata oluştu';
-      setActionError(msg);
+      console.error('❌ Error response:', error?.response);
+      console.error('❌ Error response data:', error?.response?.data);
+      console.error('❌ Error response status:', error?.response?.status);
+      console.error('❌ Error response headers:', error?.response?.headers);
+      
+      // Extract detailed error message
+      let errorMsg = 'Hata oluştu';
+      if (error?.response?.data?.detail) {
+        errorMsg = typeof error.response.data.detail === 'string' 
+          ? error.response.data.detail 
+          : JSON.stringify(error.response.data.detail);
+      } else if (error?.response?.data?.message) {
+        errorMsg = error.response.data.message;
+      } else if (error?.message) {
+        errorMsg = error.message;
+      }
+      
+      setActionError(errorMsg);
+      
+      // Don't close the form on error so user can fix and retry
+      // setShowAssignmentForm(false);
+      // setEditingDevice(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -586,12 +619,31 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
           onUpdate={handleDeviceAssignment}
           assignment={editingDevice ? {
             ...editingDevice,
-            deviceId: editingDevice.id,
+            // Keep original deviceId for inventory lookup, but also keep id for updates
+            id: editingDevice.id,
+            deviceId: (editingDevice as any).inventoryId || editingDevice.id,
             patientId: patientId,
             assignedDate: editingDevice.assignedDate || new Date().toISOString(),
             assignedBy: 'User',
             ear: (editingDevice.ear === 'both' ? 'both' : editingDevice.ear === 'right' ? 'right' : 'left'),
-            reason: 'sale',
+            reason: editingDevice.reason || 'sale',
+            // Preserve all device information fields for fallback
+            deviceName: (editingDevice as any).deviceName,
+            // Loaner fields - preserve from original device
+            isLoaner: (editingDevice as any).isLoaner,
+            is_loaner: (editingDevice as any).is_loaner,
+            loanerInventoryId: (editingDevice as any).loanerInventoryId,
+            loaner_inventory_id: (editingDevice as any).loaner_inventory_id,
+            loanerBrand: (editingDevice as any).loanerBrand,
+            loaner_brand: (editingDevice as any).loaner_brand,
+            loanerModel: (editingDevice as any).loanerModel,
+            loaner_model: (editingDevice as any).loaner_model,
+            loanerSerialNumber: (editingDevice as any).loanerSerialNumber,
+            loaner_serial_number: (editingDevice as any).loaner_serial_number,
+            loanerSerialNumberLeft: (editingDevice as any).loanerSerialNumberLeft,
+            loaner_serial_number_left: (editingDevice as any).loaner_serial_number_left,
+            loanerSerialNumberRight: (editingDevice as any).loanerSerialNumberRight,
+            loaner_serial_number_right: (editingDevice as any).loaner_serial_number_right,
           } as any : prefillAssignment}
         />
       )}

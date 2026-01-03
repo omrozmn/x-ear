@@ -73,12 +73,12 @@ const AddOns: React.FC = () => {
             if (editingAddon) {
                 await updateAddon({
                     id: editingAddon.id!,
-                    data: formData as AddOn
+                    data: formData as any
                 });
                 toast.success('Eklenti güncellendi');
             } else {
                 await createAddon({
-                    data: formData as AddOn
+                    data: formData as any
                 });
                 toast.success('Eklenti oluşturuldu');
             }

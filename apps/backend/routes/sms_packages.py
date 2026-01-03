@@ -19,12 +19,15 @@ def list_public_packages():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
+from utils.decorators import unified_access
+from utils.admin_permissions import AdminPermissions
+
 # Admin Blueprint
 admin_sms_packages_bp = Blueprint('admin_sms_packages', __name__, url_prefix='/api/admin/sms/packages')
 
 @admin_sms_packages_bp.route('', methods=['GET'])
-@jwt_required()
-def list_admin_packages():
+@unified_access(permission=AdminPermissions.SYSTEM_MANAGE) # Using generic system manage permission for now
+def list_admin_packages(ctx):
     """List all SMS packages (Admin)"""
     try:
         page = request.args.get('page', 1, type=int)
@@ -46,8 +49,8 @@ def list_admin_packages():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @admin_sms_packages_bp.route('', methods=['POST'])
-@jwt_required()
-def create_package():
+@unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
+def create_package(ctx):
     try:
         data = request.get_json()
         data = data.get('data', data) # Handle nested data wrapper if present
@@ -66,8 +69,8 @@ def create_package():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @admin_sms_packages_bp.route('/<package_id>', methods=['PUT'])
-@jwt_required()
-def update_package(package_id):
+@unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
+def update_package(ctx, package_id):
     try:
         pkg = SmsPackage.query.get(package_id)
         if not pkg:

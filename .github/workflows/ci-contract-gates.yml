@@ -1,0 +1,126 @@
+name: CI — Contract Gates & Guardrails
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  push:
+    branches: [ main, master ]
+
+jobs:
+  contract-check:
+    name: Contract Gate + Prompt Guardrail
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Determine changed files vs main
+        id: changed_files
+        run: |
+          git fetch origin main --depth=1 || true
+          FILES=$(git diff --name-only origin/main...HEAD || true)
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Spectral lint OpenAPI (if exists)
+        run: |
+          set -e
+          if [ -f "apps/openapi.generated.yaml" ]; then
+            npx --yes @stoplight/spectral-cli@6 lint apps/openapi.generated.yaml || (echo "Spectral lint failed" && exit 1)
+          else
+            echo "No OpenAPI file found at apps/openapi.generated.yaml — skipping spectral"
+          fi
+
+      - name: Enforce MD contract changed when API/backend changes
+        run: |
+          set -e
+          CHANGED_FILES="${{ steps.changed_files.outputs.changed_files }}"
+
+          echo "Files changed:\n$CHANGED_FILES"
+
+          # Detect API or backend route related changes
+          echo "$CHANGED_FILES" | grep -E -q "(^|/)openapi|(^|/)openapi.generated.yaml|(^|/)apps/backend/" && API_CHANGED=true || API_CHANGED=false
+
+          # Check contract docs existence (api-contracts/ or CONTRACTS.md)
+          echo "$CHANGED_FILES" | grep -E -q "(^|/)api-contracts/|(^|/)CONTRACTS.md|(^|/)docs/contracts/" && MD_CHANGED=true || MD_CHANGED=false
+
+          if [ "$API_CHANGED" = true ] && [ "$MD_CHANGED" = false ]; then
+            echo "ERROR: API/backend changes detected without corresponding contract updates in api-contracts/ or CONTRACTS.md"
+            echo "Please update related contract markdown under api-contracts/ or CONTRACTS.md to describe breaking/non-breaking semantics."
+            exit 1
+          fi
+
+          echo "Contract docs check passed (either no API change or MD contract updated)"
+
+      - name: LLM import guard — disallow LLM imports outside `/ai/`
+        run: |
+          set -e
+          echo "Scanning tracked source files for disallowed AI imports..."
+          BAD=0
+          # iterate tracked source files (js/ts/py)
+          git ls-files | grep -E '\.(js|ts|py)$' | while read -r f; do
+            # skip files inside any /ai/ folder (allowed)
+            if [[ "$f" == *"/ai/"* ]]; then
+              continue
+            fi
+            if grep -IqE "openai|Anthropic|langchain|huggingface|cohere|bedrock|gpt-" "$f"; then
+              echo "FOUND LLM/AI usage outside /ai/: $f"
+              BAD=1
+            fi
+          done
+          if [ "$BAD" -ne 0 ]; then
+            echo "ERROR: LLM imports detected outside '/ai/' — centralize LLM calls under an /ai/ directory."
+            exit 1
+          fi
+          echo "LLM import guard passed"
+
+  smoke-e2e:
+    name: FE Smoke Build (quick)
+    runs-on: ubuntu-latest
+    needs: contract-check
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install frontend dependencies
+        run: |
+          cd apps/web
+          pnpm install --frozen-lockfile
+
+      - name: Build frontend (smoke)
+        run: |
+          cd apps/web
+          pnpm run build
+
+      - name: Verify build produced output
+        run: |
+          if [ -d "apps/web/dist" ] || [ -d "apps/web/build" ]; then
+            echo "Frontend build artifacts present"
+          else
+            echo "ERROR: Frontend build artifacts not found (expected apps/web/dist or apps/web/build)"
+            ls -la apps/web || true
+            exit 1
+          fi

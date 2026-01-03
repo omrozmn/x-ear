@@ -1,11 +1,12 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.base import db
 from models.notification import Notification
 from models.notification_template import NotificationTemplate
 from models.tenant import Tenant
 from models.user import User
-from utils.admin_permissions import require_admin_permission, AdminPermissions
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
+from utils.admin_permissions import AdminPermissions
 import logging
 import json
 from utils.tenant_security import UnboundSession
@@ -15,9 +16,8 @@ logger = logging.getLogger(__name__)
 admin_notifications_bp = Blueprint('admin_notifications', __name__, url_prefix='/api/admin/notifications')
 
 @admin_notifications_bp.route('/init-db', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SYSTEM_MANAGE)
-def init_db():
+@unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
+def init_db(ctx):
     """Initialize notification tables"""
     try:
         # Create tables if they don't exist
@@ -55,15 +55,14 @@ def init_db():
                 db.session.add(new_tpl)
         
         db.session.commit()
-        return jsonify({'success': True, 'message': 'Notification tables initialized'}), 200
+        return success_response(message='Notification tables initialized')
     except Exception as e:
         logger.error(f"Init DB error: {e}")
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_notifications_bp.route('', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SYSTEM_READ)
-def get_notifications():
+@unified_access(permission=AdminPermissions.SYSTEM_READ)
+def get_notifications(ctx):
     """Get list of notifications"""
     try:
         page = request.args.get('page', 1, type=int)
@@ -83,26 +82,22 @@ def get_notifications():
             total = query.count()
             notifications = query.order_by(Notification.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
-        return jsonify({
-            'success': True,
-            'data': {
-                'notifications': [n.to_dict() for n in notifications],
-                'pagination': {
-                    'page': page,
-                    'limit': limit,
-                    'total': total,
-                    'totalPages': (total + limit - 1) // limit
-                }
+        return success_response(data={
+            'notifications': [n.to_dict() for n in notifications],
+            'pagination': {
+                'page': page,
+                'limit': limit,
+                'total': total,
+                'totalPages': (total + limit - 1) // limit
             }
-        }), 200
+        })
     except Exception as e:
         logger.error(f"Get notifications error: {e}")
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_notifications_bp.route('/send', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SYSTEM_MANAGE)
-def send_notification():
+@unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
+def send_notification(ctx):
     """Send a notification to tenants"""
     try:
         data = request.get_json()
@@ -114,7 +109,7 @@ def send_notification():
         channel = data.get('channel', 'push')  # 'push', 'email', 'both'
         
         if not title or not message:
-            return jsonify({'success': False, 'error': {'message': 'Title and message are required'}}), 400
+            return error_response('Title and message are required', code='MISSING_FIELDS', status_code=400)
         
         # For email channel, send via EmailService
         if channel in ['email', 'both']:
@@ -124,7 +119,7 @@ def send_notification():
             if target_type == 'tenant' and target_id:
                 tenant = Tenant.query.get(target_id)
                 if not tenant:
-                    return jsonify({'success': False, 'error': {'message': 'Tenant not found'}}), 404
+                    return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
                     
                 # Get tenant admins
                 admin_users = User.query.filter_by(tenant_id=target_id, role='owner').all()
@@ -135,7 +130,7 @@ def send_notification():
                 admin_users = User.query.filter_by(role='owner').all()
                 recipients = [u.email for u in admin_users if u.email]
             else:
-                return jsonify({'success': False, 'error': {'message': 'Invalid target type'}}), 400
+                return error_response('Invalid target type', code='INVALID_TARGET', status_code=400)
             
             # Send emails
             count = 0
@@ -149,11 +144,7 @@ def send_notification():
                 if success:
                     count += 1
             
-            return jsonify({
-                'success': True,
-                'message': f'Email notification sent to {count} recipients',
-                'data': {'count': count, 'channel': 'email'}
-            }), 201
+            return success_response(data={'count': count, 'channel': 'email'}, message=f'Email notification sent to {count} recipients', status_code=201)
         
         # For push notifications (existing logic)
         recipients = []
@@ -184,21 +175,16 @@ def send_notification():
             
         db.session.commit()
         
-        return jsonify({
-            'success': True, 
-            'message': f'Notification sent to {count} users',
-            'data': {'count': count, 'channel': 'push'}
-        }), 201
+        return success_response(data={'count': count, 'channel': 'push'}, message=f'Notification sent to {count} users', status_code=201)
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Send notification error: {e}")
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_notifications_bp.route('/templates', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SYSTEM_READ)
-def get_templates():
+@unified_access(permission=AdminPermissions.SYSTEM_READ)
+def get_templates(ctx):
     """Get all notification templates"""
     try:
         category = request.args.get('category')
@@ -212,18 +198,14 @@ def get_templates():
             query = query.filter(NotificationTemplate.channel == channel)
         
         templates = query.all()
-        return jsonify({
-            'success': True,
-            'data': [t.to_dict() for t in templates]
-        }), 200
+        return success_response(data=[t.to_dict() for t in templates])
     except Exception as e:
         logger.error(f"Get templates error: {e}")
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_notifications_bp.route('/templates', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SYSTEM_MANAGE)
-def create_template():
+@unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
+def create_template(ctx):
     """Create a new notification template"""
     try:
         data = request.get_json()
@@ -252,24 +234,20 @@ def create_template():
         db.session.add(template)
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'data': template.to_dict()
-        }), 201
+        return success_response(data=template.to_dict(), status_code=201)
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create template error: {e}")
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='CREATE_FAILED', status_code=500)
 
 @admin_notifications_bp.route('/templates/<template_id>', methods=['PUT'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SYSTEM_MANAGE)
-def update_template(template_id):
+@unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
+def update_template(ctx, template_id):
     """Update a notification template"""
     try:
         template = NotificationTemplate.query.get(template_id)
         if not template:
-            return jsonify({'success': False, 'error': {'message': 'Template not found'}}), 404
+            return error_response('Template not found', code='NOT_FOUND', status_code=404)
         
         data = request.get_json()
         
@@ -315,34 +293,26 @@ def update_template(template_id):
         
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'data': template.to_dict()
-        }), 200
+        return success_response(data=template.to_dict())
     except Exception as e:
         db.session.rollback()
         logger.error(f"Update template error: {e}")
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
 
 @admin_notifications_bp.route('/templates/<template_id>', methods=['DELETE'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SYSTEM_MANAGE)
-def delete_template(template_id):
+@unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
+def delete_template(ctx, template_id):
     """Delete a notification template"""
     try:
         template = NotificationTemplate.query.get(template_id)
         if not template:
-            return jsonify({'success': False, 'error': {'message': 'Template not found'}}), 404
+            return error_response('Template not found', code='NOT_FOUND', status_code=404)
         
         db.session.delete(template)
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'message': 'Template deleted successfully'
-        }), 200
+        return success_response(message='Template deleted successfully')
     except Exception as e:
         db.session.rollback()
         logger.error(f"Delete template error: {e}")
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
-
+        return error_response(str(e), code='DELETE_FAILED', status_code=500)

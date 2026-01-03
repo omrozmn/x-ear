@@ -10,7 +10,7 @@ import {
     Eye
 } from 'lucide-react';
 import { Input, Select } from '@x-ear/ui-web';
-import { 
+import {
     useAdminGetActivityLogs,
     useAdminGetActivityLogsStats,
     useAdminGetActivityLogFilterOptions
@@ -69,14 +69,14 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
                                 <p className="font-mono text-sm">{log.ipAddress}</p>
                             </div>
                         </div>
-                        
+
                         {log.message && (
                             <div>
                                 <label className="text-xs text-gray-500">Mesaj</label>
                                 <p className="font-medium">{log.message}</p>
                             </div>
                         )}
-                        
+
                         {log.data && Object.keys(log.data).length > 0 && (
                             <div>
                                 <label className="text-xs text-gray-500">Veri</label>
@@ -85,7 +85,7 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
                                 </pre>
                             </div>
                         )}
-                        
+
                         {log.details && Object.keys(log.details).length > 0 && (
                             <div>
                                 <label className="text-xs text-gray-500">Detaylar</label>
@@ -94,7 +94,7 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
                                 </pre>
                             </div>
                         )}
-                        
+
                         {log.userAgent && (
                             <div>
                                 <label className="text-xs text-gray-500">User Agent</label>
@@ -134,15 +134,15 @@ export default function ActivityLogPage() {
         critical_only: filters.critical_only === 'true',
         page,
         page_size: pageSize
-    });
+    } as any);
 
     const { data: statsData } = useAdminGetActivityLogsStats({});
     const { data: filterOptions } = useAdminGetActivityLogFilterOptions();
 
-    const logs = logsData?.data?.logs || [];
-    const meta = logsData?.data?.meta;
-    const stats = statsData?.data;
-    const options = filterOptions?.data;
+    const logs = (logsData?.data as any)?.logs || [];
+    const meta = (logsData?.data as any)?.meta;
+    const stats = statsData?.data as any;
+    const options = filterOptions?.data as any || {};
 
     return (
         <div className="p-6 max-w-7xl mx-auto">

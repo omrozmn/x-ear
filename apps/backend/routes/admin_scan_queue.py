@@ -1,33 +1,32 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
+from utils.admin_permissions import AdminPermissions
 from models.base import db
 from models.scan_queue import ScanQueue
-from utils.admin_permissions import require_admin_permission, AdminPermissions
-import logging
 from datetime import datetime
 from utils.tenant_security import UnboundSession
+import logging
 
 logger = logging.getLogger(__name__)
 
 admin_scan_queue_bp = Blueprint('admin_scan_queue', __name__, url_prefix='/api/admin/scan-queue')
 
 @admin_scan_queue_bp.route('/init-db', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SYSTEM_MANAGE)
-def init_db():
+@unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
+def init_db(ctx):
     """Initialize Scan Queue table"""
     try:
         engine = db.engine
         ScanQueue.__table__.create(engine, checkfirst=True)
-        return jsonify({'success': True, 'message': 'Scan Queue table initialized'}), 200
+        return success_response(message='Scan Queue table initialized')
     except Exception as e:
         logger.error(f"Init DB error: {e}")
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_scan_queue_bp.route('', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SCAN_QUEUE_READ)
-def get_scan_queue():
+@unified_access(permission=AdminPermissions.SCAN_QUEUE_READ)
+def get_scan_queue(ctx):
     """Get scan queue items"""
     try:
         status = request.args.get('status')
@@ -39,22 +38,18 @@ def get_scan_queue():
                 
             items = query.order_by(ScanQueue.created_at.desc()).all()
         
-        return jsonify({
-            'success': True,
-            'data': [i.to_dict() for i in items]
-        }), 200
+        return success_response(data=[i.to_dict() for i in items])
     except Exception as e:
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_scan_queue_bp.route('/<id>/retry', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SCAN_QUEUE_MANAGE)
-def retry_scan(id):
+@unified_access(permission=AdminPermissions.SCAN_QUEUE_MANAGE)
+def retry_scan(ctx, id):
     """Retry a failed scan"""
     try:
         scan = ScanQueue.query.get(id)
         if not scan:
-            return jsonify({'success': False, 'error': {'message': 'Scan not found'}}), 404
+            return error_response('Scan not found', code='NOT_FOUND', status_code=404)
             
         scan.status = 'pending'
         scan.error_message = None
@@ -62,11 +57,6 @@ def retry_scan(id):
         scan.completed_at = None
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'message': 'Scan queued for retry',
-            'data': scan.to_dict()
-        }), 200
+        return success_response(data=scan.to_dict(), message='Scan queued for retry')
     except Exception as e:
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
-
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)

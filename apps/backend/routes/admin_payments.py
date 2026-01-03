@@ -2,19 +2,14 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from models.base import db
 from models.sales import PaymentRecord
-from utils.admin_permissions import require_admin_permission, AdminPermissions
-from utils.tenant_security import UnboundSession
-import logging
-from datetime import datetime
-
-logger = logging.getLogger(__name__)
+from utils.decorators import unified_access
+from utils.admin_permissions import AdminPermissions
 
 admin_payments_bp = Blueprint('admin_payments', __name__, url_prefix='/api/admin/payments')
 
 @admin_payments_bp.route('/pos/transactions', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.PAYMENTS_READ)
-def get_pos_transactions():
+@unified_access(permission=AdminPermissions.PAYMENTS_READ)
+def get_pos_transactions(ctx):
     """Get all POS transactions for admin panel"""
     try:
         provider = request.args.get('provider')

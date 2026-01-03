@@ -1,23 +1,34 @@
-from app import app, db
-from models.admin_user import AdminUser
-import logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from app import app
+from models.base import db
+from models.admin_user import AdminUser
+from werkzeug.security import generate_password_hash
 
 def reset_password():
     with app.app_context():
-        email = "admin@x-ear.com"
-        password = "admin123"
-        
-        admin = AdminUser.query.filter_by(email=email).first()
+        admin = AdminUser.query.filter_by(email='admin@x-ear.com').first()
         if admin:
-            logger.info(f"Found admin user: {email}")
-            admin.set_password(password)
+            admin.password_hash = generate_password_hash('admin', method='pbkdf2:sha256')
             db.session.commit()
-            logger.info(f"Password reset to '{password}' successfully.")
+            print("Password reset successful for admin@x-ear.com")
+            
+            # Verify
+            from werkzeug.security import check_password_hash
+            valid = check_password_hash(admin.password_hash, 'admin')
+            print(f"Password 'admin' valid: {valid}")
         else:
-            logger.error("Admin user not found!")
+            print("Admin user not found, creating one.")
+            new_admin = AdminUser(
+                email='admin@x-ear.com',
+                first_name='Admin',
+                last_name='User', 
+                role='admin',
+                is_active=True
+            )
+            new_admin.password_hash = generate_password_hash('admin', method='pbkdf2:sha256')
+            db.session.add(new_admin)
+            db.session.commit()
+            print("Admin user created.")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     reset_password()

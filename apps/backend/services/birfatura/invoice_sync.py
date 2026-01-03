@@ -18,11 +18,15 @@ from services.birfatura.invoice_parser import (
 )
 
 
+from models.tenant import Tenant
+from models.integration_config import IntegrationConfig
+import os
+
 class InvoiceSyncService:
     """Service for syncing invoices from BirFatura"""
     
     def __init__(self):
-        self.client = BirfaturaClient()
+        self.client = None
     
     def sync_invoices(self, tenant_id: str, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> Dict[str, int]:
         """
@@ -35,6 +39,33 @@ class InvoiceSyncService:
         Returns:
             Dictionary with counts of imported invoices
         """
+        # Configure client with tenant credentials
+        tenant = db.session.get(Tenant, tenant_id)
+        if not tenant:
+            raise ValueError(f"Tenant {tenant_id} not found")
+
+        tenant_invoice_settings = (tenant.settings or {}).get('invoice_integration', {})
+        tenant_api_key = tenant_invoice_settings.get('api_key')
+        tenant_secret_key = tenant_invoice_settings.get('secret_key')
+        
+        # Get Global Settings (Integration Key)
+        integration_key_config = IntegrationConfig.query.filter_by(
+            integration_type='birfatura', 
+            config_key='integration_key'
+        ).first()
+        global_integration_key = integration_key_config.config_value if integration_key_config else None
+
+        # Check credentials in non-mock env
+        using_mock = os.getenv('BIRFATURA_MOCK', '0') == '1' or os.getenv('FLASK_ENV', 'production') != 'production'
+        if not using_mock and (not tenant_api_key or not tenant_secret_key or not global_integration_key):
+             raise ValueError("Missing BirFatura credentials. Please configure Invoice Integration settings.")
+             
+        self.client = BirfaturaClient(
+            api_key=tenant_api_key,
+            secret_key=tenant_secret_key,
+            integration_key=global_integration_key
+        )
+
         if not end_date:
             end_date = datetime.utcnow()
         if not start_date:

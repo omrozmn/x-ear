@@ -206,16 +206,34 @@ def create_patient_note(patient_id):
         new_note = PatientNote(
             id=str(uuid.uuid4()),
             patient_id=patient_id,
+            tenant_id=patient.tenant_id,
             author_id=data.get('createdBy', 'system'),
             note_type=data.get('type', 'genel'),
             category=data.get('category', 'general'),
             title=data.get('type', 'genel'),  # Use type as title for now
             content=data.get('content', ''),
-            is_private=data.get('isPrivate', False),
-            tags=json.dumps(data.get('tags', []))
+            is_private=data.get('isPrivate', False)
         )
         db.session.add(new_note)
         db.session.commit()
+        
+        # Create Activity Log
+        try:
+            from models.user import ActivityLog
+            activity_log = ActivityLog(
+                user_id=data.get('createdBy', 'system'),
+                action='note_created',
+                entity_type='patient',
+                entity_id=patient_id,
+                details=f"Note created: {new_note.content[:50]}{'...' if len(new_note.content) > 50 else ''}",
+                ip_address=request.remote_addr,
+                user_agent=request.headers.get('User-Agent', '')
+            )
+            db.session.add(activity_log)
+            db.session.commit()
+        except Exception as log_error:
+            logger.error(f"Failed to create activity log for note creation: {log_error}")
+        
         resp = make_response(jsonify({"success": True, "data": new_note.to_dict(), "timestamp": datetime.now().isoformat()}), 201)
         resp.headers['Location'] = f"/api/patients/{patient_id}/notes/{new_note.id}"
         return resp

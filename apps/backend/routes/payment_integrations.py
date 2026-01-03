@@ -1,6 +1,5 @@
 
 from flask import Blueprint, request, jsonify, redirect
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.base import db, gen_id
 from models.user import User
 from models.tenant import Tenant
@@ -10,8 +9,8 @@ import json
 import logging
 from datetime import datetime
 import os
-from utils.tenant_security import UnboundSession
-from utils.admin_permissions import require_admin_permission, AdminPermissions
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
 
 logger = logging.getLogger(__name__)
 
@@ -36,57 +35,50 @@ def get_tenant_paytr_settings(tenant_id):
 
 
 @payment_integrations_bp.route('/paytr/config', methods=['GET'])
-@jwt_required()
-def get_paytr_config():
+@unified_access(resource='pos', action='read')
+def get_paytr_config(ctx):
     """Get Tenant PayTR Config"""
-    current_user_id = get_jwt_identity()
-    user = db.session.get(User, current_user_id)
-    if not user:
-        return jsonify({'success': False, 'error': 'User not found'}), 401
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
     
-    settings = get_tenant_paytr_settings(user.tenant_id) or {}
+    settings = get_tenant_paytr_settings(ctx.tenant_id) or {}
     
-    # Obfuscate secret keys for frontend/security display if needed
-    # But usually admin needs to see them or placeholder.
-    # We will return empty for secrets if not editing, but for "read" typically we send masked.
-    # For now sending clear or masked? Let's send masked.
+    # Obfuscate secret keys
     m_key = settings.get('merchant_key', '')
     m_salt = settings.get('merchant_salt', '')
     
     masked_key = m_key[:4] + '****' + m_key[-4:] if len(m_key) > 8 else '****'
     masked_salt = m_salt[:4] + '****' + m_salt[-4:] if len(m_salt) > 8 else '****'
 
-    return jsonify({
-        'success': True,
-        'data': {
-            'merchant_id': settings.get('merchant_id', ''),
-            'merchant_key_masked': masked_key,
-            'merchant_salt_masked': masked_salt,
-            'test_mode': settings.get('test_mode', False),
-            'enabled': bool(settings.get('merchant_id')) # Simplified enabled check
-        }
+    return success_response(data={
+        'merchant_id': settings.get('merchant_id', ''),
+        'merchant_key_masked': masked_key,
+        'merchant_salt_masked': masked_salt,
+        'test_mode': settings.get('test_mode', False),
+        'enabled': bool(settings.get('merchant_id'))
     })
 
 @payment_integrations_bp.route('/paytr/config', methods=['PUT'])
-@jwt_required()
-def update_paytr_config():
+@unified_access(resource='pos', action='write')
+def update_paytr_config(ctx):
     """Update Tenant PayTR Config"""
-    current_user_id = get_jwt_identity()
-    user = db.session.get(User, current_user_id)
-    if not user:
-        return jsonify({'success': False, 'error': 'User not found'}), 401
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
+    
+    # Require admin/tenant_admin
+    if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
+        return error_response('Admin permissions required', code='FORBIDDEN', status_code=403)
     
     data = request.get_json()
-    tenant = db.session.get(Tenant, user.tenant_id)
+    tenant = db.session.get(Tenant, ctx.tenant_id)
     if not tenant:
-        return jsonify({'success': False, 'error': 'Tenant not found'}), 404
+        return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
         
     if not tenant.settings:
         tenant.settings = {}
         
     pos_settings = tenant.settings.get('pos_integration', {})
     
-    # preserve existing secrets if not sent (e.g. sent as masked)
     new_key = data.get('merchant_key')
     new_salt = data.get('merchant_salt')
     
@@ -108,21 +100,19 @@ def update_paytr_config():
     
     db.session.commit()
     
-    return jsonify({'success': True})
+    return success_response()
 
 @payment_integrations_bp.route('/paytr/initiate', methods=['POST'])
-@jwt_required()
-def initiate_paytr_payment():
+@unified_access(resource='pos', action='write')
+def initiate_paytr_payment(ctx):
     """
     Initiate PayTR Payment
     Supports Sale-linked or Standalone
     """
-    try:
-        current_user_id = get_jwt_identity()
-        user = db.session.get(User, current_user_id)
-        if not user:
-            return jsonify({'success': False, 'error': 'User not found'}), 401
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
 
+    try:
         data = request.get_json()
         sale_id = data.get('sale_id')
         patient_id = data.get('patient_id')
@@ -131,20 +121,20 @@ def initiate_paytr_payment():
         description = data.get('description', '')
 
         if amount <= 0:
-            return jsonify({'success': False, 'error': 'Invalid amount'}), 400
+            return error_response('Invalid amount', code='INVALID_AMOUNT', status_code=400)
 
         # Verify Tenant Settings
-        settings = get_tenant_paytr_settings(user.tenant_id)
+        settings = get_tenant_paytr_settings(ctx.tenant_id)
         if not settings:
-            return jsonify({'success': False, 'error': 'PayTR integration not configured'}), 400
+            return error_response('PayTR integration not configured', code='CONFIG_MISSING', status_code=400)
 
         sale = None
         if sale_id:
             sale = db.session.get(Sale, sale_id)
-            if not sale or sale.tenant_id != user.tenant_id:
-                return jsonify({'success': False, 'error': 'Sale not found'}), 404
+            if not sale or sale.tenant_id != ctx.tenant_id:
+                return error_response('Sale not found', code='NOT_FOUND', status_code=404)
             
-            # Idempotency Check - Prevent duplicate pending payments
+            # Idempotency Check
             from datetime import timedelta
             existing_pending = PaymentRecord.query.filter_by(
                 sale_id=sale.id,
@@ -154,28 +144,22 @@ def initiate_paytr_payment():
             ).order_by(PaymentRecord.payment_date.desc()).first()
             
             if existing_pending:
-                # Check if pending within last 10 minutes
                 time_diff = datetime.now() - existing_pending.payment_date
                 if time_diff < timedelta(minutes=10):
                     logger.warning(f"Duplicate payment initiate blocked for sale {sale.id}, amount {amount}")
-                    return jsonify({
-                        'success': False,
-                        'error': 'Bu satış için bekleyen bir ödeme zaten var. Lütfen birkaç dakika bekleyin veya önceki ödemeyi tamamlayın.'
-                    }), 400
+                    return error_response('Bu satış için bekleyen bir ödeme zaten var.', code='DUPLICATE_PAYMENT', status_code=400)
 
-        # Use Patient from Sale if not provided
         if not patient_id and sale:
             patient_id = sale.patient_id
 
-        # Generate Transaction ID
         transaction_id = gen_id("ptr")
+        current_branch_id = getattr(ctx.user, 'branch_id', None) if ctx.user else None
         
-        # Payment Record
         payment_record = PaymentRecord(
-            tenant_id=user.tenant_id,
-            branch_id=getattr(user, 'branch_id', None),
+            tenant_id=ctx.tenant_id,
+            branch_id=current_branch_id,
             patient_id=patient_id,
-            sale_id=sale_id, # Can be None
+            sale_id=sale_id,
             amount=amount,
             payment_date=datetime.now(),
             payment_method='card',
@@ -189,7 +173,6 @@ def initiate_paytr_payment():
         db.session.add(payment_record)
         db.session.commit()
 
-        # Init PayTR Service
         paytr = PayTRService(
             merchant_id=settings['merchant_id'],
             merchant_key=settings['merchant_key'],
@@ -197,16 +180,13 @@ def initiate_paytr_payment():
             test_mode=settings['test_mode']
         )
         
-        # Determine User Info for PayTR
+        # User Info
         user_name = "Misafir Kullanici"
         user_email = "noreply@xear.com"
         user_phone = "5555555555"
         user_address = "Adres Yok"
         
-        # If we have Patient object
         if patient_id:
-             # Lazy load patient or query
-             # Since we are in routes, better import Patient at top or query
              from models.patient import Patient
              patient = db.session.get(Patient, patient_id)
              if patient:
@@ -218,9 +198,7 @@ def initiate_paytr_payment():
         basket_item_name = description or (f"Satis #{sale_id}" if sale_id else "Tahsilat")
         basket = [[basket_item_name, str(amount), 1]]
 
-        # Callback URLs
         frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
-        # We point to a dedicated landing page for result
         ok_url = f"{frontend_url}/pos/success"
         fail_url = f"{frontend_url}/pos/fail"
         
@@ -244,27 +222,24 @@ def initiate_paytr_payment():
         token_result = paytr.get_token(payload)
 
         if token_result['success']:
-            return jsonify({
-                'success': True,
+            return success_response(data={
                 'token': token_result['token'],
                 'iframe_url': 'https://www.paytr.com/odeme/guvenli/' + token_result['token'],
                 'payment_record_id': payment_record.id
             })
         else:
-            return jsonify({
-                'success': False,
-                'error': token_result.get('error')
-            }), 400
+            return error_response(token_result.get('error'), code='PAYTR_ERROR', status_code=400)
 
     except Exception as e:
         logger.error(f"PayTR Initiate Error: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return error_response(str(e), code='PAYTR_INITIATE_ERROR', status_code=500)
 
 @payment_integrations_bp.route('/paytr/callback', methods=['POST'])
 def paytr_callback():
     """
     PayTR Server-to-Server Callback
     Idempotent: Checks if already paid.
+    Public endpoint - validation via PayTR hash check.
     """
     try:
         data = request.form
@@ -275,7 +250,7 @@ def paytr_callback():
         payment = PaymentRecord.query.filter_by(pos_transaction_id=merchant_oid).first()
         if not payment:
             logger.error(f"PayTR Callback: Record not found {merchant_oid}")
-            return "OK" # Stop retry
+            return "OK"
             
         # Idempotency Check
         if payment.status in ['paid', 'failed']:
@@ -307,22 +282,18 @@ def paytr_callback():
             payment.status = 'paid'
             payment.pos_status = 'success'
             payment.gross_amount = float(data.get('total_amount', 0)) / 100
-            payment.net_amount = payment.gross_amount # Minus commission logic if needed
+            payment.net_amount = payment.gross_amount
 
             # Update Linked Sale
             if payment.sale_id:
                 sale = db.session.get(Sale, payment.sale_id)
                 if sale:
-                    # Refresh sale paid amount
                     sale.paid_amount = float(sale.paid_amount or 0) + float(payment.amount)
-                    
                     sale_total = float(sale.total_amount or sale.final_amount or 0)
                     if sale.paid_amount >= sale_total - 0.01:
-                        sale.status = 'paid' # or completed
+                        sale.status = 'paid'
                     elif sale.paid_amount > 0:
                         sale.status = 'partial'
-            
-            # Note: No separate CashMovement table insert needed as unified_cash.py derives from PaymentRecord.
             
         else:
             payment.status = 'failed'
@@ -334,52 +305,50 @@ def paytr_callback():
 
     except Exception as e:
         logger.error(f"PayTR Callback Exception for merchant_oid={data.get('merchant_oid', 'N/A')}: {str(e)}")
-        
-        # Mark payment as error if found
+        # Try to mark payment error
         try:
-            if 'merchant_oid' in data:
-                error_payment = PaymentRecord.query.filter_by(pos_transaction_id=data['merchant_oid']).first()
-                if error_payment and error_payment.status == 'pending':
-                    error_payment.status = 'error'
-                    error_payment.error_message = f"Callback processing error: {str(e)}"
-                    db.session.commit()
-        except:
-            pass
-        
+             if merchant_oid:
+                 error_payment = PaymentRecord.query.filter_by(pos_transaction_id=merchant_oid).first()
+                 if error_payment and error_payment.status == 'pending':
+                     error_payment.status = 'error'
+                     error_payment.error_message = f"Callback error: {str(e)}"
+                     db.session.commit()
+        except: pass
         return "OK"
 
 @payment_integrations_bp.route('/transactions', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.PAYMENTS_READ)
-def get_pos_transactions():
-    """Report Endpoint for POS Transactions"""
-    current_user_id = get_jwt_identity()
-    user = db.session.get(User, current_user_id)
-    if not user:
-        return jsonify({'success': False}), 401
+@unified_access(resource='admin.payments', action='read')
+def get_pos_transactions(ctx):
+    """Report Endpoint for POS Transactions (Admin)"""
+    # Strict admin check
+    if not ctx.is_admin and (not ctx.user or ctx.user.role not in ['admin', 'super_admin']):
+        return error_response('Unauthorized', code='FORBIDDEN', status_code=403)
     
     provider = request.args.get('provider')
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
     limit = int(request.args.get('limit', 50))
     
-    with UnboundSession():
-        query = PaymentRecord.query.filter(PaymentRecord.pos_provider.isnot(None))
-        
-        if provider:
-            query = query.filter_by(pos_provider=provider)
-            
-        # Date filters...
-        if start_date:
-            try:
-                 s_dt = datetime.fromisoformat(start_date)
-                 query = query.filter(PaymentRecord.payment_date >= s_dt)
-            except: pass
-            
-        query = query.order_by(PaymentRecord.payment_date.desc()).limit(limit)
-        records = query.all()
+    # Base query
+    query = PaymentRecord.query.filter(PaymentRecord.pos_provider.isnot(None))
     
-    return jsonify({
-        'success': True,
-        'data': [p.to_dict() for p in records]
-    })
+    # Tenant scoping if not super admin
+    if not ctx.is_admin and ctx.user.role == 'tenant_admin':
+        query = query.filter_by(tenant_id=ctx.tenant_id)
+    elif ctx.is_admin:
+        # Super admin can see all
+        pass
+        
+    if provider:
+        query = query.filter_by(pos_provider=provider)
+        
+    if start_date:
+        try:
+             s_dt = datetime.fromisoformat(start_date)
+             query = query.filter(PaymentRecord.payment_date >= s_dt)
+        except: pass
+        
+    query = query.order_by(PaymentRecord.payment_date.desc()).limit(limit)
+    records = query.all()
+
+    return success_response(data=[p.to_dict() for p in records])

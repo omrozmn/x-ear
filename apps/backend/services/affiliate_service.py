@@ -8,7 +8,7 @@ import re
 class AffiliateService:
 
     @staticmethod
-    def create_affiliate(db: Session, email: str, password: str, iban: Optional[str] = None) -> AffiliateUser:
+    def create_affiliate(db: Session, email: str, password: str, iban: Optional[str] = None, account_holder_name: Optional[str] = None, phone_number: Optional[str] = None) -> AffiliateUser:
         # IBAN is optional at registration; validate only if provided
         if iban:
             iban = iban.replace(' ', '').upper()
@@ -23,7 +23,14 @@ class AffiliateService:
         # ensure uniqueness (simple loop)
         while db.query(AffiliateUser).filter_by(code=code).first():
             code = uuid.uuid4().hex[:8]
-        affiliate = AffiliateUser(email=email, password_hash=password_hash, iban=iban, code=code)
+        affiliate = AffiliateUser(
+            email=email, 
+            password_hash=password_hash, 
+            iban=iban, 
+            code=code,
+            account_holder_name=account_holder_name,
+            phone_number=phone_number
+        )
         db.add(affiliate)
         db.commit()
         db.refresh(affiliate)

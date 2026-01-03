@@ -2,7 +2,6 @@
 Admin Dashboard routes for metrics and analytics
 """
 from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required
 from models.base import db
 from models.admin_user import AdminUser
 from models.user import User
@@ -11,7 +10,8 @@ from models.plan import Plan
 from models.appointment import Appointment
 from models.patient import Patient
 from models.device import Device
-from utils.admin_permissions import require_admin_permission, AdminPermissions
+from utils.decorators import unified_access
+from utils.admin_permissions import AdminPermissions
 from sqlalchemy import func
 from datetime import datetime, timedelta
 import logging
@@ -21,9 +21,8 @@ logger = logging.getLogger(__name__)
 admin_dashboard_bp = Blueprint('admin_dashboard', __name__, url_prefix='/api/admin/dashboard')
 
 @admin_dashboard_bp.route('/', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.DASHBOARD_VIEW)
-def get_dashboard_metrics():
+@unified_access(permission=AdminPermissions.DASHBOARD_VIEW)
+def get_dashboard_metrics(ctx):
     """Get dashboard metrics"""
     try:
         # Total tenants (active only)
@@ -80,22 +79,53 @@ def get_dashboard_metrics():
                 ActivityLog.created_at <= today_end
             ).count()
             
-            # Recent Errors (Last 5 errors from ActivityLog)
-            recent_errors = ActivityLog.query.filter(
+            # Recent Errors (Last 10 errors from ActivityLog)
+            # Fetch errors, failures, exceptions, and critical system events
+            recent_errors_query = db.session.query(ActivityLog, User, Tenant).outerjoin(
+                User, ActivityLog.user_id == User.id
+            ).outerjoin(
+                Tenant, ActivityLog.tenant_id == Tenant.id
+            ).filter(
                 (ActivityLog.action.ilike('%error%')) | 
                 (ActivityLog.action.ilike('%fail%')) |
-                (ActivityLog.details.ilike('%error%'))
-            ).order_by(ActivityLog.created_at.desc()).limit(5).all()
+                (ActivityLog.action.ilike('%exception%')) |
+                (ActivityLog.action.ilike('%critical%')) |
+                (ActivityLog.details.ilike('%error%')) |
+                (ActivityLog.details.ilike('%traceback%'))
+            ).order_by(ActivityLog.created_at.desc()).limit(10)
+
+            recent_errors_results = recent_errors_query.all()
             
-            recent_errors_data = [{
-                'id': log.id,
-                'action': log.action,
-                'details': log.details,
-                'created_at': log.created_at.isoformat(),
-                'user_id': log.user_id
-            } for log in recent_errors]
+            recent_errors_data = []
+            import json
+            for log, user, tenant in recent_errors_results:
+                # Parse details if it's JSON string
+                details_parsed = log.details
+                if details_parsed and isinstance(details_parsed, str):
+                    try:
+                        # Try to load as JSON to check if it's structured data
+                        # If simple string, keep as is. If json object, maybe format or extract message
+                        json_data = json.loads(details_parsed)
+                        if isinstance(json_data, dict):
+                            # prioritize 'message' or 'error' keys
+                            details_parsed = json_data.get('message') or json_data.get('error') or str(json_data)
+                    except:
+                        pass # Keep original string if not valid JSON
+
+                recent_errors_data.append({
+                    'id': log.id,
+                    'action': log.action,
+                    'details': details_parsed or 'No details provided',
+                    'created_at': log.created_at.isoformat(),
+                    'user_id': log.user_id,
+                    'user_name': f"{user.first_name} {user.last_name}" if user else 'System / Unknown',
+                    'user_email': user.email if user else None,
+                    'tenant_name': tenant.name if tenant else 'System'
+                })
         except Exception as e:
-            logger.warning(f"ActivityLog query failed (table may not exist): {e}")
+            logger.warning(f"ActivityLog query failed: {e}")
+            import traceback
+            traceback.print_exc()
 
         # Calculate Revenue (MRR - Last 30 days)
         from models.invoice import Invoice

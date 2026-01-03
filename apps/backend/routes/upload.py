@@ -1,17 +1,25 @@
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+"""
+Upload API
+
+Handles file uploads via S3 presigned URLs.
+Supports unified access pattern for Super Admin and Tenant users.
+"""
+from flask import Blueprint, request
 from services.s3_service import s3_service
-from utils.tenant_security import get_current_tenant_id
-from models.user import User
+from models.user import ActivityLog
+from models.base import db
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
 import logging
 
 logger = logging.getLogger(__name__)
 
 upload_bp = Blueprint('upload', __name__)
 
+
 @upload_bp.route('/presigned', methods=['POST'])
-@jwt_required()
-def get_presigned_upload_url():
+@unified_access(resource='upload', action='write')
+def get_presigned_upload_url(ctx):
     """
     Get a presigned URL for direct S3 upload
     
@@ -28,32 +36,24 @@ def get_presigned_upload_url():
         }
     """
     try:
-        current_user_id = get_jwt_identity()
-        current_user = User.query.get(current_user_id)
-        
         data = request.get_json()
         if not data:
-            return jsonify({'error': 'No data provided'}), 400
+            return error_response('No data provided', 400)
             
         filename = data.get('filename')
         folder = data.get('folder', 'uploads')
         content_type = data.get('content_type')
         
         if not filename:
-            return jsonify({'error': 'Filename is required'}), 400
-            
-        # Get tenant ID from current user
-        # Note: get_current_tenant_id might rely on g.tenant_id set by middleware
-        # or we can extract it from current_user if available
-        tenant_id = get_current_tenant_id()
+            return error_response('Filename is required', 400)
         
-        if not tenant_id:
-            # Fallback logic if tenant_id is not set in g
-            if current_user and hasattr(current_user, 'tenant_id'):
-                tenant_id = current_user.tenant_id
-                
-            if not tenant_id:
-                tenant_id = 'admin' if current_user and current_user.role == 'admin' else 'public'
+        # Determine tenant_id for file path
+        if ctx.tenant_id:
+            tenant_id = ctx.tenant_id
+        elif ctx.is_admin:
+            tenant_id = 'admin'
+        else:
+            tenant_id = 'public'
             
         # Generate presigned URL
         presigned_data = s3_service.generate_presigned_upload_url(
@@ -65,34 +65,32 @@ def get_presigned_upload_url():
         
         # Create Activity Log for upload attempt
         try:
-            from models.user import ActivityLog
-            from models.base import db
+            user_id = ctx.user.id if ctx.user else (ctx.admin.id if ctx.admin else 'system')
             activity_log = ActivityLog(
-                user_id=current_user_id,
+                user_id=user_id,
                 action='file_upload_init',
                 entity_type='file',
-                entity_id=filename, # We don't have ID yet, use filename
+                entity_id=filename,
                 details=f"File upload initiated: {filename} to {folder}",
                 ip_address=request.remote_addr,
-                user_agent=request.headers.get('User-Agent', '')
+                user_agent=request.headers.get('User-Agent', ''),
+                tenant_id=ctx.tenant_id
             )
             db.session.add(activity_log)
             db.session.commit()
         except Exception as log_error:
             logger.error(f"Failed to create activity log for file upload: {log_error}")
         
-        return jsonify({
-            'success': True,
-            'data': presigned_data
-        }), 200
+        return success_response(data=presigned_data)
         
     except Exception as e:
         logger.error(f"Error generating presigned URL: {e}")
-        return jsonify({'error': str(e)}), 500
+        return error_response(str(e), 500)
+
 
 @upload_bp.route('/files', methods=['GET'])
-@jwt_required()
-def list_files():
+@unified_access(resource='upload', action='read')
+def list_files(ctx):
     """
     List files in a folder
     
@@ -100,36 +98,29 @@ def list_files():
         folder (str): Folder name (default: 'uploads')
     """
     try:
-        current_user_id = get_jwt_identity()
-        current_user = User.query.get(current_user_id)
-        
         folder = request.args.get('folder', 'uploads')
         
-        # Get tenant ID
-        tenant_id = get_current_tenant_id()
-        if not tenant_id:
-            if current_user and hasattr(current_user, 'tenant_id'):
-                tenant_id = current_user.tenant_id
-                
-            if not tenant_id:
-                tenant_id = 'admin' if current_user and current_user.role == 'admin' else 'public'
+        # Determine tenant_id for file listing
+        if ctx.tenant_id:
+            tenant_id = ctx.tenant_id
+        elif ctx.is_admin:
+            # Super Admin can list from a specific tenant if provided
+            tenant_id = request.args.get('tenant_id', 'admin')
+        else:
+            tenant_id = 'public'
                 
         files = s3_service.list_files(folder, str(tenant_id))
         
-        return jsonify({
-            'success': True,
-            'data': {
-                'files': files
-            }
-        }), 200
+        return success_response(data={'files': files})
         
     except Exception as e:
         logger.error(f"Error listing files: {e}")
-        return jsonify({'error': str(e)}), 500
+        return error_response(str(e), 500)
+
 
 @upload_bp.route('/files', methods=['DELETE'])
-@jwt_required()
-def delete_file():
+@unified_access(resource='upload', action='delete')
+def delete_file(ctx):
     """
     Delete a file
     
@@ -137,52 +128,48 @@ def delete_file():
         key (str): S3 key of the file to delete
     """
     try:
-        current_user_id = get_jwt_identity()
-        current_user = User.query.get(current_user_id)
-        
         key = request.args.get('key')
         if not key:
-            return jsonify({'error': 'Key is required'}), 400
-            
-        # Get tenant ID
-        tenant_id = get_current_tenant_id()
-        if not tenant_id:
-            if current_user and hasattr(current_user, 'tenant_id'):
-                tenant_id = current_user.tenant_id
-            if not tenant_id:
-                tenant_id = 'admin' if current_user and current_user.role == 'admin' else 'public'
+            return error_response('Key is required', 400)
+        
+        # Determine tenant_id for security check
+        if ctx.tenant_id:
+            tenant_id = ctx.tenant_id
+        elif ctx.is_admin:
+            tenant_id = None  # Super Admin can delete any file
+        else:
+            tenant_id = 'public'
         
         # Security check: Ensure the key belongs to the tenant
-        # Key format: folder/tenant_id/...
-        # We should verify that the key contains the tenant_id segment
-        if str(tenant_id) not in key and getattr(current_user, 'role', '') != 'super_admin':
-             return jsonify({'error': 'Unauthorized to delete this file'}), 403
+        # Super Admin (tenant_id=None) can delete any file
+        if tenant_id and str(tenant_id) not in key:
+            return error_response('Unauthorized to delete this file', 403)
 
         success = s3_service.delete_file(key)
         
         if success:
             # Create Activity Log
             try:
-                from models.user import ActivityLog
-                from models.base import db
+                user_id = ctx.user.id if ctx.user else (ctx.admin.id if ctx.admin else 'system')
                 activity_log = ActivityLog(
-                    user_id=current_user_id,
+                    user_id=user_id,
                     action='file_delete',
                     entity_type='file',
                     entity_id=key,
                     details=f"File deleted: {key}",
                     ip_address=request.remote_addr,
-                    user_agent=request.headers.get('User-Agent', '')
+                    user_agent=request.headers.get('User-Agent', ''),
+                    tenant_id=ctx.tenant_id
                 )
                 db.session.add(activity_log)
                 db.session.commit()
             except Exception as log_error:
                 logger.error(f"Failed to create activity log for file deletion: {log_error}")
             
-            return jsonify({'success': True, 'message': 'File deleted successfully'}), 200
+            return success_response(message='File deleted successfully')
         else:
-            return jsonify({'error': 'Failed to delete file'}), 500
+            return error_response('Failed to delete file', 500)
             
     except Exception as e:
         logger.error(f"Error deleting file: {e}")
-        return jsonify({'error': str(e)}), 500
+        return error_response(str(e), 500)

@@ -1,18 +1,22 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
+from utils.admin_permissions import AdminPermissions
 from models.base import db
 from models.invoice import Invoice
 from models.purchase_invoice import PurchaseInvoice
 from models.user import ActivityLog
-from utils.admin_permissions import require_admin_permission, AdminPermissions
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc, or_
+import logging
+
+# Not sure if logger was initialized, assuming yes or not critical
+logger = logging.getLogger(__name__)
 
 admin_birfatura_bp = Blueprint('admin_birfatura', __name__, url_prefix='/api/admin/birfatura')
 
 @admin_birfatura_bp.route('/stats', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.BIRFATURA_READ)
-def get_stats():
+@unified_access(permission=AdminPermissions.BIRFATURA_READ)
+def get_stats(ctx):
     """Get BirFatura statistics"""
     try:
         # Outgoing Invoices Stats
@@ -31,22 +35,18 @@ def get_stats():
         
         incoming_dict = {status: count for status, count in incoming_stats}
         
-        return jsonify({
-            'success': True,
-            'data': {
-                'outgoing': outgoing_dict,
-                'incoming': incoming_dict,
-                'totalOutgoing': sum(outgoing_dict.values()),
-                'totalIncoming': sum(incoming_dict.values())
-            }
-        }), 200
+        return success_response(data={
+            'outgoing': outgoing_dict,
+            'incoming': incoming_dict,
+            'totalOutgoing': sum(outgoing_dict.values()),
+            'totalIncoming': sum(incoming_dict.values())
+        })
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_birfatura_bp.route('/invoices', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.BIRFATURA_READ)
-def get_invoices():
+@unified_access(permission=AdminPermissions.BIRFATURA_READ)
+def get_invoices(ctx):
     """Get invoices with BirFatura status"""
     try:
         page = request.args.get('page', 1, type=int)
@@ -74,32 +74,28 @@ def get_invoices():
             
             data = [inv.to_dict() for inv in invoices]
             
-        return jsonify({
-            'success': True,
-            'data': {
-                'invoices': data,
-                'pagination': {
-                    'page': page,
-                    'limit': limit,
-                    'total': total,
-                    'totalPages': (total + limit - 1) // limit
-                }
+        return success_response(data={
+            'invoices': data,
+            'pagination': {
+                'page': page,
+                'limit': limit,
+                'total': total,
+                'totalPages': (total + limit - 1) // limit
             }
-        }), 200
+        })
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_birfatura_bp.route('/logs', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.BIRFATURA_READ)
-def get_logs():
+@unified_access(permission=AdminPermissions.BIRFATURA_READ)
+def get_logs(ctx):
     """Get BirFatura related logs"""
     try:
         page = request.args.get('page', 1, type=int)
         limit = request.args.get('limit', 20, type=int)
         
         query = ActivityLog.query.filter(
-            db.or_(
+            or_(
                 ActivityLog.action.like('invoice.%'),
                 ActivityLog.action.like('birfatura.%')
             )
@@ -108,18 +104,14 @@ def get_logs():
         total = query.count()
         logs = query.order_by(ActivityLog.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
-        return jsonify({
-            'success': True,
-            'data': {
-                'logs': [log.to_dict_with_user() for log in logs],
-                'pagination': {
-                    'page': page,
-                    'limit': limit,
-                    'total': total,
-                    'totalPages': (total + limit - 1) // limit
-                }
+        return success_response(data={
+            'logs': [log.to_dict_with_user() for log in logs],
+            'pagination': {
+                'page': page,
+                'limit': limit,
+                'total': total,
+                'totalPages': (total + limit - 1) // limit
             }
-        }), 200
+        })
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)

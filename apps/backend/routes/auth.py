@@ -7,7 +7,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.rate_limit import rate_limit
 from models.user import User
 from models.base import db
-from flask_jwt_extended import create_access_token, create_refresh_token, verify_jwt_in_request, get_jwt_identity, jwt_required, get_jwt
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
+from services.communication_service import communication_service
 
 def now_utc():
     """Return current UTC timestamp"""
@@ -108,35 +111,28 @@ def forgot_password():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
-
-from services.communication_service import communication_service
-
-# ... existing imports ...
-
 @auth_bp.route('/auth/send-verification-otp', methods=['POST'])
-@jwt_required()
-def send_verification_otp():
+@unified_access(resource='auth', action='write')
+def send_verification_otp(ctx):
     """Send OTP to the user's phone number (requires pre-auth token)"""
     try:
-        user_id = get_jwt_identity()
-        user = db.session.get(User, user_id)
+        user = ctx.user
         if not user:
-            return jsonify({"success": False, "error": "User not found"}), 404
+            return error_response("User context required", code='USER_REQUIRED', status_code=401)
 
         data = request.get_json() or {}
         phone = data.get('phone')
 
         if phone:
             # Update phone if provided
-            # Check if phone is already used by another user
-            existing = User.query.filter(User.phone == phone, User.id != user_id).first()
+            existing = User.query.filter(User.phone == phone, User.id != user.id).first()
             if existing:
-                return jsonify({"success": False, "error": "Phone number already in use"}), 400
+                return error_response("Phone number already in use", code='PHONE_EXISTS', status_code=400)
             user.phone = phone
             db.session.commit()
         
         if not user.phone:
-             return jsonify({"success": False, "error": "Phone number required"}), 400
+             return error_response("Phone number required", code='PHONE_REQUIRED', status_code=400)
 
         otp_store = current_app.extensions.get('otp_store')
         if not otp_store:
@@ -144,8 +140,6 @@ def send_verification_otp():
             otp_store = InMemoryOTPStore()
 
         # Generate OTP
-        now_ts = int(now_utc().timestamp())
-        code = str(100000 + (now_ts % 900000)) # Simple deterministic for now, replace with random in prod
         import random
         code = str(random.randint(100000, 999999))
         
@@ -157,23 +151,22 @@ def send_verification_otp():
         
         if not result.get('success'):
             logger.error(f"Failed to send SMS: {result}")
-            # Return the actual error from the provider
-            return jsonify({
-                "success": False, 
-                "error": result.get('error', 'Failed to send SMS'),
-                "details": result
-            }), 500
+            return error_response(result.get('error', 'Failed to send SMS'), code='SMS_FAILED', status_code=500, details=result)
 
-        return jsonify({"success": True, "message": "OTP sent"}), 200
+        return success_response(message="OTP sent")
 
     except Exception as e:
         logger.error(f"Send OTP error: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        return error_response(str(e), code='AUTH_ERROR', status_code=500)
 
 
 @auth_bp.route('/auth/verify-otp', methods=['POST'])
 @jwt_required(optional=True) # Optional to support both pre-auth token and generic identifier flow
 def verify_otp():
+    """
+    Verify OTP for phone verification or password reset.
+    Kept @jwt_required(optional=True) because unified_access enforces auth.
+    """
     try:
         data = request.get_json() or {}
         otp = data.get('otp')
@@ -198,7 +191,6 @@ def verify_otp():
             return jsonify({"success": False, "message": "Invalid OTP"}), 400
 
         # success: remove stored OTP ONLY if authenticated (phone verification)
-        # If unauthenticated (forgot password), keep it for reset_password to consume
         if user_id:
             otp_store.delete_otp(target_id)
         
@@ -295,12 +287,12 @@ def reset_password():
 def login():
     try:
         data = request.get_json() or {}
-        logger.info(f"Login attempt with data: {data}")  # Debug log
+        logger.info(f"Login attempt with data: {data}")
         
         identifier = data.get('identifier') or data.get('username') or data.get('email') or data.get('phone')
         password = data.get('password')
         
-        logger.info(f"Login attempt - identifier: {identifier}, password_provided: {bool(password)}")  # Debug log
+        logger.info(f"Login attempt - identifier: {identifier}, password_provided: {bool(password)}")
         
         if not identifier or not password:
             return jsonify({'success': False, 'error': 'username/email/phone and password required'}), 400
@@ -314,16 +306,7 @@ def login():
             if not user:
                 user = User.query.filter_by(phone=identifier).first()
         
-        logger.info(f"DEBUG: Found user: {user} (ID: {user.id if user else 'None'}, Email: {user.email if user else 'None'})")
-        if user:
-             logger.info(f"DEBUG: Checking password for user {user.username}...")
-             is_valid = user.check_password(password)
-             logger.info(f"DEBUG: Password valid: {is_valid}")
-        else:
-             logger.info(f"DEBUG: No user found for identifier: {identifier}")
-
         if not user or not user.check_password(password):
-            # Log failed login attempt
             try:
                 from utils.activity_logging import log_login
                 log_login(identifier, None, success=False)
@@ -331,17 +314,11 @@ def login():
                 logger.warning(f"Failed to log failed login: {e}")
             return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
 
-        # Check if user is active
         if not user.is_active:
             return jsonify({'success': False, 'error': 'Account is inactive'}), 401
             
-        # Check phone verification
-            # Check phone verification
         if not user.is_phone_verified:
-            # If phone is not verified, we still allow login but frontend will show modal
-            # We trigger OTP send if phone exists
             if user.phone:
-                # Send OTP immediately
                 otp_store = current_app.extensions.get('otp_store')
                 if not otp_store:
                     from services.otp_store import InMemoryOTPStore
@@ -354,7 +331,6 @@ def login():
                 msg = f"X-EAR dogrulama kodunuz: {code}. Bu kodu kimseyle paylasmayiniz."
                 communication_service.send_sms(user.phone, msg)
 
-        # Update last_login
         try:
             user.last_login = datetime.now(timezone.utc)
             db.session.add(user)
@@ -362,7 +338,6 @@ def login():
         except Exception:
             db.session.rollback()
 
-        # Log successful login
         try:
             from utils.activity_logging import log_login
             log_login(user.id, user.tenant_id, success=True)
@@ -387,7 +362,6 @@ def login():
 def refresh():
     """Refresh access token using refresh token"""
     try:
-        
         user_id = get_jwt_identity()
         user = db.session.get(User, user_id)
         
@@ -397,7 +371,6 @@ def refresh():
         if not user.is_active:
             return jsonify({'success': False, 'error': 'Account is inactive'}), 401
             
-        # Create new access token
         access_token = create_access_token(identity=user.id, additional_claims={'tenant_id': user.tenant_id})
         
         return jsonify({
@@ -410,27 +383,25 @@ def refresh():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @auth_bp.route('/auth/set-password', methods=['POST'])
-@jwt_required()
-def set_password():
+@unified_access(resource='user', action='write')
+def set_password(ctx):
     """Set password for authenticated user (Post-Registration Flow)"""
     try:
-        user_id = get_jwt_identity()
-        user = db.session.get(User, user_id)
-        
+        user = ctx.user
         if not user:
-            return jsonify({'success': False, 'error': 'User not found'}), 404
+            return error_response('User context required', code='USER_REQUIRED', status_code=401)
             
         data = request.get_json() or {}
         password = data.get('password')
         
         if not password or len(password) < 6:
-            return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
+            return error_response('Password must be at least 6 characters', code='INVALID_PASSWORD', status_code=400)
             
         user.set_password(password)
         db.session.commit()
         
-        return jsonify({'success': True, 'message': 'Password set successfully'}), 200
+        return success_response(message='Password set successfully')
         
     except Exception as e:
         logger.error(f"Set password error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return error_response(str(e), code='AUTH_ERROR', status_code=500)

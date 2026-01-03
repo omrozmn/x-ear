@@ -32,13 +32,16 @@ const Analytics: React.FC = () => {
   const [selectedMetric, setSelectedMetric] = useState('revenue');
 
   // Fetch analytics data
-  const { data: analyticsData, isLoading } = useGetAdminAnalytics({
+  const { data: analyticsData, isLoading, error } = useGetAdminAnalytics({
     start_date: startDate || undefined,
     end_date: endDate || undefined,
     metric: selectedMetric
   });
 
-  const data = analyticsData?.data as any;
+  // Robust Data Extraction: Handle wrapping and potential stale backend structure
+  const rawData = analyticsData as any;
+  const unwrapped = rawData?.data || rawData;
+  const data = unwrapped?.metrics || unwrapped;
 
   const handleExport = () => {
     console.log('Exporting analytics data...');
@@ -66,11 +69,26 @@ const Analytics: React.FC = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="p-6 text-center text-red-600 bg-red-50 m-4 rounded-lg border border-red-200">
+        <h3 className="font-bold text-lg">Veriler Yüklenemedi</h3>
+        <p className="mt-2">{(error as any)?.message}</p>
+        <p className="text-xs mt-1 font-mono text-red-500">{(error as any)?.response?.data?.error}</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <Helmet>
         <title>Raporlar - Admin Paneli</title>
       </Helmet>
+
+      {/* Debug Bar: Veri durumunu kontrol etmek için */}
+      <div className="bg-yellow-50 p-1 text-[10px] text-gray-400 text-center border-b border-yellow-100 font-mono">
+        DEBUG: Trend={data?.revenue_trend?.length} | Plans={data?.plan_distribution?.length} | Engagement={data?.user_engagement?.length} | Rev={data?.overview?.total_revenue}
+      </div>
 
       <div className="p-6 max-w-7xl mx-auto space-y-6">
         {/* Header */}
@@ -241,8 +259,8 @@ const Analytics: React.FC = () => {
           {/* Revenue Trend */}
           <div className="bg-white shadow rounded-lg p-6 lg:col-span-2">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Gelir Trendi</h3>
-            <div className="h-80 w-full" style={{ minHeight: '320px' }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="w-full">
+              <ResponsiveContainer width="100%" height={320}>
                 <AreaChart data={(data?.revenue_trend || []) as any[]}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" />
@@ -263,8 +281,8 @@ const Analytics: React.FC = () => {
           {/* Plan Distribution */}
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Plan Dağılımı</h3>
-            <div className="h-80 w-full" style={{ minHeight: '320px' }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="w-full">
+              <ResponsiveContainer width="100%" height={320}>
                 <PieChart>
                   <Pie
                     data={(data?.plan_distribution || []) as any[]}
@@ -276,7 +294,7 @@ const Analytics: React.FC = () => {
                     dataKey="value"
                     label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                   >
-                    {data?.plan_distribution?.map((entry, index) => (
+                    {data?.plan_distribution?.map((entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -292,8 +310,8 @@ const Analytics: React.FC = () => {
           {/* User Engagement */}
           <div className="bg-white shadow rounded-lg p-6 lg:col-span-2">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Kullanıcı Etkileşimi</h3>
-            <div className="h-80 w-full" style={{ minHeight: '320px' }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="w-full">
+              <ResponsiveContainer width="100%" height={320}>
                 <LineChart data={(data?.user_engagement || []) as any[]}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="date" />
@@ -311,8 +329,8 @@ const Analytics: React.FC = () => {
           {/* Revenue Growth */}
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Gelir Büyümesi</h3>
-            <div className="h-80 w-full" style={{ minHeight: '320px' }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="w-full">
+              <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={(data?.revenue_trend || []) as any[]}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" />
@@ -330,8 +348,8 @@ const Analytics: React.FC = () => {
           {/* SGK Submissions */}
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">SGK Başvuru Durumu</h3>
-            <div className="h-80 w-full" style={{ minHeight: '320px' }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="w-full">
+              <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={(data?.domain_metrics?.sgk_submissions || []) as any[]}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" />
@@ -348,8 +366,8 @@ const Analytics: React.FC = () => {
           {/* Device Fittings Trend */}
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Cihaz Uygulama Trendi</h3>
-            <div className="h-80 w-full" style={{ minHeight: '320px' }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="w-full">
+              <ResponsiveContainer width="100%" height={320}>
                 <AreaChart data={(data?.domain_metrics?.device_fittings || []) as any[]}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" />

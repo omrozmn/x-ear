@@ -181,6 +181,7 @@ apiClient.interceptors.request.use(
     // Add auth token if available. Support global window token, persisted zustand storage, new key, and legacy key.
     let token: string | null = null;
     let tokenSource = 'none';
+    let isAdmin = false;
 
     try {
       const tryParse = (raw: string | null) => {
@@ -220,18 +221,31 @@ apiClient.interceptors.request.use(
       else if (localStorageToken) { token = localStorageToken; tokenSource = 'localStorage.auth_token'; }
       else if (authTokenConstant) { token = authTokenConstant; tokenSource = 'localStorage.AUTH_TOKEN'; }
       else if (persistedToken) { token = persistedToken; tokenSource = 'zustand-persist'; }
+
+      // Check if user is SUPER ADMIN by parsing token for 'admin_' prefix in subject
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          // Determine if super admin based on ID prefix (admin_ vs usr_)
+          // Flask-JWT-Extended uses 'sub' claim for identity
+          const sub = payload.sub || '';
+          isAdmin = typeof sub === 'string' && sub.startsWith('admin_');
+        } catch (e) {
+          // ignore token parse errors
+        }
+      }
     } catch (e) {
       // ignore storage access or JSON parse errors
     }
 
     if (token) {
-      const masked = token.slice(0, 8) + '...' + token.slice(-8);
-      console.log('[orval-mutator] Attaching auth token', { url: config.url, source: tokenSource, token: masked });
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
-    } else {
-      console.log('[orval-mutator] No auth token found for request', { url: config.url });
     }
+
+    // URL rewriting logic has been removed as backend now supports Unified Endpoints.
+    // All roles (Tenant Admin, Super Admin) access the same endpoints.
+    // Sub-resource filtering and permission checks are handled by AccessContext on the backend.
 
     // Add idempotency key for non-GET requests
     if (config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {

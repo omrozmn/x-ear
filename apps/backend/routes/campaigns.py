@@ -1,8 +1,11 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
 from models import db, Campaign, SMSLog, Patient, SMSProviderConfig, TenantSMSCredit, User
 from services.sms_service import VatanSMSService
 from datetime import datetime, timezone
+from config.tenant_permissions import TenantPermissions
+from utils.tenant_security import UnboundSession
 import logging
 import json
 
@@ -10,51 +13,56 @@ logger = logging.getLogger(__name__)
 campaigns_bp = Blueprint('campaigns', __name__)
 
 @campaigns_bp.route('/campaigns', methods=['GET'])
-@jwt_required()
-def get_campaigns():
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(permission=TenantPermissions.CAMPAIGN_READ)
+def get_campaigns(ctx):
+    user_id = ctx.principal_id
+    tenant_id = ctx.tenant_id
+    
+    if not tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
 
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
     
-    query = Campaign.query.filter_by(tenant_id=user.tenant_id)
-    
-    # Filters
-    status = request.args.get('status')
-    if status:
-        query = query.filter_by(status=status)
+    with UnboundSession():
+        query = Campaign.query.filter_by(tenant_id=tenant_id)
         
-    pagination = query.order_by(Campaign.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+        # Filters
+        status = request.args.get('status')
+        if status:
+            query = query.filter_by(status=status)
+            
+        pagination = query.order_by(Campaign.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+        items = [c.to_dict() for c in pagination.items]
+        total = pagination.total
+        pages = pagination.pages
     
-    return jsonify({
-        'success': True,
-        'data': [c.to_dict() for c in pagination.items],
+    return success_response({
+        'data': items,
         'meta': {
-            'total': pagination.total,
+            'total': total,
             'page': page,
             'perPage': per_page,
-            'totalPages': pagination.pages
+            'totalPages': pages
         }
     })
 
 @campaigns_bp.route('/campaigns', methods=['POST'])
-@jwt_required()
-def create_campaign():
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(permission=TenantPermissions.CAMPAIGN_WRITE)
+def create_campaign(ctx):
+    user_id = ctx.principal_id
+    tenant_id = ctx.tenant_id
+    
+    if not tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
         
     data = request.get_json() or {}
     required = ['name', 'messageTemplate']
     if not all(k in data for k in required):
-        return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+        return error_response('Missing required fields', code='MISSING_FIELDS', status_code=400)
         
     camp = Campaign(
-        tenant_id=user.tenant_id,
+        tenant_id=tenant_id,
         name=data['name'],
         description=data.get('description'),
         campaign_type='sms',
@@ -66,88 +74,78 @@ def create_campaign():
     
     # Calculate estimated recipients if possible
     if camp.target_segment == 'all':
-        camp.total_recipients = Patient.query.filter_by(tenant_id=user.tenant_id).count()
+        camp.total_recipients = Patient.query.filter_by(tenant_id=tenant_id).count()
     elif camp.target_segment == 'filter':
-        # Apply filters to count (simplified)
-        query = Patient.query.filter_by(tenant_id=user.tenant_id)
+        query = Patient.query.filter_by(tenant_id=tenant_id)
         # TODO: Apply filters from target_criteria
         camp.total_recipients = query.count()
     elif camp.target_segment == 'excel':
-        # If excel, criteria should have count or file info
         criteria = camp.target_criteria_json or {}
         camp.total_recipients = criteria.get('count', 0)
         
     db.session.add(camp)
     db.session.commit()
     
-    return jsonify({'success': True, 'data': camp.to_dict()}), 201
+    return success_response(data=camp.to_dict(), status_code=201)
 
 @campaigns_bp.route('/campaigns/<campaign_id>/send', methods=['POST'])
-@jwt_required()
-def send_campaign(campaign_id):
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user or not user.tenant_id:
-        return jsonify({'success': False, 'error': 'Tenant context required'}), 400
+@unified_access(permission=TenantPermissions.CAMPAIGN_WRITE)
+def send_campaign(ctx, campaign_id):
+    user_id = ctx.principal_id
+    tenant_id = ctx.tenant_id
+    
+    if not tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
         
     camp = db.session.get(Campaign, campaign_id)
     if not camp:
-        return jsonify({'success': False, 'error': 'Campaign not found'}), 404
+        return error_response('Campaign not found', code='NOT_FOUND', status_code=404)
         
-    if camp.tenant_id != user.tenant_id:
-        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    if camp.tenant_id != tenant_id:
+        return error_response('Unauthorized', code='FORBIDDEN', status_code=403)
         
     if camp.status in ['sending', 'sent']:
-        return jsonify({'success': False, 'error': 'Campaign already sent'}), 400
+        return error_response('Campaign already sent', code='ALREADY_SENT', status_code=400)
         
     # Check SMS Config
-    config = SMSProviderConfig.query.filter_by(tenant_id=user.tenant_id).first()
+    config = SMSProviderConfig.query.filter_by(tenant_id=tenant_id).first()
     if not config or not config.api_username or not config.api_password:
-        return jsonify({'success': False, 'error': 'SMS configuration missing'}), 400
+        return error_response('SMS configuration missing', code='CONFIG_MISSING', status_code=400)
         
     # Check Credit
-    credit = TenantSMSCredit.query.filter_by(tenant_id=user.tenant_id).first()
+    credit = TenantSMSCredit.query.filter_by(tenant_id=tenant_id).first()
     if not credit or credit.balance < camp.total_recipients:
-        return jsonify({'success': False, 'error': 'Insufficient SMS credit'}), 400
+        return error_response('Insufficient SMS credit', code='INSUFFICIENT_CREDIT', status_code=400)
         
     # Get Recipients
     recipients = [] # List of {phone, name, id}
     
     if camp.target_segment == 'all':
-        patients = Patient.query.filter_by(tenant_id=user.tenant_id).all()
+        patients = Patient.query.filter_by(tenant_id=tenant_id).all()
         recipients = [{'phone': p.phone, 'name': f"{p.first_name} {p.last_name}", 'id': p.id} for p in patients if p.phone]
     elif camp.target_segment == 'filter':
-        # Apply filters
-        query = Patient.query.filter_by(tenant_id=user.tenant_id)
+        query = Patient.query.filter_by(tenant_id=tenant_id)
         # TODO: Apply filters
         patients = query.all()
         recipients = [{'phone': p.phone, 'name': f"{p.first_name} {p.last_name}", 'id': p.id} for p in patients if p.phone]
     elif camp.target_segment == 'excel':
-        # Load from excel file (path in criteria)
-        # For now, assume criteria has list of numbers (simplified)
         criteria = camp.target_criteria_json or {}
         numbers = criteria.get('numbers', [])
         recipients = [{'phone': n, 'name': '', 'id': None} for n in numbers]
 
     if not recipients:
-        return jsonify({'success': False, 'error': 'No recipients found'}), 400
+        return error_response('No recipients found', code='NO_RECIPIENTS', status_code=400)
 
     # Initialize Service
-    # Sender ID should be in campaign data or default
-    sender_id = request.get_json().get('senderId') or 'VATANSMS' # Default fallback
+    sender_id = request.get_json().get('senderId') or 'VATANSMS'
     sms_service = VatanSMSService(config.api_username, config.api_password, sender_id)
     
-    # Send (Batching needed for large lists, but simplified here)
     phones = [r['phone'] for r in recipients]
-    message = camp.message_template # TODO: Handle dynamic fields per recipient if needed
+    message = camp.message_template
     
     try:
-        # If dynamic fields are used, we must send 1-by-1 or use provider's dynamic feature
-        # For MVP, assume static message or 1-by-1 if small
-        # VatanSMS supports 1toN for same message
-        
         # Deduct credit first (optimistic)
-        cost = len(recipients) # 1 credit per SMS (simplified)
+        cost = len(recipients)
         credit.balance -= cost
         credit.total_used += cost
         
@@ -160,7 +158,7 @@ def send_campaign(campaign_id):
         
         # Update Campaign
         camp.status = 'sent'
-        camp.successful_sends = len(recipients) # Assume all success if API returns OK (naive)
+        camp.successful_sends = len(recipients)
         camp.actual_cost = cost
         
         # Log SMS
@@ -168,7 +166,7 @@ def send_campaign(campaign_id):
             log = SMSLog(
                 campaign_id=camp.id,
                 patient_id=r['id'],
-                tenant_id=user.tenant_id,
+                tenant_id=tenant_id,
                 phone_number=r['phone'],
                 message=message,
                 status='sent',
@@ -179,12 +177,10 @@ def send_campaign(campaign_id):
             
         db.session.commit()
         
-        return jsonify({'success': True, 'message': 'Campaign sent successfully'})
+        return success_response(message='Campaign sent successfully')
         
     except Exception as e:
         logger.error(f"Campaign send failed: {e}")
-        # Refund credit?
-        # credit.balance += cost
         camp.status = 'failed'
         db.session.commit()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return error_response(str(e), code='SEND_FAILED', status_code=500)

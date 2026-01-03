@@ -47,7 +47,7 @@ const AdminCampaignsPage: React.FC = () => {
                 toast.success('Kampanya başarıyla oluşturuldu');
                 handleCloseModal();
             },
-            onError: (error) => {
+            onError: (error: any) => {
                 toast.error(`Hata: ${error.message}`);
             }
         }
@@ -60,7 +60,7 @@ const AdminCampaignsPage: React.FC = () => {
                 toast.success('Kampanya güncellendi');
                 handleCloseModal();
             },
-            onError: (error) => {
+            onError: (error: any) => {
                 toast.error(`Hata: ${error.message}`);
             }
         }
@@ -72,7 +72,7 @@ const AdminCampaignsPage: React.FC = () => {
                 queryClient.invalidateQueries({ queryKey: ['/admin/campaigns'] });
                 toast.success('Kampanya silindi');
             },
-            onError: (error) => {
+            onError: (error: any) => {
                 toast.error(`Hata: ${error.message}`);
             }
         }
@@ -214,19 +214,19 @@ const AdminCampaignsPage: React.FC = () => {
                 )}
 
                 {/* Pagination */}
-                {pagination && pagination.totalPages > 1 && (
+                {pagination && (pagination.totalPages || 0) > 1 && (
                     <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                         <div className="flex-1 flex justify-between sm:hidden">
                             <button
-                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}
                                 disabled={page === 1}
                                 className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                             >
                                 Önceki
                             </button>
                             <button
-                                onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
-                                disabled={page === pagination.totalPages}
+                                onClick={() => setPage((p) => Math.min(pagination?.totalPages || 1, p + 1))}
+                                disabled={page === (pagination?.totalPages || 1)}
                                 className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                             >
                                 Sonraki
@@ -235,12 +235,12 @@ const AdminCampaignsPage: React.FC = () => {
                         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                             <div>
                                 <p className="text-sm text-gray-700">
-                                    Toplam <span className="font-medium">{pagination.total}</span> kayıttan <span className="font-medium">{(page - 1) * limit + 1}</span> - <span className="font-medium">{Math.min(page * limit, pagination.total)}</span> arası gösteriliyor
+                                    Toplam <span className="font-medium">{pagination?.total || 0}</span> kayıttan <span className="font-medium">{(page - 1) * limit + 1}</span> - <span className="font-medium">{Math.min(page * limit, pagination?.total || 0)}</span> arası gösteriliyor
                                 </p>
                             </div>
                             <div>
                                 <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                    {Array.from({ length: pagination.totalPages }).map((_, i) => (
+                                    {Array.from({ length: pagination?.totalPages || 1 }).map((_, i) => (
                                         <button
                                             key={i}
                                             onClick={() => setPage(i + 1)}

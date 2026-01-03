@@ -1,13 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { customInstance } from '@/api/orval-mutator';
 import { Shield, Check, Save, Loader2, AlertCircle, Users, ShoppingCart, DollarSign, FileText, Headphones, Package, Megaphone, Settings, BarChart, LayoutDashboard } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
-  useAdminRolesGetAdminPermissions,
+  // useAdminRolesGetAdminPermissions,
   usePermissionsGetRolePermissions,
   usePermissionsUpdateRolePermissions,
+  getPermissionsGetRolePermissionsQueryKey,
   getPermissionsGetMyPermissionsQueryKey,
 } from '@/api/generated';
+import { getAdminDebugAvailableRolesQueryKey } from '@/api/generated/admin/admin';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { AxiosError } from 'axios';
 
@@ -79,14 +82,28 @@ export function RolePermissionsTab() {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [pendingRole, setPendingRole] = useState<string | null>(null);
 
-  // Fetch all permissions using orval hook
-  const { data: allPermissionsResponse, isLoading: loadingPermissions } = useAdminRolesGetAdminPermissions();
+  // Custom hook to fetch permissions from the correct endpoint (/api/permissions)
+  // instead of the admin endpoint (/api/admin/permissions)
+  const usePermissionsGetAllPermissions = () => {
+    return useQuery({
+      queryKey: ['/api/permissions'],
+      queryFn: ({ signal }) => customInstance<AllPermissionsResponse>({
+        url: '/api/permissions',
+        method: 'GET',
+        signal
+      })
+    });
+  };
+
+  // Fetch all permissions using correct hook
+  const { data: allPermissionsResponse, isLoading: loadingPermissions } = usePermissionsGetAllPermissions();
 
   // Get role permissions using orval hook
   const { data: rolePermissionsResponse, isLoading: loadingRole } = usePermissionsGetRolePermissions(
     selectedRole || '',
     {
       query: {
+        queryKey: getPermissionsGetRolePermissionsQueryKey(selectedRole || ''),
         enabled: !!selectedRole,
       },
     }
@@ -98,14 +115,16 @@ export function RolePermissionsTab() {
       onSuccess: () => {
         toast.success('İzinler başarıyla güncellendi');
         // Invalidate role permissions query
-        queryClient.invalidateQueries({ queryKey: ['permissions', 'role', selectedRole] });
+        queryClient.invalidateQueries({ queryKey: getPermissionsGetRolePermissionsQueryKey(selectedRole || '') });
         queryClient.invalidateQueries({ queryKey: getPermissionsGetMyPermissionsQueryKey() });
+        // Invalidate debug role switcher to update counts
+        queryClient.invalidateQueries({ queryKey: getAdminDebugAvailableRolesQueryKey() });
         setHasChanges(false);
       },
       onError: (error: AxiosError<{ error?: string; message?: string }>) => {
-        const errorMessage = error.response?.data?.error || 
-                            error.response?.data?.message || 
-                            'İzinler güncellenirken bir hata oluştu';
+        const errorMessage = error.response?.data?.error ||
+          error.response?.data?.message ||
+          'İzinler güncellenirken bir hata oluştu';
         toast.error(errorMessage);
         console.error('Permission update error:', error);
       },
@@ -114,12 +133,12 @@ export function RolePermissionsTab() {
 
   // Extract data from responses
   const allPermissionsData = allPermissionsResponse?.data as AllPermissionsResponse | undefined;
-  const rolePermissionsData = rolePermissionsResponse as { permissions?: any[] } | undefined;
+  const rolePermissionsData = rolePermissionsResponse as RolePermissionsResponse | undefined;
 
   // Initialize local permissions when role data loads
   React.useEffect(() => {
-    if (rolePermissionsData?.permissions) {
-      setLocalPermissions(new Set(rolePermissionsData.permissions));
+    if (rolePermissionsData?.data?.permissions) {
+      setLocalPermissions(new Set(rolePermissionsData.data.permissions));
       setHasChanges(false);
     }
   }, [rolePermissionsData]);
@@ -127,9 +146,9 @@ export function RolePermissionsTab() {
   // Group permissions by category
   const groupedPermissions = useMemo(() => {
     if (!allPermissionsData?.all) return [];
-    
+
     const groups: Record<string, Permission[]> = {};
-    
+
     allPermissionsData.all.forEach(perm => {
       const category = perm.name.split('.')[0];
       if (!groups[category]) {
@@ -160,13 +179,13 @@ export function RolePermissionsTab() {
   const handleCategoryToggle = (category: string, permissions: Permission[]) => {
     const newPermissions = new Set(localPermissions);
     const allSelected = permissions.every(p => localPermissions.has(p.name));
-    
+
     if (allSelected) {
       permissions.forEach(p => newPermissions.delete(p.name));
     } else {
       permissions.forEach(p => newPermissions.add(p.name));
     }
-    
+
     setLocalPermissions(newPermissions);
     setHasChanges(true);
   };
@@ -174,7 +193,7 @@ export function RolePermissionsTab() {
   const handleSave = () => {
     const permissionsArray = Array.from(localPermissions);
     console.log('Saving permissions for role:', selectedRole, 'permissions:', permissionsArray);
-    
+
     updateMutation.mutate({
       roleName: selectedRole,
       data: { permissions: permissionsArray },
@@ -236,11 +255,10 @@ export function RolePermissionsTab() {
                   setSelectedRole(role);
                 }
               }}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                selectedRole === role
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedRole === role
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
             >
               {ROLE_LABELS[role] || role}
             </button>
@@ -285,7 +303,7 @@ export function RolePermissionsTab() {
           {groupedPermissions.map(group => {
             const allSelected = group.permissions.every(p => localPermissions.has(p.name));
             const someSelected = group.permissions.some(p => localPermissions.has(p.name));
-            
+
             return (
               <div
                 key={group.category}
@@ -300,13 +318,12 @@ export function RolePermissionsTab() {
                     <span className="text-indigo-600 dark:text-indigo-400 mr-3">{group.icon}</span>
                     <span className="font-medium text-gray-900 dark:text-white">{group.label}</span>
                   </div>
-                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                    allSelected 
-                      ? 'bg-indigo-600 border-indigo-600' 
-                      : someSelected 
-                        ? 'bg-indigo-200 border-indigo-600' 
-                        : 'border-gray-300 dark:border-gray-600'
-                  }`}>
+                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${allSelected
+                    ? 'bg-indigo-600 border-indigo-600'
+                    : someSelected
+                      ? 'bg-indigo-200 border-indigo-600'
+                      : 'border-gray-300 dark:border-gray-600'
+                    }`}>
                     {allSelected && <Check className="w-3 h-3 text-white" />}
                     {someSelected && !allSelected && <div className="w-2 h-2 bg-indigo-600 rounded-sm" />}
                   </div>
@@ -317,7 +334,7 @@ export function RolePermissionsTab() {
                   {group.permissions.map(perm => {
                     const isSelected = localPermissions.has(perm.name);
                     const action = perm.name.split('.')[1];
-                    
+
                     return (
                       <div
                         key={perm.id}
@@ -327,28 +344,28 @@ export function RolePermissionsTab() {
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
                             {action === 'view' ? 'Goruntuleme' :
-                             action === 'create' ? 'Olusturma' :
-                             action === 'edit' ? 'Duzenleme' :
-                             action === 'delete' ? 'Silme' :
-                             action === 'approve' ? 'Onaylama' :
-                             action === 'send' ? 'Gonderme' :
-                             action === 'manage' ? 'Yonetim' :
-                             action === 'export' ? 'Disari Aktar' :
-                             action === 'upload' ? 'Yukleme' :
-                             action === 'notes' ? 'Notlar' :
-                             action === 'history' ? 'Gecmis' :
-                             action === 'assign' ? 'Atama' :
-                             action === 'payments' ? 'Odemeler' :
-                             action === 'refunds' ? 'Iadeler' :
-                             action === 'reports' ? 'Raporlar' :
-                             action === 'cash_register' ? 'Kasa' :
-                             action === 'cancel' ? 'Iptal' :
-                             action === 'send_sms' ? 'SMS Gonder' :
-                             action === 'branches' ? 'Subeler' :
-                             action === 'integrations' ? 'Entegrasyonlar' :
-                             action === 'permissions' ? 'Izinler' :
-                             action === 'analytics' ? 'Analitik' :
-                             action}
+                              action === 'create' ? 'Olusturma' :
+                                action === 'edit' ? 'Duzenleme' :
+                                  action === 'delete' ? 'Silme' :
+                                    action === 'approve' ? 'Onaylama' :
+                                      action === 'send' ? 'Gonderme' :
+                                        action === 'manage' ? 'Yonetim' :
+                                          action === 'export' ? 'Disari Aktar' :
+                                            action === 'upload' ? 'Yukleme' :
+                                              action === 'notes' ? 'Notlar' :
+                                                action === 'history' ? 'Gecmis' :
+                                                  action === 'assign' ? 'Atama' :
+                                                    action === 'payments' ? 'Odemeler' :
+                                                      action === 'refunds' ? 'Iadeler' :
+                                                        action === 'reports' ? 'Raporlar' :
+                                                          action === 'cash_register' ? 'Kasa' :
+                                                            action === 'cancel' ? 'Iptal' :
+                                                              action === 'send_sms' ? 'SMS Gonder' :
+                                                                action === 'branches' ? 'Subeler' :
+                                                                  action === 'integrations' ? 'Entegrasyonlar' :
+                                                                    action === 'permissions' ? 'Izinler' :
+                                                                      action === 'analytics' ? 'Analitik' :
+                                                                        action}
                           </div>
                           {perm.description && (
                             <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
@@ -356,11 +373,10 @@ export function RolePermissionsTab() {
                             </div>
                           )}
                         </div>
-                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ml-3 ${
-                          isSelected 
-                            ? 'bg-indigo-600 border-indigo-600' 
-                            : 'border-gray-300 dark:border-gray-600'
-                        }`}>
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ml-3 ${isSelected
+                          ? 'bg-indigo-600 border-indigo-600'
+                          : 'border-gray-300 dark:border-gray-600'
+                          }`}>
                           {isSelected && <Check className="w-3 h-3 text-white" />}
                         </div>
                       </div>

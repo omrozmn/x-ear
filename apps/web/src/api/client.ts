@@ -124,7 +124,7 @@ class ApiClient {
 
   // Authentication methods
   async login(credentials: LoginCredentials): Promise<ApiResponse<LoginResponse>> {
-    return this.request<LoginResponse>('/api/auth/login', {
+    return this.request<LoginResponse>('/api/admin/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });

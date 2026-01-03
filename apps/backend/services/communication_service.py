@@ -76,12 +76,19 @@ class VatanSMSProvider(SMSProvider):
     def _get_credentials(self):
         """Get credentials from DB settings or environment"""
         try:
-            from models.system import Settings
-            settings = Settings.get_system_settings()
+            from models.integration_config import IntegrationConfig
             
-            username = settings.get_setting('smsUsername') or os.getenv('VATANSMS_USERNAME', '4ab531b6fd26fd9ba6010b0d')
-            password = settings.get_setting('smsPassword') or os.getenv('VATANSMS_PASSWORD', '49b2001edbb1789e4e62f935')
-            sender = settings.get_setting('smsHeader') or os.getenv('VATANSMS_SENDER', 'OZMN TIBCHZ')
+            # Helper to get config
+            def get_config(key):
+                config = IntegrationConfig.query.filter_by(
+                    integration_type='vatan_sms',
+                    config_key=key
+                ).first()
+                return config.config_value if config else None
+
+            username = get_config('username') or os.getenv('VATANSMS_USERNAME')
+            password = get_config('password') or os.getenv('VATANSMS_PASSWORD')
+            sender = get_config('sender_id') or os.getenv('VATANSMS_SENDER')
             
             return username, password, sender
         except Exception as e:

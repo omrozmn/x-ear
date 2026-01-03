@@ -2,13 +2,15 @@
 Admin Add-ons routes for managing additional features/packages
 """
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
 from datetime import datetime
 from models.base import db
 from models.addon import AddOn, AddOnType
-from utils.admin_permissions import require_admin_permission, AdminPermissions
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
+from utils.admin_permissions import AdminPermissions
 import logging
 import uuid
+import re
 from utils.tenant_security import UnboundSession
 
 logger = logging.getLogger(__name__)
@@ -16,9 +18,8 @@ logger = logging.getLogger(__name__)
 admin_addons_bp = Blueprint('admin_addons', __name__, url_prefix='/api/admin/addons')
 
 @admin_addons_bp.route('', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.ADDONS_READ)
-def list_addons():
+@unified_access(permission=AdminPermissions.ADDONS_READ)
+def list_addons(ctx):
     """List all add-ons"""
     try:
         page = request.args.get('page', 1, type=int)
@@ -39,42 +40,31 @@ def list_addons():
             total = query.count()
             addons = query.offset((page - 1) * limit).limit(limit).all()
         
-        return jsonify({
-            'success': True,
-            'data': {
-                'addons': [a.to_dict() for a in addons],
-                'pagination': {
-                    'page': page,
-                    'limit': limit,
-                    'total': total,
-                    'totalPages': (total + limit - 1) // limit
-                }
+        return success_response(data={
+            'addons': [a.to_dict() for a in addons],
+            'pagination': {
+                'page': page,
+                'limit': limit,
+                'total': total,
+                'totalPages': (total + limit - 1) // limit
             }
-        }), 200
+        })
         
     except Exception as e:
         logger.error(f"List addons error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': 'Internal server error'}
-        }), 500
+        return error_response('Internal server error', code='INTERNAL_ERROR', status_code=500)
 
 @admin_addons_bp.route('', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.ADDONS_MANAGE)
-def create_addon():
+@unified_access(permission=AdminPermissions.ADDONS_MANAGE)
+def create_addon(ctx):
     """Create a new add-on"""
     try:
         data = request.get_json()
         
         if not data.get('name') or data.get('price') is None:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Name and price are required'}
-            }), 400
+            return error_response('Name and price are required', code='MISSING_FIELDS', status_code=400)
             
         # Generate slug
-        import re
         slug = data.get('slug')
         if not slug:
             slug = re.sub(r'[^\w\s-]', '', data['name'].lower())
@@ -96,56 +86,36 @@ def create_addon():
         db.session.add(addon)
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'data': {'addon': addon.to_dict()}
-        }), 201
+        return success_response(data={'addon': addon.to_dict()}, status_code=201)
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create addon error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': str(e)}
-        }), 500
+        return error_response(str(e), code='CREATE_FAILED', status_code=500)
 
 @admin_addons_bp.route('/<addon_id>', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.ADDONS_READ)
-def get_addon(addon_id):
+@unified_access(permission=AdminPermissions.ADDONS_READ)
+def get_addon(ctx, addon_id):
     """Get add-on details"""
     try:
         addon = AddOn.query.get(addon_id)
         if not addon:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Add-on not found'}
-            }), 404
+            return error_response('Add-on not found', code='NOT_FOUND', status_code=404)
             
-        return jsonify({
-            'success': True,
-            'data': {'addon': addon.to_dict()}
-        }), 200
+        return success_response(data={'addon': addon.to_dict()})
         
     except Exception as e:
         logger.error(f"Get addon error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': 'Internal server error'}
-        }), 500
+        return error_response('Internal server error', code='INTERNAL_ERROR', status_code=500)
 
 @admin_addons_bp.route('/<addon_id>', methods=['PUT'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.ADDONS_MANAGE)
-def update_addon(addon_id):
+@unified_access(permission=AdminPermissions.ADDONS_MANAGE)
+def update_addon(ctx, addon_id):
     """Update add-on"""
     try:
         addon = AddOn.query.get(addon_id)
         if not addon:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Add-on not found'}
-            }), 404
+            return error_response('Add-on not found', code='NOT_FOUND', status_code=404)
             
         data = request.get_json()
         
@@ -171,45 +141,29 @@ def update_addon(addon_id):
         addon.updated_at = datetime.utcnow()
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'data': {'addon': addon.to_dict()}
-        }), 200
+        return success_response(data={'addon': addon.to_dict()})
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Update addon error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': str(e)}
-        }), 500
+        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
 
 @admin_addons_bp.route('/<addon_id>', methods=['DELETE'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.ADDONS_MANAGE)
-def delete_addon(addon_id):
+@unified_access(permission=AdminPermissions.ADDONS_MANAGE)
+def delete_addon(ctx, addon_id):
     """Delete add-on (soft delete by setting is_active=False)"""
     try:
         addon = AddOn.query.get(addon_id)
         if not addon:
-            return jsonify({
-                'success': False,
-                'error': {'message': 'Add-on not found'}
-            }), 404
+            return error_response('Add-on not found', code='NOT_FOUND', status_code=404)
             
         addon.is_active = False
         addon.updated_at = datetime.utcnow()
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'message': 'Add-on deleted successfully'
-        }), 200
+        return success_response(message='Add-on deleted successfully')
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Delete addon error: {e}")
-        return jsonify({
-            'success': False,
-            'error': {'message': 'Internal server error'}
-        }), 500
+        return error_response('Internal server error', code='DELETE_FAILED', status_code=500)

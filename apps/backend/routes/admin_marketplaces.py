@@ -1,35 +1,34 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.decorators import unified_access
+from utils.response import success_response, error_response
+from utils.admin_permissions import AdminPermissions
 from models.base import db
 from models.marketplace import MarketplaceIntegration, MarketplaceProduct
 from models.tenant import Tenant
-from utils.admin_permissions import require_admin_permission, AdminPermissions
-import logging
-from datetime import datetime
 from utils.tenant_security import UnboundSession
+from datetime import datetime
+import logging
 
 logger = logging.getLogger(__name__)
 
 admin_marketplaces_bp = Blueprint('admin_marketplaces', __name__, url_prefix='/api/admin/marketplaces')
 
 @admin_marketplaces_bp.route('/init-db', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.SYSTEM_MANAGE)
-def init_db():
+@unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
+def init_db(ctx):
     """Initialize Marketplace tables"""
     try:
         engine = db.engine
         MarketplaceIntegration.__table__.create(engine, checkfirst=True)
         MarketplaceProduct.__table__.create(engine, checkfirst=True)
-        return jsonify({'success': True, 'message': 'Marketplace tables initialized'}), 200
+        return success_response(message='Marketplace tables initialized')
     except Exception as e:
         logger.error(f"Init DB error: {e}")
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_marketplaces_bp.route('/integrations', methods=['GET'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.MARKETPLACES_READ)
-def get_integrations():
+@unified_access(permission=AdminPermissions.MARKETPLACES_READ)
+def get_integrations(ctx):
     """Get list of marketplace integrations"""
     try:
         tenant_id = request.args.get('tenant_id')
@@ -41,17 +40,13 @@ def get_integrations():
                 
             integrations = query.all()
         
-        return jsonify({
-            'success': True,
-            'data': [i.to_dict() for i in integrations]
-        }), 200
+        return success_response(data=[i.to_dict() for i in integrations])
     except Exception as e:
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
 
 @admin_marketplaces_bp.route('/integrations', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.MARKETPLACES_MANAGE)
-def create_integration():
+@unified_access(permission=AdminPermissions.MARKETPLACES_MANAGE)
+def create_integration(ctx):
     """Create a new marketplace integration"""
     try:
         data = request.get_json()
@@ -71,32 +66,25 @@ def create_integration():
         db.session.add(integration)
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'data': integration.to_dict()
-        }), 201
+        return success_response(data=integration.to_dict(), status_code=201)
     except Exception as e:
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
+        db.session.rollback()
+        return error_response(str(e), code='CREATE_FAILED', status_code=500)
 
 @admin_marketplaces_bp.route('/integrations/<id>/sync', methods=['POST'])
-@jwt_required()
-@require_admin_permission(AdminPermissions.MARKETPLACES_MANAGE)
-def sync_integration(id):
+@unified_access(permission=AdminPermissions.MARKETPLACES_MANAGE)
+def sync_integration(ctx, id):
     """Trigger sync for an integration (Mock)"""
     try:
         integration = MarketplaceIntegration.query.get(id)
         if not integration:
-            return jsonify({'success': False, 'error': {'message': 'Integration not found'}}), 404
+            return error_response('Integration not found', code='NOT_FOUND', status_code=404)
             
         # Mock sync logic
         integration.last_sync_at = datetime.utcnow()
         integration.status = 'connected'
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'message': 'Sync triggered successfully'
-        }), 200
+        return success_response(message='Sync triggered successfully')
     except Exception as e:
-        return jsonify({'success': False, 'error': {'message': str(e)}}), 500
-
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Zap, Save, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
+import { Zap, Save, RefreshCw, CheckCircle, XCircle, FileText } from 'lucide-react';
 import { useGetAdminIntegrations } from '@/lib/api-client';
+import { adminApi } from '@/lib/apiMutator';
 import toast from 'react-hot-toast';
 
 export default function IntegrationsPage() {
@@ -16,13 +17,95 @@ export default function IntegrationsPage() {
         enabled: false
     });
 
+    const [birFaturaConfig, setBirFaturaConfig] = useState({
+        integrationKey: '',
+        appApiKey: '',
+        appSecretKey: ''
+    });
+
+    useEffect(() => {
+        // Load configurations
+        const loadConfigs = async () => {
+            // 1. BirFatura
+            try {
+                const response: any = await adminApi({
+                    url: '/admin/integrations/birfatura/config',
+                    method: 'GET'
+                });
+                if (response.success && response.data) {
+                    setBirFaturaConfig({
+                        integrationKey: response.data.integrationKey || '',
+                        appApiKey: response.data.appApiKey || '',
+                        appSecretKey: response.data.appSecretKey || ''
+                    });
+                }
+            } catch (e: any) {
+                // Check if e is object and has message potentially
+                const errMsg = e.message || String(e);
+                // Safe check
+                if (typeof errMsg === 'string' && errMsg.includes('404')) {
+                    // Config might not exist yet, which is fine
+                } else {
+                    console.error('Failed to load BirFatura config', e);
+                }
+            }
+
+            // 2. Vatan SMS
+            try {
+                const response: any = await adminApi({
+                    url: '/admin/integrations/vatan-sms/config',
+                    method: 'GET'
+                });
+                if (response.success && response.data) {
+                    setSmsConfig({
+                        provider: 'vatan-sms',
+                        username: response.data.username || '',
+                        password: response.data.password || '',
+                        senderId: response.data.senderId || '',
+                        enabled: response.data.isActive === true // Explicitly use isActive
+                    });
+                }
+            } catch (e: any) {
+                console.error('Failed to load VatanSMS config', e);
+            }
+        };
+        loadConfigs();
+    }, []);
+
+
     const integrations = integrationsData?.data?.integrations || [];
 
     const handleSave = async () => {
         try {
-            // TODO: Implement save mutation
-            toast.success('Entegrasyon ayarları kaydedildi');
+            await adminApi({
+                url: '/admin/integrations/vatan-sms/config',
+                method: 'PUT',
+                data: {
+                    username: smsConfig.username,
+                    password: smsConfig.password,
+                    senderId: smsConfig.senderId,
+                    isActive: smsConfig.enabled
+                }
+            });
+            toast.success('VatanSMS ayarları kaydedildi');
             queryClient.invalidateQueries({ queryKey: ['/api/admin/integrations'] });
+        } catch (error: any) {
+            toast.error('Kaydetme başarısız: ' + (error.message || 'Bilinmeyen hata'));
+        }
+    };
+
+    const handleSaveBirFatura = async () => {
+        try {
+            await adminApi({
+                url: '/admin/integrations/birfatura/config',
+                method: 'PUT',
+                data: {
+                    integrationKey: birFaturaConfig.integrationKey,
+                    appApiKey: birFaturaConfig.appApiKey,
+                    appSecretKey: birFaturaConfig.appSecretKey
+                }
+            });
+            toast.success('BirFatura ayarları kaydedildi');
         } catch (error: any) {
             toast.error('Kaydetme başarısız: ' + (error.message || 'Bilinmeyen hata'));
         }
@@ -64,8 +147,8 @@ export default function IntegrationsPage() {
                                 </div>
                             </div>
                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${smsConfig.enabled
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-gray-100 text-gray-600'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-600'
                                 }`}>
                                 {smsConfig.enabled ? 'Aktif' : 'Pasif'}
                             </span>
@@ -144,7 +227,82 @@ export default function IntegrationsPage() {
                         </div>
                     </div>
 
-                    {/* Placeholder for more integrations */}
+                    {/* BirFatura Card */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 bg-blue-100 rounded-lg">
+                                    <FileText className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-gray-900">BirFatura</h3>
+                                    <p className="text-sm text-gray-500">E-Fatura entegrasyonu</p>
+                                </div>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${birFaturaConfig.integrationKey
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                {birFaturaConfig.integrationKey ? 'Aktif' : 'Pasif'}
+                            </span>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Integration Key (Global)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={birFaturaConfig.integrationKey}
+                                    onChange={(e) => setBirFaturaConfig({ ...birFaturaConfig, integrationKey: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                                    placeholder="865c3848-fda5-48f8-aeb6-9ae58abbb3bf"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Tüm üyeler için geçerli ortak anahtar (INTEGRATION KEY)</p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    App API Key
+                                </label>
+                                <input
+                                    type="text"
+                                    value={birFaturaConfig.appApiKey}
+                                    onChange={(e) => setBirFaturaConfig({ ...birFaturaConfig, appApiKey: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                                    placeholder="d500f61b-2104-4a59-b306-71cf72dd52d1"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Uygulama API anahtarı (API KEY)</p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    App Secret Key
+                                </label>
+                                <input
+                                    type="password"
+                                    value={birFaturaConfig.appSecretKey}
+                                    onChange={(e) => setBirFaturaConfig({ ...birFaturaConfig, appSecretKey: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                                    placeholder="b72389be-6285-4ec6-9128-c162e43f19c2"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Uygulama gizli anahtarı (SECRET KEY)</p>
+                            </div>
+
+                            <div className="pt-4 flex gap-3">
+                                <button
+                                    onClick={handleSaveBirFatura}
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    <Save className="w-4 h-4" />
+                                    Kaydet
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* More Integrations Placeholder inside the grid */}
                     <div className="bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 p-12 flex flex-col items-center justify-center text-center">
                         <Zap className="w-12 h-12 text-gray-400 mb-4" />
                         <h3 className="font-medium text-gray-900 mb-2">Daha Fazla Entegrasyon</h3>
@@ -172,8 +330,8 @@ export default function IntegrationsPage() {
                                     </div>
                                 </div>
                                 <span className={`flex items-center gap-1 text-sm font-medium ${integration.status === 'active'
-                                        ? 'text-green-600'
-                                        : 'text-gray-500'
+                                    ? 'text-green-600'
+                                    : 'text-gray-500'
                                     }`}>
                                     {integration.status === 'active' ? (
                                         <><CheckCircle className="w-4 h-4" /> Aktif</>

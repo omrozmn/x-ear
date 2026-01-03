@@ -48,38 +48,22 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
   const loadDocuments = async () => {
     try {
       setIsLoading(true);
-      // Load SGK documents for the patient
-      await sgkGetPatientSgkDocuments(patientId);
+      // Load documents from API using ORVAL-generated client
+      const { documentsGetPatientDocuments } = await import('@/api/generated');
+      const response = await documentsGetPatientDocuments(patientId);
+      
+      // Transform API response to component format
+      const apiDocuments: Document[] = (response?.data || []).map((doc: any) => ({
+        id: doc.id || '',
+        name: doc.fileName || doc.originalName || 'Untitled',
+        type: (doc.type || 'other') as Document['type'],
+        uploadDate: doc.uploadedAt || doc.createdAt || new Date().toISOString(),
+        size: doc.size ? `${(doc.size / 1024 / 1024).toFixed(2)} MB` : 'Unknown',
+        status: (doc.status || 'completed') as Document['status'],
+        url: doc.url
+      }));
 
-      // Mock data for now - replace with actual API response
-      const mockDocuments: Document[] = [
-        {
-          id: '1',
-          name: 'SGK Raporu - Ocak 2024.pdf',
-          type: 'sgk',
-          uploadDate: '2024-01-15',
-          size: '2.3 MB',
-          status: 'completed'
-        },
-        {
-          id: '2',
-          name: 'Odyoloji Testi Sonuçları.pdf',
-          type: 'medical',
-          uploadDate: '2024-01-10',
-          size: '1.8 MB',
-          status: 'completed'
-        },
-        {
-          id: '3',
-          name: 'Fatura - INV-2024-001.pdf',
-          type: 'invoice',
-          uploadDate: '2024-01-08',
-          size: '0.5 MB',
-          status: 'processing'
-        }
-      ];
-
-      setDocuments(mockDocuments);
+      setDocuments(apiDocuments);
     } catch (loadError) {
       console.error('Error loading documents:', loadError);
       error('Dokümanlar yüklenirken bir hata oluştu.');
@@ -134,19 +118,13 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
   const processFileUploads = async (files: File[]) => {
     try {
       setIsUploading(true);
+      const { documentsAddPatientDocument } = await import('@/api/generated');
 
       for (const file of files) {
         const fileId = `${file.name}_${Date.now()}`;
         setUploadProgress(prev => ({ ...prev, [fileId]: 0 }));
 
-        // Create FormData for file upload
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('patient_id', patientId);
-        formData.append('document_type', selectedDocumentType === 'all' ? 'other' : selectedDocumentType);
-        formData.append('notes', documentNotes);
-
-        // Simulate upload progress
+        // Simulate progress for UI feedback
         const progressInterval = setInterval(() => {
           setUploadProgress(prev => {
             const currentProgress = prev[fileId] || 0;
@@ -158,22 +136,34 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
           });
         }, 200);
 
-        // Upload document based on type
-        if (selectedDocumentType === 'sgk' || file.name.toLowerCase().includes('sgk')) {
-          await sgkUploadSgkDocument(formData as any);
+        // Convert file to base64
+        const base64Content = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            // Remove data URL prefix (e.g., "data:application/pdf;base64,")
+            const base64 = result.split(',')[1] || result;
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
 
-          // Trigger OCR processing for SGK documents
-          await sgkProcessOcr({
-            document_id: `temp_${Date.now()}`,
-            patient_id: patientId
-          });
+        // Prepare document data for API
+        const documentData = {
+          fileName: file.name,
+          originalName: file.name,
+          type: selectedDocumentType === 'all' ? 'other' : selectedDocumentType,
+          content: base64Content,
+          mimeType: file.type || 'application/octet-stream',
+          size: file.size,
+          createdBy: 'current_user', // TODO: Get from auth context
+          status: 'completed' as const,
+          metadata: documentNotes ? { notes: documentNotes } : {}
+        };
 
-          // Trigger automated SGK processing
-          await automationTriggerSgkProcessing({
-            patient_id: patientId,
-            document_id: `temp_${Date.now()}`
-          });
-        }
+        // Upload using ORVAL-generated client
+        await documentsAddPatientDocument(patientId, documentData);
 
         // Complete progress
         clearInterval(progressInterval);
@@ -283,7 +273,19 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
   };
 
   const formatFileSize = (sizeStr: string) => {
-    return sizeStr; // Already formatted in mock data
+    return sizeStr; // Already formatted when loading from API
+  };
+
+  const formatDate = (dateStr: string): string => {
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        return 'Tarih belirtilmemiş';
+      }
+      return date.toLocaleDateString('tr-TR');
+    } catch {
+      return 'Tarih belirtilmemiş';
+    }
   };
 
   return (
@@ -511,7 +513,7 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
                     <p className="font-medium text-gray-900 truncate">{doc.name}</p>
                     <p className="text-sm text-gray-500 capitalize">{doc.type}</p>
                     <p className="text-xs text-gray-400">
-                      {formatFileSize(doc.size)} • {new Date(doc.uploadDate).toLocaleDateString('tr-TR')}
+                      {formatFileSize(doc.size)} • {formatDate(doc.uploadDate)}
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">

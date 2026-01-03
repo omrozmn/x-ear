@@ -1,1 +1,23 @@
-zsh:1: command not found: python
+WARNING:services.otp_store:Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+WARNING:__main__:Development environment detected: overriding DATABASE_URL sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/instance/xear_crm.db -> sqlite:////Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/instance/xear_crm.db
+DEBUG:app:REDIS_URL present; skipping local Redis auto-start.
+WARNING:app:Failed to initialize Redis client for idempotency: Error 61 connecting to localhost:6379. Connection refused.
+WARNING:services.otp_store:Redis available at REDIS_URL but ping failed; falling back to in-memory OTP store
+INFO:__main__:Tenant security (global query filter) initialized
+WARNING:services.s3_service:S3Service running in mock mode - no actual S3 operations will be performed
+DEBUG:passlib.registry:registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+INFO:__main__:Ensuring database tables exist (create_all)
+INFO:__main__:Permission middleware initialized successfully
+INFO:__main__:Permission map validation passed. Warnings: []
+INFO:__main__:Starting Flask development server on 0.0.0.0:5003
+ * Serving Flask app 'app'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://192.168.1.137:5003
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+DEBUG:utils.tenant_security:Tenant identification failed: You must call `@jwt_required()` or `verify_jwt_in_request()` before using this method
+INFO:werkzeug:127.0.0.1 - - [02/Jan/2026 14:19:34] "[35m[1mOPTIONS /api/admin/auth/login HTTP/1.1[0m" 204 -
+INFO:werkzeug:127.0.0.1 - - [02/Jan/2026 14:19:34] "[31m[1mPOST /api/admin/auth/login HTTP/1.1[0m" 401 -
+INFO:werkzeug:127.0.0.1 - - [02/Jan/2026 14:19:38] "GET /api/health HTTP/1.1" 200 -

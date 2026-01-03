@@ -127,6 +127,16 @@ export const useDeviceAssignment = ({
           loaner_serial_number: (assignment as any).loaner_serial_number
         };
 
+        console.log('🔍 [useDeviceAssignment] LOANER FIELDS:', {
+          raw_isLoaner: (assignment as any).isLoaner,
+          raw_is_loaner: (assignment as any).is_loaner,
+          raw_loanerBrand: (assignment as any).loanerBrand,
+          raw_loaner_brand: (assignment as any).loaner_brand,
+          raw_loanerModel: (assignment as any).loanerModel,
+          raw_loaner_model: (assignment as any).loaner_model,
+          extracted: loanerFields
+        });
+
         // Edit mode - load assignment data
         setFormData({
           ...assignment,
@@ -226,10 +236,34 @@ export const useDeviceAssignment = ({
           } else {
             // Fallback: Create synthetic device from assignment data if not found in inventory
             console.warn('Device not found in loaded inventory, using assignment data fallback');
+            
+            // Extract brand and model from various possible field names
+            const assignmentAny = assignment as any;
+            let brand = assignmentAny.brand || assignmentAny.deviceBrand;
+            let model = assignmentAny.model || assignmentAny.deviceModel;
+            
+            // For loaner devices, check loaner-specific fields
+            if (assignmentAny.isLoaner || assignmentAny.is_loaner) {
+              brand = brand || assignmentAny.loanerBrand || assignmentAny.loaner_brand;
+              model = model || assignmentAny.loanerModel || assignmentAny.loaner_model;
+            }
+            
+            // Extract from deviceName if available (e.g., "ReSound hb-2477")
+            if (!brand || !model) {
+              const deviceName = assignmentAny.deviceName || assignmentAny.device_name;
+              if (deviceName) {
+                const parts = deviceName.split(' ');
+                if (parts.length >= 2) {
+                  brand = brand || parts[0];
+                  model = model || parts.slice(1).join(' ');
+                }
+              }
+            }
+            
             const syntheticDevice: DeviceInventoryItem = {
               id: assignment.deviceId,
-              brand: (assignment as any).brand || (assignment as any).deviceBrand || 'Bilinmiyor',
-              model: (assignment as any).model || (assignment as any).deviceModel || 'Bilinmiyor',
+              brand: brand || 'Bilinmiyor',
+              model: model || 'Bilinmiyor',
               price: assignment.listPrice || 0,
               ear: assignment.ear || 'bilateral',
               category: 'hearing_aid',
