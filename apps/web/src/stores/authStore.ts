@@ -47,6 +47,8 @@ interface User {
   role?: string;
   phone?: string;
   isPhoneVerified?: boolean;
+  isImpersonating?: boolean;
+  realUserEmail?: string;
 }
 
 interface SubscriptionStatus {
@@ -211,7 +213,7 @@ export const useAuthStore = create<AuthStore>()(
           // Backend response: { success, data: { token, user, requires_mfa } }
           if (responseData && responseData.success && responseData.data) {
             const { token, user: userData, requires_mfa } = responseData.data;
-            
+
             if (requires_mfa) {
               // Handle MFA requirement
               set({ requiresOtp: true, isLoading: false });
@@ -222,7 +224,7 @@ export const useAuthStore = create<AuthStore>()(
               const user: User = {
                 id: userData.id,
                 email: userData.email,
-                name: userData.first_name && userData.last_name 
+                name: userData.first_name && userData.last_name
                   ? `${userData.first_name} ${userData.last_name}`.trim()
                   : userData.email,
                 role: userData.role || 'user',
@@ -234,12 +236,12 @@ export const useAuthStore = create<AuthStore>()(
               const previousTenantId = localStorage.getItem('current_tenant_id');
               const newToken = token;
               let newTenantId: string | null = null;
-              
+
               try {
                 // Decode JWT to get tenant_id (simple base64 decode, no verification needed here)
                 const payload = JSON.parse(atob(newToken.split('.')[1]));
                 newTenantId = payload.tenant_id || null;
-                
+
                 // If tenant changed, clear IndexedDB to prevent data leakage
                 if (previousTenantId && newTenantId && previousTenantId !== newTenantId) {
                   console.log('Tenant changed, clearing IndexedDB:', previousTenantId, '->', newTenantId);
@@ -250,7 +252,7 @@ export const useAuthStore = create<AuthStore>()(
                     console.error('Failed to clear IndexedDB on tenant change:', error);
                   }
                 }
-                
+
                 // Store new tenant ID
                 if (newTenantId) {
                   localStorage.setItem('current_tenant_id', newTenantId);
@@ -598,7 +600,7 @@ export const useAuthStore = create<AuthStore>()(
         } catch (error) {
           console.error('Failed to clear IndexedDB on logout:', error);
         }
-        
+
         get().clearAuth();
       },
 
@@ -683,13 +685,28 @@ export const useAuthStore = create<AuthStore>()(
                 const userData = responseData?.data || responseData;
 
                 if (userData && (userData.id || userData.email)) {
+                  // Decode token to get impersonation status
+                  let isImpersonating = false;
+                  let realUserEmail = undefined;
+                  try {
+                    if (storedToken) {
+                      const payload = JSON.parse(atob(storedToken.split('.')[1]));
+                      isImpersonating = payload.is_impersonating === true;
+                      realUserEmail = payload.real_user_email;
+                    }
+                  } catch (e) {
+                    console.warn('Failed to parse token claims during restore:', e);
+                  }
+
                   const transformedUser: User = {
                     id: userData.id || '',
                     email: userData.email || '',
                     name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.fullName || userData.username || '',
                     role: userData.role || 'user',
                     phone: userData.phone,
-                    isPhoneVerified: userData.isPhoneVerified === true
+                    isPhoneVerified: userData.isPhoneVerified === true,
+                    isImpersonating,
+                    realUserEmail
                   };
 
                   console.log('[initializeAuth] Transformed user:', transformedUser);

@@ -16,8 +16,8 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
   const { user, setUser } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Check if current user is the debug admin
-  const isDebugAdmin = user?.email === DEBUG_ADMIN_EMAIL;
+  // Check if current user is the debug admin OR is already impersonating
+  const isDebugAdmin = user?.email === DEBUG_ADMIN_EMAIL || user?.isImpersonating === true;
 
   // Fetch available roles only if debug admin
   const { data: rolesResponse, isLoading: rolesLoading } = useAdminDebugAvailableRoles({
@@ -55,8 +55,8 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
             });
           }
 
-          // Sayfayı yenile - tüm permission kontrollerinin güncel olması için
-          window.location.reload();
+          // Dashboard'a yönlendir (yetki hatası almamak için) ve sayfayı yenile
+          window.location.href = '/';
         }
       },
       onError: (error) => {
