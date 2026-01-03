@@ -67,6 +67,7 @@ export default function IntegrationSettings() {
     };
 
     const { token } = useAuthStore();
+    
     const { data: configData, isLoading: configLoading, refetch: refetchConfig } = useSmsGetConfig({
         query: { enabled: !!token }
     });
@@ -219,7 +220,22 @@ export default function IntegrationSettings() {
                     message = errorData;
                 } else if (typeof errorData === 'object') {
                     // Handle different error response formats
-                    message = errorData.error || errorData.message || JSON.stringify(errorData);
+                    // Backend returns: { error: { message: '...', code: '...' }, success: false }
+                    // or: { error: '...', success: false }
+                    if (errorData.error) {
+                        if (typeof errorData.error === 'string') {
+                            message = errorData.error;
+                        } else if (typeof errorData.error === 'object' && errorData.error.message) {
+                            message = errorData.error.message;
+                        }
+                    } else if (errorData.message) {
+                        message = errorData.message;
+                    }
+                    
+                    // Special handling for TENANT_REQUIRED error
+                    if (errorData.error?.code === 'TENANT_REQUIRED' || message.includes('Tenant context required')) {
+                        message = 'Bu işlem için tenant seçimi gerekli. Lütfen bir tenant hesabıyla giriş yapın.';
+                    }
                 }
             } else if (error?.message && typeof error.message === 'string') {
                 message = error.message;

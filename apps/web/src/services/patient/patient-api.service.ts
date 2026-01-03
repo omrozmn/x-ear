@@ -334,7 +334,7 @@ export class PatientApiService {
         // TODO: The generated client for salesUpdateSale currently only accepts saleId.
         // We need to verify if the backend supports body or if the generator is missing it.
         // For now, we are calling it without body to satisfy the type checker, but this is likely broken functionality.
-        return await salesUpdateSale(saleId);
+        return await salesUpdateSale(saleId, updates);
       });
       const payload = (response as unknown) as { data?: unknown };
       return {

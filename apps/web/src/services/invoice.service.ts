@@ -962,7 +962,7 @@ export class InvoiceService {
     }
 
     try {
-      const response = await invoicesGenerateInvoicePdf(String(serverId)) as any;
+      const response = await invoicesActionsServeInvoicePdf(String(serverId)) as any;
 
       if (response instanceof Blob) {
         return { success: true, data: response };

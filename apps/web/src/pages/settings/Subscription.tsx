@@ -2,7 +2,7 @@ import React from 'react';
 import { CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
 import {
-    useAddonsGetActiveAddons,
+    useAddonsGetAddons,
     useSmsIntegrationGetSmsCredit,
     useSmsIntegrationGetSmsPackages,
     useSubscriptionsGetCurrent
@@ -167,7 +167,7 @@ const Subscription: React.FC = () => {
 };
 
 function SmsPackagesList() {
-    const { data: packagesData, isLoading, isError } = useSmsGetPackages();
+    const { data: packagesData, isLoading, isError } = useSmsIntegrationGetSmsPackages();
     if (isLoading) return <div className="text-gray-500">SMS Paketleri yükleniyor...</div>;
     if (isError) return <div className="text-gray-500">SMS paketleri yüklenemedi.</div>;
 
@@ -202,7 +202,7 @@ function SmsPackagesList() {
 }
 
 function AddOnsList() {
-    const { data: addonsData, isLoading, isError } = useAddonsListActive();
+    const { data: addonsData, isLoading, isError } = useAddonsGetAddons();
     if (isLoading) return <div className="text-gray-500">Eklentiler yükleniyor...</div>;
     if (isError) return <div className="text-gray-500">Eklentiler yüklenemedi.</div>;
 

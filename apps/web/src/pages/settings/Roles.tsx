@@ -100,7 +100,7 @@ export default function RolesSettings() {
     const deleteRoleMutation = useRolesDeleteRole();
 
     // Extract roles from response
-    const roles = rolesData?.data || [];
+    const roles = rolesData || [];
     const error = fetchError ? 'Roller yüklenemedi' : null;
 
     const handleCreateRole = async (e: React.FormEvent) => {

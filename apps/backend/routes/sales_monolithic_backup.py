@@ -1657,6 +1657,10 @@ def _ensure_loaner_serials_in_inventory(assignment, created_by='system'):
     Ensure that any manually entered loaner serial numbers are added to the inventory.
     This supports the workflow where a user enters a serial number for a loaner device
     that hasn't been explicitly added to the system yet.
+    
+    IMPORTANT: We check BOTH serial_numbers (all serials ever added) AND available_serials
+    to prevent duplicate 'Manuel Eklendi' movements when a serial was previously added but
+    is currently loaned out (removed from available_serials but still in serial_numbers).
     """
     if not assignment.loaner_inventory_id:
         return
@@ -1683,17 +1687,22 @@ def _ensure_loaner_serials_in_inventory(assignment, created_by='system'):
             return
 
         added_some = False
-        current_serials = json.loads(loaner_item.available_serials) if loaner_item.available_serials else []
+        
+        # Check BOTH serial_numbers (all ever added) AND available_serials
+        # This prevents duplicate 'Manuel Eklendi' when a serial was loaned out and returned
+        available_serials = json.loads(loaner_item.available_serials) if loaner_item.available_serials else []
+        all_serials = json.loads(loaner_item.serial_numbers) if loaner_item.serial_numbers else []
+        known_serials = set(available_serials) | set(all_serials)
         
         for serial in serials_to_check:
-            if serial not in current_serials:
-                # Add to inventory
+            if serial not in known_serials:
+                # This is a genuinely new serial - add to inventory
                 if loaner_item.add_serial_number(serial):
                     added_some = True
                     # Log movement for audit
                     create_stock_movement(
                         inventory_id=loaner_item.id,
-                        movement_type="manual_add", # Or "adjustment_in"
+                        movement_type="manual_add",
                         quantity=1,
                         tenant_id=loaner_item.tenant_id,
                         serial_number=serial,
@@ -1701,10 +1710,14 @@ def _ensure_loaner_serials_in_inventory(assignment, created_by='system'):
                         created_by=created_by,
                         session=db.session
                     )
+                    logger.info(f"Auto-added new loaner serial to inventory {loaner_item.id}: {serial}")
+            else:
+                # Serial already known - make sure it's in available_serials for assignment
+                if serial not in available_serials:
+                    loaner_item.add_serial_number(serial)  # This will add to available_serials
+                    logger.debug(f"Restored existing serial to available_serials: {serial}")
         
         if added_some:
-            # We must commit/flush here so that subsequent remove_serial_number calls work?
-            # Actually, add_serial_number checks self.available_serials which is updated in memory.
             logger.info(f"Auto-added manual loaner serials to inventory {loaner_item.id}: {serials_to_check}")
 
     except Exception as e:
@@ -2810,6 +2823,15 @@ def return_loaner_to_stock(ctx, assignment_id):
                  loaner_item.add_serial_number(s)
                  restored_serials.append(s)
 
+        # Get proper username for logging
+        created_by_name = 'system'
+        if ctx._principal and ctx._principal.admin:
+            admin = ctx._principal.admin
+            created_by_name = getattr(admin, 'email', None) or getattr(admin, 'name', None) or str(ctx.principal_id)
+        elif ctx._principal and ctx._principal.user:
+            user = ctx._principal.user
+            created_by_name = f"{getattr(user, 'first_name', '')} {getattr(user, 'last_name', '')}".strip() or getattr(user, 'email', None) or str(ctx.principal_id)
+        
         # Log movement
         create_stock_movement(
             inventory_id=loaner_item.id,
@@ -2818,15 +2840,16 @@ def return_loaner_to_stock(ctx, assignment_id):
             tenant_id=loaner_item.tenant_id,
             serial_number=','.join(restored_serials) if restored_serials else None,
             transaction_id=assignment.id,
-            created_by=user.id,
+            created_by=created_by_name,
             session=db.session
         )
 
-        # Update assignment status
+        # Update assignment status - CLEAR LOANER FLAG
         assignment.status = 'returned'
         assignment.return_date = datetime.now()
+        assignment.is_loaner = False  # Clear loaner flag after return
         
-        data = request.get_json() or {}
+        data = request.get_json(silent=True) or {}
         if data.get('notes'):
             assignment.notes = (assignment.notes or '') + f"\nEmanet İade Notu: {data.get('notes')}"
 

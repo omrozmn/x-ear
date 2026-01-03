@@ -5,6 +5,7 @@ from models import db, SMSProviderConfig, SMSHeaderRequest, SMSPackage, TenantSM
 from utils.authorization import admin_required, role_required
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
+from utils.query_policy import tenant_scoped_query
 from datetime import datetime, timezone
 import logging
 import os
@@ -27,18 +28,18 @@ sms_bp = Blueprint('sms_integration', __name__)
 @unified_access(resource='sms', action='read')
 def get_sms_config(ctx):
     """Get SMS configuration for tenant."""
-    # For super_admin without tenant_id, use user's tenant_id
-    tenant_id = ctx.tenant_id or (ctx.user.tenant_id if ctx.user else None)
+    # Use tenant_scoped_query - works for both tenant users and super admin
+    config = tenant_scoped_query(ctx, SMSProviderConfig).first()
     
-    if not tenant_id:
-        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
-        
-    config = SMSProviderConfig.query.filter_by(tenant_id=tenant_id).first()
     if not config:
-        # Create default empty config
-        config = SMSProviderConfig(tenant_id=tenant_id)
-        db.session.add(config)
-        db.session.commit()
+        # For tenant users, create default config
+        if ctx.tenant_id:
+            config = SMSProviderConfig(tenant_id=ctx.tenant_id)
+            db.session.add(config)
+            db.session.commit()
+        else:
+            # Super admin with no tenant - return empty config
+            return success_response(data=None)
         
     return success_response(data=config.to_dict())
 
@@ -49,9 +50,10 @@ def update_sms_config(ctx):
     if not ctx.tenant_id:
         return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
     
-    # Check if user has admin permissions within tenant
-    if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
-        return error_response('Admin access required', code='FORBIDDEN', status_code=403)
+    # Allow super_admin, tenant_admin, or admin role
+    if not ctx.is_super_admin and not ctx.is_tenant_admin:
+        if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
+            return error_response('Admin access required', code='FORBIDDEN', status_code=403)
         
     data = request.get_json() or {}
     config = SMSProviderConfig.query.filter_by(tenant_id=ctx.tenant_id).first()
@@ -72,40 +74,26 @@ def update_sms_config(ctx):
 @unified_access(resource='sms', action='read')
 def list_sms_headers(ctx):
     """List SMS headers for tenant."""
-    # For super_admin without tenant_id, use user's tenant_id
-    tenant_id = ctx.tenant_id or (ctx.user.tenant_id if ctx.user else None)
-    
-    if not tenant_id:
-        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
-        
-    headers = SMSHeaderRequest.query.filter_by(tenant_id=tenant_id).order_by(SMSHeaderRequest.created_at.desc()).all()
+    # Use tenant_scoped_query - works for both tenant users and super admin
+    headers = tenant_scoped_query(ctx, SMSHeaderRequest).order_by(SMSHeaderRequest.created_at.desc()).all()
     return success_response(data=[h.to_dict() for h in headers])
 
 @sms_bp.route('/sms/headers', methods=['POST'])
 @unified_access(resource='sms', action='write')
 def request_sms_header(ctx):
     """Request a new SMS header for tenant."""
-    # Debug logging
-    logger.info(f"=== SMS HEADER REQUEST DEBUG ===")
-    logger.info(f"ctx object: {ctx}")
-    logger.info(f"ctx.tenant_id: {ctx.tenant_id}")
-    logger.info(f"ctx.user: {ctx.user}")
-    logger.info(f"ctx.user.tenant_id if ctx.user: {ctx.user.tenant_id if ctx.user else 'NO USER'}")
+    # Tenant context is required for creating headers
+    if not ctx.tenant_id:
+        return error_response('Tenant context required for creating SMS headers', code='TENANT_REQUIRED', status_code=400)
     
-    # For super_admin without tenant_id, use user's tenant_id
-    tenant_id = ctx.tenant_id or (ctx.user.tenant_id if ctx.user else None)
-    
-    logger.info(f"SMS Header Request - ctx.tenant_id: {ctx.tenant_id}, user.tenant_id: {ctx.user.tenant_id if ctx.user else None}, final tenant_id: {tenant_id}")
-    
-    if not tenant_id:
-        logger.error(f"TENANT_REQUIRED - ctx: {ctx}, user: {ctx.user}")
-        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
-    
-    if ctx.user and ctx.user.role not in ['admin', 'tenant_admin', 'super_admin']:
-        return error_response('Admin access required', code='FORBIDDEN', status_code=403)
+    # Allow super_admin, tenant_admin, or admin role
+    if not ctx.is_super_admin and not ctx.is_tenant_admin:
+        # Check if user has admin role within tenant
+        if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
+            return error_response('Admin access required', code='FORBIDDEN', status_code=403)
         
     data = request.get_json() or {}
-    logger.info(f"SMS Header Request - data received: {data}")
+    logger.info(f"SMS Header Request - tenant_id: {ctx.tenant_id}, data: {data}")
     
     # Support both old (headerText/headerType) and new (name) formats
     header_text = data.get('headerText') or data.get('name')
@@ -119,11 +107,11 @@ def request_sms_header(ctx):
         return error_response('Header text max 11 chars', code='INVALID_LENGTH', status_code=400)
     
     # Check if this is the first header for this tenant
-    existing_headers = SMSHeaderRequest.query.filter_by(tenant_id=tenant_id).count()
+    existing_headers = SMSHeaderRequest.query.filter_by(tenant_id=ctx.tenant_id).count()
     is_first_header = existing_headers == 0
         
     header = SMSHeaderRequest(
-        tenant_id=tenant_id,
+        tenant_id=ctx.tenant_id,
         header_text=header_text,
         header_type=header_type,
         documents_json=data.get('documents', []),
@@ -139,7 +127,7 @@ def request_sms_header(ctx):
         for admin in admins:
             notif = Notification(
                 user_id=admin.id,
-                tenant_id=admin.tenant_id or tenant_id,
+                tenant_id=admin.tenant_id or ctx.tenant_id,
                 title="Yeni SMS Başlık Talebi",
                 message=f"Yeni SMS başlığı talep edildi: {header_text}",
                 notification_type="info",
@@ -156,17 +144,17 @@ def request_sms_header(ctx):
 @unified_access(resource='sms', action='write')
 def set_default_header(ctx, header_id):
     """Set a header as the default for the tenant."""
-    # For super_admin without tenant_id, use user's tenant_id
-    tenant_id = ctx.tenant_id or (ctx.user.tenant_id if ctx.user else None)
-    
-    if not tenant_id:
+    # Tenant context is required
+    if not ctx.tenant_id:
         return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
     
-    if ctx.user and ctx.user.role not in ['admin', 'tenant_admin', 'super_admin']:
-        return error_response('Admin access required', code='FORBIDDEN', status_code=403)
+    # Allow super_admin, tenant_admin, or admin role
+    if not ctx.is_super_admin and not ctx.is_tenant_admin:
+        if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
+            return error_response('Admin access required', code='FORBIDDEN', status_code=403)
     
     header = db.session.get(SMSHeaderRequest, header_id)
-    if not header or header.tenant_id != tenant_id:
+    if not header or header.tenant_id != ctx.tenant_id:
         return error_response('Header not found', code='NOT_FOUND', status_code=404)
     
     if header.status != 'approved':
@@ -175,7 +163,7 @@ def set_default_header(ctx, header_id):
     try:
         # Remove default from all other headers for this tenant
         SMSHeaderRequest.query.filter_by(
-            tenant_id=tenant_id
+            tenant_id=ctx.tenant_id
         ).update({'is_default': False})
         
         # Set this header as default
@@ -198,17 +186,18 @@ def list_sms_packages():
 @unified_access(resource='sms', action='read')
 def get_sms_credit(ctx):
     """Get SMS credit balance for tenant."""
-    # For super_admin without tenant_id, use user's tenant_id
-    tenant_id = ctx.tenant_id or (ctx.user.tenant_id if ctx.user else None)
+    # Use tenant_scoped_query - works for both tenant users and super admin
+    credit = tenant_scoped_query(ctx, TenantSMSCredit).first()
     
-    if not tenant_id:
-        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
-        
-    credit = TenantSMSCredit.query.filter_by(tenant_id=tenant_id).first()
     if not credit:
-        credit = TenantSMSCredit(tenant_id=tenant_id)
-        db.session.add(credit)
-        db.session.commit()
+        # For tenant users, create default credit
+        if ctx.tenant_id:
+            credit = TenantSMSCredit(tenant_id=ctx.tenant_id)
+            db.session.add(credit)
+            db.session.commit()
+        else:
+            # Super admin with no tenant - return empty credit
+            return success_response(data=None)
         
     return success_response(data=credit.to_dict())
 
@@ -221,8 +210,10 @@ def upload_sms_document(ctx):
     if not ctx.tenant_id:
         return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
     
-    if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
-        return error_response('Admin access required', code='FORBIDDEN', status_code=403)
+    # Allow super_admin, tenant_admin, or admin role
+    if not ctx.is_super_admin and not ctx.is_tenant_admin:
+        if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
+            return error_response('Admin access required', code='FORBIDDEN', status_code=403)
     
     if 'file' not in request.files:
         return error_response('No file provided', code='NO_FILE', status_code=400)
@@ -303,8 +294,10 @@ def delete_sms_document(ctx, document_type):
     if not ctx.tenant_id:
         return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
     
-    if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
-        return error_response('Admin access required', code='FORBIDDEN', status_code=403)
+    # Allow super_admin, tenant_admin, or admin role
+    if not ctx.is_super_admin and not ctx.is_tenant_admin:
+        if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
+            return error_response('Admin access required', code='FORBIDDEN', status_code=403)
     
     config = SMSProviderConfig.query.filter_by(tenant_id=ctx.tenant_id).first()
     if not config:

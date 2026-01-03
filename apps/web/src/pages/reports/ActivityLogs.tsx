@@ -136,7 +136,7 @@ export default function ActivityLogsPage() {
         search: filters.search || undefined,
         page,
         per_page: perPage
-    });
+    } as any);
 
     const { data: filterResponse } = useActivityLogsGetFilterOptions();
 
