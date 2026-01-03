@@ -1103,7 +1103,102 @@ def update_device_assignment(assignment_id):
 
         # Allow updating individual loaner fields if loaner is already set or just set
         if assignment.is_loaner:
-            # Handle camelCase and snake_case for all loaner fields from frontend
+            # IMPORTANT: Handle loaner inventory SWAP FIRST before updating serial fields
+            # This preserves old serial numbers for proper stock return
+            new_loaner_inventory_id = data.get('loaner_inventory_id') or data.get('loanerInventoryId')
+            if new_loaner_inventory_id:
+                old_loaner_inventory_id = assignment.loaner_inventory_id
+                
+                # Only process swap if loaner is actually changing
+                if old_loaner_inventory_id and old_loaner_inventory_id != new_loaner_inventory_id:
+                    from models.inventory import InventoryItem
+                    
+                    # 1. Return OLD loaner to stock (BEFORE serials are updated)
+                    old_loaner = db.session.get(InventoryItem, old_loaner_inventory_id)
+                    if old_loaner:
+                        ear_val = str(assignment.ear or '').lower()
+                        qty = 2 if ear_val in ['both', 'bilateral', 'b'] else 1
+                        
+                        # Get OLD serial numbers (still on assignment, not yet overwritten)
+                        old_serials = []
+                        if ear_val in ['both', 'bilateral', 'b']:
+                            if assignment.loaner_serial_number_left:
+                                old_serials.append(assignment.loaner_serial_number_left)
+                                old_loaner.add_serial_number(assignment.loaner_serial_number_left)
+                            if assignment.loaner_serial_number_right:
+                                old_serials.append(assignment.loaner_serial_number_right)
+                                old_loaner.add_serial_number(assignment.loaner_serial_number_right)
+                        else:
+                            if assignment.loaner_serial_number:
+                                old_serials.append(assignment.loaner_serial_number)
+                                old_loaner.add_serial_number(assignment.loaner_serial_number)
+                        
+                        # If no serials, just add quantity back
+                        if not old_serials:
+                            old_loaner.update_inventory(qty)
+                        
+                        create_stock_movement(
+                            inventory_id=old_loaner.id,
+                            movement_type="loaner_return",
+                            quantity=qty,
+                            tenant_id=old_loaner.tenant_id,
+                            serial_number=",".join(old_serials) if old_serials else None,
+                            transaction_id=assignment.id,
+                            created_by=data.get('user_id', 'system'),
+                            session=db.session
+                        )
+                        logger.info(f"↩️ OLD loaner returned to stock: {old_loaner.name} (qty={qty}, serials={old_serials})")
+                    
+                    # 2. Deduct NEW loaner from stock
+                    new_loaner = db.session.get(InventoryItem, new_loaner_inventory_id)
+                    if new_loaner:
+                        ear_val = str(assignment.ear or '').lower()
+                        qty = 2 if ear_val in ['both', 'bilateral', 'b'] else 1
+                        
+                        # Get NEW serial numbers from request data
+                        new_serials = []
+                        if ear_val in ['both', 'bilateral', 'b']:
+                            new_left = data.get('loaner_serial_number_left') or data.get('loanerSerialNumberLeft')
+                            new_right = data.get('loaner_serial_number_right') or data.get('loanerSerialNumberRight')
+                            if new_left:
+                                new_serials.append(new_left)
+                                new_loaner.remove_serial_number(new_left)
+                            if new_right:
+                                new_serials.append(new_right)
+                                new_loaner.remove_serial_number(new_right)
+                        else:
+                            new_sn = data.get('loaner_serial_number') or data.get('loanerSerialNumber')
+                            if new_sn:
+                                new_serials.append(new_sn)
+                                new_loaner.remove_serial_number(new_sn)
+                        
+                        # If no serials consumed, deduct quantity
+                        remaining = qty - len(new_serials)
+                        if remaining > 0:
+                            new_loaner.update_inventory(-remaining, allow_negative=True)
+                        
+                        create_stock_movement(
+                            inventory_id=new_loaner.id,
+                            movement_type="loaner_out",
+                            quantity=-qty,
+                            tenant_id=new_loaner.tenant_id,
+                            serial_number=",".join(new_serials) if new_serials else None,
+                            transaction_id=assignment.id,
+                            created_by=data.get('user_id', 'system'),
+                            session=db.session
+                        )
+                        
+                        # Update assignment with new loaner info
+                        assignment.loaner_inventory_id = new_loaner_inventory_id
+                        assignment.loaner_brand = new_loaner.brand
+                        assignment.loaner_model = new_loaner.model
+                        logger.info(f"📦 NEW loaner assigned: {new_loaner.name} (qty={qty}, serials={new_serials})")
+                
+                elif not old_loaner_inventory_id:
+                    # First time setting loaner_inventory_id on existing loaner
+                    assignment.loaner_inventory_id = new_loaner_inventory_id
+            
+            # NOW update individual loaner fields (after swap is processed)
             if 'loaner_serial_number' in data:
                  assignment.loaner_serial_number = data['loaner_serial_number']
             elif 'loanerSerialNumber' in data:
@@ -1134,10 +1229,6 @@ def update_device_assignment(assignment_id):
             if assignment.loaner_inventory_id:
                 _ensure_loaner_serials_in_inventory(assignment, data.get('user_id', 'system'))
 
-            if 'loaner_inventory_id' in data:
-                 assignment.loaner_inventory_id = data['loaner_inventory_id']
-            elif 'loanerInventoryId' in data:
-                 assignment.loaner_inventory_id = data['loanerInventoryId']
         
         logger.info(f"💾 COMMITTING UPDATE {assignment_id}: Report={assignment.report_status}, Delivery={assignment.delivery_status}, Loaner={assignment.is_loaner}, L={assignment.loaner_serial_number_left}, R={assignment.loaner_serial_number_right}")
         db.session.commit()

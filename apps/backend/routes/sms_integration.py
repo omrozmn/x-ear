@@ -27,13 +27,16 @@ sms_bp = Blueprint('sms_integration', __name__)
 @unified_access(resource='sms', action='read')
 def get_sms_config(ctx):
     """Get SMS configuration for tenant."""
-    if not ctx.tenant_id:
+    # For super_admin without tenant_id, use user's tenant_id
+    tenant_id = ctx.tenant_id or (ctx.user.tenant_id if ctx.user else None)
+    
+    if not tenant_id:
         return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
         
-    config = SMSProviderConfig.query.filter_by(tenant_id=ctx.tenant_id).first()
+    config = SMSProviderConfig.query.filter_by(tenant_id=tenant_id).first()
     if not config:
         # Create default empty config
-        config = SMSProviderConfig(tenant_id=ctx.tenant_id)
+        config = SMSProviderConfig(tenant_id=tenant_id)
         db.session.add(config)
         db.session.commit()
         
@@ -69,35 +72,62 @@ def update_sms_config(ctx):
 @unified_access(resource='sms', action='read')
 def list_sms_headers(ctx):
     """List SMS headers for tenant."""
-    if not ctx.tenant_id:
+    # For super_admin without tenant_id, use user's tenant_id
+    tenant_id = ctx.tenant_id or (ctx.user.tenant_id if ctx.user else None)
+    
+    if not tenant_id:
         return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
         
-    headers = SMSHeaderRequest.query.filter_by(tenant_id=ctx.tenant_id).order_by(SMSHeaderRequest.created_at.desc()).all()
+    headers = SMSHeaderRequest.query.filter_by(tenant_id=tenant_id).order_by(SMSHeaderRequest.created_at.desc()).all()
     return success_response(data=[h.to_dict() for h in headers])
 
 @sms_bp.route('/sms/headers', methods=['POST'])
 @unified_access(resource='sms', action='write')
 def request_sms_header(ctx):
     """Request a new SMS header for tenant."""
-    if not ctx.tenant_id:
+    # Debug logging
+    logger.info(f"=== SMS HEADER REQUEST DEBUG ===")
+    logger.info(f"ctx object: {ctx}")
+    logger.info(f"ctx.tenant_id: {ctx.tenant_id}")
+    logger.info(f"ctx.user: {ctx.user}")
+    logger.info(f"ctx.user.tenant_id if ctx.user: {ctx.user.tenant_id if ctx.user else 'NO USER'}")
+    
+    # For super_admin without tenant_id, use user's tenant_id
+    tenant_id = ctx.tenant_id or (ctx.user.tenant_id if ctx.user else None)
+    
+    logger.info(f"SMS Header Request - ctx.tenant_id: {ctx.tenant_id}, user.tenant_id: {ctx.user.tenant_id if ctx.user else None}, final tenant_id: {tenant_id}")
+    
+    if not tenant_id:
+        logger.error(f"TENANT_REQUIRED - ctx: {ctx}, user: {ctx.user}")
         return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
     
-    if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
+    if ctx.user and ctx.user.role not in ['admin', 'tenant_admin', 'super_admin']:
         return error_response('Admin access required', code='FORBIDDEN', status_code=403)
         
     data = request.get_json() or {}
-    required = ['headerText', 'headerType']
-    if not all(k in data for k in required):
-        return error_response('Missing required fields', code='MISSING_FIELDS', status_code=400)
+    logger.info(f"SMS Header Request - data received: {data}")
+    
+    # Support both old (headerText/headerType) and new (name) formats
+    header_text = data.get('headerText') or data.get('name')
+    header_type = data.get('headerType', 'company_title')
+    
+    if not header_text:
+        logger.warning(f"SMS Header Request - Missing header text. Data: {data}")
+        return error_response('Header text is required', code='MISSING_FIELDS', status_code=400)
         
-    if len(data['headerText']) > 11:
+    if len(header_text) > 11:
         return error_response('Header text max 11 chars', code='INVALID_LENGTH', status_code=400)
+    
+    # Check if this is the first header for this tenant
+    existing_headers = SMSHeaderRequest.query.filter_by(tenant_id=tenant_id).count()
+    is_first_header = existing_headers == 0
         
     header = SMSHeaderRequest(
-        tenant_id=ctx.tenant_id,
-        header_text=data['headerText'],
-        header_type=data['headerType'],
-        documents_json=data.get('documents', [])
+        tenant_id=tenant_id,
+        header_text=header_text,
+        header_type=header_type,
+        documents_json=data.get('documents', []),
+        is_default=is_first_header  # First header is automatically default
     )
     
     db.session.add(header)
@@ -109,9 +139,9 @@ def request_sms_header(ctx):
         for admin in admins:
             notif = Notification(
                 user_id=admin.id,
-                tenant_id=admin.tenant_id or ctx.tenant_id,
+                tenant_id=admin.tenant_id or tenant_id,
                 title="Yeni SMS Başlık Talebi",
-                message=f"Yeni SMS başlığı talep edildi: {data['headerText']}",
+                message=f"Yeni SMS başlığı talep edildi: {header_text}",
                 notification_type="info",
                 is_read=False
             )
@@ -121,6 +151,42 @@ def request_sms_header(ctx):
         logger.warning(f"Failed to create notifications: {e}")
     
     return success_response(data=header.to_dict(), status_code=201)
+
+@sms_bp.route('/sms/headers/<header_id>/set-default', methods=['PUT'])
+@unified_access(resource='sms', action='write')
+def set_default_header(ctx, header_id):
+    """Set a header as the default for the tenant."""
+    # For super_admin without tenant_id, use user's tenant_id
+    tenant_id = ctx.tenant_id or (ctx.user.tenant_id if ctx.user else None)
+    
+    if not tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
+    
+    if ctx.user and ctx.user.role not in ['admin', 'tenant_admin', 'super_admin']:
+        return error_response('Admin access required', code='FORBIDDEN', status_code=403)
+    
+    header = db.session.get(SMSHeaderRequest, header_id)
+    if not header or header.tenant_id != tenant_id:
+        return error_response('Header not found', code='NOT_FOUND', status_code=404)
+    
+    if header.status != 'approved':
+        return error_response('Only approved headers can be set as default', code='NOT_APPROVED', status_code=400)
+    
+    try:
+        # Remove default from all other headers for this tenant
+        SMSHeaderRequest.query.filter_by(
+            tenant_id=tenant_id
+        ).update({'is_default': False})
+        
+        # Set this header as default
+        header.is_default = True
+        db.session.commit()
+        
+        return success_response(data=header.to_dict(), message='Varsayılan başlık olarak ayarlandı')
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Failed to set default header: {e}")
+        return error_response('Failed to set default header', code='UPDATE_FAILED', status_code=500)
 
 @sms_bp.route('/sms/packages', methods=['GET'])
 def list_sms_packages():
@@ -132,12 +198,15 @@ def list_sms_packages():
 @unified_access(resource='sms', action='read')
 def get_sms_credit(ctx):
     """Get SMS credit balance for tenant."""
-    if not ctx.tenant_id:
+    # For super_admin without tenant_id, use user's tenant_id
+    tenant_id = ctx.tenant_id or (ctx.user.tenant_id if ctx.user else None)
+    
+    if not tenant_id:
         return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
         
-    credit = TenantSMSCredit.query.filter_by(tenant_id=ctx.tenant_id).first()
+    credit = TenantSMSCredit.query.filter_by(tenant_id=tenant_id).first()
     if not credit:
-        credit = TenantSMSCredit(tenant_id=ctx.tenant_id)
+        credit = TenantSMSCredit(tenant_id=tenant_id)
         db.session.add(credit)
         db.session.commit()
         

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { Bug, ChevronDown, Check, Loader2, Shield, LogOut } from 'lucide-react';
-import { useAdminDebugAvailableRoles, useAdminDebugSwitchRole, useAdminDebugExitImpersonation, getAdminDebugAvailableRolesQueryKey } from '@/api/generated/admin/admin';
+import { useAdminDebugAvailableRoles, useAdminDebugSwitchRole, useAdminDebugExitImpersonation } from '@/api/generated/admin/admin';
 import { useAuthStore } from '../../stores/authStore';
 import { AUTH_TOKEN, REFRESH_TOKEN } from '../../constants/storage-keys';
 import { patientService } from '../../services/patient.service';
@@ -21,16 +21,19 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
   // Check if current user is the debug admin OR is already impersonating
   const isDebugAdmin = user?.email === DEBUG_ADMIN_EMAIL || user?.isImpersonating === true;
 
-  // Fetch available roles only if debug admin
+  // Fetch available roles only if debug admin AND dropdown is open
   const { data: rolesResponse, isLoading: rolesLoading } = useAdminDebugAvailableRoles({
     query: {
-      queryKey: getAdminDebugAvailableRolesQueryKey(),
       enabled: isDebugAdmin && isOpen,
       staleTime: 5 * 60 * 1000, // 5 dakika
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
     }
   });
 
-  console.log('[DebugRoleSwitcher] Render. isDebugAdmin:', isDebugAdmin, 'Current Role:', user?.role, 'IsImpersonating:', user?.isImpersonating);
+  // Reduced logging to prevent console spam
+  // console.log('[DebugRoleSwitcher] Render. isDebugAdmin:', isDebugAdmin, 'Current Role:', user?.role, 'IsImpersonating:', user?.isImpersonating);
 
   // Role switch mutation
   const { mutate: switchRole, isPending: isSwitching } = useAdminDebugSwitchRole({

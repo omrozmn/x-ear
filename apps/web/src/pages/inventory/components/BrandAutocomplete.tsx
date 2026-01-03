@@ -94,8 +94,26 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
 
   // Load brands from API data
   useEffect(() => {
-    if (brandsData && Array.isArray(brandsData)) {
-      const combined = [...new Set([...brandsData, ...defaultBrands])];
+    let apiBrands: string[] = [];
+
+    // Handle different response structures (same as SupplierAutocomplete)
+    if (brandsData) {
+      if (Array.isArray(brandsData)) {
+        apiBrands = brandsData;
+      } else if ((brandsData as any)?.data) {
+        const innerData = (brandsData as any).data;
+        if (Array.isArray(innerData)) {
+          apiBrands = innerData;
+        } else if (innerData?.brands && Array.isArray(innerData.brands)) {
+          apiBrands = innerData.brands;
+        } else if (innerData?.data && Array.isArray(innerData.data)) {
+          apiBrands = innerData.data;
+        }
+      }
+    }
+
+    if (apiBrands.length > 0) {
+      const combined = [...new Set([...apiBrands, ...defaultBrands])];
       setAllBrands(combined.sort());
     } else {
       setAllBrands(defaultBrands);

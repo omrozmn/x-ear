@@ -18,8 +18,7 @@ import {
 import {
     useSmsGetConfig,
     useSmsGetHeaders,
-    useSmsIntegrationRequestSmsHeader,
-  useSmsIntegrationGetSmsCredit,
+    useSmsIntegrationGetSmsCredit,
     smsDownloadDocument,
     smsUploadDocument,
     smsDeleteDocument
@@ -28,6 +27,7 @@ import { Button, Input, Select, useToastHelpers } from '@x-ear/ui-web';
 import * as Tabs from '@radix-ui/react-tabs';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useAuthStore } from '@/stores/authStore';
+import { customInstance } from '@/api/orval-mutator';
 
 import { PosSettings } from './PosSettings';
 
@@ -80,9 +80,10 @@ export default function IntegrationSettings() {
     const { data: headersData, isLoading: headersLoading, refetch: refetchHeaders } = useSmsGetHeaders({
         query: { enabled: !!token }
     });
-    const requestHeaderMutation = useSmsIntegrationRequestSmsHeader();
     const [newHeader, setNewHeader] = useState('');
     const [newHeaderType, setNewHeaderType] = useState('company_title');
+    const [headerDocument, setHeaderDocument] = useState<File | null>(null);
+    const headerDocInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (configData?.data) {
@@ -157,20 +158,112 @@ export default function IntegrationSettings() {
         if (!newHeader) return showErrorToast('Başlık giriniz');
         if (newHeader.length > 11) return showErrorToast('Başlık en fazla 11 karakter olabilir');
 
+        // Check if document is required for this header type
+        const requiresDocument = newHeaderType !== 'company_title';
+        if (requiresDocument && !headerDocument) {
+            return showErrorToast('Bu başlık tipi için belge yüklemeniz gerekiyor');
+        }
+
         try {
-            await requestHeaderMutation.mutateAsync({
-                data: {
-                    headerText: newHeader,
-                    headerType: newHeaderType
-                } as any
+            // For now, just send document info without uploading
+            // In production, you would upload to S3 first
+            const documents: Array<{ type: string; filename: string }> = [];
+            if (headerDocument) {
+                documents.push({
+                    type: newHeaderType,
+                    filename: headerDocument.name
+                });
+            }
+
+            const requestData = {
+                headerText: newHeader,
+                headerType: newHeaderType,
+                documents
+            };
+            
+            console.log('=== SMS HEADER REQUEST ===');
+            console.log('Sending data:', requestData);
+
+            // Use customInstance directly to send all required fields
+            const response = await customInstance({
+                url: '/api/sms/headers',
+                method: 'POST',
+                data: requestData
             });
+            
+            console.log('Response:', response);
+            
             showSuccessToast('Başlık talebi oluşturuldu. Yönetici onayı bekleniyor.');
             setNewHeader('');
             setNewHeaderType('company_title');
+            setHeaderDocument(null);
+            if (headerDocInputRef.current) {
+                headerDocInputRef.current.value = '';
+            }
             refetchHeaders();
-        } catch (error) {
-            showErrorToast('Talep oluşturulamadı');
-            console.error(error);
+        } catch (error: any) {
+            console.log('=== SMS HEADER ERROR ===');
+            console.log('Error object:', error);
+            console.log('Error response:', error?.response);
+            console.log('Error response data:', error?.response?.data);
+            console.log('Error response status:', error?.response?.status);
+            
+            let message = 'Talep oluşturulamadı';
+            
+            if (error?.response?.data) {
+                const errorData = error.response.data;
+                console.log('Error data type:', typeof errorData);
+                console.log('Error data:', errorData);
+                
+                if (typeof errorData === 'string') {
+                    message = errorData;
+                } else if (typeof errorData === 'object') {
+                    // Handle different error response formats
+                    message = errorData.error || errorData.message || JSON.stringify(errorData);
+                }
+            } else if (error?.message && typeof error.message === 'string') {
+                message = error.message;
+            }
+            
+            // Ensure message is always a string
+            if (typeof message !== 'string') {
+                message = 'Talep oluşturulamadı';
+            }
+            
+            showErrorToast(message);
+            console.error('Header request error:', error);
+        }
+    };
+
+    const handleSetDefaultHeader = async (headerId: string) => {
+        try {
+            await customInstance({
+                url: `/api/sms/headers/${headerId}/set-default`,
+                method: 'PUT'
+            });
+            showSuccessToast('Varsayılan başlık olarak ayarlandı');
+            refetchHeaders();
+        } catch (error: any) {
+            let message = 'İşlem başarısız';
+            
+            if (error?.response?.data) {
+                const errorData = error.response.data;
+                if (typeof errorData === 'string') {
+                    message = errorData;
+                } else if (typeof errorData === 'object') {
+                    message = errorData.error || errorData.message || JSON.stringify(errorData);
+                }
+            } else if (error?.message && typeof error.message === 'string') {
+                message = error.message;
+            }
+            
+            // Ensure message is always a string
+            if (typeof message !== 'string') {
+                message = 'İşlem başarısız';
+            }
+            
+            showErrorToast(message);
+            console.error('Set default header error:', error);
         }
     };
 
@@ -417,22 +510,78 @@ export default function IntegrationSettings() {
                                                 </label>
                                                 <Select
                                                     value={newHeaderType}
-                                                    onChange={(e) => setNewHeaderType(e.target.value)}
+                                                    onChange={(e) => {
+                                                        setNewHeaderType(e.target.value);
+                                                        setHeaderDocument(null);
+                                                        if (headerDocInputRef.current) {
+                                                            headerDocInputRef.current.value = '';
+                                                        }
+                                                    }}
                                                     options={HEADER_TYPES}
                                                     fullWidth
                                                 />
                                             </div>
                                         </div>
 
+                                        {/* Document Upload for non-company_title types */}
+                                        {newHeaderType !== 'company_title' && (
+                                            <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Belge Yükle (Zorunlu)
+                                                </label>
+                                                <div className="flex items-center gap-3">
+                                                    <input
+                                                        ref={headerDocInputRef}
+                                                        type="file"
+                                                        className="hidden"
+                                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (file) setHeaderDocument(file);
+                                                        }}
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => headerDocInputRef.current?.click()}
+                                                    >
+                                                        <Upload className="w-4 h-4 mr-2" />
+                                                        {headerDocument ? 'Belge Değiştir' : 'Belge Seç'}
+                                                    </Button>
+                                                    {headerDocument && (
+                                                        <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                                                            <CheckCircle className="w-4 h-4" />
+                                                            <span className="truncate max-w-[200px]" title={headerDocument.name}>
+                                                                {headerDocument.name}
+                                                            </span>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setHeaderDocument(null);
+                                                                    if (headerDocInputRef.current) {
+                                                                        headerDocInputRef.current.value = '';
+                                                                    }
+                                                                }}
+                                                                className="text-red-500 hover:text-red-700"
+                                                            >
+                                                                <X className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <p className="text-xs text-amber-700 dark:text-amber-300 mt-2">
+                                                    {newHeaderType === 'trademark' && 'Marka tescil belgesi yüklemeniz gerekiyor'}
+                                                    {newHeaderType === 'domain' && 'Alan adı sahiplik belgesi yüklemeniz gerekiyor'}
+                                                    {newHeaderType === 'other' && 'İlgili belgeyi yüklemeniz gerekiyor'}
+                                                </p>
+                                            </div>
+                                        )}
+
                                         <Button
                                             onClick={handleRequestHeader}
-                                            disabled={requestHeaderMutation.isPending || !newHeader}
+                                            disabled={!newHeader}
                                         >
-                                            {requestHeaderMutation.isPending ? (
-                                                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gönderiliyor...</>
-                                            ) : (
-                                                <><Plus className="w-4 h-4 mr-2" /> Başlık Talebi Oluştur</>
-                                            )}
+                                            <Plus className="w-4 h-4 mr-2" /> Başlık Talebi Oluştur
                                         </Button>
                                     </div>
 
@@ -460,9 +609,24 @@ export default function IntegrationSettings() {
                                                                     ({HEADER_TYPES.find(t => t.value === header.headerType)?.label || header.headerType})
                                                                 </div>
                                                             )}
+                                                            {header.isDefault && (
+                                                                <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 font-medium">
+                                                                    Varsayılan
+                                                                </span>
+                                                            )}
                                                         </div>
                                                         <div className="flex items-center gap-3">
                                                             {getStatusBadge(header.status || 'pending')}
+                                                            {header.status === 'approved' && !header.isDefault && (
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => handleSetDefaultHeader(header.id)}
+                                                                    title="Varsayılan başlık olarak ayarla"
+                                                                >
+                                                                    Varsayılan Yap
+                                                                </Button>
+                                                            )}
                                                             {header.status === 'rejected' && header.rejectionReason && (
                                                                 <button
                                                                     className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1"

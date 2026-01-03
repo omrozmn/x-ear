@@ -4,6 +4,17 @@ import { useInventoryGetInventoryMovements } from '@/api/generated';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ArrowUpRight, ArrowDownLeft, Calendar, User, Search } from 'lucide-react';
 
+interface StockMovement {
+    id: string;
+    movementType?: string;
+    quantity?: number;
+    serialNumber?: string;
+    patientId?: string;
+    patientName?: string;
+    createdAt?: string;
+    createdBy?: string;
+}
+
 interface InventoryMovementsTableProps {
     inventoryId?: string; // Optional: filter by specific item
 }
@@ -15,7 +26,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
 
     // Use orval-generated hook with CORRECT endpoint (path param, not query)
     // Note: Backend supports startTime/endTime
-    const { data: movementsResponseRaw, isLoading } = useInventoryGetInventoryMovements(
+    const { data: movementsResponseRaw, isLoading, error } = useInventoryGetInventoryMovements(
         inventoryId || '', // item_id as path parameter
         {
             query: {
@@ -24,8 +35,15 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
         }
     );
 
+    // DEBUG: Log movements data to diagnose empty table issue
+    console.log('🔍 [InventoryMovementsTable] inventoryId:', inventoryId);
+    console.log('🔍 [InventoryMovementsTable] isLoading:', isLoading);
+    console.log('🔍 [InventoryMovementsTable] error:', error);
+    console.log('🔍 [InventoryMovementsTable] movementsResponseRaw:', JSON.stringify(movementsResponseRaw, null, 2));
+
     const movementsResponse = movementsResponseRaw as any; // Fix type inference
     const movements = movementsResponse?.data || [];
+    console.log('🔍 [InventoryMovementsTable] movements array:', movements, 'length:', movements.length);
 
 
     const getMovementIcon = (type: string, quantity: number) => {

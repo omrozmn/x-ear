@@ -58,6 +58,9 @@ class SMSHeaderRequest(BaseModel, JSONMixin):
     status = db.Column(db.String(20), default='pending')
     rejection_reason = db.Column(db.String(500))
     
+    # Is this the default header for the tenant
+    is_default = db.Column(db.Boolean, default=False)
+    
     # Documents for this specific header (if trademark/domain)
     documents = db.Column(db.Text)
     
@@ -79,6 +82,7 @@ class SMSHeaderRequest(BaseModel, JSONMixin):
             'headerType': self.header_type,
             'status': self.status,
             'rejectionReason': self.rejection_reason,
+            'isDefault': self.is_default,
             'documents': self.documents_json
         }
 

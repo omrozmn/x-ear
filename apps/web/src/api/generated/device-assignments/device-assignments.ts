@@ -16,7 +16,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  SalesReturnLoanerToStockBody
+  SalesReturnLoanerToStockBody,
+  SalesUpdateDeviceAssignmentBody
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -94,11 +95,14 @@ export const useSalesReturnLoanerToStock = <TError = unknown,
  */
 export const salesUpdateDeviceAssignment = (
     assignmentId: string,
+    salesUpdateDeviceAssignmentBody: SalesUpdateDeviceAssignmentBody,
  ) => {
       
       
       return customInstance<void>(
-      {url: `/api/device-assignments/${assignmentId}`, method: 'PATCH'
+      {url: `/api/device-assignments/${assignmentId}`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: salesUpdateDeviceAssignmentBody
     },
       );
     }
@@ -106,8 +110,8 @@ export const salesUpdateDeviceAssignment = (
 
 
 export const getSalesUpdateDeviceAssignmentMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof salesUpdateDeviceAssignment>>, TError,{assignmentId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof salesUpdateDeviceAssignment>>, TError,{assignmentId: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof salesUpdateDeviceAssignment>>, TError,{assignmentId: string;data: SalesUpdateDeviceAssignmentBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof salesUpdateDeviceAssignment>>, TError,{assignmentId: string;data: SalesUpdateDeviceAssignmentBody}, TContext> => {
 
 const mutationKey = ['salesUpdateDeviceAssignment'];
 const {mutation: mutationOptions} = options ?
@@ -119,10 +123,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof salesUpdateDeviceAssignment>>, {assignmentId: string}> = (props) => {
-          const {assignmentId} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof salesUpdateDeviceAssignment>>, {assignmentId: string;data: SalesUpdateDeviceAssignmentBody}> = (props) => {
+          const {assignmentId,data} = props ?? {};
 
-          return  salesUpdateDeviceAssignment(assignmentId,)
+          return  salesUpdateDeviceAssignment(assignmentId,data,)
         }
 
         
@@ -131,18 +135,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type SalesUpdateDeviceAssignmentMutationResult = NonNullable<Awaited<ReturnType<typeof salesUpdateDeviceAssignment>>>
-    
+    export type SalesUpdateDeviceAssignmentMutationBody = SalesUpdateDeviceAssignmentBody
     export type SalesUpdateDeviceAssignmentMutationError = unknown
 
     /**
  * @summary Update a device assignment (e.g., cancel, update serial numbers, pricing)
  */
 export const useSalesUpdateDeviceAssignment = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof salesUpdateDeviceAssignment>>, TError,{assignmentId: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof salesUpdateDeviceAssignment>>, TError,{assignmentId: string;data: SalesUpdateDeviceAssignmentBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof salesUpdateDeviceAssignment>>,
         TError,
-        {assignmentId: string},
+        {assignmentId: string;data: SalesUpdateDeviceAssignmentBody},
         TContext
       > => {
 

@@ -8296,6 +8296,12 @@ paths:
         required: true
         schema:
           type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesUpdateDeviceAssignmentBody'
       responses:
         '200':
           description: Success
@@ -10009,3 +10015,105 @@ components:
           type: string
           format: date-time
           nullable: true
+    SalesUpdateDeviceAssignmentBody:
+      type: object
+      description: Request body for updating a device assignment
+      properties:
+        ear_side:
+          type: string
+          enum: [left, right, both]
+          description: Which ear the device is assigned to
+        reason:
+          type: string
+          description: Reason for assignment (sale, trial, etc.)
+        base_price:
+          type: number
+          description: Base/list price of the device
+        sale_price:
+          type: number
+          description: Final sale price
+        sgk_reduction:
+          type: number
+          description: SGK (insurance) reduction amount
+        patient_payment:
+          type: number
+          description: Amount patient pays
+        kdv_rate:
+          type: number
+          description: KDV (VAT) rate
+        discount_type:
+          type: string
+          enum: [none, percentage, amount]
+          description: Type of discount applied
+        discount_value:
+          type: number
+          description: Discount value (percentage or fixed amount)
+        payment_method:
+          type: string
+          enum: [cash, card, transfer, installment]
+          description: Payment method used
+        notes:
+          type: string
+          description: Additional notes
+        serial_number:
+          type: string
+          nullable: true
+          description: Device serial number
+        serial_number_left:
+          type: string
+          nullable: true
+          description: Left ear device serial number
+        serial_number_right:
+          type: string
+          nullable: true
+          description: Right ear device serial number
+        sgk_scheme:
+          type: string
+          description: SGK support scheme type
+        down_payment:
+          type: number
+          description: Down payment amount
+        device_id:
+          type: string
+          nullable: true
+          description: Device/inventory ID if changing device
+        inventory_id:
+          type: string
+          nullable: true
+          description: Inventory item ID if changing device
+        delivery_status:
+          type: string
+          enum: [pending, delivered, cancelled]
+          description: Delivery status of the device
+        is_loaner:
+          type: boolean
+          description: Whether a loaner device is provided
+        report_status:
+          type: string
+          enum: [received, pending, none]
+          nullable: true
+          description: Report status (Rapor durumu)
+        loaner_inventory_id:
+          type: string
+          nullable: true
+          description: Loaner device inventory ID
+        loaner_serial_number:
+          type: string
+          nullable: true
+          description: Loaner device serial number
+        loaner_serial_number_left:
+          type: string
+          nullable: true
+          description: Loaner device left ear serial number
+        loaner_serial_number_right:
+          type: string
+          nullable: true
+          description: Loaner device right ear serial number
+        loaner_brand:
+          type: string
+          nullable: true
+          description: Loaner device brand
+        loaner_model:
+          type: string
+          nullable: true
+          description: Loaner device model

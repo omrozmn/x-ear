@@ -233,12 +233,33 @@ def get_inventory_movements(ctx, item_id):
         enriched = []
         for m in paginated.items:
             m_dict = m.to_dict()
+            
+            # Enrich with patient info from transaction
             if m.transaction_id:
-                # Basic enrichment logic
-                if m.transaction_id.startswith('assign_'):
-                   pass # Full enrichment skipped for brevity but ideally kept.
-                   # Just returning basic dict for now, user can expand if needed.
-                   # Phase 2 Pilot focus is Architecture.
+                try:
+                    # If transaction is a device assignment, get patient info
+                    if m.transaction_id.startswith('assign_'):
+                        from models.sales import DeviceAssignment
+                        from models.patient import Patient
+                        assignment = db.session.get(DeviceAssignment, m.transaction_id)
+                        if assignment and assignment.patient_id:
+                            patient = db.session.get(Patient, assignment.patient_id)
+                            if patient:
+                                m_dict['patientId'] = patient.id
+                                m_dict['patientName'] = f"{patient.first_name} {patient.last_name}".strip()
+                    # If transaction is a sale
+                    elif m.transaction_id.startswith('sale_'):
+                        from models.sales import Sale
+                        from models.patient import Patient
+                        sale = db.session.get(Sale, m.transaction_id)
+                        if sale and sale.patient_id:
+                            patient = db.session.get(Patient, sale.patient_id)
+                            if patient:
+                                m_dict['patientId'] = patient.id
+                                m_dict['patientName'] = f"{patient.first_name} {patient.last_name}".strip()
+                except Exception as enrich_err:
+                    logger.warning(f"Failed to enrich movement {m.id}: {enrich_err}")
+                    
             enriched.append(m_dict)
             
         return jsonify({

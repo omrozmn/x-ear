@@ -22,7 +22,9 @@ import {
     usePatientsGetPatients,
     getBranchesGetBranchesQueryKey,
     getPatientsGetPatientsQueryKey,
-    getPatientsCountPatientsQueryKey
+    getPatientsCountPatientsQueryKey,
+    useSmsGetHeaders,
+    getSmsGetHeadersQueryKey
 } from '@/api/generated';
 import type { PatientsCountPatientsParams } from '@/api/generated/schemas/patientsCountPatientsParams';
 
@@ -87,6 +89,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
     const [audienceFilters, setAudienceFilters] = useState<AudienceFilters>({ status: 'active' });
     const [mode, setMode] = useState<AudienceMode>('filters');
     const [message, setMessage] = useState('');
+    const [selectedHeader, setSelectedHeader] = useState('');
     const [excelPreview, setExcelPreview] = useState<ExcelPreview | null>(null);
     const [excelError, setExcelError] = useState<string | null>(null);
     const [excelLoading, setExcelLoading] = useState(false);
@@ -98,6 +101,11 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
 
     const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useBranchesGetBranches({
         query: { queryKey: getBranchesGetBranchesQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
+    });
+
+    // Get SMS headers for sender selection
+    const { data: headersData, isLoading: headersLoading, isError: headersError } = useSmsGetHeaders({
+        query: { queryKey: getSmsGetHeadersQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
     });
 
     const branchOptions = useMemo(() => {
@@ -121,6 +129,44 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
             .filter((branch): branch is { id: string; name?: string } => Boolean(branch?.id))
             .map((branch) => ({ value: branch.id, label: branch.name ?? 'Şube' }));
     }, [branchesData]);
+
+    // Parse SMS headers and filter only approved ones
+    const headerOptions = useMemo(() => {
+        let headersRaw: Array<{ id?: string; headerText?: string; status?: string; isDefault?: boolean }> = [];
+        if (headersData) {
+            if (Array.isArray(headersData)) {
+                headersRaw = headersData;
+            } else if ((headersData as any)?.data) {
+                const innerData = (headersData as any).data;
+                if (Array.isArray(innerData)) {
+                    headersRaw = innerData;
+                } else if (innerData?.data && Array.isArray(innerData.data)) {
+                    headersRaw = innerData.data;
+                }
+            }
+        }
+        // Only return approved headers
+        return headersRaw
+            .filter(h => h.status === 'approved')
+            .map((h) => ({
+                value: h.id || h.headerText || '',
+                label: h.headerText || '',
+                isDefault: h.isDefault
+            }));
+    }, [headersData]);
+
+    // Set default header when headers are loaded
+    React.useEffect(() => {
+        if (headerOptions.length > 0 && !selectedHeader) {
+            const defaultHeader = headerOptions.find(h => h.isDefault);
+            if (defaultHeader) {
+                setSelectedHeader(defaultHeader.value);
+            } else if (headerOptions.length === 1) {
+                // If only one header, select it automatically
+                setSelectedHeader(headerOptions[0].value);
+            }
+        }
+    }, [headerOptions, selectedHeader]);
 
     // Fetch first patient for preview
     const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = usePatientsGetPatients(
@@ -387,6 +433,21 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
                         }
                         fullWidth
                         disabled={branchesLoading}
+                    />
+                </div>
+                <div>
+                    <label className="text-xs font-semibold text-gray-600">Gönderici Başlığı</label>
+                    <Select
+                        value={selectedHeader}
+                        onChange={(event) => setSelectedHeader(event.target.value)}
+                        options={headersLoading
+                            ? [{ value: '', label: 'Başlıklar Yükleniyor...' }]
+                            : headersError
+                                ? [{ value: '', label: 'Başlık Hatası' }]
+                                : [{ value: '', label: 'Varsayılan' }, ...headerOptions]
+                        }
+                        fullWidth
+                        disabled={headersLoading}
                     />
                 </div>
                 <div>

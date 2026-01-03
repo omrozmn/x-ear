@@ -51,8 +51,8 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
         query: { queryKey: getSmsGetHeadersQueryKey(), enabled: !!token }
     });
 
-    // Handle different response structures
-    let headersRaw: Array<{ id?: string; headerText?: string; status?: string }> = [];
+    // Parse SMS headers and filter only approved ones
+    let headersRaw: Array<{ id?: string; headerText?: string; status?: string; isDefault?: boolean }> = [];
     if (headersData) {
         if (Array.isArray(headersData)) {
             headersRaw = headersData;
@@ -66,6 +66,19 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
         }
     }
     const headers = headersRaw.filter(h => h.status === 'approved');
+
+    // Set default header when headers are loaded
+    React.useEffect(() => {
+        if (headers.length > 0 && !selectedHeader) {
+            const defaultHeader = headers.find(h => h.isDefault);
+            if (defaultHeader) {
+                setSelectedHeader(defaultHeader.id || defaultHeader.headerText || '');
+            } else if (headers.length === 1) {
+                // If only one header, select it automatically
+                setSelectedHeader(headers[0].id || headers[0].headerText || '');
+            }
+        }
+    }, [headers, selectedHeader]);
 
     const smsSegments = message.trim().length > 0
         ? Math.max(1, Math.ceil(message.length / SMS_SEGMENT_LENGTH))

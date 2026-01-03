@@ -26,6 +26,8 @@ import {
     X,
     Zap
 } from 'lucide-react';
+import { useSmsGetHeaders, getSmsGetHeadersQueryKey } from '@/api/generated';
+import { useAuthStore } from '@/stores/authStore';
 
 // SMS Automation Trigger Types
 type TriggerType =
@@ -51,6 +53,7 @@ interface AutomationRule {
     templateName: string;
     templateContent: string;
     isActive: boolean;
+    headerId?: string;
     timing?: {
         type: 'immediate' | 'before' | 'after';
         value?: number;
@@ -255,17 +258,65 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
     const [showPreview, setShowPreview] = useState(false);
     const [previewContent, setPreviewContent] = useState('');
     const { success: showSuccessToast, error: showErrorToast } = useToastHelpers();
+    const { token } = useAuthStore();
+
+    // Get SMS headers for sender selection
+    const { data: headersData, isLoading: headersLoading, isError: headersError } = useSmsGetHeaders({
+        query: { queryKey: getSmsGetHeadersQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
+    });
+
+    // Parse SMS headers and filter only approved ones
+    const headerOptions = useMemo(() => {
+        let headersRaw: Array<{ id?: string; headerText?: string; status?: string; isDefault?: boolean }> = [];
+        if (headersData) {
+            if (Array.isArray(headersData)) {
+                headersRaw = headersData;
+            } else if ((headersData as any)?.data) {
+                const innerData = (headersData as any).data;
+                if (Array.isArray(innerData)) {
+                    headersRaw = innerData;
+                } else if (innerData?.data && Array.isArray(innerData.data)) {
+                    headersRaw = innerData.data;
+                }
+            }
+        }
+        // Only return approved headers
+        return headersRaw
+            .filter(h => h.status === 'approved')
+            .map((h) => ({
+                value: h.id || h.headerText || '',
+                label: h.headerText || '',
+                isDefault: h.isDefault
+            }));
+    }, [headersData]);
+
+    // Get default header ID
+    const defaultHeaderId = useMemo(() => {
+        const defaultHeader = headerOptions.find(h => h.isDefault);
+        if (defaultHeader) return defaultHeader.value;
+        if (headerOptions.length === 1) return headerOptions[0].value;
+        return '';
+    }, [headerOptions]);
+
+    // Set default header when opening modal
+    React.useEffect(() => {
+        if (showCreateModal && !editingRule && defaultHeaderId && !formData.headerId) {
+            setFormData(prev => ({ ...prev, headerId: defaultHeaderId }));
+        }
+    }, [showCreateModal, editingRule, defaultHeaderId]);
 
     // Form state for create/edit
     const [formData, setFormData] = useState<{
         name: string;
         trigger: TriggerType;
         templateContent: string;
+        headerId?: string;
         timing: { type: 'immediate' | 'before' | 'after'; value?: number; unit?: 'minutes' | 'hours' | 'days' };
     }>({
         name: '',
         trigger: 'new_patient',
         templateContent: '',
+        headerId: '',
         timing: { type: 'immediate' }
     });
 
@@ -312,6 +363,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
             trigger: formData.trigger,
             templateName: formData.name,
             templateContent: formData.templateContent,
+            headerId: formData.headerId,
             isActive: true,
             timing: formData.timing,
             stats: { sent: 0, delivered: 0, failed: 0 },
@@ -329,7 +381,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
 
         setShowCreateModal(false);
         setEditingRule(null);
-        setFormData({ name: '', trigger: 'new_patient', templateContent: '', timing: { type: 'immediate' } });
+        setFormData({ name: '', trigger: 'new_patient', templateContent: '', headerId: '', timing: { type: 'immediate' } });
     };
 
     const handleEditRule = (rule: AutomationRule) => {
@@ -338,6 +390,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
             name: rule.name,
             trigger: rule.trigger,
             templateContent: rule.templateContent,
+            headerId: rule.headerId || '',
             timing: rule.timing || { type: 'immediate' }
         });
         setShowCreateModal(true);
@@ -448,7 +501,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
                         className="w-full h-full flex items-center justify-center gap-2"
                         onClick={() => {
                             setEditingRule(null);
-                            setFormData({ name: '', trigger: 'new_patient', templateContent: '', timing: { type: 'immediate' } });
+                            setFormData({ name: '', trigger: 'new_patient', templateContent: '', headerId: '', timing: { type: 'immediate' } });
                             setShowCreateModal(true);
                         }}
                     >
@@ -580,6 +633,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
                                                                 name: '',
                                                                 trigger: trigger as TriggerType,
                                                                 templateContent: '',
+                                                                headerId: '',
                                                                 timing: config.defaultTiming
                                                             });
                                                             setShowCreateModal(true);
@@ -651,6 +705,24 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
                                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                     className="w-full"
                                 />
+                            </div>
+
+                            {/* SMS Header Selection */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-700 mb-1 block">Gönderici Başlığı</label>
+                                <Select
+                                    value={formData.headerId || ''}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, headerId: e.target.value }))}
+                                    options={headersLoading
+                                        ? [{ value: '', label: 'Başlıklar Yükleniyor...' }]
+                                        : headersError
+                                            ? [{ value: '', label: 'Başlık Hatası' }]
+                                            : [{ value: '', label: 'Varsayılan' }, ...headerOptions]
+                                    }
+                                    fullWidth
+                                    disabled={headersLoading}
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Sadece onaylı başlıklar gösterilir</p>
                             </div>
 
                             {/* Timing Configuration */}

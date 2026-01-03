@@ -91,7 +91,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
   useEffect(() => {
     let apiCategories: string[] = [];
 
-    // Handle different response structures
+    // Handle different response structures (same as SupplierAutocomplete)
     if (categoriesData) {
       if (Array.isArray(categoriesData)) {
         apiCategories = categoriesData;
@@ -99,6 +99,8 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
         const innerData = (categoriesData as any).data;
         if (Array.isArray(innerData)) {
           apiCategories = innerData;
+        } else if (innerData?.categories && Array.isArray(innerData.categories)) {
+          apiCategories = innerData.categories;
         } else if (innerData?.data && Array.isArray(innerData.data)) {
           apiCategories = innerData.data;
         }
