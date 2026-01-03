@@ -15,10 +15,10 @@ interface DebugRoleSwitcherProps {
 export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode = false }) => {
   const { user, setUser } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
-  
+
   // Check if current user is the debug admin
   const isDebugAdmin = user?.email === DEBUG_ADMIN_EMAIL;
-  
+
   // Fetch available roles only if debug admin
   const { data: rolesResponse, isLoading: rolesLoading } = useAdminDebugAvailableRoles({
     query: {
@@ -27,23 +27,26 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
       staleTime: 5 * 60 * 1000, // 5 dakika
     }
   });
-  
+
   // Role switch mutation
   const { mutate: switchRole, isPending: isSwitching } = useAdminDebugSwitchRole({
     mutation: {
       onSuccess: (response) => {
         // Response has { success, data: { accessToken, refreshToken, effectiveRole } }
-        const data = response?.data;
+        const data = (response as any)?.data;
         if (data) {
           // Token'ları localStorage'a yaz
           if (data.accessToken) {
+            localStorage.setItem('auth_token', data.accessToken); // Fix: Set legacy key for initializeAuth
             localStorage.setItem(AUTH_TOKEN, data.accessToken);
+            localStorage.setItem('auth_token_timestamp', Date.now().toString()); // Fix: Update timestamp
             window.__AUTH_TOKEN__ = data.accessToken;
           }
           if (data.refreshToken) {
+            localStorage.setItem('refresh_token', data.refreshToken); // Fix: Set legacy key
             localStorage.setItem(REFRESH_TOKEN, data.refreshToken);
           }
-          
+
           // User state'i güncelle - effective role'u user.role olarak kullan
           if (user && data.effectiveRole) {
             setUser({
@@ -51,7 +54,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
               role: data.effectiveRole,
             });
           }
-          
+
           // Sayfayı yenile - tüm permission kontrollerinin güncel olması için
           window.location.reload();
         }
@@ -62,28 +65,28 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
       }
     }
   });
-  
+
   // Debug admin değilse hiçbir şey gösterme
   if (!isDebugAdmin) {
     return null;
   }
-  
+
   // Response has { success, data: { roles: [...] } }
-  const roles = rolesResponse?.data?.roles || [];
+  const roles = (rolesResponse as any)?.data?.roles || [];
   const currentRole = user?.role || 'unknown';
-  
+
   const handleRoleSwitch = (roleName: string) => {
     if (roleName === currentRole) {
       setIsOpen(false);
       return;
     }
-    
+
     switchRole({
       data: { targetRole: roleName }
     });
     setIsOpen(false);
   };
-  
+
   return (
     <div style={{ position: 'relative' }}>
       {/* Debug Badge & Button */}
@@ -122,7 +125,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
           transition: 'transform 0.2s ease'
         }} />
       </button>
-      
+
       {/* Dropdown */}
       {isOpen && (
         <div
@@ -165,7 +168,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
               Sadece {DEBUG_ADMIN_EMAIL} kullanabilir
             </div>
           </div>
-          
+
           {/* Role List */}
           <div style={{ padding: '0.5rem 0' }}>
             {rolesLoading ? (
@@ -249,7 +252,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
               })
             )}
           </div>
-          
+
           {/* Footer */}
           <div style={{
             padding: '0.5rem 1rem',
