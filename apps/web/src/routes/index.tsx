@@ -9,10 +9,12 @@ import { PricingCalculatorCard } from '../components/dashboard/PricingCalculator
 import { CashRegisterModal } from '../components/dashboard/CashRegisterModal';
 import { PricingCalculatorModal } from '../components/dashboard/PricingCalculatorModal';
 import { useDashboardData } from '../hooks/useDashboardData';
+import { usePermissions } from '../hooks/usePermissions';
 import { getEnvVar } from '../utils/env';
 import PieChartSimple from '../components/charts/PieChartSimple';
 import { usePatientDistribution } from '../api/dashboard';
 import { formatActivitySentence } from '../utils/activity';
+import { NoPermissionPlaceholder } from '../components/ui/NoPermissionPlaceholder';
 
 
 export const Route = createFileRoute('/')({
@@ -37,6 +39,19 @@ function DesktopDashboard() {
   const [dateRange, setDateRange] = useState('week');
   const [isCashRegisterModalOpen, setIsCashRegisterModalOpen] = useState(false);
   const [isPricingCalculatorModalOpen, setIsPricingCalculatorModalOpen] = useState(false);
+
+  // Permission-based visibility
+  const { hasPermission, isSuperAdmin, isLoading: permissionsLoading } = usePermissions();
+
+  // Check individual permissions for dashboard sections
+  const canViewPatients = isSuperAdmin || hasPermission('patients.view');
+  const canViewFinance = isSuperAdmin || hasPermission('finance.view');
+  const canViewAppointments = isSuperAdmin || hasPermission('appointments.view');
+  const canViewCashRegister = isSuperAdmin || hasPermission('finance.cash_register');
+  const canViewSales = isSuperAdmin || hasPermission('sales.view');
+  const canViewAnalytics = isSuperAdmin || hasPermission('dashboard.analytics');
+  const canViewActivityLogs = isSuperAdmin || hasPermission('activity_logs.view');
+  const canViewReports = isSuperAdmin || hasPermission('reports.view');
 
   const handleCardClick = (cardType: string) => {
     switch (cardType) {
@@ -121,65 +136,85 @@ function DesktopDashboard() {
           </div>
         </div>
       </div>
-      {/* KPI Cards */}
+      {/* KPI Cards - Show with masked values for restricted metrics */}
       <DashboardStats
         stats={{
-          totalPatients: stats.totalPatients,
-          todayAppointments: stats.todayAppointments,
-          monthlyRevenue: stats.monthlyRevenue,
-          activeTrials: stats.activeTrials,
+          totalPatients: canViewPatients ? stats.totalPatients : 0,
+          todayAppointments: canViewAppointments ? stats.todayAppointments : 0,
+          monthlyRevenue: canViewFinance ? stats.monthlyRevenue : 0,
+          activeTrials: canViewPatients ? stats.activeTrials : 0,
         }}
         onCardClick={handleCardClick}
       />
       {/* Cash Register Card and Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Cash Register Card */}
-        <CashRegisterCard
-          lastTransaction={lastTransaction}
-          onClick={handleCashRegisterClick}
-        />
+        {/* Cash Register Card - Only show if user can access cash register */}
+        {canViewCashRegister && (
+          <CashRegisterCard
+            lastTransaction={lastTransaction}
+            onClick={handleCashRegisterClick}
+          />
+        )}
 
-        {/* Pricing Calculator Card */}
-        <PricingCalculatorCard
-          lastCalculation={lastCalculation}
-          onClick={handlePricingCalculatorClick}
-        />
+        {/* Pricing Calculator Card - Only show if user can view sales */}
+        {canViewSales && (
+          <PricingCalculatorCard
+            lastCalculation={lastCalculation}
+            onClick={handlePricingCalculatorClick}
+          />
+        )}
 
-        {/* Quick Stats Card */}
+        {/* Quick Stats Card - Show with permission-masked values */}
         <QuickStatsCard
           stats={{
-            activePatients: stats.activePatients,
-            dailyRevenue: stats.dailyRevenue,
-            pendingAppointments: stats.pendingAppointments,
-            endingTrials: stats.endingTrials,
+            activePatients: canViewPatients ? stats.activePatients : 0,
+            dailyRevenue: canViewFinance ? stats.dailyRevenue : 0,
+            pendingAppointments: canViewAppointments ? stats.pendingAppointments : 0,
+            endingTrials: canViewPatients ? stats.endingTrials : 0,
           }}
         />
       </div>
       {/* Patient distribution + Recent activity (keeps only these two) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Hasta Dağılımı</h3>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-            <PatientDistribution />
+        {/* Patient Distribution - Only show if user has analytics permission */}
+        {canViewAnalytics ? (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Hasta Dağılımı</h3>
+            <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+              <PatientDistribution />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Hasta Dağılımı</h3>
+            <NoPermissionPlaceholder />
+          </div>
+        )}
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Son Aktiviteler</h3>
-          <div className="h-64 bg-gray-50 rounded-lg overflow-auto">
-            {(!recentActivity || recentActivity.length === 0) ? (
-              <div className="h-full flex items-center justify-center text-gray-500">No recent activity</div>
-            ) : (
-              <ul className="p-4 space-y-3">
-                {recentActivity.map((act: any, idx: number) => (
-                  <li key={idx} className="text-sm text-gray-700">
-                    <div className="text-sm text-gray-800">{formatActivitySentence(act)}</div>
-                  </li>
-                ))}
-              </ul>
-            )}
+        {/* Recent Activity - Only show if user has activity logs permission */}
+        {canViewActivityLogs ? (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Son Aktiviteler</h3>
+            <div className="h-64 bg-gray-50 rounded-lg overflow-auto">
+              {(!recentActivity || recentActivity.length === 0) ? (
+                <div className="h-full flex items-center justify-center text-gray-500">No recent activity</div>
+              ) : (
+                <ul className="p-4 space-y-3">
+                  {recentActivity.map((act: any, idx: number) => (
+                    <li key={idx} className="text-sm text-gray-700">
+                      <div className="text-sm text-gray-800">{formatActivitySentence(act)}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Son Aktiviteler</h3>
+            <NoPermissionPlaceholder />
+          </div>
+        )}
       </div>
       {/* Modals */}
       <CashRegisterModal
@@ -192,7 +227,7 @@ function DesktopDashboard() {
         onClose={() => setIsPricingCalculatorModalOpen(false)}
         onCalculate={handlePricingCalculatorSubmit}
       />
-    </div>
+    </div >
   );
 }
 

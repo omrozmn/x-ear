@@ -2,7 +2,7 @@
 Admin routes for admin panel
 """
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, create_refresh_token
 from datetime import datetime, timedelta
 from models.base import db
 from models.admin_user import AdminUser
@@ -135,11 +135,18 @@ def admin_login():
         admin_identity = admin.id if admin.id.startswith('admin_') else f'admin_{admin.id}'
         access_token = create_access_token(
             identity=admin_identity,
-            additional_claims={'role': admin.role, 'type': 'admin'}
+            additional_claims={'role': admin.role, 'user_type': 'admin'}  # user_type instead of type
+        )
+        
+        # Create refresh token for admin users
+        refresh_token = create_refresh_token(
+            identity=admin_identity,
+            additional_claims={'role': admin.role, 'user_type': 'admin'}  # user_type instead of type
         )
         
         return success_response(data={
             'token': access_token,
+            'refreshToken': refresh_token,
             'user': admin.to_dict(),
             'requires_mfa': False
         })
@@ -467,8 +474,9 @@ def debug_switch_role(ctx):
         if not user:
             return error_response('User not found', 404)
         
-        # Only admin@x-ear.com can use this feature
-        if user.email != DEBUG_ADMIN_EMAIL:
+        # Only admin@x-ear.com can use this feature (check real email if impersonating)
+        real_email = ctx.claims.get('real_user_email') or user.email
+        if real_email != DEBUG_ADMIN_EMAIL:
             return error_response('Bu özellik sadece sistem yöneticisi için kullanılabilir', 403)
         
         data = request.get_json() or {}
@@ -485,6 +493,10 @@ def debug_switch_role(ctx):
         # Get role permissions
         role_permissions = [p.name for p in role.permissions]
         
+        # Always include debug permission for impersonating admin
+        if 'platform.debug.use' not in role_permissions:
+            role_permissions.append('platform.debug.use')
+        
         # Create new JWT with impersonation claims
         additional_claims = {
             'tenant_id': user.tenant_id if hasattr(user, 'tenant_id') and user.tenant_id else 'debug_tenant', # Mock tenant context
@@ -492,17 +504,22 @@ def debug_switch_role(ctx):
             'real_user_id': user.id,
             'real_user_email': user.email,
             'is_impersonating': True,
-            'role_permissions': role_permissions
+            'role_permissions': role_permissions,
+            # Keep admin privileges
+            'user_type': 'admin',
+            'role': user.role or 'super_admin',
         }
         
+        # Preserve admin_ prefix for proper principal resolution
+        admin_identity = user.id if user.id.startswith('admin_') else f'admin_{user.id}'
+        
         access_token = create_access_token(
-            identity=user.id,
+            identity=admin_identity,
             additional_claims=additional_claims
         )
         
-        refresh_token = create_access_token(
-            identity=user.id,
-            expires_delta=timedelta(days=30),
+        refresh_token = create_refresh_token(
+            identity=admin_identity,
             additional_claims=additional_claims
         )
         
@@ -546,7 +563,12 @@ def debug_available_roles(ctx):
         user_id = ctx.principal_id
         admin_user = AdminUser.query.get(user_id) # Using query to be safe with session attachment
         
-        if not admin_user or admin_user.email != DEBUG_ADMIN_EMAIL:
+        if not admin_user:
+            return error_response('Unauthorized', 403)
+        
+        # Check real email if impersonating
+        real_email = ctx.claims.get('real_user_email') or admin_user.email
+        if real_email != DEBUG_ADMIN_EMAIL:
             return error_response('Unauthorized', 403)
         
         roles = Role.query.all()
@@ -578,6 +600,168 @@ def debug_available_roles(ctx):
         return error_response(str(e), 500)
 
 
+@admin_bp.route('/debug/switch-tenant', methods=['POST'])
+@unified_access(permission=AdminPermissions.DEBUG_USE)
+def debug_switch_tenant(ctx):
+    """
+    Switch to a different tenant context for debugging purposes.
+    Only available to admin@x-ear.com user.
+    Returns a new JWT with the selected tenant_id.
+    """
+    # Check if debug mode is enabled
+    if getenv('ENABLE_DEBUG_ROLE_SWITCH', 'true').lower() != 'true':
+        return error_response('Debug tenant switch is disabled', code='DEBUG_DISABLED', status_code=403)
+    
+    try:
+        user_id = ctx.principal_id
+        user = AdminUser.query.get(user_id)
+        
+        if not user:
+            return error_response('User not found', 404)
+        
+        # Only admin@x-ear.com can use this feature (check real email if impersonating)
+        real_email = ctx.claims.get('real_user_email') or user.email
+        if real_email != DEBUG_ADMIN_EMAIL:
+            return error_response('Bu özellik sadece sistem yöneticisi için kullanılabilir', 403)
+        
+        data = request.get_json() or {}
+        target_tenant_id = data.get('targetTenantId')
+        
+        if not target_tenant_id:
+            return error_response('targetTenantId is required', 400)
+        
+        # Validate target tenant exists
+        from models.tenant import Tenant
+        tenant = Tenant.query.get(target_tenant_id)
+        if not tenant:
+            return error_response(f'Tenant "{target_tenant_id}" not found', 404)
+        
+        # Get current role permissions and add debug permission
+        current_role_permissions = ctx.claims.get('role_permissions', [])
+        if isinstance(current_role_permissions, list):
+            role_permissions = list(current_role_permissions)
+        else:
+            role_permissions = []
+        if 'platform.debug.use' not in role_permissions:
+            role_permissions.append('platform.debug.use')
+        
+        # Create new JWT with tenant impersonation claims
+        additional_claims = {
+            'tenant_id': target_tenant_id,
+            'effective_tenant_id': target_tenant_id,
+            'real_user_id': user.id,
+            'real_user_email': user.email,
+            'is_impersonating_tenant': True,
+            # Keep admin privileges
+            'user_type': 'admin',
+            'role': user.role or 'super_admin',
+            # Keep current role if exists
+            'effective_role': ctx.claims.get('effective_role', 'super_admin'),
+            'is_impersonating': ctx.claims.get('is_impersonating', False),
+            'role_permissions': role_permissions,
+        }
+        
+        # Preserve admin_ prefix for proper principal resolution
+        admin_identity = user.id if user.id.startswith('admin_') else f'admin_{user.id}'
+        
+        access_token = create_access_token(
+            identity=admin_identity,
+            additional_claims=additional_claims
+        )
+        
+        refresh_token = create_refresh_token(
+            identity=admin_identity,
+            additional_claims=additional_claims
+        )
+        
+        # Audit log
+        logger.info(f"Tenant switch: {user.email} -> {tenant.name} ({target_tenant_id})")
+        
+        # Log to activity logs for audit trail
+        try:
+            from services.activity_logging import log_activity
+            log_activity(
+                action='TENANT_IMPERSONATION',
+                resource_type='tenant',
+                resource_id=target_tenant_id,
+                details={
+                    'admin_user_id': user.id,
+                    'admin_email': user.email,
+                    'target_tenant_id': target_tenant_id,
+                    'tenant_name': tenant.name,
+                    'ip': request.remote_addr,
+                    'user_agent': request.headers.get('User-Agent')
+                }
+            )
+        except Exception as log_error:
+            logger.warning(f"Failed to log tenant impersonation: {log_error}")
+        
+        return success_response(data={
+            'accessToken': access_token,
+            'refreshToken': refresh_token,
+            'effectiveTenantId': target_tenant_id,
+            'tenantName': tenant.name,
+            'tenantStatus': tenant.status,
+            'isImpersonatingTenant': True,
+            'realUserEmail': user.email
+        })
+        
+    except Exception as e:
+        logger.error(f"Debug tenant switch error: {e}")
+        return error_response(str(e), 500)
+
+
+@admin_bp.route('/debug/exit-impersonation', methods=['POST'])
+@unified_access(permission=AdminPermissions.DEBUG_USE)
+def debug_exit_impersonation(ctx):
+    """
+    Exit tenant/role impersonation and return to normal admin mode.
+    Only available to admin@x-ear.com user.
+    """
+    try:
+        user_id = ctx.principal_id
+        user = AdminUser.query.get(user_id)
+        
+        if not user:
+            return error_response('User not found', 404)
+        
+        # Check real email if impersonating
+        real_email = ctx.claims.get('real_user_email') or user.email
+        if real_email != DEBUG_ADMIN_EMAIL:
+            return error_response('Bu özellik sadece sistem yöneticisi için kullanılabilir', 403)
+        
+        # Create clean JWT without impersonation
+        additional_claims = {
+            'role': 'super_admin',
+            'user_type': 'admin'
+        }
+        
+        # Preserve admin_ prefix for proper principal resolution
+        admin_identity = user.id if user.id.startswith('admin_') else f'admin_{user.id}'
+        
+        access_token = create_access_token(
+            identity=admin_identity,
+            additional_claims=additional_claims
+        )
+        
+        refresh_token = create_refresh_token(
+            identity=admin_identity,
+            additional_claims=additional_claims
+        )
+        
+        logger.info(f"Exit impersonation: {user.email}")
+        
+        return success_response(data={
+            'accessToken': access_token,
+            'refreshToken': refresh_token,
+            'message': 'Exited impersonation mode'
+        })
+        
+    except Exception as e:
+        logger.error(f"Exit impersonation error: {e}")
+        return error_response(str(e), 500)
+
+
 @admin_bp.route('/debug/page-permissions/<page_key>', methods=['GET'])
 @unified_access(permission=AdminPermissions.DEBUG_USE)
 def debug_page_permissions(ctx, page_key):
@@ -595,7 +779,12 @@ def debug_page_permissions(ctx, page_key):
         # get_jwt() is replaced by ctx.claims
         jwt_claims = ctx.claims
         
-        if not admin_user or admin_user.email != DEBUG_ADMIN_EMAIL:
+        if not admin_user:
+            return error_response('Unauthorized', 403)
+        
+        # Check real email if impersonating
+        real_email = ctx.claims.get('real_user_email') or admin_user.email
+        if real_email != DEBUG_ADMIN_EMAIL:
             return error_response('Unauthorized', 403)
         
         # Get role from query param or JWT

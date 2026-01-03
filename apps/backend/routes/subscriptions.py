@@ -56,8 +56,11 @@ def serialize_plan(plan: Optional[Plan]) -> Optional[dict]:
 def subscribe(ctx):
     """Subscribe to a plan (Mock Payment)"""
     user = ctx.user
+    if not user:
+        return error_response('User context required', code='USER_REQUIRED', status_code=401)
     
     # Only tenant admin or super admin can subscribe
+    # Note: If Super Admin reaches here (mocking a user?), they must have a user object.
     if user.role not in ['tenant_admin', 'super_admin']:
         return error_response('Unauthorized', code='FORBIDDEN', status_code=403)
         
@@ -168,6 +171,8 @@ def complete_signup(ctx):
     2. Users verifying phone inline at checkout
     """
     user = ctx.user
+    if not user:
+        return error_response('User context required', code='USER_REQUIRED', status_code=401)
     
     data = request.get_json()
     
@@ -263,6 +268,15 @@ def complete_signup(ctx):
 def get_current(ctx):
     """Get current subscription details"""
     user = ctx.user
+    
+    # Super admin doesn't have tenant subscription - return a default response
+    if not user or ctx.is_super_admin:
+        return success_response(data={
+            'subscription': None,
+            'plan': None,
+            'is_super_admin': True,
+            'message': 'Super admin - no tenant subscription'
+        })
     
     tenant = Tenant.query.get(user.tenant_id)
     if not tenant:

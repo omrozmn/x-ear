@@ -44,25 +44,29 @@ export const useSupplierInvoices = (params: SupplierInvoicesParams): Omit<UseQue
         end_date: params.endDate
     });
 
-    const { data, ...rest } = queryResult;
+    const { data: apiResponse, isLoading, isError, ...rest } = queryResult;
 
     // Adapt response to match previous hook's return structure
     // Previous usage: data.invoices
-    // Generated response: data.data.invoices
+    // Generated response: apiResponse.data.invoices
     return {
         ...rest,
-        data: data?.data
+        isLoading,
+        isError,
+        data: apiResponse?.data
     };
 };
 
 // Hook: Get suggested suppliers
 export const useSuggestedSuppliers = (): Omit<UseQueryResult<SuppliersGetSuggestedSuppliers200, ErrorResponse>, 'data'> & { suggestedSuppliers: any[], success: boolean | undefined } => {
     const queryResult = useSuppliersGetSuggestedSuppliers();
-    const { data, ...rest } = queryResult;
-    
+    const { data: apiResponse, isLoading, isError, ...rest } = queryResult;
+
     return {
-        suggestedSuppliers: data?.data?.suggestedSuppliers || [],
-        success: data?.success,
+        suggestedSuppliers: apiResponse?.data?.suggestedSuppliers || [],
+        success: apiResponse?.success,
+        isLoading,
+        isError,
         ...rest
     };
 };
@@ -98,10 +102,10 @@ export const useSyncInvoices = () => {
     const queryClient = useQueryClient();
     const { mutateAsync, ...rest } = useBirfaturaSyncInvoices({
         mutation: {
-             onSuccess: () => {
+            onSuccess: () => {
                 // Invalidate all invoice-related queries
                 queryClient.invalidateQueries({ queryKey: ['/api/suppliers'] });
-             }
+            }
         }
     });
 

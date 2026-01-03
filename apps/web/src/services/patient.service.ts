@@ -33,7 +33,7 @@ export class PatientService {
   private initialized = false;
 
   constructor() {
-    this.init();
+    // Don't initialize in constructor - wait for first use
   }
 
   private async init(): Promise<void> {
@@ -47,6 +47,13 @@ export class PatientService {
 
     // Listen for storage changes (localStorage fallback only)
     window.addEventListener('storage', this.handleStorageChange.bind(this));
+  }
+
+  // Ensure initialization before any operation
+  private async ensureInitialized(): Promise<void> {
+    if (!this.initialized) {
+      await this.init();
+    }
   }
 
   private handleStorageChange(event: StorageEvent): void {
@@ -183,8 +190,8 @@ export class PatientService {
 
   // CRUD Operations
   async createPatient(patientData: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>): Promise<Patient> {
+    await this.ensureInitialized();
     try {
-      await this.init();
 
       // Validate required fields (TC number is optional per DB schema)
       if (!patientData.firstName?.trim()) {
@@ -235,8 +242,8 @@ export class PatientService {
   }
 
   async updatePatient(id: string, updates: Partial<Patient>): Promise<Patient | null> {
+    await this.ensureInitialized();
     try {
-      await this.init();
 
       if (!id?.trim()) {
         throw new Error('Patient ID is required');
@@ -285,8 +292,8 @@ export class PatientService {
   }
 
   async deletePatient(id: string): Promise<boolean> {
+    await this.ensureInitialized();
     try {
-      await this.init();
 
       if (!id?.trim()) {
         throw new Error('Patient ID is required');
@@ -325,8 +332,8 @@ export class PatientService {
 
   // Query operations
   async getPatient(id: string): Promise<Patient | null> {
+    await this.ensureInitialized();
     try {
-      await this.init();
 
       if (!id?.trim()) {
         return null;
@@ -340,8 +347,8 @@ export class PatientService {
   }
 
   async getPatients(filters: PatientFilters = {}): Promise<PatientSearchResult> {
+    await this.ensureInitialized();
     try {
-      await this.init();
 
       let filteredPatients = [...this.patients];
 
@@ -423,8 +430,8 @@ export class PatientService {
   }
 
   async getPatientStats(): Promise<PatientStats> {
+    await this.ensureInitialized();
     try {
-      await this.init();
 
       const stats: PatientStats = {
         total: this.patients.length,

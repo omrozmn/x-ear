@@ -6,6 +6,7 @@ import { useAuthStore } from '../../../stores/authStore';
 
 import {
   useDevicesGetDeviceBrands,
+  getDevicesGetDeviceBrandsQueryKey,
   useDevicesCreateDeviceBrand
 } from '@/api/generated';
 
@@ -84,14 +85,17 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
   const { token } = useAuthStore();
 
   // React Query hook for brands - only fetch if authenticated
-  const { data: brandsData } = useDevicesGetDeviceBrands({
-    query: { enabled: !!token }
+  const { data: brandsData, isLoading, isError } = useDevicesGetDeviceBrands({
+    query: {
+      queryKey: getDevicesGetDeviceBrandsQueryKey(),
+      enabled: !!token
+    }
   });
 
   // Load brands from API data
   useEffect(() => {
     let apiBrands: string[] = [];
-    
+
     // Handle different response structures
     if (brandsData) {
       if (Array.isArray(brandsData)) {
@@ -105,7 +109,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
         }
       }
     }
-    
+
     if (apiBrands.length > 0) {
       const combined = [...new Set([...apiBrands, ...defaultBrands])];
       setAllBrands(combined.sort());
@@ -310,7 +314,19 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
             className="bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
             role="listbox"
           >
-            {filteredBrands.map((brand, index) => (
+            {isLoading && (
+              <div className="px-4 py-2 text-sm text-gray-500 italic">
+                Yükleniyor...
+              </div>
+            )}
+
+            {isError && (
+              <div className="px-4 py-2 text-sm text-red-500">
+                Markalar yüklenirken hata oluştu.
+              </div>
+            )}
+
+            {!isLoading && !isError && filteredBrands.map((brand, index) => (
               <div
                 key={index}
                 role="option"

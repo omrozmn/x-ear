@@ -88,18 +88,18 @@ def init_permission_middleware(app):
         # Best Practice: Admin panel has its own RBAC via @require_admin_permission decorator
         # Middleware should skip admin endpoints when admin JWT is present
         if request.path.startswith('/api/admin/'):
-            jwt_type = jwt_data.get('type')
+            user_type = jwt_data.get('user_type')  # Changed from 'type' to 'user_type'
             
             # Admin JWT varsa middleware'i atla, decorator kontrol etsin
-            if jwt_type == 'admin':
+            if user_type == 'admin':
                 # Admin panel JWT'si - middleware'i atla, @require_admin_permission decorator'ı kontrol edecek
-                logger.debug(f"Admin panel middleware bypass: user={current_user}, type=admin")
+                logger.debug(f"Admin panel middleware bypass: user={current_user}, user_type=admin")
                 return None
             
             # Admin JWT yoksa reddet (decorator bile kontrol etmesin)
             logger.warning(
                 f"Admin panel access denied - no admin JWT: user={current_user}, "
-                f"path={request.path}, jwt_type={jwt_type}"
+                f"path={request.path}, user_type={user_type}"
             )
             from flask import jsonify
             return jsonify({

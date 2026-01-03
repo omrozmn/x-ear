@@ -96,13 +96,13 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
     const { success: showSuccessToast, error: showErrorToast, warning: showWarningToast } = useToastHelpers();
     const { token } = useAuthStore();
 
-    const { data: branchesData } = useBranchesGetBranches({
+    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useBranchesGetBranches({
         query: { queryKey: getBranchesGetBranchesQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
     });
-    
+
     const branchOptions = useMemo(() => {
         let items: any[] = [];
-        
+
         // Handle different response structures
         if (branchesData) {
             if (Array.isArray(branchesData)) {
@@ -116,18 +116,18 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
                 }
             }
         }
-        
+
         return items
             .filter((branch): branch is { id: string; name?: string } => Boolean(branch?.id))
             .map((branch) => ({ value: branch.id, label: branch.name ?? 'Şube' }));
     }, [branchesData]);
 
     // Fetch first patient for preview
-    const { data: patientsData } = usePatientsGetPatients(
+    const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = usePatientsGetPatients(
         { page: 1, per_page: 1 },
         { query: { queryKey: getPatientsGetPatientsQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters' && !!token, refetchOnWindowFocus: false } }
     );
-    
+
     // Handle different response structures for first patient
     let firstPatient: any = null;
     if (patientsData) {
@@ -164,6 +164,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
             }
         }
     );
+    const { isLoading: countLoading } = patientsCountQuery;
 
     const filterRecipientCount = (patientsCountQuery.data as any)?.count ?? 0;
     const excelRecipientCount = excelPreview?.validPhoneCount ?? 0;
@@ -378,8 +379,14 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
                             ...prev,
                             branchId: event.target.value || undefined
                         }))}
-                        options={[{ value: '', label: 'Tümü' }, ...branchOptions]}
+                        options={branchesLoading
+                            ? [{ value: '', label: 'Şubeler Yükleniyor...' }]
+                            : branchesError
+                                ? [{ value: '', label: 'Şube Hatası' }]
+                                : [{ value: '', label: 'Tümü' }, ...branchOptions]
+                        }
                         fullWidth
+                        disabled={branchesLoading}
                     />
                 </div>
                 <div>
@@ -409,7 +416,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
             </div>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div className="text-sm text-gray-600 flex items-center gap-2">
-                    {patientsCountQuery.isFetching ? (
+                    {patientsCountQuery.isFetching || countLoading ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
                             Alıcı sayısı hesaplanıyor...

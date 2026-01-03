@@ -7,7 +7,13 @@
 
 import { InvoiceFormData } from '../types/invoice';
 import { apiClient } from '../api/orval-mutator';
+import {
+  birfaturaCreateInvoice,
+  birfaturaCancelInvoice,
+  birfaturaRetryInvoice
+} from '@/api/generated';
 import { getOutEBelgeV2API } from '../generated/birfatura/outEBelgeV2API';
+import { unwrapObject } from '../utils/response-unwrap';
 
 export interface BirFaturaResponse {
   success: boolean;
@@ -286,8 +292,8 @@ class BirFaturaService {
    */
   async create(invoiceData: InvoiceFormData): Promise<BirFaturaResponse> {
     try {
-      const api = getOutEBelgeV2API();
-      const response = await api.postApiOutEBelgeV2Create({ body: invoiceData as any });
+      // const api = getOutEBelgeV2API();
+      const response = await birfaturaCreateInvoice(invoiceData as any);
       const data = unwrapObject<any>(response);
 
       if (!data.Success) {
@@ -403,8 +409,8 @@ class BirFaturaService {
    */
   async cancel(invoiceId: string, reason?: string): Promise<BirFaturaResponse> {
     try {
-      const api = getOutEBelgeV2API();
-      const response = await api.postApiOutEBelgeV2Cancel({ uuid: invoiceId, body: reason ? { reason } : {} as any });
+      // const api = getOutEBelgeV2API();
+      const response = await birfaturaCancelInvoice(invoiceId, reason ? { reason } : {} as any);
       const data = unwrapObject<any>(response);
 
       if (!data.Success) {

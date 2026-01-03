@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QA Rol Değiştirici Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            border-left: 4px solid #2196F3;
+            padding-left: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #FF9800;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .info {
+            color: #2196F3;
+            font-weight: bold;
+        }
+        .warning {
+            color: #FF9800;
+            font-weight: bold;
+        }
+        pre {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .role-button {
+            background: #2196F3;
+        }
+        .role-button:hover {
+            background: #0b7dda;
+        }
+        .token-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .response-box {
+            background: #e8f5e9;
+            border: 1px solid #4CAF50;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 QA Rol Değiştirici Test</h1>
+        <p>Bu test, <code>admin@x-ear.com</code> kullanıcısının farklı rollere geçiş yapabilmesini test eder.</p>
+        
+        <div class="test-section">
+            <h2>📋 Test Adımları</h2>
+            <ol>
+                <li>Admin olarak giriş yap</li>
+                <li>Mevcut rolleri listele</li>
+                <li>Farklı rollere geç ve response'ları kontrol et</li>
+                <li>Her rol değişiminde token ve user state'i kontrol et</li>
+            </ol>
+        </div>
+
+        <div id="output"></div>
+        
+        <div style="margin-top: 20px;">
+            <button onclick="runFullTest()">🚀 Tüm Testleri Çalıştır</button>
+            <button onclick="clearOutput()">🗑️ Temizle</button>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:5003';
+        let currentToken = null;
+        let availableRoles = [];
+        
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+        
+        function log(msg, type = 'info') {
+            const output = document.getElementById('output');
+            const className = type === 'success' ? 'success' : 
+                            type === 'error' ? 'error' : 
+                            type === 'warning' ? 'warning' : 'info';
+            output.innerHTML += `<p class="${className}">${msg}</p>`;
+            console.log(msg);
+        }
+        
+        function logSection(title) {
+            const output = document.getElementById('output');
+            output.innerHTML += `<h2>${title}</h2>`;
+        }
+        
+        function logJson(label, data) {
+            const output = document.getElementById('output');
+            output.innerHTML += `<div class="response-box"><strong>${label}:</strong><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+        }
+        
+        function logTokenInfo(token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const output = document.getElementById('output');
+                output.innerHTML += `
+                    <div class="token-info">
+                        <strong>🔑 Token Bilgileri:</strong>
+                        <pre>${JSON.stringify(payload, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (e) {
+                log('Token decode edilemedi: ' + e.message, 'error');
+            }
+        }
+        
+        async function step1_login() {
+            logSection('1️⃣ Admin Girişi');
+            try {
+                log('admin@x-ear.com ile giriş yapılıyor...');
+                
+                const response = await fetch(`${API_URL}/api/admin/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@x-ear.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    log('❌ Giriş başarısız!', 'error');
+                    logJson('Response', data);
+                    return false;
+                }
+                
+                currentToken = data.data.token;
+                log('✅ Giriş başarılı!', 'success');
+                logTokenInfo(currentToken);
+                
+                return true;
+            } catch (error) {
+                log(`❌ Hata: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function step2_getAvailableRoles() {
+            logSection('2️⃣ Mevcut Rolleri Listele');
+            try {
+                log('Mevcut roller getiriliyor...');
+                
+                const response = await fetch(`${API_URL}/api/admin/debug/available-roles`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log(`Response Status: ${response.status}`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    log('❌ Roller getirilemedi!', 'error');
+                    logJson('Response', data);
+                    return false;
+                }
+                
+                availableRoles = data.data.roles || [];
+                log(`✅ ${availableRoles.length} rol bulundu!`, 'success');
+                logJson('Mevcut Roller', availableRoles);
+                
+                // Render role buttons
+                const output = document.getElementById('output');
+                let buttonsHtml = '<div style="margin: 20px 0;"><strong>Rol Değiştir:</strong><br>';
+                availableRoles.forEach(role => {
+                    buttonsHtml += `<button class="role-button" onclick="testRoleSwitch('${role.name}')">${role.displayName} (${role.permissionCount} izin)</button>`;
+                });
+                buttonsHtml += '</div>';
+                output.innerHTML += buttonsHtml;
+                
+                return true;
+            } catch (error) {
+                log(`❌ Hata: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testRoleSwitch(roleName) {
+            logSection(`3️⃣ Rol Değiştirme: ${roleName}`);
+            try {
+                log(`"${roleName}" rolüne geçiliyor...`);
+                
+                const response = await fetch(`${API_URL}/api/admin/debug/switch-role`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        targetRole: roleName
+                    })
+                });
+                
+                log(`Response Status: ${response.status}`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    log('❌ Rol değiştirme başarısız!', 'error');
+                    logJson('Response', data);
+                    return;
+                }
+                
+                log('✅ Rol değiştirme başarılı!', 'success');
+                logJson('Response Data', data.data);
+                
+                // Update current token
+                if (data.data.accessToken) {
+                    currentToken = data.data.accessToken;
+                    log('🔄 Token güncellendi', 'info');
+                    logTokenInfo(currentToken);
+                }
+                
+                // Test frontend response structure
+                log('📊 Frontend Response Analizi:', 'info');
+                const responseData = data.data;
+                
+                const checks = [
+                    { field: 'accessToken', exists: !!responseData.accessToken, type: typeof responseData.accessToken },
+                    { field: 'refreshToken', exists: !!responseData.refreshToken, type: typeof responseData.refreshToken },
+                    { field: 'effectiveRole', exists: !!responseData.effectiveRole, value: responseData.effectiveRole },
+                    { field: 'roleDisplayName', exists: !!responseData.roleDisplayName, value: responseData.roleDisplayName },
+                    { field: 'permissions', exists: !!responseData.permissions, count: responseData.permissions?.length },
+                    { field: 'isImpersonating', exists: responseData.isImpersonating !== undefined, value: responseData.isImpersonating },
+                    { field: 'realUserEmail', exists: !!responseData.realUserEmail, value: responseData.realUserEmail }
+                ];
+                
+                const output = document.getElementById('output');
+                let checkHtml = '<div class="response-box"><strong>Response Field Kontrolü:</strong><ul>';
+                checks.forEach(check => {
+                    const status = check.exists ? '✅' : '❌';
+                    let detail = '';
+                    if (check.value !== undefined) detail = ` = ${check.value}`;
+                    if (check.count !== undefined) detail = ` (${check.count} adet)`;
+                    if (check.type) detail += ` [${check.type}]`;
+                    checkHtml += `<li>${status} <code>${check.field}</code>${detail}</li>`;
+                });
+                checkHtml += '</ul></div>';
+                output.innerHTML += checkHtml;
+                
+                // Simulate frontend state update
+                log('🎨 Frontend State Simülasyonu:', 'info');
+                const frontendState = {
+                    user: {
+                        email: responseData.realUserEmail,
+                        role: responseData.effectiveRole,
+                        isImpersonating: responseData.isImpersonating
+                    },
+                    tokens: {
+                        accessToken: responseData.accessToken ? '***' + responseData.accessToken.slice(-10) : null,
+                        refreshToken: responseData.refreshToken ? '***' + responseData.refreshToken.slice(-10) : null
+                    }
+                };
+                logJson('Frontend State', frontendState);
+                
+            } catch (error) {
+                log(`❌ Hata: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        async function step3_testAllRoles() {
+            logSection('3️⃣ Tüm Rolleri Test Et');
+            
+            for (const role of availableRoles) {
+                await testRoleSwitch(role.name);
+                // Wait a bit between tests
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+        
+        async function runFullTest() {
+            clearOutput();
+            log('🚀 Test başlatılıyor...', 'info');
+            
+            const step1 = await step1_login();
+            if (!step1) {
+                log('❌ Test durdu: Giriş başarısız', 'error');
+                return;
+            }
+            
+            const step2 = await step2_getAvailableRoles();
+            if (!step2) {
+                log('❌ Test durdu: Roller getirilemedi', 'error');
+                return;
+            }
+            
+            log('✅ Test hazır! Yukarıdaki butonlardan bir rol seçerek test edebilirsiniz.', 'success');
+        }
+        
+        // Auto-run on load
+        window.onload = () => {
+            log('Sayfa yüklendi. Test başlatmak için butona tıklayın.', 'info');
+        };
+    </script>
+</body>
+</html>

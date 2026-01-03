@@ -3,15 +3,15 @@ const { useState, useMemo } = React;
 import { Button, Input, Badge } from '@x-ear/ui-web';
 import { Card, CardContent, CardHeader, CardTitle } from '@x-ear/ui-web';
 import { useToastHelpers } from '@x-ear/ui-web';
-import { 
-  Search, 
-  Filter, 
-  Calendar, 
-  Clock, 
-  User, 
-  FileText, 
-  Phone, 
-  CreditCard, 
+import {
+  Search,
+  Filter,
+  Calendar,
+  Clock,
+  User,
+  FileText,
+  Phone,
+  CreditCard,
   Stethoscope,
   Settings,
   RefreshCw,
@@ -41,7 +41,7 @@ interface PatientTimelineTabProps {
 
 export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient, onPatientUpdate: _onPatientUpdate }) => {
   const { success: showSuccessToast, error: showErrorToast } = useToastHelpers();
-  
+
   // State management
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
@@ -207,7 +207,7 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
 
     // Search filter
     if (searchTerm) {
-      filtered = filtered.filter(event => 
+      filtered = filtered.filter(event =>
         event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         event.description.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -376,7 +376,7 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
                       variant={selectedEventTypes.includes(option.value) ? "default" : "outline"}
                       size="sm"
                       onClick={() => {
-                        setSelectedEventTypes(prev => 
+                        setSelectedEventTypes(prev =>
                           prev.includes(option.value)
                             ? prev.filter(t => t !== option.value)
                             : [...prev, option.value]
@@ -478,24 +478,48 @@ export const PatientTimelineTab: React.FC<PatientTimelineTabProps> = ({ patient,
                                 {formatTime(event.date)}
                               </span>
                             </div>
-                            
+
                             {/* Expanded metadata */}
                             {expandedEvents.has(event.id) && event.metadata && (
                               <div className="mt-3 p-3 bg-gray-50 rounded-md">
                                 <h6 className="text-xs font-medium text-gray-700 mb-2">Detaylar</h6>
                                 <div className="space-y-1">
-                                  {Object.entries(event.metadata).map(([key, value]) => (
-                                    <div key={key} className="flex justify-between text-xs">
-                                      <span className="text-gray-500 capitalize">{key}:</span>
-                                      <span className="text-gray-700">{String(value)}</span>
-                                    </div>
-                                  ))}
+                                  {Object.entries(event.metadata).map(([key, value]) => {
+                                    const keyMapping: Record<string, string> = {
+                                      author: 'Ekleyen',
+                                      type: 'Tür',
+                                      isPrivate: 'Gizli Not',
+                                      serialNumber: 'Seri No',
+                                      price: 'Fiyat',
+                                      status: 'Durum',
+                                      notes: 'Notlar',
+                                      description: 'Açıklama',
+                                      paymentMethod: 'Ödeme Yöntemi',
+                                      amount: 'Tutar',
+                                      currency: 'Para Birimi',
+                                      priority: 'Öncelik',
+                                      category: 'Kategori'
+                                    };
+
+                                    // Format boolean values
+                                    let displayValue = String(value);
+                                    if (typeof value === 'boolean') {
+                                      displayValue = value ? 'Evet' : 'Hayır';
+                                    }
+
+                                    return (
+                                      <div key={key} className="flex justify-between text-xs">
+                                        <span className="text-gray-500">{keyMapping[key] || key}:</span>
+                                        <span className="text-gray-700">{displayValue}</span>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}
                           </div>
                         </div>
-                        
+
                         {/* Actions */}
                         <div className="flex items-center space-x-1 ml-2">
                           {event.metadata && (

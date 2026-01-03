@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { DebugRoleSwitcher } from './DebugRoleSwitcher';
+import { DebugTenantSwitcher } from './DebugTenantSwitcher';
 import { PagePermissionsViewer } from './PagePermissionsViewer';
 
 // Route'tan page key mapping
@@ -427,7 +428,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 }}></span>
               </Button>
 
-              {/* Debug Role Switcher (admin@x-ear.com only) */}
+              {/* Debug Switchers (admin@x-ear.com only) */}
+              <DebugTenantSwitcher darkMode={darkMode} />
               <DebugRoleSwitcher darkMode={darkMode} />
 
               {/* User Menu */}
@@ -491,8 +493,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     zIndex: 1000
                   }}>
                     <div style={{ padding: '0.5rem 0' }}>
-                      <a
-                        href="/profile"
+                      <Link
+                        to="/profile"
+                        onClick={() => setShowUserDropdown(false)}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -513,9 +516,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       >
                         <User size={16} style={{ marginRight: '0.5rem' }} />
                         <span>Profil</span>
-                      </a>
-                      <a
-                        href="/settings"
+                      </Link>
+                      <Link
+                        to="/settings"
+                        onClick={() => setShowUserDropdown(false)}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -536,7 +540,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       >
                         <Settings size={16} style={{ marginRight: '0.5rem' }} />
                         <span>Ayarlar</span>
-                      </a>
+                      </Link>
                       <Button
                         onClick={() => {
                           const { logout } = useAuthStore.getState();
@@ -594,6 +598,34 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           backgroundColor: darkMode ? '#111827' : '#f9fafb',
           minHeight: 'calc(100vh - 80px)'
         }}>
+          {/* Impersonation Warning Banner */}
+          {((user as any)?.isImpersonatingTenant || (user as any)?.isImpersonating) && (
+            <div
+              style={{
+                marginBottom: '1rem',
+                padding: '0.75rem 1rem',
+                backgroundColor: darkMode ? '#065f46' : '#d1fae5',
+                border: `2px solid ${darkMode ? '#10b981' : '#059669'}`,
+                borderRadius: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Building2 size={16} style={{ color: darkMode ? '#34d399' : '#065f46' }} />
+                <span style={{ color: darkMode ? '#34d399' : '#065f46', fontWeight: '600', fontSize: '0.875rem' }}>
+                  {(user as any)?.isImpersonatingTenant && `🏢 Impersonating: ${(user as any)?.tenantName}`}
+                  {(user as any)?.isImpersonating && !((user as any)?.isImpersonatingTenant) && `👤 Impersonating Role: ${user?.role}`}
+                  {(user as any)?.isImpersonatingTenant && (user as any)?.isImpersonating && ` • Role: ${user?.role}`}
+                </span>
+              </div>
+              <span style={{ color: darkMode ? '#6ee7b7' : '#047857', fontSize: '0.75rem' }}>
+                QA Debug Mode
+              </span>
+            </div>
+          )}
+          
           {children}
 
           {/* Page Permissions Viewer (admin@x-ear.com only) */}

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { Bug, ChevronDown, Check, Loader2, Shield } from 'lucide-react';
-import { useAdminDebugAvailableRoles, useAdminDebugSwitchRole, getAdminDebugAvailableRolesQueryKey } from '@/api/generated/admin/admin';
+import { Bug, ChevronDown, Check, Loader2, Shield, LogOut } from 'lucide-react';
+import { useAdminDebugAvailableRoles, useAdminDebugSwitchRole, useAdminDebugExitImpersonation, getAdminDebugAvailableRolesQueryKey } from '@/api/generated/admin/admin';
 import { useAuthStore } from '../../stores/authStore';
 import { AUTH_TOKEN, REFRESH_TOKEN } from '../../constants/storage-keys';
 
@@ -13,7 +13,7 @@ interface DebugRoleSwitcherProps {
 }
 
 export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode = false }) => {
-  const { user, setUser } = useAuthStore();
+  const { user, setUser, setAuth } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
 
   // Check if current user is the debug admin OR is already impersonating
@@ -33,37 +33,44 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
   // Role switch mutation
   const { mutate: switchRole, isPending: isSwitching } = useAdminDebugSwitchRole({
     mutation: {
-      onSuccess: (response) => {
-        console.log('[DebugRoleSwitcher] Role switch success. Response:', response);
-        // Response has { success, data: { accessToken, refreshToken, effectiveRole } }
-        const data = (response as any)?.data;
-        if (data) {
-          console.log('[DebugRoleSwitcher] Updating tokens and user state...', data);
-          // Token'ları localStorage'a yaz
-          if (data.accessToken) {
-            localStorage.setItem('auth_token', data.accessToken); // Fix: Set legacy key for initializeAuth
-            localStorage.setItem(AUTH_TOKEN, data.accessToken);
-            localStorage.setItem('auth_token_timestamp', Date.now().toString()); // Fix: Update timestamp
-            window.__AUTH_TOKEN__ = data.accessToken;
-          }
-          if (data.refreshToken) {
-            localStorage.setItem('refresh_token', data.refreshToken); // Fix: Set legacy key
-            localStorage.setItem(REFRESH_TOKEN, data.refreshToken);
-          }
+      onMutate: () => {
+        console.log('[DebugRoleSwitcher] Mutation starting...');
+      },
+      onSuccess: async (response) => {
+        console.log('[DebugRoleSwitcher] ===== ROLE SWITCH SUCCESS =====');
+        console.log('[DebugRoleSwitcher] Raw response:', response);
 
-          // User state'i güncelle - effective role'u user.role olarak kullan
-          if (user && data.effectiveRole) {
-            setUser({
+        const data = (response as any)?.data || response;
+        console.log('[DebugRoleSwitcher] Extracted data:', data);
+
+        if (data && (data.accessToken || data.effectiveRole)) {
+          console.log('[DebugRoleSwitcher] Updating tokens and user state...', data);
+
+          if (data.accessToken && user) {
+            const updatedUser = {
               ...user,
               role: data.effectiveRole,
-            });
+              isImpersonating: data.isImpersonating || true,
+              realUserEmail: data.realUserEmail || user.email,
+            };
+
+            // Pass both access and refresh tokens to setAuth
+            setAuth(updatedUser, data.accessToken, data.refreshToken || null);
+
+            console.log('[DebugRoleSwitcher] Updated Zustand store with setAuth()');
+            console.log('[DebugRoleSwitcher] New role:', data.effectiveRole);
+            console.log('[DebugRoleSwitcher] Has refresh token:', !!data.refreshToken);
           }
 
+          console.log('[DebugRoleSwitcher] Waiting for Zustand persist...');
+          // Wait for Zustand persist to complete
+          await new Promise(resolve => setTimeout(resolve, 300));
+
           console.log('[DebugRoleSwitcher] Redirecting to /');
-          // Dashboard'a yönlendir (yetki hatası almamak için) ve sayfayı yenile
           window.location.href = '/';
         } else {
-          console.error('[DebugRoleSwitcher] Response data missing!');
+          console.error('[DebugRoleSwitcher] Response data missing or invalid!');
+          console.error('[DebugRoleSwitcher] Response:', response);
         }
       },
       onError: (error) => {
@@ -73,10 +80,41 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
     }
   });
 
+  // Exit impersonation mutation
+  const { mutate: exitImpersonation, isPending: isExiting } = useAdminDebugExitImpersonation({
+    mutation: {
+      onSuccess: async (response) => {
+        console.log('[DebugRoleSwitcher] Exit impersonation success:', response);
+        const data = (response as any)?.data || response;
+
+        if (data?.accessToken && user) {
+          const updatedUser = {
+            ...user,
+            role: 'super_admin',
+            isImpersonating: false,
+            realUserEmail: undefined,
+          };
+
+          setAuth(updatedUser, data.accessToken, data.refreshToken || null);
+
+          await new Promise(resolve => setTimeout(resolve, 300));
+          window.location.href = '/';
+        }
+      },
+      onError: (error) => {
+        console.error('[DebugRoleSwitcher] Exit impersonation failed:', error);
+        alert('Orijinal role dönüş başarısız oldu');
+      }
+    }
+  });
+
   // Debug admin değilse hiçbir şey gösterme
   if (!isDebugAdmin) {
     return null;
   }
+
+  // Check if currently impersonating (not super_admin and has isImpersonating flag)
+  const isImpersonating = user?.isImpersonating === true;
 
   // Response has { success, data: { roles: [...] } }
   const roles = (rolesResponse as any)?.data?.roles || [];
@@ -261,6 +299,48 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
               })
             )}
           </div>
+
+          {/* Exit Impersonation Button - Only show when impersonating */}
+          {isImpersonating && (
+            <div style={{
+              padding: '0.5rem',
+              borderTop: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
+            }}>
+              <button
+                onClick={() => exitImpersonation()}
+                disabled={isExiting}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  width: '100%',
+                  padding: '0.625rem 1rem',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  backgroundColor: darkMode ? '#dc2626' : '#fee2e2',
+                  color: darkMode ? '#fecaca' : '#b91c1c',
+                  fontWeight: '600',
+                  fontSize: '0.875rem',
+                  cursor: isExiting ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = darkMode ? '#b91c1c' : '#fecaca';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = darkMode ? '#dc2626' : '#fee2e2';
+                }}
+              >
+                {isExiting ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <LogOut size={14} />
+                )}
+                <span>Super Admin'e Dön</span>
+              </button>
+            </div>
+          )}
 
           {/* Footer */}
           <div style={{

@@ -117,32 +117,53 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     }
   };
 
-  // Initialize form data when sale changes
+  // Load Reference Data
   useEffect(() => {
-    if (sale && isOpen) {
-      loadProductDetails();
+    if (isOpen) {
       loadAvailableDevices();
       loadSgkSchemes();
-      loadPaymentRecords();
+    }
+  }, [isOpen]);
 
-      // Initialize form with sale data
-      setFormData({
-        productName: productDetails?.name || sale.productId || '',
-        brand: productDetails?.brand || '',
-        model: productDetails?.model || '',
-        serialNumber: productDetails?.availableSerials?.[0] || '',
-        listPrice: sale.listPriceTotal || 0,
-        salePrice: sale.totalAmount,
-        discountAmount: sale.discountAmount || 0,
-        sgkCoverage: sale.sgkCoverage || 0,
+  // Load Product Details
+  useEffect(() => {
+    if (sale?.productId && isOpen) {
+      loadProductDetails();
+    }
+  }, [sale?.productId, isOpen]);
+
+  // Load Payment Records
+  useEffect(() => {
+    if (sale?.id && isOpen) {
+      loadPaymentRecords();
+    }
+  }, [sale?.id, isOpen]);
+
+  // Initialize form data when sale or productDetails availability changes
+  // Note: We use a ref or check to prevent overwriting user edits if we handled that, 
+  // but here we assume simple init on open + update when data arrives.
+  useEffect(() => {
+    if (sale && isOpen) {
+      // Use efficient fallbacks
+      const s = sale as any;
+
+      setFormData(prev => ({
+        ...prev,
+        productName: productDetails?.name || s.productName || s.product_name || sale.productId || '',
+        brand: productDetails?.brand || s.brand || s.productBrand || s.product_brand || '',
+        model: productDetails?.model || s.model || s.productModel || s.product_model || '',
+        serialNumber: productDetails?.availableSerials?.[0] || s.serialNumber || s.serial_number || '',
+        listPrice: sale.listPriceTotal || s.listPrice || s.list_price || 0,
+        salePrice: sale.totalAmount || s.amount || 0,
+        discountAmount: sale.discountAmount || s.discount_amount || 0,
+        sgkCoverage: sale.sgkCoverage || s.sgk_coverage || 0,
         notes: sale.notes || '',
-        saleDate: sale.saleDate ? sale.saleDate.split('T')[0] : '',
+        saleDate: sale.saleDate ? sale.saleDate.split('T')[0] : (s.date ? s.date.split('T')[0] : ''),
         deviceId: sale.productId || '',
-        ear: 'both',
-        warrantyPeriod: 24,
-        fittingDate: '',
-        deliveryDate: ''
-      });
+        ear: s.ear || 'both', // default
+        // Preserve existing values if they were manually set? 
+        // For now, simpler to just re-sync, assuming this only runs on load.
+      }));
 
       setState(prev => ({
         ...prev,

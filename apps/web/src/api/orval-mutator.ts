@@ -1,7 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { AUTH_TOKEN, REFRESH_TOKEN } from '../constants/storage-keys';
 import { outbox, OutboxOperation } from '../utils/outbox';
-import { useAuthStore } from '../stores/authStore';
+import { tokenManager } from '../utils/token-manager';
 
 // API Configuration - NO /api suffix because Orval paths already include it
 const API_BASE_URL = typeof window !== 'undefined' && import.meta?.env?.VITE_API_URL
@@ -178,69 +177,27 @@ function handleResourceError(error: any, config: AxiosRequestConfig): Error {
 // Request interceptor for authentication and idempotency
 apiClient.interceptors.request.use(
   (config) => {
-    // Add auth token if available. Support global window token, persisted zustand storage, new key, and legacy key.
-    let token: string | null = null;
-    let tokenSource = 'none';
-    let isAdmin = false;
-
-    try {
-      const tryParse = (raw: string | null) => {
-        if (!raw) return null;
-        try {
-          const parsed = JSON.parse(raw);
-          if (parsed && typeof parsed === 'object') {
-            if (typeof parsed.token === 'string') return parsed.token;
-            if (parsed.state && typeof parsed.state === 'object' && typeof parsed.state.token === 'string') return parsed.state.token;
-          }
-        } catch (e) {
-          // not JSON
-        }
-        return null;
-      };
-
-      const persistedKeys = ['auth-storage', 'persist:auth-storage', 'auth-store', 'persist:auth-store'];
-      let persistedToken: string | null = null;
-      for (const key of persistedKeys) {
-        try {
-          const raw = (typeof window !== 'undefined') ? localStorage.getItem(key) : null;
-          const t = tryParse(raw);
-          if (t) { persistedToken = t; break; }
-        } catch (e) { /* ignore */ }
-      }
-
-      // PRIORITY ORDER (freshest first):
-      // 1. window.__AUTH_TOKEN__ - set immediately on login
-      // 2. localStorage 'auth_token' - set immediately on login  
-      // 3. localStorage AUTH_TOKEN constant
-      // 4. Zustand persist storage (may be stale due to async persistence)
-      const windowToken = (typeof window !== 'undefined' ? (window as any).__AUTH_TOKEN__ : null);
-      const localStorageToken = (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null);
-      const authTokenConstant = (typeof window !== 'undefined' ? localStorage.getItem(AUTH_TOKEN) : null);
-
-      if (windowToken) { token = windowToken; tokenSource = 'window.__AUTH_TOKEN__'; }
-      else if (localStorageToken) { token = localStorageToken; tokenSource = 'localStorage.auth_token'; }
-      else if (authTokenConstant) { token = authTokenConstant; tokenSource = 'localStorage.AUTH_TOKEN'; }
-      else if (persistedToken) { token = persistedToken; tokenSource = 'zustand-persist'; }
-
-      // Check if user is SUPER ADMIN by parsing token for 'admin_' prefix in subject
-      if (token) {
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          // Determine if super admin based on ID prefix (admin_ vs usr_)
-          // Flask-JWT-Extended uses 'sub' claim for identity
-          const sub = payload.sub || '';
-          isAdmin = typeof sub === 'string' && sub.startsWith('admin_');
-        } catch (e) {
-          // ignore token parse errors
-        }
-      }
-    } catch (e) {
-      // ignore storage access or JSON parse errors
-    }
+    // Get token from TokenManager (single source of truth)
+    const token = tokenManager.accessToken;
+    const isAdmin = tokenManager.isAdmin();
 
     if (token) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
+
+      // DEBUG LOG
+      console.log('[orval-mutator] Request interceptor:', {
+        url: config.url,
+        method: config.method,
+        tokenSource: 'TokenManager',
+        tokenPreview: token.substring(0, 50) + '...',
+        tokenIdentity: tokenManager.getUserId(),
+        isAdmin,
+        tokenTTL: tokenManager.getAccessTokenTTL(),
+        isExpired: tokenManager.isAccessTokenExpired()
+      });
+    } else {
+      console.warn('[orval-mutator] No token found for request:', config.url);
     }
 
     // URL rewriting logic has been removed as backend now supports Unified Endpoints.
@@ -282,73 +239,80 @@ apiClient.interceptors.response.use(
     // Handle 401 by attempting a silent refresh and replaying the original request
     try {
       if (error.response?.status === 401 && config && !config.__isRetryRequest && !isAuthEndpoint) {
+        const refreshToken = tokenManager.refreshToken;
+        
+        console.log('[orval-mutator] 401 error detected:', {
+          url: config.url,
+          isAuthEndpoint,
+          hasRefreshToken: !!refreshToken
+        });
+        
         if (!(apiClient as any)._refreshing) {
           (apiClient as any)._refreshing = true;
           (apiClient as any)._refreshSubscribers = [] as Array<(token: string | null) => void>;
           try {
-            const refreshToken = localStorage.getItem('refresh_token');
-            if (!refreshToken) throw new Error('No refresh token available');
+            if (!refreshToken) {
+              console.error('[orval-mutator] No refresh token available');
+              throw new Error('No refresh token available');
+            }
 
+            console.log('[orval-mutator] Attempting token refresh...');
+            
             // Bypass apiClient to avoid attaching the expired access token
-            // Explicitly set the Authorization header with the Refresh Token
-            // Prefer sending refresh token in the request body without credentials
-            // to avoid CORS `withCredentials` network failures. Fall back to
-            // credentialed request if necessary.
             const refreshUrl = `${API_BASE_URL}/api/auth/refresh`;
-            let refreshResp;
+            let refreshResp: { status: number; data: any };
+            
             try {
-              refreshResp = await axios.post(refreshUrl, { refreshToken }, { withCredentials: false });
+              // Try with Authorization header first (preferred by backend)
+              console.log('[orval-mutator] Trying refresh with Authorization header...');
+              refreshResp = await axios.post(refreshUrl, {}, {
+                headers: { Authorization: `Bearer ${refreshToken}` },
+                withCredentials: true,
+              });
             } catch (err) {
-              // If the non-credentialed attempt fails (server expects cookie-based flow),
-              // try again including credentials so cookie-based refresh can work.
+              console.log('[orval-mutator] Header refresh failed, trying with token in body...');
+              // Fallback to body-based refresh
               try {
-                refreshResp = await axios.post(refreshUrl, {}, {
-                  headers: { Authorization: `Bearer ${refreshToken}` },
-                  withCredentials: true,
-                });
+                refreshResp = await axios.post(refreshUrl, { refreshToken }, { withCredentials: false });
               } catch (err2) {
-                throw err; // propagate original error
+                console.error('[orval-mutator] Both refresh attempts failed:', err);
+                throw err;
               }
             }
+
+            console.log('[orval-mutator] Refresh response:', {
+              status: refreshResp.status,
+              hasAccessToken: !!(refreshResp.data as any).access_token || !!(refreshResp.data as any).accessToken
+            });
 
             if (refreshResp.status === 200 && refreshResp.data) {
               const newToken = (refreshResp.data as any).access_token || (refreshResp.data as any).accessToken || null;
               if (newToken) {
-                try {
-                  localStorage.setItem('auth_token', newToken);
-                  localStorage.setItem(AUTH_TOKEN, newToken);
-                } catch (e) { }
-                (window as any).__AUTH_TOKEN__ = newToken;
-                axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+                console.log('[orval-mutator] Token refresh successful, updating via TokenManager...');
+                // Use TokenManager to update token (single source of truth)
+                tokenManager.updateAccessToken(newToken);
                 (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(newToken));
               } else {
+                console.error('[orval-mutator] No access token in refresh response');
                 (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
               }
             } else {
+              console.error('[orval-mutator] Refresh failed with status:', refreshResp.status);
               (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
-              // Clear tokens on refresh failure - UI layer will handle redirect
-              try {
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('refresh_token');
-                localStorage.removeItem(AUTH_TOKEN);
-                localStorage.removeItem(REFRESH_TOKEN);
-              } catch (err) { }
-              delete (window as any).__AUTH_TOKEN__;
+              // Clear tokens via TokenManager
+              tokenManager.clearTokens();
             }
           } catch (e) {
+            console.error('[orval-mutator] Token refresh error:', e);
             (apiClient as any)._refreshSubscribers.forEach((cb: any) => cb(null));
-            // Clear tokens on error - UI layer will handle redirect
-            try {
-              localStorage.removeItem('auth_token');
-              localStorage.removeItem('refresh_token');
-              localStorage.removeItem(AUTH_TOKEN);
-              localStorage.removeItem(REFRESH_TOKEN);
-            } catch (storageErr) { }
-            delete (window as any).__AUTH_TOKEN__;
+            // Clear tokens via TokenManager
+            tokenManager.clearTokens();
           } finally {
             (apiClient as any)._refreshing = false;
             (apiClient as any)._refreshSubscribers = [];
           }
+        } else {
+          console.log('[orval-mutator] Refresh already in progress, waiting...');
         }
 
         return new Promise((resolve, reject) => {
@@ -359,15 +323,7 @@ apiClient.interceptors.response.use(
               config.headers['Authorization'] = `Bearer ${token}`;
               resolve(apiClient(config));
             } else {
-              // Failed to refresh - clear tokens, UI will handle redirect
-              try {
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('refresh_token');
-                localStorage.removeItem(AUTH_TOKEN);
-                localStorage.removeItem(REFRESH_TOKEN);
-              } catch (storageErr) { }
-              delete (window as any).__AUTH_TOKEN__;
-
+              // Failed to refresh - tokens already cleared by TokenManager
               reject(error);
             }
           });

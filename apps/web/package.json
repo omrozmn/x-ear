@@ -17,7 +17,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "type-check": "tsc --noEmit",
-    "gen:api": "orval && npm run type-check",
+    "gen:api": "orval && node scripts/generate-api-index.mjs && npm run type-check",
     "gen:key": "node scripts/gen-storage-key.cjs"
   },
   "dependencies": {

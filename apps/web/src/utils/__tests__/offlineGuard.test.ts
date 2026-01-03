@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { useOfflineGuard, OfflineForbiddenOperation, isOperationAllowedOffline, getOfflineBlockMessage } from '../offlineGuard';
-import { vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
 describe('offlineGuard', () => {
     describe('isOperationAllowedOffline', () => {

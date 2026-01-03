@@ -128,8 +128,16 @@ def create_cash_record(ctx):
         tenant_id = ctx.tenant_id
         if not tenant_id:
             tenant_id = data.get('tenant_id')
-            if not tenant_id:
-                return jsonify({"success": False, "error": "tenant_id is required for super admin operations"}), 400
+            # For super admin without explicit tenant_id, try to use first allowed tenant
+            if not tenant_id and ctx.is_super_admin:
+                if ctx.allowed_tenants:
+                    tenant_id = ctx.allowed_tenants[0]
+                else:
+                    # Super admin can create records without tenant for global records
+                    tenant_id = None
+            elif not tenant_id:
+                return jsonify({"success": False, "error": "tenant_id is required for this operation"}), 400
+
 
         payment = PaymentRecord()
         

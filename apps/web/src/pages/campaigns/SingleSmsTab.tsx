@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import {
     useSmsGetHeaders,
-    useSmsSendSingleSms,
+    getSmsGetHeadersQueryKey,
+    useCommunicationsSendSms,
 } from '@/api/generated';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -46,10 +47,10 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
     const { token } = useAuthStore();
 
     // Get SMS headers for sender selection - only fetch if authenticated
-    const { data: headersData } = useSmsGetHeaders({
-        query: { enabled: !!token }
+    const { data: headersData, isLoading: headersLoading, isError: headersError } = useSmsGetHeaders({
+        query: { queryKey: getSmsGetHeadersQueryKey(), enabled: !!token }
     });
-    
+
     // Handle different response structures
     let headersRaw: Array<{ id?: string; headerText?: string; status?: string }> = [];
     if (headersData) {
@@ -211,14 +212,18 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
                                 <Select
                                     value={selectedHeader}
                                     onChange={(e) => setSelectedHeader(e.target.value)}
-                                    options={[
-                                        { value: '', label: 'Varsayılan' },
-                                        ...headers.map((h) => ({
-                                            value: h.id || h.headerText || '',
-                                            label: h.headerText || ''
-                                        }))
-                                    ]}
+                                    options={headersLoading
+                                        ? [{ value: '', label: 'Başlıklar Yükleniyor...' }]
+                                        : headersError
+                                            ? [{ value: '', label: 'Başlık Hatası' }]
+                                            : [{ value: '', label: 'Varsayılan' },
+                                            ...headers.map((h) => ({
+                                                value: h.id || h.headerText || '',
+                                                label: h.headerText || ''
+                                            }))]
+                                    }
                                     fullWidth
+                                    disabled={headersLoading}
                                 />
                             </div>
                         )}

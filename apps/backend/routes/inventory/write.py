@@ -46,10 +46,25 @@ def update_inventory_item(ctx, item_id):
         if not data:
             return error_response("No data provided", status_code=400)
         
-        # Update fields
+        # Map camelCase to snake_case for known fields
+        camel_to_snake = {
+            'priceIncludesKdv': 'price_includes_kdv',
+            'costIncludesKdv': 'cost_includes_kdv',
+            'availableInventory': 'available_inventory',
+            'totalInventory': 'total_inventory',
+            'usedInventory': 'used_inventory',
+            'reorderLevel': 'reorder_level',
+            'minInventory': 'reorder_level',
+            'stockCode': 'stock_code',
+            'vatRate': 'kdv_rate',
+            'kdv': 'kdv_rate',
+        }
+        
+        # Update fields with proper mapping
         for key, value in data.items():
-            if hasattr(item, key) and key not in ['id', 'tenant_id', 'created_at']:
-                setattr(item, key, value)
+            db_key = camel_to_snake.get(key, key)  # Use mapped key or original
+            if hasattr(item, db_key) and db_key not in ['id', 'tenant_id', 'created_at']:
+                setattr(item, db_key, value)
         
         db.session.commit()
         return success_response(data=item.to_dict())
@@ -57,6 +72,7 @@ def update_inventory_item(ctx, item_id):
         db.session.rollback()
         logger.error(f"Update inventory error: {str(e)}")
         return error_response(str(e), status_code=500)
+
 
 
 @inventory_bp.route('/<item_id>', methods=['DELETE'])
@@ -76,3 +92,42 @@ def delete_inventory_item(ctx, item_id):
         db.session.rollback()
         logger.error(f"Delete inventory error: {str(e)}")
         return error_response(str(e), status_code=500)
+
+
+@inventory_bp.route('/<item_id>/serials', methods=['POST'])
+@unified_access(resource='inventory', action='manage')
+def add_serial_numbers(ctx, item_id):
+    """Add serial numbers to an inventory item"""
+    try:
+        item = db.session.get(Inventory, item_id)
+        if not item or (ctx.tenant_id and item.tenant_id != ctx.tenant_id):
+            return error_response("Item not found", status_code=404)
+        
+        data = request.get_json()
+        if not data:
+            return error_response("No data provided", status_code=400)
+        
+        serials = data.get('serials', [])
+        if not isinstance(serials, list):
+            return error_response("serials must be an array", status_code=400)
+        
+        # Add serials using the model method
+        added_count = 0
+        for serial in serials:
+            if serial and isinstance(serial, str) and serial.strip():
+                if item.add_serial_number(serial.strip()):
+                    added_count += 1
+        
+        db.session.commit()
+        
+        logger.info(f"Added {added_count} serial numbers to inventory item {item_id}")
+        
+        return success_response(data={
+            'message': f'{added_count} serial numbers added',
+            'item': item.to_dict()
+        })
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Add serials error: {str(e)}")
+        return error_response(str(e), status_code=500)
+

@@ -45,12 +45,26 @@ export const DesktopProfilePage: React.FC = () => {
     const [isEditingPhone, setIsEditingPhone] = useState(false);
 
     // API Hooks (Query & Mutations)
-    const { data: userDataResponse, isError, isLoading } = useUsersGetCurrentUser({
+    const { data: userDataResponse, isError, isLoading, error } = useUsersGetCurrentUser({
         query: {
             retry: 1,
             refetchOnWindowFocus: false
         }
     });
+
+    // DEBUG: Log the API call state
+    React.useEffect(() => {
+        console.log('[DesktopProfilePage] useUsersGetCurrentUser state:', {
+            isLoading,
+            isError,
+            hasData: !!userDataResponse,
+            error: error ? {
+                message: (error as any).message,
+                response: (error as any).response,
+                status: (error as any).response?.status
+            } : null
+        });
+    }, [isLoading, isError, userDataResponse, error]);
 
     const updateMeMutation = useUsersUpdateMe({
         mutation: {

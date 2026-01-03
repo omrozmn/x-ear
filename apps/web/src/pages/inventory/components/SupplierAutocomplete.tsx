@@ -6,7 +6,9 @@ import { useAuthStore } from '../../../stores/authStore';
 
 import {
   useSuppliersGetSuppliers,
+  getSuppliersGetSuppliersQueryKey,
   useInventoryGetInventoryItems,
+  getInventoryGetInventoryItemsQueryKey,
   useSuppliersCreateSupplier
 } from '@/api/generated';
 
@@ -75,14 +77,27 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
   const { token } = useAuthStore();
 
   // React Query hooks for data fetching - only fetch if authenticated
-  const { data: suppliersData } = useSuppliersGetSuppliers(
+  const { data: suppliersData, isLoading: isLoadingSuppliers, isError: isErrorSuppliers } = useSuppliersGetSuppliers(
     { per_page: 1000 },
-    { query: { enabled: !!token } }
+    {
+      query: {
+        queryKey: getSuppliersGetSuppliersQueryKey({ per_page: 1000 }),
+        enabled: !!token,
+      }
+    }
   );
-  const { data: inventoryData } = useInventoryGetInventoryItems(
+  const { data: inventoryData, isLoading: isLoadingInventory, isError: isErrorInventory } = useInventoryGetInventoryItems(
     {},
-    { query: { enabled: !!token } }
+    {
+      query: {
+        queryKey: getInventoryGetInventoryItemsQueryKey({}),
+        enabled: !!token,
+      }
+    }
   );
+
+  const isLoading = isLoadingSuppliers || isLoadingInventory;
+  const isError = isErrorSuppliers || isErrorInventory;
 
   // Load suppliers from API data
   useEffect(() => {
@@ -101,7 +116,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
           supplierArray = innerData.data;
         }
       }
-      
+
       const supplierNames = supplierArray
         .map((s: any) => s.companyName || s.company_name)
         .filter(Boolean);
@@ -121,7 +136,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
           inventoryArray = innerData.data;
         }
       }
-      
+
       const inventorySuppliers = [...new Set(
         inventoryArray.map((item: any) => item.supplier).filter(Boolean)
       )] as string[];
@@ -343,7 +358,19 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
           style={dropdownStyle}
           className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
         >
-          {filteredSuppliers.map((supplier, index) => (
+          {isLoading && (
+            <div className="px-4 py-3 text-sm text-gray-500 italic">
+              Yükleniyor...
+            </div>
+          )}
+
+          {isError && (
+            <div className="px-4 py-3 text-sm text-red-500">
+              Tedarikçiler yüklenirken hata oluştu.
+            </div>
+          )}
+
+          {!isLoading && !isError && filteredSuppliers.map((supplier, index) => (
             <Button
               key={index}
               variant="ghost"

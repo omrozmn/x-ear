@@ -96,16 +96,24 @@ def create_appointment(ctx):
         appointment.branch_id = data.get('branchId')
         appointment.tenant_id = ctx.tenant_id
         
-        # Parse date
-        date_str = data['date'].split('T')[0] if 'T' in data['date'] else data['date']
+        # Parse date - handle both YYYY-MM-DD and ISO format
+        date_str = data['date']
+        if 'T' in date_str:
+            date_str = date_str.split('T')[0]
         appointment.date = datetime.strptime(date_str, '%Y-%m-%d')
+        
         appointment.time = data['time']
         appointment.duration = data.get('duration', 30)
         appointment.appointment_type = data.get('type', 'consultation')
         
-        # Handle status
-        status_value = data.get('status', 'SCHEDULED')
-        appointment.status = AppointmentStatus.from_legacy(status_value) if isinstance(status_value, str) else status_value or AppointmentStatus.SCHEDULED
+        # Handle status - accept both string and enum
+        status_value = data.get('status', 'scheduled')
+        if isinstance(status_value, str):
+            status_value = status_value.upper()
+            appointment.status = AppointmentStatus.from_legacy(status_value)
+        else:
+            appointment.status = status_value or AppointmentStatus.SCHEDULED
+            
         appointment.notes = data.get('notes')
 
         db.session.add(appointment)

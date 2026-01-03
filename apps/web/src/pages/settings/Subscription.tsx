@@ -15,7 +15,7 @@ type FeatureUsageStats = {
 };
 
 const Subscription: React.FC = () => {
-    const { token } = useAuthStore();
+    const { token, user } = useAuthStore();
     const { data: subscriptionData, isLoading, isError } = useSubscriptionsGetCurrent();
     const { data: creditData } = useSmsIntegrationGetSmsCredit({
         query: { enabled: !!token }
@@ -24,6 +24,26 @@ const Subscription: React.FC = () => {
 
     if (isLoading) return <div className="p-6">Yükleniyor...</div>;
     if (isError) return <div className="p-6">Abonelik bilgisi yüklenirken hata oluştu.</div>;
+    
+    // Super admin check
+    if (info?.is_super_admin || user?.role === 'super_admin') {
+        return (
+            <div className="p-6 max-w-4xl mx-auto">
+                <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Abonelik ve Paket Bilgileri</h1>
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-8 text-center">
+                    <div className="text-6xl mb-4">👑</div>
+                    <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-300 mb-2">Super Admin</h2>
+                    <p className="text-blue-700 dark:text-blue-400">
+                        Platform yöneticisi olarak tüm özelliklere sınırsız erişiminiz var.
+                    </p>
+                    <p className="text-sm text-blue-600 dark:text-blue-500 mt-4">
+                        Tenant aboneliklerini yönetmek için Admin Panel'i kullanın.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+    
     if (!info) return <div className="p-6">Abonelik bilgisi bulunamadı.</div>;
 
     const { plan, tenant, isExpired, daysRemaining } = info;

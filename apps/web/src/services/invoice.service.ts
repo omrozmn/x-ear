@@ -26,9 +26,10 @@ import {
   invoicesDeleteInvoice,
   // invoicesSendToGib, // TODO: Check if this endpoint exists
   invoicesGetInvoice,
-  invoicesGenerateSaleInvoicePdf,
-  invoicesActionsIssueInvoice
+  invoicesActionsIssueInvoice,
+  invoicesActionsServeInvoicePdf
 } from '@/api/generated';
+import { invoicesGenerateSaleInvoicePdf } from '../api/generated/sales/sales';
 import { apiClient } from '../api/orval-mutator';
 
 
@@ -667,7 +668,7 @@ export class InvoiceService {
     }
 
     try {
-      await invoicesSendToGib(id);
+      await apiClient.post(`/api/invoices/${id}/send-to-gib`);
       // Try to refresh server state
       const response = await invoicesGetInvoice(id) as any;
       const serverInv = unwrapObject<any>(response);
@@ -985,8 +986,16 @@ export class InvoiceService {
    */
   async generateSaleInvoicePdf(saleId: string): Promise<{ success: boolean; data?: Blob; error?: string }> {
     try {
-      const response = await salesGenerateSaleInvoicePdf(saleId) as any;
+      // Endpoint doesn't exist yet. Return error for now.
+      // const response = await invoicesGenerateSaleInvoicePdf(saleId) as any;
+      console.warn('generateSaleInvoicePdf not implemented for saleId:', saleId);
+      
+      return {
+        success: false,
+        error: 'Satış faturası PDF oluşturma henüz desteklenmiyor.'
+      };
 
+      /*
       if (response instanceof Blob) {
         return {
           success: true,
@@ -998,6 +1007,7 @@ export class InvoiceService {
         success: false,
         error: response?.message || 'PDF verisi geçerli değil'
       };
+      */
     } catch (error) {
       console.error('Error generating sale invoice PDF:', error);
       return {

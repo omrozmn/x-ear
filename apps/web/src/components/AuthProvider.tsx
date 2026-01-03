@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { LoginForm } from './LoginForm';
 import { ForgotPasswordPage } from '../pages/ForgotPasswordPage';
-import { useNavigate } from '@tanstack/react-router';
+import { tokenManager } from '../utils/token-manager';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -13,8 +13,6 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { isAuthenticated, isLoading, initializeAuth, logout, clearAuth } = useAuthStore();
   const [isInitializing, setIsInitializing] = React.useState(true);
-  const [sessionChecked, setSessionChecked] = React.useState(false);
-  const navigate = typeof window !== 'undefined' ? (window as any).__tanstack_router_navigate || (() => {}) : () => {};
 
   console.log('AuthProvider render - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
 
@@ -50,30 +48,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     console.log('AuthProvider: On forgot-password page');
     if (isAuthenticated) {
       console.log('AuthProvider: User is authenticated, forcing logout for security');
-      // Aggressive logout - clear everything
-      try {
-        logout();
-        localStorage.clear(); // Clear all localStorage
-        sessionStorage.clear(); // Clear all sessionStorage
-        // Clear common auth keys
-        const authKeys = ['auth_token', 'refresh_token', 'token', 'refreshToken', 'x-ear.auth.token@v1'];
-        authKeys.forEach(key => {
-          try {
-            localStorage.removeItem(key);
-            sessionStorage.removeItem(key);
-          } catch (e) {}
-        });
-        // Clear global token
-        if (typeof window !== 'undefined') {
-          delete (window as any).__AUTH_TOKEN__;
-        }
-        // Force page reload to ensure clean state
-        window.location.reload();
-      } catch (e) {
-        console.error('Logout failed:', e);
-        // Force reload anyway
-        window.location.reload();
-      }
+      // Use TokenManager to clear tokens (single source of truth)
+      tokenManager.clearTokens();
+      clearAuth();
+      // Force page reload to ensure clean state
+      window.location.reload();
     }
     // Render ForgotPasswordPage directly (no MainLayout)
     console.log('AuthProvider: Rendering ForgotPasswordPage');

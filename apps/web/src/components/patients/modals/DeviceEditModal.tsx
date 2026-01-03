@@ -239,6 +239,7 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
         deliveryStatus: formData.deliveryStatus,
         isLoaner: formData.isLoaner,
         reportStatus: formData.reportStatus,
+        report_status: formData.reportStatus, // Send snake_case ensuring backend compat
         loanerBrand: formData.loanerBrand,
         loanerModel: formData.loanerModel,
         loanerSerialNumber: formData.loanerSerialNumber,

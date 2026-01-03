@@ -77,13 +77,24 @@ def list_permissions(ctx):
 @unified_access()
 def get_my_permissions(ctx):
     """Get current user's permissions based on their role"""
-    user = ctx.user
+    # Check if admin user (AdminUser table)
+    admin = ctx.admin
+    if admin:
+        # Super Admin from admin_users table
+        perms = Permission.query.order_by(Permission.name).all()
+        return success_response({
+            'permissions': [p.name for p in perms],
+            'role': admin.role,
+            'isSuperAdmin': True
+        })
     
+    # Regular tenant user
+    user = ctx.user
     if not user:
         # Should not happen with unified_access unless token payload issue
         return error_response('User not found', code='USER_NOT_FOUND', status_code=404)
     
-    # Super admin checks
+    # Super admin checks (users table with super_admin role)
     if user.role == 'super_admin':
          # Force Super Admin response regardless of tenant_id
          perms = Permission.query.order_by(Permission.name).all()

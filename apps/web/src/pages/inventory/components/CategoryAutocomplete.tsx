@@ -7,6 +7,7 @@ import { useAuthStore } from '../../../stores/authStore';
 
 import {
   useInventoryGetCategories,
+  getInventoryGetCategoriesQueryKey,
   useInventoryCreateCategory
 } from '@/api/generated';
 
@@ -77,14 +78,17 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
   const { token } = useAuthStore();
 
   // React Query hook for categories - only fetch if authenticated
-  const { data: categoriesData } = useInventoryGetCategories({
-    query: { enabled: !!token }
+  const { data: categoriesData, isLoading, isError } = useInventoryGetCategories({
+    query: {
+      queryKey: getInventoryGetCategoriesQueryKey(),
+      enabled: !!token,
+    }
   });
 
   // Load categories from API data
   useEffect(() => {
     let apiCategories: string[] = [];
-    
+
     // Handle different response structures
     if (categoriesData) {
       if (Array.isArray(categoriesData)) {
@@ -98,7 +102,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
         }
       }
     }
-    
+
     if (apiCategories.length > 0) {
       const combined = [...new Set([...apiCategories, ...defaultCategories])];
       setAllCategories(combined.sort());
@@ -304,7 +308,19 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
             className="bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
             role="listbox"
           >
-            {filteredCategories.map((category, index) => (
+            {isLoading && (
+              <div className="px-4 py-2 text-sm text-gray-500 italic">
+                Yükleniyor...
+              </div>
+            )}
+
+            {isError && (
+              <div className="px-4 py-2 text-sm text-red-500">
+                Kategoriler yüklenirken hata oluştu.
+              </div>
+            )}
+
+            {!isLoading && !isError && filteredCategories.map((category, index) => (
               <div
                 key={index}
                 role="option"

@@ -76,6 +76,11 @@ class AccessContext:
             
         return self._principal.user if self._principal else None
     
+    @property
+    def admin(self):
+        """Get the underlying admin object if principal is super admin"""
+        return self._principal.admin if self._principal else None
+    
     def _create_impersonated_user(self):
         """Create a mock User object for impersonation compatibility"""
         try:
@@ -175,8 +180,23 @@ def get_access_context(requested_tenant_id: Optional[str] = None) -> Optional[Ac
         
         if principal.is_super_admin:
             # SUPER ADMIN
-            # Check for impersonation (QA Role Switcher)
-            if principal.claims.get('is_impersonating'):
+            # Check for tenant impersonation (QA Tenant Switcher)
+            if principal.claims.get('is_impersonating_tenant'):
+                # Tenant impersonation mode
+                assert principal.is_super_admin, "Only super admin can impersonate tenants"
+                effective_tenant_id = principal.claims.get('effective_tenant_id')
+                allowed_tenants = {effective_tenant_id} if effective_tenant_id else set()
+                
+                # Keep super admin permissions but lock to tenant
+                if principal.admin and hasattr(principal.admin, 'get_all_permissions'):
+                    permissions = principal.admin.get_all_permissions()
+                elif 'permissions' in principal.claims:
+                    permissions = set(principal.claims.get('permissions', []))
+                
+                logger.info(f"Impersonating tenant: {effective_tenant_id}")
+                
+            # Check for role impersonation (QA Role Switcher)
+            elif principal.claims.get('is_impersonating'):
                 # Override super admin logic - use permissions from token
                 permissions = set(principal.claims.get('role_permissions', []))
                 

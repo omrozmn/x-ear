@@ -3,6 +3,7 @@
 
 // Re-export Patient from generated schemas for consistency
 export type { Patient } from '@/api/generated/schemas';
+import { tokenManager } from '../utils/token-manager';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5003';
 
@@ -90,14 +91,8 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    let token: string | null = null;
-    try {
-      if (typeof window !== 'undefined') {
-        token = (window as any).__AUTH_TOKEN__ || localStorage.getItem('x-ear.auth.token@v1') || localStorage.getItem('auth_token');
-      }
-    } catch (e) {
-      token = localStorage.getItem('auth_token');
-    }
+    // Use TokenManager for token access (single source of truth)
+    const token = tokenManager.accessToken;
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -137,7 +132,8 @@ class ApiClient {
   }
 
   async refreshToken(): Promise<ApiResponse<LoginResponse>> {
-    const refreshToken = localStorage.getItem('refresh_token');
+    // Use TokenManager for refresh token access (single source of truth)
+    const refreshToken = tokenManager.refreshToken;
     return this.request<LoginResponse>('/api/auth/refresh', {
       method: 'POST',
       body: JSON.stringify({ refreshToken }),

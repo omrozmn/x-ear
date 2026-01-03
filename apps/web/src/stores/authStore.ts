@@ -2,16 +2,15 @@ import { create } from 'zustand';
 import { apiClient } from '../api/orval-mutator';
 import { persist } from 'zustand/middleware';
 import {
-  authLogin,
   authRefresh,
   authVerifyOtp,
   authSendVerificationOtp,
   authForgotPassword
 } from '@/api/generated/auth/auth';
 import { adminAdminLogin } from '@/api/generated/admin/admin';
-import { AUTH_TOKEN, REFRESH_TOKEN } from '../constants/storage-keys';
 import { DEV_CONFIG } from '../config/dev-config';
 import { subscriptionService } from '../services/subscription.service';
+import { tokenManager } from '../utils/token-manager';
 
 // Manual auth functions not in generated API
 const authLookupPhone = async (data: { identifier: string }) => {
@@ -49,6 +48,10 @@ interface User {
   isPhoneVerified?: boolean;
   isImpersonating?: boolean;
   realUserEmail?: string;
+  // Tenant impersonation
+  effectiveTenantId?: string;
+  tenantName?: string;
+  isImpersonatingTenant?: boolean;
 }
 
 interface SubscriptionStatus {
@@ -72,7 +75,7 @@ interface AuthState {
 }
 
 interface AuthActions {
-  setAuth: (user: User, token: string) => void;
+  setAuth: (user: User, token: string, refreshToken?: string | null) => void;
   setUser: (user: User) => void;
   clearAuth: () => void;
   setLoading: (loading: boolean) => void;
@@ -114,26 +117,17 @@ export const useAuthStore = create<AuthStore>()(
       maskedPhone: null,
 
       // Actions
-      setAuth: (user: User, token: string) => {
+      setAuth: (user: User, token: string, refreshToken?: string | null) => {
         set({
           user,
           token,
+          refreshToken: refreshToken || get().refreshToken, // Keep existing if not provided
           isAuthenticated: true,
           error: null,
         });
 
-        // Store token in both legacy and new storage keys for persistence
-        try {
-          localStorage.setItem('auth_token', token);
-          localStorage.setItem(AUTH_TOKEN, token);
-        } catch (e) {
-          // ignore storage errors
-        }
-
-        // Set global token for immediate use
-        if (typeof window !== 'undefined') {
-          window.__AUTH_TOKEN__ = token;
-        }
+        // Use TokenManager for token storage (single source of truth)
+        tokenManager.setTokens(token, refreshToken);
 
         // Check subscription after auth set
         get().checkSubscription();
@@ -154,21 +148,14 @@ export const useAuthStore = create<AuthStore>()(
           subscription: null,
         });
 
-        // Clear localStorage (both legacy and new keys)
+        // Use TokenManager to clear all tokens (single source of truth)
+        tokenManager.clearTokens();
+
+        // Clear tenant ID separately (not managed by TokenManager)
         try {
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('refresh_token');
-          localStorage.removeItem('auth_token_timestamp');
-          localStorage.removeItem(AUTH_TOKEN);
-          localStorage.removeItem(REFRESH_TOKEN);
           localStorage.removeItem('current_tenant_id');
         } catch (e) {
           // ignore storage errors
-        }
-
-        // Clear global token
-        if (typeof window !== 'undefined') {
-          delete window.__AUTH_TOKEN__;
         }
       },
 
@@ -210,9 +197,9 @@ export const useAuthStore = create<AuthStore>()(
           // customInstance extracts axios response.data, which contains our backend response
           const responseData = response as any;
 
-          // Backend response: { success, data: { token, user, requires_mfa } }
+          // Backend response: { success, data: { token, user, requires_mfa, refreshToken } }
           if (responseData && responseData.success && responseData.data) {
-            const { token, user: userData, requires_mfa } = responseData.data;
+            const { token, user: userData, requires_mfa, refreshToken } = responseData.data;
 
             if (requires_mfa) {
               // Handle MFA requirement
@@ -265,7 +252,7 @@ export const useAuthStore = create<AuthStore>()(
               set({
                 user,
                 token: newToken,
-                refreshToken: null, // Admin login doesn't return refresh token
+                refreshToken: refreshToken || null, // Store refresh token if provided
                 isAuthenticated: true,
                 error: null,
                 requiresOtp: false,
@@ -273,19 +260,21 @@ export const useAuthStore = create<AuthStore>()(
                 maskedPhone: null,
               });
 
-              // Persist tokens under both legacy and new keys
-              try {
-                localStorage.setItem('auth_token', newToken);
-                localStorage.setItem(AUTH_TOKEN, newToken);
-                localStorage.setItem('auth_token_timestamp', Date.now().toString());
-              } catch (e) {
-                // ignore storage errors
-              }
+              // DEBUG LOG
+              console.log('[authStore] Login successful, storing tokens via TokenManager:', {
+                hasAccessToken: !!newToken,
+                hasRefreshToken: !!refreshToken,
+                accessTokenPreview: newToken.substring(0, 50) + '...',
+                refreshTokenPreview: refreshToken ? refreshToken.substring(0, 50) + '...' : 'N/A',
+                user: {
+                  id: user.id,
+                  email: user.email,
+                  role: user.role
+                }
+              });
 
-              // Set global token for immediate use
-              if (typeof window !== 'undefined') {
-                window.__AUTH_TOKEN__ = newToken;
-              }
+              // Use TokenManager for token storage (single source of truth)
+              tokenManager.setTokens(newToken, refreshToken || null);
 
               // Check subscription
               await checkSubscription();
@@ -392,20 +381,8 @@ export const useAuthStore = create<AuthStore>()(
               maskedPhone: null
             });
 
-            // Persist tokens
-            try {
-              localStorage.setItem('auth_token', newToken);
-              localStorage.setItem(AUTH_TOKEN, newToken);
-              if (refreshToken) {
-                localStorage.setItem('refresh_token', refreshToken);
-                localStorage.setItem(REFRESH_TOKEN, refreshToken);
-              }
-              localStorage.setItem('auth_token_timestamp', Date.now().toString());
-            } catch (e) { }
-
-            if (typeof window !== 'undefined') {
-              window.__AUTH_TOKEN__ = newToken;
-            }
+            // Use TokenManager for token storage (single source of truth)
+            tokenManager.setTokens(newToken, refreshToken || null);
 
             await checkSubscription();
           } else {
@@ -606,7 +583,8 @@ export const useAuthStore = create<AuthStore>()(
 
       refreshAuth: async () => {
         try {
-          const { refreshToken, clearAuth } = get();
+          const { clearAuth } = get();
+          const refreshToken = tokenManager.refreshToken;
 
           if (!refreshToken) {
             clearAuth();
@@ -619,13 +597,8 @@ export const useAuthStore = create<AuthStore>()(
             // Backend should return { access_token, data: user } format
             const newToken = responseData.access_token || responseData.accessToken;
             set({ token: newToken });
-            try {
-              localStorage.setItem('auth_token', newToken);
-              localStorage.setItem(AUTH_TOKEN, newToken);
-            } catch (e) { }
-            if (typeof window !== 'undefined') {
-              window.__AUTH_TOKEN__ = newToken;
-            }
+            // Use TokenManager to update access token
+            tokenManager.updateAccessToken(newToken);
           } else {
             clearAuth();
           }
@@ -641,118 +614,110 @@ export const useAuthStore = create<AuthStore>()(
         // Always validate token, don't trust persisted isAuthenticated
         // The persisted state might have isAuthenticated=true but with an expired token
 
-        // Try to restore auth from persisted tokens (always)
-        let storedToken = localStorage.getItem('auth_token');
-        let storedRefreshToken = localStorage.getItem('refresh_token');
-        const tokenTimestamp = localStorage.getItem('auth_token_timestamp');
+        // Get tokens from TokenManager (single source of truth)
+        const storedToken = tokenManager.accessToken;
+        const storedRefreshToken = tokenManager.refreshToken;
 
-        // If no token in localStorage, attempt to read cookie named 'auth_token' (some dev setups use cookies)
-        try {
-          if (!storedToken && typeof document !== 'undefined') {
-            const match = document.cookie.match(new RegExp('(^| )auth_token=([^;]+)'));
-            if (match) storedToken = decodeURIComponent(match[2]);
-          }
-          if (!storedRefreshToken && typeof document !== 'undefined') {
-            const matchR = document.cookie.match(new RegExp('(^| )refresh_token=([^;]+)'));
-            if (matchR) storedRefreshToken = decodeURIComponent(matchR[2]);
-          }
-        } catch (e) {
-          // ignore cookie read errors
-        }
+        console.log('[initializeAuth] TokenManager state:', {
+          hasAccessToken: !!storedToken,
+          hasRefreshToken: !!storedRefreshToken,
+          isExpired: tokenManager.isAccessTokenExpired(),
+          ttl: tokenManager.getAccessTokenTTL()
+        });
 
-        if (storedToken) {
+        if (storedToken && !tokenManager.isAccessTokenExpired()) {
           try {
-            const now = Date.now();
-            const tokenAge = tokenTimestamp ? now - parseInt(tokenTimestamp) : 0;
+            // Get current user info from API
+            const { usersGetCurrentUser } = await import('../api/generated/users/users');
+            const response = await usersGetCurrentUser();
 
-            if (!tokenTimestamp || tokenAge < DEV_CONFIG.TOKEN_PERSISTENCE_DURATION) {
-              // Token is still valid, restore auth state
-              if (typeof window !== 'undefined') {
-                window.__AUTH_TOKEN__ = storedToken;
+            // customInstance returns response.data directly: {success, data: {...}}
+            const responseData = response as any;
+            console.log('[initializeAuth] API response:', responseData);
+
+            // Extract nested user data
+            const userData = responseData?.data || responseData;
+
+            if (userData && (userData.id || userData.email)) {
+              // Get impersonation status from TokenManager
+              const payload = tokenManager.payload;
+              const isImpersonating = payload?.is_impersonating === true;
+              const realUserEmail = payload?.real_user_email;
+
+              // Admin users are always phone verified (they don't need phone verification)
+              const isAdmin = tokenManager.isAdmin();
+              const isPhoneVerified = isAdmin ? true : userData.isPhoneVerified === true;
+
+              const transformedUser: User = {
+                id: userData.id || '',
+                email: userData.email || '',
+                name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.fullName || userData.username || '',
+                role: userData.role || 'user',
+                phone: userData.phone,
+                isPhoneVerified,
+                isImpersonating,
+                realUserEmail,
+                // Preserve tenant impersonation details from token
+                effectiveTenantId: payload?.effective_tenant_id as string | undefined,
+                // If tenant name is in token, use it. Backend doesn't strictly put name in token usually, 
+                // but we can try to keep what was persisted if not available, OR rely on what /me returns if updated.
+                // However, /me usually returns DB user. 
+                // Let's use persisted tenantName if we are impersonating tenant and token confirms it.
+                tenantName: (payload?.is_impersonating_tenant ? userData.tenantName : undefined),
+                isImpersonatingTenant: payload?.is_impersonating_tenant as boolean | undefined
+              };
+
+              // If we are impersonating a tenant, try to restore tenantName from storage if available
+              // because token usually stores IDs not names to save space
+              if (transformedUser.isImpersonatingTenant) {
+                const storedUser = get().user;
+                if (storedUser?.tenantName && !transformedUser.tenantName) {
+                  transformedUser.tenantName = storedUser.tenantName;
+                }
               }
 
-              // Get current user info from API
+              console.log('[initializeAuth] Transformed user:', transformedUser, { isAdmin });
+
+              set({
+                user: transformedUser,
+                token: storedToken,
+                refreshToken: storedRefreshToken,
+                isAuthenticated: true,
+                isInitialized: true,
+                error: null,
+              });
+
+              await checkSubscription();
+
+              // Trigger lazy services that need auth
               try {
-                // Import from users.ts which now uses customInstance with auth headers
-                const { usersGetCurrentUser } = await import('../api/generated/users/users');
-                const response = await usersGetCurrentUser();
+                const { appointmentService } = await import('../services/appointment.service');
+                appointmentService.triggerServerSync();
+              } catch (e) { /* ignore */ }
 
-                // customInstance returns response.data directly: {success, data: {...}}
-                const responseData = response as any;
-                console.log('[initializeAuth] API response:', responseData);
-
-                // Extract nested user data
-                const userData = responseData?.data || responseData;
-
-                if (userData && (userData.id || userData.email)) {
-                  // Decode token to get impersonation status
-                  let isImpersonating = false;
-                  let realUserEmail = undefined;
-                  try {
-                    if (storedToken) {
-                      const payload = JSON.parse(atob(storedToken.split('.')[1]));
-                      isImpersonating = payload.is_impersonating === true;
-                      realUserEmail = payload.real_user_email;
-                    }
-                  } catch (e) {
-                    console.warn('Failed to parse token claims during restore:', e);
-                  }
-
-                  const transformedUser: User = {
-                    id: userData.id || '',
-                    email: userData.email || '',
-                    name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.fullName || userData.username || '',
-                    role: userData.role || 'user',
-                    phone: userData.phone,
-                    isPhoneVerified: userData.isPhoneVerified === true,
-                    isImpersonating,
-                    realUserEmail
-                  };
-
-                  console.log('[initializeAuth] Transformed user:', transformedUser);
-
-                  set({
-                    user: transformedUser,
-                    token: storedToken,
-                    refreshToken: storedRefreshToken,
-                    isAuthenticated: true,
-                    isInitialized: true,
-                    error: null,
-                  });
-
-                  await checkSubscription();
-
-                  // Trigger lazy services that need auth
-                  try {
-                    const { appointmentService } = await import('../services/appointment.service');
-                    appointmentService.triggerServerSync();
-                  } catch (e) { /* ignore */ }
-
-                  console.log('Auth state restored successfully with user:', transformedUser);
-                  return;
-                }
-              } catch (err) {
-                console.warn('Failed to fetch current user during restore (token likely expired):', err);
-                // Token is invalid/expired, clear everything including Zustand persist
-                if (typeof window !== 'undefined') {
-                  delete (window as any).__AUTH_TOKEN__;
-                }
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('refresh_token');
-                localStorage.removeItem('auth_token_timestamp');
-                localStorage.removeItem('auth-storage'); // Clear Zustand persist storage
-                clearAuth(); // Reset store state
-              }
+              console.log('Auth state restored successfully with user:', transformedUser);
+              return;
             }
-          } catch (error) {
-            console.warn('Failed to restore auth state:', error);
-            if (typeof window !== 'undefined') {
-              delete (window as any).__AUTH_TOKEN__;
-            }
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('refresh_token');
-            localStorage.removeItem('auth_token_timestamp');
+          } catch (err) {
+            console.warn('Failed to fetch current user during restore (token likely expired):', err);
+            // Token is invalid/expired, clear via TokenManager
+            tokenManager.clearTokens();
             localStorage.removeItem('auth-storage'); // Clear Zustand persist storage
+            clearAuth();
+          }
+        } else if (storedToken && tokenManager.isAccessTokenExpired() && storedRefreshToken) {
+          // Token expired but we have refresh token - try to refresh
+          console.log('[initializeAuth] Token expired, attempting refresh...');
+          try {
+            await get().refreshAuth();
+            // If refresh succeeded, retry initialization
+            const newToken = tokenManager.accessToken;
+            if (newToken && !tokenManager.isAccessTokenExpired()) {
+              return get().initializeAuth();
+            }
+          } catch (e) {
+            console.warn('[initializeAuth] Refresh failed:', e);
+            tokenManager.clearTokens();
             clearAuth();
           }
         }

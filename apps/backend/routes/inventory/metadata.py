@@ -32,7 +32,7 @@ def get_categories(ctx):
 
 
 @inventory_bp.route('/categories', methods=['POST'])
-@unified_access(resource='inventory', action='write')
+@unified_access(permission='inventory.manage')
 @idempotent(methods=['POST'])
 def create_category(ctx):
     """Create a new category"""
@@ -72,7 +72,7 @@ def get_brands(ctx):
 
 
 @inventory_bp.route('/brands', methods=['POST'])
-@unified_access(resource='inventory', action='write')
+@unified_access(permission='inventory.manage')
 @idempotent(methods=['POST'])
 def create_brand(ctx):
     """Create a new brand"""

@@ -32,6 +32,7 @@ import {
   sgkGetPatientSgkDocuments,
   automationTriggerSgkProcessing
 } from '@/api/generated';
+import { unwrapObject } from '../utils/response-unwrap';
 
 export class SGKService {
   private documents: SGKDocument[] = [];
@@ -729,6 +730,9 @@ export class SGKService {
     try {
       const response = await sgkGetPatientSgkDocuments(receiptId);
       const blobData = unwrapObject<Blob>(response);
+      if (!blobData) {
+        throw new Error('No data received from SGK document download');
+      }
       return blobData;
     } catch (error) {
       console.error('Download patient form error:', error);

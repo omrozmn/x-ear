@@ -139,7 +139,20 @@ class AppointmentService {
       const { appointmentsApi } = await import('../api/appointments');
       const idempotencyKey = `appt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      const backendAppointment = await appointmentsApi.createAppointment(data, idempotencyKey);
+      // Transform to AppointmentFormData format expected by backend
+      const backendData = {
+        patientId: data.patientId,
+        date: data.date,
+        time: data.time,
+        duration: data.duration || 30,
+        type: data.type,
+        title: data.title,
+        notes: data.notes,
+        clinicianId: data.clinicianId,
+        branchId: data.branchId
+      };
+
+      const backendAppointment = await appointmentsApi.createAppointment(backendData, idempotencyKey);
       console.log('✅ Backend created appointment:', backendAppointment);
 
       // Also save to localStorage for offline access

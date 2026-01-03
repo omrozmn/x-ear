@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Profile Access</title>
+</head>
+<body>
+    <h1>Test Profile Access</h1>
+    <div id="output"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:5003';
+        const output = document.getElementById('output');
+        
+        function log(msg) {
+            output.innerHTML += `<p>${msg}</p>`;
+            console.log(msg);
+        }
+        
+        async function test() {
+            try {
+                // 1. Login
+                log('1. Logging in as admin@x-ear.com...');
+                const loginResponse = await fetch(`${API_URL}/api/admin/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@x-ear.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const loginData = await loginResponse.json();
+                log(`Login response: ${JSON.stringify(loginData, null, 2)}`);
+                
+                if (!loginData.success) {
+                    log('❌ Login failed!');
+                    return;
+                }
+                
+                const token = loginData.data.token;
+                log(`✅ Login successful! Token: ${token.substring(0, 50)}...`);
+                
+                // Decode token
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                log(`Token payload: ${JSON.stringify(payload, null, 2)}`);
+                log(`Token identity (sub): ${payload.sub}`);
+                
+                // 2. Test /api/users/me
+                log('<br>2. Testing /api/users/me endpoint...');
+                const meResponse = await fetch(`${API_URL}/api/users/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log(`Response status: ${meResponse.status}`);
+                const meData = await meResponse.json();
+                log(`Response data: ${JSON.stringify(meData, null, 2)}`);
+                
+                if (meResponse.status === 200) {
+                    log('✅ /api/users/me works correctly!');
+                } else {
+                    log('❌ /api/users/me failed!');
+                }
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        test();
+    </script>
+</body>
+</html>

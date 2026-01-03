@@ -6,6 +6,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.rate_limit import rate_limit
 from models.user import User
+from models.admin_user import AdminUser
 from models.base import db
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
 from utils.decorators import unified_access
@@ -363,20 +364,46 @@ def refresh():
     """Refresh access token using refresh token"""
     try:
         user_id = get_jwt_identity()
-        user = db.session.get(User, user_id)
         
-        if not user:
-            return jsonify({'success': False, 'error': 'User not found'}), 404
+        # Check if admin user (ID starts with 'admin_')
+        if str(user_id).startswith('admin_'):
+            # Strip the 'admin_' prefix to get the actual UUID
+            actual_admin_id = user_id[6:] if user_id.startswith('admin_') else user_id
+            admin = db.session.get(AdminUser, actual_admin_id)
             
-        if not user.is_active:
-            return jsonify({'success': False, 'error': 'Account is inactive'}), 401
+            if not admin:
+                return jsonify({'success': False, 'error': 'Admin user not found'}), 404
+                
+            if not admin.is_active:
+                return jsonify({'success': False, 'error': 'Account is inactive'}), 401
             
-        access_token = create_access_token(identity=user.id, additional_claims={'tenant_id': user.tenant_id})
-        
-        return jsonify({
-            'success': True,
-            'access_token': access_token
-        }), 200
+            # Create new access token with admin_ prefix
+            admin_identity = admin.id if admin.id.startswith('admin_') else f'admin_{admin.id}'
+            access_token = create_access_token(
+                identity=admin_identity,
+                additional_claims={'role': admin.role, 'user_type': 'admin'}  # user_type instead of type
+            )
+            
+            return jsonify({
+                'success': True,
+                'access_token': access_token
+            }), 200
+        else:
+            # Regular tenant user
+            user = db.session.get(User, user_id)
+            
+            if not user:
+                return jsonify({'success': False, 'error': 'User not found'}), 404
+                
+            if not user.is_active:
+                return jsonify({'success': False, 'error': 'Account is inactive'}), 401
+                
+            access_token = create_access_token(identity=user.id, additional_claims={'tenant_id': user.tenant_id})
+            
+            return jsonify({
+                'success': True,
+                'access_token': access_token
+            }), 200
         
     except Exception as e:
         logger.error(f"Token refresh error: {e}")

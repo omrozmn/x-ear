@@ -40,9 +40,22 @@ class Appointment(BaseModel):
 
     def to_dict(self):
         base_dict = self.to_dict_base()
+        
+        # Fetch patient name if available
+        patient_name = None
+        if self.patient_id:
+            try:
+                from .patient import Patient
+                patient = Patient.query.get(self.patient_id)
+                if patient:
+                    patient_name = f"{patient.first_name or ''} {patient.last_name or ''}".strip() or 'Hasta bilgisi yok'
+            except Exception:
+                patient_name = 'Hasta bilgisi yok'
+        
         appointment_dict = {
             'id': self.id,
             'patientId': self.patient_id,
+            'patientName': patient_name,
             'clinicianId': self.clinician_id,
             'branchId': self.branch_id,
             'date': self.date.strftime('%Y-%m-%d') if self.date else None,

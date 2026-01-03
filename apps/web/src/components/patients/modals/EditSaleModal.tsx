@@ -1,6 +1,6 @@
 import React from 'react';
-import { 
-  Button, 
+import {
+  Button,
   Alert,
   Loading,
   Modal
@@ -54,7 +54,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
 
   const handleSgkSchemeSelect = (scheme: any) => {
     const coverage = Math.min(
-      formData.listPrice * (scheme.coveragePercentage / 100), 
+      formData.listPrice * (scheme.coveragePercentage / 100),
       scheme.maxAmount || Infinity
     );
     updateFormData({ sgkCoverage: coverage });
@@ -105,22 +105,23 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
             <SaleFormFields
               formData={formData}
               state={state}
-                  availableDevices={availableDevices}
-                  onFormDataChange={updateFormData}
-                  onStateChange={updateState}
-                  onDeviceSelect={handleDeviceSelect}
-                />
-              </div>
+              availableDevices={availableDevices}
+              onFormDataChange={updateFormData}
+              onStateChange={updateState}
+              onDeviceSelect={handleDeviceSelect}
+            />
+          </div>
 
-              {/* Right Column - Summary & Actions */}
-              <div className="space-y-6">
-                <PaymentSummary
-                  sale={sale}
-                  onPaymentUpdate={() => {
-                    // Handle payment update
-                  }}
-                />
+          {/* Right Column - Summary & Actions */}
+          <div className="space-y-6">
+            <PaymentSummary
+              sale={sale}
+              onPaymentUpdate={() => {
+                // Handle payment update
+              }}
+            />
 
+            {/* SGK Integration - Commented out as requested
                 <SGKIntegration
                   patientAge={patient.age || 0}
                   isBilateral={formData.ear === 'both'}
@@ -128,49 +129,50 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                     // Handle SGK update
                   }}
                 />
-              </div>
-            </div>
+                */}
+          </div>
+        </div>
 
-            {/* Footer Actions */}
-            <div className="flex items-center justify-between pt-6 border-t">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Durum:</span>
-                <select
-                  value={state.saleStatus}
-                  onChange={(e) => updateState({ saleStatus: e.target.value })}
-                  className="px-3 py-1 border border-gray-300 rounded text-sm"
-                >
-                  <option value="draft">Taslak</option>
-                  <option value="confirmed">Onaylandı</option>
-                  <option value="delivered">Teslim Edildi</option>
-                  <option value="completed">Tamamlandı</option>
-                  <option value="cancelled">İptal</option>
-                </select>
-              </div>
+        {/* Footer Actions */}
+        <div className="flex items-center justify-between pt-6 border-t">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Durum:</span>
+            <select
+              value={state.saleStatus}
+              onChange={(e) => updateState({ saleStatus: e.target.value })}
+              className="px-3 py-1 border border-gray-300 rounded text-sm"
+            >
+              <option value="draft">Taslak</option>
+              <option value="confirmed">Onaylandı</option>
+              <option value="delivered">Teslim Edildi</option>
+              <option value="completed">Tamamlandı</option>
+              <option value="cancelled">İptal</option>
+            </select>
+          </div>
 
-              <div className="flex gap-3">
-                <Button type="button" variant="outline" onClick={handleClose}>
-                  İptal
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={state.isSubmitting}
-                  className="min-w-[120px]"
-                >
-                  {state.isSubmitting ? <Loading /> : 'Güncelle'}
-                </Button>
-              </div>
-            </div>
-          </form>
+          <div className="flex gap-3">
+            <Button type="button" variant="outline" onClick={handleClose}>
+              İptal
+            </Button>
+            <Button
+              type="submit"
+              disabled={state.isSubmitting}
+              className="min-w-[120px]"
+            >
+              {state.isSubmitting ? <Loading /> : 'Güncelle'}
+            </Button>
+          </div>
+        </div>
+      </form>
 
-          {/* Payment Modal */}
-          {state.showPaymentModal && (
-            <div>
-              {/* Payment modal content would go here */}
-            </div>
-          )}
-        </Modal>
-      );
-    };
+      {/* Payment Modal */}
+      {state.showPaymentModal && (
+        <div>
+          {/* Payment modal content would go here */}
+        </div>
+      )}
+    </Modal>
+  );
+};
 
 export default EditSaleModal;

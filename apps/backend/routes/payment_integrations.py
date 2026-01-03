@@ -333,7 +333,7 @@ def get_pos_transactions(ctx):
     query = PaymentRecord.query.filter(PaymentRecord.pos_provider.isnot(None))
     
     # Tenant scoping if not super admin
-    if not ctx.is_admin and ctx.user.role == 'tenant_admin':
+    if not ctx.is_admin and ctx.user and ctx.user.role == 'tenant_admin':
         query = query.filter_by(tenant_id=ctx.tenant_id)
     elif ctx.is_admin:
         # Super admin can see all

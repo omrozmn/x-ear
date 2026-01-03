@@ -1,6 +1,5 @@
 import { 
-  AUTH_TOKEN, 
-  REFRESH_TOKEN, 
+  // NOTE: AUTH_TOKEN, REFRESH_TOKEN, ACCESS_TOKEN, JWT_TOKEN are now handled by TokenManager
   USER_PREFERENCES,
   SIDEBAR_COLLAPSED,
   THEME_MODE,
@@ -37,8 +36,6 @@ import {
   SGK_SUBMENU_EXPANDED,
   FATURA_SUBMENU_EXPANDED,
   REPORTS_SUBMENU_EXPANDED,
-  ACCESS_TOKEN,
-  JWT_TOKEN
 } from '../constants/storage-keys';
 
 interface MigrationRule {
@@ -50,33 +47,12 @@ interface MigrationRule {
 }
 
 // Legacy key mappings and migration rules
+// NOTE: Auth token migrations are now handled by TokenManager (single source of truth)
+// Only non-auth data migrations should be here
 const MIGRATION_RULES: MigrationRule[] = [
-  // Auth migrations
-  {
-    from: 'auth_token',
-    to: AUTH_TOKEN,
-    version: 'v1'
-  },
-  {
-    from: 'token',
-    to: JWT_TOKEN,
-    version: 'v1'
-  },
-  {
-    from: 'jwt',
-    to: JWT_TOKEN,
-    version: 'v1'
-  },
-  {
-    from: 'xear_access_token',
-    to: ACCESS_TOKEN,
-    version: 'v1'
-  },
-  {
-    from: 'refresh_token', 
-    to: REFRESH_TOKEN,
-    version: 'v1'
-  },
+  // Auth migrations - REMOVED: Now handled by TokenManager
+  // TokenManager handles: auth_token, refresh_token, token, jwt, etc.
+  
   {
     from: 'user_session',
     to: USER_PREFERENCES,
@@ -370,22 +346,30 @@ class StorageMigrator {
    */
   private migrateKey(rule: MigrationRule): boolean {
     const oldValue = localStorage.getItem(rule.from);
+    const newValue = localStorage.getItem(rule.to);
+    
+    // If new key already exists, just remove old key (idempotent)
+    if (newValue !== null && oldValue !== null) {
+      localStorage.removeItem(rule.from);
+      console.log(`📦 Cleaned up old key: ${rule.from} (new key exists)`);
+      return true;
+    }
     
     if (oldValue === null) {
       return false; // Nothing to migrate
     }
     
     try {
-      let newValue = oldValue;
+      let transformedValue = oldValue;
       
       // Apply transformation if provided
       if (rule.transform) {
         const parsed = JSON.parse(oldValue);
-        newValue = JSON.stringify(rule.transform(parsed));
+        transformedValue = JSON.stringify(rule.transform(parsed));
       }
       
       // Set new key
-      localStorage.setItem(rule.to, newValue);
+      localStorage.setItem(rule.to, transformedValue);
       
       // Remove old key
       localStorage.removeItem(rule.from);

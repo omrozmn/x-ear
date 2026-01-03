@@ -89,7 +89,7 @@ const CampaignsPage: React.FC = () => {
     const { success: showSuccessToast, error: showErrorToast, warning: showWarningToast } = useToastHelpers();
 
     const { data: creditData, isFetching: creditLoading } = useSmsIntegrationGetSmsCredit();
-    
+
     // Handle different response structures for credit balance
     let creditBalance = 0;
     if (creditData) {
@@ -109,27 +109,40 @@ const CampaignsPage: React.FC = () => {
         }
     }
 
-    const { data: branchesData } = useBranchesGetBranches({
+    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useBranchesGetBranches({
         query: { queryKey: getBranchesGetBranchesQueryKey(), refetchOnWindowFocus: false }
     });
-    
+
     const branchOptions = useMemo(() => {
         let items: any[] = [];
-        
+
         // Handle different response structures\n        if (branchesData) {\n            if (Array.isArray(branchesData)) {\n                items = branchesData;\n            } else if ((branchesData as any)?.data) {\n                const innerData = (branchesData as any).data;\n                if (Array.isArray(innerData)) {\n                    items = innerData;\n                } else if (innerData?.data && Array.isArray(innerData.data)) {\n                    items = innerData.data;\n                }\n            }\n        }
-        
+
         return items
             .filter((branch): branch is { id: string; name?: string } => Boolean(branch?.id))
             .map((branch) => ({ value: branch.id, label: branch.name ?? '\u015eube' }));
     }, [branchesData]);
 
     // Fetch first patient for preview
-    const { data: patientsData } = usePatientsGetPatients(
+    const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = usePatientsGetPatients(
         { page: 1, per_page: 1 },
         { query: { queryKey: getPatientsGetPatientsQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters', refetchOnWindowFocus: false } }
     );
-    
-    // Handle different response structures for first patient\n    let firstPatient: any = null;\n    if (patientsData) {\n        if (Array.isArray(patientsData) && patientsData.length > 0) {\n            firstPatient = patientsData[0];\n        } else if ((patientsData as any)?.data) {\n            const innerData = (patientsData as any).data;\n            if (Array.isArray(innerData) && innerData.length > 0) {\n                firstPatient = innerData[0];\n            } else if (innerData?.data && Array.isArray(innerData.data) && innerData.data.length > 0) {\n                firstPatient = innerData.data[0];\n            }\n        }\n    }
+
+    // Handle different response structures for first patient
+    let firstPatient: any = null;
+    if (patientsData) {
+        if (Array.isArray(patientsData) && patientsData.length > 0) {
+            firstPatient = patientsData[0];
+        } else if ((patientsData as any)?.data) {
+            const innerData = (patientsData as any).data;
+            if (Array.isArray(innerData) && innerData.length > 0) {
+                firstPatient = innerData[0];
+            } else if (innerData?.data && Array.isArray(innerData.data) && innerData.data.length > 0) {
+                firstPatient = innerData.data[0];
+            }
+        }
+    }
 
     const normalizedParams = useMemo<PatientsCountPatientsParams>(() => {
         const params: PatientsCountPatientsParams = {};
@@ -152,10 +165,11 @@ const CampaignsPage: React.FC = () => {
             }
         }
     );
+    const { isLoading: countLoading, isError: countError } = patientsCountQuery;
 
     const filterRecipientCount = (patientsCountQuery.data as any)?.count ?? 0;
     const excelRecipientCount = excelPreview?.validPhoneCount ?? 0;
-    const recipients = mode === 'filters' ? filterRecipientCount : excelRecipientCount;
+    const recipients = (countLoading || countError) ? 0 : (mode === 'filters' ? filterRecipientCount : excelRecipientCount);
 
     const smsSegments = message.trim().length > 0
         ? Math.max(1, Math.ceil(message.length / SMS_SEGMENT_LENGTH))
@@ -364,8 +378,14 @@ const CampaignsPage: React.FC = () => {
                             ...prev,
                             branchId: event.target.value || undefined
                         }))}
-                        options={[{ value: '', label: 'Tümü' }, ...branchOptions]}
+                        options={branchesLoading
+                            ? [{ value: '', label: 'Şubeler Yükleniyor...' }]
+                            : branchesError
+                                ? [{ value: '', label: 'Şube Hatası' }]
+                                : [{ value: '', label: 'Tümü' }, ...branchOptions]
+                        }
                         fullWidth
+                        disabled={branchesLoading}
                     />
                 </div>
                 <div>

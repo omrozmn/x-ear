@@ -95,63 +95,101 @@ def create_user(ctx):
 
 
 @users_bp.route('/users/me', methods=['GET'])
-@unified_access(resource='users', action='read')
+@unified_access()  # No permission required - self access
 def get_me(ctx):
     """Get current user profile - Unified Access"""
-    user = ctx._principal.user if ctx._principal else None
-    if not user:
-        return jsonify({'success': False, 'error': 'Not found'}), 404
+    # 1. Helper function to build response
+    def build_payload(u_obj, is_admin_user=False):
+        payload = u_obj.to_dict()
+        
+        # Super Admins (AdminUser) might not have 'username' or 'role' fields in to_dict() depending on model
+        if is_admin_user:
+            payload['role'] = 'super_admin'
+            payload['globalPermissions'] = ['*']
+            payload['apps'] = [] # Admin has access to everything, no specific app roles needed for now
+            return payload
 
-    # Build app-scoped roles and permissions
-    apps = {}
-    for ur in user.app_roles:
-        a = ur.app
-        if not a:
-            continue
-        entry = apps.get(a.id) or {'appId': a.id, 'appSlug': a.slug, 'roles': [], 'permissions': []}
-        entry['roles'].append(ur.role.name if ur.role else ur.role_id)
-        if ur.role and ur.role.permissions:
-            entry['permissions'].extend([p.name for p in ur.role.permissions])
-        apps[a.id] = entry
+        # Tenant Users
+        apps = {}
+        if hasattr(u_obj, 'app_roles'):
+            for ur in u_obj.app_roles:
+                a = ur.app
+                if not a:
+                    continue
+                entry = apps.get(a.id) or {'appId': a.id, 'appSlug': a.slug, 'roles': [], 'permissions': []}
+                entry['roles'].append(ur.role.name if ur.role else ur.role_id)
+                if ur.role and ur.role.permissions:
+                    entry['permissions'].extend([p.name for p in ur.role.permissions])
+                apps[a.id] = entry
 
-    for k in apps:
-        apps[k]['permissions'] = sorted(list(set(apps[k]['permissions'])))
+        for k in apps:
+            apps[k]['permissions'] = sorted(list(set(apps[k]['permissions'])))
 
-    global_permissions = []
-    if user.role == 'admin':
-        global_permissions = ['*']
+        global_permissions = []
+        if u_obj.role == 'admin':
+            global_permissions = ['*']
 
-    payload = user.to_dict()
-    payload['apps'] = list(apps.values())
-    payload['globalPermissions'] = global_permissions
-    return jsonify({'success': True, 'data': payload}), 200
+        payload['apps'] = list(apps.values())
+        payload['globalPermissions'] = global_permissions
+        return payload
+
+    # 2. Check if Standard User
+    user = ctx.user
+    if user:
+        return jsonify({'success': True, 'data': build_payload(user, is_admin_user=False)}), 200
+        
+    # 3. Check if Super Admin (AdminUser)
+    admin = ctx.admin
+    if admin:
+        return jsonify({'success': True, 'data': build_payload(admin, is_admin_user=True)}), 200
+
+    # If is_super_admin but ctx.admin is None, user might be in users table with role='super_admin'
+    if ctx.is_super_admin and ctx._principal and ctx._principal.user:
+        return jsonify({'success': True, 'data': build_payload(ctx._principal.user, is_admin_user=True)}), 200
+
+    return jsonify({'success': False, 'error': 'Not found'}), 404
+
 
 
 @users_bp.route('/users/me', methods=['PUT'])
-@unified_access(resource='users', action='write')
+@unified_access()  # No permission required - self access
 def update_me(ctx):
     """Update current user profile - Unified Access"""
-    user = ctx._principal.user if ctx._principal else None
-    if not user:
-        return jsonify({'success': False, 'error': 'Not found'}), 404
-
     data = request.get_json() or {}
     
-    if 'firstName' in data: user.first_name = data['firstName']
-    if 'lastName' in data: user.last_name = data['lastName']
-    if 'email' in data: user.email = data['email']
-    if 'username' in data: user.username = data['username']
-    
-    db.session.commit()
-    return jsonify({'success': True, 'data': user.to_dict()})
+    # 1. Update Standard User
+    user = ctx.user
+    if user:
+        if 'firstName' in data: user.first_name = data['firstName']
+        if 'lastName' in data: user.last_name = data['lastName']
+        if 'email' in data: user.email = data['email']
+        if 'username' in data: user.username = data['username']
+        db.session.commit()
+        return jsonify({'success': True, 'data': user.to_dict()})
+
+    # 2. Update Super Admin
+    admin = ctx.admin
+    if admin:
+        # Check what fields AdminUser supports. Assuming basics.
+        if 'firstName' in data: admin.first_name = data['firstName']
+        if 'lastName' in data: admin.last_name = data['lastName']
+        if 'email' in data: admin.email = data['email']
+        if 'username' in data: admin.username = data['username'] # If AdminUser has username
+        db.session.commit()
+        return jsonify({'success': True, 'data': admin.to_dict()})
+
+    return jsonify({'success': False, 'error': 'Not found'}), 404
 
 
 @users_bp.route('/users/me/password', methods=['POST'])
-@unified_access(resource='users', action='write')
+@unified_access()  # No permission required - self access
 def change_password(ctx):
     """Change password - Unified Access"""
-    user = ctx._principal.user if ctx._principal else None
-    if not user:
+    user = ctx.user
+    admin = ctx.admin
+    
+    subject = user or admin
+    if not subject:
         return jsonify({'success': False, 'error': 'Not found'}), 404
 
     try:
@@ -159,18 +197,19 @@ def change_password(ctx):
         current_password = data.get('currentPassword')
         new_password = data.get('newPassword')
 
-        logger.info(f"Password change attempt for user_id={user.id}")
+        username = getattr(subject, 'username', getattr(subject, 'email', 'unknown'))
+        logger.info(f"Password change attempt for {username}")
 
         if not current_password or not new_password:
             return jsonify({'success': False, 'error': 'Missing fields'}), 400
 
-        is_valid = user.check_password(current_password)
-        logger.info(f"Password check result for {user.username}: {is_valid}")
+        is_valid = subject.check_password(current_password)
+        logger.info(f"Password check result for {username}: {is_valid}")
         
         if not is_valid:
             return jsonify({'success': False, 'error': 'Invalid current password'}), 403
 
-        user.set_password(new_password)
+        subject.set_password(new_password)
         db.session.commit()
         logger.info("Password updated successfully.")
         return jsonify({'success': True, 'message': 'Password updated'})

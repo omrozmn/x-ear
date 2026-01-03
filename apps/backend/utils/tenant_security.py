@@ -124,6 +124,10 @@ def setup_tenant_security(app, db):
             # Check if JWT is present
             verify_jwt_in_request(optional=True)
             
+            # If no identity found (unauthenticated request), skip tenant identification
+            if not get_jwt_identity():
+                return
+            
             # Try to get tenant_id from claims first (performance)
             claims = get_jwt()
             if claims and 'tenant_id' in claims:

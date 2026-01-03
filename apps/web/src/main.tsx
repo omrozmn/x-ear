@@ -3,60 +3,56 @@ import ReactDOM from 'react-dom/client'
 import './styles/index.css'
 import App from './App.tsx'
 import { storageMigrator } from './utils/storage-migrator'
+import { tokenManager } from './utils/token-manager'
 import { useAuthStore } from './stores/authStore'
-import { AUTH_TOKEN } from './constants/storage-keys'
 import { MantineProvider } from '@mantine/core';
 
 console.log('main.tsx loaded');
 
-// Synchronously restore persisted token (hard-refresh safe)
-try {
-  const persisted = localStorage.getItem(AUTH_TOKEN) || localStorage.getItem('auth_token')
-    if (persisted) {
-    if (typeof window !== 'undefined') {
-      // ensure in-memory helper is set for non-axios callers
-      (window as Window & { __AUTH_TOKEN__?: string }).__AUTH_TOKEN__ = persisted
-    }
-    try {
-      // `apiClient`'s interceptor reads `window.__AUTH_TOKEN__` so setting that is sufficient
-      // Avoid global axios.defaults usage; centralized interceptor will handle auth headers.
-    } catch (e) {
-      // ignore
-    }
-  } else {
-    // If no token in localStorage, try to read common cookie names synchronously
-    try {
-      if (typeof document !== 'undefined' && document.cookie) {
-        const cookies = document.cookie.split(';').map(c => c.trim());
-        const cookieMap: Record<string, string> = {};
-        for (const c of cookies) {
-          const [k, ...v] = c.split('=');
-          cookieMap[k] = decodeURIComponent(v.join('='));
-        }
-        const possibleKeys = ['auth_token', 'x-ear.auth.token@v1', 'x-ear.auth.token', 'AUTH_TOKEN'];
-        for (const key of possibleKeys) {
-          const val = cookieMap[key];
-            if (val) {
-            (window as Window & { __AUTH_TOKEN__?: string }).__AUTH_TOKEN__ = val;
-            // Avoid setting global axios.defaults here; central interceptor will attach Authorization header.
-            break;
-          }
-        }
+// Sync tokens from Zustand persist to TokenManager
+// This ensures TokenManager has the latest tokens from Zustand persist storage
+function syncTokensFromZustand() {
+  try {
+    // Read directly from localStorage to avoid Zustand state timing issues
+    const authStorage = localStorage.getItem('auth-storage');
+    if (authStorage) {
+      const parsed = JSON.parse(authStorage);
+      const zustandToken = parsed?.state?.token;
+      const zustandRefresh = parsed?.state?.refreshToken;
+      
+      if (zustandToken && !tokenManager.accessToken) {
+        console.log('[main.tsx] Syncing tokens from Zustand persist storage...');
+        tokenManager.setTokens(zustandToken, zustandRefresh || null);
+        console.log('[main.tsx] Tokens synced successfully');
       }
-    } catch (e) {
-      // ignore cookie read errors
     }
+  } catch (e) {
+    console.warn('[main.tsx] Failed to sync tokens from Zustand:', e);
   }
-} catch (e) {
-  console.error('Token restore error:', e);
 }
+
+// TokenManager handles all token hydration from storage automatically on construction
+console.log('[main.tsx] TokenManager initialized:', {
+  hasAccessToken: !!tokenManager.accessToken,
+  hasRefreshToken: !!tokenManager.refreshToken,
+  isExpired: tokenManager.isAccessTokenExpired(),
+  userId: tokenManager.getUserId()
+});
+
+// Sync tokens from Zustand persist if TokenManager didn't find them
+syncTokensFromZustand();
+
+console.log('[main.tsx] After sync:', {
+  hasAccessToken: !!tokenManager.accessToken,
+  hasRefreshToken: !!tokenManager.refreshToken,
+});
 
 console.log('Starting migration and auth init...');
 
 // Simplified: Just render the app directly without waiting for async operations
 (async () => {
   try {
-    // Run migration in background (non-blocking)
+    // Run migration in background (non-blocking) - only for non-token data
     storageMigrator.migrate().catch(e => console.warn('Migration failed:', e));
     
     // Initialize auth in background (non-blocking)

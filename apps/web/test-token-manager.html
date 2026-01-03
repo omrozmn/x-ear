@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TokenManager Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a2e; color: #eee; }
+        .section { margin: 20px 0; padding: 15px; background: #16213e; border-radius: 8px; }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #2563eb; }
+        pre { background: #0f0f23; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        h2 { color: #818cf8; }
+    </style>
+</head>
+<body>
+    <h1>🔐 TokenManager Test Suite</h1>
+    
+    <div class="section">
+        <h2>1. Login Test</h2>
+        <button onclick="testLogin()">Login as Admin</button>
+        <pre id="loginResult"></pre>
+    </div>
+
+    <div class="section">
+        <h2>2. Token Storage Check</h2>
+        <button onclick="checkStorage()">Check All Storage</button>
+        <pre id="storageResult"></pre>
+    </div>
+
+    <div class="section">
+        <h2>3. API Request Test (with token)</h2>
+        <button onclick="testApiRequest()">Test /api/dashboard</button>
+        <button onclick="testAvailableRoles()">Test /api/admin/debug/available-roles</button>
+        <pre id="apiResult"></pre>
+    </div>
+
+    <div class="section">
+        <h2>4. Page Refresh Simulation</h2>
+        <button onclick="simulateRefresh()">Simulate Page Refresh</button>
+        <pre id="refreshResult"></pre>
+    </div>
+
+    <div class="section">
+        <h2>5. Token Refresh Test</h2>
+        <button onclick="testTokenRefresh()">Test Token Refresh</button>
+        <pre id="refreshTokenResult"></pre>
+    </div>
+
+    <div class="section">
+        <h2>6. Logout Test</h2>
+        <button onclick="testLogout()">Logout (Clear Tokens)</button>
+        <pre id="logoutResult"></pre>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5003';
+        
+        // Storage keys
+        const CANONICAL_ACCESS_KEY = 'x-ear.auth.token@v1';
+        const CANONICAL_REFRESH_KEY = 'x-ear.auth.refresh@v1';
+        const LEGACY_ACCESS_KEYS = ['auth_token', 'token', 'jwt'];
+        const LEGACY_REFRESH_KEYS = ['refresh_token', 'refreshToken'];
+
+        function log(elementId, message, type = 'info') {
+            const el = document.getElementById(elementId);
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            const colorClass = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            el.innerHTML += `<span class="${colorClass}">[${timestamp}] ${message}</span>\n`;
+        }
+
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        async function testLogin() {
+            clearLog('loginResult');
+            log('loginResult', 'Attempting login...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'admin@x-ear.com', password: 'admin123' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const { token, refreshToken, user } = data.data;
+                    
+                    log('loginResult', `✅ Login successful!`, 'success');
+                    log('loginResult', `User: ${user.email} (${user.role})`);
+                    log('loginResult', `Access Token: ${token.substring(0, 50)}...`);
+                    log('loginResult', `Refresh Token: ${refreshToken ? refreshToken.substring(0, 50) + '...' : 'NOT PROVIDED'}`, refreshToken ? 'success' : 'error');
+                    
+                    // Store tokens like TokenManager would
+                    localStorage.setItem(CANONICAL_ACCESS_KEY, token);
+                    if (refreshToken) {
+                        localStorage.setItem(CANONICAL_REFRESH_KEY, refreshToken);
+                    }
+                    window.__AUTH_TOKEN__ = token;
+                    
+                    log('loginResult', `\n📦 Tokens stored in:`, 'info');
+                    log('loginResult', `  - localStorage['${CANONICAL_ACCESS_KEY}']`, 'success');
+                    log('loginResult', `  - localStorage['${CANONICAL_REFRESH_KEY}']`, refreshToken ? 'success' : 'error');
+                    log('loginResult', `  - window.__AUTH_TOKEN__`, 'success');
+                } else {
+                    log('loginResult', `❌ Login failed: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                log('loginResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function checkStorage() {
+            clearLog('storageResult');
+            log('storageResult', '🔍 Checking all storage locations...\n');
+            
+            // Check canonical keys
+            log('storageResult', '=== CANONICAL KEYS (should have values) ===');
+            const accessToken = localStorage.getItem(CANONICAL_ACCESS_KEY);
+            const refreshToken = localStorage.getItem(CANONICAL_REFRESH_KEY);
+            
+            log('storageResult', `${CANONICAL_ACCESS_KEY}: ${accessToken ? '✅ ' + accessToken.substring(0, 40) + '...' : '❌ NOT FOUND'}`, accessToken ? 'success' : 'error');
+            log('storageResult', `${CANONICAL_REFRESH_KEY}: ${refreshToken ? '✅ ' + refreshToken.substring(0, 40) + '...' : '❌ NOT FOUND'}`, refreshToken ? 'success' : 'error');
+            
+            // Check legacy keys
+            log('storageResult', '\n=== LEGACY KEYS (should be empty after migration) ===');
+            LEGACY_ACCESS_KEYS.forEach(key => {
+                const val = localStorage.getItem(key);
+                log('storageResult', `${key}: ${val ? '⚠️ STILL EXISTS: ' + val.substring(0, 30) + '...' : '✅ Empty (good)'}`, val ? 'error' : 'success');
+            });
+            LEGACY_REFRESH_KEYS.forEach(key => {
+                const val = localStorage.getItem(key);
+                log('storageResult', `${key}: ${val ? '⚠️ STILL EXISTS: ' + val.substring(0, 30) + '...' : '✅ Empty (good)'}`, val ? 'error' : 'success');
+            });
+            
+            // Check window global
+            log('storageResult', '\n=== WINDOW GLOBAL ===');
+            log('storageResult', `window.__AUTH_TOKEN__: ${window.__AUTH_TOKEN__ ? '✅ Set' : '❌ NOT SET'}`, window.__AUTH_TOKEN__ ? 'success' : 'error');
+            
+            // Check Zustand persist
+            log('storageResult', '\n=== ZUSTAND PERSIST ===');
+            const zustandStorage = localStorage.getItem('auth-storage');
+            if (zustandStorage) {
+                try {
+                    const parsed = JSON.parse(zustandStorage);
+                    log('storageResult', `auth-storage: ✅ Found`, 'success');
+                    log('storageResult', `  - state.token: ${parsed.state?.token ? 'Present' : 'Missing'}`);
+                    log('storageResult', `  - state.refreshToken: ${parsed.state?.refreshToken ? 'Present' : 'Missing'}`);
+                } catch (e) {
+                    log('storageResult', `auth-storage: ⚠️ Parse error`, 'error');
+                }
+            } else {
+                log('storageResult', `auth-storage: Not found (may be normal)`, 'info');
+            }
+        }
+
+        async function testApiRequest() {
+            clearLog('apiResult');
+            const token = localStorage.getItem(CANONICAL_ACCESS_KEY) || window.__AUTH_TOKEN__;
+            
+            if (!token) {
+                log('apiResult', '❌ No token found! Please login first.', 'error');
+                return;
+            }
+            
+            log('apiResult', `Using token from: ${localStorage.getItem(CANONICAL_ACCESS_KEY) ? 'localStorage' : 'window.__AUTH_TOKEN__'}`);
+            log('apiResult', 'Making request to /api/dashboard...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('apiResult', `✅ Request successful! Status: ${response.status}`, 'success');
+                    log('apiResult', `Response: ${JSON.stringify(data).substring(0, 200)}...`);
+                } else {
+                    log('apiResult', `❌ Request failed! Status: ${response.status}`, 'error');
+                    log('apiResult', `Error: ${JSON.stringify(data)}`);
+                }
+            } catch (error) {
+                log('apiResult', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAvailableRoles() {
+            clearLog('apiResult');
+            const token = localStorage.getItem(CANONICAL_ACCESS_KEY) || window.__AUTH_TOKEN__;
+            
+            if (!token) {
+                log('apiResult', '❌ No token found! Please login first.', 'error');
+                return;
+            }
+            
+            log('apiResult', 'Making request to /api/admin/debug/available-roles...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/debug/available-roles`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('apiResult', `✅ Request successful! Status: ${response.status}`, 'success');
+                    log('apiResult', `Response: ${JSON.stringify(data, null, 2)}`);
+                } else {
+                    log('apiResult', `❌ Request failed! Status: ${response.status}`, 'error');
+                    log('apiResult', `Error: ${JSON.stringify(data)}`);
+                }
+            } catch (error) {
+                log('apiResult', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        function simulateRefresh() {
+            clearLog('refreshResult');
+            log('refreshResult', '🔄 Simulating page refresh...\n');
+            
+            // Clear window global (simulates page unload)
+            delete window.__AUTH_TOKEN__;
+            log('refreshResult', '1. Cleared window.__AUTH_TOKEN__');
+            
+            // Now simulate TokenManager hydration
+            log('refreshResult', '2. Simulating TokenManager hydration from localStorage...\n');
+            
+            // Try canonical keys first
+            let accessToken = localStorage.getItem(CANONICAL_ACCESS_KEY);
+            let refreshToken = localStorage.getItem(CANONICAL_REFRESH_KEY);
+            let source = 'canonical';
+            
+            // Fallback to legacy keys
+            if (!accessToken) {
+                for (const key of LEGACY_ACCESS_KEYS) {
+                    const val = localStorage.getItem(key);
+                    if (val) {
+                        accessToken = val;
+                        source = `legacy (${key})`;
+                        break;
+                    }
+                }
+            }
+            
+            if (!refreshToken) {
+                for (const key of LEGACY_REFRESH_KEYS) {
+                    const val = localStorage.getItem(key);
+                    if (val) {
+                        refreshToken = val;
+                        break;
+                    }
+                }
+            }
+            
+            if (accessToken) {
+                window.__AUTH_TOKEN__ = accessToken;
+                log('refreshResult', `✅ Access token restored from ${source}`, 'success');
+                log('refreshResult', `✅ window.__AUTH_TOKEN__ set`, 'success');
+                
+                // Decode and check expiration
+                try {
+                    const payload = JSON.parse(atob(accessToken.split('.')[1]));
+                    const exp = new Date(payload.exp * 1000);
+                    const now = new Date();
+                    const ttl = Math.floor((exp - now) / 1000);
+                    
+                    log('refreshResult', `\n📋 Token Info:`);
+                    log('refreshResult', `  - Subject: ${payload.sub}`);
+                    log('refreshResult', `  - Role: ${payload.role}`);
+                    log('refreshResult', `  - Expires: ${exp.toISOString()}`);
+                    log('refreshResult', `  - TTL: ${ttl} seconds (${Math.floor(ttl/60)} minutes)`, ttl > 0 ? 'success' : 'error');
+                } catch (e) {
+                    log('refreshResult', `⚠️ Could not decode token`, 'error');
+                }
+            } else {
+                log('refreshResult', `❌ No access token found in any storage!`, 'error');
+            }
+            
+            if (refreshToken) {
+                log('refreshResult', `✅ Refresh token available`, 'success');
+            } else {
+                log('refreshResult', `❌ No refresh token found!`, 'error');
+            }
+        }
+
+        async function testTokenRefresh() {
+            clearLog('refreshTokenResult');
+            const refreshToken = localStorage.getItem(CANONICAL_REFRESH_KEY);
+            
+            if (!refreshToken) {
+                log('refreshTokenResult', '❌ No refresh token found! Please login first.', 'error');
+                return;
+            }
+            
+            log('refreshTokenResult', 'Attempting token refresh...');
+            log('refreshTokenResult', `Using refresh token: ${refreshToken.substring(0, 50)}...`);
+            
+            try {
+                // Try body-based refresh first
+                const response = await fetch(`${API_BASE}/api/auth/refresh`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refreshToken })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && (data.access_token || data.accessToken)) {
+                    const newToken = data.access_token || data.accessToken;
+                    log('refreshTokenResult', `✅ Token refresh successful!`, 'success');
+                    log('refreshTokenResult', `New access token: ${newToken.substring(0, 50)}...`);
+                    
+                    // Update storage
+                    localStorage.setItem(CANONICAL_ACCESS_KEY, newToken);
+                    window.__AUTH_TOKEN__ = newToken;
+                    log('refreshTokenResult', `✅ Storage updated`, 'success');
+                } else {
+                    log('refreshTokenResult', `❌ Refresh failed: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                log('refreshTokenResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testLogout() {
+            clearLog('logoutResult');
+            log('logoutResult', '🚪 Logging out...\n');
+            
+            // Clear canonical keys
+            localStorage.removeItem(CANONICAL_ACCESS_KEY);
+            localStorage.removeItem(CANONICAL_REFRESH_KEY);
+            log('logoutResult', `✅ Removed ${CANONICAL_ACCESS_KEY}`, 'success');
+            log('logoutResult', `✅ Removed ${CANONICAL_REFRESH_KEY}`, 'success');
+            
+            // Clear legacy keys
+            [...LEGACY_ACCESS_KEYS, ...LEGACY_REFRESH_KEYS].forEach(key => {
+                localStorage.removeItem(key);
+            });
+            log('logoutResult', `✅ Removed all legacy keys`, 'success');
+            
+            // Clear window global
+            delete window.__AUTH_TOKEN__;
+            log('logoutResult', `✅ Cleared window.__AUTH_TOKEN__`, 'success');
+            
+            // Clear Zustand persist
+            localStorage.removeItem('auth-storage');
+            log('logoutResult', `✅ Cleared auth-storage`, 'success');
+            
+            log('logoutResult', `\n✅ Logout complete!`, 'success');
+        }
+
+        // Auto-check storage on load
+        window.onload = () => {
+            checkStorage();
+        };
+    </script>
+</body>
+</html>

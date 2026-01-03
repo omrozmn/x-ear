@@ -3477,43 +3477,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       description: Get sale details by ID
-    put:
-      summary: PUT /api/sales/{sale_id}
-      operationId: salesUpdateSale
-      tags:
-      - Sales
-      parameters:
-      - name: sale_id
-        in: path
-        required: true
-        schema:
-          type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Sale'
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      description: Update sale information
     delete:
       summary: DELETE /api/sales/{sale_id}
       operationId: salesDeleteSale
@@ -3548,9 +3511,39 @@ paths:
         required: true
         schema:
           type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                discount_amount:
+                  type: number
+                payment_method:
+                  type: string
+                notes:
+                  type: string
+                status:
+                  type: string
+                sgk_coverage:
+                  type: number
+                patient_payment:
+                  type: number
+                sale_date:
+                  type: string
+                  format: date-time
+                report_status:
+                  type: string
+                paid_amount:
+                  type: number
       responses:
         '200':
           description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
   /api/sales/{sale_id}/payment-plan:
     post:
       summary: POST /api/sales/{sale_id}/payment-plan
@@ -5771,6 +5764,69 @@ paths:
         '200':
           description: Success
   /api/admin/tenants:
+    get:
+      summary: List all tenants
+      description: Get paginated list of all tenants with search support
+      operationId: adminTenantsListTenants
+      tags:
+      - Admin
+      parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 20
+      - name: status
+        in: query
+        schema:
+          type: string
+      - name: search
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Tenant list retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      tenants:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+                            owner_email:
+                              type: string
+                            status:
+                              type: string
+                            user_count:
+                              type: integer
+                            created_at:
+                              type: string
+                              format: date-time
+                      total:
+                        type: integer
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
     post:
       summary: Create tenant
       operationId: adminTenantsCreateTenant
@@ -6070,21 +6126,6 @@ paths:
           type: string
       responses:
         '200':
-          description: Success
-  /api/admin/tickets:
-    post:
-      summary: POST /api/admin/tickets
-      operationId: adminTicketsCreateAdminTicket
-      tags:
-      - Admin
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        '201':
           description: Success
   /api/admin/tenants/{tenant_id}/status:
     put:
@@ -7601,14 +7642,184 @@ paths:
       tags:
       - Admin
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - targetRole
+              properties:
+                targetRole:
+                  type: string
+                  description: The role name to switch to
+                  example: odyolog
       responses:
-        '201':
-          description: Success
+        '200':
+          description: Role switch successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+                        description: New JWT access token with impersonated role
+                      refreshToken:
+                        type: string
+                        description: New JWT refresh token
+                      effectiveRole:
+                        type: string
+                        description: The role that was switched to
+                        example: odyolog
+                      roleDisplayName:
+                        type: string
+                        description: Display name of the role
+                        example: Odyolog
+                      permissions:
+                        type: array
+                        items:
+                          type: string
+                        description: List of permissions for the role
+                      isImpersonating:
+                        type: boolean
+                        description: Whether the user is impersonating
+                        example: true
+                      realUserEmail:
+                        type: string
+                        description: Email of the real user (admin@x-ear.com)
+                        example: admin@x-ear.com
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request - targetRole missing
+        '403':
+          description: Forbidden - not authorized or debug mode disabled
+        '404':
+          description: Role not found
+  /api/admin/debug/switch-tenant:
+    post:
+      summary: Switch to a different tenant context for debugging purposes.
+      description: 'Only available to admin@x-ear.com user.
+
+        Returns a new JWT with the selected tenant context.'
+      operationId: adminDebugSwitchTenant
+      tags:
+      - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - targetTenantId
+              properties:
+                targetTenantId:
+                  type: string
+                  description: The tenant ID to switch to
+                  example: tenant_abc123
+      responses:
+        '200':
+          description: Tenant switch successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+                        description: New JWT access token with tenant context
+                      refreshToken:
+                        type: string
+                        description: New JWT refresh token
+                      effectiveTenantId:
+                        type: string
+                        description: The tenant ID that was switched to
+                        example: tenant_abc123
+                      tenantName:
+                        type: string
+                        description: Name of the tenant
+                        example: Acme Corp
+                      tenantStatus:
+                        type: string
+                        description: Status of the tenant
+                        example: active
+                      isImpersonatingTenant:
+                        type: boolean
+                        description: Whether the user is impersonating a tenant
+                        example: true
+                      realUserEmail:
+                        type: string
+                        description: Email of the real user (admin@x-ear.com)
+                        example: admin@x-ear.com
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request - targetTenantId missing
+        '403':
+          description: Forbidden - not authorized or debug mode disabled
+        '404':
+          description: Tenant not found
+  /api/admin/debug/exit-impersonation:
+    post:
+      summary: Exit tenant/role impersonation mode
+      description: 'Only available to admin@x-ear.com user.
+
+        Returns to normal admin mode without impersonation.'
+      operationId: adminDebugExitImpersonation
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Successfully exited impersonation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+                        description: New JWT access token without impersonation
+                      refreshToken:
+                        type: string
+                        description: New JWT refresh token
+                      message:
+                        type: string
+                        example: Exited impersonation mode
+                  requestId:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '403':
+          description: Forbidden - not authorized
+        '404':
+          description: Role not found
   /api/invoices/{invoice_id}/update-gib-status:
     post:
       summary: Update invoice status from Birfatura.
@@ -8569,6 +8780,71 @@ paths:
       - Ocr
       responses:
         '201':
+          description: Success
+  /api/admin/tickets:
+    get:
+      summary: Get all tickets
+      operationId: adminTicketsList
+      tags: [Admin]
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create ticket
+      operationId: adminTicketsCreate
+      tags: [Admin]
+      responses:
+        '201':
+          description: Created
+  /api/pos/transactions:
+    get:
+      summary: Get POS transactions
+      operationId: posGetTransactions
+      tags: [Finance]
+      responses:
+        '200':
+          description: Success
+  /api/templates:
+    get:
+      summary: Get templates
+      operationId: getTemplates
+      tags: [Campaigns]
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create template
+      operationId: createTemplate
+      tags: [Campaigns]
+      responses:
+        '201':
+          description: Created
+  /api/templates/{template_id}:
+    put:
+      summary: Update template
+      operationId: updateTemplate
+      tags: [Campaigns]
+      parameters:
+        - name: template_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete template
+      operationId: deleteTemplate
+      tags: [Campaigns]
+      parameters:
+        - name: template_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
           description: Success
 components:
   schemas:

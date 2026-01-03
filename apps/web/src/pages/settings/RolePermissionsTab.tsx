@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { customInstance } from '@/api/orval-mutator';
-import { Shield, Check, Save, Loader2, AlertCircle, Users, ShoppingCart, DollarSign, FileText, Headphones, Package, Megaphone, Settings, BarChart, LayoutDashboard } from 'lucide-react';
+import { Shield, Check, Save, Loader2, AlertCircle, Users, ShoppingCart, DollarSign, FileText, Headphones, Package, Megaphone, Settings, BarChart, LayoutDashboard, Calendar, ClipboardList } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   // useAdminRolesGetAdminPermissions,
@@ -17,7 +17,7 @@ import { AxiosError } from 'axios';
 // Permission categories with icons
 const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode }> = {
   patients: { label: 'Hastalar', icon: <Users className="w-5 h-5" /> },
-  sales: { label: 'Satislar', icon: <ShoppingCart className="w-5 h-5" /> },
+  sales: { label: 'Satışlar', icon: <ShoppingCart className="w-5 h-5" /> },
   finance: { label: 'Finans', icon: <DollarSign className="w-5 h-5" /> },
   invoices: { label: 'Faturalar', icon: <FileText className="w-5 h-5" /> },
   devices: { label: 'Cihazlar', icon: <Headphones className="w-5 h-5" /> },
@@ -25,9 +25,12 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode }> 
   campaigns: { label: 'Kampanyalar', icon: <Megaphone className="w-5 h-5" /> },
   sgk: { label: 'SGK', icon: <Shield className="w-5 h-5" /> },
   settings: { label: 'Ayarlar', icon: <Settings className="w-5 h-5" /> },
-  team: { label: 'Ekip', icon: <Users className="w-5 h-5" /> },
+  team: { label: 'Ekip Yönetimi', icon: <Users className="w-5 h-5" /> },
   reports: { label: 'Raporlar', icon: <BarChart className="w-5 h-5" /> },
   dashboard: { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+  // Newly added categories
+  appointments: { label: 'Randevular', icon: <Calendar className="w-5 h-5" /> },
+  activity_logs: { label: 'Aktivite Logları', icon: <ClipboardList className="w-5 h-5" /> },
 };
 
 // Role display names
@@ -37,6 +40,11 @@ const ROLE_LABELS: Record<string, string> = {
   odyometrist: 'Odyometrist',
   secretary: 'Sekreter',
   user: 'Kullanıcı',
+  tenant_admin: 'Tenant Admin',
+  sales_manager: 'Satış Yöneticisi',
+  receptionist: 'Resepsiyonist',
+  accountant: 'Muhasebeci',
+  stock_manager: 'Stok Yöneticisi',
 };
 
 // Editable roles (tenant_admin cannot be edited - has all permissions by default)
