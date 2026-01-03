@@ -28,13 +28,17 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
     }
   });
 
+  console.log('[DebugRoleSwitcher] Render. isDebugAdmin:', isDebugAdmin, 'Current Role:', user?.role, 'IsImpersonating:', user?.isImpersonating);
+
   // Role switch mutation
   const { mutate: switchRole, isPending: isSwitching } = useAdminDebugSwitchRole({
     mutation: {
       onSuccess: (response) => {
+        console.log('[DebugRoleSwitcher] Role switch success. Response:', response);
         // Response has { success, data: { accessToken, refreshToken, effectiveRole } }
         const data = (response as any)?.data;
         if (data) {
+          console.log('[DebugRoleSwitcher] Updating tokens and user state...', data);
           // Token'ları localStorage'a yaz
           if (data.accessToken) {
             localStorage.setItem('auth_token', data.accessToken); // Fix: Set legacy key for initializeAuth
@@ -55,12 +59,15 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
             });
           }
 
+          console.log('[DebugRoleSwitcher] Redirecting to /');
           // Dashboard'a yönlendir (yetki hatası almamak için) ve sayfayı yenile
           window.location.href = '/';
+        } else {
+          console.error('[DebugRoleSwitcher] Response data missing!');
         }
       },
       onError: (error) => {
-        console.error('Role switch failed:', error);
+        console.error('[DebugRoleSwitcher] Role switch failed:', error);
         alert('Rol değiştirme başarısız oldu');
       }
     }
@@ -76,7 +83,9 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
   const currentRole = user?.role || 'unknown';
 
   const handleRoleSwitch = (roleName: string) => {
+    console.log('[DebugRoleSwitcher] Handling switch to:', roleName);
     if (roleName === currentRole) {
+      console.log('[DebugRoleSwitcher] Already on this role, closing.');
       setIsOpen(false);
       return;
     }
