@@ -51,6 +51,11 @@ class AccessContext:
     def is_super_admin(self) -> bool:
         """Check if current context is for a super admin"""
         return self.principal_kind == PrincipalKind.SUPER_ADMIN
+
+    @property
+    def is_admin(self) -> bool:
+        """Alias for is_super_admin (backward compatibility)"""
+        return self.is_super_admin
     
     @property
     def is_tenant_member(self) -> bool:

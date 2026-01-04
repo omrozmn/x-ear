@@ -13,19 +13,23 @@ Ensures consistency across all endpoints in the format:
 
 from flask import jsonify
 
-def success_response(data=None, meta=None, status_code=200):
+def success_response(data=None, meta=None, message=None, status_code=200):
     """
     Return a standardized success response.
     
     Args:
         data: The main payload (dict, list, or None)
         meta: Optional metadata dictionary (e.g. pagination, scope info)
+        message: Optional success message
         status_code: HTTP status code (default 200)
     """
     response = {
         'success': True,
         'data': data
     }
+    
+    if message:
+        response['message'] = message
     
     if meta:
         response['meta'] = meta

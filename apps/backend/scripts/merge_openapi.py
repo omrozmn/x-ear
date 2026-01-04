@@ -25,6 +25,16 @@ def merge_specs(manual_spec, auto_spec):
     manual_paths = set(manual_spec.get('paths', {}).keys())
     auto_paths = set(auto_spec.get('paths', {}).keys())
     
+    # Track all operationIds to detect duplicates
+    operation_ids = {}
+    
+    # First, collect operationIds from manual spec
+    for path, methods in manual_spec.get('paths', {}).items():
+        for method, operation in methods.items():
+            if isinstance(operation, dict) and 'operationId' in operation:
+                op_id = operation['operationId']
+                operation_ids[op_id] = f"{method.upper()} {path}"
+    
     # Find new paths in auto-generated
     new_paths = auto_paths - manual_paths
     
@@ -38,6 +48,16 @@ def merge_specs(manual_spec, auto_spec):
         merged['paths'] = {}
     
     for path in new_paths:
+        # Check for duplicate operationIds in new paths
+        for method, operation in auto_spec['paths'][path].items():
+            if isinstance(operation, dict) and 'operationId' in operation:
+                op_id = operation['operationId']
+                if op_id in operation_ids:
+                    # Duplicate found - skip this path
+                    print(f"   ⚠️  Skipping {path} [{method}]: duplicate operationId '{op_id}' (already in {operation_ids[op_id]})")
+                    continue
+                operation_ids[op_id] = f"{method.upper()} {path}"
+        
         merged['paths'][path] = auto_spec['paths'][path]
         print(f"   + Added: {path}")
     
@@ -51,14 +71,36 @@ def merge_specs(manual_spec, auto_spec):
             manual_op = manual_spec['paths'][path][method]
             auto_op = auto_spec['paths'][path][method]
             
+            if not isinstance(manual_op, dict) or not isinstance(auto_op, dict):
+                continue
+            
             if 'operationId' in auto_op and auto_op['operationId'] != manual_op.get('operationId'):
-                print(f"   ✏️  {path} [{method}]: {manual_op.get('operationId')} → {auto_op['operationId']}")
-                merged['paths'][path][method]['operationId'] = auto_op['operationId']
+                old_id = manual_op.get('operationId')
+                new_id = auto_op['operationId']
+                
+                # Check if new operationId would create duplicate
+                if new_id in operation_ids and operation_ids[new_id] != f"{method.upper()} {path}":
+                    print(f"   ⚠️  Keeping old operationId for {path} [{method}]: {old_id} (new '{new_id}' would duplicate)")
+                    continue
+                
+                print(f"   ✏️  {path} [{method}]: {old_id} → {new_id}")
+                merged['paths'][path][method]['operationId'] = new_id
+                if old_id:
+                    del operation_ids[old_id]
+                operation_ids[new_id] = f"{method.upper()} {path}"
         
         # Add new methods from auto-generated
         for method in auto_methods - manual_methods:
+            auto_op = auto_spec['paths'][path][method]
+            if isinstance(auto_op, dict) and 'operationId' in auto_op:
+                op_id = auto_op['operationId']
+                if op_id in operation_ids:
+                    print(f"   ⚠️  Skipping {path} [{method}]: duplicate operationId '{op_id}'")
+                    continue
+                operation_ids[op_id] = f"{method.upper()} {path}"
+            
             print(f"   + {path} [{method}]")
-            merged['paths'][path][method] = auto_spec['paths'][path][method]
+            merged['paths'][path][method] = auto_op
     
     # Merge tags (keep unique)
     manual_tags = {t['name'] for t in manual_spec.get('tags', [])}
@@ -80,28 +122,31 @@ def main():
     auto_path = base_dir / 'apps' / 'openapi.generated.yaml'
     output_path = base_dir / 'openapi.yaml'
     
-    print("🔄 Merging OpenAPI specs...")
-    print(f"   Manual (base): {manual_path}")
+    print("🔄 Generating OpenAPI spec...")
     print(f"   Auto-generated: {auto_path}")
     print(f"   Output: {output_path}")
     print()
     
-    manual = load_yaml(manual_path)
+    # FULL AUTO MODE: Use only auto-generated spec, no manual merge
     auto = load_yaml(auto_path)
     
-    merged = merge_specs(manual, auto)
-    
     # Update metadata
-    merged['info']['title'] = 'X-Ear CRM API'
-    merged['info']['version'] = '1.0.0'
-    merged['info']['description'] = 'Merged: manual schemas + auto-generated endpoints'
+    auto['info']['title'] = 'X-Ear CRM API'
+    auto['info']['version'] = '1.0.0'
+    auto['info']['description'] = 'Auto-generated from Flask backend routes'
     
-    save_yaml(merged, output_path)
+    # Add contact info
+    auto['info']['contact'] = {
+        'name': 'X-Ear Web App Support',
+        'email': 'support@x-ear.com',
+        'url': 'https://x-ear.com/support'
+    }
     
-    print()
-    print(f"✅ Merged spec saved to {output_path}")
-    print(f"   Total paths: {len(merged['paths'])}")
-    print(f"   Total tags: {len(merged.get('tags', []))}")
+    save_yaml(auto, output_path)
+    
+    print(f"✅ OpenAPI spec saved to {output_path}")
+    print(f"   Total paths: {len(auto['paths'])}")
+    print(f"   Total tags: {len(auto.get('tags', []))}")
 
 if __name__ == '__main__':
     main()

@@ -122,7 +122,9 @@ def get_user_notification_settings():
     try:
         user_id = request.args.get('user_id')
         if not user_id and request.is_json:
-            user_id = request.get_json().get('userId')
+            json_data = request.get_json(silent=True)
+            if json_data:
+                user_id = json_data.get('userId')
         if not user_id:
             return jsonify({'success': False, 'error': 'user_id required'}), 400
 

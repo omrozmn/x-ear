@@ -12,11 +12,14 @@ import { PatientDevice } from '../../types/patient';
 import { unwrapArray } from '../../utils/response-unwrap';
 
 // Orval Hooks
-import { useReplacementsGetReplacement } from '@/api/generated';
+import {
+  useReplacementsGetReplacement,
+  useReplacementsCreateReturnInvoice as useCreateReturnInvoice
+} from '@/api/generated';
 import {
   useReplacementsSendInvoiceToGib,
 } from '@/api/generated/return-invoices/return-invoices';
-import { useReplacementsCreateReturnInvoice as useCreateReturnInvoice } from '@/api/generated/replacements/replacements';
+import { usePatientsGetPatientReplacements } from '@/api/custom-hooks/usePatientReplacements';
 
 interface InventoryItem {
   id: string;

@@ -77,84 +77,76 @@ export const SGKDownloadsPage: React.FC = () => {
     try {
       // TODO: Backend endpoint '/api/sgk/e-receipts/delivered' is not implemented/documented in OpenAPI.
       // Manual fetch is banned. Using mock data until endpoint is available via generated client.
-      /*
-      // Gerçek API çağrısı - backend'den e-reçeteleri çek
-      const response = await fetch('/api/sgk/e-receipts/delivered', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
+      // TODO: Backend endpoint '/api/sgk/e-receipts/delivered' is missing.
+      // Keeping mock data until backend implementation is complete and generated hook exists.
+
+      // Expected usage with generated hook:
+      // const { data } = useGetDeliveredEReceipts();
+      // setPatients(data?.patients || []);
+      // API başarısız olursa mock data kullan
+      console.warn('API endpoint not available, using mock data');
+      const mockPatients: PatientWithEReceipts[] = [
+        {
+          id: 'pat1',
+          name: 'Ahmet Yılmaz',
+          tcNumber: '12345678901',
+          phone: '0555 123 4567',
+          email: 'ahmet@example.com',
+          currentMonthReceipts: [
+            {
+              id: 'er1',
+              number: 'ER20241001',
+              date: '2024-10-15',
+              doctorName: 'Dr. Zeynep Kaya',
+              validUntil: '2026-10-15',
+              patientName: 'Ahmet Yılmaz',
+              patientTcNumber: '12345678901',
+              materials: [
+                {
+                  code: 'DMT001',
+                  name: 'Dijital programlanabilir işitme cihazı - sağ',
+                  applicationDate: '2024-10-15',
+                  deliveryStatus: 'delivered'
+                }
+              ],
+              sgkDocumentAvailable: true,
+              patientFormAvailable: true,
+              sgkStatus: 'success'
+            }
+          ]
         },
-      });
+        {
+          id: 'pat2',
+          name: 'Ayşe Demir',
+          tcNumber: '23456789012',
+          phone: '0555 234 5678',
+          email: 'ayse@example.com',
+          currentMonthReceipts: [
+            {
+              id: 'er2',
+              number: 'ER20241002',
+              date: '2024-10-20',
+              doctorName: 'Dr. Mehmet Öz',
+              validUntil: '2026-10-20',
+              patientName: 'Ayşe Demir',
+              patientTcNumber: '23456789012',
+              materials: [
+                {
+                  code: 'DMT002',
+                  name: 'Dijital programlanabilir işitme cihazı - sol',
+                  applicationDate: '2024-10-20',
+                  deliveryStatus: 'delivered'
+                }
+              ],
+              sgkDocumentAvailable: true,
+              patientFormAvailable: true,
+              sgkStatus: 'success'
+            }
+          ]
+        }
+      ];
 
-      if (response.ok) {
-        const data = await response.json();
-        setPatients(data.patients || []);
-      } else {
-      */
-        // API başarısız olursa mock data kullan
-        console.warn('API endpoint not available, using mock data');
-        const mockPatients: PatientWithEReceipts[] = [
-          {
-            id: 'pat1',
-            name: 'Ahmet Yılmaz',
-            tcNumber: '12345678901',
-            phone: '0555 123 4567',
-            email: 'ahmet@example.com',
-            currentMonthReceipts: [
-              {
-                id: 'er1',
-                number: 'ER20241001',
-                date: '2024-10-15',
-                doctorName: 'Dr. Zeynep Kaya',
-                validUntil: '2026-10-15',
-                patientName: 'Ahmet Yılmaz',
-                patientTcNumber: '12345678901',
-                materials: [
-                  {
-                    code: 'DMT001',
-                    name: 'Dijital programlanabilir işitme cihazı - sağ',
-                    applicationDate: '2024-10-15',
-                    deliveryStatus: 'delivered'
-                  }
-                ],
-                sgkDocumentAvailable: true,
-                patientFormAvailable: true,
-                sgkStatus: 'success'
-              }
-            ]
-          },
-          {
-            id: 'pat2',
-            name: 'Ayşe Demir',
-            tcNumber: '23456789012',
-            phone: '0555 234 5678',
-            email: 'ayse@example.com',
-            currentMonthReceipts: [
-              {
-                id: 'er2',
-                number: 'ER20241002',
-                date: '2024-10-20',
-                doctorName: 'Dr. Mehmet Öz',
-                validUntil: '2026-10-20',
-                patientName: 'Ayşe Demir',
-                patientTcNumber: '23456789012',
-                materials: [
-                  {
-                    code: 'DMT002',
-                    name: 'Dijital programlanabilir işitme cihazı - sol',
-                    applicationDate: '2024-10-20',
-                    deliveryStatus: 'delivered'
-                  }
-                ],
-                sgkDocumentAvailable: true,
-                patientFormAvailable: true,
-                sgkStatus: 'success'
-              }
-            ]
-          }
-        ];
-
-        setPatients(mockPatients);
+      setPatients(mockPatients);
       // }
     } catch (error) {
       console.error('Error loading patients:', error);
@@ -214,7 +206,7 @@ export const SGKDownloadsPage: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const docName = docType === 'report' ? 'Rapor' :
-                     docType === 'prescription' ? 'Reçete' : 'İşlem Formu';
+        docType === 'prescription' ? 'Reçete' : 'İşlem Formu';
 
       showSuccess('Başarılı', `${patient.name} için ${docName} indirildi`);
     } catch (error) {
@@ -268,8 +260,8 @@ export const SGKDownloadsPage: React.FC = () => {
 
     try {
       const docsPerPatient = (bulkOptions.reports ? 1 : 0) +
-                           (bulkOptions.prescriptions ? 1 : 0) +
-                           (bulkOptions.processForms ? 1 : 0);
+        (bulkOptions.prescriptions ? 1 : 0) +
+        (bulkOptions.processForms ? 1 : 0);
 
       const totalDocs = selectedPatientList.length * docsPerPatient;
       setDownloadProgress({ current: 0, total: totalDocs });

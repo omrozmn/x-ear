@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import { useCallback, useMemo } from 'react';
 import { customInstance } from '../api/orval-mutator';
-import { API_BASE_URL } from '../constants/api';
+
 
 // Permission categories
 export const PERMISSION_CATEGORIES = {
@@ -48,7 +48,7 @@ async function authFetch<T>(endpoint: string, options: RequestInit = {}): Promis
   }
 
   // Use customInstance instead of fetch - maintains auth + retry logic
-  const response = await customInstance({
+  const response = await customInstance<T>({
     url: endpoint,
     method: options.method || 'GET',
     headers,

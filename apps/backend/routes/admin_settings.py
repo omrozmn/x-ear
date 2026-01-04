@@ -73,7 +73,7 @@ def update_settings(ctx):
         
         return success_response(message='Settings updated')
     except Exception as e:
-        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
+        return error_response(str(e), code='UPDATE_FAILED', status_code=400)
 
 @admin_settings_bp.route('/cache/clear', methods=['POST'])
 @unified_access(permission=AdminPermissions.SYSTEM_MANAGE)

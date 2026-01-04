@@ -79,7 +79,7 @@ def create_supplier(ctx):
 
     except Exception as e:
         db.session.rollback()
-        return error_response(str(e), code='CREATE_FAILED', status_code=500)
+        return error_response(str(e), code='CREATE_FAILED', status_code=400)
 
 @admin_suppliers_bp.route('/<int:id>', methods=['GET'])
 @unified_access(permission=AdminPermissions.SUPPLIERS_READ)
@@ -128,7 +128,7 @@ def update_supplier(ctx, id):
 
     except Exception as e:
         db.session.rollback()
-        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
+        return error_response(str(e), code='UPDATE_FAILED', status_code=400)
 
 @admin_suppliers_bp.route('/<int:id>', methods=['DELETE'])
 @unified_access(permission=AdminPermissions.SUPPLIERS_MANAGE)
@@ -146,4 +146,4 @@ def delete_supplier(ctx, id):
 
     except Exception as e:
         db.session.rollback()
-        return error_response(str(e), code='DELETE_FAILED', status_code=500)
+        return error_response(str(e), code='DELETE_FAILED', status_code=400)

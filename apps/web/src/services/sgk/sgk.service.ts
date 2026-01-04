@@ -1,7 +1,7 @@
 import {
   sgkUploadSgkDocument,
   sgkDeleteSgkDocument,
-  sgkProcessOcr,
+  ocrProcessDocument,
   automationTriggerSgkProcessing,
   sgkGetPatientSgkDocuments
 } from '@/api/generated';
@@ -19,7 +19,7 @@ export const sgkService = {
   listDocuments: (patientId: string) => sgkGetPatientSgkDocuments(patientId),
 
   // Process OCR
-  processOcr: (body?: any) => sgkProcessOcr(body),
+  processOcr: (body?: any) => ocrProcessDocument(body),
 
   // Trigger SGK processing
   triggerProcessing: (body?: any) => automationTriggerSgkProcessing(body),

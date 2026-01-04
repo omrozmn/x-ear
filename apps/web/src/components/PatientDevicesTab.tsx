@@ -163,7 +163,10 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
       setActionError(null);
 
       // Update device status to cancelled using mutation
-      await updateDeviceMutation.mutateAsync({ assignmentId: deviceToCancel });
+      await updateDeviceMutation.mutateAsync({
+        assignmentId: deviceToCancel,
+        data: { status: 'cancelled' } as any
+      });
 
       setSuccessMessage('Cihaz ataması iptal edildi');
       await refetch();
@@ -192,8 +195,15 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
       setActionError(null);
 
       const assignmentId = deviceToReturn.id;
+      // Extract ear info to support partial returns (especially for bilateral)
+      // The individual cards for bilateral devices have 'ear' set to 'left' or 'right'
+      const ear = (deviceToReturn as any).earSide || deviceToReturn.ear || '';
 
-      await returnLoanerMutation.mutateAsync({ assignmentId });
+      await returnLoanerMutation.mutateAsync({
+        assignmentId,
+        data: {},
+        params: { ear: String(ear).toLowerCase() as any }
+      });
 
       setSuccessMessage('Emanet cihaz stoğa geri alındı');
       await refetch();
@@ -354,9 +364,9 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
           assignmentId: editingDevice.id,
           data: updateData
         });
-        
+
         console.log('✅ Update response from backend:', updateResponse);
-        console.log('✅ Update response data:', updateResponse?.data);
+
 
         setSuccessMessage('Cihaz ataması başarıyla güncellendi');
         console.log('🔄 Waiting 500ms before refetch...');
@@ -420,21 +430,21 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
       console.error('❌ Error response data:', error?.response?.data);
       console.error('❌ Error response status:', error?.response?.status);
       console.error('❌ Error response headers:', error?.response?.headers);
-      
+
       // Extract detailed error message
       let errorMsg = 'Hata oluştu';
       if (error?.response?.data?.detail) {
-        errorMsg = typeof error.response.data.detail === 'string' 
-          ? error.response.data.detail 
+        errorMsg = typeof error.response.data.detail === 'string'
+          ? error.response.data.detail
           : JSON.stringify(error.response.data.detail);
       } else if (error?.response?.data?.message) {
         errorMsg = error.response.data.message;
       } else if (error?.message) {
         errorMsg = error.message;
       }
-      
+
       setActionError(errorMsg);
-      
+
       // Don't close the form on error so user can fix and retry
       // setShowAssignmentForm(false);
       // setEditingDevice(null);
@@ -546,8 +556,32 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({
               const perItemSale = dp.salePricePerItem || Number(dp.netPayable || 0) / 2 || 0;
               const perItemSgk = dp.sgkSupportPerItem || Number(dp.sgkSupport || 0) / 2 || 0;
 
-              const rightCard = { ...device, ear: 'right', earSide: 'RIGHT', side: 'right', salePricePerItem: perItemSale, sgkSupportPerItem: perItemSgk } as any;
-              const leftCard = { ...device, ear: 'left', earSide: 'LEFT', side: 'left', salePricePerItem: perItemSale, sgkSupportPerItem: perItemSgk } as any;
+              // Calculate isLoaner for each side based on presence of specific serial number
+              // This ensures that when one ear is returned (serial is null), the badge is removed
+              const isRightLoaner = dp.isLoaner && !!(dp.loanerSerialNumberRight || dp.loaner_serial_number_right);
+              const isLeftLoaner = dp.isLoaner && !!(dp.loanerSerialNumberLeft || dp.loaner_serial_number_left);
+
+              const rightCard = {
+                ...device,
+                ear: 'right',
+                earSide: 'RIGHT',
+                side: 'right',
+                salePricePerItem: perItemSale,
+                sgkSupportPerItem: perItemSgk,
+                isLoaner: isRightLoaner,
+                loanerSerialNumber: dp.loanerSerialNumberRight || dp.loaner_serial_number_right
+              } as any;
+
+              const leftCard = {
+                ...device,
+                ear: 'left',
+                earSide: 'LEFT',
+                side: 'left',
+                salePricePerItem: perItemSale,
+                sgkSupportPerItem: perItemSgk,
+                isLoaner: isLeftLoaner,
+                loanerSerialNumber: dp.loanerSerialNumberLeft || dp.loaner_serial_number_left
+              } as any;
 
               return (
                 <div key={device.id} className="grid grid-cols-1 md:grid-cols-2 gap-4">

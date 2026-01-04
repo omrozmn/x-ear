@@ -9,7 +9,7 @@ import json
 
 # Import Package model only if present
 try:
-    
+    from models.system import Package  # type: ignore
 except Exception:
     Package = None
 

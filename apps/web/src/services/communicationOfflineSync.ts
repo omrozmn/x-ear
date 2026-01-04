@@ -511,8 +511,8 @@ class CommunicationOfflineSync {
     const metadata = await this.db.get('syncMetadata', 'templates');
     const since = metadata?.lastSyncTimestamp || new Date(0).toISOString();
 
-    const { communicationsListTemplates } = await import('@/api/generated');
-    const response = await communicationsListTemplates({ since, limit: 1000 } as any);
+    const { communicationsGetTemplates } = await import('@/api/generated');
+    const response = await communicationsGetTemplates({ since, limit: 1000 } as any);
 
     const result = (response as any).data || response;
     if (!(result as any).success) return;

@@ -7,7 +7,7 @@ import {
   timelineAddTimelineEvent,
   timelineDeleteTimelineEvent,
   timelineLogPatientActivity,
-  salesGetPatientSales,
+  patientsGetPatientSales,
   salesCreateSale,
   sgkUploadSgkDocument,
   sgkDeleteSgkDocument
@@ -31,7 +31,7 @@ export const patientsApi = {
   deleteNote: (patientId: string, noteId: string) => timelineDeleteTimelineEvent(patientId, noteId),
 
   // Sales operations
-  getSales: (patientId: string) => salesGetPatientSales(patientId),
+  getSales: (patientId: string) => patientsGetPatientSales(patientId),
   createSale: (data: any) => salesCreateSale(data),
   // deleteSale: (saleId: string) => salesDeleteSale(saleId), // Removed as it doesn't exist
 

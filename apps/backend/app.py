@@ -130,6 +130,15 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=8)  # Extended for admi
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 jwt = JWTManager(app)
 
+# Flask-Mail Configuration
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', '587'))
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', '1') == '1'
+app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', '0') == '1'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', '')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', 'noreply@x-ear.com')
+
 @jwt.expired_token_loader
 def my_expired_token_callback(jwt_header, jwt_payload):
     logger.warning(f"JWT EXPIRED: {jwt_payload.get('sub')}")

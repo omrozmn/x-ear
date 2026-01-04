@@ -3,7 +3,7 @@ import {
   PatientsGetPatients200,
   Sale,
   SalesCreateSaleBody,
-  SalesUpdateSaleBody,
+  SalesUpdateSale1Body,
   PaginationInfo
 } from "@/api/generated/schemas";
 import { apiClient, LegacyPatient, CreatePatientRequest, UpdatePatientRequest } from '../../api/client';
@@ -14,12 +14,12 @@ import {
   patientsCreatePatient,
   patientsUpdatePatient,
   patientsDeletePatient,
-  salesGetPatientSales,
+  patientsGetPatientSales,
   salesCreateSale,
   salesUpdateSale,
   timelineGetPatientTimeline,
   sgkGetPatientSgkDocuments,
-  appointmentsListAppointments,
+  appointmentsGetAppointments,
   patientSubresourcesCreatePatientNote,
   patientSubresourcesDeletePatientNote,
   patientSubresourcesGetPatientNotes,
@@ -158,7 +158,7 @@ export class PatientApiService {
   async getSales(patientId: string): Promise<ApiEnvelope<Sale[]>> {
     try {
       const response = await this.throttler.throttle(async () => {
-        return await salesGetPatientSales(patientId);
+        return await patientsGetPatientSales(patientId);
       });
       const res = response as unknown as { data?: { data?: Sale[]; meta?: PaginationInfo } };
       const salesArray = Array.isArray(res.data?.data) ? (res.data?.data as Sale[]) : [];
@@ -328,7 +328,7 @@ export class PatientApiService {
     }
   }
 
-  async updateSale(saleId: string, updates: SalesUpdateSaleBody): Promise<ApiEnvelope<unknown>> {
+  async updateSale(saleId: string, updates: SalesUpdateSale1Body): Promise<ApiEnvelope<unknown>> {
     try {
       const response = await this.throttler.throttle(async () => {
         // TODO: The generated client for salesUpdateSale currently only accepts saleId.
@@ -394,7 +394,7 @@ export class PatientApiService {
     try {
       const response = await this.throttler.throttle(async () => {
         // Use correct list endpoint and cast to any since generated type is void but runtime returns data
-        return await appointmentsListAppointments() as any;
+        return await appointmentsGetAppointments({ patient_id: patientId }) as any;
       });
 
       // Filter appointments by patient ID on the client side since the API doesn't support filtering

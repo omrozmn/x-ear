@@ -5,7 +5,7 @@ import WarningModal from '../../pages/inventory/components/WarningModal';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { unwrapArray } from '../../utils/response-unwrap';
+import { unwrapPaginated } from '../../utils/response-unwrap';
 import {
   useInventoryGetInventoryItems,
   useInventoryDeleteInventoryItem,
@@ -111,7 +111,8 @@ export const InventoryList: React.FC<InventoryListProps> = ({
 
   // Transform Data
   const { items, totalItems } = useMemo(() => {
-    const rawItems = unwrapArray<any>(fetchResponse);
+    const { data: rawItems, total } = unwrapPaginated<any>(fetchResponse);
+
     if (!rawItems || rawItems.length === 0) {
       return { items: [], totalItems: 0 };
     }
@@ -188,9 +189,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       };
     });
 
-    // Pagination info - backend may include in response or we estimate from array length
-    const total = (fetchResponse as any).pagination?.total || mappedItems.length;
-    return { items: mappedItems, totalItems: total };
+    return { items: mappedItems, totalItems: total || mappedItems.length };
   }, [fetchResponse]);
 
   // Helper: format numbers as TR locale

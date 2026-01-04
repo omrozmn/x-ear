@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import sgkService from '@/services/sgk/sgk.service';
 
 // Note: The OpenAPI/Orval-generated client in this repo exposes SGK document endpoints and OCR/processing
-// helpers (sgkGetPatientSgkDocuments, sgkUploadSgkDocument, sgkDeleteSgkDocument, sgkProcessOcr, automationTriggerSgkProcessing).
+// helpers (sgkGetPatientSgkDocuments, sgkUploadSgkDocument, sgkDeleteSgkDocument, ocrProcessDocument, automationTriggerSgkProcessing).
 // There are no generic CRUD endpoints for "SGK records" in the generated client. We expose processing hooks
 // and provide clear placeholders for CRUD once backend endpoints exist.
 

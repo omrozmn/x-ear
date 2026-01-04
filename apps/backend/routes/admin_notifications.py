@@ -238,7 +238,7 @@ def create_template(ctx):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create template error: {e}")
-        return error_response(str(e), code='CREATE_FAILED', status_code=500)
+        return error_response(str(e), code='CREATE_FAILED', status_code=400)
 
 @admin_notifications_bp.route('/templates/<template_id>', methods=['PUT'])
 @unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
@@ -297,7 +297,7 @@ def update_template(ctx, template_id):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Update template error: {e}")
-        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
+        return error_response(str(e), code='UPDATE_FAILED', status_code=400)
 
 @admin_notifications_bp.route('/templates/<template_id>', methods=['DELETE'])
 @unified_access(permission=AdminPermissions.SYSTEM_MANAGE)
@@ -315,4 +315,4 @@ def delete_template(ctx, template_id):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Delete template error: {e}")
-        return error_response(str(e), code='DELETE_FAILED', status_code=500)
+        return error_response(str(e), code='DELETE_FAILED', status_code=400)

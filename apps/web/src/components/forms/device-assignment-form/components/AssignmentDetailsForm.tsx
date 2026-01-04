@@ -86,7 +86,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             category: 'hearing_aid'
           });
           const unwrapped = unwrapObject(response);
-          const items = unwrapped?.data || unwrapped || [];
+          const items = unwrapped || [];
           setLoanerResults(Array.isArray(items) ? items : []);
           setShowLoanerResults(true);
         } catch (error) {
@@ -489,8 +489,8 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                       onFocus={() => setActiveSerialInput('single')}
                       onBlur={() => setTimeout(() => setActiveSerialInput(null), 200)}
                       className={`w-full px-2 py-1.5 text-sm border-2 rounded bg-white focus:outline-none focus:ring-2 ${formData.ear === 'left' ? 'border-blue-400 focus:ring-blue-200' :
-                          formData.ear === 'right' ? 'border-red-400 focus:ring-red-200' :
-                            'border-gray-300 focus:ring-gray-200'
+                        formData.ear === 'right' ? 'border-red-400 focus:ring-red-200' :
+                          'border-gray-300 focus:ring-gray-200'
                         }`}
                       placeholder="Seri No"
                     />

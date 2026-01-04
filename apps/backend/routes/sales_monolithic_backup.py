@@ -2474,7 +2474,7 @@ def create_sales_log(ctx):
         # Create ActivityLog entry for backend tracking
         
         log_entry = ActivityLog(
-            tenant_id=user.tenant_id,
+            tenant_id=ctx.tenant_id,
             user_id=data.get('user_name', 'system'),
             action='product_sale',
             entity_type='sale',
@@ -2803,55 +2803,116 @@ def return_loaner_to_stock(ctx, assignment_id):
             return error_response('Loaner inventory item not found', code='LOANER_NOT_FOUND', status_code=404)
 
 
-        # Calculate quantity to return
-        ear_val = str(assignment.ear or '').lower()
-        qty = 2 if (ear_val.startswith('b') or ear_val in ['both', 'bilateral']) else 1
+        # Calculate quantity and identify serials to return
+        # Check if a specific ear is being returned (for bilateral partial return)
+        requested_ear = (request.args.get('ear') or '').lower()
         
-        # Collect serials to restore
-        loaner_serials = []
-        if assignment.loaner_serial_number and assignment.loaner_serial_number != 'null': loaner_serials.append(assignment.loaner_serial_number)
-        if assignment.loaner_serial_number_left and assignment.loaner_serial_number_left != 'null': loaner_serials.append(assignment.loaner_serial_number_left)
-        if assignment.loaner_serial_number_right and assignment.loaner_serial_number_right != 'null': loaner_serials.append(assignment.loaner_serial_number_right)
+        # Determine strict bilateral status from assignment
+        assign_ear = str(assignment.ear or '').lower()
+        is_bilateral = assign_ear.startswith('b') or assign_ear in ['both', 'bilateral']
 
-        # Restore inventory
-        loaner_item.update_inventory(qty)
+        serials_to_return = []
+        is_full_return = False
         
-        # Restore serials
-        restored_serials = []
-        for s in loaner_serials:
-             if s and s != '-':
-                 loaner_item.add_serial_number(s)
-                 restored_serials.append(s)
+        # Logic to determine which serials to return and which fields to clear
+        fields_to_clear = []
 
-        # Get proper username for logging
-        created_by_name = 'system'
-        if ctx._principal and ctx._principal.admin:
-            admin = ctx._principal.admin
-            created_by_name = getattr(admin, 'email', None) or getattr(admin, 'name', None) or str(ctx.principal_id)
-        elif ctx._principal and ctx._principal.user:
-            user = ctx._principal.user
-            created_by_name = f"{getattr(user, 'first_name', '')} {getattr(user, 'last_name', '')}".strip() or getattr(user, 'email', None) or str(ctx.principal_id)
+        if requested_ear == 'left':
+            # Returning ONLY Left
+            if assignment.loaner_serial_number_left and assignment.loaner_serial_number_left != 'null':
+                serials_to_return.append(assignment.loaner_serial_number_left)
+                fields_to_clear.append('loaner_serial_number_left')
+            # Handle case where unilateral left might stored in generic field (less likely for bilateral but possible)
+            elif not is_bilateral and (assign_ear == 'left' or assign_ear == 'l') and assignment.loaner_serial_number:
+                serials_to_return.append(assignment.loaner_serial_number)
+                fields_to_clear.append('loaner_serial_number')
         
-        # Log movement
-        create_stock_movement(
-            inventory_id=loaner_item.id,
-            movement_type="loaner_return",
-            quantity=qty,
-            tenant_id=loaner_item.tenant_id,
-            serial_number=','.join(restored_serials) if restored_serials else None,
-            transaction_id=assignment.id,
-            created_by=created_by_name,
-            session=db.session
-        )
+        elif requested_ear == 'right':
+            # Returning ONLY Right
+            if assignment.loaner_serial_number_right and assignment.loaner_serial_number_right != 'null':
+                serials_to_return.append(assignment.loaner_serial_number_right)
+                fields_to_clear.append('loaner_serial_number_right')
+            # Handle case where unilateral right might stored in generic field
+            elif not is_bilateral and (assign_ear == 'right' or assign_ear == 'r') and assignment.loaner_serial_number:
+                serials_to_return.append(assignment.loaner_serial_number)
+                fields_to_clear.append('loaner_serial_number')
 
-        # Update assignment status - CLEAR LOANER FLAG
-        assignment.status = 'returned'
-        assignment.return_date = datetime.now()
-        assignment.is_loaner = False  # Clear loaner flag after return
+        else:
+            # Returning ALL (Both or Single)
+            if assignment.loaner_serial_number and assignment.loaner_serial_number != 'null': 
+                serials_to_return.append(assignment.loaner_serial_number)
+                fields_to_clear.append('loaner_serial_number')
+            if assignment.loaner_serial_number_left and assignment.loaner_serial_number_left != 'null': 
+                serials_to_return.append(assignment.loaner_serial_number_left)
+                fields_to_clear.append('loaner_serial_number_left')
+            if assignment.loaner_serial_number_right and assignment.loaner_serial_number_right != 'null': 
+                serials_to_return.append(assignment.loaner_serial_number_right)
+                fields_to_clear.append('loaner_serial_number_right')
+            is_full_return = True
+
+        if not serials_to_return and not is_full_return:
+             # If specific ear requested but no serial found, it might already be returned.
+             # We should proceed to check if we can close the assignment, or just return success if already done.
+             pass
+
+        qty = len(serials_to_return)
+
+        if qty > 0:
+            # Restore inventory
+            loaner_item.update_inventory(qty)
+            
+            # Restore serials
+            restored_serials = []
+            for s in serials_to_return:
+                 if s and s != '-':
+                     loaner_item.add_serial_number(s)
+                     restored_serials.append(s)
+
+            # Get proper username for logging
+            created_by_name = 'system'
+            if ctx._principal and ctx._principal.admin:
+                admin = ctx._principal.admin
+                created_by_name = getattr(admin, 'email', None) or getattr(admin, 'name', None) or str(ctx.principal_id)
+            elif ctx._principal and ctx._principal.user:
+                user = ctx._principal.user
+                created_by_name = f"{getattr(user, 'first_name', '')} {getattr(user, 'last_name', '')}".strip() or getattr(user, 'email', None) or str(ctx.principal_id)
+            
+            # Log movement
+            create_stock_movement(
+                inventory_id=loaner_item.id,
+                movement_type="loaner_return",
+                quantity=qty,
+                tenant_id=loaner_item.tenant_id,
+                serial_number=','.join(restored_serials) if restored_serials else None,
+                transaction_id=assignment.id,
+                created_by=created_by_name,
+                session=db.session
+            )
+
+        # Clear returned fields on assignment
+        for field in fields_to_clear:
+            setattr(assignment, field, None)
+
+        # Check if entirely returned to update status
+        # It is fully returned if ALL loaner serial fields are now empty/None
+        remaining_serials = []
+        if assignment.loaner_serial_number: remaining_serials.append(assignment.loaner_serial_number)
+        if assignment.loaner_serial_number_left: remaining_serials.append(assignment.loaner_serial_number_left)
+        if assignment.loaner_serial_number_right: remaining_serials.append(assignment.loaner_serial_number_right)
+        
+        # Filter valid serials
+        remaining_valid = [s for s in remaining_serials if s and str(s).lower() not in ['null', 'none', '-', '']]
+
+        if not remaining_valid:
+            # All returned
+            assignment.status = 'returned'
+            assignment.return_date = datetime.now()
+            assignment.is_loaner = False  # Clear loaner flag only when ALL are returned
         
         data = request.get_json(silent=True) or {}
         if data.get('notes'):
-            assignment.notes = (assignment.notes or '') + f"\nEmanet İade Notu: {data.get('notes')}"
+            note_prefix = f"Emanet İade ({requested_ear})" if requested_ear else "Emanet İade"
+            assignment.notes = (assignment.notes or '') + f"\n{note_prefix} Notu: {data.get('notes')}"
 
         db.session.add(loaner_item)
         db.session.add(assignment)

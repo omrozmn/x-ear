@@ -9,7 +9,7 @@ import type {
   AppointmentsCreateAppointmentBody,
   AppointmentsCancelAppointmentBody,
   AppointmentsCompleteAppointmentBody,
-  AppointmentsGetAppointments200
+  AppointmentsGetAppointments1200
 } from '@/api/generated/schemas';
 
 interface PatientAppointmentsTabProps {

@@ -8,8 +8,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   useSuppliersGetSuppliers,
   getSuppliersGetSuppliersQueryKey,
-  useInventoryGetInventoryItems,
-  getInventoryGetInventoryItemsQueryKey,
   useSuppliersCreateSupplier
 } from '@/api/generated';
 
@@ -34,8 +32,11 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
   required = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  // Debounce search term to prevent excessive API calls
+  const [debouncedSearch, setDebouncedSearch] = useState(value);
+
   const [filteredSuppliers, setFilteredSuppliers] = useState<string[]>([]);
-  const [allSuppliers, setAllSuppliers] = useState<string[]>([]);
+  // allSuppliers removed as we use server-side search
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement | null>(null);
@@ -75,39 +76,47 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     'Hearing Care Turkey'
   ];
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(value);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [value]);
+
   const { token } = useAuthStore();
   const queryClient = useQueryClient();
 
-  // React Query hooks for data fetching - only fetch if authenticated
+  // Async Search using backend API
+  // We request only 10 items for autocomplete performance
   const { data: suppliersData, isLoading: isLoadingSuppliers, isError: isErrorSuppliers } = useSuppliersGetSuppliers(
-    { per_page: 1000 },
+    { search: debouncedSearch, per_page: 10 },
     {
       query: {
-        queryKey: getSuppliersGetSuppliersQueryKey({ per_page: 1000 }),
+        queryKey: getSuppliersGetSuppliersQueryKey({ search: debouncedSearch, per_page: 10 }),
         enabled: !!token,
-      }
-    }
-  );
-  const { data: inventoryData, isLoading: isLoadingInventory, isError: isErrorInventory } = useInventoryGetInventoryItems(
-    {},
-    {
-      query: {
-        queryKey: getInventoryGetInventoryItemsQueryKey({}),
-        enabled: !!token,
+        staleTime: 5000
       }
     }
   );
 
-  const isLoading = isLoadingSuppliers || isLoadingInventory;
-  const isError = isErrorSuppliers || isErrorInventory;
+  // NOTE: Inventory scraping removed for scalability/pagination reasons (Phase 4)
 
-  // Load suppliers from API data
+  const isLoading = isLoadingSuppliers;
+  const isError = isErrorSuppliers;
+
+  // Compute filtered suppliers (Backend Results + Filtered Defaults)
   useEffect(() => {
+    if (!isOpen) {
+      setFilteredSuppliers([]);
+      return;
+    }
+
     const suppliers: string[] = [];
 
-    // Try suppliers endpoint first - handle response structure
+    // 1. Add API Results
     if (suppliersData) {
       let supplierArray: any[] = [];
+      // Handle response wrapping (using unwrapPaginated logic concepts)
       if (Array.isArray(suppliersData)) {
         supplierArray = suppliersData;
       } else if ((suppliersData as any)?.data) {
@@ -115,97 +124,41 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
         if (Array.isArray(innerData)) {
           supplierArray = innerData;
         } else if (innerData?.data && Array.isArray(innerData.data)) {
+          // Double wrapped
           supplierArray = innerData.data;
         }
       }
 
-      const supplierNames = supplierArray
-        .map((s: any) => s.companyName || s.company_name)
+      const apiNames = supplierArray
+        .map((s: any) => s.companyName || s.company_name || s.name)
         .filter(Boolean);
-      suppliers.push(...supplierNames);
+      suppliers.push(...apiNames);
     }
 
-    // Fallback to inventory data
-    if (inventoryData && suppliers.length === 0) {
-      let inventoryArray: any[] = [];
-      if (Array.isArray(inventoryData)) {
-        inventoryArray = inventoryData;
-      } else if ((inventoryData as any)?.data) {
-        const innerData = (inventoryData as any).data;
-        if (Array.isArray(innerData)) {
-          inventoryArray = innerData;
-        } else if (innerData?.data && Array.isArray(innerData.data)) {
-          inventoryArray = innerData.data;
-        }
-      }
-
-      const inventorySuppliers = [...new Set(
-        inventoryArray.map((item: any) => item.supplier).filter(Boolean)
-      )] as string[];
-      suppliers.push(...inventorySuppliers);
-    }
-
-    // Combine with defaults
-    const combined = suppliers.length > 0
-      ? [...new Set([...suppliers, ...defaultSuppliers])]
-      : defaultSuppliers;
-
-    setAllSuppliers(combined.sort());
-  }, [suppliersData, inventoryData]);
-
-  useEffect(() => {
-    const suppliers = allSuppliers.length > 0 ? allSuppliers : defaultSuppliers;
-    if (value && isOpen) {
-      // Normalize Turkish characters
-      const normalizeTurkish = (str: string) => {
-        return str
-          .toLowerCase()
-          .replace(/ğ/g, 'g')
-          .replace(/ü/g, 'u')
-          .replace(/ş/g, 's')
-          .replace(/ı/g, 'i')
-          .replace(/ö/g, 'o')
-          .replace(/ç/g, 'c');
-      };
-
-      const normalizedValue = normalizeTurkish(value);
-
-      const scored = suppliers.map(supplier => {
-        const normalizedSupplier = normalizeTurkish(supplier);
-        let score = 0;
-
-        if (normalizedSupplier === normalizedValue) score = 100;
-        else if (normalizedSupplier.startsWith(normalizedValue)) score = 90;
-        else if (normalizedSupplier.includes(normalizedValue)) score = 70;
-        else {
-          let matches = 0;
-          for (const char of normalizedValue) {
-            if (normalizedSupplier.includes(char)) matches++;
-          }
-          score = (matches / normalizedValue.length) * 50;
-        }
-
-        return { supplier, score };
-      });
-
-      const filtered = scored
-        .filter(item => item.score > 30)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 8)
-        .map(item => item.supplier);
-
-      setFilteredSuppliers(filtered);
-    } else if (isOpen) {
-      setFilteredSuppliers(suppliers.slice(0, 8));
+    // 2. Add Default Suppliers (Client-side filtered fallback)
+    // Only if we don't have many results from API, or always?
+    // Let's filter defaults using the search term
+    if (value) {
+      const lowerVal = value.toLocaleLowerCase('tr-TR');
+      const matchedDefaults = defaultSuppliers.filter(s =>
+        s.toLocaleLowerCase('tr-TR').includes(lowerVal)
+      );
+      suppliers.push(...matchedDefaults);
     } else {
-      setFilteredSuppliers([]);
+      // If empty search, show some defaults?
+      suppliers.push(...defaultSuppliers.slice(0, 5));
     }
-  }, [value, isOpen, allSuppliers]);
 
-  // Check if current value is an exact match
-  const suppliers = allSuppliers.length > 0 ? allSuppliers : defaultSuppliers;
+    // Deduplicate
+    const unique = [...new Set(suppliers)].slice(0, 10); // Limit to 10
+    setFilteredSuppliers(unique);
+
+  }, [suppliersData, value, isOpen]);
+
+  // Check if current value is an exact match (check filtered and defaults)
+  const validationList = filteredSuppliers.length > 0 ? filteredSuppliers : defaultSuppliers;
   const valStr = value || '';
-  const hasExactMatch = suppliers.some(sup => (sup || '').toLowerCase() === valStr.toLowerCase());
+  const hasExactMatch = validationList.some(sup => (sup || '').toLowerCase() === valStr.toLowerCase());
   const showCreateNew = value.trim() && !hasExactMatch && isOpen;
 
   useEffect(() => {
@@ -289,25 +242,16 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     try {
       await createSupplierMutation.mutateAsync({ data: { company_name: newSupplier } } as any);
       console.log('✅ New supplier created:', newSupplier);
-      // Add to local list immediately
-      setAllSuppliers(prev => [...new Set([...prev, newSupplier])].sort());
-      
+
       // Invalidate React Query cache to refetch suppliers
       queryClient.invalidateQueries({ queryKey: getSuppliersGetSuppliersQueryKey() });
-      queryClient.invalidateQueries({ queryKey: getInventoryGetInventoryItemsQueryKey() });
     } catch (error: any) {
       if (error.response?.status === 409) {
         console.log('Supplier already exists, using existing:', newSupplier);
-        // Still add to local list
-        setAllSuppliers(prev => [...new Set([...prev, newSupplier])].sort());
-        
         // Invalidate cache
         queryClient.invalidateQueries({ queryKey: getSuppliersGetSuppliersQueryKey() });
-        queryClient.invalidateQueries({ queryKey: getInventoryGetInventoryItemsQueryKey() });
       } else {
         console.warn('Failed to persist supplier to API, using locally:', error);
-        // Add to local list anyway
-        setAllSuppliers(prev => [...new Set([...prev, newSupplier])].sort());
       }
     }
 

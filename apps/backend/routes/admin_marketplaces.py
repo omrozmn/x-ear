@@ -69,7 +69,7 @@ def create_integration(ctx):
         return success_response(data=integration.to_dict(), status_code=201)
     except Exception as e:
         db.session.rollback()
-        return error_response(str(e), code='CREATE_FAILED', status_code=500)
+        return error_response(str(e), code='CREATE_FAILED', status_code=400)
 
 @admin_marketplaces_bp.route('/integrations/<id>/sync', methods=['POST'])
 @unified_access(permission=AdminPermissions.MARKETPLACES_MANAGE)

@@ -96,10 +96,9 @@ export function CustomerSection({
 
     setIsSearching(true);
     try {
-      // TODO: API entegrasyonu
-      // const response = await fetch(`/api/Musteri/FirmaMusteriGetir?KW=${query}`);
-      // const data = await response.json();
-      // setSearchResults(data);
+      // TODO: API integration pending backend implementation
+      // Endpoint: /api/Musteri/FirmaMusteriGetir
+      // When implemented, generate hook and use: const { data } = useGetCustomerQuery(...)
 
       // Mock data
       setSearchResults([
@@ -130,9 +129,9 @@ export function CustomerSection({
     // E-Fatura mükellefi kontrolü ve PK etiket listesi
     if (customer.isEInvoiceUser && customer.taxNumber) {
       try {
-        // TODO: API entegrasyonu
-        // const response = await fetch(`/api/Firma/FirmaPKBilgisiGetir?vergiNo=${customer.taxNumber}`);
-        // const labels = await response.json();
+        // TODO: API integration pending backend implementation
+        // Endpoint: /api/Firma/FirmaPKBilgisiGetir
+        // When implemented, generate hook and use: useGetCompanyPKInfo(...)
 
         // Mock data
         const labels = [
@@ -151,9 +150,9 @@ export function CustomerSection({
 
     // Adres listesi
     try {
-      // TODO: API entegrasyonu
-      // const response = await fetch(`/api/Firma/FirmaAdresBilgisiGetir?musteriId=${customer.id}`);
-      // const addresses = await response.json();
+      // TODO: API integration pending backend implementation
+      // Endpoint: /api/Firma/FirmaAdresBilgisiGetir
+      // When implemented, generate hook and use: useGetCompanyAddresses(...)
 
       // Mock data
       const addresses = [

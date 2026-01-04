@@ -1,0 +1,6905 @@
+openapi: 3.0.3
+info:
+  title: X-Ear CRM API (auto-generated)
+  version: 0.0.0-auto
+servers:
+- url: http://localhost:5003
+paths:
+  /api/EFatura/Cancel/{invoice_id}:
+    post:
+      summary: Cancel an invoice (send cancellation to GİB)
+      operationId: birfaturaCancelInvoice
+      tags:
+      - Efatura
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/EFatura/Create:
+    post:
+      summary: Create invoice (draft mode, not sent to GİB yet)
+      operationId: birfaturaCreateInvoice
+      tags:
+      - Efatura
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/EFatura/Retry/{invoice_id}:
+    post:
+      summary: Retry sending a failed invoice to GİB
+      operationId: birfaturaRetryInvoice
+      tags:
+      - Efatura
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/EFatura/sendBasicInvoice:
+    post:
+      summary: POST /api/EFatura/sendBasicInvoice
+      operationId: birfaturaSendBasicInvoice
+      tags:
+      - Efatura
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/EFatura/sendDocument:
+    post:
+      summary: POST /api/EFatura/sendDocument
+      operationId: birfaturaSendDocument
+      tags:
+      - Efatura
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/OutEBelgeV2/SendBasicInvoiceFromModel:
+    post:
+      summary: POST /api/OutEBelgeV2/SendBasicInvoiceFromModel
+      operationId: birfaturaOutSendBasicInvoiceFromModel
+      tags:
+      - Outebelgev2
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/OutEBelgeV2/SendDocument:
+    post:
+      summary: POST /api/OutEBelgeV2/SendDocument
+      operationId: birfaturaOutSendDocument
+      tags:
+      - Outebelgev2
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/activity-logs:
+    get:
+      summary: Get activity logs with unified access.
+      operationId: activityLogsGetActivityLogs
+      tags:
+      - Activity-logs
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new activity log entry (internal/system use)
+      operationId: activityLogsCreateActivityLog
+      tags:
+      - Activity-logs
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/activity-logs/{log_id}:
+    get:
+      summary: Get a single activity log entry with full details
+      operationId: activityLogsGetActivityLogDetail
+      tags:
+      - Activity-logs
+      parameters:
+      - name: log_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/activity-logs/filter-options:
+    get:
+      summary: Get available filter options for activity logs
+      operationId: activityLogsGetFilterOptions
+      tags:
+      - Activity-logs
+      responses:
+        '200':
+          description: Success
+  /api/activity-logs/stats:
+    get:
+      summary: Get activity statistics.
+      operationId: activityLogsGetActivityStats
+      tags:
+      - Activity-logs
+      responses:
+        '200':
+          description: Success
+  /api/addons:
+    get:
+      summary: Get all active addons (Public)
+      operationId: addonsGetAddons
+      tags:
+      - Addons
+      responses:
+        '200':
+          description: Success
+  /api/admin/activity-logs:
+    get:
+      summary: Legacy admin endpoint - redirects to unified endpoint.
+      description: Kept for backward compatibility with admin panel.
+      operationId: activityLogsAdminGetActivityLogs
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/activity-logs/filter-options:
+    get:
+      summary: Legacy admin filter options endpoint
+      operationId: activityLogsAdminGetFilterOptions
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/activity-logs/stats:
+    get:
+      summary: Legacy admin stats endpoint
+      operationId: activityLogsAdminGetActivityStats
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/addons:
+    get:
+      summary: List all add-ons
+      operationId: adminAddonsGetAddons
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new add-on
+      operationId: adminAddonsCreateAddon
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/addons/{addon_id}:
+    get:
+      summary: Get add-on details
+      operationId: adminAddonsGetAddon
+      tags:
+      - Admin
+      parameters:
+      - name: addon_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update add-on
+      operationId: adminAddonsUpdateAddon
+      tags:
+      - Admin
+      parameters:
+      - name: addon_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete add-on (soft delete by setting is_active=False)
+      operationId: adminAddonsDeleteAddon
+      tags:
+      - Admin
+      parameters:
+      - name: addon_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/admin/admin-users:
+    get:
+      summary: Admin kullanıcıları rolleriyle birlikte listele
+      operationId: adminRolesGetAdminUsersWithRoles
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/admin-users/{user_id}:
+    get:
+      summary: Admin kullanıcı detayı
+      operationId: adminRolesGetAdminUserDetail
+      tags:
+      - Admin
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/admin/admin-users/{user_id}/roles:
+    put:
+      summary: Kullanıcıya rol ata
+      description: 'Body:
+
+        role_ids: list[str] - Rol ID''leri
+
+        Not: admin@x-ear.com kullanıcısından SuperAdmin rolü kaldırılamaz'
+      operationId: adminRolesUpdateAdminUserRoles
+      tags:
+      - Admin
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/admin/analytics:
+    get:
+      summary: Get admin analytics data
+      operationId: adminAnalyticsGetAdminAnalytics
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/api-keys:
+    get:
+      summary: Get list of API keys
+      operationId: adminApiKeysGetApiKeys
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new API key
+      operationId: adminApiKeysCreateApiKey
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/api-keys/{key_id}:
+    delete:
+      summary: Revoke (delete) an API key
+      operationId: adminApiKeysRevokeApiKey
+      tags:
+      - Admin
+      parameters:
+      - name: key_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/admin/api-keys/init-db:
+    post:
+      summary: Initialize API Key table
+      operationId: adminApiKeysInitDb
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/appointments:
+    get:
+      summary: Get list of ALL appointments from ALL tenants
+      operationId: adminAppointmentsGetAllAppointments
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/auth/login:
+    post:
+      summary: Admin login endpoint
+      operationId: adminAdminLogin
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/birfatura/invoices:
+    get:
+      summary: Get invoices with BirFatura status
+      operationId: adminBirfaturaGetInvoices
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/birfatura/logs:
+    get:
+      summary: Get BirFatura related logs
+      operationId: adminBirfaturaGetLogs
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/birfatura/stats:
+    get:
+      summary: Get BirFatura statistics
+      operationId: adminBirfaturaGetStats
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/campaigns:
+    get:
+      summary: GET /api/admin/campaigns
+      operationId: adminCampaignsGetCampaigns
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: POST /api/admin/campaigns
+      operationId: adminCampaignsCreateCampaign
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/campaigns/{id}:
+    get:
+      summary: GET /api/admin/campaigns/{id}
+      operationId: adminCampaignsGetCampaign
+      tags:
+      - Admin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: PUT /api/admin/campaigns/{id}
+      operationId: adminCampaignsUpdateCampaign
+      tags:
+      - Admin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: DELETE /api/admin/campaigns/{id}
+      operationId: adminCampaignsDeleteCampaign
+      tags:
+      - Admin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/admin/dashboard/:
+    get:
+      summary: Get dashboard metrics
+      operationId: adminDashboardGetDashboardMetrics
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/debug/available-roles:
+    get:
+      summary: Get all available roles for debugging.
+      description: Only available to admin@x-ear.com user.
+      operationId: adminDebugAvailableRoles
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/debug/exit-impersonation:
+    post:
+      summary: Exit tenant/role impersonation and return to normal admin mode.
+      description: Only available to admin@x-ear.com user.
+      operationId: adminDebugExitImpersonation
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/debug/page-permissions/{page_key}:
+    get:
+      summary: Get permissions for a specific page based on the effective role.
+      description: Only available to admin@x-ear.com user.
+      operationId: adminDebugPagePermissions
+      tags:
+      - Admin
+      parameters:
+      - name: page_key
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/admin/debug/switch-role:
+    post:
+      summary: Switch to a different role for debugging purposes.
+      description: Only available to admin@x-ear.com user.
+      operationId: adminDebugSwitchRole
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/debug/switch-tenant:
+    post:
+      summary: Switch to a different tenant context for debugging purposes.
+      description: 'Only available to admin@x-ear.com user.
+
+        Returns a new JWT with the selected tenant_id.'
+      operationId: adminDebugSwitchTenant
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/features:
+    get:
+      summary: Return the current feature flags for admin UI.
+      description: 'Requires JWT; access to the admin panel itself is verified client-side,
+        but
+
+        we still require a logged-in user to fetch flags.'
+      operationId: adminGetFeatures
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    patch:
+      summary: 'Patch feature flags. Body: { features: { ''integrations_ui'': true
+        } }'
+      description: 'Authorization: user must have `settings.update` or `features.toggle`.'
+      operationId: adminPatchFeatures
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/integrations/birfatura/config:
+    get:
+      summary: Get BirFatura integration configuration
+      operationId: adminIntegrationsGetBirfaturaConfig
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update BirFatura integration configuration
+      operationId: adminIntegrationsUpdateBirfaturaConfig
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/admin/integrations/init-db:
+    post:
+      summary: Initialize integration config tables
+      operationId: adminIntegrationsInitDb
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/integrations/vatan-sms/config:
+    get:
+      summary: Get VatanSMS integration configuration
+      operationId: adminIntegrationsGetVatanSmsConfig
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update VatanSMS integration configuration
+      operationId: adminIntegrationsUpdateVatanSmsConfig
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/admin/inventory:
+    get:
+      summary: Get list of ALL devices/inventory from ALL tenants
+      operationId: adminInventoryGetAllInventory
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/invoices:
+    get:
+      summary: Get paginated list of admin invoices
+      operationId: adminInvoicesGetAdminInvoices
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: POST /api/admin/invoices
+      operationId: adminInvoicesCreateAdminInvoice
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/invoices/{id}:
+    get:
+      summary: GET /api/admin/invoices/{id}
+      operationId: adminInvoicesGetAdminInvoice
+      tags:
+      - Admin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/admin/invoices/{id}/payment:
+    post:
+      summary: POST /api/admin/invoices/{id}/payment
+      operationId: adminInvoicesRecordPayment
+      tags:
+      - Admin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/invoices/{id}/pdf:
+    get:
+      summary: GET /api/admin/invoices/{id}/pdf
+      operationId: adminInvoicesGetInvoicePdf
+      tags:
+      - Admin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/admin/marketplaces/init-db:
+    post:
+      summary: Initialize Marketplace tables
+      operationId: adminMarketplacesInitDb
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/marketplaces/integrations:
+    get:
+      summary: Get list of marketplace integrations
+      operationId: adminMarketplacesGetIntegrations
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new marketplace integration
+      operationId: adminMarketplacesCreateIntegration
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/marketplaces/integrations/{id}/sync:
+    post:
+      summary: Trigger sync for an integration (Mock)
+      operationId: adminMarketplacesSyncIntegration
+      tags:
+      - Admin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/my-permissions:
+    get:
+      summary: Mevcut admin kullanıcısının izinlerini döndürür.
+      description: Frontend için - sidebar, buton gizleme vb.
+      operationId: adminRolesGetMyAdminPermissions
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/notifications:
+    get:
+      summary: Get list of notifications
+      operationId: adminNotificationsGetNotifications
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/notifications/init-db:
+    post:
+      summary: Initialize notification tables
+      operationId: adminNotificationsInitDb
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/notifications/send:
+    post:
+      summary: Send a notification to tenants
+      operationId: adminNotificationsSendNotification
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/notifications/templates:
+    get:
+      summary: Get all notification templates
+      operationId: adminNotificationsGetTemplates
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new notification template
+      operationId: adminNotificationsCreateTemplate
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/notifications/templates/{template_id}:
+    put:
+      summary: Update a notification template
+      operationId: adminNotificationsUpdateTemplate
+      tags:
+      - Admin
+      parameters:
+      - name: template_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete a notification template
+      operationId: adminNotificationsDeleteTemplate
+      tags:
+      - Admin
+      parameters:
+      - name: template_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/admin/patients:
+    get:
+      summary: Get list of ALL patients from ALL tenants
+      operationId: adminPatientsGetAllPatients
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/patients/{patient_id}:
+    get:
+      summary: Get single patient detail by ID (admin can access any patient)
+      operationId: adminPatientsGetPatientDetail
+      tags:
+      - Admin
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/admin/patients/{patient_id}/devices:
+    get:
+      summary: Get devices for a patient (admin can access any patient)
+      operationId: adminPatientsGetPatientDevices
+      tags:
+      - Admin
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/admin/patients/{patient_id}/documents:
+    get:
+      summary: Get documents for a patient (admin can access any patient)
+      operationId: adminPatientsGetPatientDocuments
+      tags:
+      - Admin
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/admin/patients/{patient_id}/sales:
+    get:
+      summary: Get sales for a patient (admin can access any patient)
+      operationId: adminPatientsGetPatientSales
+      tags:
+      - Admin
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/admin/patients/{patient_id}/timeline:
+    get:
+      summary: Get timeline/activity log for a patient (admin can access any patient)
+      operationId: adminPatientsGetPatientTimeline
+      tags:
+      - Admin
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/admin/payments/pos/transactions:
+    get:
+      summary: Get all POS transactions for admin panel
+      operationId: adminPaymentsGetPosTransactions
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/permissions:
+    get:
+      summary: Tüm izinleri listele
+      description: 'Query params:
+
+        category: str - Kategoriye göre filtrele'
+      operationId: adminRolesGetAdminPermissions
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/permissions/check/{endpoint_path}:
+    get:
+      summary: Belirli bir endpoint için gerekli permission'ı döndürür.
+      operationId: permissionAdminCheckEndpointPermission
+      tags:
+      - Admin
+      parameters:
+      - name: endpoint_path
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/admin/permissions/coverage:
+    get:
+      summary: Permission coverage raporunu döndürür.
+      operationId: permissionAdminGetPermissionCoverage
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/permissions/map:
+    get:
+      summary: Tüm endpoint-permission mapping'ini döndürür.
+      operationId: permissionAdminGetPermissionMap
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/plans:
+    get:
+      summary: List all plans with optional filtering
+      operationId: adminPlansGetPlans
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new plan
+      operationId: adminPlansCreatePlan
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/plans/{plan_id}:
+    get:
+      summary: Get plan details
+      operationId: adminPlansGetPlan
+      tags:
+      - Admin
+      parameters:
+      - name: plan_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update plan
+      operationId: adminPlansUpdatePlan
+      tags:
+      - Admin
+      parameters:
+      - name: plan_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete plan (soft delete by setting is_active=False)
+      operationId: adminPlansDeletePlan
+      tags:
+      - Admin
+      parameters:
+      - name: plan_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/admin/production/init-db:
+    post:
+      summary: Initialize Production Orders table
+      operationId: adminProductionInitDb
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/production/orders:
+    get:
+      summary: Get production orders
+      operationId: adminProductionGetOrders
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/production/orders/{id}/status:
+    put:
+      summary: Update order status
+      operationId: adminProductionUpdateOrderStatus
+      tags:
+      - Admin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/admin/roles:
+    get:
+      summary: Tüm admin rollerini listele
+      description: 'Query params:
+
+        include_permissions: bool - İzinleri dahil et'
+      operationId: adminRolesGetAdminRoles
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Yeni rol oluştur
+      description: 'Body:
+
+        name: str - Rol adı (unique)
+
+        description: str - Açıklama
+
+        permissions: list[str] - İzin kodları'
+      operationId: adminRolesCreateAdminRole
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/roles/{role_id}:
+    get:
+      summary: Tek bir rol detayını getir
+      operationId: adminRolesGetAdminRole
+      tags:
+      - Admin
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Rol güncelle
+      description: 'Body:
+
+        name: str - Rol adı
+
+        description: str - Açıklama
+
+        Not: System role''ler için name değiştirilemez'
+      operationId: adminRolesUpdateAdminRole
+      tags:
+      - Admin
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Rol sil
+      description: 'Not: System role''ler silinemez'
+      operationId: adminRolesDeleteAdminRole
+      tags:
+      - Admin
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/admin/roles/{role_id}/permissions:
+    get:
+      summary: Rol izinlerini getir
+      operationId: adminRolesGetAdminRolePermissions
+      tags:
+      - Admin
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Rol izinlerini güncelle
+      description: 'Body:
+
+        permissions: list[str] - İzin kodları
+
+        Not: SuperAdmin rolünün izinleri değiştirilemez'
+      operationId: adminRolesUpdateAdminRolePermissions
+      tags:
+      - Admin
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/admin/scan-queue:
+    get:
+      summary: Get scan queue items
+      operationId: adminScanQueueGetScanQueue
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/scan-queue/{id}/retry:
+    post:
+      summary: Retry a failed scan
+      operationId: adminScanQueueRetryScan
+      tags:
+      - Admin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/scan-queue/init-db:
+    post:
+      summary: Initialize Scan Queue table
+      operationId: adminScanQueueInitDb
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/settings:
+    get:
+      summary: Get all system settings
+      operationId: adminSettingsGetSettings
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Update system settings
+      operationId: adminSettingsUpdateSettings
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/settings/backup:
+    post:
+      summary: Trigger database backup (Mock)
+      operationId: adminSettingsTriggerBackup
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/settings/cache/clear:
+    post:
+      summary: Clear system cache (Mock)
+      operationId: adminSettingsClearCache
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/settings/init-db:
+    post:
+      summary: Initialize System Settings table
+      operationId: adminSettingsInitDb
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/sms/headers:
+    get:
+      summary: List all SMS header requests (admin).
+      operationId: smsIntegrationAdminListHeaders
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/sms/headers/{header_id}/status:
+    put:
+      summary: Update SMS header request status (admin).
+      operationId: smsIntegrationAdminUpdateHeaderStatus
+      tags:
+      - Admin
+      parameters:
+      - name: header_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/admin/sms/packages:
+    get:
+      summary: List all SMS packages (admin).
+      operationId: smsIntegrationAdminListPackages
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new SMS package (admin).
+      operationId: smsIntegrationAdminCreatePackage
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/sms/packages/{package_id}:
+    put:
+      summary: PUT /api/admin/sms/packages/{package_id}
+      operationId: adminSmsPackagesUpdatePackage
+      tags:
+      - Admin
+      parameters:
+      - name: package_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/admin/sms/packages/{pkg_id}:
+    put:
+      summary: Update an SMS package (admin).
+      operationId: smsIntegrationAdminUpdatePackage
+      tags:
+      - Admin
+      parameters:
+      - name: pkg_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/admin/suppliers:
+    get:
+      summary: GET /api/admin/suppliers
+      operationId: adminSuppliersGetSuppliers
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: POST /api/admin/suppliers
+      operationId: adminSuppliersCreateSupplier
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/suppliers/{id}:
+    get:
+      summary: GET /api/admin/suppliers/{id}
+      operationId: adminSuppliersGetSupplier
+      tags:
+      - Admin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: PUT /api/admin/suppliers/{id}
+      operationId: adminSuppliersUpdateSupplier
+      tags:
+      - Admin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: DELETE /api/admin/suppliers/{id}
+      operationId: adminSuppliersDeleteSupplier
+      tags:
+      - Admin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/admin/tenants:
+    get:
+      summary: List all tenants
+      operationId: adminTenantsGetTenants
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create tenant
+      operationId: adminTenantsCreateTenant
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/tenants/{tenant_id}:
+    get:
+      summary: Get tenant details
+      operationId: adminTenantsGetTenant
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update tenant
+      operationId: adminTenantsUpdateTenant
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete tenant (soft delete)
+      operationId: adminTenantsDeleteTenant
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/admin/tenants/{tenant_id}/addons:
+    post:
+      summary: Add addon to tenant (Admin override)
+      operationId: adminTenantsAddTenantAddon
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+    delete:
+      summary: Remove addon from tenant (decrease limits)
+      operationId: adminTenantsRemoveTenantAddon
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/admin/tenants/{tenant_id}/sms-config:
+    get:
+      summary: Get SMS configuration for a tenant (admin view)
+      operationId: adminTenantsGetTenantSmsConfig
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/admin/tenants/{tenant_id}/sms-documents:
+    get:
+      summary: Get SMS documents for a tenant
+      operationId: adminTenantsGetTenantSmsDocuments
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/admin/tenants/{tenant_id}/sms-documents/{document_type}/download:
+    get:
+      summary: Get download URL for a tenant's SMS document
+      operationId: adminTenantsDownloadTenantSmsDocument
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: document_type
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/admin/tenants/{tenant_id}/sms-documents/{document_type}/status:
+    put:
+      summary: Update SMS document status (approve/request revision)
+      operationId: adminTenantsUpdateSmsDocumentStatus
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: document_type
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/admin/tenants/{tenant_id}/sms-documents/send-email:
+    post:
+      summary: Send all approved SMS documents via email
+      operationId: adminTenantsSendSmsDocumentsEmail
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/tenants/{tenant_id}/status:
+    put:
+      summary: Update tenant status
+      operationId: adminTenantsUpdateTenantStatus
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/admin/tenants/{tenant_id}/subscribe:
+    post:
+      summary: Subscribe tenant to a plan (Admin override)
+      operationId: adminTenantsSubscribeTenant
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/tenants/{tenant_id}/users:
+    get:
+      summary: Get users for a specific tenant
+      operationId: adminTenantsGetTenantUsers
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a user for a specific tenant
+      operationId: adminTenantsCreateTenantUser
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/tenants/{tenant_id}/users/{user_id}:
+    put:
+      summary: Update a tenant user
+      operationId: adminTenantsUpdateTenantUser
+      tags:
+      - Admin
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/admin/tickets:
+    get:
+      summary: Get support tickets (placeholder)
+      operationId: adminGetAdminTickets
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create support ticket (placeholder)
+      operationId: adminCreateAdminTicket
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/tickets/{id}:
+    put:
+      summary: PUT /api/admin/tickets/{id}
+      operationId: adminTicketsUpdateAdminTicket
+      tags:
+      - Admin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/admin/tickets/{ticket_id}:
+    put:
+      summary: Update support ticket (placeholder)
+      operationId: adminUpdateAdminTicket
+      tags:
+      - Admin
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/admin/tickets/{ticket_id}/responses:
+    post:
+      summary: Create response for support ticket (placeholder)
+      operationId: adminCreateTicketResponse
+      tags:
+      - Admin
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/admin/users:
+    post:
+      summary: Create admin user or tenant user
+      operationId: adminCreateAdminUser
+      tags:
+      - Admin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+    get:
+      summary: Get list of admin users
+      operationId: adminGetAdminUsers
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/users/all:
+    get:
+      summary: Get list of ALL users from ALL tenants
+      operationId: adminGetAllTenantUsers
+      tags:
+      - Admin
+      responses:
+        '200':
+          description: Success
+  /api/admin/users/all/{user_id}:
+    put:
+      summary: Update any tenant user (Admin Panel)
+      operationId: adminUpdateAnyTenantUser
+      tags:
+      - Admin
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/affiliate:
+    post:
+      summary: Create a new affiliate user
+      operationId: affiliateAdminCreateAffiliate
+      tags:
+      - Affiliate
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/affiliate/{affiliate_id}:
+    patch:
+      summary: PATCH /api/affiliate/{affiliate_id}
+      operationId: affiliateUpdateAffiliatePayment
+      tags:
+      - Affiliate
+      parameters:
+      - name: affiliate_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/affiliate/{affiliate_id}/commissions:
+    get:
+      summary: GET /api/affiliate/{affiliate_id}/commissions
+      operationId: affiliateGetCommissions
+      tags:
+      - Affiliate
+      parameters:
+      - name: affiliate_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/affiliate/{affiliate_id}/details:
+    get:
+      summary: Get detailed affiliate information with referrals
+      operationId: affiliateAdminGetAffiliateDetails
+      tags:
+      - Affiliate
+      parameters:
+      - name: affiliate_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/affiliate/{affiliate_id}/toggle-status:
+    patch:
+      summary: Toggle affiliate active/inactive status
+      operationId: affiliateAdminToggleAffiliateStatus
+      tags:
+      - Affiliate
+      parameters:
+      - name: affiliate_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/affiliate/list:
+    get:
+      summary: GET /api/affiliate/list
+      operationId: affiliateGetAffiliates
+      tags:
+      - Affiliate
+      responses:
+        '200':
+          description: Success
+  /api/affiliate/login:
+    post:
+      summary: POST /api/affiliate/login
+      operationId: affiliateLoginAffiliate
+      tags:
+      - Affiliate
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/affiliate/lookup:
+    get:
+      summary: GET /api/affiliate/lookup
+      operationId: affiliateLookupAffiliate
+      tags:
+      - Affiliate
+      responses:
+        '200':
+          description: Success
+  /api/affiliate/me:
+    get:
+      summary: GET /api/affiliate/me
+      operationId: affiliateGetMe
+      tags:
+      - Affiliate
+      responses:
+        '200':
+          description: Success
+  /api/affiliate/register:
+    post:
+      summary: POST /api/affiliate/register
+      operationId: affiliateRegisterAffiliate
+      tags:
+      - Affiliate
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/affiliates/check/{code}:
+    get:
+      summary: Check if affiliate code exists and return basic info (Public)
+      operationId: affiliatePublicCheckAffiliate
+      tags:
+      - Affiliates
+      parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/appointments:
+    get:
+      summary: Get appointments with filtering and pagination
+      operationId: appointmentsGetAppointments
+      tags:
+      - Appointments
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new appointment
+      operationId: appointmentsCreateAppointment
+      tags:
+      - Appointments
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/appointments/{appointment_id}:
+    get:
+      summary: Get a single appointment
+      operationId: appointmentsGetAppointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update appointment
+      operationId: appointmentsUpdateAppointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    patch:
+      summary: Update appointment
+      operationId: appointmentsUpdateAppointment1
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete an appointment
+      operationId: appointmentsDeleteAppointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/appointments/{appointment_id}/cancel:
+    post:
+      summary: Cancel an appointment
+      operationId: appointmentsCancelAppointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/appointments/{appointment_id}/complete:
+    post:
+      summary: Mark appointment as completed
+      operationId: appointmentsCompleteAppointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/appointments/{appointment_id}/reschedule:
+    post:
+      summary: Reschedule an appointment
+      operationId: appointmentsRescheduleAppointment
+      tags:
+      - Appointments
+      parameters:
+      - name: appointment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/appointments/availability:
+    get:
+      summary: Get available time slots for a date
+      operationId: appointmentsGetAvailability
+      tags:
+      - Appointments
+      responses:
+        '200':
+          description: Success
+  /api/appointments/list:
+    get:
+      summary: List appointments with filters
+      operationId: appointmentsGetAppointments1
+      tags:
+      - Appointments
+      responses:
+        '200':
+          description: Success
+  /api/auth/forgot-password:
+    post:
+      summary: POST /api/auth/forgot-password
+      operationId: authForgotPassword
+      tags:
+      - Auth
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/auth/login:
+    post:
+      summary: POST /api/auth/login
+      operationId: authLogin
+      tags:
+      - Auth
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/auth/lookup-phone:
+    post:
+      summary: POST /api/auth/lookup-phone
+      operationId: authLookupPhone
+      tags:
+      - Auth
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/auth/refresh:
+    post:
+      summary: Refresh access token using refresh token
+      operationId: authRefresh
+      tags:
+      - Auth
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/auth/reset-password:
+    post:
+      summary: Reset password using verified OTP
+      operationId: authResetPassword
+      tags:
+      - Auth
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/auth/send-verification-otp:
+    post:
+      summary: Send OTP to the user's phone number (requires pre-auth token)
+      operationId: authSendVerificationOtp
+      tags:
+      - Auth
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/auth/set-password:
+    post:
+      summary: Set password for authenticated user (Post-Registration Flow)
+      operationId: authSetPassword
+      tags:
+      - Auth
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/auth/verify-otp:
+    post:
+      summary: Verify OTP for phone verification or password reset.
+      description: Kept @jwt_required(optional=True) because unified_access enforces
+        auth.
+      operationId: authVerifyOtp
+      tags:
+      - Auth
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/automation/backup:
+    post:
+      summary: Trigger system backup
+      operationId: automationTriggerBackup
+      tags:
+      - Automation
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/automation/logs:
+    get:
+      summary: Get automation logs
+      operationId: automationGetAutomationLogs
+      tags:
+      - Automation
+      responses:
+        '200':
+          description: Success
+  /api/automation/sgk/process:
+    post:
+      summary: Trigger SGK document processing
+      operationId: automationTriggerSgkProcessing
+      tags:
+      - Automation
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/automation/status:
+    get:
+      summary: Get automation system status
+      operationId: automationGetAutomationStatus
+      tags:
+      - Automation
+      responses:
+        '200':
+          description: Success
+  /api/birfatura/sync-invoices:
+    post:
+      summary: Sync invoices from BirFatura API
+      operationId: birfaturaSyncInvoices
+      tags:
+      - Birfatura
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/branches:
+    get:
+      summary: Get all branches for the current tenant - Unified Access
+      operationId: branchesGetBranches
+      tags:
+      - Branches
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new branch - Unified Access
+      operationId: branchesCreateBranch
+      tags:
+      - Branches
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/branches/{branch_id}:
+    put:
+      summary: Update a branch - Unified Access
+      operationId: branchesUpdateBranch
+      tags:
+      - Branches
+      parameters:
+      - name: branch_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete a branch - Unified Access
+      operationId: branchesDeleteBranch
+      tags:
+      - Branches
+      parameters:
+      - name: branch_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/campaigns:
+    get:
+      summary: GET /api/campaigns
+      operationId: campaignsGetCampaigns
+      tags:
+      - Campaigns
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: POST /api/campaigns
+      operationId: campaignsCreateCampaign
+      tags:
+      - Campaigns
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/campaigns/{campaign_id}/send:
+    post:
+      summary: POST /api/campaigns/{campaign_id}/send
+      operationId: campaignsSendCampaign
+      tags:
+      - Campaigns
+      parameters:
+      - name: campaign_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/cash-records:
+    get:
+      summary: Return cash register records - Unified Access
+      operationId: cashRecordsGetCashRecords
+      tags:
+      - Cash-records
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new cash record - Unified Access
+      operationId: cashRecordsCreateCashRecord
+      tags:
+      - Cash-records
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/cash-records/{record_id}:
+    delete:
+      summary: Delete a cash record - Unified Access
+      operationId: cashRecordsDeleteCashRecord
+      tags:
+      - Cash-records
+      parameters:
+      - name: record_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/checkout/confirm:
+    post:
+      summary: Mock endpoint to confirm a payment (simulating a webhook or successful
+        callback).
+      operationId: checkoutConfirmPayment
+      tags:
+      - Checkout
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/checkout/session:
+    post:
+      summary: Initiates a checkout session for a plan purchase.
+      description: 'In a real scenario, this would create a Stripe Checkout Session.
+
+        For now, it simulates the process and returns a success URL or mock payment
+        data.'
+      operationId: checkoutCreateCheckoutSession
+      tags:
+      - Checkout
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/communications/history:
+    get:
+      summary: List communication history with filtering
+      operationId: communicationsGetCommunicationHistory
+      tags:
+      - Communications
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a manual communication history entry
+      operationId: communicationsCreateCommunicationHistory
+      tags:
+      - Communications
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/communications/messages:
+    get:
+      summary: List all communication messages (SMS and Email) with filtering
+      operationId: communicationsGetMessages
+      tags:
+      - Communications
+      responses:
+        '200':
+          description: Success
+  /api/communications/messages/send-email:
+    post:
+      summary: Send Email message
+      operationId: communicationsSendEmail
+      tags:
+      - Communications
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/communications/messages/send-sms:
+    post:
+      summary: Send SMS message
+      operationId: communicationsSendSms
+      tags:
+      - Communications
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/communications/stats:
+    get:
+      summary: Get communication statistics
+      operationId: communicationsCommunicationStats
+      tags:
+      - Communications
+      responses:
+        '200':
+          description: Success
+  /api/communications/templates:
+    get:
+      summary: List communication templates with filtering
+      operationId: communicationsGetTemplates
+      tags:
+      - Communications
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new communication template
+      operationId: communicationsCreateTemplate
+      tags:
+      - Communications
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/communications/templates/{template_id}:
+    get:
+      summary: Get a specific template
+      operationId: communicationsGetTemplate
+      tags:
+      - Communications
+      parameters:
+      - name: template_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update a communication template
+      operationId: communicationsUpdateTemplate
+      tags:
+      - Communications
+      parameters:
+      - name: template_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete a communication template
+      operationId: communicationsDeleteTemplate
+      tags:
+      - Communications
+      parameters:
+      - name: template_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/config:
+    get:
+      summary: GET /api/config
+      operationId: configGetConfig
+      tags:
+      - Config
+      responses:
+        '200':
+          description: Success
+  /api/config/turnstile:
+    get:
+      summary: GET /api/config/turnstile
+      operationId: registrationGetTurnstileConfig
+      tags:
+      - Config
+      responses:
+        '200':
+          description: Success
+  /api/dashboard:
+    get:
+      summary: Main dashboard endpoint - Unified Access
+      operationId: dashboardGetDashboard
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+  /api/dashboard/charts/patient-distribution:
+    get:
+      summary: Patient distribution by branch - Unified Access
+      operationId: dashboardPatientDistribution
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+  /api/dashboard/charts/patient-trends:
+    get:
+      summary: Patient trends chart - Unified Access
+      operationId: dashboardPatientTrends
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+  /api/dashboard/charts/revenue-trends:
+    get:
+      summary: Revenue trends chart - Unified Access
+      operationId: dashboardRevenueTrends
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+  /api/dashboard/kpis:
+    get:
+      summary: Get KPIs - Unified Access
+      operationId: dashboardGetKpis
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+  /api/dashboard/recent-activity:
+    get:
+      summary: Recent activity - Unified Access
+      operationId: dashboardRecentActivity
+      tags:
+      - Dashboard
+      responses:
+        '200':
+          description: Success
+  /api/device-assignments/{assignment_id}:
+    patch:
+      summary: Update a device assignment (e.g., cancel, update serial numbers, pricing)
+      operationId: salesUpdateDeviceAssignment
+      tags:
+      - Device-assignments
+      parameters:
+      - name: assignment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/device-assignments/{assignment_id}/return-loaner:
+    post:
+      summary: Return a loaner device to stock.
+      description: 'Access:
+
+        - Requires write permission on sales
+
+        - Tenant scoped'
+      operationId: salesReturnLoanerToStock
+      tags:
+      - Device-assignments
+      parameters:
+      - name: assignment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/devices:
+    get:
+      summary: Get devices with filtering
+      operationId: devicesGetDevices
+      tags:
+      - Devices
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new device
+      operationId: devicesCreateDevice
+      tags:
+      - Devices
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/devices/{device_id}:
+    get:
+      summary: Get a specific device
+      operationId: devicesGetDevice
+      tags:
+      - Devices
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update a device
+      operationId: devicesUpdateDevice
+      tags:
+      - Devices
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    patch:
+      summary: Update a device
+      operationId: devicesUpdateDevice1
+      tags:
+      - Devices
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete a device or device assignment
+      operationId: devicesDeleteDevice
+      tags:
+      - Devices
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/devices/{device_id}/stock-update:
+    post:
+      summary: Update device stock levels
+      operationId: devicesUpdateDeviceStock
+      tags:
+      - Devices
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/devices/brands:
+    get:
+      summary: Get available device brands
+      operationId: devicesGetDeviceBrands
+      tags:
+      - Devices
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new device brand
+      operationId: devicesCreateDeviceBrand
+      tags:
+      - Devices
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/devices/categories:
+    get:
+      summary: Get available device categories
+      operationId: devicesGetDeviceCategories
+      tags:
+      - Devices
+      responses:
+        '200':
+          description: Success
+  /api/devices/low-stock:
+    get:
+      summary: Get devices with low stock levels
+      operationId: devicesGetLowStockDevices
+      tags:
+      - Devices
+      responses:
+        '200':
+          description: Success
+  /api/health:
+    get:
+      summary: Health endpoint exposing overall status and DB read/write check results.
+      description: Returns 200 when read+write ok, 503 when write fails, and 500 when
+        other errors occur.
+      operationId: healthCheck
+      tags:
+      - Health
+      responses:
+        '200':
+          description: Success
+  /api/inventory:
+    get:
+      summary: Get all inventory items with optional filtering and pagination
+      operationId: inventoryGetAllInventory
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new inventory item
+      operationId: inventoryCreateInventoryItem
+      tags:
+      - Inventory
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/inventory/{item_id}:
+    get:
+      summary: Get a single inventory item by ID
+      operationId: inventoryGetInventoryItem
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update an inventory item
+      operationId: inventoryUpdateInventoryItem
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    patch:
+      summary: Update an inventory item
+      operationId: inventoryUpdateInventoryItem1
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete an inventory item
+      operationId: inventoryDeleteInventoryItem
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/inventory/{item_id}/activity:
+    get:
+      summary: Get inventory item activity log - Unified Access
+      operationId: inventoryGetInventoryActivities
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/inventory/{item_id}/movements:
+    get:
+      summary: Get stock movement history - Unified Access
+      operationId: inventoryGetInventoryMovements
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/inventory/{item_id}/serials:
+    post:
+      summary: Add serial numbers to an inventory item
+      operationId: inventoryAddSerialNumbers
+      tags:
+      - Inventory
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/inventory/brands:
+    get:
+      summary: Get all brands
+      operationId: inventoryGetBrands
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new brand
+      operationId: inventoryCreateBrand
+      tags:
+      - Inventory
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/inventory/bulk_upload:
+    post:
+      summary: Bulk upload inventory items from CSV
+      operationId: inventoryBulkUploadInventory
+      tags:
+      - Inventory
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/inventory/categories:
+    get:
+      summary: Get all categories
+      operationId: inventoryGetCategories
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new category
+      operationId: inventoryCreateCategory
+      tags:
+      - Inventory
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/inventory/low-stock:
+    get:
+      summary: Get low stock items - Unified Access
+      operationId: inventoryGetLowStockItems
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Success
+  /api/inventory/search:
+    get:
+      summary: Advanced product search with comprehensive filtering - Unified Access
+      operationId: inventoryAdvancedSearch
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Success
+  /api/inventory/stats:
+    get:
+      summary: Get inventory statistics - Unified Access
+      operationId: inventoryGetInventoryStats
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Success
+  /api/inventory/units:
+    get:
+      summary: Get available units
+      operationId: inventoryGetUnits
+      tags:
+      - Inventory
+      responses:
+        '200':
+          description: Success
+  /api/invoices:
+    get:
+      summary: Get all invoices with pagination - Unified Access
+      operationId: invoicesGetInvoices
+      tags:
+      - Invoices
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new invoice - Unified Access
+      operationId: invoicesCreateInvoice
+      tags:
+      - Invoices
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/invoices/{invoice_id}:
+    get:
+      summary: Get a specific invoice - Unified Access
+      operationId: invoicesGetInvoice
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/invoices/{invoice_id}/copy:
+    post:
+      summary: POST /api/invoices/{invoice_id}/copy
+      operationId: invoicesActionsCopyInvoice
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/invoices/{invoice_id}/copy-cancel:
+    post:
+      summary: POST /api/invoices/{invoice_id}/copy-cancel
+      operationId: invoicesActionsCopyInvoiceCancel
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/invoices/{invoice_id}/issue:
+    post:
+      summary: POST /api/invoices/{invoice_id}/issue
+      operationId: invoicesActionsIssueInvoice
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/invoices/{invoice_id}/pdf:
+    get:
+      summary: GET /api/invoices/{invoice_id}/pdf
+      operationId: invoicesActionsServeInvoicePdf
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/invoices/{invoice_id}/shipping-pdf:
+    get:
+      summary: GET /api/invoices/{invoice_id}/shipping-pdf
+      operationId: invoicesActionsServeShippingPdf
+      tags:
+      - Invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/invoices/batch-generate:
+    post:
+      summary: Generate multiple invoices at once - Unified Access
+      operationId: invoicesBatchGenerateInvoices
+      tags:
+      - Invoices
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/invoices/bulk_upload:
+    post:
+      summary: Bulk upload invoices from CSV/XLSX - Unified Access
+      operationId: invoicesBulkUploadInvoices
+      tags:
+      - Invoices
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/invoices/print-queue:
+    get:
+      summary: Get invoices in print queue - Unified Access
+      operationId: invoicesGetPrintQueue
+      tags:
+      - Invoices
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Add invoices to print queue - Unified Access
+      operationId: invoicesAddToPrintQueue
+      tags:
+      - Invoices
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/invoices/templates:
+    get:
+      summary: Get available invoice templates - Unified Access
+      operationId: invoicesGetInvoiceTemplates
+      tags:
+      - Invoices
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a custom invoice template - Unified Access
+      operationId: invoicesCreateInvoiceTemplate
+      tags:
+      - Invoices
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/notifications:
+    post:
+      summary: POST /api/notifications
+      operationId: notificationsCreateNotification
+      tags:
+      - Notifications
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+    get:
+      summary: GET /api/notifications
+      operationId: notificationsGetNotifications
+      tags:
+      - Notifications
+      responses:
+        '200':
+          description: Success
+  /api/notifications/{notification_id}:
+    delete:
+      summary: DELETE /api/notifications/{notification_id}
+      operationId: notificationsDeleteNotification
+      tags:
+      - Notifications
+      parameters:
+      - name: notification_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/notifications/{notification_id}/read:
+    put:
+      summary: PUT /api/notifications/{notification_id}/read
+      operationId: notificationsMarkNotificationRead
+      tags:
+      - Notifications
+      parameters:
+      - name: notification_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/notifications/settings:
+    get:
+      summary: GET /api/notifications/settings
+      operationId: notificationsGetUserNotificationSettings
+      tags:
+      - Notifications
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: PUT /api/notifications/settings
+      operationId: notificationsSetUserNotificationSettings
+      tags:
+      - Notifications
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/notifications/stats:
+    get:
+      summary: GET /api/notifications/stats
+      operationId: notificationsNotificationStats
+      tags:
+      - Notifications
+      responses:
+        '200':
+          description: Success
+  /api/ocr/debug_ner:
+    post:
+      summary: Debug endpoint (System Admin)
+      operationId: ocrDebugNer
+      tags:
+      - Ocr
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/ocr/entities:
+    post:
+      summary: Extract entities from image using OCR
+      operationId: ocrExtractEntities
+      tags:
+      - Ocr
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/ocr/extract_patient:
+    post:
+      summary: Extract patient name from image using OCR
+      operationId: ocrExtractPatientName
+      tags:
+      - Ocr
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/ocr/health:
+    get:
+      summary: Health check endpoint (Public)
+      operationId: ocrHealthCheck
+      tags:
+      - Ocr
+      responses:
+        '200':
+          description: Success
+  /api/ocr/init-db:
+    post:
+      summary: Initialize database and create tables (System Admin)
+      operationId: ocrInitDatabase
+      tags:
+      - Ocr
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/ocr/initialize:
+    post:
+      summary: Initialize NLP/OCR service (System Admin)
+      operationId: ocrInitializeNlpEndpoint
+      tags:
+      - Ocr
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/ocr/jobs:
+    get:
+      summary: List OCR jobs
+      operationId: ocrGetJobs
+      tags:
+      - Ocr
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new OCR job
+      operationId: ocrCreateJob
+      tags:
+      - Ocr
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/ocr/process:
+    post:
+      summary: Process document with OCR
+      operationId: ocrProcessDocument
+      tags:
+      - Ocr
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/ocr/similarity:
+    post:
+      summary: Calculate similarity
+      operationId: ocrCalculateSimilarity
+      tags:
+      - Ocr
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/openapi.yaml:
+    get:
+      summary: Serve the canonical OpenAPI contract for frontend/back-end sync and
+        respond to CORS preflight.
+      description: 'Returns CORS headers so the static Swagger UI served from a different
+        origin (e.g. localhost:8080)
+
+        can fetch the YAML without browser CORS errors.'
+      operationId: serveOpenapiYaml
+      tags:
+      - Openapi.yaml
+      responses:
+        '200':
+          description: Success
+  /api/patients:
+    get:
+      summary: GET /api/patients
+      operationId: patientsGetPatients
+      tags:
+      - Patients
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new patient - Unified Access
+      operationId: patientsCreatePatient
+      tags:
+      - Patients
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}:
+    get:
+      summary: GET /api/patients/{patient_id}
+      operationId: patientsGetPatient
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update an existing patient - Unified Access
+      operationId: patientsUpdatePatient
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    patch:
+      summary: Update an existing patient - Unified Access
+      operationId: patientsUpdatePatient1
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete a patient - Unified Access
+      operationId: patientsDeletePatient
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/patients/{patient_id}/activities:
+    post:
+      summary: Log an activity for a patient (alias for timeline event)
+      operationId: timelineLogPatientActivity
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/appointments:
+    get:
+      summary: Get all appointments for a specific patient
+      operationId: patientSubresourcesGetPatientAppointments
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/assign-devices-extended:
+    post:
+      summary: Assign devices to patient with extended sale record creation.
+      operationId: salesAssignDevicesExtended
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/devices:
+    get:
+      summary: Get all devices assigned to a specific patient - Unified Access
+      operationId: patientsGetPatientDevices
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/documents:
+    get:
+      summary: Get all documents for a patient
+      operationId: documentsGetPatientDocuments
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Add a new document to patient - stores file locally (MinIO-compatible
+        structure)
+      operationId: documentsAddPatientDocument
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/documents/{document_id}:
+    get:
+      summary: Get a specific document - returns file for download
+      operationId: documentsGetPatientDocument
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete a document - removes file from disk and DB
+      operationId: documentsDeletePatientDocument
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/patients/{patient_id}/ereceipts:
+    post:
+      summary: Mock endpoint for creating e-receipt
+      operationId: sgkCreatePatientEreceipt
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+    get:
+      summary: GET /api/patients/{patient_id}/ereceipts
+      operationId: patientSubresourcesGetPatientEreceipts
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/ereceipts/{ereceipt_id}:
+    put:
+      summary: PUT /api/patients/{patient_id}/ereceipts/{ereceipt_id}
+      operationId: patientSubresourcesUpdatePatientEreceipt
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: ereceipt_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: DELETE /api/patients/{patient_id}/ereceipts/{ereceipt_id}
+      operationId: patientSubresourcesDeletePatientEreceipt
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: ereceipt_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/patients/{patient_id}/hearing-tests:
+    get:
+      summary: GET /api/patients/{patient_id}/hearing-tests
+      operationId: patientSubresourcesGetPatientHearingTests
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: POST /api/patients/{patient_id}/hearing-tests
+      operationId: patientSubresourcesAddPatientHearingTest
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/hearing-tests/{test_id}:
+    put:
+      summary: PUT /api/patients/{patient_id}/hearing-tests/{test_id}
+      operationId: patientSubresourcesUpdatePatientHearingTest
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: test_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: DELETE /api/patients/{patient_id}/hearing-tests/{test_id}
+      operationId: patientSubresourcesDeletePatientHearingTest
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: test_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/patients/{patient_id}/invoices:
+    get:
+      summary: Get all invoices for a patient - Unified Access
+      operationId: invoicesGetPatientInvoices
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/notes:
+    get:
+      summary: GET /api/patients/{patient_id}/notes
+      operationId: patientSubresourcesGetPatientNotes
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: POST /api/patients/{patient_id}/notes
+      operationId: patientSubresourcesCreatePatientNote
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/notes/{note_id}:
+    put:
+      summary: PUT /api/patients/{patient_id}/notes/{note_id}
+      operationId: patientSubresourcesUpdatePatientNote
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: DELETE /api/patients/{patient_id}/notes/{note_id}
+      operationId: patientSubresourcesDeletePatientNote
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/patients/{patient_id}/payment-records:
+    get:
+      summary: Get all payment records for a patient - Unified Access
+      operationId: paymentsGetPatientPaymentRecords
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/product-sales:
+    post:
+      summary: Create a new product sale from inventory.
+      description: 'Access:
+
+        - Requires write permission on sales
+
+        - Tenant scoped'
+      operationId: salesCreateProductSale
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/promissory-notes:
+    get:
+      summary: Get all promissory notes for a patient - Unified Access
+      operationId: paymentsGetPatientPromissoryNotes
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/replacements:
+    get:
+      summary: Get replacement history for a patient
+      operationId: replacementsGetPatientReplacements
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a replacement for a patient. Request body mirrors legacy fields.
+      operationId: replacementsCreatePatientReplacement
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/sales:
+    get:
+      summary: Get all sales for a specific patient - Unified Access
+      operationId: patientsGetPatientSales
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/sales/{sale_id}:
+    patch:
+      summary: Partially update a Sale resource. Supports updating status, notes,
+        total_amount, and paid_amount.
+      description: 'Expected payload: { "status": "cancelled", "total_amount": 1000.0,
+        "paid_amount": 500.0, "notes": "Updated notes" }'
+      operationId: salesUpdateSalePartial
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/sgk-documents:
+    get:
+      summary: GET /api/patients/{patient_id}/sgk-documents
+      operationId: sgkGetPatientSgkDocuments
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/patients/{patient_id}/timeline:
+    get:
+      summary: Get timeline events for a patient
+      operationId: timelineGetPatientTimeline
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Add a new timeline event for a patient
+      operationId: timelineAddTimelineEvent
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/{patient_id}/timeline/{event_id}:
+    delete:
+      summary: Delete a timeline event
+      operationId: timelineDeleteTimelineEvent
+      tags:
+      - Patients
+      parameters:
+      - name: patient_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/patients/bulk_upload:
+    post:
+      summary: Accept a multipart/form-data CSV file containing patients and upsert
+        them into the DB - Unified Access.
+      operationId: patientsBulkUploadPatients
+      tags:
+      - Patients
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/patients/count:
+    get:
+      summary: Count patients with optional filters for SMS campaigns - Unified Access
+      operationId: patientsCountPatients
+      tags:
+      - Patients
+      responses:
+        '200':
+          description: Success
+  /api/patients/export:
+    get:
+      summary: Export patients as CSV - Unified Access.
+      description: 'Supports optional query params: status, segment, q (search term).'
+      operationId: patientsExportPatientsCsv
+      tags:
+      - Patients
+      responses:
+        '200':
+          description: Success
+  /api/patients/search:
+    get:
+      summary: Search patients with filters - Unified Access
+      operationId: patientsSearchPatients
+      tags:
+      - Patients
+      responses:
+        '200':
+          description: Success
+  /api/payment-records:
+    post:
+      summary: Create a new payment record - Unified Access
+      operationId: paymentsCreatePaymentRecord
+      tags:
+      - Payment-records
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/payment-records/{record_id}:
+    patch:
+      summary: Update a payment record - Unified Access
+      operationId: paymentsUpdatePaymentRecord
+      tags:
+      - Payment-records
+      parameters:
+      - name: record_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/payments/pos/paytr/callback:
+    post:
+      summary: PayTR Server-to-Server Callback
+      description: 'Idempotent: Checks if already paid.
+
+        Public endpoint - validation via PayTR hash check.'
+      operationId: paymentIntegrationsPaytrCallback
+      tags:
+      - Payments
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/payments/pos/paytr/config:
+    get:
+      summary: Get Tenant PayTR Config
+      operationId: paymentIntegrationsGetPaytrConfig
+      tags:
+      - Payments
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update Tenant PayTR Config
+      operationId: paymentIntegrationsUpdatePaytrConfig
+      tags:
+      - Payments
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/payments/pos/paytr/initiate:
+    post:
+      summary: Initiate PayTR Payment
+      description: Supports Sale-linked or Standalone
+      operationId: paymentIntegrationsInitiatePaytrPayment
+      tags:
+      - Payments
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/payments/pos/transactions:
+    get:
+      summary: Report Endpoint for POS Transactions (Admin)
+      operationId: paymentIntegrationsGetPosTransactions
+      tags:
+      - Payments
+      responses:
+        '200':
+          description: Success
+  /api/permissions:
+    get:
+      summary: List all permissions, grouped by category (Admin)
+      operationId: permissionsGetPermissions
+      tags:
+      - Permissions
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new permission (System Admin)
+      operationId: permissionsCreatePermission
+      tags:
+      - Permissions
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/permissions/my:
+    get:
+      summary: Get current user's permissions based on their role
+      operationId: permissionsGetMyPermissions
+      tags:
+      - Permissions
+      responses:
+        '200':
+          description: Success
+  /api/permissions/role/{role_name}:
+    get:
+      summary: Get permissions for a specific role (Admin Panel)
+      operationId: permissionsGetRolePermissions
+      tags:
+      - Permissions
+      parameters:
+      - name: role_name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update permissions for a role (Admin Panel)
+      operationId: permissionsUpdateRolePermissions
+      tags:
+      - Permissions
+      parameters:
+      - name: role_name
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/plans:
+    get:
+      summary: Get all active plans (Public)
+      operationId: plansGetPlans
+      tags:
+      - Plans
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new plan (Super Admin only - via Permission)
+      operationId: plansCreatePlan
+      tags:
+      - Plans
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/plans/{plan_id}:
+    put:
+      summary: Update a plan (Super Admin only - via Permission)
+      operationId: plansUpdatePlan
+      tags:
+      - Plans
+      parameters:
+      - name: plan_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/plans/admin:
+    get:
+      summary: Get all plans for admin (including inactive/private)
+      operationId: plansGetAdminPlans
+      tags:
+      - Plans
+      responses:
+        '200':
+          description: Success
+  /api/pos/commission/calculate:
+    post:
+      summary: Calculate commission for given amount and installments
+      operationId: posCommissionCalculateCommissionEndpoint
+      tags:
+      - Pos
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/pos/commission/installment-options:
+    post:
+      summary: Get installment options with calculated amounts for each
+      operationId: posCommissionGetInstallmentOptions
+      tags:
+      - Pos
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/pos/commission/rates:
+    get:
+      summary: Get commission rates for current tenant
+      operationId: posCommissionGetCommissionRates
+      tags:
+      - Pos
+      responses:
+        '200':
+          description: Success
+  /api/pos/commission/rates/system:
+    get:
+      summary: Get system-wide default rates (admin only)
+      operationId: posCommissionGetSystemRatesEndpoint
+      tags:
+      - Pos
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update system-wide default rates (super admin only)
+      operationId: posCommissionUpdateSystemRates
+      tags:
+      - Pos
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/pos/commission/rates/tenant/{tenant_id}:
+    get:
+      summary: Get tenant-specific rates (admin only)
+      operationId: posCommissionGetTenantRatesAdmin
+      tags:
+      - Pos
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update tenant-specific rates (admin only)
+      operationId: posCommissionUpdateTenantRatesAdmin
+      tags:
+      - Pos
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/pricing-preview:
+    post:
+      summary: Generate pricing preview for devices/accessories/services.
+      operationId: salesPricingPreview
+      tags:
+      - Pricing-preview
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/product-suppliers/{ps_id}:
+    put:
+      summary: Update a product-supplier relationship - Unified Access
+      operationId: suppliersUpdateProductSupplier
+      tags:
+      - Product-suppliers
+      parameters:
+      - name: ps_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete a product-supplier relationship - Unified Access
+      operationId: suppliersDeleteProductSupplier
+      tags:
+      - Product-suppliers
+      parameters:
+      - name: ps_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/products/{product_id}/suppliers:
+    get:
+      summary: Get all suppliers for a specific product - Unified Access
+      operationId: suppliersGetProductSuppliers
+      tags:
+      - Products
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Add a supplier to a product - Unified Access
+      operationId: suppliersAddProductSupplier
+      tags:
+      - Products
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/promissory-notes:
+    post:
+      summary: Create multiple promissory notes - Unified Access
+      operationId: paymentsCreatePromissoryNotes
+      tags:
+      - Promissory-notes
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/promissory-notes/{note_id}:
+    patch:
+      summary: Update a promissory note - Unified Access
+      operationId: paymentsUpdatePromissoryNote
+      tags:
+      - Promissory-notes
+      parameters:
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/promissory-notes/{note_id}/collect:
+    post:
+      summary: Collect payment for a promissory note - Unified Access
+      operationId: paymentsCollectPromissoryNote
+      tags:
+      - Promissory-notes
+      parameters:
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/register-phone:
+    post:
+      summary: POST /api/register-phone
+      operationId: registrationRegisterPhone
+      tags:
+      - Register-phone
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/replacements/{replacement_id}:
+    get:
+      summary: Get a single replacement by ID
+      operationId: replacementsGetReplacement
+      tags:
+      - Replacements
+      parameters:
+      - name: replacement_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/replacements/{replacement_id}/invoice:
+    post:
+      summary: Create a supplier return invoice record linked to a replacement.
+      operationId: replacementsCreateReturnInvoice
+      tags:
+      - Replacements
+      parameters:
+      - name: replacement_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/replacements/{replacement_id}/status:
+    patch:
+      summary: Update replacement status
+      operationId: replacementsPatchReplacementStatus
+      tags:
+      - Replacements
+      parameters:
+      - name: replacement_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/reports/appointments:
+    get:
+      summary: GET /api/reports/appointments
+      operationId: reportsReportAppointments
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/campaigns:
+    get:
+      summary: Kampanya raporu
+      operationId: reportsReportCampaigns
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/cashflow-summary:
+    get:
+      summary: Nakit akışı özeti
+      operationId: reportsReportCashflowSummary
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/financial:
+    get:
+      summary: Mali rapor
+      operationId: reportsReportFinancial
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/overview:
+    get:
+      summary: Genel rapor özeti
+      operationId: reportsReportOverview
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/patients:
+    get:
+      summary: Hasta analizi raporu
+      operationId: reportsReportPatients
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/pos-movements:
+    get:
+      summary: POS hareketleri raporu
+      operationId: reportsReportPosMovements
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/promissory-notes:
+    get:
+      summary: Senet raporları - aylık sayı, gelir ve özet
+      operationId: reportsReportPromissoryNotes
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/promissory-notes/by-patient:
+    get:
+      summary: Hasta bazlı senet özeti - hangi hastanın kaç senedi kalmış
+      operationId: reportsReportPromissoryNotesByPatient
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/promissory-notes/list:
+    get:
+      summary: Detaylı senet listesi raporu
+      operationId: reportsReportPromissoryNotesList
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/remaining-payments:
+    get:
+      summary: Kalan ödemeler raporu - hangi hastanın ne kadar ödemesi kalmış
+      operationId: reportsReportRemainingPayments
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/reports/revenue:
+    get:
+      summary: GET /api/reports/revenue
+      operationId: reportsReportRevenue
+      tags:
+      - Reports
+      responses:
+        '200':
+          description: Success
+  /api/return-invoices/{invoice_id}/send-to-gib:
+    post:
+      summary: Mark return invoice as sent to GIB and trigger completion workflow.
+      operationId: replacementsSendInvoiceToGib
+      tags:
+      - Return-invoices
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/roles:
+    get:
+      summary: Get all roles
+      description: '---
+
+        tags:
+
+        - Roles
+
+        responses:
+
+        200:
+
+        description: List of roles'
+      operationId: rolesGetRoles
+      tags:
+      - Roles
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new role
+      description: '---
+
+        tags:
+
+        - Roles
+
+        parameters:
+
+        - name: body
+
+        in: body
+
+        required: true
+
+        schema:
+
+        type: object
+
+        properties:
+
+        name:
+
+        type: string
+
+        description:
+
+        type: string
+
+        responses:
+
+        201:
+
+        description: Role created'
+      operationId: rolesCreateRole
+      tags:
+      - Roles
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/roles/{role_id}:
+    put:
+      summary: Update a role
+      description: '---
+
+        tags:
+
+        - Roles
+
+        parameters:
+
+        - name: role_id
+
+        in: path
+
+        type: string
+
+        required: true
+
+        - name: body
+
+        in: body
+
+        schema:
+
+        type: object
+
+        responses:
+
+        200:
+
+        description: Role updated'
+      operationId: rolesUpdateRole
+      tags:
+      - Roles
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete a role
+      description: '---
+
+        tags:
+
+        - Roles
+
+        parameters:
+
+        - name: role_id
+
+        in: path
+
+        type: string
+
+        required: true
+
+        responses:
+
+        200:
+
+        description: Role deleted'
+      operationId: rolesDeleteRole
+      tags:
+      - Roles
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/roles/{role_id}/permissions:
+    post:
+      summary: Add permission to role
+      description: '---
+
+        tags:
+
+        - Roles
+
+        parameters:
+
+        - name: role_id
+
+        in: path
+
+        type: string
+
+        required: true
+
+        - name: body
+
+        in: body
+
+        schema:
+
+        type: object
+
+        responses:
+
+        200:
+
+        description: Permission added'
+      operationId: rolesAddPermissionToRole
+      tags:
+      - Roles
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/roles/{role_id}/permissions/{permission_id}:
+    delete:
+      summary: Remove permission from role
+      description: '---
+
+        tags:
+
+        - Roles
+
+        parameters:
+
+        - name: role_id
+
+        in: path
+
+        type: string
+
+        required: true
+
+        - name: permission_id
+
+        in: path
+
+        type: string
+
+        required: true
+
+        responses:
+
+        200:
+
+        description: Permission removed'
+      operationId: rolesRemovePermissionFromRole
+      tags:
+      - Roles
+      parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: permission_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/sales:
+    get:
+      summary: Get all sales with pagination and filtering.
+      description: 'Access:
+
+        - Super Admin: All tenants (or specific tenant via X-Tenant-ID header)
+
+        - Tenant Admin: All sales in tenant
+
+        - Tenant User: Sales filtered by assigned branches'
+      operationId: salesGetSales
+      tags:
+      - Sales
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new sale directly (e.g. from frontend form).
+      description: 'Access:
+
+        - Requires write permission on sales
+
+        - Sale created in user''s tenant context'
+      operationId: salesCreateSale
+      tags:
+      - Sales
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sales/{sale_id}:
+    put:
+      summary: Update sale details, specifically pricing and financial info.
+      description: 'Used when device assignments are edited (price change, discount
+        change).
+
+        Access:
+
+        - Requires write permission on sales
+
+        - Tenant scoped'
+      operationId: salesUpdateSale
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    patch:
+      summary: Update sale details, specifically pricing and financial info.
+      description: 'Used when device assignments are edited (price change, discount
+        change).
+
+        Access:
+
+        - Requires write permission on sales
+
+        - Tenant scoped'
+      operationId: salesUpdateSale1
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/sales/{sale_id}/installments/{installment_id}/pay:
+    post:
+      summary: Pay a specific installment.
+      operationId: salesPayInstallment
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: installment_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sales/{sale_id}/invoice:
+    post:
+      summary: Create invoice for a sale - Unified Access
+      operationId: invoicesCreateSaleInvoice
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sales/{sale_id}/payment-plan:
+    get:
+      summary: Get payment plan details for a sale.
+      operationId: salesGetSalePaymentPlan
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create payment plan for a sale.
+      description: 'Access:
+
+        - Requires write permission on sales
+
+        - Tenant scoped'
+      operationId: salesCreateSalePaymentPlan
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sales/{sale_id}/payments:
+    get:
+      summary: Get all payments for a specific sale.
+      operationId: salesGetSalePayments
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Record a new payment for a sale.
+      operationId: salesRecordSalePayment
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sales/{sale_id}/promissory-notes:
+    get:
+      summary: Get all promissory notes for a specific sale - Unified Access
+      operationId: paymentsGetSalePromissoryNotes
+      tags:
+      - Sales
+      parameters:
+      - name: sale_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/sales/logs:
+    post:
+      summary: Create a sales log entry for cashflow.html page.
+      description: 'Access:
+
+        - Requires write permission on sales'
+      operationId: salesCreateSalesLog
+      tags:
+      - Sales
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sales/recalc:
+    post:
+      summary: Recalculate SGK and patient payment amounts for sales.
+      description: 'Optional filters in body or query: patientId, saleId, limit.'
+      operationId: salesRecalcSales
+      tags:
+      - Sales
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/settings:
+    get:
+      summary: Get system settings from database
+      operationId: getSettings
+      tags:
+      - Settings
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update system settings
+      operationId: updateSettings
+      tags:
+      - Settings
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Save system settings
+      operationId: saveSettings
+      tags:
+      - Settings
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+    patch:
+      summary: Apply partial updates to system settings using dot-path notation.
+      description: 'Request body: { "updates": { "company.name": "New", "system.timezone":
+        "Europe/London" } }'
+      operationId: patchSettings
+      tags:
+      - Settings
+      responses:
+        '200':
+          description: Success
+  /api/settings/pricing:
+    get:
+      summary: Get pricing settings specifically
+      operationId: getPricingSettings
+      tags:
+      - Settings
+      responses:
+        '200':
+          description: Success
+  /api/sgk/documents:
+    get:
+      summary: GET /api/sgk/documents
+      operationId: sgkGetSgkDocuments
+      tags:
+      - Sgk
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: POST /api/sgk/documents
+      operationId: sgkUploadSgkDocument
+      tags:
+      - Sgk
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sgk/documents/{document_id}:
+    get:
+      summary: GET /api/sgk/documents/{document_id}
+      operationId: sgkGetSgkDocument
+      tags:
+      - Sgk
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: DELETE /api/sgk/documents/{document_id}
+      operationId: sgkDeleteSgkDocument
+      tags:
+      - Sgk
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/sgk/e-receipt/query:
+    post:
+      summary: E-reçete sorgulama endpoint'i
+      operationId: sgkQueryEReceipt
+      tags:
+      - Sgk
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sgk/e-receipts/{receipt_id}/download-patient-form:
+    get:
+      summary: Mock endpoint for downloading form
+      operationId: sgkDownloadPatientForm
+      tags:
+      - Sgk
+      parameters:
+      - name: receipt_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/sgk/patient-rights/query:
+    post:
+      summary: SGK hasta hakları sorgulama endpoint'i
+      operationId: sgkQueryPatientRights
+      tags:
+      - Sgk
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sgk/seed-test-patients:
+    post:
+      summary: 'Development helper: for each image in the repo images/ folder, run
+        OCR, extract name and tc_partial,'
+      description: 'then insert a Patient record with a generated valid TC that contains
+        the partial substring.
+
+        This endpoint is intended for local/dev only and makes a best-effort to avoid
+        duplicate inserts.'
+      operationId: sgkSeedTestPatients
+      tags:
+      - Sgk
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sgk/upload:
+    post:
+      summary: Accept multipart/form-data uploads under the 'files' field (multiple
+        allowed).
+      description: 'Saves files to a secure temporary path, runs OCR (worker-first)
+        with auto_crop=True
+
+        and returns per-file OCR results including patient_info.'
+      operationId: sgkUploadAndProcessFiles
+      tags:
+      - Sgk
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sgk/workflow/{workflow_id}:
+    get:
+      summary: SGK workflow detayları endpoint'i
+      operationId: sgkGetSgkWorkflow
+      tags:
+      - Sgk
+      parameters:
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/sgk/workflow/{workflow_id}/update:
+    put:
+      summary: SGK workflow güncelleme endpoint'i
+      operationId: sgkUpdateSgkWorkflow
+      tags:
+      - Sgk
+      parameters:
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/sgk/workflow/create:
+    post:
+      summary: SGK workflow oluşturma endpoint'i
+      operationId: sgkCreateSgkWorkflow
+      tags:
+      - Sgk
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sgk/workflows/{workflow_id}/status:
+    put:
+      summary: Mock endpoint to update workflow status.
+      description: Required by frontend `sgk.service.ts` > updateWorkflowStatus
+      operationId: sgkUpdateWorkflowStatus
+      tags:
+      - Sgk
+      parameters:
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/sms-packages:
+    get:
+      summary: List all active SMS packages (Public)
+      operationId: smsPackagesPublicGetPublicPackages
+      tags:
+      - Sms-packages
+      responses:
+        '200':
+          description: Success
+  /api/sms/audiences:
+    get:
+      summary: List target audiences for tenant.
+      operationId: smsIntegrationGetTargetAudiences
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new target audience.
+      operationId: smsIntegrationCreateTargetAudience
+      tags:
+      - Sms
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sms/audiences/upload:
+    post:
+      summary: Upload Excel file for audience.
+      operationId: smsIntegrationUploadAudienceExcel
+      tags:
+      - Sms
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sms/config:
+    get:
+      summary: Get SMS configuration for tenant.
+      operationId: smsIntegrationGetSmsConfig
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update SMS configuration for tenant.
+      operationId: smsIntegrationUpdateSmsConfig
+      tags:
+      - Sms
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/sms/credit:
+    get:
+      summary: Get SMS credit balance for tenant.
+      operationId: smsIntegrationGetSmsCredit
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+  /api/sms/documents/{document_type}:
+    delete:
+      summary: Delete an uploaded document.
+      operationId: smsIntegrationDeleteSmsDocument
+      tags:
+      - Sms
+      parameters:
+      - name: document_type
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/sms/documents/{document_type}/download:
+    get:
+      summary: Get document URL for preview/download.
+      operationId: smsIntegrationDownloadSmsDocument
+      tags:
+      - Sms
+      parameters:
+      - name: document_type
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/sms/documents/file/{filepath}:
+    get:
+      summary: Serve document file for preview.
+      operationId: smsIntegrationServeSmsDocument
+      tags:
+      - Sms
+      parameters:
+      - name: filepath
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/sms/documents/submit:
+    post:
+      summary: Submit all documents for review.
+      operationId: smsIntegrationSubmitSmsDocuments
+      tags:
+      - Sms
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sms/documents/upload:
+    post:
+      summary: Upload SMS document to local storage.
+      operationId: smsIntegrationUploadSmsDocument
+      tags:
+      - Sms
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sms/headers:
+    get:
+      summary: List SMS headers for tenant.
+      operationId: smsIntegrationGetSmsHeaders
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Request a new SMS header for tenant.
+      operationId: smsIntegrationRequestSmsHeader
+      tags:
+      - Sms
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/sms/headers/{header_id}/set-default:
+    put:
+      summary: Set a header as the default for the tenant.
+      operationId: smsIntegrationSetDefaultHeader
+      tags:
+      - Sms
+      parameters:
+      - name: header_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/sms/monitoring:
+    get:
+      summary: GET /api/sms/monitoring
+      operationId: smsMonitoring
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+  /api/sms/packages:
+    get:
+      summary: List available SMS packages (public endpoint).
+      operationId: smsIntegrationGetSmsPackages
+      tags:
+      - Sms
+      responses:
+        '200':
+          description: Success
+  /api/subscriptions/complete-signup:
+    post:
+      summary: Complete user signup and subscribe.
+      description: 'Used for both:
+
+        1. Users coming from /register (already have phone verified)
+
+        2. Users verifying phone inline at checkout'
+      operationId: subscriptionsCompleteSignup
+      tags:
+      - Subscriptions
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/subscriptions/current:
+    get:
+      summary: Get current subscription details
+      operationId: subscriptionsGetCurrent
+      tags:
+      - Subscriptions
+      responses:
+        '200':
+          description: Success
+  /api/subscriptions/register-and-subscribe:
+    post:
+      summary: Register new tenant and subscribe (Public)
+      operationId: subscriptionsRegisterAndSubscribe
+      tags:
+      - Subscriptions
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/subscriptions/subscribe:
+    post:
+      summary: Subscribe to a plan (Mock Payment)
+      operationId: subscriptionsSubscribe
+      tags:
+      - Subscriptions
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/suppliers:
+    get:
+      summary: Get all suppliers with optional filtering and pagination - Unified
+        Access
+      operationId: suppliersGetSuppliers
+      tags:
+      - Suppliers
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new supplier - Unified Access
+      operationId: suppliersCreateSupplier
+      tags:
+      - Suppliers
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/suppliers/{supplier_id}:
+    get:
+      summary: Get a single supplier by ID - Unified Access
+      operationId: suppliersGetSupplier
+      tags:
+      - Suppliers
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update an existing supplier - Unified Access
+      operationId: suppliersUpdateSupplier
+      tags:
+      - Suppliers
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete a supplier (soft delete by setting is_active=False) - Unified
+        Access
+      operationId: suppliersDeleteSupplier
+      tags:
+      - Suppliers
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/suppliers/{supplier_id}/invoices:
+    get:
+      summary: Get all purchase invoices for a specific supplier - Unified Access
+      operationId: suppliersGetSupplierInvoices
+      tags:
+      - Suppliers
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/suppliers/{supplier_id}/products:
+    get:
+      summary: Get all products for a specific supplier - Unified Access
+      operationId: suppliersGetSupplierProducts
+      tags:
+      - Suppliers
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/suppliers/search:
+    get:
+      summary: Fast supplier search for autocomplete - Unified Access
+      operationId: suppliersSearchSuppliers
+      tags:
+      - Suppliers
+      responses:
+        '200':
+          description: Success
+  /api/suppliers/stats:
+    get:
+      summary: Get supplier statistics - Unified Access
+      operationId: suppliersGetSupplierStats
+      tags:
+      - Suppliers
+      responses:
+        '200':
+          description: Success
+  /api/suppliers/suggested:
+    get:
+      summary: Get all suggested suppliers (pending approval) - Unified Access
+      operationId: suppliersGetSuggestedSuppliers
+      tags:
+      - Suppliers
+      responses:
+        '200':
+          description: Success
+  /api/suppliers/suggested/{suggested_id}:
+    delete:
+      summary: Reject/delete a suggested supplier - Unified Access
+      operationId: suppliersRejectSuggestedSupplier
+      tags:
+      - Suppliers
+      parameters:
+      - name: suggested_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/suppliers/suggested/{suggested_id}/accept:
+    post:
+      summary: Accept a suggested supplier and create a new supplier record - Unified
+        Access
+      operationId: suppliersAcceptSuggestedSupplier
+      tags:
+      - Suppliers
+      parameters:
+      - name: suggested_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/tenant/assets/{tenant_id}/{filename}:
+    get:
+      summary: Serve tenant assets with authentication.
+      description: 'In production with S3: This endpoint generates presigned URLs.
+
+        In local dev: Serves files from disk.
+
+        Access Control:
+
+        - Super Admin: Can access any tenant''s assets
+
+        - Tenant User: Can only access own tenant''s assets'
+      operationId: tenantUsersServeTenantAsset
+      tags:
+      - Tenant
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: filename
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/tenant/company:
+    get:
+      summary: Get the current tenant's company information and settings.
+      description: Returns company_info including logo, stamp, signature URLs.
+      operationId: tenantUsersGetTenantCompany
+      tags:
+      - Tenant
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update the current tenant's company information.
+      description: Only tenant_admin can update company info.
+      operationId: tenantUsersUpdateTenantCompany
+      tags:
+      - Tenant
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/tenant/company/assets/{asset_type}/url:
+    get:
+      summary: Get a temporary URL for accessing an asset.
+      description: Returns presigned URL (S3) or direct URL (local).
+      operationId: tenantUsersGetAssetUrl
+      tags:
+      - Tenant
+      parameters:
+      - name: asset_type
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/tenant/company/upload/{asset_type}:
+    post:
+      summary: Upload a company asset (logo, stamp, or signature).
+      description: 'STORAGE MODES:
+
+        - local: Saves to disk (⚠️ DEV ONLY - not suitable for production)
+
+        - s3: Saves to S3/DigitalOcean Spaces (production-ready)
+
+        Accepts:
+
+        - multipart/form-data with ''file'' field
+
+        - JSON with base64 ''data'' field (max 5MB)
+
+        asset_type: ''logo'' | ''stamp'' | ''signature'''
+      operationId: tenantUsersUploadTenantAsset
+      tags:
+      - Tenant
+      parameters:
+      - name: asset_type
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+    delete:
+      summary: Delete a company asset (logo, stamp, or signature).
+      operationId: tenantUsersDeleteTenantAsset
+      tags:
+      - Tenant
+      parameters:
+      - name: asset_type
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/tenant/users:
+    get:
+      summary: List users belonging to the current user's tenant.
+      description: 'Super Admin can see all users (no tenant filter).
+
+        Tenant Admin sees users in their tenant.
+
+        Branch Admin sees users in their assigned branches.'
+      operationId: tenantUsersGetTenantUsers
+      tags:
+      - Tenant
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create a new user for the tenant with username and password.
+      description: Admin creates the user directly with credentials.
+      operationId: tenantUsersInviteTenantUser
+      tags:
+      - Tenant
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/tenant/users/{user_id}:
+    delete:
+      summary: Remove a user from the tenant.
+      operationId: tenantUsersDeleteTenantUser
+      tags:
+      - Tenant
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+    put:
+      summary: Update a user in the tenant.
+      operationId: tenantUsersUpdateTenantUser
+      tags:
+      - Tenant
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/timeline:
+    get:
+      summary: Get all timeline events across all patients
+      operationId: timelineGetTimeline
+      tags:
+      - Timeline
+      responses:
+        '200':
+          description: Success
+  /api/unified-cash-records:
+    get:
+      summary: Birleşik cash records endpoint'i - tüm finansal kayıtları tek yerden
+        döndürür.
+      description: 'Şu kaynak türlerini birleştirir:
+
+        - Sales (satışlar)
+
+        - PaymentRecords (ödeme kayıtları)
+
+        - Cash Records (nakit kayıtları)
+
+        Query parametreleri:
+
+        - limit: maksimum kayıt sayısı (varsayılan: 200)
+
+        - start_date, end_date: tarih filtreleri (ISO format)
+
+        - record_type: kayıt türü filtresi (sale, payment, cash)
+
+        - patient_id: hasta ID filtresi
+
+        - status: durum filtresi (paid, pending, partial)'
+      operationId: unifiedCashGetUnifiedCashRecords
+      tags:
+      - Unified-cash-records
+      responses:
+        '200':
+          description: Success
+  /api/unified-cash-records/summary:
+    get:
+      summary: Finansal özet bilgileri döndürür.
+      description: 'Query parametreleri:
+
+        - period: özet dönemi (today, week, month, year)
+
+        - start_date, end_date: özel tarih aralığı'
+      operationId: unifiedCashGetCashSummary
+      tags:
+      - Unified-cash-records
+      responses:
+        '200':
+          description: Success
+  /api/upload/files:
+    get:
+      summary: List files in a folder
+      description: 'Query Params:
+
+        folder (str): Folder name (default: ''uploads'')'
+      operationId: uploadGetFiles
+      tags:
+      - Upload
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete a file
+      description: 'Query Params:
+
+        key (str): S3 key of the file to delete'
+      operationId: uploadDeleteFile
+      tags:
+      - Upload
+      responses:
+        '204':
+          description: Success
+  /api/upload/presigned:
+    post:
+      summary: Get a presigned URL for direct S3 upload
+      description: 'Request Body:
+
+        filename (str): Original filename
+
+        folder (str): Target folder (e.g., ''sms_documents'', ''invoices'')
+
+        content_type (str): File content type (optional)
+
+        Returns:
+
+        JSON: {
+
+        ''url'': str,
+
+        ''fields'': dict,
+
+        ''key'': str
+
+        }'
+      operationId: uploadGetPresignedUploadUrl
+      tags:
+      - Upload
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/users:
+    get:
+      summary: List users - Unified Access
+      operationId: usersGetUsers
+      tags:
+      - Users
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Create user - Unified Access
+      operationId: usersCreateUser
+      tags:
+      - Users
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/users/{user_id}:
+    put:
+      summary: Update user - Unified Access
+      operationId: usersUpdateUser
+      tags:
+      - Users
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+    delete:
+      summary: Delete user - Unified Access
+      operationId: usersDeleteUser
+      tags:
+      - Users
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Success
+  /api/users/me:
+    get:
+      summary: Get current user profile - Unified Access
+      operationId: usersGetMe
+      tags:
+      - Users
+      responses:
+        '200':
+          description: Success
+    put:
+      summary: Update current user profile - Unified Access
+      operationId: usersUpdateMe
+      tags:
+      - Users
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Success
+  /api/users/me/password:
+    post:
+      summary: Change password - Unified Access
+      operationId: usersChangePassword
+      tags:
+      - Users
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/uts/jobs/{job_id}:
+    get:
+      summary: Get UTS registration job status
+      operationId: utsGetJobStatus
+      tags:
+      - Uts
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+  /api/uts/jobs/{job_id}/cancel:
+    post:
+      summary: Cancel UTS registration job
+      operationId: utsCancelJob
+      tags:
+      - Uts
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/uts/registrations:
+    get:
+      summary: List UTS device registrations
+      operationId: utsGetRegistrations
+      tags:
+      - Uts
+      responses:
+        '200':
+          description: Success
+  /api/uts/registrations/bulk:
+    post:
+      summary: Start bulk UTS device registration job
+      operationId: utsStartBulkRegistration
+      tags:
+      - Uts
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /api/verify-registration-otp:
+    post:
+      summary: POST /api/verify-registration-otp
+      operationId: registrationVerifyRegistrationOtp
+      tags:
+      - Verify-registration-otp
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Success
+  /metrics:
+    get:
+      summary: GET /metrics
+      operationId: metrics
+      tags:
+      - Metrics
+      responses:
+        '200':
+          description: Success
+  /swagger.html:
+    get:
+      summary: Serve the static Swagger UI page from the repository `public/` folder.
+      description: 'This helps local development: visit http://<backend-host>:<port>/swagger.html
+        so the
+
+        Swagger UI and `/api/openapi.yaml` are on the same origin and no CORS overrides
+        are needed.'
+      operationId: serveSwaggerUi
+      tags:
+      - Swagger.html
+      responses:
+        '200':
+          description: Success
+components:
+  schemas: {}

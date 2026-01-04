@@ -24,6 +24,8 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { customInstance } from '../api/orval-mutator';
 import { Button } from '@x-ear/ui-web';
 import { usePermissions } from '../hooks/usePermissions';
 import { unwrapObject, unwrapArray, unwrapPaginated } from '../utils/response-unwrap';
@@ -523,15 +525,15 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
     per_page: 10
   });
 
-  const { data: listData, isLoading: listLoading } = useReportsReportPromissoryNotesList({
-    status: listFilter,
-    page: listPage,
-    per_page: 20
-  }, {
-    query: {
-      queryKey: [...getReportsReportPromissoryNotesListQueryKey({ status: listFilter, page: listPage, per_page: 20 }), { showListModal }],
-      enabled: showListModal
-    }
+  const { data: listData, isLoading: listLoading } = useQuery({
+    queryKey: ['/api/reports/promissory-notes/list', { status: listFilter, page: listPage, per_page: 20 }],
+    queryFn: ({ signal }) => customInstance<any>({
+      url: `/api/reports/promissory-notes/list`,
+      method: 'GET',
+      params: { status: listFilter, page: listPage, per_page: 20 },
+      signal
+    }),
+    enabled: showListModal
   });
 
   const formatCurrency = (amount: number) => {

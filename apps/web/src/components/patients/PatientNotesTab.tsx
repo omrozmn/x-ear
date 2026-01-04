@@ -88,9 +88,9 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
 
       // Create note via patient notes API
       const noteBody: PatientSubresourcesCreatePatientNoteBody = {
-        text: newNoteContent,
+        content: newNoteContent,
         type: 'general',
-        author: 'current_user' // This should come from auth context
+        createdBy: 'current_user' // This should come from auth context
       };
 
       await patientSubresourcesCreatePatientNote(patient.id || '', noteBody);
@@ -137,9 +137,9 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
       await patientSubresourcesDeletePatientNote(patient.id || '', editingNote.id);
 
       const noteBody: PatientSubresourcesCreatePatientNoteBody = {
-        text: editNoteContent,
+        content: editNoteContent,
         type: editingNote.type || 'general',
-        author: editingNote.author
+        createdBy: editingNote.author
       };
 
       await patientSubresourcesCreatePatientNote(patient.id || '', noteBody);

@@ -369,6 +369,60 @@ export class PatientSyncService {
       console.error('Failed to update last sync time:', error);
     }
   }
+
+  async createPatient(patient: LocalPatient, _origin?: string): Promise<LocalPatient> {
+    // 1. Save to local IndexedDB
+    await indexedDBManager.updatePatient(patient);
+
+    // 2. Add to Outbox for sync
+    const orval = this.toOrvalPatient(patient);
+    await outbox.addOperation({
+      method: 'POST',
+      endpoint: '/api/patients',
+      data: orval,
+      headers: {
+        'Idempotency-Key': `create-patient-${patient.id}-${Date.now()}`
+      }
+    });
+
+    // 3. Trigger sync if online (fire and forget)
+    if (navigator.onLine) {
+      this.syncPatients().catch(console.error);
+    }
+
+    return patient;
+  }
+
+  async updatePatient(patient: LocalPatient, _origin?: string): Promise<LocalPatient> {
+    // 1. Update local IndexedDB
+    await indexedDBManager.updatePatient(patient);
+
+    // 2. Add to Outbox
+    await this.pushPatientToServer(patient);
+
+    // 3. Trigger sync if online
+    if (navigator.onLine) {
+      this.syncPatients().catch(console.error);
+    }
+
+    return patient;
+  }
+
+  async deletePatient(patientId: string, _origin?: string): Promise<void> {
+    // 1. Delete from local IndexedDB
+    await indexedDBManager.deletePatient(patientId);
+
+    // 2. Add to Outbox
+    await outbox.addOperation({
+      method: 'DELETE',
+      endpoint: `/api/patients/${patientId}`
+    });
+
+    // 3. Trigger sync if online
+    if (navigator.onLine) {
+      this.syncPatients().catch(console.error);
+    }
+  }
 }
 
 export const patientSyncService = new PatientSyncService();

@@ -1,4 +1,4 @@
-import { apiClient } from './api-client';
+import { apiClient, tokenManager } from './api-client';
 import { Affiliate, AffiliateRegisterRequest, AffiliateLoginRequest } from '@packages/types/affiliate';
 
 const API_BASE = '/api/affiliate';
@@ -21,7 +21,14 @@ export const registerAffiliate = async (data: Omit<AffiliateRegisterRequest, 'ib
 
 export const loginAffiliate = async (data: AffiliateLoginRequest): Promise<Affiliate> => {
   const res = await apiClient.post(`${API_BASE}/login`, data);
-  return unwrap(res.data);
+  const result = unwrap(res.data);
+  
+  // Save token to TokenManager if present
+  if (result.token || result.access_token) {
+    tokenManager.setToken(result.token || result.access_token);
+  }
+  
+  return result;
 };
 
 export const getAffiliate = async (affiliate_id: number): Promise<Affiliate> => {

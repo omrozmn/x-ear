@@ -89,7 +89,7 @@ def create_plan(ctx):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create plan error: {e}")
-        return error_response(str(e), code='CREATE_FAILED', status_code=500)
+        return error_response(str(e), code='CREATE_FAILED', status_code=400)
 
 @admin_plans_bp.route('/<plan_id>', methods=['GET'])
 @unified_access(permission=AdminPermissions.PLANS_READ)
@@ -149,7 +149,7 @@ def update_plan(ctx, plan_id):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Update plan error: {e}")
-        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
+        return error_response(str(e), code='UPDATE_FAILED', status_code=400)
 
 @admin_plans_bp.route('/<plan_id>', methods=['DELETE'])
 @unified_access(permission=AdminPermissions.PLANS_MANAGE)
@@ -170,4 +170,4 @@ def delete_plan(ctx, plan_id):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Delete plan error: {e}")
-        return error_response('Internal server error', code='DELETE_FAILED', status_code=500)
+        return error_response('Internal server error', code='DELETE_FAILED', status_code=400)

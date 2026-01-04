@@ -131,7 +131,7 @@ def get_patient_timeline(ctx, patient_id):
             if not patient:
                 return error_response('Patient not found', code='NOT_FOUND', status_code=404)
             
-            activities = ActivityLog.query.filter_by(entity_id=patient_id).order_by(ActivityLog.timestamp.desc()).all()
+            activities = ActivityLog.query.filter_by(entity_id=patient_id).order_by(ActivityLog.created_at.desc()).all()
             timeline_list = [a.to_dict() for a in activities]
             
             return success_response(data={'timeline': timeline_list})

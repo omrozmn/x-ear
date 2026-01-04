@@ -345,8 +345,21 @@ def login():
         except Exception as e:
             logger.warning(f"Failed to log login activity: {e}")
 
-        access_token = create_access_token(identity=user.id, additional_claims={'tenant_id': user.tenant_id})
-        refresh_token = create_refresh_token(identity=user.id, expires_delta=timedelta(days=30), additional_claims={'tenant_id': user.tenant_id})
+        access_token = create_access_token(
+            identity=user.id, 
+            additional_claims={
+                'tenant_id': user.tenant_id,
+                'role': user.role
+            }
+        )
+        refresh_token = create_refresh_token(
+            identity=user.id, 
+            expires_delta=timedelta(days=30), 
+            additional_claims={
+                'tenant_id': user.tenant_id,
+                'role': user.role
+            }
+        )
         return jsonify({
             'success': True,
             'access_token': access_token,

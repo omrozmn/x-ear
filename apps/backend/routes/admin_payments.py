@@ -2,8 +2,13 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from models.base import db
 from models.sales import PaymentRecord
+from datetime import datetime
+import logging
 from utils.decorators import unified_access
 from utils.admin_permissions import AdminPermissions
+from utils.tenant_security import UnboundSession
+
+logger = logging.getLogger(__name__)
 
 admin_payments_bp = Blueprint('admin_payments', __name__, url_prefix='/api/admin/payments')
 

@@ -96,11 +96,9 @@ def batch_generate_invoices(ctx):
                     invoice_number=invoice_number,
                     patient_id=sale.patient_id,
                     sale_id=sale_id,
-                    device_price=sale.total_amount,
-                    sgk_coverage=sale.sgk_coverage or 0,
-                    patient_payment=sale.patient_payment or sale.total_amount,
-                    invoice_type=invoice_type,
+                    device_price=sale.total_amount or 0,
                     status='draft',
+                    notes=f"SGK: {sale.sgk_coverage or 0}, Patient: {sale.patient_payment or sale.total_amount}, Type: {invoice_type}",
                     created_at=now_utc(),
                     updated_at=now_utc()
                 )

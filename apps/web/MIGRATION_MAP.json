@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "useAdminTenantsListTenants": "useAdminTenantsGetTenants",
+    "appointmentsListAppointments": "appointmentsGetAppointments",
+    "useInventoryGetBrands": "useInventoryGetBrands",
+    "usePaymentIntegrationsGetPaytrConfig": "usePaymentIntegrationsGetPaytrConfig",
+    "usePermissionsGetRolePermissions": "usePermissionsGetRolePermissions",
+    "patientSubresourcesGetPatientNotes": "patientSubresourcesGetPatientNotes",
+    "documentsGetPatientDocuments": "documentsGetPatientDocuments",
+    "proformasCreateProforma": "proformasCreateProforma"
+  },
+  "schemas": {
+    "SalesUpdateSaleBody": "SalesUpdateSale1Body",
+    "AppointmentsGetAppointments200": "AppointmentsGetAppointments1200",
+    "SuppliersUpdateSupplierBody": "SuppliersUpdateSupplierBody"
+  }
+}

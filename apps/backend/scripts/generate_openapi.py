@@ -67,8 +67,9 @@ def endpoint_to_camel_case(endpoint):
         func_camel = to_camel_case(func, capitalize_first=True)
         return blueprint_camel + func_camel
     else:
-        # Fallback: just convert underscores
-        return to_camel_case(endpoint, capitalize_first=False)
+        # Fallback: convert full endpoint name to camelCase
+        # This ensures uniqueness for non-blueprint endpoints
+        return to_camel_case(endpoint.replace('.', '_'), capitalize_first=False)
 
 
 def normalize_function_name(func_name):
@@ -106,6 +107,9 @@ def generate_spec():
     spec['info'] = {'title': 'X-Ear CRM API (auto-generated)', 'version': '0.0.0-auto'}
     spec['servers'] = [{'url': os.environ.get('API_BASE_URL', 'http://localhost:5003')}]
     paths = {}
+    
+    # Track operationIds to ensure uniqueness
+    operation_ids = {}
 
     # Iterate URL rules
     for rule in sorted(app.url_map.iter_rules(), key=lambda r: r.rule):
@@ -116,8 +120,14 @@ def generate_spec():
         methods = [m for m in rule.methods if m not in ('HEAD', 'OPTIONS')]
         path = openapi_path_from_rule(rule.rule)
 
-        operations = {}
+        # Get existing operations for this path or create new dict
+        operations = paths.get(path, {})
+        
         for method in methods:
+            # Skip if this method already exists for this path
+            if method.lower() in operations:
+                continue
+                
             op = {}
             # Try to fill summary/description from the view function's docstring
             view_fn = app.view_functions.get(rule.endpoint)
@@ -138,7 +148,15 @@ def generate_spec():
                 op['description'] = description
 
             # Add operationId to help client generation (camelCase for Orval)
-            op['operationId'] = endpoint_to_camel_case(rule.endpoint)
+            # Ensure uniqueness by appending counter if duplicate
+            base_operation_id = endpoint_to_camel_case(rule.endpoint)
+            operation_id = base_operation_id
+            counter = 1
+            while operation_id in operation_ids:
+                operation_id = f"{base_operation_id}{counter}"
+                counter += 1
+            operation_ids[operation_id] = f"{method} {path}"
+            op['operationId'] = operation_id
 
             op['tags'] = [tag_from_rule(rule.rule)]
 

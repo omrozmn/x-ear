@@ -1,7 +1,8 @@
 """
 Admin Tenants routes for customer/organization management
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
+from flask_mail import Message
 from datetime import datetime
 from models.base import db
 from models.tenant import Tenant, TenantStatus
@@ -11,6 +12,7 @@ from utils.admin_permissions import AdminPermissions
 from utils.tenant_security import UnboundSession
 import logging
 import uuid
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +115,7 @@ def create_tenant(ctx):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create tenant error: {e}")
-        return error_response(str(e), code='CREATE_FAILED', status_code=500)
+        return error_response(str(e), code='CREATE_FAILED', status_code=400)
 
 @admin_tenants_bp.route('/<tenant_id>', methods=['GET'])
 @unified_access(permission=AdminPermissions.TENANTS_READ)
@@ -174,7 +176,7 @@ def update_tenant(ctx, tenant_id):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Update tenant error: {e}")
-        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
+        return error_response(str(e), code='UPDATE_FAILED', status_code=400)
 
 @admin_tenants_bp.route('/<tenant_id>', methods=['DELETE'])
 @unified_access(permission=AdminPermissions.TENANTS_MANAGE)
@@ -193,7 +195,7 @@ def delete_tenant(ctx, tenant_id):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Delete tenant error: {e}")
-        return error_response(str(e), code='DELETE_FAILED', status_code=500)
+        return error_response(str(e), code='DELETE_FAILED', status_code=400)
 
 @admin_tenants_bp.route('/<tenant_id>/users', methods=['GET'])
 @unified_access(permission=AdminPermissions.USERS_READ)
@@ -353,7 +355,7 @@ def create_tenant_user(ctx, tenant_id):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create tenant user error: {e}")
-        return error_response(str(e), code='CREATE_FAILED', status_code=500)
+        return error_response(str(e), code='CREATE_FAILED', status_code=400)
 
 @admin_tenants_bp.route('/<tenant_id>/users/<user_id>', methods=['PUT'])
 @unified_access(permission=AdminPermissions.USERS_MANAGE)
@@ -410,7 +412,7 @@ def update_tenant_user(ctx, tenant_id, user_id):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Update tenant user error: {e}")
-        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
+        return error_response(str(e), code='UPDATE_FAILED', status_code=400)
 
 @admin_tenants_bp.route('/<tenant_id>/addons', methods=['POST'])
 @unified_access(permission=AdminPermissions.TENANTS_MANAGE)
@@ -564,4 +566,281 @@ def update_tenant_status(ctx, tenant_id):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Update tenant status error: {e}")
-        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
+        return error_response(str(e), code='UPDATE_FAILED', status_code=400)
+
+
+@admin_tenants_bp.route('/<tenant_id>/sms-config', methods=['GET'])
+@unified_access(permission=AdminPermissions.TENANTS_READ)
+def get_tenant_sms_config(ctx, tenant_id):
+    """Get SMS configuration for a tenant (admin view)"""
+    try:
+        from models.sms_integration import SMSProviderConfig
+        
+        tenant = Tenant.query.get(tenant_id)
+        if not tenant or tenant.deleted_at:
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
+        
+        config = SMSProviderConfig.query.filter_by(tenant_id=tenant_id).first()
+        if not config:
+            return success_response(data=None)
+        
+        return success_response(data={
+            'apiUsername': config.api_username,
+            'documentsEmail': config.documents_email,
+            'documentsSubmitted': config.documents_submitted,
+            'allDocumentsApproved': config.all_documents_approved
+        })
+        
+    except Exception as e:
+        logger.error(f"Get tenant SMS config error: {e}")
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
+
+@admin_tenants_bp.route('/<tenant_id>/sms-documents', methods=['GET'])
+@unified_access(permission=AdminPermissions.TENANTS_READ)
+def get_tenant_sms_documents(ctx, tenant_id):
+    """Get SMS documents for a tenant"""
+    try:
+        from models.sms_integration import SMSProviderConfig
+        
+        tenant = Tenant.query.get(tenant_id)
+        if not tenant or tenant.deleted_at:
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
+        
+        config = SMSProviderConfig.query.filter_by(tenant_id=tenant_id).first()
+        if not config:
+            return success_response(data={'documents': [], 'documentsSubmitted': False})
+        
+        documents = config.documents_json or []
+        
+        return success_response(data={
+            'documents': documents,
+            'documentsSubmitted': config.documents_submitted or False,
+            'documentsSubmittedAt': config.documents_submitted_at.isoformat() if config.documents_submitted_at else None,
+            'allDocumentsApproved': config.all_documents_approved or False
+        })
+        
+    except Exception as e:
+        logger.error(f"Get tenant SMS documents error: {e}")
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
+
+@admin_tenants_bp.route('/<tenant_id>/sms-documents/<document_type>/download', methods=['GET'])
+@unified_access(permission=AdminPermissions.TENANTS_READ)
+def download_tenant_sms_document(ctx, tenant_id, document_type):
+    """Get download URL for a tenant's SMS document"""
+    try:
+        import os
+        from models.sms_integration import SMSProviderConfig
+        
+        tenant = Tenant.query.get(tenant_id)
+        if not tenant or tenant.deleted_at:
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
+        
+        config = SMSProviderConfig.query.filter_by(tenant_id=tenant_id).first()
+        if not config:
+            return error_response('No SMS configuration found', code='NOT_FOUND', status_code=404)
+        
+        docs = config.documents_json or []
+        doc = next((d for d in docs if d.get('type') == document_type), None)
+        
+        if not doc:
+            return error_response('Document not found', code='NOT_FOUND', status_code=404)
+        
+        filepath = doc.get('filepath')
+        if not filepath:
+            return error_response('File path not found', code='NOT_FOUND', status_code=404)
+        
+        SMS_DOCUMENTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads', 'sms-documents')
+        full_path = os.path.join(SMS_DOCUMENTS_FOLDER, filepath)
+        
+        if not os.path.exists(full_path):
+            logger.error(f"File not found: {full_path}")
+            return error_response('File not found on disk', code='NOT_FOUND', status_code=404)
+        
+        # Return URL for static file serving
+        url = f"/api/sms/documents/file/{filepath}"
+        
+        return success_response(data={'url': url, 'filename': doc.get('filename', 'document')})
+        
+    except Exception as e:
+        logger.error(f"Download tenant SMS document error: {e}")
+        return error_response(str(e), code='DOWNLOAD_FAILED', status_code=500)
+        logger.error(f"Get tenant SMS documents error: {e}")
+        return error_response(str(e), code='INTERNAL_ERROR', status_code=500)
+
+@admin_tenants_bp.route('/<tenant_id>/sms-documents/<document_type>/status', methods=['PUT'])
+@unified_access(permission=AdminPermissions.TENANTS_MANAGE)
+def update_sms_document_status(ctx, tenant_id, document_type):
+    """Update SMS document status (approve/request revision)"""
+    try:
+        from models.sms_integration import SMSProviderConfig
+        
+        tenant = Tenant.query.get(tenant_id)
+        if not tenant or tenant.deleted_at:
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
+        
+        config = SMSProviderConfig.query.filter_by(tenant_id=tenant_id).first()
+        if not config:
+            return error_response('No SMS configuration found', code='NOT_FOUND', status_code=404)
+        
+        data = request.get_json() or {}
+        status = data.get('status')  # 'approved' or 'revision_requested'
+        
+        if status not in ['approved', 'revision_requested']:
+            return error_response('Invalid status', code='INVALID_STATUS', status_code=400)
+        
+        docs = config.documents_json or []
+        doc = next((d for d in docs if d.get('type') == document_type), None)
+        
+        if not doc:
+            return error_response('Document not found', code='NOT_FOUND', status_code=404)
+        
+        doc['status'] = status
+        doc['reviewedAt'] = datetime.utcnow().isoformat()
+        doc['reviewedBy'] = ctx.principal_id
+        
+        if status == 'revision_requested':
+            doc['revisionNote'] = data.get('note', '')
+        
+        config.documents_json = docs
+        
+        # Check if all documents are approved
+        all_approved = all(d.get('status') == 'approved' for d in docs)
+        config.all_documents_approved = all_approved
+        
+        db.session.commit()
+        
+        return success_response(data={
+            'document': doc,
+            'allDocumentsApproved': all_approved
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Update SMS document status error: {e}")
+        return error_response(str(e), code='UPDATE_FAILED', status_code=400)
+
+@admin_tenants_bp.route('/<tenant_id>/sms-documents/send-email', methods=['POST'])
+@unified_access(permission=AdminPermissions.TENANTS_MANAGE)
+def send_sms_documents_email(ctx, tenant_id):
+    """Send all approved SMS documents via email"""
+    try:
+        from models.sms_integration import SMSProviderConfig
+        from extensions import mail
+        
+        tenant = Tenant.query.get(tenant_id)
+        if not tenant or tenant.deleted_at:
+            return error_response('Tenant not found', code='NOT_FOUND', status_code=404)
+        
+        config = SMSProviderConfig.query.filter_by(tenant_id=tenant_id).first()
+        if not config:
+            return error_response('No SMS configuration found', code='NOT_FOUND', status_code=404)
+        
+        if not config.all_documents_approved:
+            return error_response('Not all documents are approved', code='NOT_APPROVED', status_code=400)
+        
+        if not config.documents_email:
+            return error_response('No email address configured', code='NO_EMAIL', status_code=400)
+        
+        docs = config.documents_json or []
+        if not docs:
+            return error_response('No documents to send', code='NO_DOCUMENTS', status_code=400)
+        
+        # Prepare email
+        subject = f"SMS Başvuru Belgeleri - {tenant.name}"
+        body = f"""
+Merhaba,
+
+{tenant.name} firması için SMS başvuru belgelerini ekte bulabilirsiniz.
+
+Firma Bilgileri:
+- Firma Adı: {tenant.name}
+- Yönetici Email: {tenant.owner_email}
+- API Username: {config.api_username}
+
+Belgeler:
+"""
+        
+        for doc in docs:
+            body += f"\n- {doc.get('filename', 'Belge')} ({doc.get('type', 'unknown')})"
+        
+        body += "\n\nİyi çalışmalar."
+        
+        # Create message
+        msg = Message(
+            subject=subject,
+            recipients=[config.documents_email],
+            body=body,
+            sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@x-ear.com')
+        )
+        
+        # Attach documents
+        SMS_DOCUMENTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads', 'sms-documents')
+        
+        for doc in docs:
+            if doc.get('filepath'):
+                filepath = os.path.join(SMS_DOCUMENTS_FOLDER, doc['filepath'])
+                if os.path.exists(filepath):
+                    with open(filepath, 'rb') as f:
+                        msg.attach(
+                            filename=doc.get('filename', 'document'),
+                            content_type='application/octet-stream',
+                            data=f.read()
+                        )
+                else:
+                    logger.warning(f"Document file not found: {filepath}")
+        
+        # Send email
+        try:
+            from extensions import mail
+            
+            # Check if we're in development mode
+            is_dev = os.getenv('FLASK_ENV', 'production') == 'development'
+            mail_username = current_app.config.get('MAIL_USERNAME', '')
+            mail_configured = mail_username and mail_username != 'your-email@gmail.com'
+            
+            if is_dev and not mail_configured:
+                # Development mode without SMTP - simulate email sending
+                logger.info("=" * 80)
+                logger.info("📧 EMAIL SIMULATION (Development Mode)")
+                logger.info("=" * 80)
+                logger.info(f"To: {config.documents_email}")
+                logger.info(f"From: {msg.sender}")
+                logger.info(f"Subject: {subject}")
+                logger.info("-" * 80)
+                logger.info("Body:")
+                logger.info(body)
+                logger.info("-" * 80)
+                logger.info(f"Attachments: {len(msg.attachments)}")
+                for attachment in msg.attachments:
+                    logger.info(f"  - {attachment.filename} ({len(attachment.data)} bytes)")
+                logger.info("=" * 80)
+                logger.info("✅ Email simulated successfully (no actual email sent)")
+                logger.info("=" * 80)
+                
+                return success_response(
+                    data={
+                        'message': 'E-posta başarıyla gönderildi (Development: Simulated)',
+                        'simulated': True,
+                        'recipient': config.documents_email,
+                        'attachments': len(msg.attachments)
+                    }
+                )
+            else:
+                # Production mode or SMTP configured - send real email
+                mail.send(msg)
+                logger.info(f"SMS documents email sent to {config.documents_email} for tenant {tenant_id}")
+                return success_response(
+                    data={
+                        'message': 'E-posta başarıyla gönderildi',
+                        'simulated': False,
+                        'recipient': config.documents_email,
+                        'attachments': len(msg.attachments)
+                    }
+                )
+        except Exception as mail_error:
+            logger.error(f"Failed to send email: {mail_error}", exc_info=True)
+            return error_response(f'E-posta gönderilemedi: {str(mail_error)}', code='MAIL_FAILED', status_code=500)
+        
+    except Exception as e:
+        logger.error(f"Send SMS documents email error: {e}", exc_info=True)
+        return error_response(str(e), code='SEND_FAILED', status_code=500)

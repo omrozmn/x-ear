@@ -80,6 +80,12 @@ class TenantPermissions:
 
     # Activity Logs
     ACTIVITY_LOGS_READ = "activity_logs:read"
+    
+    # SMS Permissions (both formats for compatibility)
+    SMS_READ = "sms:read"
+    SMS_WRITE = "sms:write"
+    SMS_VIEW = "sms.view"
+    SMS_EDIT = "sms.edit"
 
 
 # Full admin permissions set
@@ -122,6 +128,10 @@ _FULL_ADMIN_PERMISSIONS = {
     TenantPermissions.ROLE_READ,
     TenantPermissions.ROLE_WRITE,
     TenantPermissions.ACTIVITY_LOGS_READ,
+    TenantPermissions.SMS_READ,
+    TenantPermissions.SMS_WRITE,
+    TenantPermissions.SMS_VIEW,
+    TenantPermissions.SMS_EDIT,
 }
 
 # Role-to-Permission Mapping

@@ -83,7 +83,7 @@ def create_api_key(ctx):
         return success_response(data=api_key.to_dict(), status_code=201)
     except Exception as e:
         logger.error(f"Create API key error: {e}")
-        return error_response(str(e), code='CREATE_FAILED', status_code=500)
+        return error_response(str(e), code='CREATE_FAILED', status_code=400)
 
 @admin_api_keys_bp.route('/<key_id>', methods=['DELETE'])
 @unified_access(permission=AdminPermissions.API_KEYS_MANAGE)

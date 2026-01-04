@@ -15,8 +15,13 @@ class SMSProviderConfig(BaseModel, JSONMixin):
     # Documents submission email (VatanSMS provided)
     documents_email = db.Column(db.String(200))
     
-    # Uploaded documents (JSON array of S3 metadata)
+    # Uploaded documents (JSON array of document metadata)
     documents = db.Column(db.Text)
+    
+    # Document submission status
+    documents_submitted = db.Column(db.Boolean, default=False)
+    documents_submitted_at = db.Column(db.DateTime)
+    all_documents_approved = db.Column(db.Boolean, default=False)
     
     # Status
     is_active = db.Column(db.Boolean, default=True)
@@ -38,6 +43,9 @@ class SMSProviderConfig(BaseModel, JSONMixin):
             'apiUsername': self.api_username,
             'documentsEmail': self.documents_email,
             'documents': self.documents_json,
+            'documentsSubmitted': self.documents_submitted,
+            'documentsSubmittedAt': self.documents_submitted_at.isoformat() if self.documents_submitted_at else None,
+            'allDocumentsApproved': self.all_documents_approved,
             # Do not return password
             'isActive': self.is_active
         }

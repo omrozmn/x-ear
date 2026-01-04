@@ -2,7 +2,7 @@
  * Copied Orval-generated client for OutEBelgeV2
  * Do not edit generated types unless necessary.
  */
-import axios from 'axios';
+import { apiClient as axios } from '../../api/orval-mutator';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export interface SendDocumentRequestData { receiverTag?: string; documentBytes: string; isDocumentNoAuto: boolean; systemTypeCodes: string; }

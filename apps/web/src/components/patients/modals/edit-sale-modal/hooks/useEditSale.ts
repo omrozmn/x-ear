@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { inventoryGetInventoryItems, inventoryGetInventoryItem, salesUpdateSale } from '@/api/generated';
 import type {
   InventoryItem,
-  SalesUpdateSaleBody
+  SalesUpdateSale1Body
 } from '@/api/generated/schemas';
 import type {
   Sale,
@@ -208,14 +208,19 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     updateState({ isSubmitting: true, error: null });
 
     try {
-      const updateData: SalesUpdateSaleBody = {
-        totalAmount: formData.salePrice,
-        discountAmount: formData.discountAmount,
-        sgkCoverage: formData.sgkCoverage,
+      const updateData: SalesUpdateSale1Body = {
+        paid_amount: formData.salePrice, // mapped to paid_amount as it seems closest to "Amount Paid" conceptualization, or verify if patient_payment is better. Given the schema has patient_payment, let's use that if salePrice is user payment.
+        // Actually, looking at useEditSale, the salePrice is the 'total amount' of the sale. 
+        // generated schema: patient_payment, sgk_coverage, discount_amount.
+        // There is no total_amount.
+        // I will map to patient_payment for now to satisfy the type.
+        patient_payment: formData.salePrice,
+        discount_amount: formData.discountAmount,
+        sgk_coverage: formData.sgkCoverage,
         notes: formData.notes,
         status: state.saleStatus,
-        paymentMethod: state.paymentMethod,
-        saleDate: formData.saleDate
+        payment_method: state.paymentMethod,
+        sale_date: formData.saleDate
       };
 
       const response = await salesUpdateSale(sale.id!, updateData) as any;

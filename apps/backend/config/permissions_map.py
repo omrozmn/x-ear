@@ -40,7 +40,8 @@ ENDPOINT_PERMISSIONS = {
     # =========================================================================
     ('POST', '/auth/login'): 'public',
     ('POST', '/auth/forgot-password'): 'public',
-    ('POST', '/auth/send-verification-otp'): 'public',
+    ('POST', '/auth/send-verification-otp'): 'auth.edit',
+    ('POST', '/api/auth/send-verification-otp'): 'auth.edit',
     ('POST', '/auth/verify-otp'): 'public',
     ('POST', '/auth/refresh'): None,  # JWT yeterli
     
@@ -71,7 +72,7 @@ ENDPOINT_PERMISSIONS = {
     ('PATCH', '/api/patients/<patient_id>'): 'patients.edit',
     ('DELETE', '/api/patients/<patient_id>'): 'patients.delete',
     ('GET', '/api/patients/search'): 'patients.view',
-    ('GET', '/api/patients/export'): 'patients.view',
+    ('GET', '/api/patients/export'): 'patients.export',
     ('POST', '/api/patients/import'): 'patients.create',
     
     # Patient Notes
@@ -150,31 +151,31 @@ ENDPOINT_PERMISSIONS = {
     ('DELETE', '/api/sales/<sale_id>'): 'sales.delete',
     
     # Patient Sales
-    ('GET', '/patients/<patient_id>/sales'): 'sales.view',
-    ('POST', '/patients/<patient_id>/sales'): 'sales.create',
+    ('GET', '/patients/<patient_id>/sales'): 'patients.view',
+    ('POST', '/patients/<patient_id>/sales'): 'sales.edit',
     ('POST', '/patients/<patient_id>/product-sales'): 'sales.edit',
     ('PATCH', '/patients/<patient_id>/sales/<sale_id>'): 'sales.edit',
     ('GET', '/api/patients/<patient_id>/sales'): 'sales.view',
-    ('POST', '/api/patients/<patient_id>/sales'): 'sales.create',
-    ('POST', '/api/patients/<patient_id>/product-sales'): 'sales.create',
+    ('POST', '/api/patients/<patient_id>/sales'): 'sales.edit',
+    ('POST', '/api/patients/<patient_id>/product-sales'): 'sales.edit',
     ('PATCH', '/api/patients/<patient_id>/sales/<sale_id>'): 'sales.edit',
     
     # Device Assignments (Satış ilişkili)
     ('POST', '/patients/<patient_id>/assign-devices-extended'): 'sales.edit',
     ('PATCH', '/device-assignments/<assignment_id>'): 'sales.edit',
-    ('POST', '/api/patients/<patient_id>/assign-devices-extended'): 'sales.create',
+    ('POST', '/api/patients/<patient_id>/assign-devices-extended'): 'sales.edit',
     ('PATCH', '/api/device-assignments/<assignment_id>'): 'sales.edit',
     
     # Payment Plans & Records
-    ('GET', '/sales/<sale_id>/payments'): 'finance.view',
-    ('POST', '/sales/<sale_id>/payments'): 'finance.payments',
-    ('GET', '/sales/<sale_id>/payment-plan'): 'finance.view',
+    ('GET', '/sales/<sale_id>/payments'): 'sales.view',
+    ('POST', '/sales/<sale_id>/payments'): 'sales.edit',
+    ('GET', '/sales/<sale_id>/payment-plan'): 'sales.view',
     ('POST', '/sales/<sale_id>/payment-plan'): 'sales.edit',
     ('POST', '/sales/<sale_id>/installments/<installment_id>/pay'): 'finance.payments',
     ('GET', '/api/sales/<sale_id>/payments'): 'finance.view',
     ('POST', '/api/sales/<sale_id>/payments'): 'finance.payments',
     ('GET', '/api/sales/<sale_id>/payment-plan'): 'finance.view',
-    ('POST', '/api/sales/<sale_id>/payment-plan'): 'finance.payments',
+    ('POST', '/api/sales/<sale_id>/payment-plan'): 'sales.edit',
     ('POST', '/api/sales/<sale_id>/installments/<installment_id>/pay'): 'finance.payments',
     
     # Pricing
@@ -205,6 +206,7 @@ ENDPOINT_PERMISSIONS = {
     ('PATCH', '/payment-records/<record_id>'): 'payments.edit',
     
     # POS Integrations
+    ('GET', '/api/paytr/config'): 'pos.view',
     ('POST', '/api/payments/pos/paytr/initiate'): 'finance.payments',
     ('POST', '/api/payments/pos/paytr/callback'): 'public',
     
@@ -242,13 +244,13 @@ ENDPOINT_PERMISSIONS = {
     # Sale Invoices
     ('GET', '/sales/<sale_id>/invoice'): 'invoices.view',
     ('POST', '/sales/<sale_id>/invoice'): 'invoices.edit',
-    ('OPTIONS', '/sales/<sale_id>/invoice'): None,  # CORS preflight
+    ('OPTIONS', '/sales/<sale_id>/invoice'): 'invoices.edit',  # CORS preflight
     ('GET', '/sales/<sale_id>/invoice/pdf'): 'invoices.view',
     
     # Legacy /api/invoices routes
     ('GET', '/api/invoices'): 'invoices.view',
     ('GET', '/api/invoices/<invoice_id>'): 'invoices.view',
-    ('POST', '/api/invoices'): 'invoices.create',
+    ('POST', '/api/invoices'): 'invoices.edit',
     ('POST', '/api/invoices/create'): 'invoices.create',
     ('PUT', '/api/invoices/<invoice_id>'): 'invoices.create',
     ('POST', '/api/invoices/<invoice_id>/send'): 'invoices.send',
@@ -286,7 +288,7 @@ ENDPOINT_PERMISSIONS = {
     # CASH RECORDS - Kasa Yönetimi
     # =========================================================================
     ('GET', '/api/cash-records'): 'cash_records.view',
-    ('POST', '/api/cash-records'): 'cash_records.write',
+    ('POST', '/api/cash-records'): 'cash_records.edit',
     ('PUT', '/api/cash-records/<record_id>'): 'cash_records.write',
     ('DELETE', '/api/cash-records/<record_id>'): 'cash_records.delete',
     ('GET', '/api/unified-cash-records'): 'cash_records.view',
@@ -412,10 +414,10 @@ ENDPOINT_PERMISSIONS = {
     ('POST', '/branches'): 'branches.edit',
     ('PUT', '/branches/<branch_id>'): 'branches.edit',
     ('DELETE', '/branches/<branch_id>'): 'branches.delete',
-    ('GET', '/api/branches'): 'settings.view',
-    ('POST', '/api/branches'): 'settings.branches',
-    ('PUT', '/api/branches/<branch_id>'): 'settings.branches',
-    ('DELETE', '/api/branches/<branch_id>'): 'settings.branches',
+    ('GET', '/api/branches'): 'branches.view',
+    ('POST', '/api/branches'): 'branches.edit',
+    ('PUT', '/api/branches/<branch_id>'): 'branches.edit',
+    ('DELETE', '/api/branches/<branch_id>'): 'branches.delete',
     
     # Integrations
     ('GET', '/api/integrations'): 'settings.integrations',
@@ -425,8 +427,8 @@ ENDPOINT_PERMISSIONS = {
     # =========================================================================
     # TEAM - Ekip Yönetimi
     # =========================================================================
-    ('GET', '/users'): 'team.view',
-    ('POST', '/users'): 'team.create',
+    ('GET', '/users'): 'users.view',
+    ('POST', '/users'): 'users.edit',
     ('GET', '/users/me'): None,  # Herkes kendi bilgilerini görebilir
     ('PUT', '/users/me'): None,  # Herkes kendi bilgilerini düzenleyebilir
     ('POST', '/users/me/password'): None,
@@ -435,27 +437,27 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/api/users/me'): None,  # Herkes kendi bilgilerini görebilir
     ('PUT', '/api/users/me'): None,  # Herkes kendi bilgilerini düzenleyebilir
     ('POST', '/api/users/me/password'): None,  # Herkes kendi şifresini değiştirebilir
-    ('GET', '/api/users'): 'team.view',
+    ('GET', '/api/users'): 'users.view',
     ('GET', '/api/users/<user_id>'): 'team.view',
     ('POST', '/api/users'): 'team.create',
-    ('PUT', '/api/users/<user_id>'): 'team.edit',
+    ('PUT', '/api/users/<user_id>'): 'users.edit',
     ('PATCH', '/api/users/<user_id>'): 'team.edit',
-    ('DELETE', '/api/users/<user_id>'): 'team.delete',
+    ('DELETE', '/api/users/<user_id>'): 'users.delete',
     
     # Roles Management
-    ('GET', '/roles'): 'team.view',
-    ('POST', '/roles'): 'team.permissions',
-    ('PUT', '/roles/<role_id>'): 'team.permissions',
-    ('DELETE', '/roles/<role_id>'): 'team.permissions',
-    ('POST', '/roles/<role_id>/permissions'): 'team.permissions',
-    ('DELETE', '/roles/<role_id>/permissions/<permission_id>'): 'team.permissions',
+    ('GET', '/roles'): 'role:read',
+    ('POST', '/roles'): 'role:write',
+    ('PUT', '/roles/<role_id>'): 'role:write',
+    ('DELETE', '/roles/<role_id>'): 'role:write',
+    ('POST', '/roles/<role_id>/permissions'): 'role:write',
+    ('DELETE', '/roles/<role_id>/permissions/<permission_id>'): 'role:write',
     
     # Permissions
-    ('GET', '/permissions'): 'team.permissions',
+    ('GET', '/permissions'): 'role:read',
     ('POST', '/permissions'): 'team.permissions',
     ('GET', '/permissions/my'): None,  # Herkes kendi izinlerini görebilir
-    ('GET', '/permissions/role/<role_name>'): 'team.permissions',
-    ('PUT', '/permissions/role/<role_name>'): 'team.permissions',
+    ('GET', '/permissions/role/<role_name>'): 'role:read',
+    ('PUT', '/permissions/role/<role_name>'): 'role:write',
     ('GET', '/api/permissions'): 'team.permissions',
     ('GET', '/api/permissions/role/<role_name>'): 'team.permissions',
     ('PUT', '/api/permissions/role/<role_name>'): 'team.permissions',
@@ -470,7 +472,7 @@ ENDPOINT_PERMISSIONS = {
     ('PUT', '/tenant/company'): 'tenant_users.edit',
     ('POST', '/tenant/company/upload/<asset_type>'): 'tenant_users.edit',
     ('DELETE', '/tenant/company/upload/<asset_type>'): 'tenant_users.delete',
-    ('GET', '/tenant/assets/<tenant_id>/<filename>'): None,
+    ('GET', '/tenant/assets/<tenant_id>/<filename>'): 'users.view',
     
     # =========================================================================
     # REPORTS - Raporlar
@@ -503,6 +505,7 @@ ENDPOINT_PERMISSIONS = {
     # =========================================================================
     ('GET', '/dashboard'): 'dashboard.view',
     ('GET', '/dashboard/kpis'): 'dashboard.view',
+    ('GET', '/api/dashboard/kpis'): 'dashboard.view',
     ('GET', '/dashboard/charts/patient-trends'): 'dashboard.view',
     ('GET', '/dashboard/charts/revenue-trends'): 'dashboard.view',
     ('GET', '/dashboard/recent-activity'): 'dashboard.view',
@@ -598,9 +601,11 @@ ENDPOINT_PERMISSIONS = {
     # =========================================================================
     # UPLOAD / FILES
     # =========================================================================
-    ('POST', '/presigned'): None,  # JWT yeterli
-    ('GET', '/files'): None,
-    ('DELETE', '/files'): None,
+    ('POST', '/api/upload/presigned'): 'upload.edit',
+    ('GET', '/api/upload/files'): 'upload.view',
+    ('POST', '/presigned'): 'upload.edit',  # JWT yeterli
+    ('GET', '/files'): 'upload.view',
+    ('DELETE', '/files'): 'upload.delete',
     
     # =========================================================================
     # AUDIT
@@ -610,8 +615,8 @@ ENDPOINT_PERMISSIONS = {
     # =========================================================================
     # APPS - Uygulama Yönetimi
     # =========================================================================
-    ('GET', '/apps'): 'settings.view',
-    ('POST', '/apps'): 'settings.edit',
+    ('GET', '/apps'): 'admin.apps.view',
+    ('POST', '/apps'): 'admin.apps.edit',
     ('GET', '/apps/<app_id>'): 'apps.view',
     ('PUT', '/apps/<app_id>'): 'apps.edit',
     ('POST', '/apps/<app_id>/assign'): 'apps.edit',
@@ -641,11 +646,11 @@ ENDPOINT_PERMISSIONS = {
     # =========================================================================
     # BİRFATURA INTEGRATION
     # =========================================================================
-    ('POST', '/api/EFatura/sendDocument'): 'invoices.send',
-    ('POST', '/api/EFatura/sendBasicInvoice'): 'invoices.send',
-    ('POST', '/api/OutEBelgeV2/SendDocument'): 'invoices.send',
-    ('POST', '/api/OutEBelgeV2/SendBasicInvoiceFromModel'): 'invoices.send',
-    ('POST', '/api/birfatura/sync-invoices'): 'invoices.view',
+    ('POST', '/api/EFatura/sendDocument'): 'integration.birfatura.edit',
+    ('POST', '/api/EFatura/sendBasicInvoice'): 'integration.birfatura.edit',
+    ('POST', '/api/OutEBelgeV2/SendDocument'): 'integration.birfatura.edit',
+    ('POST', '/api/OutEBelgeV2/SendBasicInvoiceFromModel'): 'integration.birfatura.edit',
+    ('POST', '/api/birfatura/sync-invoices'): 'integration.birfatura.sync',
     ('POST', '/api/OutEBelgeV2/ReceiveDocument'): 'invoices.view',
     ('GET', '/api/birfatura/inbox/list'): 'invoices.view',
     ('GET', '/api/birfatura/inbox/file'): 'invoices.view',
@@ -684,7 +689,7 @@ ENDPOINT_PERMISSIONS = {
     ('POST', '/api/admin/users'): 'platform.users.manage',
     ('GET', '/api/admin/users/all'): 'platform.users.read',
     ('PUT', '/api/admin/users/all/<user_id>'): 'platform.users.manage',
-    ('DELETE', '/api/admin/users/<user_id>'): 'platform.users.manage',
+    ('DELETE', '/api/admin/users/<user_id>'): 'users.delete',
     
     # Admin Patients
     ('GET', '/api/admin/patients'): 'platform.patients.read',
@@ -763,11 +768,11 @@ ENDPOINT_PERMISSIONS = {
     ('POST', '/api/admin/settings/backup'): 'platform.system.manage',
     
     # Admin SMS
-    ('GET', '/admin/sms/packages'): 'platform.sms_packages.read',
-    ('POST', '/admin/sms/packages'): 'platform.sms_packages.manage',
-    ('PUT', '/admin/sms/packages/<pkg_id>'): 'platform.sms_packages.manage',
-    ('GET', '/admin/sms/headers'): 'platform.sms_headers.read',
-    ('PUT', '/admin/sms/headers/<header_id>/status'): 'platform.sms_headers.manage',
+    ('GET', '/admin/sms/packages'): 'admin.sms.view',
+    ('POST', '/admin/sms/packages'): 'admin.sms.edit',
+    ('PUT', '/admin/sms/packages/<pkg_id>'): 'admin.sms.edit',
+    ('GET', '/admin/sms/headers'): 'sms.view',
+    ('PUT', '/admin/sms/headers/<header_id>/status'): 'admin.sms.edit',
     
     # Support Tickets (Super Admin)
     ('GET', '/api/admin/tickets'): 'platform.tickets.read',
@@ -776,9 +781,9 @@ ENDPOINT_PERMISSIONS = {
     ('POST', '/api/admin/tickets/<ticket_id>/responses'): 'platform.tickets.manage',
     
     # Activity Logs - Platform Level (Super Admin)
-    ('GET', '/api/admin/activity-logs'): 'platform.activity_logs.read',
-    ('GET', '/api/admin/activity-logs/filter-options'): 'platform.activity_logs.read',
-    ('GET', '/api/admin/activity-logs/stats'): 'platform.activity_logs.read',
+    ('GET', '/api/admin/activity-logs'): 'activity_logs.view',
+    ('GET', '/api/admin/activity-logs/filter-options'): 'activity_logs.view',
+    ('GET', '/api/admin/activity-logs/stats'): 'activity_logs.view',
     
     # Tenant Management (Super Admin)
     ('GET', '/api/admin/tenants'): 'platform.tenants.read',
@@ -791,7 +796,7 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/api/admin/tenants/<tenant_id>/users'): 'platform.tenants.read',
     ('POST', '/api/admin/tenants/<tenant_id>/subscribe'): 'platform.tenants.manage',
     ('POST', '/api/admin/tenants/<tenant_id>/users'): 'platform.tenants.manage',
-    ('PUT', '/api/admin/tenants/<tenant_id>/users/<user_id>'): 'platform.tenants.manage',
+    ('PUT', '/api/admin/tenants/<tenant_id>/users/<user_id>'): 'users.edit',
     ('POST', '/api/admin/tenants/<tenant_id>/addons'): 'platform.tenants.manage',
     ('PUT', '/api/admin/tenants/<tenant_id>/status'): 'platform.tenants.manage',
     
@@ -862,7 +867,7 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/api/admin/debug/available-roles'): 'super_admin',
     ('GET', '/api/admin/debug/page-permissions/<page_key>'): 'super_admin',
     ('GET', '/api/pos/transactions'): 'finance.view', 
-    ('GET', '/api/tenant/company/assets/<asset_type>/url'): 'settings.view',
+    ('GET', '/api/tenant/company/assets/<asset_type>/url'): 'users.view',
     ('GET', '/api/templates'): 'campaigns.create', 
     ('POST', '/api/templates'): 'campaigns.create',
     ('PUT', '/api/templates/<template_id>'): 'campaigns.create',
@@ -872,22 +877,22 @@ ENDPOINT_PERMISSIONS = {
     # ANALYZER ALIASES (Due to Blueprint Prefixes)
     # =========================================================================
     ('GET', '/categories'): 'inventory.view',
-    ('POST', '/categories'): 'inventory.manage',
+    ('POST', '/categories'): 'inventory.edit',
     ('GET', '/brands'): 'inventory.view',
-    ('POST', '/brands'): 'inventory.manage',
+    ('POST', '/brands'): 'inventory.edit',
     ('GET', '/units'): 'inventory.view',
     ('GET', '/search'): 'inventory.view',
     ('GET', '/<item_id>/movements'): 'inventory.view',
     ('GET', '/low-stock'): 'inventory.view',
     ('GET', '/<item_id>/activity'): 'inventory.view',
-    ('GET', '/paytr/config'): 'settings.integrations',
-    ('PUT', '/paytr/config'): 'settings.integrations',
+    ('GET', '/paytr/config'): 'pos.view',
+    ('PUT', '/paytr/config'): 'pos.edit',
     ('GET', '/vatan-sms/config'): 'settings.integrations',
     ('PUT', '/vatan-sms/config'): 'settings.integrations',
     ('GET', '/birfatura/config'): 'settings.integrations',
     ('PUT', '/birfatura/config'): 'settings.integrations',
-    ('POST', '/installment-options'): 'finance.view',
-    ('GET', '/transactions'): 'finance.view',
+    ('POST', '/installment-options'): 'pos.view',
+    ('GET', '/transactions'): 'admin.payments.view',
     ('POST', '/send'): 'campaigns.send_sms', # Assuming /api/sms/send
 }
 
@@ -963,5 +968,8 @@ def get_endpoints_for_permission(permission: str) -> list:
     endpoints = []
     for (method, path), perm in ENDPOINT_PERMISSIONS.items():
         if perm == permission:
-            endpoints.append(f"{method} {path}")
+            endpoints.append(f"{method} {path
+    # Auto-added missing entries
+
+}")
     return endpoints

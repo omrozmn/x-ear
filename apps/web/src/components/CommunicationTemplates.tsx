@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  communicationsListTemplates,
+  communicationsGetTemplates,
   communicationsUpdateTemplate,
   communicationsCreateTemplate,
   communicationsDeleteTemplate
@@ -130,7 +130,7 @@ const CommunicationTemplates: React.FC = () => {
   const loadTemplates = async () => {
     try {
       setLoading(true);
-      const response = await communicationsListTemplates();
+      const response = await communicationsGetTemplates();
 
       if (response.success && response.data) {
         // Filter out templates with undefined id

@@ -10,6 +10,7 @@ interface Role {
     description?: string;
     is_system?: boolean;
     permissions?: string[];
+    createdAt?: string;
 }
 
 /**
@@ -275,14 +276,14 @@ export default function RolesSettings() {
                             {role.permissions && role.permissions.length > 0 && (
                                 <div className="flex flex-wrap gap-1">
                                     {role.permissions.slice(0, 3).map((perm, idx) => (
-                                        <span
-                                            key={idx}
-                                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-                                        >
-                                            <Lock className="w-3 h-3 mr-1" />
-                                            {perm.action}
-                                        </span>
-                                    ))}
+                    <span
+                        key={idx}
+                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                    >
+                        <Lock className="w-3 h-3 mr-1" />
+                        {perm}
+                    </span>
+                ))}
                                     {role.permissions.length > 3 && (
                                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                                             +{role.permissions.length - 3} daha

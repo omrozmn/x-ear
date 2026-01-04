@@ -13,6 +13,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Compiled Python artifacts (occasionally under app folders)
+*.pyc
+**/__pycache__/
+
 # Distribution/build
 build/
 dist/
@@ -21,6 +25,14 @@ dist/
 # Editor/temp
 .vscode/
 *.swp
+
+# macOS
+.DS_Store
+
+# Local debug/typecheck logs
+*.log
+*type_check_errors*.log
+*typescript-errors*.txt
 
 # dotenv/local env
 .env

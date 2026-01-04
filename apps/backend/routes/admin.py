@@ -222,7 +222,7 @@ def create_admin_user(ctx):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create user error: {e}")
-        return error_response(str(e), code='CREATE_FAILED', status_code=500)
+        return error_response(str(e), code='CREATE_FAILED', status_code=400)
 
 @admin_bp.route('/users', methods=['GET'])
 @unified_access(permission=AdminPermissions.USERS_READ)

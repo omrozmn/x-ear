@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { customInstance } from '@/api/orval-mutator';
 
 // Outbox item interface
 export interface OutboxItem {
@@ -36,7 +37,7 @@ class OutboxDB {
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
-        
+
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
           store.createIndex('type', 'type', { unique: false });
@@ -48,7 +49,7 @@ class OutboxDB {
 
   async addItem(item: OutboxItem): Promise<void> {
     if (!this.db) await this.init();
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([STORE_NAME], 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
@@ -61,7 +62,7 @@ class OutboxDB {
 
   async getItems(): Promise<OutboxItem[]> {
     if (!this.db) await this.init();
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([STORE_NAME], 'readonly');
       const store = transaction.objectStore(STORE_NAME);
@@ -74,7 +75,7 @@ class OutboxDB {
 
   async updateItem(item: OutboxItem): Promise<void> {
     if (!this.db) await this.init();
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([STORE_NAME], 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
@@ -87,7 +88,7 @@ class OutboxDB {
 
   async removeItem(id: string): Promise<void> {
     if (!this.db) await this.init();
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([STORE_NAME], 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
@@ -100,7 +101,7 @@ class OutboxDB {
 
   async clearItems(): Promise<void> {
     if (!this.db) await this.init();
-    
+
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([STORE_NAME], 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
@@ -192,59 +193,33 @@ export const useOutbox = () => {
 
       for (const item of itemsToProcess) {
         try {
-          // resolve API base safely (Vite uses import.meta.env)
-          const API_BASE = ((): string => {
-            try {
-              // import meta / Vite
-              if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
-                return (import.meta as any).env.VITE_API_URL || (import.meta as any).env.REACT_APP_API_URL || 'http://localhost:5003/api';
-              }
-            } catch (e) {}
-            try {
-              if (typeof process !== 'undefined' && (process as any).env) {
-                return (process as any).env.REACT_APP_API_URL || 'http://localhost:5003/api';
-              }
-            } catch (e) {}
-            return 'http://localhost:5003/api';
-          })();
-
-          const response = await fetch(`${API_BASE}${item.endpoint}`, {
+          // Use customInstance to ensure auth/interceptors are applied
+          await customInstance({
+            url: item.endpoint,
             method: item.method,
+            data: item.data,
             headers: {
-              'Content-Type': 'application/json',
               'Idempotency-Key': item.idempotencyKey,
             },
-            body: item.method !== 'GET' ? JSON.stringify(item.data) : undefined,
           });
 
-          if (response.ok) {
-            // Success - remove from outbox
-            await removeFromOutbox(item.id);
-          } else {
-            // Failed - increment retry count
-            const updatedItem: OutboxItem = {
-              ...item,
-              retryCount: item.retryCount + 1,
-              lastAttemptAt: new Date().toISOString(),
-              error: `HTTP ${response.status}: ${response.statusText}`,
-            };
+          // If no error thrown, it's a success
+          // Success - remove from outbox
+          await removeFromOutbox(item.id);
 
-            await outboxDB.updateItem(updatedItem);
-            setOutboxItems(prev => 
-              prev.map(i => i.id === item.id ? updatedItem : i)
-            );
-          }
         } catch (error) {
-          // Network error - increment retry count
+          // Network error or HTTP error (axios throws on non-2xx)
+          // Increment retry count
+          const isNetworkError = (error as any)?.code === 'ERR_NETWORK' || (error as any)?.message === 'Network Error';
           const updatedItem: OutboxItem = {
             ...item,
             retryCount: item.retryCount + 1,
             lastAttemptAt: new Date().toISOString(),
-            error: error instanceof Error ? error.message : 'Network error',
+            error: error instanceof Error ? error.message : 'Unknown error',
           };
 
           await outboxDB.updateItem(updatedItem);
-          setOutboxItems(prev => 
+          setOutboxItems(prev =>
             prev.map(i => i.id === item.id ? updatedItem : i)
           );
         }

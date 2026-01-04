@@ -91,7 +91,7 @@ def create_addon(ctx):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create addon error: {e}")
-        return error_response(str(e), code='CREATE_FAILED', status_code=500)
+        return error_response(str(e), code='CREATE_FAILED', status_code=400)
 
 @admin_addons_bp.route('/<addon_id>', methods=['GET'])
 @unified_access(permission=AdminPermissions.ADDONS_READ)
@@ -146,7 +146,7 @@ def update_addon(ctx, addon_id):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Update addon error: {e}")
-        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
+        return error_response(str(e), code='UPDATE_FAILED', status_code=400)
 
 @admin_addons_bp.route('/<addon_id>', methods=['DELETE'])
 @unified_access(permission=AdminPermissions.ADDONS_MANAGE)
@@ -166,4 +166,4 @@ def delete_addon(ctx, addon_id):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Delete addon error: {e}")
-        return error_response('Internal server error', code='DELETE_FAILED', status_code=500)
+        return error_response('Internal server error', code='DELETE_FAILED', status_code=400)

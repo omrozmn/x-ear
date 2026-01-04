@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from models import db, SMSProviderConfig, SMSHeaderRequest, SMSPackage, TenantSMSCredit, TargetAudience, User, Tenant, ActivityLog, Notification
@@ -9,14 +9,23 @@ from utils.query_policy import tenant_scoped_query
 from datetime import datetime, timezone
 import logging
 import os
+import uuid
 from utils.tenant_security import UnboundSession
 from utils.admin_permissions import require_admin_permission, AdminPermissions
 
 logger = logging.getLogger(__name__)
 
-# Upload folder for audience Excel files
+# Upload folders
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads', 'audiences')
+SMS_DOCUMENTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads', 'sms-documents')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(SMS_DOCUMENTS_FOLDER, exist_ok=True)
+
+# Document status constants
+DOC_STATUS_UPLOADED = 'uploaded'
+DOC_STATUS_SENT = 'sent'
+DOC_STATUS_REVISION_REQUESTED = 'revision_requested'
+DOC_STATUS_APPROVED = 'approved'
 
 sms_bp = Blueprint('sms_integration', __name__)
 
@@ -201,12 +210,10 @@ def get_sms_credit(ctx):
         
     return success_response(data=credit.to_dict())
 
-from services.s3_service import s3_service
-
 @sms_bp.route('/sms/documents/upload', methods=['POST'])
 @unified_access(resource='sms', action='write')
 def upload_sms_document(ctx):
-    """Upload SMS document to S3."""
+    """Upload SMS document to local storage."""
     if not ctx.tenant_id:
         return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
     
@@ -228,14 +235,30 @@ def upload_sms_document(ctx):
         return error_response('Document type required', code='MISSING_TYPE', status_code=400)
     
     try:
-        upload_result = s3_service.upload_file(
-            file_obj=file,
-            folder='sms_documents',
-            tenant_id=ctx.tenant_id,
-            original_filename=file.filename
-        )
+        # Create tenant folder
+        tenant_folder = os.path.join(SMS_DOCUMENTS_FOLDER, ctx.tenant_id)
+        os.makedirs(tenant_folder, exist_ok=True)
         
+        # Generate unique filename
+        original_filename = secure_filename(file.filename)
+        unique_id = uuid.uuid4().hex[:8]
+        filename = f"{document_type}_{unique_id}_{original_filename}"
+        filepath = os.path.join(tenant_folder, filename)
+        
+        # Delete old file if exists
         config = SMSProviderConfig.query.filter_by(tenant_id=ctx.tenant_id).first()
+        if config and config.documents_json:
+            old_doc = next((d for d in config.documents_json if d.get('type') == document_type), None)
+            if old_doc and old_doc.get('filepath'):
+                old_filepath = os.path.join(SMS_DOCUMENTS_FOLDER, old_doc['filepath'])
+                if os.path.exists(old_filepath):
+                    os.remove(old_filepath)
+        
+        # Save file
+        file.save(filepath)
+        file_size = os.path.getsize(filepath)
+        
+        # Update config
         if not config:
             config = SMSProviderConfig(tenant_id=ctx.tenant_id)
             db.session.add(config)
@@ -244,19 +267,23 @@ def upload_sms_document(ctx):
         docs = [d for d in docs if d.get('type') != document_type]
         docs.append({
             'type': document_type,
-            's3_key': upload_result['key'],
-            'filename': upload_result['filename'],
-            'size': upload_result['size'],
+            'filepath': f"{ctx.tenant_id}/{filename}",
+            'filename': original_filename,
+            'size': file_size,
+            'status': DOC_STATUS_UPLOADED,
             'uploadedAt': datetime.now(timezone.utc).isoformat()
         })
         
         config.documents_json = docs
         db.session.commit()
         
+        logger.info(f"Document uploaded: {filepath}")
+        
         return success_response(data={
             'type': document_type,
-            'filename': upload_result['filename'],
-            'size': upload_result['size']
+            'filename': original_filename,
+            'size': file_size,
+            'status': DOC_STATUS_UPLOADED
         })
         
     except Exception as e:
@@ -266,7 +293,7 @@ def upload_sms_document(ctx):
 @sms_bp.route('/sms/documents/<document_type>/download', methods=['GET'])
 @unified_access(resource='sms', action='read')
 def download_sms_document(ctx, document_type):
-    """Generate presigned URL for document download."""
+    """Get document URL for preview/download."""
     if not ctx.tenant_id:
         return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
     
@@ -280,12 +307,45 @@ def download_sms_document(ctx, document_type):
     if not doc:
         return error_response('Document not found', code='NOT_FOUND', status_code=404)
     
+    # Check if file exists
+    filepath = doc.get('filepath')
+    if not filepath:
+        return error_response('File path not found', code='NOT_FOUND', status_code=404)
+    
+    full_path = os.path.join(SMS_DOCUMENTS_FOLDER, filepath)
+    if not os.path.exists(full_path):
+        logger.error(f"File not found: {full_path}")
+        return error_response('File not found on disk', code='NOT_FOUND', status_code=404)
+    
+    # Return URL for static file serving
+    url = f"/api/sms/documents/file/{filepath}"
+    return success_response(data={'url': url, 'filename': doc.get('filename', 'document')})
+
+@sms_bp.route('/sms/documents/file/<path:filepath>', methods=['GET'])
+def serve_sms_document(filepath):
+    """Serve document file for preview."""
     try:
-        presigned_url = s3_service.generate_presigned_url(doc['s3_key'], expiration=3600)
-        return success_response(data={'url': presigned_url})
+        # Security: ensure filepath doesn't escape the documents folder
+        safe_path = os.path.normpath(filepath)
+        if '..' in safe_path or safe_path.startswith('/'):
+            logger.error(f"Invalid path attempt: {filepath}")
+            return error_response('Invalid path', code='INVALID_PATH', status_code=400)
+        
+        full_path = os.path.join(SMS_DOCUMENTS_FOLDER, safe_path)
+        logger.info(f"Attempting to serve file: {full_path}")
+        
+        if not os.path.exists(full_path):
+            logger.error(f"File not found: {full_path}")
+            return error_response('File not found', code='NOT_FOUND', status_code=404)
+        
+        directory = os.path.dirname(full_path)
+        filename = os.path.basename(full_path)
+        
+        logger.info(f"Serving file from directory: {directory}, filename: {filename}")
+        return send_from_directory(directory, filename)
     except Exception as e:
-        logger.error(f"Failed to generate download URL: {e}")
-        return error_response(str(e), code='URL_FAILED', status_code=500)
+        logger.error(f"Failed to serve document: {e}", exc_info=True)
+        return error_response(f'Failed to serve file: {str(e)}', code='SERVE_FAILED', status_code=500)
 
 @sms_bp.route('/sms/documents/<document_type>', methods=['DELETE'])
 @unified_access(resource='sms', action='write')
@@ -299,26 +359,66 @@ def delete_sms_document(ctx, document_type):
         if ctx.user and ctx.user.role not in ['admin', 'tenant_admin']:
             return error_response('Admin access required', code='FORBIDDEN', status_code=403)
     
-    config = SMSProviderConfig.query.filter_by(tenant_id=ctx.tenant_id).first()
-    if not config:
-        return error_response('No configuration found', code='NOT_FOUND', status_code=404)
-    
-    docs = config.documents_json or []
-    doc = next((d for d in docs if d.get('type') == document_type), None)
-    
-    if not doc:
-        return error_response('Document not found', code='NOT_FOUND', status_code=404)
-    
     try:
-        s3_service.delete_file(doc['s3_key'])
+        config = SMSProviderConfig.query.filter_by(tenant_id=ctx.tenant_id).first()
+        if not config:
+            return error_response('No configuration found', code='NOT_FOUND', status_code=404)
+        
+        docs = config.documents_json or []
+        doc = next((d for d in docs if d.get('type') == document_type), None)
+        
+        if not doc:
+            return error_response('Document not found', code='NOT_FOUND', status_code=404)
+        
+        # Delete file from disk
+        if doc.get('filepath'):
+            filepath = os.path.join(SMS_DOCUMENTS_FOLDER, doc['filepath'])
+            if os.path.exists(filepath):
+                os.remove(filepath)
+                logger.info(f"Document deleted: {filepath}")
+            else:
+                logger.warning(f"File not found on disk: {filepath}")
+        
+        # Update config
         docs = [d for d in docs if d.get('type') != document_type]
         config.documents_json = docs
         db.session.commit()
         
         return success_response(message='Document deleted')
     except Exception as e:
-        logger.error(f"Document deletion failed: {e}")
-        return error_response(str(e), code='DELETE_FAILED', status_code=500)
+        logger.error(f"Document deletion failed: {e}", exc_info=True)
+        db.session.rollback()
+        return error_response(f'Delete failed: {str(e)}', code='DELETE_FAILED', status_code=500)
+
+@sms_bp.route('/sms/documents/submit', methods=['POST'])
+@unified_access(resource='sms', action='write')
+def submit_sms_documents(ctx):
+    """Submit all documents for review."""
+    if not ctx.tenant_id:
+        return error_response('Tenant context required', code='TENANT_REQUIRED', status_code=400)
+    
+    config = SMSProviderConfig.query.filter_by(tenant_id=ctx.tenant_id).first()
+    if not config:
+        return error_response('No configuration found', code='NOT_FOUND', status_code=404)
+    
+    docs = config.documents_json or []
+    if not docs:
+        return error_response('No documents to submit', code='NO_DOCUMENTS', status_code=400)
+    
+    # Update all document statuses to 'sent'
+    for doc in docs:
+        if doc.get('status') == DOC_STATUS_UPLOADED:
+            doc['status'] = DOC_STATUS_SENT
+            doc['sentAt'] = datetime.now(timezone.utc).isoformat()
+    
+    config.documents_json = docs
+    config.documents_submitted = True
+    config.documents_submitted_at = datetime.now(timezone.utc)
+    db.session.commit()
+    
+    logger.info(f"Documents submitted for tenant: {ctx.tenant_id}")
+    
+    return success_response(message='Belgeler gönderildi', data={'documentsSubmitted': True})
 
 
 @sms_bp.route('/sms/audiences', methods=['GET'])

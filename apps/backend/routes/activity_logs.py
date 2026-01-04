@@ -98,24 +98,11 @@ def _build_activity_query(
 def get_activity_logs(ctx):
     """
     Get activity logs with unified access.
-    
-    Super Admin: Can see all tenants' logs (optionally filter by tenant_id)
-    Tenant Admin: Only sees own tenant's logs
-    
-    Query params:
-        page: int - Page number (default 1)
-        page_size/limit: int - Items per page (default 20, max 100)
-        tenant_id: str - Filter by tenant (Super Admin only)
-        branch_id: str - Filter by branch
-        user_id: str - Filter by user
-        role: str - Filter by role
-        action: str - Filter by exact action
-        action_type/entity_type: str - Filter by action prefix
-        date_from: str - ISO date string
-        date_to: str - ISO date string
-        critical_only: bool - Only show critical actions
-        search: str - Search in message, action, entity_id
     """
+    return _get_activity_logs_internal(ctx)
+
+def _get_activity_logs_internal(ctx):
+    """Internal logic for fetching logs (undecorated)"""
     try:
         # Parse query parameters
         page = request.args.get('page', 1, type=int)
@@ -127,10 +114,8 @@ def get_activity_logs(ctx):
         # Tenant filtering - Super Admin can specify tenant_id, others are auto-filtered
         tenant_filter = None
         if ctx.tenant_id:
-            # Tenant user - always filter by their tenant
             tenant_filter = ctx.tenant_id
         elif ctx.is_super_admin:
-            # Super Admin - can optionally filter by tenant
             tenant_filter = request.args.get('tenant_id')
         
         branch_id = request.args.get('branch_id')
@@ -209,6 +194,10 @@ def get_activity_log_detail(ctx, log_id):
 @unified_access(resource='activity_logs', action='read')
 def get_filter_options(ctx):
     """Get available filter options for activity logs"""
+    return _get_filter_options_internal(ctx)
+
+def _get_filter_options_internal(ctx):
+    """Internal logic for filter options (undecorated)"""
     try:
         # Get distinct actions
         actions_query = db.session.query(ActivityLog.action.distinct())
@@ -263,10 +252,11 @@ def get_filter_options(ctx):
 @activity_logs_bp.route('/activity-logs/stats', methods=['GET'])
 @unified_access(resource='activity_logs', action='read')
 def get_activity_stats(ctx):
-    """
-    Get activity statistics.
-    Super Admin sees global stats, Tenant Admin sees tenant stats.
-    """
+    """Get activity statistics."""
+    return _get_activity_stats_internal(ctx)
+
+def _get_activity_stats_internal(ctx):
+    """Internal logic for stats (undecorated)"""
     try:
         base_query = ActivityLog.query
         if ctx.tenant_id:
@@ -332,11 +322,15 @@ def admin_get_activity_logs(ctx):
     Legacy admin endpoint - redirects to unified endpoint.
     Kept for backward compatibility with admin panel.
     """
-    if not ctx.is_super_admin:
-        return error_response('Bu endpoint sadece platform yöneticileri için kullanılabilir', 403)
-    
-    # Delegate to unified endpoint
-    return get_activity_logs(ctx)
+    try:
+        if not ctx.is_super_admin:
+            return error_response('Bu endpoint sadece platform yöneticileri için kullanılabilir', 403)
+        
+        # Delegate to unified logic (using internal function to avoid bad decorator stack)
+        return _get_activity_logs_internal(ctx)
+    except Exception as e:
+        logger.error(f"Legacy admin logs error: {e}")
+        return error_response(str(e), 500)
 
 
 @activity_logs_bp.route('/admin/activity-logs/filter-options', methods=['GET'])
@@ -346,7 +340,7 @@ def admin_get_filter_options(ctx):
     if not ctx.is_admin:
         return error_response('Bu endpoint sadece platform yöneticileri için kullanılabilir', 403)
     
-    return get_filter_options(ctx)
+    return _get_filter_options_internal(ctx)
 
 
 @activity_logs_bp.route('/admin/activity-logs/stats', methods=['GET'])
@@ -356,7 +350,7 @@ def admin_get_activity_stats(ctx):
     if not ctx.is_admin:
         return error_response('Bu endpoint sadece platform yöneticileri için kullanılabilir', 403)
     
-    return get_activity_stats(ctx)
+    return _get_activity_stats_internal(ctx)
 
 
 # =============================================================================

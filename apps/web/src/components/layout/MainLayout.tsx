@@ -518,7 +518,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         <span>Profil</span>
                       </Link>
                       <Link
-                        to="/settings"
+                        to={"/settings" as any}
                         onClick={() => setShowUserDropdown(false)}
                         style={{
                           display: 'flex',
@@ -625,7 +625,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               </span>
             </div>
           )}
-          
+
           {children}
 
           {/* Page Permissions Viewer (admin@x-ear.com only) */}

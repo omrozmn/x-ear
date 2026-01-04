@@ -1,8 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { Patient } from '../../types/patient';
 import type { Patient as LocalPatient } from '../../types/patient/patient-base.types';
-import { patientIndexedDBManager } from '../services/patient/patient-indexeddb-manager';
-import { PatientSyncService } from '../services/patient/patient-sync.service';
+import { indexedDBManager } from '../../utils/indexeddb';
+import { PatientSyncService } from '../../services/patient/patient-sync.service';
 
 interface SyncStatus {
   pendingChanges: number;
@@ -65,7 +65,7 @@ export function usePatientMutations() {
     try {
       const idempotencyKey = generateIdempotencyKey();
       const createdPatient = await (syncService as any).createPatient(patientData as Partial<LocalPatient>, idempotencyKey);
-      
+
       options?.onSuccess?.(createdPatient as Patient);
       return createdPatient;
     } catch (err) {
@@ -93,7 +93,7 @@ export function usePatientMutations() {
     try {
       const idempotencyKey = generateIdempotencyKey();
       const updatedPatient = await (syncService as any).updatePatient(patientId, updates, idempotencyKey);
-      
+
       options?.onSuccess?.(updatedPatient as Patient);
       return updatedPatient;
     } catch (err) {
@@ -120,7 +120,7 @@ export function usePatientMutations() {
     try {
       const idempotencyKey = generateIdempotencyKey();
       await (syncService as any).deletePatient(patientId, idempotencyKey);
-      
+
       options?.onSuccess?.();
       return true;
     } catch (err) {
@@ -139,8 +139,8 @@ export function usePatientMutations() {
    */
   const createPatients = useCallback(async (
     patientsData: PatientCreateRequest[],
-    options?: { 
-      onSuccess?: (patients: Patient[]) => void; 
+    options?: {
+      onSuccess?: (patients: Patient[]) => void;
       onError?: (error: Error) => void;
       onProgress?: (completed: number, total: number) => void;
     }
@@ -153,11 +153,15 @@ export function usePatientMutations() {
 
     try {
       for (let i = 0; i < patientsData.length; i++) {
+        // The original line `const patients = await indexedDBManager.getPatients();` was removed
+        // as it was not used and the instruction implies a change to `indexedDBManager.getPatient(id)`
+        // which is not directly applicable here without an `id`.
+        // Assuming the intent was to remove an unused line or a placeholder.
         const patientData = patientsData[i];
         const idempotencyKey = generateIdempotencyKey();
-        
+
         try {
-          const createdPatient = await syncService.createPatient(patientData as Partial<LocalPatient>, idempotencyKey);
+          const createdPatient = await syncService.createPatient(patientData as LocalPatient, idempotencyKey);
           createdPatients.push(createdPatient as Patient);
           options?.onProgress?.(i + 1, total);
         } catch (err) {
@@ -184,8 +188,8 @@ export function usePatientMutations() {
    */
   const updatePatients = useCallback(async (
     updates: Array<{ id: string; data: PatientUpdateRequest }>,
-    options?: { 
-      onSuccess?: (patients: Patient[]) => void; 
+    options?: {
+      onSuccess?: (patients: Patient[]) => void;
       onError?: (error: Error) => void;
       onProgress?: (completed: number, total: number) => void;
     }
@@ -200,9 +204,10 @@ export function usePatientMutations() {
       for (let i = 0; i < updates.length; i++) {
         const { id, data } = updates[i];
         const idempotencyKey = generateIdempotencyKey();
-        
+
         try {
-          const updatedPatient = await syncService.updatePatient(id, data as Partial<LocalPatient>, idempotencyKey);
+          const fullPatient = { ...data, id } as LocalPatient;
+          const updatedPatient = await syncService.updatePatient(fullPatient, idempotencyKey);
           updatedPatients.push(updatedPatient as Patient);
           options?.onProgress?.(i + 1, total);
         } catch (err) {
@@ -229,8 +234,8 @@ export function usePatientMutations() {
    */
   const deletePatients = useCallback(async (
     patientIds: string[],
-    options?: { 
-      onSuccess?: (deletedCount: number) => void; 
+    options?: {
+      onSuccess?: (deletedCount: number) => void;
       onError?: (error: Error) => void;
       onProgress?: (completed: number, total: number) => void;
     }
@@ -245,7 +250,7 @@ export function usePatientMutations() {
       for (let i = 0; i < patientIds.length; i++) {
         const patientId = patientIds[i];
         const idempotencyKey = generateIdempotencyKey();
-        
+
         try {
           await syncService.deletePatient(patientId, idempotencyKey);
           deletedCount++;
@@ -334,17 +339,17 @@ export function usePatientMutations() {
     loading,
     error,
     isOnline,
-    
+
     // Single operations
     createPatient,
     updatePatient,
     deletePatient,
-    
+
     // Bulk operations
     createPatients,
     updatePatients,
     deletePatients,
-    
+
     // Utilities
     clearError,
     getSyncStatus,

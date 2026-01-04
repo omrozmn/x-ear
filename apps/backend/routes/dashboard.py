@@ -154,7 +154,7 @@ def get_kpis(ctx):
         ).count()
         
         sales = tenant_scoped_query(ctx, Sale).all()
-        estimated_revenue = float(sum(s.total_net_payable or s.total_amount or 0 for s in sales))
+        estimated_revenue = float(sum(s.final_amount or s.total_amount or 0 for s in sales))
 
         return jsonify({
             "success": True,
@@ -218,7 +218,7 @@ def revenue_trends(ctx):
                     db.func.strftime('%Y-%m', Sale.created_at) == label,
                     Sale.status == 'completed'
                 ).all()
-                total = sum(float(s.total_net_payable or s.total_amount or 0) for s in sales)
+                total = sum(float(s.final_amount or s.total_amount or 0) for s in sales)
                 data.append(total)
             except Exception:
                 data.append(0.0)

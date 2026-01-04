@@ -170,13 +170,20 @@ def update_me(ctx):
     # 2. Update Super Admin
     admin = ctx.admin
     if admin:
-        # Check what fields AdminUser supports. Assuming basics.
-        if 'firstName' in data: admin.first_name = data['firstName']
-        if 'lastName' in data: admin.last_name = data['lastName']
-        if 'email' in data: admin.email = data['email']
-        if 'username' in data: admin.username = data['username'] # If AdminUser has username
-        db.session.commit()
-        return jsonify({'success': True, 'data': admin.to_dict()})
+        try:
+            # Check what fields AdminUser supports and update safely
+            if 'firstName' in data and hasattr(admin, 'first_name'): 
+                admin.first_name = data['firstName']
+            if 'lastName' in data and hasattr(admin, 'last_name'): 
+                admin.last_name = data['lastName']
+            if 'email' in data and hasattr(admin, 'email'): 
+                admin.email = data['email']
+            db.session.commit()
+            return jsonify({'success': True, 'data': admin.to_dict()})
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error updating admin profile: {e}")
+            return jsonify({'success': False, 'error': 'Failed to update profile'}), 500
 
     return jsonify({'success': False, 'error': 'Not found'}), 404
 

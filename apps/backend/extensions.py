@@ -1,5 +1,6 @@
 from flask import current_app
 from services.otp_store import get_store
+from flask_mail import Mail
 import os
 import socket
 import shutil
@@ -10,6 +11,9 @@ import time
 
 # Redis client for idempotency
 redis_client = None
+
+# Flask-Mail instance
+mail = Mail()
 
 _local_redis_proc = None
 _local_redis_tmpdir = None
@@ -121,6 +125,9 @@ from models.base import db
 def init_extensions(app):
 	"""Initialize optional extensions and attach them to app.extensions."""
 	global redis_client
+	
+	# Initialize Flask-Mail
+	mail.init_app(app)
 	
 	# Attempt to auto-start a local Redis for development when REDIS_URL is not provided.
 	started_local = _start_local_redis_if_missing(app)

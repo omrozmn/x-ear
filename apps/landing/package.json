@@ -6,9 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "orval": "orval && node scripts/generate-api-index.mjs",
+    "generate-api-index": "node scripts/generate-api-index.mjs"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.16",
     "axios": "^1.6.2",
     "lucide-react": "^0.294.0",
     "next": "16.0.4",
@@ -23,6 +26,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.4",
+    "orval": "^7.13.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

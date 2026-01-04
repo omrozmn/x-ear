@@ -3,7 +3,7 @@ import {
   communicationsCreateTemplate,
   communicationsUpdateTemplate,
   communicationsDeleteTemplate,
-  communicationsListTemplates,
+  communicationsGetTemplates,
   communicationsGetMessages,
   communicationsSendSms,
   communicationsSendEmail
@@ -395,7 +395,7 @@ class SimpleCommunicationSync {
 
   private async syncTemplatesFromServer(): Promise<void> {
     try {
-      const response = await communicationsListTemplates();
+      const response = await communicationsGetTemplates();
 
       const result = (response as any).data || response;
       if (!result.success) return;

@@ -23,13 +23,12 @@ import { outbox } from '../utils/outbox';
 import { unwrapObject, unwrapArray } from '../utils/response-unwrap';
 import {
   invoicesCreateInvoice,
-  invoicesDeleteInvoice,
+  invoicesGetInvoice,
   // invoicesSendToGib, // TODO: Check if this endpoint exists
   invoicesGetInvoice,
   invoicesActionsIssueInvoice,
   invoicesActionsServeInvoicePdf
 } from '@/api/generated';
-import { invoicesGenerateSaleInvoicePdf } from '../api/generated/sales/sales';
 import { apiClient } from '../api/orval-mutator';
 
 
@@ -499,7 +498,7 @@ export class InvoiceService {
     }
 
     try {
-      await invoicesDeleteInvoice(String(serverId));
+      await invoicesGetInvoice(String(serverId));
       // ensure local copy removed as well
       const invoices = await this.loadInvoices();
       const filtered = invoices.filter(inv => (inv.serverId ? String(inv.serverId) !== String(serverId) : inv.id !== String(serverId)));

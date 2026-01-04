@@ -32,8 +32,9 @@ export interface SupplierExtended extends Omit<BaseSupplier, 'name'> {
   notes?: string;
   isActive?: boolean;
   productCount?: number;
-  contactPerson?: string;
+  contactPerson: string;
   phone?: string;
+  district?: string;
   email?: string;
   address?: string;
   taxNumber?: string;

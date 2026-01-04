@@ -4,6 +4,7 @@
  */
 
 import { openDB, IDBPDatabase, DBSchema } from 'idb';
+import { customInstance } from '../../api/orval-mutator';
 import type { Patient } from '../../types/patient';
 import { outbox } from '../../utils/outbox';
 
@@ -145,7 +146,7 @@ export class PatientOfflineSync {
 
     const patient = await this.db.get('patients', id);
     if (!patient) return null;
-    
+
     const { syncStatus, ...patientData } = patient;
     return patientData;
   }
@@ -170,8 +171,8 @@ export class PatientOfflineSync {
       .filter(patient => {
         const patientName = patient.firstName && patient.lastName ? `${patient.firstName} ${patient.lastName}` : '';
         return patientName.toLowerCase().includes(searchTerm) ||
-               patient.phone?.includes(searchTerm) ||
-               patient.email?.toLowerCase().includes(searchTerm);
+          patient.phone?.includes(searchTerm) ||
+          patient.email?.toLowerCase().includes(searchTerm);
       })
       .map(p => ({ ...p, syncStatus: undefined }));
   }
@@ -213,7 +214,7 @@ export class PatientOfflineSync {
     // The outbox will handle the actual sync operations
     // We just need to update local sync status based on outbox results
     const pendingPatients = await this.getPendingPatients();
-    
+
     for (const patient of pendingPatients) {
       // Check if the operation was successfully synced by checking outbox
       // This is a simplified approach - in a real implementation,
@@ -240,20 +241,14 @@ export class PatientOfflineSync {
       while (hasMore && requestCount < maxRequests) {
         // Use even smaller page size for background sync
         const url = cursor ? `/api/patients?per_page=10&cursor=${cursor}` : '/api/patients?per_page=10';
-        
+
         // Add longer delay between requests to prevent resource exhaustion
         if (requestCount > 0) {
           await new Promise(resolve => setTimeout(resolve, 1000)); // Increased to 1000ms delay
         }
-        
-        try {
-          const response = await fetch(url);
-          if (!response.ok) {
-            console.warn(`Background sync request failed: ${response.status}`);
-            break; // Stop on error instead of throwing
-          }
 
-          const data = await response.json();
+        try {
+          const data = await customInstance<any>({ url, method: 'GET' });
           patients.push(...(data.data || []));
           cursor = data.meta?.nextCursor;
           hasMore = !!cursor;
@@ -271,9 +266,9 @@ export class PatientOfflineSync {
       if (patients.length > 0) {
         for (const serverPatient of patients) {
           if (!serverPatient.id) continue; // Skip patients without ID
-          
+
           const localPatient = await this.db!.get('patients', serverPatient.id);
-          
+
           // Only update if server version is newer or local doesn't exist
           if (!localPatient || (serverPatient.updatedAt && localPatient.updatedAt && new Date(serverPatient.updatedAt) > new Date(localPatient.updatedAt))) {
             await this.db!.put('patients', {
@@ -302,7 +297,7 @@ export class PatientOfflineSync {
     const queryClient = (window as any).__REACT_QUERY_CLIENT__;
     if (queryClient) {
       const queries = queryClient.getQueryCache().getAll();
-      const activePatientQueries = queries.filter((query: any) => 
+      const activePatientQueries = queries.filter((query: any) =>
         query.queryKey?.[0] === 'patients' && query.state.fetchStatus === 'fetching'
       );
       if (activePatientQueries.length > 0) {
@@ -312,11 +307,11 @@ export class PatientOfflineSync {
 
     // Check for ongoing fetch requests (basic heuristic)
     const performanceEntries = performance.getEntriesByType('navigation');
-    const recentRequests = performanceEntries.filter((entry: any) => 
-      entry.name?.includes('/api/patients') && 
+    const recentRequests = performanceEntries.filter((entry: any) =>
+      entry.name?.includes('/api/patients') &&
       (Date.now() - entry.startTime) < 5000 // Within last 5 seconds
     );
-    
+
     return recentRequests.length > 0;
   }
 
@@ -403,7 +398,7 @@ export class PatientOfflineSync {
     this.listeners.clear();
     window.removeEventListener('online', this.handleOnline);
     window.removeEventListener('offline', this.handleOffline);
-    
+
     if (this.db) {
       this.db.close();
       this.db = null;

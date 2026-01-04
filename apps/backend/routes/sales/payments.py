@@ -363,9 +363,9 @@ def create_sale_payment_plan(ctx, sale_id):
         if ctx.tenant_id and sale.tenant_id != ctx.tenant_id:
             return error_response(ERROR_SALE_NOT_FOUND, code='FORBIDDEN', status_code=404)
 
-        from app import get_settings
-        settings_response = get_settings()
-        settings = settings_response.get_json()['settings']
+        from models.system import Settings
+        settings_record = Settings.get_system_settings()
+        settings = settings_record.settings_json
         
         plan_type = data.get('planType', 'installment')
         installment_count = int(data.get('installmentCount', 6))
@@ -382,11 +382,10 @@ def create_sale_payment_plan(ctx, sale_id):
         else:
             payment_plan = create_payment_plan(
                 sale_id=sale_id,
-                total_amount=float(sale.total_amount),
                 plan_type=plan_type,
-                installment_count=installment_count,
-                down_payment=down_payment,
-                settings=settings
+                amount=float(sale.total_amount) - down_payment,
+                settings=settings,
+                tenant_id=sale.tenant_id
             )
         
         if payment_plan:

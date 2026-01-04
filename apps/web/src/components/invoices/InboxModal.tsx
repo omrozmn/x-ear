@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@x-ear/ui-web';
-import { getBirFaturaAPI } from '../../services/birfatura.service';
+// import { getBirFaturaAPI } from '../../services/birfatura.service';
 import { unwrapObject } from '../../utils/response-unwrap';
 
 interface InboxFile { filename: string; size: number; mtime: number }
@@ -17,10 +17,11 @@ export const InboxModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
   const fetchList = async () => {
     setLoading(true);
     try {
-      const api = getBirFaturaAPI();
-      const resp = await api.getApiInEBelgeV2List();
-      const fileList = unwrapObject<{ data: InboxFile[] }>(resp);
-      setFiles(fileList.data || []);
+      // const api = getBirFaturaAPI();
+      // const resp = await api.getApiInEBelgeV2List();
+      // const fileList = unwrapObject<{ data: InboxFile[] }>(resp);
+      // setFiles(fileList?.data || []);
+      setFiles([]);
     } catch (e) {
       console.error('Failed to fetch inbox list', e);
     } finally {

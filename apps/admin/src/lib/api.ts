@@ -1,4 +1,28 @@
 import axios, { AxiosRequestConfig } from 'axios';
+import humps from 'humps';
+
+// Hybrid Converter: Adds CamelCase keys while preserving SnakeCase keys
+const hybridCamelize = (data: any): any => {
+    if (Array.isArray(data)) {
+        return data.map(hybridCamelize);
+    }
+    if (data && typeof data === 'object' && data !== null && !(data instanceof Date)) {
+        const result: any = {};
+        for (const key in data) {
+            if (Object.prototype.hasOwnProperty.call(data, key)) {
+                const value = data[key];
+                const camelKey = humps.camelize(key);
+                const newValue = hybridCamelize(value);
+                result[key] = newValue; // Keep original key
+                if (camelKey !== key) {
+                    result[camelKey] = newValue; // Add camel key
+                }
+            }
+        }
+        return result;
+    }
+    return data;
+};
 
 // API Configuration
 // API Configuration
@@ -20,6 +44,23 @@ apiClient.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Add idempotency key for non-GET requests
+        if (config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
+            const idempotencyKey = config.headers['Idempotency-Key'] ||
+                `admin-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            config.headers['Idempotency-Key'] = idempotencyKey;
+        }
+
+        // Add request ID for tracing
+        const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        config.headers['X-Request-ID'] = requestId;
+
+        // Case Conversion: Convert payload to snake_case for backend
+        if (config.data && !(config.data instanceof FormData)) {
+            config.data = humps.decamelizeKeys(config.data);
+        }
+
         return config;
     },
     (error) => Promise.reject(error)
@@ -27,8 +68,27 @@ apiClient.interceptors.request.use(
 
 // Response Interceptor
 apiClient.interceptors.response.use(
-    (response) => response,
-    (error) => {
+    (response) => {
+        if (response.data) {
+            response.data = hybridCamelize(response.data);
+        }
+        return response;
+    },
+    async (error) => {
+        // Handle offline errors - queue for later processing
+        if (!error.response && (error.code === 'ERR_NETWORK' || !navigator.onLine)) {
+            console.warn('[Admin API] Network error detected, queuing request for offline processing');
+            
+            // Dynamically import to avoid circular dependency
+            const { offlineQueue } = await import('./offlineQueue');
+            offlineQueue.addRequest(error.config);
+            
+            const offlineError = new Error('Request queued for offline processing');
+            offlineError.name = 'OfflineError';
+            (offlineError as any).isOffline = true;
+            return Promise.reject(offlineError);
+        }
+
         if (error.response?.status === 401) {
             // Check if it's a real authentication error or just authorization
             let message = '';

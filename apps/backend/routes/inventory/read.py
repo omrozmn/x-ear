@@ -174,10 +174,10 @@ def advanced_search(ctx):
         # Metadata logic (removed for brevity, can re-add if needed or use separate metadata endpoints)
         # The legacy endpoint returned filter options. I should probably include them to avoid breaking frontend.
         # ... Re-implementing filter options ...
-        categories = db.session.query(Inventory.category).filter_by(tenant_id=user.tenant_id).distinct().filter(Inventory.category.isnot(None)).all()
-        brands = db.session.query(Inventory.brand).filter_by(tenant_id=user.tenant_id).distinct().filter(Inventory.brand.isnot(None)).all()
-        suppliers = db.session.query(Inventory.supplier).filter_by(tenant_id=user.tenant_id).distinct().filter(Inventory.supplier.isnot(None)).all()
-        price_stats = db.session.query(db.func.min(Inventory.price), db.func.max(Inventory.price)).filter_by(tenant_id=user.tenant_id).first()
+        categories = db.session.query(Inventory.category).filter_by(tenant_id=ctx.tenant_id).distinct().filter(Inventory.category.isnot(None)).all()
+        brands = db.session.query(Inventory.brand).filter_by(tenant_id=ctx.tenant_id).distinct().filter(Inventory.brand.isnot(None)).all()
+        suppliers = db.session.query(Inventory.supplier).filter_by(tenant_id=ctx.tenant_id).distinct().filter(Inventory.supplier.isnot(None)).all()
+        price_stats = db.session.query(db.func.min(Inventory.price), db.func.max(Inventory.price)).filter_by(tenant_id=ctx.tenant_id).first()
 
         safe_items = [i.to_dict() for i in items]
         

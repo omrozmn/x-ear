@@ -1,0 +1,172 @@
+# API Contract Analysis Report
+Generated: 2026-01-03T23:43:51.949444Z
+
+## Summary
+- Total Endpoints: 183
+- Analyzed: 183
+- Critical Issues: 0 🔴
+- Silent Bugs: 0 🔵
+- Warnings: 0 🟠
+- Info: 0 🟡
+
+## Risk Distribution
+```
+🔴 CRITICAL ( 0) ░░░░░░░░░░░░░░░░░░░░
+🔵 SILENT   ( 0) ░░░░░░░░░░░░░░░░░░░░
+🟠 WARNING  ( 0) ░░░░░░░░░░░░░░░░░░░░
+🟡 INFO     ( 0) ░░░░░░░░░░░░░░░░░░░░
+```
+
+## Unused Endpoints (Not Called by Frontend)
+- /api/config/turnstile
+- /api/reports/appointments
+- /api/dashboard/recent-activity
+- /api/admin/tenants/{id}/sms-documents/{documentType}/status
+- /api/EFatura/Cancel/{invoice_id}
+- /api/dashboard/charts/revenue-trends
+- /api/automation/sgk/process
+- /api/invoices
+- /api/birfatura/sync-invoices
+- /api/devices/low-stock
+- /api/patients/{patient_id}/ereceipts
+- /api/notifications/{notification_id}/read
+- /api/invoices/{invoice_id}
+- /api/devices/brands
+- /api/sales/{sale_id}/payment-plan
+- /api/dashboard/charts/patient-trends
+- /api/roles/{role_id}/permissions/{permission_id}
+- /api/campaigns
+- /api/reports/campaigns
+- /api/auth/forgot-password
+- /api/affiliate/login
+- /api/campaigns/{campaign_id}/send
+- /api/users/me/password
+- /api/sales/{sale_id}/promissory-notes
+- /api/inventory/low-stock
+- /api/pricing-preview
+- /api/suppliers
+- /api/devices
+- /api/patients/{patient_id}/timeline
+- /api/communications/templates
+- /api/notifications/{notification_id}
+- /api/sms/headers
+- /api/auth/lookup-phone
+- /api/reports/overview
+- /api/subscriptions/current
+- /api/suppliers/{supplier_id}
+- /api/promissory-notes/{note_id}
+- /api/patients/search
+- /api/roles
+- /api/inventory/{item_id}/serials
+- /similarity
+- /api/suppliers/suggested/{suggested_id}/accept
+- /api/reports/revenue
+- /api/auth/send-verification-otp
+- /api/admin/sms/packages
+- /api/admin/sms/packages/{pkg_id}
+- /api/inventory/stats
+- /api/sales/{sale_id}/invoice
+- /api/suppliers/{supplier_id}/products
+- /api/admin/tenants/{id}/sms-documents
+- /api/suppliers/{supplier_id}/invoices
+- /api/inventory
+- /api/promissory-notes
+- /api/invoices/{invoice_id}/pdf
+- /api/patients/{patient_id}/timeline/{event_id}
+- /api/communications/stats
+- /api/notifications/stats
+- /api/patients/{patient_id}/ereceipts/{ereceipt_id}
+- /api/users
+- /api/sales/{sale_id}/invoice/pdf
+- /api/patients
+- /api/automation/backup
+- /api/appointments
+- /api/sms/documents/{documentType}
+- /api/suppliers/stats
+- /api/products/{product_id}/suppliers
+- /api/promissory-notes/{note_id}/collect
+- /api/openapi.yaml
+- /api/devices/{device_id}
+- /api/patients/{patient_id}/sgk-documents
+- /api/sgk/documents/{document_id}
+- /api/sms/documents/{document_type}
+- /api/settings
+- /api/reports/patients
+- /api/patients/{patient_id}/notes
+- /swagger.html
+- /api/ocr/process
+- /api/invoices/{invoice_id}/send-to-gib
+- /api/patients/export
+- /api/appointments/{appointment_id}
+- /api/patients/{patient_id}/sales
+- /api/admin/sms/headers/{header_id}/status
+- /api/inventory/{item_id}/assign
+- /api/patients/{patient_id}/assign-devices-extended
+- /api/reports/financial
+- /api/admin/tenants/{id}/sms-config
+- /api/patients/{patient_id}
+- /api/patients/{patient_id}/hearing-tests/{test_id}
+- /api/devices/{device_id}/stock-update
+- /api/roles/{role_id}
+- /api/sms/packages
+- /api/sms/credit
+- /api/sales/{sale_id}
+- /init-db
+- /api/dashboard/kpis
+- /api/payment-records
+- /api/sgk/documents
+- /api/patients/{patient_id}/devices
+- /api/affiliate/register
+- /api/activity-logs
+- /api/users/{user_id}
+- /extract_patient
+- /api/sms/documents/{documentType}/download
+- /api/EFatura/Create
+- /api/dashboard/charts/patient-distribution
+- /api/sales
+- /api/health
+- /api/verify-registration-otp
+- /api/register-phone
+- /api/automation/logs
+- /api/roles/{role_id}/permissions
+- /api/appointments/availability
+- /api/sms/audiences
+- /api/affiliate/{affiliate_id}
+- /api/affiliate/list
+- /api/sms/config
+- /api/communications/templates/{template_id}
+- /api/notifications
+- /entities
+- /api/auth/reset-password
+- /api/users/me
+- /initialize
+- /api/affiliate/me
+- /process
+- /api/appointments/list
+- /api/admin/sms/headers
+- /api/suppliers/suggested/{suggested_id}
+- /api/devices/categories
+- /api/appointments/{appointment_id}/cancel
+- /api/patients/{patient_id}/hearing-tests
+- /api/admin/tenants/{id}/sms-documents/send-email
+- /api/inventory/{item_id}/activity
+- /api/appointments/{appointment_id}/reschedule
+- /api/dashboard
+- /health
+- /api/product-suppliers/{ps_id}
+- /api/invoices/{invoice_id}/issue
+- /api/patients/{patient_id}/notes/{note_id}
+- /api/auth/verify-otp
+- /api/communications/messages
+- /api/suppliers/suggested
+- /api/sms/audiences/upload
+- /api/patients/bulk_upload
+- /api/patients/{patient_id}/activities
+- /api/inventory/{item_id}
+- /api/appointments/{appointment_id}/complete
+- /api/automation/status
+- /api/EFatura/Retry/{invoice_id}
+- /api/inventory/categories
+- /api/sms/monitoring
+- /api/sms/documents/upload
+- /api/patients/{patient_id}/promissory-notes

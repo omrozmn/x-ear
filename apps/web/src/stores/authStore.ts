@@ -628,8 +628,8 @@ export const useAuthStore = create<AuthStore>()(
         if (storedToken && !tokenManager.isAccessTokenExpired()) {
           try {
             // Get current user info from API
-            const { usersGetCurrentUser } = await import('../api/generated/users/users');
-            const response = await usersGetCurrentUser();
+            const { usersGetMe } = await import('../api/generated/users/users');
+            const response = await usersGetMe();
 
             // customInstance returns response.data directly: {success, data: {...}}
             const responseData = response as any;

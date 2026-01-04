@@ -92,7 +92,7 @@ def create_admin_invoice(ctx):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Create invoice error: {e}")
-        return error_response(str(e), code='CREATE_FAILED', status_code=500)
+        return error_response(str(e), code='CREATE_FAILED', status_code=400)
 
 @admin_invoices_bp.route('/<id>', methods=['GET'])
 @unified_access(permission=AdminPermissions.INVOICES_READ)

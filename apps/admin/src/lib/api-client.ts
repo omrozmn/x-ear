@@ -2,7 +2,8 @@ import { useQuery, useMutation, UseMutationOptions, MutationFunction, UseQueryOp
 import { adminApi } from './apiMutator';
 
 // Import generated hooks needed for aliases or usage within this file
-import { useGetAdminSettings } from './api/settings/settings';
+// useGetAdminSettings and useGetAdminUsers are missing from generated code
+// We will define them manually below
 import { usePostAdminAddons, usePutAdminAddonsId, useDeleteAdminAddonsId } from './api/add-ons/add-ons';
 import {
   useGetAdminTenantsIdUsers,
@@ -10,7 +11,7 @@ import {
   usePutAdminTenantsId,
   usePutAdminTenantsIdStatus
 } from './api/tenants/tenants';
-import { useGetAdminUsers } from './api/users/users';
+// import { useGetAdminUsers } from './api/users/users'; // Broken import
 import { usePostAdminTickets, usePutAdminTicketsId } from './api/support/support';
 import {
   useGetAdminInvoices,
@@ -25,16 +26,51 @@ export * from './api/add-ons/add-ons';
 export * from './api/admin/admin';
 export * from './api/affiliate/affiliate';
 export * from './api/analytics/analytics';
+export * from './api/appointments/appointments';
 export * from './api/auth/auth';
+export * from './api/automation/automation';
 export * from './api/billing/billing';
+export * from './api/bir-fatura/bir-fatura';
+export * from './api/campaigns/campaigns';
+export * from './api/communications/communications';
+export * from './api/config/config';
 export * from './api/dashboard/dashboard';
+export * from './api/devices/devices';
+export * from './api/entities/entities';
+export * from './api/extract-patient/extract-patient';
+export * from './api/health/health';
+export * from './api/init-db/init-db';
+export * from './api/initialize/initialize';
+export * from './api/inventory/inventory';
+export * from './api/invoices/invoices';
+export * from './api/notifications/notifications';
+export * from './api/ocr/ocr';
+export * from './api/openapi-yaml/openapi-yaml';
+export * from './api/patients/patients';
+export * from './api/payments/payments';
 export * from './api/plans/plans';
+export * from './api/pricing-preview/pricing-preview';
+export * from './api/process/process';
+export * from './api/product-suppliers/product-suppliers';
+export * from './api/products/products';
+export * from './api/promissory-notes/promissory-notes';
+export * from './api/register-phone/register-phone';
+export * from './api/reports/reports';
+export * from './api/roles/roles';
+export * from './api/sales/sales';
 export * from './api/settings/settings';
+export * from './api/sgk/sgk';
+export * from './api/similarity/similarity';
+export * from './api/sms/sms';
+export * from './api/subscriptions/subscriptions';
+export * from './api/suppliers/suppliers';
 export * from './api/support/support';
+export * from './api/swagger-html/swagger-html';
 export * from './api/tenants/tenants';
+export * from './api/timeline/timeline';
 export * from './api/users/users';
+export * from './api/verify-registration-otp/verify-registration-otp';
 export * from './api/index.schemas';
-
 // ============================================================================
 // ALIASES (Mapping generated names to legacy/manual names)
 // ============================================================================
@@ -74,6 +110,11 @@ export const getAdminInvoicePdf = (id: string) => {
 // ============================================================================
 // MANUAL OVERRIDES & MISSING FUNCTIONS
 // ============================================================================
+// NOTE: The following manual overrides are necessary because the generated client 
+// (e.g. appointments/appointments.ts) currently targets Tenant API endpoints (e.g. /api/appointments) 
+// instead of Admin API endpoints (e.g. /api/admin/appointments).
+// Until the OpenAPI spec is updated to include correct Admin routes, these overrides 
+// MUST be retained to ensure the Admin Panel functions correctly.
 
 // Tenants Manual Override (Fixing void return type from generated code)
 export const useGetTenant = (id: string, options?: any): UseQueryResult<{ data: { tenant: any } }, unknown> => {
@@ -100,7 +141,10 @@ export const useGetAdminInventory = (params?: any, options?: any) => {
   return useQuery({ queryKey: ['adminInventory', params], queryFn: () => adminApi({ url: '/api/admin/inventory', params }), ...options?.query });
 }
 
-// Settings (mutations only - GET already exists)
+// Settings (mutations only - GET already exists matches generated? No, generated missing GET)
+export const getAdminSettings = (signal?: AbortSignal) => adminApi<any>({ url: '/api/admin/settings', method: 'GET', signal });
+export const useGetAdminSettings = (options?: { query?: any }) => useQuery({ queryKey: ['adminSettings'], queryFn: ({ signal }) => getAdminSettings(signal), ...options?.query });
+
 export const useUpdateAdminSettings = <TData = any, TError = unknown, TContext = unknown>(options?: { mutation?: UseMutationOptions<TData, TError, any, TContext> }) => {
   return useMutation({ mutationFn: (data: any) => adminApi<TData>({ url: '/api/admin/settings', method: 'PUT', data }), ...options?.mutation });
 }
@@ -108,6 +152,10 @@ export const useUpdateAdminSettings = <TData = any, TError = unknown, TContext =
 export const usePatchAdminSettings = <TData = any, TError = unknown, TContext = unknown>(options?: { mutation?: UseMutationOptions<TData, TError, any, TContext> }) => {
   return useMutation({ mutationFn: (data: any) => adminApi<TData>({ url: '/api/admin/settings', method: 'PATCH', data }), ...options?.mutation });
 }
+
+// Users Manual Override
+export const getAdminUsers = (params?: any, signal?: AbortSignal) => adminApi<any>({ url: '/api/admin/users', params, signal });
+export const useGetAdminUsers = (params?: any, options?: { query?: any }) => useQuery({ queryKey: ['adminUsers', params], queryFn: ({ signal }) => getAdminUsers(params, signal), ...options?.query });
 
 // Files
 export const useListFiles = (params?: any, options?: any): UseQueryResult<{ data: any }, unknown> => {
@@ -317,3 +365,7 @@ export const adminLogin = (credentials: any) => adminApi<any>({ url: '/admin/aut
 export const useAdminLogin = (options?: any) => useMutation({ mutationFn: (credentials: any) => adminLogin(credentials), ...options?.mutation });
 
 
+
+// SMS Documents Email
+export const sendSmsDocumentsEmail = (tenantId: string) => adminApi<{ data: { message: string; simulated: boolean; recipient: string; attachments: number } }>({ url: `/api/admin/tenants/${tenantId}/sms-documents/send-email`, method: 'POST' });
+export const useSendSmsDocumentsEmail = (options?: any) => useMutation({ mutationFn: ({ id }: { id: string }) => sendSmsDocumentsEmail(id), ...options?.mutation });

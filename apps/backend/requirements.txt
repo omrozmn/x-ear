@@ -18,6 +18,7 @@ psycopg[binary]
 
 # Authentication
 Flask-JWT-Extended
+Flask-Mail
 
 # HTTP requests
 requests
@@ -62,3 +63,10 @@ pdfkit
 pandas
 openpyxl
 boto3
+
+# FastAPI Migration
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
+pydantic>=2.6.0
+pydantic-settings>=2.1.0

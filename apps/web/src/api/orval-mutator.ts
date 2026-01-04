@@ -1,6 +1,56 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import humps from 'humps';
 import { outbox, OutboxOperation } from '../utils/outbox';
 import { tokenManager } from '../utils/token-manager';
+
+// Hybrid Converter: Adds CamelCase keys while preserving SnakeCase keys
+const hybridCamelize = (data: any): any => {
+  if (Array.isArray(data)) {
+    return data.map(hybridCamelize);
+  }
+  if (data && typeof data === 'object' && data !== null && !(data instanceof Date)) {
+    // 1. Get camelCased version
+    const camelized = humps.camelizeKeys(data);
+
+    // 2. Merge preserving original keys (priority to original if collision, but usually keys differ)
+    // We want the result to have BOTH `first_name` and `firstName`.
+    // If we just return { ...data, ...camelized }, we get both.
+    // We need to do this recursively? 
+    // actually humps.camelizeKeys IS recursive.
+    // But simplistic merge only works for top level.
+    // For deep hybrid, we need a custom walker.
+
+    // HOWEVER, for safety and performance, let's rely on humps.camelizeKeys for the "New Standard".
+    // AND keep the original data for "Legacy Access" simply by returning a proxy or just merging.
+    // Deep merging thousands of objects might be slow.
+
+    // Let's implement a shallow merge for now? No, deep access like patient.address.city_name vs address.cityName
+    // We probably need deep hybrid.
+
+    // Let's stick to a simpler strategy first:
+    // If generated types expect camelCase, we MUST provide it.
+    // If legacy code expects snake_case, we MUST provide it.
+
+    // Custom recursive hybridizer:
+    const result: any = {};
+    for (const key in data) {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        const value = data[key];
+        const camelKey = humps.camelize(key);
+
+        // Recurse
+        const newValue = hybridCamelize(value);
+
+        result[key] = newValue; // Keep original key
+        if (camelKey !== key) {
+          result[camelKey] = newValue; // Add camel key
+        }
+      }
+    }
+    return result;
+  }
+  return data;
+};
 
 // API Configuration - NO /api suffix because Orval paths already include it
 const API_BASE_URL = typeof window !== 'undefined' && import.meta?.env?.VITE_API_URL
@@ -215,6 +265,13 @@ apiClient.interceptors.request.use(
     const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     config.headers['X-Request-ID'] = requestId;
 
+    // URL rewriting logic has been removed as backend now supports Unified Endpoints.
+
+    // Case Conversion: Convert payload to snake_case for backend
+    if (config.data && !(config.data instanceof FormData)) {
+      config.data = humps.decamelizeKeys(config.data);
+    }
+
     return config;
   },
   (error) => {
@@ -225,6 +282,10 @@ apiClient.interceptors.request.use(
 // Response interceptor for error handling and offline support
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
+    if (response.data) {
+      // Apply hybrid conversion to response data
+      response.data = hybridCamelize(response.data);
+    }
     return response;
   },
   async (error) => {
@@ -240,13 +301,13 @@ apiClient.interceptors.response.use(
     try {
       if (error.response?.status === 401 && config && !config.__isRetryRequest && !isAuthEndpoint) {
         const refreshToken = tokenManager.refreshToken;
-        
+
         console.log('[orval-mutator] 401 error detected:', {
           url: config.url,
           isAuthEndpoint,
           hasRefreshToken: !!refreshToken
         });
-        
+
         if (!(apiClient as any)._refreshing) {
           (apiClient as any)._refreshing = true;
           (apiClient as any)._refreshSubscribers = [] as Array<(token: string | null) => void>;
@@ -257,11 +318,11 @@ apiClient.interceptors.response.use(
             }
 
             console.log('[orval-mutator] Attempting token refresh...');
-            
+
             // Bypass apiClient to avoid attaching the expired access token
             const refreshUrl = `${API_BASE_URL}/api/auth/refresh`;
             let refreshResp: { status: number; data: any };
-            
+
             try {
               // Try with Authorization header first (preferred by backend)
               console.log('[orval-mutator] Trying refresh with Authorization header...');

@@ -93,7 +93,7 @@ def create_campaign(ctx):
 
     except Exception as e:
         db.session.rollback()
-        return error_response(str(e), code='CREATE_FAILED', status_code=500)
+        return error_response(str(e), code='CREATE_FAILED', status_code=400)
 
 @admin_campaigns_bp.route('/<string:id>', methods=['GET'])
 @unified_access(permission=AdminPermissions.CAMPAIGNS_READ)
@@ -145,7 +145,7 @@ def update_campaign(ctx, id):
 
     except Exception as e:
         db.session.rollback()
-        return error_response(str(e), code='UPDATE_FAILED', status_code=500)
+        return error_response(str(e), code='UPDATE_FAILED', status_code=400)
 
 @admin_campaigns_bp.route('/<string:id>', methods=['DELETE'])
 @unified_access(permission=AdminPermissions.CAMPAIGNS_MANAGE)
@@ -163,4 +163,4 @@ def delete_campaign(ctx, id):
 
     except Exception as e:
         db.session.rollback()
-        return error_response(str(e), code='DELETE_FAILED', status_code=500)
+        return error_response(str(e), code='DELETE_FAILED', status_code=400)

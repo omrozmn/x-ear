@@ -201,8 +201,8 @@ def get_unified_cash_records():
         unified_records = unified_records[:limit]
 
         # Özet istatistikleri hesapla
-        total_income = sum(r['amount'] for r in unified_records if r['transaction_type'] == 'income')
-        total_expense = sum(abs(r['amount']) for r in unified_records if r['transaction_type'] == 'expense')
+        total_income = sum(r['amount'] for r in unified_records if r['transactionType'] == 'income')
+        total_expense = sum(abs(r['amount']) for r in unified_records if r['transactionType'] == 'expense')
         net_amount = total_income - total_expense
 
         return jsonify({

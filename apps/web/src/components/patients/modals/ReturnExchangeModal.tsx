@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { Patient } from '../../../types/patient';
 import { salesUpdateSale } from '@/api/generated';
-import type { Sale as APISale, SalesUpdateSaleBody, InventoryItem } from '@/api/generated/schemas';
+import type { Sale as APISale, SalesUpdateSale1Body, InventoryItem } from '@/api/generated/schemas';
 import { useInventory } from '../../../hooks/useInventory';
 import { useFuzzySearch } from '../../../hooks/useFuzzySearch';
 
@@ -351,7 +351,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
       };
 
       // Update sale status based on return/exchange type
-      const updateData: SalesUpdateSaleBody = {
+      const updateData: SalesUpdateSale1Body = {
         status: type === 'return' ? 'RETURNED' : 'EXCHANGED',
         notes: `${type === 'return' ? 'İade' : 'Değişim'} - Neden: ${reason}${notes ? ` - Notlar: ${notes}` : ''}`
       };
