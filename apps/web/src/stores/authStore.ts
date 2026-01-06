@@ -751,7 +751,9 @@ export const useAuthStore = create<AuthStore>()(
         // Mark initialization attempt complete (success or failure)
         try {
           set({ isInitialized: true });
-        } catch (e) { }
+        } catch {
+          // Ignore state update errors during initialization
+        }
       },
     }),
     {

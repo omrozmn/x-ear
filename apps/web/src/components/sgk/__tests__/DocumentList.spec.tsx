@@ -1,13 +1,7 @@
-// Test globals
-declare global {
-  var describe: (name: string, fn: () => void) => void;
-  var it: (name: string, fn: () => void) => void;
-  var expect: (actual: any) => any;
-}
-
+// Test globals - using vitest types
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
 
 // Mock ui primitives to avoid loading the real Modal (which depends on browser internals/hooks)
 vi.mock('@x-ear/ui-web', () => ({

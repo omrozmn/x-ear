@@ -97,10 +97,10 @@ export function PurchasesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       {viewMode !== 'list' && (
-        <div className="bg-white shadow">
+        <div className="bg-white dark:bg-gray-800 shadow">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <Button
@@ -118,15 +118,15 @@ export function PurchasesPage() {
       )}
       {/* Page Header */}
       {viewMode === 'list' && (
-        <div className="bg-white shadow">
+        <div className="bg-white dark:bg-gray-800 shadow">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="md:flex md:items-center md:justify-between">
               <div className="flex-1 min-w-0">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                     Alışlar
                   </h1>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     XML formatında gelen alış faturalarını yönetin ve takip edin
                   </p>
                 </div>
@@ -135,12 +135,12 @@ export function PurchasesPage() {
                 <Button onClick={() => setIsImporterOpen(true)} className="px-3 py-2 bg-blue-600 text-white hover:bg-blue-700">İçe Aktar</Button>
               </div>
             </div>
-            
+
             {/* Filters Card placed under header */}
-            <div className="mt-4 bg-white rounded-lg shadow p-4">
+            <div className="mt-4 bg-white dark:bg-gray-800 rounded-lg shadow p-4 border dark:border-gray-700">
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Durum
                   </label>
                   <Select
@@ -160,7 +160,7 @@ export function PurchasesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Tedarikçi
                   </label>
                   <Input
@@ -168,31 +168,31 @@ export function PurchasesPage() {
                     value={filters.supplierName || ''}
                     onChange={(e) => setFilters({ ...filters, supplierName: e.target.value || undefined })}
                     placeholder="Tedarikçi adı..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Başlangıç Tarihi
                   </label>
                   <Input
                     type="date"
                     value={filters.dateFrom || ''}
                     onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value || undefined })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Bitiş Tarihi
                   </label>
                   <Input
                     type="date"
                     value={filters.dateTo || ''}
                     onChange={(e) => setFilters({ ...filters, dateTo: e.target.value || undefined })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               </div>

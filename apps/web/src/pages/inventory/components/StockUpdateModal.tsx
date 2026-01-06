@@ -67,7 +67,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
 
   const calculateNewStock = () => {
     if (!product) return 0;
-    
+
     switch (formData.type) {
       case 'add':
         return product.availableInventory + formData.quantity;
@@ -91,12 +91,12 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
     >
       <div className="space-y-6">
         {product && (
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-medium text-gray-900">{product.name}</h3>
-            <p className="text-sm text-gray-600">
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+            <h3 className="font-medium text-gray-900 dark:text-white">{product.name}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Mevcut Stok: <span className="font-medium">{product.availableInventory}</span>
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Model: {product.model} | Marka: {product.brand}
             </p>
           </div>

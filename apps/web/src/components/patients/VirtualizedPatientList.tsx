@@ -100,11 +100,10 @@ const PatientRow = ({ index, style, data }: PatientRowProps) => {
   };
 
   return (
-    <div 
-      style={style} 
-      className={`flex items-center px-4 py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors ${
-        isSelected ? 'bg-blue-50 border-blue-200' : ''
-      }`}
+    <div
+      style={style}
+      className={`flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''
+        }`}
     >
       {/* Selection Checkbox */}
       <div className="flex-shrink-0 mr-3">
@@ -116,16 +115,16 @@ const PatientRow = ({ index, style, data }: PatientRowProps) => {
 
       {/* Patient Avatar */}
       <div className="flex-shrink-0 mr-4">
-        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-          <User className="w-5 h-5 text-blue-600" />
+        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+          <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
         </div>
       </div>
 
       {/* Patient Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center space-x-3 mb-1">
-          <h3 
-            className="text-sm font-medium text-gray-900 truncate cursor-pointer hover:text-blue-600"
+          <h3
+            className="text-sm font-medium text-gray-900 dark:text-white truncate cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
             onClick={() => data.onPatientClick?.(patient)}
           >
             {`${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'İsimsiz Hasta'}
@@ -133,8 +132,8 @@ const PatientRow = ({ index, style, data }: PatientRowProps) => {
           {getStatusBadge(patient.status)}
           {getLabelBadge((patient as any).label || (patient as any).labels?.[0])}
         </div>
-        
-        <div className="flex items-center space-x-4 text-xs text-gray-500">
+
+        <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
           {patient.tcNumber && (
             <span>TC: {patient.tcNumber}</span>
           )}
@@ -171,7 +170,7 @@ const PatientRow = ({ index, style, data }: PatientRowProps) => {
         >
           <Eye className="w-4 h-4" />
         </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -183,7 +182,7 @@ const PatientRow = ({ index, style, data }: PatientRowProps) => {
         >
           <MessageSquare className="w-4 h-4" />
         </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -195,7 +194,7 @@ const PatientRow = ({ index, style, data }: PatientRowProps) => {
         >
           <Edit className="w-4 h-4" />
         </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -275,15 +274,15 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
     return (
       <div className="flex items-center justify-center py-12">
         <Loading size="lg" />
-        <span className="ml-2 text-gray-600">Hastalar yükleniyor...</span>
+        <span className="ml-2 text-gray-600 dark:text-gray-400">Hastalar yükleniyor...</span>
       </div>
     );
   }
 
   return (
-    <div className={`bg-white shadow overflow-hidden sm:rounded-md ${className}`}>
+    <div className={`bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md ${className}`}>
       {/* Header with Search and Filters */}
-      <div className="px-4 py-3 border-b border-gray-200">
+      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3">
             <Checkbox
@@ -291,14 +290,14 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
               indeterminate={isPartiallySelected}
               onChange={handleSelectAll}
             />
-            <span className="text-sm text-gray-700">
-              {selectedPatients.length > 0 
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              {selectedPatients.length > 0
                 ? `${selectedPatients.length} hasta seçildi`
                 : `${patients.length} hasta`
               }
             </span>
           </div>
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -317,7 +316,7 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
             placeholder="Hasta ara (isim, TC, telefon)..."
             value={searchTerm}
             onChange={(e) => onSearchChange?.(e.target.value)}
-            className="pl-10"
+            className="pl-10 text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
           />
         </div>
 
@@ -327,7 +326,7 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
             <select
               value={filters?.status || 'all'}
               onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="all">Tüm Durumlar</option>
               <option value="active">Aktif</option>
@@ -338,7 +337,7 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
             <select
               value={filters?.segment || 'all'}
               onChange={(e) => handleFilterChange('segment', e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="all">Tüm Segmentler</option>
               <option value="new">Yeni</option>
@@ -351,7 +350,7 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
             <select
               value={filters?.label || 'all'}
               onChange={(e) => handleFilterChange('label', e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="all">Tüm Etiketler</option>
               <option value="yeni">Yeni</option>
@@ -365,7 +364,7 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
             <select
               value={filters?.hasDevices ? 'true' : filters?.hasDevices === false ? 'false' : 'all'}
               onChange={(e) => handleFilterChange('hasDevices', e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="all">Tüm Hastalar</option>
               <option value="true">Cihazı Var</option>
@@ -375,7 +374,7 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
             <select
               value={filters?.sgkStatus || 'all'}
               onChange={(e) => handleFilterChange('sgkStatus', e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="all">Tüm SGK Durumları</option>
               <option value="pending">Beklemede</option>
@@ -410,8 +409,8 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
       ) : (
         <div className="flex flex-col items-center justify-center py-12">
           <User className="w-12 h-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Hasta bulunamadı</h3>
-          <p className="text-gray-600 text-center">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Hasta bulunamadı</h3>
+          <p className="text-gray-600 dark:text-gray-400 text-center">
             {searchTerm || Object.values(filters || {}).some(v => v)
               ? 'Arama kriterlerinize uygun hasta bulunamadı.'
               : 'Henüz hasta kaydı bulunmuyor.'
@@ -422,9 +421,9 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
 
       {/* Loading indicator at bottom */}
       {loading && patients.length > 0 && (
-        <div className="flex items-center justify-center py-4 border-t border-gray-200">
+        <div className="flex items-center justify-center py-4 border-t border-gray-200 dark:border-gray-700">
           <Loading size="sm" />
-          <span className="ml-2 text-sm text-gray-600">Daha fazla hasta yükleniyor...</span>
+          <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Daha fazla hasta yükleniyor...</span>
         </div>
       )}
 
@@ -436,10 +435,10 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
               <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={() => setCommunicationPatient(null)}></div>
             </div>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+              <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                     İletişim - {`${communicationPatient.firstName || ''} ${communicationPatient.lastName || ''}`.trim() || 'İsimsiz Hasta'}
                   </h3>
                   <Button
@@ -450,7 +449,7 @@ export const VirtualizedPatientList: React.FC<VirtualizedPatientListProps> = ({
                     ✕
                   </Button>
                 </div>
-                
+
                 <PatientCommunicationIntegration
                   patient={communicationPatient}
                   onClose={() => setCommunicationPatient(null)}

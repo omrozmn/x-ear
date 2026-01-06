@@ -84,12 +84,13 @@ export const CalendarList: React.FC<CalendarListProps> = ({
         case 'status':
           return a.status.localeCompare(b.status);
         case 'date':
-        default:
+        default: {
           const dateCompare = a.date.localeCompare(b.date);
           if (dateCompare === 0) {
             return a.time.localeCompare(b.time);
           }
           return dateCompare;
+        }
       }
     });
 

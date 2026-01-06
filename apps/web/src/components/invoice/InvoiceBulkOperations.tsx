@@ -305,7 +305,8 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
         throw new Error(resp.error || 'Dışa aktarım başarısız');
       }
     } catch (error) {
-      throw error;
+      // Re-throw to let caller handle the error
+      throw error instanceof Error ? error : new Error('Dışa aktarım hatası');
     }
   };
 

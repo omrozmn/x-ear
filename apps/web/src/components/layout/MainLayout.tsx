@@ -372,7 +372,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                             localStorage.removeItem('refresh_token');
                             localStorage.removeItem('x-ear.auth.token@v1');
                             delete (window as any).__AUTH_TOKEN__;
-                          } catch (err) { }
+                          } catch {
+                            // Ignore localStorage errors during logout
+                          }
                         }
                         navigate({ to: '/login' as any });
                       }}

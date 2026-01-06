@@ -30,20 +30,20 @@ const WarningModal: React.FC<WarningModalProps> = ({ isOpen, onClose, title = 'U
         </Alert>
 
         {failures.length > 0 && (
-          <div className="max-h-56 overflow-y-auto bg-gray-50 p-3 rounded">
+          <div className="max-h-56 overflow-y-auto bg-gray-50 dark:bg-gray-800 p-3 rounded">
             {failures.map((f, idx) => (
               <div key={f.id + idx} className="mb-2">
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="font-medium">ID: {f.id}</div>
-                    <div className="text-sm text-gray-600">{f.message}</div>
+                    <div className="font-medium dark:text-gray-100">ID: {f.id}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{f.message}</div>
                   </div>
-                  <div className="text-right text-xs text-gray-500">
+                  <div className="text-right text-xs text-gray-500 dark:text-gray-500">
                     {f.status && <div>Status: {f.status}</div>}
                   </div>
                 </div>
                 {f.data && (
-                  <pre className="text-xs text-gray-700 mt-1 bg-white p-2 rounded overflow-x-auto">{JSON.stringify(f.data, null, 2)}</pre>
+                  <pre className="text-xs text-gray-700 dark:text-gray-300 mt-1 bg-white dark:bg-gray-700 p-2 rounded overflow-x-auto">{JSON.stringify(f.data, null, 2)}</pre>
                 )}
               </div>
             ))}

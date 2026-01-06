@@ -114,7 +114,7 @@ const CampaignsPage: React.FC = () => {
     });
 
     const branchOptions = useMemo(() => {
-        let items: any[] = [];
+        const items: any[] = [];
 
         // Handle different response structures\n        if (branchesData) {\n            if (Array.isArray(branchesData)) {\n                items = branchesData;\n            } else if ((branchesData as any)?.data) {\n                const innerData = (branchesData as any).data;\n                if (Array.isArray(innerData)) {\n                    items = innerData;\n                } else if (innerData?.data && Array.isArray(innerData.data)) {\n                    items = innerData.data;\n                }\n            }\n        }
 
@@ -329,7 +329,7 @@ const CampaignsPage: React.FC = () => {
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                    <label className="text-xs font-semibold text-gray-600">Durum</label>
+                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Durum</label>
                     <Select
                         value={audienceFilters.status || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -345,7 +345,7 @@ const CampaignsPage: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600">Segment</label>
+                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Segment</label>
                     <Select
                         value={audienceFilters.segment || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -357,7 +357,7 @@ const CampaignsPage: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600">Kazanım Türü</label>
+                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Kazanım Türü</label>
                     <Select
                         value={audienceFilters.acquisitionType || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -369,7 +369,7 @@ const CampaignsPage: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600">Şube</label>
+                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Şube</label>
                     <Select
                         value={audienceFilters.branchId || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -465,8 +465,8 @@ const CampaignsPage: React.FC = () => {
                     onChange={handleFileChange}
                 />
             </div>
-            <div className="rounded-lg border border-dashed border-gray-300 p-4 space-y-2 text-sm bg-white">
-                <ul className="list-disc pl-5 text-gray-500 text-xs space-y-1">
+            <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-4 space-y-2 text-sm bg-white dark:bg-gray-800">
+                <ul className="list-disc pl-5 text-gray-500 dark:text-gray-400 text-xs space-y-1">
                     <li>"Telefon" başlıklı sütun zorunludur.</li>
                     <li>Önizleme ilk 8 satırı gösterir.</li>
                     <li>Geçerli telefonların sayısı kredi hesabına eklenir.</li>
@@ -495,9 +495,9 @@ const CampaignsPage: React.FC = () => {
                 )}
             </div>
             {excelPreview && (
-                <div className="overflow-hidden rounded-lg border border-gray-200">
+                <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
                     <table className="min-w-full text-xs">
-                        <thead className="bg-gray-50 text-gray-600">
+                        <thead className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
                             <tr>
                                 {excelPreview.headers.map((header, index) => (
                                     <th key={`${header}-${index}`} className="px-3 py-2 text-left font-medium">
@@ -506,9 +506,9 @@ const CampaignsPage: React.FC = () => {
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                             {excelPreview.rows.map((row, rowIndex) => (
-                                <tr key={rowIndex} className="text-gray-700">
+                                <tr key={rowIndex} className="text-gray-700 dark:text-gray-300 lg:hover:bg-gray-50 dark:lg:hover:bg-gray-800">
                                     {excelPreview.headers.map((_, colIndex) => (
                                         <td key={colIndex} className="px-3 py-2">
                                             {row[colIndex] ?? ''}
@@ -537,13 +537,13 @@ const CampaignsPage: React.FC = () => {
                         </p>
                     </div>
                 </div>
-                <Card className="p-4 flex items-center gap-3 bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 max-w-sm w-full">
-                    <div className="p-2 rounded-full bg-white text-indigo-600">
+                <Card className="p-4 flex items-center gap-3 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/40 dark:to-gray-800 border border-indigo-100 dark:border-indigo-900/50 max-w-sm w-full">
+                    <div className="p-2 rounded-full bg-white dark:bg-indigo-900 text-indigo-600 dark:text-indigo-200">
                         <Wallet className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className="text-xs uppercase text-gray-500">Kalan SMS Kredisi</p>
-                        <p className="text-2xl font-semibold text-gray-900">
+                        <p className="text-xs uppercase text-gray-500 dark:text-gray-400">Kalan SMS Kredisi</p>
+                        <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                             {creditLoading ? 'Yükleniyor...' : `${formatNumber(creditBalance)} kredi`}
                         </p>
                     </div>
@@ -601,14 +601,14 @@ const CampaignsPage: React.FC = () => {
                     <div className="space-y-5">
                         {mode === 'filters' ? (
                             <>
-                                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                                     <Users className="w-4 h-4 text-indigo-500" /> Hedef Kitleler
                                 </div>
                                 {renderFilters()}
                             </>
                         ) : (
                             <>
-                                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                                     <FileSpreadsheet className="w-4 h-4 text-indigo-500" /> Excel Listesi
                                 </div>
                                 {renderExcelArea()}
@@ -620,8 +620,8 @@ const CampaignsPage: React.FC = () => {
                 <Card className="p-6 space-y-4 flex flex-col">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-500">SMS Mesajı</p>
-                            <p className="text-lg font-semibold text-gray-900">Metin ve Kredi</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">SMS Mesajı</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">Metin ve Kredi</p>
                         </div>
                         {creditEnough ? (
                             <CheckCircle className="w-6 h-6 text-emerald-500" />
@@ -632,14 +632,14 @@ const CampaignsPage: React.FC = () => {
 
                     {/* Dynamic Fields */}
                     <div className="space-y-2">
-                        <p className="text-xs font-medium text-gray-600">Dinamik Alanlar</p>
+                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Dinamik Alanlar</p>
                         <div className="flex flex-wrap gap-2">
                             {DYNAMIC_FIELDS.map((field) => (
                                 <button
                                     key={field.key}
                                     type="button"
                                     onClick={() => insertDynamicField(field.key)}
-                                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-md hover:bg-indigo-100 transition-colors"
+                                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
                                     title={field.description}
                                 >
                                     <Plus className="w-3 h-3" />
@@ -662,7 +662,7 @@ const CampaignsPage: React.FC = () => {
 Örnek: Sayın {{AD}} {{SOYAD}}, randevunuzu hatırlatmak isteriz."
                         />
                         <div className="flex items-center justify-between">
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
                                 {smsSegments || 0} SMS / kişi ({message.length} karakter)
                             </p>
                             <Button
@@ -679,7 +679,7 @@ const CampaignsPage: React.FC = () => {
                     </div>
 
                     {/* Credit Summary */}
-                    <div className="rounded-lg border border-gray-200 p-4 space-y-2 bg-gray-50">
+                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-2 bg-gray-50 dark:bg-gray-800">
                         <div className="flex justify-between text-sm">
                             <span>Toplam alıcı</span>
                             <span className="font-semibold">{recipients ? formatNumber(recipients) : '-'}</span>
@@ -713,35 +713,35 @@ const CampaignsPage: React.FC = () => {
             {/* Preview Modal */}
             {showPreview && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
-                        <div className="flex items-center justify-between p-4 border-b">
-                            <h3 className="text-lg font-semibold text-gray-900">SMS Önizleme</h3>
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
+                        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">SMS Önizleme</h3>
                             <button
                                 onClick={() => setShowPreview(false)}
-                                className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             >
-                                <X className="w-5 h-5 text-gray-500" />
+                                <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                             </button>
                         </div>
                         <div className="p-4 space-y-4">
-                            <div className="bg-gray-100 rounded-lg p-4">
-                                <p className="text-xs text-gray-500 mb-2">
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                                     {mode === 'filters' && firstPatient
                                         ? `İlk hasta: ${firstPatient.firstName} ${firstPatient.lastName}`
                                         : mode === 'excel' && excelPreview
                                             ? 'Excel listesinden ilk kayıt'
                                             : 'Örnek verilerle'}
                                 </p>
-                                <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
-                                    <p className="text-sm text-gray-800 whitespace-pre-wrap">{getPreviewMessage}</p>
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-600">
+                                    <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{getPreviewMessage}</p>
                                 </div>
                             </div>
-                            <div className="text-xs text-gray-500 space-y-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
                                 <p>Karakter sayısı: {getPreviewMessage.length}</p>
                                 <p>SMS sayısı: {Math.max(1, Math.ceil(getPreviewMessage.length / SMS_SEGMENT_LENGTH))}</p>
                             </div>
                         </div>
-                        <div className="p-4 border-t bg-gray-50">
+                        <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                             <Button
                                 variant="primary"
                                 className="w-full"

@@ -11,12 +11,12 @@ type Props = {
   onSelectionChange?: (selectedIds: string[]) => void;
 };
 
-const InventoryTable: React.FC<Props> = ({ 
-  items, 
-  onEdit, 
+const InventoryTable: React.FC<Props> = ({
+  items,
+  onEdit,
   onViewDetails,
   selectedItems = [],
-  onSelectionChange 
+  onSelectionChange
 }) => {
   if (!items || items.length === 0)
     return <div className="p-4 text-sm text-gray-500">Ürün bulunamadı.</div>;
@@ -41,10 +41,10 @@ const InventoryTable: React.FC<Props> = ({
   const someSelected = selectedItems.length > 0 && selectedItems.length < items.length;
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
       <table className="min-w-full table-auto">
-        <thead className="bg-gray-50">
-          <tr className="text-left border-b">
+        <thead className="bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700">
+          <tr className="text-left border-b dark:border-gray-700">
             {onSelectionChange && (
               <th className="px-4 py-3">
                 <Checkbox
@@ -54,19 +54,19 @@ const InventoryTable: React.FC<Props> = ({
                 />
               </th>
             )}
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Ürün</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Miktar</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Fiyat</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+            <th className="px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ürün</th>
+            <th className="px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">SKU</th>
+            <th className="px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Miktar</th>
+            <th className="px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fiyat</th>
+            <th className="px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Durum</th>
+            <th className="px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">İşlemler</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {items.map((item) => (
-            <InventoryRow 
-              key={item.id} 
-              item={item} 
+            <InventoryRow
+              key={item.id}
+              item={item}
               onEdit={onEdit}
               onViewDetails={onViewDetails}
               isSelected={selectedItems.includes(item.id)}

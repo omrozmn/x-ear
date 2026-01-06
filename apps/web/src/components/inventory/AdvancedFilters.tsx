@@ -143,10 +143,11 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
       case 'month':
         startDate = new Date(today.getFullYear(), today.getMonth(), 1);
         break;
-      case 'quarter':
+      case 'quarter': {
         const quarter = Math.floor(today.getMonth() / 3);
         startDate = new Date(today.getFullYear(), quarter * 3, 1);
         break;
+      }
       case 'year':
         startDate = new Date(today.getFullYear(), 0, 1);
         break;

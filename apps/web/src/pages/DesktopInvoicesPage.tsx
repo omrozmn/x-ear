@@ -357,7 +357,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
       <div className="page-header mb-6">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <h1 className="text-3xl font-bold text-gray-900">Fatura Yönetimi</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Fatura Yönetimi</h1>
           </div>
 
           <div className="header-actions flex gap-3">
@@ -382,7 +382,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         </div>
 
         {/* View Tabs */}
-        <div className="view-tabs border-b border-gray-200">
+        <div className="view-tabs border-b border-gray-200 dark:border-gray-700">
           <nav className="flex space-x-8">
             {[
               { key: 'list', label: 'Fatura Listesi', Icon: FileText },
@@ -393,7 +393,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                 onClick={() => setState(prev => ({ ...prev, currentView: tab.key as any }))}
                 className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${state.currentView === tab.key
                   ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                   }`}
                 variant='default'>
                 <tab.Icon size={16} />
@@ -440,7 +440,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
           />
 
           {/* Invoice Table (now using shared InvoiceList component) */}
-          <div className="invoice-table bg-white rounded-lg shadow overflow-hidden">
+          <div className="invoice-table bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
             <InvoiceList
               onInvoiceSelect={(inv) => handleEditInvoice(inv)}
               filters={state.filters}
@@ -580,7 +580,7 @@ const InvoiceRow: React.FC<InvoiceRowProps> = ({
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
 
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color} dark:bg-opacity-20`}>
         {config.label}
       </span>
     );

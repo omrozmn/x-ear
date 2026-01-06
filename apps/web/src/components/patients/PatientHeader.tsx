@@ -73,13 +73,13 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
 }) => {
   if (isLoading || !patient) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div className="animate-pulse">
           <div className="flex items-start space-x-4">
-            <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
+            <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
             <div className="flex-1 space-y-2">
-              <div className="h-6 bg-gray-200 rounded w-48"></div>
-              <div className="h-4 bg-gray-200 rounded w-32"></div>
+              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
             </div>
           </div>
         </div>
@@ -156,23 +156,23 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
   const statusInfo = formatStatus(patient.status);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
       <div className="flex items-start justify-between">
         <div className="flex items-start space-x-4">
           {/* Avatar */}
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-            <User className="w-8 h-8 text-blue-600" />
+          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center">
+            <User className="w-8 h-8 text-blue-600 dark:text-blue-400" />
           </div>
 
           {/* Patient Info */}
           <div className="flex-1">
             <div className="flex items-center space-x-3 mb-2">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {patient.firstName || ''} {patient.lastName || ''}
               </h1>
             </div>
 
-            <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
+            <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300 mb-3">
               <div>
                 <span className="font-medium">Segment:</span> {formatSegment(patient.segment)}
               </div>
@@ -184,38 +184,38 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
             {/* Contact Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
               <div className="flex items-center space-x-2">
-                <Phone className="w-4 h-4 text-gray-400" />
-                <span>{formatPhone(patient.phone)}</span>
+                <Phone className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                <span className="text-gray-700 dark:text-gray-300">{formatPhone(patient.phone)}</span>
               </div>
 
               <div className="flex items-center space-x-2">
-                <User className="w-4 h-4 text-gray-400" />
-                <span title="Hasta ID" className="font-mono text-gray-600">ID: {patient.id}</span>
+                <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                <span title="Hasta ID" className="font-mono text-gray-600 dark:text-gray-400">ID: {patient.id}</span>
               </div>
 
               <div className="flex items-center space-x-2">
-                <User className="w-4 h-4 text-gray-400" />
-                <span>TC: {patient.tcNumber || 'Belirtilmemiş'}</span>
+                <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                <span className="text-gray-700 dark:text-gray-300">TC: {patient.tcNumber || 'Belirtilmemiş'}</span>
               </div>
 
               <div className="flex items-center space-x-2">
-                <User className="w-4 h-4 text-gray-400" />
-                <span>Cinsiyet: {formatGender(patient.gender)}</span>
+                <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                <span className="text-gray-700 dark:text-gray-300">Cinsiyet: {formatGender(patient.gender)}</span>
               </div>
 
               <div className="flex items-center space-x-2">
-                <Calendar className="w-4 h-4 text-gray-400" />
-                <span>Doğum: {formatDate(patient.birthDate)}</span>
+                <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                <span className="text-gray-700 dark:text-gray-300">Doğum: {formatDate(patient.birthDate)}</span>
               </div>
 
               <div className="flex items-center space-x-2">
-                <Mail className="w-4 h-4 text-gray-400" />
-                <span>{patient.email || 'Belirtilmemiş'}</span>
+                <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                <span className="text-gray-700 dark:text-gray-300">{patient.email || 'Belirtilmemiş'}</span>
               </div>
 
               <div className="flex items-center space-x-2">
-                <MapPin className="w-4 h-4 text-gray-400" />
-                <span>
+                <MapPin className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                <span className="text-gray-700 dark:text-gray-300">
                   {(() => {
                     // İl ve İlçe bilgisi
                     const city = patient.addressCity || (typeof patient.address === 'object' ? (patient.address as any)?.city : '');
@@ -229,8 +229,8 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
               </div>
 
               <div className="flex items-center space-x-2">
-                <MapPin className="w-4 h-4 text-gray-400" />
-                <span>
+                <MapPin className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                <span className="text-gray-700 dark:text-gray-300">
                   {(() => {
                     // Tam adres
                     const address = patient.address;
@@ -246,7 +246,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
 
             {/* Additional Info */}
             {patient.tags && patient.tags.length > 0 && (
-              <div className="mt-4 flex items-center space-x-1 text-sm text-gray-500">
+              <div className="mt-4 flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
                 <span>Etiketler:</span>
                 {patient.tags.map((tag, index) => (
                   <Badge key={index} variant="secondary" size="sm">

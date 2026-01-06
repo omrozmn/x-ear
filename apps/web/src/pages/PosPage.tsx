@@ -113,7 +113,7 @@ export default function PosPage() {
                     <h2 className="text-xl font-bold">Güvenli Ödeme</h2>
                     <Button variant="ghost" onClick={() => setIframeUrl(null)}>İptal / Geri Dön</Button>
                 </div>
-                <div className="flex-1 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden relative">
+                <div className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden relative">
                     <iframe
                         src={iframeUrl}
                         className="absolute inset-0 w-full h-full"
@@ -131,23 +131,23 @@ export default function PosPage() {
     return (
         <div className="max-w-4xl mx-auto py-8 px-4">
             <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                    <CreditCard className="w-8 h-8 text-blue-600" />
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <CreditCard className="w-8 h-8 text-blue-600 dark:text-blue-500" />
                     Hızlı Tahsilat
                 </h1>
-                <p className="text-gray-500 mt-1">
+                <p className="text-gray-500 dark:text-gray-400 mt-1">
                     Hasta kartına gitmeden hızlı ödeme alma ekranı.
                 </p>
             </div>
 
             {result === 'success' && (
-                <div className="mb-6 bg-green-50 border border-green-200 p-4 rounded-lg flex items-center gap-3 text-green-800">
+                <div className="mb-6 bg-green-50 border border-green-200 dark:bg-green-900/30 dark:border-green-800 p-4 rounded-lg flex items-center gap-3 text-green-800 dark:text-green-300">
                     <ShieldCheck className="w-6 h-6" />
                     <div>
                         <p className="font-bold">Ödeme Başarılı!</p>
                         <p className="text-sm">İşlem başarıyla tamamlandı ve kayıtlara eklendi.</p>
                     </div>
-                    <Button variant="outline" size="sm" className="ml-auto" onClick={() => {
+                    <Button variant="outline" size="sm" className="ml-auto dark:border-green-700 dark:text-green-300 dark:hover:bg-green-900/50" onClick={() => {
                         setResult(null);
                         setValue('amount', '');
                         setValue('description', '');
@@ -162,7 +162,7 @@ export default function PosPage() {
             )}
 
             {errorMessage && (
-                <div className="mb-6 bg-red-50 border border-red-200 p-4 rounded-lg flex items-center gap-3 text-red-800">
+                <div className="mb-6 bg-red-50 border border-red-200 dark:bg-red-900/30 dark:border-red-800 p-4 rounded-lg flex items-center gap-3 text-red-800 dark:text-red-300">
                     <AlertTriangle className="w-6 h-6" />
                     <div>
                         <p className="font-bold">Hata</p>

@@ -161,22 +161,22 @@ export const DesktopPatientDetailsPage: React.FC = () => {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 px-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center space-x-2">
               <Calendar className="h-5 w-5 text-blue-500" />
               <div>
-                <p className="text-sm text-gray-600">Kayıt Tarihi</p>
-                <p className="font-medium">{formatDate(patient.createdAt)}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Kayıt Tarihi</p>
+                <p className="font-medium text-gray-900 dark:text-white">{formatDate(patient.createdAt)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center space-x-2">
               <Activity className="h-5 w-5 text-green-500" />
               <div>
-                <p className="text-sm text-gray-600">Cihaz Sayısı</p>
-                <p className="font-medium">{tabCounts.devices}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Cihaz Sayısı</p>
+                <p className="font-medium text-gray-900 dark:text-white">{tabCounts.devices}</p>
               </div>
             </div>
           </div>
@@ -193,11 +193,11 @@ export const DesktopPatientDetailsPage: React.FC = () => {
           </div>
           */}
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center space-x-2">
               <CreditCard className="h-5 w-5 text-red-500" />
               <div>
-                <p className="text-sm text-gray-600">Durum</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Durum</p>
                 <div className="mt-1">{getStatusBadge(patient.status ?? 'active')}</div>
               </div>
             </div>
@@ -214,7 +214,7 @@ export const DesktopPatientDetailsPage: React.FC = () => {
         </ErrorBoundary>
 
         {/* Tab Content */}
-        <div className="bg-white">
+        <div className="bg-white dark:bg-gray-900">
           <ErrorBoundary>
             <PatientTabContent
               patient={patient}
@@ -230,13 +230,13 @@ export const DesktopPatientDetailsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header with back button */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
         <Button
           onClick={handleGoBack}
           variant="ghost"
-          className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
+          className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Hasta Listesine Dön

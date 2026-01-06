@@ -144,7 +144,7 @@ export const PosSettings = () => {
                         className="h-11"
                     />
 
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Ödeme almak için kullanacağınız POS altyapısını seçin
                     </p>
                 </div>
