@@ -32,7 +32,7 @@ const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({ categories,
     setInputValue(matched ? matched.label : (value || ''));
   }, [value, items]);
 
-  const normalized = (s: string) => s?.toLowerCase().replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c') || '';
+  const normalized = (s: string) => s?.toLowerCase().replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c') || '';
 
   const suggestions = useMemo(() => {
     const q = normalized(inputValue);
@@ -49,11 +49,11 @@ const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({ categories,
         placeholder="Kategori ara"
       />
       {isOpen && suggestions.length > 0 && (
-        <div className="absolute z-50 mt-1 w-full bg-white border rounded-md shadow max-h-56 overflow-auto">
+        <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow max-h-56 overflow-auto">
           {suggestions.map(s => (
             <div
               key={s.key}
-              className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+              className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer dark:text-gray-200"
               onMouseDown={(e) => { e.preventDefault(); onChange(s.key); setIsOpen(false); }}
             >
               {s.label}
@@ -114,7 +114,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
     const newFeatures = currentFeatures.includes(feature)
       ? currentFeatures.filter((f: string) => f !== feature)
       : [...currentFeatures, feature];
-    
+
     onFiltersChange({
       ...filters,
       features: newFeatures
@@ -143,7 +143,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
     const updatedFeatures = currentFeatures.includes(value)
       ? currentFeatures.filter(f => f !== value)
       : [...currentFeatures, value];
-    
+
     onFiltersChange({
       ...filters,
       features: updatedFeatures
@@ -153,7 +153,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   const applyDatePreset = (preset: string) => {
     const now = new Date();
     let start: Date;
-    
+
     switch (preset) {
       case 'today':
         start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -164,17 +164,18 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
       case 'month':
         start = new Date(now.getFullYear(), now.getMonth(), 1);
         break;
-      case 'quarter':
+      case 'quarter': {
         const quarterStart = Math.floor(now.getMonth() / 3) * 3;
         start = new Date(now.getFullYear(), quarterStart, 1);
         break;
+      }
       case 'year':
         start = new Date(now.getFullYear(), 0, 1);
         break;
       default:
         return;
     }
-    
+
     onFiltersChange({
       ...filters,
       dateRange: {
@@ -262,7 +263,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Price Range Filter */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">Fiyat Aralığı</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">Fiyat Aralığı</h4>
               <div className="flex gap-2">
                 <Input
                   type="number"
@@ -283,7 +284,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
             {/* Date Range Filter */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">Tarih Aralığı</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">Tarih Aralığı</h4>
               <div className="flex gap-2">
                 <Input
                   type="date"
@@ -332,17 +333,17 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
             {/* Stock Status Filter */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">Stok Durumu</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">Stok Durumu</h4>
               <Select
-               value={filters.stockStatus || 'all'}
-               onChange={handleStockStatusChange}
-               options={stockStatusOptions}
-             />
+                value={filters.stockStatus || 'all'}
+                onChange={handleStockStatusChange}
+                options={stockStatusOptions}
+              />
             </div>
 
-              {/* Supplier Filter */}
+            {/* Supplier Filter */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">Tedarikçi</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">Tedarikçi</h4>
               <Select
                 value={filters.supplier || ''}
                 onChange={(e) => onFiltersChange({ ...filters, supplier: e.target.value || undefined })}
@@ -353,29 +354,29 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               />
             </div>
 
-              {/* Brand Filter (typeahead) */}
-              <div className="space-y-3">
-                <h4 className="font-medium text-gray-900">Marka</h4>
-                <BrandAutocomplete
-                  value={filters.brand || ''}
-                  onChange={(v) => onFiltersChange({ ...filters, brand: v || undefined })}
-                  placeholder="Marka ara"
-                />
-              </div>
+            {/* Brand Filter (typeahead) */}
+            <div className="space-y-3">
+              <h4 className="font-medium text-gray-900 dark:text-white">Marka</h4>
+              <BrandAutocomplete
+                value={filters.brand || ''}
+                onChange={(v) => onFiltersChange({ ...filters, brand: v || undefined })}
+                placeholder="Marka ara"
+              />
+            </div>
 
-              {/* Category Filter (typeahead showing human labels) */}
-              <div className="space-y-3">
-                <h4 className="font-medium text-gray-900">Kategori</h4>
-                <CategoryAutocomplete
-                  categories={categories}
-                  value={filters.category || ''}
-                  onChange={(v) => onFiltersChange({ ...filters, category: (v || undefined) as any })}
-                />
-              </div>
+            {/* Category Filter (typeahead showing human labels) */}
+            <div className="space-y-3">
+              <h4 className="font-medium text-gray-900 dark:text-white">Kategori</h4>
+              <CategoryAutocomplete
+                categories={categories}
+                value={filters.category || ''}
+                onChange={(v) => onFiltersChange({ ...filters, category: (v || undefined) as any })}
+              />
+            </div>
 
             {/* Warranty Period Filter */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">Garanti Süresi</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">Garanti Süresi</h4>
               <Select
                 value={filters.warrantyPeriod || ''}
                 onChange={(e) => onFiltersChange({ ...filters, warrantyPeriod: e.target.value || undefined })}
@@ -385,7 +386,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
             {/* Features Filter */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">Özellikler</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">Özellikler</h4>
               <div className="grid grid-cols-2 gap-2">
                 {commonFeatures.map(feature => (
                   <label key={feature} className="flex items-center space-x-2">
@@ -401,7 +402,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-between items-center pt-6 border-t border-gray-200 mt-6">
+          <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700 mt-6">
             <Button
               variant="outline"
               onClick={clearFilters}
@@ -410,7 +411,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               <X className="w-4 h-4 mr-2" />
               Filtreleri Temizle
             </Button>
-            
+
             <div className="flex items-center gap-2">
               {activeFilterCount > 0 && (
                 <Badge variant="secondary">

@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button, Input, Select } from '@x-ear/ui-web';
-import { 
-  SGKDocument, 
-  SGKDocumentFilters, 
+import {
+  SGKDocument,
+  SGKDocumentFilters,
   SGKSearchResult,
   SGKWorkflowStatus,
   SGKDocumentType
 } from '../types/sgk';
 import sgkService from '../services/sgk/sgk.service';
-import { 
-  Download, 
-  Trash2, 
-  CheckSquare, 
-  Square, 
+import {
+  Download,
+  Trash2,
+  CheckSquare,
+  Square,
   Eye,
   Edit
 } from 'lucide-react';
@@ -49,11 +49,11 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
   const [selectedProcessingStatus, setSelectedProcessingStatus] = useState<SGKProcessingStatus | ''>('');
   const [sortBy, _setSortBy] = useState<'date' | 'name' | 'type' | 'status'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  
+
   // Batch operations state
   const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set());
   const [batchLoading, setBatchLoading] = useState(false);
-  
+
   // Document viewer state
   const [viewerDocument, setViewerDocument] = useState<SGKDocument | null>(null);
   const [showViewer, setShowViewer] = useState(false);
@@ -63,10 +63,10 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
 
   const loadDocuments = useCallback(async () => {
     if (!patientId) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const result = await sgkService.listDocuments(patientId);
       const documents = ((result as unknown) as SGKSearchResult).documents || [];
@@ -80,7 +80,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
 
   const sortedDocuments = useMemo(() => {
     const sorted = [...documents];
-    
+
     sorted.sort((a, b) => {
       let aValue: unknown;
       let bValue: unknown;
@@ -133,11 +133,11 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
 
   const getProcessingStatusColor = (status: SGKProcessingStatus): string => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'processing': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'processing': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'failed': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -190,17 +190,17 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
 
   const handleBulkDelete = async () => {
     if (selectedDocuments.size === 0) return;
-    
+
     const confirmMessage = `${selectedDocuments.size} belgeyi silmek istediğinizden emin misiniz?`;
     if (!window.confirm(confirmMessage)) return;
 
     setBatchLoading(true);
     try {
-      const deletePromises = Array.from(selectedDocuments).map(id => 
+      const deletePromises = Array.from(selectedDocuments).map(id =>
         sgkService.deleteDocument(id)
       );
       await Promise.all(deletePromises);
-      
+
       await loadDocuments();
       setSelectedDocuments(new Set());
     } catch (err) {
@@ -212,11 +212,11 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
 
   const handleBulkDownload = async () => {
     if (selectedDocuments.size === 0) return;
-    
+
     setBatchLoading(true);
     try {
       const selectedDocs = sortedDocuments.filter(doc => selectedDocuments.has(doc.id));
-      
+
       // Create a zip file or download individually
       for (const doc of selectedDocs) {
         if (doc.fileUrl) {
@@ -226,12 +226,12 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
           window.document.body.appendChild(link);
           link.click();
           window.document.body.removeChild(link);
-          
+
           // Add small delay between downloads
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
-      
+
       setSelectedDocuments(new Set());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Toplu indirme işlemi başarısız');
@@ -242,7 +242,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
 
   const handleBulkStatusUpdate = async (status: SGKWorkflowStatus) => {
     if (selectedDocuments.size === 0) return;
-    
+
     setBatchLoading(true);
     try {
       const selectedDocs = sortedDocuments.filter(doc => selectedDocuments.has(doc.id));
@@ -250,7 +250,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
         .filter(doc => doc.workflow?.id)
         .map(doc => sgkService.updateWorkflowStatus(doc.workflow!.id, status));
       await Promise.all(updatePromises);
-      
+
       await loadDocuments();
       setSelectedDocuments(new Set());
     } catch (err) {
@@ -291,7 +291,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
   // Handle delete
   const handleDelete = async (documentId: string) => {
     if (!window.confirm('Bu belgeyi silmek istediğinizden emin misiniz?')) return;
-    
+
     try {
       await sgkService.deleteDocument(documentId);
       await loadDocuments();
@@ -326,10 +326,10 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
   return (
     <div className="p-4">
       {/* Filters */}
-      <div className={`bg-white border rounded-lg p-4 mb-4 ${compact ? 'text-sm' : ''}`}>
+      <div className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-4 mb-4 ${compact ? 'text-sm' : ''}`}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Arama</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Arama</label>
             <Input
               type="text"
               placeholder="Belge adı, türü veya açıklama"
@@ -338,7 +338,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Belge Türü</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Belge Türü</label>
             <Select
               value={selectedType}
               onChange={(e) => handleTypeChange(e.target.value as SGKDocumentType | '')}
@@ -354,7 +354,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Workflow Durumu</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Workflow Durumu</label>
             <Select
               value={selectedStatus}
               onChange={(e) => handleStatusChange(e.target.value as SGKWorkflowStatus | '')}
@@ -368,7 +368,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">İşleme Durumu</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">İşleme Durumu</label>
             <Select
               value={selectedProcessingStatus}
               onChange={(e) => handleProcessingStatusChange(e.target.value as SGKProcessingStatus | '')}
@@ -385,9 +385,9 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
       </div>
 
       {/* Documents List */}
-      <div className={`bg-white border rounded-lg ${compact ? 'text-sm' : ''}`}>
-        <div className="p-4 border-b flex items-center justify-between">
-          <h4 className="text-sm font-medium text-gray-900">Belgeler</h4>
+      <div className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg ${compact ? 'text-sm' : ''}`}>
+        <div className="p-4 border-b dark:border-gray-700 flex items-center justify-between">
+          <h4 className="text-sm font-medium text-gray-900 dark:text-white">Belgeler</h4>
           {showActions && (
             <div className="flex items-center gap-2">
               <Button onClick={handleSelectAll} size="sm" variant="outline">
@@ -410,16 +410,16 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
             </div>
           )}
         </div>
-        <div className="divide-y">
+        <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {sortedDocuments.length === 0 ? (
-            <div className="p-4 text-sm text-gray-500">Belge bulunamadı</div>
+            <div className="p-4 text-sm text-gray-500 dark:text-gray-400">Belge bulunamadı</div>
           ) : (
             sortedDocuments.map((doc) => (
-              <div key={doc.id} className="p-4 grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
+              <div key={doc.id} className="p-4 grid grid-cols-1 md:grid-cols-4 gap-2 items-center hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <div>
-                  <div className="text-sm font-medium text-gray-900">{doc.filename}</div>
-                  <div className="text-xs text-gray-500">{getDocumentTypeLabel(doc.documentType)} • {formatFileSize(doc.fileSize || 0)}</div>
-                  <div className="text-xs text-gray-500">{formatDate(doc.createdAt)}</div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-white">{doc.filename}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{getDocumentTypeLabel(doc.documentType)} • {formatFileSize(doc.fileSize || 0)}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{formatDate(doc.createdAt)}</div>
                 </div>
                 <div>
                   <span className={`px-2 py-1 rounded text-xs ${getProcessingStatusColor(doc.processingStatus as SGKProcessingStatus)}`}>
@@ -428,7 +428,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
                 </div>
                 <div>
                   {doc.workflow?.currentStatus && (
-                    <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">
+                    <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
                       {doc.workflow.currentStatus}
                     </span>
                   )}

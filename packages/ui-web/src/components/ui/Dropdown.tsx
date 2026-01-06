@@ -57,19 +57,18 @@ export const Dropdown: React.FC<DropdownProps> = ({
       <div onClick={() => setIsOpen(!isOpen)} className="cursor-pointer">
         {trigger}
       </div>
-      
+
       {isOpen && (
         <div
-          className={`absolute z-50 min-w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 ${positionClasses[position]}`}
+          className={`absolute z-50 min-w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-1 ${positionClasses[position]}`}
         >
           {items.map((item, index) => (
             <button
               key={index}
               onClick={() => handleItemClick(item)}
               disabled={item.disabled}
-              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none ${
-                item.disabled ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700'
-              }`}
+              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700/50 focus:bg-gray-100 dark:focus:bg-gray-700/50 focus:outline-none transition-colors ${item.disabled ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-gray-700 dark:text-gray-200'
+                }`}
             >
               {item.label}
             </button>

@@ -298,8 +298,8 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
     <div className="space-y-6">
       {/* Upload Modal */}
       {isUploadModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">
                 {bulkUploadMode ? 'Toplu Belge Yükleme' : 'Belge Yükle'}
@@ -326,19 +326,19 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
               {/* Drag and Drop Area */}
               <div
                 className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-300 hover:border-gray-400'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                  : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 dark:bg-gray-700/50'
                   }`}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
               >
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-lg font-medium text-gray-900 mb-2">
+                <Upload className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                <p className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   Dosyaları buraya sürükleyin veya seçin
                 </p>
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                   PDF, JPG, PNG, DOC, DOCX formatları desteklenir
                 </p>
                 <input
@@ -362,15 +362,15 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
               {/* Selected Files (Bulk Mode) */}
               {bulkUploadMode && selectedFiles.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="font-medium text-gray-900">
+                  <h4 className="font-medium text-gray-900 dark:text-white">
                     Seçilen Dosyalar ({selectedFiles.length})
                   </h4>
                   <div className="max-h-40 overflow-y-auto space-y-2">
                     {selectedFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
                         <div className="flex items-center space-x-2">
-                          <FileText className="w-4 h-4 text-gray-500" />
-                          <span className="text-sm">{file.name}</span>
+                          <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                          <span className="text-sm dark:text-gray-200">{file.name}</span>
                           <span className="text-xs text-gray-500">
                             ({(file.size / 1024 / 1024).toFixed(2)} MB)
                           </span>
@@ -391,14 +391,14 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
               {/* Upload Progress */}
               {Object.keys(uploadProgress).length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="font-medium text-gray-900">Yükleme Durumu</h4>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Yükleme Durumu</h4>
                   {Object.entries(uploadProgress).map(([fileId, progress]) => (
                     <div key={fileId} className="space-y-1">
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-sm dark:text-gray-300">
                         <span>{fileId.split('_')[0]}</span>
                         <span>{progress}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                         <div
                           className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${progress}%` }}
@@ -412,7 +412,7 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
               {/* Document Type and Notes */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Belge Türü
                   </label>
                   <Select
@@ -427,7 +427,7 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Notlar (Opsiyonel)
                   </label>
                   <Input
@@ -468,7 +468,7 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
 
       {/* Header with Upload Button */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Belge Yönetimi</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Belge Yönetimi</h3>
         <Button
           onClick={() => setIsUploadModalOpen(true)}
           className="bg-blue-600 hover:bg-blue-700"
@@ -511,14 +511,14 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredDocuments.map((doc) => (
-            <Card key={doc.id} className="hover:shadow-md transition-shadow">
+            <Card key={doc.id} className="hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-gray-700">
               <CardContent className="p-4">
                 <div className="flex items-start space-x-3 mb-3">
-                  <FileText className="w-8 h-8 text-blue-600 flex-shrink-0" />
+                  <FileText className="w-8 h-8 text-blue-600 dark:text-blue-500 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 truncate">{doc.name}</p>
-                    <p className="text-sm text-gray-500 capitalize">{doc.type}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="font-medium text-gray-900 dark:text-white truncate">{doc.name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{doc.type}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
                       {formatFileSize(doc.size)} • {formatDate(doc.uploadDate)}
                     </p>
                   </div>

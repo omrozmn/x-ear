@@ -119,19 +119,21 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
 
       const normalizedValue = normalizeTurkish(value);
 
-      // Score each brand
       const scored = allBrands.map(brand => {
         const normalizedBrand = normalizeTurkish(brand);
         let score = 0;
 
         // Exact match
-        if (normalizedBrand === normalizedValue) score = 100;
-        // Starts with
-        else if (normalizedBrand.startsWith(normalizedValue)) score = 90;
-        // Contains
-        else if (normalizedBrand.includes(normalizedValue)) score = 70;
-        // Fuzzy match
-        else {
+        if (normalizedBrand === normalizedValue) {
+          score = 100;
+        } else if (normalizedBrand.startsWith(normalizedValue)) {
+          // Starts with
+          score = 90;
+        } else if (normalizedBrand.includes(normalizedValue)) {
+          // Contains
+          score = 70;
+        } else {
+          // Fuzzy match
           let matches = 0;
           for (const char of normalizedValue) {
             if (normalizedBrand.includes(char)) matches++;
@@ -273,7 +275,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${error ? 'border-red-300' : 'border-gray-300'
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${error ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
             }`}
           aria-autocomplete="list"
           aria-expanded={isOpen}
@@ -285,7 +287,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
             ref={dropdownRef}
             id="brand-autocomplete-list"
             style={dropdownStyle}
-            className="bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
+            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto"
             role="listbox"
           >
             {isLoading && (
@@ -312,10 +314,10 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
                     handleSelect(brand);
                   }
                 }}
-                className="px-4 py-2 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors"
+                className="px-4 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 focus:bg-blue-50 dark:focus:bg-blue-900/30 focus:outline-none transition-colors"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-900">{brand}</span>
+                  <span className="text-sm text-gray-900 dark:text-gray-100">{brand}</span>
                 </div>
               </div>
             ))}

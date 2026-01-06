@@ -25,7 +25,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       setRequireReason(true);
       return;
     }
-    
+
     await onConfirm(reason.trim() || undefined);
     handleClose();
   };
@@ -51,8 +51,8 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
         <Alert variant={hasStock ? 'warning' : 'error'}>
           <div className="space-y-2">
             <p className="font-medium">
-              {isSingleItem 
-                ? 'Bu ürünü silmek istediğinizden emin misiniz?' 
+              {isSingleItem
+                ? 'Bu ürünü silmek istediğinizden emin misiniz?'
                 : `${items.length} ürünü silmek istediğinizden emin misiniz?`
               }
             </p>
@@ -68,9 +68,9 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
         </Alert>
 
         {isSingleItem ? (
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-medium text-gray-900">{items[0].name}</h3>
-            <div className="text-sm text-gray-600 space-y-1 mt-2">
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+            <h3 className="font-medium text-gray-900 dark:text-white">{items[0].name}</h3>
+            <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1 mt-2">
               <p>Model: {items[0].model}</p>
               <p>Marka: {items[0].brand}</p>
               <p>Stok: {items[0].availableInventory} adet</p>
@@ -78,18 +78,18 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
             </div>
           </div>
         ) : (
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-medium text-gray-900 mb-3">Silinecek Ürünler:</h3>
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+            <h3 className="font-medium text-gray-900 dark:text-white mb-3">Silinecek Ürünler:</h3>
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {items.map((item, index) => (
-                <div key={item.id} className="flex justify-between text-sm">
+                <div key={item.id} className="flex justify-between text-sm dark:text-gray-300">
                   <span>{index + 1}. {item.name}</span>
-                  <span className="text-gray-500">{item.availableInventory} adet</span>
+                  <span className="text-gray-500 dark:text-gray-500">{item.availableInventory} adet</span>
                 </div>
               ))}
             </div>
-            <div className="border-t pt-2 mt-3">
-              <div className="flex justify-between text-sm font-medium">
+            <div className="border-t dark:border-gray-700 pt-2 mt-3">
+              <div className="flex justify-between text-sm font-medium dark:text-gray-200">
                 <span>Toplam:</span>
                 <span>{totalStock} adet</span>
               </div>

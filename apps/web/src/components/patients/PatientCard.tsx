@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Button, Badge, Checkbox } from '@x-ear/ui-web';
-import { 
-  User, 
-  Phone, 
-  Mail, 
-  Calendar, 
-  MapPin, 
+import {
+  User,
+  Phone,
+  Mail,
+  Calendar,
+  MapPin,
   CreditCard,
   AlertCircle,
   CheckCircle,
@@ -67,13 +67,13 @@ export function PatientCard({
   const getSegmentColor = (segment: string) => {
     switch (segment) {
       case 'premium':
-        return 'bg-purple-100 text-purple-800 border-purple-200';
+        return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800';
       case 'standard':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
       case 'basic':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
     }
   };
 
@@ -102,9 +102,8 @@ export function PatientCard({
   if (compact) {
     return (
       <div
-        className={`bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all cursor-pointer ${
-          selected ? 'ring-2 ring-blue-500 border-blue-300' : ''
-        } ${className}`}
+        className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-all cursor-pointer ${selected ? 'ring-2 ring-blue-500 border-blue-300 dark:border-blue-700' : ''
+          } ${className}`}
         onClick={handleCardClick}
       >
         <div className="flex items-center justify-between">
@@ -116,24 +115,24 @@ export function PatientCard({
                 onClick={(e) => e.stopPropagation()}
               />
             )}
-            
+
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-medium">
               {getInitials(patient.firstName, patient.lastName)}
             </div>
-            
+
             <div>
-              <h3 className="text-sm font-medium text-gray-900">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                 {patient.firstName || ''} {patient.lastName || ''}
               </h3>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {formatDate(patient.registrationDate)}
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {getStatusBadge(patient.status)}
-            
+
             {showActions && (
               <div className="relative">
                 <Button
@@ -147,9 +146,9 @@ export function PatientCard({
                 >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
-                
+
                 {showMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                  <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
                     <div className="py-1">
                       <button
                         onClick={(e) => {
@@ -157,12 +156,12 @@ export function PatientCard({
                           onClick?.(patient);
                           setShowMenu(false);
                         }}
-                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                        className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
                       >
                         <Eye className="h-4 w-4 mr-2" />
                         Görüntüle
                       </button>
-                      
+
                       {onEdit && (
                         <button
                           onClick={(e) => {
@@ -176,7 +175,7 @@ export function PatientCard({
                           Düzenle
                         </button>
                       )}
-                      
+
                       {onDelete && (
                         <button
                           onClick={(e) => {
@@ -203,9 +202,8 @@ export function PatientCard({
 
   return (
     <div
-      className={`bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-all cursor-pointer ${
-        selected ? 'ring-2 ring-blue-500 border-blue-300' : ''
-      } ${className}`}
+      className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all cursor-pointer ${selected ? 'ring-2 ring-blue-500 border-blue-300 dark:border-blue-700' : ''
+        } ${className}`}
       onClick={handleCardClick}
     >
       {/* Header */}
@@ -219,26 +217,25 @@ export function PatientCard({
                 onClick={(e) => e.stopPropagation()}
               />
             )}
-            
+
             <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xl font-medium">
               {getInitials(patient.firstName, patient.lastName)}
             </div>
-            
+
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {patient.firstName || ''} {patient.lastName || ''}
               </h3>
-              
+
               <div className="flex items-center space-x-2 mt-1">
                 {getStatusBadge(patient.status)}
-                
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${
-                  getSegmentColor(patient.segment)
-                }`}>
+
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getSegmentColor(patient.segment)
+                  }`}>
                   {patient.segment}
                 </span>
               </div>
-              
+
               {patient.priority > 0 && (
                 <div className="mt-2">
                   <Badge variant="warning" size="sm">
@@ -249,7 +246,7 @@ export function PatientCard({
               )}
             </div>
           </div>
-          
+
           {showActions && (
             <div className="relative">
               <Button
@@ -263,9 +260,9 @@ export function PatientCard({
               >
                 <MoreVertical className="h-5 w-5" />
               </Button>
-              
+
               {showMenu && (
-                <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
                   <div className="py-1">
                     <button
                       onClick={(e) => {
@@ -273,12 +270,12 @@ export function PatientCard({
                         onClick?.(patient);
                         setShowMenu(false);
                       }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
                     >
                       <Eye className="h-4 w-4 mr-3" />
                       Detayları Görüntüle
                     </button>
-                    
+
                     {onEdit && (
                       <button
                         onClick={(e) => {
@@ -286,13 +283,13 @@ export function PatientCard({
                           onEdit(patient);
                           setShowMenu(false);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
                       >
                         <Edit className="h-4 w-4 mr-3" />
                         Düzenle
                       </button>
                     )}
-                    
+
                     {onDelete && (
                       <button
                         onClick={(e) => {
@@ -300,7 +297,7 @@ export function PatientCard({
                           onDelete(patient);
                           setShowMenu(false);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
                       >
                         <Trash2 className="h-4 w-4 mr-3" />
                         Sil
@@ -318,38 +315,38 @@ export function PatientCard({
       <div className="px-6 pb-4">
         <div className="grid grid-cols-2 gap-4">
           {/* Contact Info */}
-           <div className="space-y-2">
-             {patient.phone && (
-               <div className="flex items-center text-sm text-gray-600">
-                 <Phone className="h-4 w-4 mr-2 text-gray-400" />
-                 {patient.phone}
-               </div>
-             )}
-             
-             {patient.email && (
-               <div className="flex items-center text-sm text-gray-600">
-                 <Mail className="h-4 w-4 mr-2 text-gray-400" />
-                 {patient.email}
-               </div>
-             )}
-           </div>
-          
+          <div className="space-y-2">
+            {patient.phone && (
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                <Phone className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
+                {patient.phone}
+              </div>
+            )}
+
+            {patient.email && (
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                <Mail className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
+                {patient.email}
+              </div>
+            )}
+          </div>
+
           {/* Stats */}
           <div className="space-y-2">
-            <div className="flex items-center text-sm text-gray-600">
-              <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+              <Calendar className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
               Kayıt: {formatDate(patient.registrationDate)}
             </div>
-            
+
             {patient.deviceCount > 0 && (
-              <div className="flex items-center text-sm text-gray-600">
-                <Activity className="h-4 w-4 mr-2 text-gray-400" />
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                <Activity className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
                 {patient.deviceCount} Cihaz
               </div>
             )}
-            
+
             {patient.hasInsurance && (
-              <div className="flex items-center text-sm text-green-600">
+              <div className="flex items-center text-sm text-green-600 dark:text-green-400">
                 <Shield className="h-4 w-4 mr-2" />
                 Sigortalı
               </div>
@@ -359,7 +356,7 @@ export function PatientCard({
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+      <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 rounded-b-lg">
         <div className="flex items-center justify-between">
           {/* Labels */}
           <div className="flex flex-wrap gap-1">
@@ -367,28 +364,28 @@ export function PatientCard({
               patient.labels.slice(0, 3).map((label, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
+                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
                 >
                   {label}
                 </span>
               ))
             )}
-            
+
             {patient.labels && patient.labels.length > 3 && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                 +{patient.labels.length - 3}
               </span>
             )}
           </div>
-          
+
           {/* Balance */}
           <div className="text-right">
             {patient.outstandingBalance > 0 ? (
-              <div className="text-sm font-medium text-red-600">
+              <div className="text-sm font-medium text-red-600 dark:text-red-400">
                 Borç: {formatCurrency(patient.outstandingBalance)}
               </div>
             ) : (
-              <div className="flex items-center text-sm text-green-600">
+              <div className="flex items-center text-sm text-green-600 dark:text-green-400">
                 <CheckCircle className="h-4 w-4 mr-1" />
                 Bakiye Temiz
               </div>

@@ -364,7 +364,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
                   handleCreateNew();
                 }
               }}
-              className="px-4 py-2 cursor-pointer bg-green-50 hover:bg-green-100 focus:bg-green-100 focus:outline-none transition-colors border-t border-gray-200"
+              className="px-4 py-2 cursor-pointer bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 focus:bg-green-100 dark:focus:bg-green-900/40 focus:outline-none transition-colors border-t border-gray-200 dark:border-gray-700"
             >
               <div className="flex items-center gap-2">
                 <Plus className="w-4 h-4 text-green-600" />

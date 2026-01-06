@@ -119,10 +119,13 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
         const normalizedCat = normalizeTurkish(cat);
         let score = 0;
 
-        if (normalizedCat === normalizedValue) score = 100;
-        else if (normalizedCat.startsWith(normalizedValue)) score = 90;
-        else if (normalizedCat.includes(normalizedValue)) score = 70;
-        else {
+        if (normalizedCat === normalizedValue) {
+          score = 100;
+        } else if (normalizedCat.startsWith(normalizedValue)) {
+          score = 90;
+        } else if (normalizedCat.includes(normalizedValue)) {
+          score = 70;
+        } else {
           let matches = 0;
           for (const char of normalizedValue) {
             if (normalizedCat.includes(char)) matches++;
@@ -266,7 +269,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${error ? 'border-red-300' : 'border-gray-300'
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${error ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
             }`}
           aria-autocomplete="list"
           aria-expanded={isOpen}
@@ -278,7 +281,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
             ref={dropdownRef}
             id="category-autocomplete-list"
             style={dropdownStyle}
-            className="bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
+            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto"
             role="listbox"
           >
             {isLoading && (
@@ -305,10 +308,10 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
                     handleSelect(category);
                   }
                 }}
-                className="px-4 py-2 cursor-pointer hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors"
+                className="px-4 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 focus:bg-blue-50 dark:focus:bg-blue-900/30 focus:outline-none transition-colors"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-900">{category}</span>
+                  <span className="text-sm text-gray-900 dark:text-gray-100">{category}</span>
                 </div>
               </div>
             ))}
@@ -324,7 +327,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
                     handleCreateNew();
                   }
                 }}
-                className="px-4 py-2 cursor-pointer bg-green-50 hover:bg-green-100 focus:bg-green-100 focus:outline-none transition-colors border-t border-gray-200"
+                className="px-4 py-2 cursor-pointer bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 focus:bg-green-100 dark:focus:bg-green-900/40 focus:outline-none transition-colors border-t border-gray-200 dark:border-gray-700"
               >
                 <div className="flex items-center gap-2">
                   <Plus className="w-4 h-4 text-green-600" />

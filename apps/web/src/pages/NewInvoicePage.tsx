@@ -24,7 +24,7 @@ export function NewInvoicePage() {
     try {
       // TODO: Save invoice via API
       console.log('Saving invoice:', invoiceData);
-      
+
       // Navigate back to invoices list
       navigate({ to: '/invoices' });
     } catch (error) {
@@ -85,13 +85,13 @@ export function NewInvoicePage() {
   const showMedicalSection = formData.scenario === 'medical';
   const showReturnSection = ['15', '49', '50'].includes(formData.invoiceType);
   const showSpecialBaseSection = ['12', '19', '25', '33'].includes(formData.invoiceType);
-  
+
   // Özel işlemler görünürlüğü
   const isWithholdingType = ['11', '18', '24', '32'].includes(formData.invoiceType);
   const showSpecialOperations = isWithholdingType;
 
   return (
-    <NewInvoicePageContent 
+    <NewInvoicePageContent
       isSaving={isSaving}
       handleSubmit={handleSubmit}
       handleSaveDraft={handleSaveDraft}
@@ -114,10 +114,10 @@ export function NewInvoicePage() {
 }
 
 // Sidebar Component
-function InvoiceSidebar({ 
-  showSGKSection, 
-  showExportSection, 
-  showMedicalSection, 
+function InvoiceSidebar({
+  showSGKSection,
+  showExportSection,
+  showMedicalSection,
   showGovernmentSection,
   showIstisnaReason,
   showReturnSection,
@@ -152,10 +152,10 @@ function InvoiceSidebar({
 
       {/* SGK Section */}
       {_showSGKSection && (
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="p-4 border-b border-gray-200 bg-blue-50">
-            <h3 className="text-sm font-bold text-gray-900">SGK Fatura Bilgileri</h3>
-            <p className="text-xs text-gray-600 mt-1">SGK faturası için gerekli bilgileri girin</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/40">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">SGK Fatura Bilgileri</h3>
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">SGK faturası için gerekli bilgileri girin</p>
           </div>
           <div className="p-4">
             <SGKInvoiceSection
@@ -168,10 +168,10 @@ function InvoiceSidebar({
 
       {/* Government Section */}
       {_showGovernmentSection && (
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="p-4 border-b border-gray-200 bg-purple-50">
-            <h3 className="text-sm font-bold text-gray-900">Kamu Fatura Bilgileri</h3>
-            <p className="text-xs text-gray-600 mt-1">Kamu kurumu faturası bilgileri</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-purple-50 dark:bg-purple-900/40">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">Kamu Fatura Bilgileri</h3>
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Kamu kurumu faturası bilgileri</p>
           </div>
           <div className="p-4">
             <GovernmentSection
@@ -203,9 +203,9 @@ function InvoiceSidebar({
 
       {/* Export Section */}
       {_showExportSection && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
           <div className="mb-3">
-            <h3 className="text-sm font-bold text-gray-900">İhracat Bilgileri</h3>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">İhracat Bilgileri</h3>
           </div>
           <div>
             <ExportDetailsCard
@@ -218,11 +218,11 @@ function InvoiceSidebar({
 
       {/* Özel Matrah (sidebar) */}
       {_showSpecialBaseSection && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-3">Özel Matrah Bilgileri</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Özel Matrah Bilgileri</h3>
           <div className="grid grid-cols-1 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Özel Matrah Tutarı</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Özel Matrah Tutarı</label>
               <Input
                 type="number"
                 step="0.01"
@@ -237,7 +237,7 @@ function InvoiceSidebar({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">KDV Oranı (%)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">KDV Oranı (%)</label>
               <Input
                 type="number"
                 value={extendedData.specialTaxBase?.taxRate || ''}
@@ -250,7 +250,7 @@ function InvoiceSidebar({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Açıklama</label>
               <Input
                 type="text"
                 value={extendedData.specialTaxBase?.description || ''}
@@ -291,7 +291,7 @@ function InvoiceSidebar({
                 value={extendedData.returnInvoiceDetails?.returnInvoiceDate ? new Date(extendedData.returnInvoiceDetails.returnInvoiceDate) : null}
                 onChange={(date) => handlers.handleExtendedFieldChange('returnInvoiceDetails', {
                   ...extendedData.returnInvoiceDetails,
-                  returnInvoiceDate: date ? `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}` : ''
+                  returnInvoiceDate: date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : ''
                 })}
                 className="w-full"
               />
@@ -398,12 +398,12 @@ function InvoiceSidebar({
 }
 
 // Main Page Content
-function NewInvoicePageContent({ 
-  isSaving, 
-  handleSubmit, 
+function NewInvoicePageContent({
+  isSaving,
+  handleSubmit,
   handleSaveDraft,
-  handleCancel, 
-  formData, 
+  handleCancel,
+  formData,
   onFormDataChange,
   showSGKSection,
   showGovernmentSection,
@@ -419,27 +419,27 @@ function NewInvoicePageContent({
 }: any) {
 
   return (
-    <div className="new-invoice-page min-h-screen bg-gray-50 w-full pb-8">
+    <div className="new-invoice-page min-h-screen bg-gray-50 dark:bg-gray-900 w-full pb-8">
       {/* Sticky Header with Progress */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
+      <div className="sticky top-0 z-20 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
                 onClick={handleCancel}
                 variant="ghost"
-                className="text-gray-600 hover:text-gray-900 flex items-center gap-2"
+                className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 flex items-center gap-2"
               >
                 <ArrowLeft size={20} />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Yeni Fatura</h1>
-                <p className="text-sm text-gray-500">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Yeni Fatura</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Fatura bilgilerini doldurun
                 </p>
               </div>
             </div>
-            
+
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
               <Button
@@ -477,7 +477,7 @@ function NewInvoicePageContent({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Form - 2/3 width */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
               <InvoiceFormExtended
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
@@ -491,7 +491,7 @@ function NewInvoicePageContent({
 
           {/* Sidebar - 1/3 width */}
           <div className="lg:col-span-1">
-            <InvoiceSidebar 
+            <InvoiceSidebar
               showSGKSection={showSGKSection}
               showExportSection={showExportSection}
               showMedicalSection={showMedicalSection}
@@ -502,8 +502,8 @@ function NewInvoicePageContent({
               extendedData={formData}
               handlers={{
                 handleExtendedFieldChange: onFormDataChange,
-                setExportModalOpen: () => {},
-                setMedicalModalOpen: () => {},
+                setExportModalOpen: () => { },
+                setMedicalModalOpen: () => { },
                 specialOperationsVisible: showSpecialOperations,
                 isWithholdingType: isWithholdingType
               }}

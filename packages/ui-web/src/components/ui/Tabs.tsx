@@ -42,31 +42,31 @@ export const Tabs: React.FC<TabsProps> & {
   orientation = 'horizontal',
   className,
 }) => {
-  const [internalValue, setInternalValue] = useState(defaultValue || '');
-  
-  const activeTab = value !== undefined ? value : internalValue;
-  
-  const setActiveTab = (newValue: string) => {
-    if (value === undefined) {
-      setInternalValue(newValue);
-    }
-    onValueChange?.(newValue);
-  };
+    const [internalValue, setInternalValue] = useState(defaultValue || '');
 
-  return (
-    <TabsContext.Provider value={{ activeTab, setActiveTab, orientation }}>
-      <div 
-        className={cn(
-          'tabs',
-          orientation === 'vertical' ? 'flex gap-4' : 'space-y-2',
-          className
-        )}
-      >
-        {children}
-      </div>
-    </TabsContext.Provider>
-  );
-};
+    const activeTab = value !== undefined ? value : internalValue;
+
+    const setActiveTab = (newValue: string) => {
+      if (value === undefined) {
+        setInternalValue(newValue);
+      }
+      onValueChange?.(newValue);
+    };
+
+    return (
+      <TabsContext.Provider value={{ activeTab, setActiveTab, orientation }}>
+        <div
+          className={cn(
+            'tabs',
+            orientation === 'vertical' ? 'flex gap-4' : 'space-y-2',
+            className
+          )}
+        >
+          {children}
+        </div>
+      </TabsContext.Provider>
+    );
+  };
 
 interface TabsListProps {
   children: ReactNode;
@@ -75,13 +75,13 @@ interface TabsListProps {
 
 export const TabsList: React.FC<TabsListProps> = ({ children, className }) => {
   const { orientation } = useTabsContext();
-  
+
   return (
     <div
       className={cn(
         'tabs-list',
-        orientation === 'horizontal' 
-          ? 'flex border-b border-gray-200' 
+        orientation === 'horizontal'
+          ? 'flex border-b border-gray-200 dark:border-gray-700'
           : 'flex flex-col space-y-1 min-w-[200px]',
         className
       )}
@@ -134,21 +134,21 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
       onKeyDown={handleKeyDown}
       className={cn(
         'tabs-trigger transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-        orientation === 'horizontal' 
+        orientation === 'horizontal'
           ? cn(
-              'px-4 py-2 text-sm font-medium border-b-2 -mb-px',
-              isActive 
-                ? 'border-blue-500 text-blue-600' 
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-              disabled && 'opacity-50 cursor-not-allowed'
-            )
+            'px-4 py-2 text-sm font-medium border-b-2 -mb-px',
+            isActive
+              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600',
+            disabled && 'opacity-50 cursor-not-allowed'
+          )
           : cn(
-              'px-3 py-2 text-sm font-medium rounded-md text-left',
-              isActive 
-                ? 'bg-blue-100 text-blue-700' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
-              disabled && 'opacity-50 cursor-not-allowed'
-            ),
+            'px-3 py-2 text-sm font-medium rounded-md text-left',
+            isActive
+              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800',
+            disabled && 'opacity-50 cursor-not-allowed'
+          ),
         className
       )}
     >
@@ -203,21 +203,21 @@ export const TabsExample: React.FC = () => {
         <TabsTrigger value="tab3">Belgeler</TabsTrigger>
         <TabsTrigger value="tab4" disabled>Devre Dışı</TabsTrigger>
       </TabsList>
-      
+
       <TabsContent value="tab1" className="mt-4">
         <div className="p-4 border rounded-lg">
           <h3 className="text-lg font-medium mb-2">Genel Bilgiler</h3>
           <p className="text-gray-600">Hasta genel bilgileri burada görüntülenir.</p>
         </div>
       </TabsContent>
-      
+
       <TabsContent value="tab2" className="mt-4">
         <div className="p-4 border rounded-lg">
           <h3 className="text-lg font-medium mb-2">Cihazlar</h3>
           <p className="text-gray-600">Hasta cihaz bilgileri burada görüntülenir.</p>
         </div>
       </TabsContent>
-      
+
       <TabsContent value="tab3" className="mt-4">
         <div className="p-4 border rounded-lg">
           <h3 className="text-lg font-medium mb-2">Belgeler</h3>
@@ -238,7 +238,7 @@ export const VerticalTabsExample: React.FC = () => {
         <TabsTrigger value="security">Güvenlik</TabsTrigger>
         <TabsTrigger value="notifications">Bildirimler</TabsTrigger>
       </TabsList>
-      
+
       <div className="flex-1">
         <TabsContent value="profile">
           <div className="p-6 border rounded-lg">
@@ -246,21 +246,21 @@ export const VerticalTabsExample: React.FC = () => {
             <p className="text-gray-600">Profil bilgilerinizi buradan düzenleyebilirsiniz.</p>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="account">
           <div className="p-6 border rounded-lg">
             <h3 className="text-lg font-medium mb-2">Hesap Ayarları</h3>
             <p className="text-gray-600">Hesap bilgilerinizi buradan yönetebilirsiniz.</p>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="security">
           <div className="p-6 border rounded-lg">
             <h3 className="text-lg font-medium mb-2">Güvenlik Ayarları</h3>
             <p className="text-gray-600">Güvenlik tercihlerinizi buradan ayarlayabilirsiniz.</p>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="notifications">
           <div className="p-6 border rounded-lg">
             <h3 className="text-lg font-medium mb-2">Bildirim Ayarları</h3>

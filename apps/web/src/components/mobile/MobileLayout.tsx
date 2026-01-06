@@ -18,7 +18,7 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   const isMobile = useIsMobile();
 
   return (
-    <div className={cn("min-h-screen bg-gray-50", className)}>
+    <div className={cn("min-h-screen bg-gray-50 dark:bg-gray-900", className)}>
       <main className={cn(
         "pb-safe",
         showBottomNav && isMobile && "pb-20"

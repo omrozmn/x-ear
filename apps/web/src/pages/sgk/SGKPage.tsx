@@ -47,16 +47,16 @@ export const SGKPage: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">SGK Doküman İşleme</h1>
         <div className="flex gap-3">
-          <Button 
+          <Button
             onClick={() => setIsCameraCaptureOpen(true)}
             className="flex items-center gap-2"
           >
             <Camera size={16} />
             Kamera ile Çek
           </Button>
-          <Button 
+          <Button
             onClick={() => setIsUploadModalOpen(true)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 dark:text-gray-200"
           >
             <Upload size={16} />
             Dosya Yükle
@@ -65,11 +65,11 @@ export const SGKPage: React.FC = () => {
       </div>
 
       <Tabs defaultValue="results" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="results">İşleme Sonuçları</TabsTrigger>
-          <TabsTrigger value="upload">Yeni Yükleme</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800">
+          <TabsTrigger value="results" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 dark:text-gray-200">İşleme Sonuçları</TabsTrigger>
+          <TabsTrigger value="upload" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 dark:text-gray-200">Yeni Yükleme</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="results" className="mt-6">
           {processingResults.length > 0 ? (
             <ProcessingResults
@@ -83,14 +83,14 @@ export const SGKPage: React.FC = () => {
                 Henüz işlenmiş doküman bulunmuyor
               </div>
               <div className="flex gap-3 justify-center">
-                <Button 
+                <Button
                   onClick={() => setIsCameraCaptureOpen(true)}
                   className="flex items-center gap-2"
                 >
                   <Camera size={16} />
                   Kamera ile Başla
                 </Button>
-                <Button 
+                <Button
                   onClick={() => setIsUploadModalOpen(true)}
                   className="flex items-center gap-2"
                 >
@@ -101,30 +101,30 @@ export const SGKPage: React.FC = () => {
             </div>
           )}
         </TabsContent>
-        
+
         <TabsContent value="upload" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
-              <Camera size={48} className="mx-auto mb-4 text-gray-400" />
-              <h3 className="text-lg font-medium mb-2">Kamera ile Çekim</h3>
-              <p className="text-gray-500 mb-4">
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors dark:bg-gray-800">
+              <Camera size={48} className="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+              <h3 className="text-lg font-medium mb-2 dark:text-white">Kamera ile Çekim</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
                 Kamera ile arka arkaya fotoğraf çekerek belgeleri yükleyin
               </p>
-              <Button 
+              <Button
                 onClick={() => setIsCameraCaptureOpen(true)}
                 className="w-full"
               >
                 Kamerayı Aç
               </Button>
             </div>
-            
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
-              <Upload size={48} className="mx-auto mb-4 text-gray-400" />
-              <h3 className="text-lg font-medium mb-2">Dosya Yükleme</h3>
-              <p className="text-gray-500 mb-4">
+
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors dark:bg-gray-800">
+              <Upload size={48} className="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+              <h3 className="text-lg font-medium mb-2 dark:text-white">Dosya Yükleme</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
                 Bilgisayarınızdan görsel dosyalarını seçerek yükleyin
               </p>
-              <Button 
+              <Button
                 onClick={() => setIsUploadModalOpen(true)}
                 className="w-full"
               >

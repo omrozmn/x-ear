@@ -29,13 +29,13 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
 }) => {
   const currentPrice = isEditMode && editedItem.price !== undefined ? editedItem.price : (item?.price || 0);
   const currentStock = isEditMode && editedItem.availableInventory !== undefined ? editedItem.availableInventory : (item?.availableInventory || 0);
-  
+
   // Calculate prices based on KDV inclusion
   const priceExcludingKdv = isPriceKdvIncluded ? currentPrice / (1 + kdvRate / 100) : currentPrice;
   const priceWithKdv = isPriceKdvIncluded ? currentPrice : currentPrice * (1 + kdvRate / 100);
   const kdvAmount = priceWithKdv - priceExcludingKdv;
   const totalInventoryValue = priceExcludingKdv * currentStock;
-  
+
   const currentCost = isEditMode && editedItem.cost !== undefined ? editedItem.cost : (item?.cost || 0);
   const costExcludingKdv = isCostKdvIncluded ? currentCost / (1 + kdvRate / 100) : currentCost;
   const profitMargin = costExcludingKdv > 0 ? ((priceExcludingKdv - costExcludingKdv) / costExcludingKdv) * 100 : 0;
@@ -46,7 +46,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
           Fiyat Bilgileri
         </h2>
-        
+
         <div className="space-y-4">
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -58,7 +58,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                   type="checkbox"
                   checked={isPriceKdvIncluded}
                   onChange={(e) => onPriceKdvIncludedChange(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 mr-2"
                   disabled={!isEditMode}
                 />
                 <span className="text-sm text-gray-600 dark:text-gray-400">KDV Dahil</span>
@@ -118,7 +118,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                   type="checkbox"
                   checked={isCostKdvIncluded}
                   onChange={(e) => onCostKdvIncludedChange(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 mr-2"
                   disabled={!isEditMode}
                 />
                 <span className="text-sm text-gray-600 dark:text-gray-400">KDV Dahil</span>

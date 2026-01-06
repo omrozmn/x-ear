@@ -263,14 +263,14 @@ export const SGKDownloadsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white shadow">
+      <div className="bg-white dark:bg-gray-800 shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">SGK Belge İndir</h1>
-              <p className="mt-1 text-sm text-gray-600">Bu ay kaydedilen e-reçeteler için belgelerinizi indirin</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">SGK Belge İndir</h1>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Bu ay kaydedilen e-reçeteler için belgelerinizi indirin</p>
             </div>
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2">
@@ -278,7 +278,7 @@ export const SGKDownloadsPage: React.FC = () => {
                 <select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+                  className="rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">Tüm Aylar</option>
                   {availableMonths.map(month => (
@@ -303,8 +303,8 @@ export const SGKDownloadsPage: React.FC = () => {
 
       {/* Bulk Download Panel */}
       {showBulkDownload && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg mx-4 sm:mx-6 lg:mx-8 mt-6 p-4">
-          <h3 className="text-lg font-semibold text-blue-900 mb-3">Toplu İndirme</h3>
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mx-4 sm:mx-6 lg:mx-8 mt-6 p-4">
+          <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">Toplu İndirme</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="space-y-2">
               <label className="flex items-center">
@@ -314,9 +314,9 @@ export const SGKDownloadsPage: React.FC = () => {
                   onChange={(e) => setBulkOptions(prev => ({ ...prev, reports: e.target.checked }))}
                   className="mr-2"
                 />
-                <span className="font-medium">Rapor Belgeleri</span>
+                <span className="font-medium dark:text-gray-200">Rapor Belgeleri</span>
               </label>
-              <p className="text-sm text-gray-600">SGK onaylı rapor belgelerini indir</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">SGK onaylı rapor belgelerini indir</p>
             </div>
             <div className="space-y-2">
               <label className="flex items-center">
@@ -326,9 +326,9 @@ export const SGKDownloadsPage: React.FC = () => {
                   onChange={(e) => setBulkOptions(prev => ({ ...prev, prescriptions: e.target.checked }))}
                   className="mr-2"
                 />
-                <span className="font-medium">E-Reçete Belgeleri</span>
+                <span className="font-medium dark:text-gray-200">E-Reçete Belgeleri</span>
               </label>
-              <p className="text-sm text-gray-600">E-reçete onay belgelerini indir</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">E-reçete onay belgelerini indir</p>
             </div>
             <div className="space-y-2">
               <label className="flex items-center">
@@ -338,13 +338,13 @@ export const SGKDownloadsPage: React.FC = () => {
                   onChange={(e) => setBulkOptions(prev => ({ ...prev, processForms: e.target.checked }))}
                   className="mr-2"
                 />
-                <span className="font-medium">Hasta İşlem Formları</span>
+                <span className="font-medium dark:text-gray-200">Hasta İşlem Formları</span>
               </label>
-              <p className="text-sm text-gray-600">Hasta işlem ve teslim formlarını indir</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Hasta işlem ve teslim formlarını indir</p>
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Toplam <span className="font-semibold">{selectedPatients.size}</span> hasta için belgeler indirilecek
             </p>
             <div className="space-x-2">
@@ -368,23 +368,23 @@ export const SGKDownloadsPage: React.FC = () => {
       {/* Download Progress Modal */}
       {downloading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Belgeler İndiriliyor</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Belgeler İndiriliyor</h3>
               </div>
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-sm dark:text-gray-300">
                   <span>İlerleme</span>
                   <span>{downloadProgress.current}/{downloadProgress.total}</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${downloadProgress.total > 0 ? (downloadProgress.current / downloadProgress.total) * 100 : 0}%` }}
                   ></div>
                 </div>
-                <div className="max-h-32 overflow-y-auto text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                <div className="max-h-32 overflow-y-auto text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 p-2 rounded">
                   {downloadLogs.map((log, index) => (
                     <div key={index}>{log}</div>
                   ))}
@@ -397,12 +397,12 @@ export const SGKDownloadsPage: React.FC = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-white rounded-lg shadow border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 E-Reçete Belgeleri
-                <span className="ml-2 text-sm font-normal text-gray-500">({filteredPatients.length})</span>
+                <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">({filteredPatients.length})</span>
               </h2>
               <div className="flex items-center space-x-2">
                 <label className="flex items-center text-sm">
@@ -418,10 +418,10 @@ export const SGKDownloadsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {filteredPatients.length > 0 ? (
               filteredPatients.map((patient) => (
-                <div key={patient.id} className="p-4 hover:bg-gray-50">
+                <div key={patient.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <label className="flex items-center">
@@ -433,9 +433,9 @@ export const SGKDownloadsPage: React.FC = () => {
                         />
                       </label>
                       <div>
-                        <h3 className="font-medium text-gray-900">{patient.name}</h3>
-                        <p className="text-sm text-gray-600">TC: {patient.tcNumber}</p>
-                        <p className="text-sm text-gray-500">{patient.currentMonthReceipts.length} e-reçete</p>
+                        <h3 className="font-medium text-gray-900 dark:text-white">{patient.name}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">TC: {patient.tcNumber}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{patient.currentMonthReceipts.length} e-reçete</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -477,18 +477,18 @@ export const SGKDownloadsPage: React.FC = () => {
                   {/* E-receipt details */}
                   <div className="mt-3 pl-7">
                     <details className="text-sm">
-                      <summary className="cursor-pointer text-gray-600 hover:text-gray-900">
+                      <summary className="cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200">
                         E-reçete detayları ({patient.currentMonthReceipts.length})
                       </summary>
                       <div className="mt-2 space-y-2">
                         {patient.currentMonthReceipts.map((receipt) => (
-                          <div key={receipt.id} className="bg-gray-50 p-2 rounded border-l-4 border-blue-400">
+                          <div key={receipt.id} className="bg-gray-50 dark:bg-gray-900 p-2 rounded border-l-4 border-blue-400 dark:border-blue-500">
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
-                                <p className="font-medium text-gray-900">E-Reçete #{receipt.number}</p>
-                                <p className="text-xs text-gray-600">{receipt.doctorName}</p>
-                                <p className="text-xs text-gray-600">{new Date(receipt.date).toLocaleDateString('tr-TR')}</p>
-                                <p className="text-xs text-gray-600">{receipt.materials.length} malzeme</p>
+                                <p className="font-medium text-gray-900 dark:text-white">E-Reçete #{receipt.number}</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">{receipt.doctorName}</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">{new Date(receipt.date).toLocaleDateString('tr-TR')}</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">{receipt.materials.length} malzeme</p>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <div className="flex items-center space-x-1">
@@ -524,10 +524,10 @@ export const SGKDownloadsPage: React.FC = () => {
       {/* E-Receipt Detail Modal */}
       {selectedEReceipt && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">E-Reçete Detayları - {selectedEReceipt.number}</h3>
+                <h3 className="text-lg font-semibold dark:text-white">E-Reçete Detayları - {selectedEReceipt.number}</h3>
                 <button
                   onClick={() => setSelectedEReceipt(null)}
                   className="text-gray-400 hover:text-gray-600"
@@ -540,47 +540,47 @@ export const SGKDownloadsPage: React.FC = () => {
                 {/* Basic Info */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Hasta</label>
-                    <p className="text-sm text-gray-900">{selectedEReceipt.patientName}</p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Hasta</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{selectedEReceipt.patientName}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">TC Kimlik</label>
-                    <p className="text-sm text-gray-900">{selectedEReceipt.patientTcNumber}</p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">TC Kimlik</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{selectedEReceipt.patientTcNumber}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Doktor</label>
-                    <p className="text-sm text-gray-900">{selectedEReceipt.doctorName}</p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Doktor</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{selectedEReceipt.doctorName}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Tarih</label>
-                    <p className="text-sm text-gray-900">{new Date(selectedEReceipt.date).toLocaleDateString('tr-TR')}</p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tarih</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{new Date(selectedEReceipt.date).toLocaleDateString('tr-TR')}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Geçerlilik</label>
-                    <p className="text-sm text-gray-900">{new Date(selectedEReceipt.validUntil).toLocaleDateString('tr-TR')}</p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Geçerlilik</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{new Date(selectedEReceipt.validUntil).toLocaleDateString('tr-TR')}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">SGK Durumu</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">SGK Durumu</label>
                     <div className="flex items-center space-x-2">
                       {getStatusIcon(selectedEReceipt.sgkStatus)}
-                      <span className="text-sm text-gray-900">{getStatusText(selectedEReceipt.sgkStatus)}</span>
+                      <span className="text-sm text-gray-900 dark:text-white">{getStatusText(selectedEReceipt.sgkStatus)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Materials */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-4">Teslim Edilen Malzemeler</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Teslim Edilen Malzemeler</label>
                   <div className="space-y-3">
                     {selectedEReceipt.materials.map((material, index) => (
-                      <div key={`${material.code}-${index}`} className="border rounded-lg p-4 bg-green-50 border-green-200">
+                      <div key={`${material.code}-${index}`} className="border rounded-lg p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <p className="font-medium text-green-800">{material.name}</p>
-                            <p className="text-sm text-green-600">Kod: {material.code}</p>
-                            <p className="text-sm text-green-600">Başvuru Tarihi: {new Date(material.applicationDate).toLocaleDateString('tr-TR')}</p>
+                            <p className="font-medium text-green-800 dark:text-green-300">{material.name}</p>
+                            <p className="text-sm text-green-600 dark:text-green-400">Kod: {material.code}</p>
+                            <p className="text-sm text-green-600 dark:text-green-400">Başvuru Tarihi: {new Date(material.applicationDate).toLocaleDateString('tr-TR')}</p>
                           </div>
-                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300">
                             Teslim Edildi
                           </span>
                         </div>

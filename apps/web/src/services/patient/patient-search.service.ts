@@ -229,7 +229,7 @@ export class PatientSearchService {
 
   private calculatePhoneSimilarity(phone1: string, phone2: string): number {
     // Normalize phone numbers (remove spaces, dashes, parentheses)
-    const normalize = (phone: string) => phone.replace(/[\s\-\(\)]/g, '');
+    const normalize = (phone: string) => phone.replace(/[\s\-()]/g, '');
 
     const p1 = normalize(phone1);
     const p2 = normalize(phone2);

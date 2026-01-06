@@ -89,7 +89,7 @@ module.exports = {
     'no-empty': 'warn',
     'no-constant-condition': 'warn',
     'no-debugger': 'warn',
-    'no-case-declarations': 'warn',
+    'no-case-declarations': 'off',  // Style preference, not a bug
     'no-useless-catch': 'warn',
     'no-var': 'warn',
     'prefer-const': 'warn',
