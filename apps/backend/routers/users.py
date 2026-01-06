@@ -162,18 +162,35 @@ def get_me(
         payload = u_obj.to_dict()
         
         if is_admin_user:
-            payload['role'] = 'super_admin'
-            payload['globalPermissions'] = ['*']
+            # Handle impersonation
+            effective_role = access.claims.get('effective_role')
+            impersonating = access.claims.get('is_impersonating') or access.claims.get('is_impersonating_tenant')
+            
+            payload['role'] = effective_role if effective_role else 'super_admin'
+            
+            if impersonating and 'role_permissions' in access.claims:
+                payload['globalPermissions'] = access.claims['role_permissions']
+            else:
+                payload['globalPermissions'] = ['*']
+            
             payload['apps'] = []
-            # Add required fields for UserRead schema compatibility
-            payload['tenantId'] = payload.get('tenant_id') or 'admin'  # Admin users don't have tenant
-            payload['tenant_id'] = payload.get('tenant_id') or 'admin'
+            
+            # Tenant ID handling for impersonation
+            eff_tenant = access.claims.get('effective_tenant_id') or access.claims.get('tenant_id')
+            payload['tenantId'] = eff_tenant if eff_tenant else (payload.get('tenant_id') or 'admin')
+            payload['tenant_id'] = payload['tenantId']
+            
             payload['fullName'] = f"{payload.get('first_name', '')} {payload.get('last_name', '')}".strip() or payload.get('email', '')
             payload['full_name'] = payload['fullName']
             payload['firstName'] = payload.get('first_name', '')
             payload['lastName'] = payload.get('last_name', '')
             payload['isActive'] = payload.get('is_active', True)
-            payload['permissions'] = list(payload.get('globalPermissions', ['*']))
+            payload['permissions'] = list(payload.get('globalPermissions'))
+            
+            if impersonating:
+                payload['isImpersonating'] = True
+                payload['realUserEmail'] = access.claims.get('real_user_email')
+                
             return payload
         
         apps = {}

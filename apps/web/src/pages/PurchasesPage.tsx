@@ -11,6 +11,7 @@ export function PurchasesPage() {
   const [filters, setFilters] = useState<PurchaseFilters>({});
   const [viewMode, setViewMode] = useState<'list' | 'form' | 'details'>('list');
   const [showFilters, setShowFilters] = useState(false);
+  const { success: showSuccess, error: showError } = useToastHelpers();
 
   const handlePurchaseSelect = (purchase: Purchase) => {
     setSelectedPurchase(purchase);
@@ -239,7 +240,6 @@ export function PurchasesPage() {
         modalTitle={'Toplu Fatura Yükleme'}
         sampleDownloadUrl={'/import_samples/invoices_sample.csv'}
         onComplete={(res) => {
-          const { success: showSuccess, error: showError } = useToastHelpers();
           if (res.errors && res.errors.length > 0) {
             showError(`Alış import tamamlandı — Hatalı satır: ${res.errors.length}`);
           } else {

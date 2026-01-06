@@ -7,10 +7,10 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const cardVariants = {
-  default: 'bg-white border border-gray-200 rounded-lg shadow-sm',
-  outlined: 'bg-white border-2 border-gray-300 rounded-lg',
-  elevated: 'bg-white border border-gray-200 rounded-lg shadow-lg',
-  filled: 'bg-gray-50 border border-gray-200 rounded-lg'
+  default: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm',
+  outlined: 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg',
+  elevated: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg',
+  filled: 'bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg'
 };
 
 const paddingVariants = {
@@ -50,7 +50,7 @@ export const CardHeader: React.FC<CardHeaderProps> = ({
   ...props
 }) => {
   const classes = ['flex flex-col space-y-1.5 pb-4', className].filter(Boolean).join(' ');
-  
+
   return (
     <div className={classes} {...props}>
       {children}
@@ -68,7 +68,7 @@ export const CardTitle: React.FC<CardTitleProps> = ({
   ...props
 }) => {
   const classes = ['text-lg font-semibold leading-none tracking-tight', className].filter(Boolean).join(' ');
-  
+
   return (
     <h3 className={classes} {...props}>
       {children}
@@ -86,7 +86,7 @@ export const CardContent: React.FC<CardContentProps> = ({
   ...props
 }) => {
   const classes = ['pt-0', className].filter(Boolean).join(' ');
-  
+
   return (
     <div className={classes} {...props}>
       {children}
@@ -104,7 +104,7 @@ export const CardFooter: React.FC<CardFooterProps> = ({
   ...props
 }) => {
   const classes = ['flex items-center pt-4', className].filter(Boolean).join(' ');
-  
+
   return (
     <div className={classes} {...props}>
       {children}
