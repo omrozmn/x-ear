@@ -10,22 +10,7 @@ import type {
 import type { Sale, PaymentRecord } from '../../../../../types/patient/patient-communication.types';
 
 export const useCollection = (sale: Sale, isOpen: boolean) => {
-  // Early guard for undefined sale
-  if (!sale) {
-    return {
-      state: { activeTab: 'payments' as const, paymentMethod: 'cash' as const, showCreatePromissoryForm: false, paymentAmount: 0, selectedInstallments: [], error: null, success: null, isLoading: false, generateReceipt: false, collectingNoteId: null, promissoryPaymentAmount: 0, promissoryPaymentMethod: 'cash' as const },
-      installments: [],
-      promissoryNotes: [],
-      calculations: { totalPaid: 0, remainingBalance: 0, pendingInstallments: [], overdueInstallments: [] },
-      updateState: () => {},
-      handleInstallmentSelection: () => {},
-      submitPayment: () => {},
-      submitPromissoryNote: () => {},
-      collectPromissoryPayment: () => {},
-      formatCurrency: (amount: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount)
-    };
-  }
-
+  // All hooks must be called unconditionally at the top
   const [state, setState] = useState<CollectionState>({
     activeTab: 'payments',
     paymentMethod: 'cash',
@@ -43,22 +28,22 @@ export const useCollection = (sale: Sale, isOpen: boolean) => {
 
   const [promissoryNotes, setPromissoryNotes] = useState<PromissoryNote[]>([]);
   const [newPromissoryNote, setNewPromissoryNote] = useState<PromissoryNoteFormData>({
-    noteNumber: `SN-${sale.id || 'TEMP'}-001`,
+    noteNumber: '',
     amount: 0,
     dueDate: '',
     notes: ''
   });
 
-  // Calculate payment details
+  // Calculate payment details - handle undefined sale
   const calculations: PaymentCalculations = {
-    totalPaid: sale.payments?.reduce((sum, payment) => sum + payment.amount, 0) || 0,
-    remainingBalance: sale.totalAmount - (sale.payments?.reduce((sum, payment) => sum + payment.amount, 0) || 0),
+    totalPaid: sale?.payments?.reduce((sum, payment) => sum + payment.amount, 0) || 0,
+    remainingBalance: (sale?.totalAmount || 0) - (sale?.payments?.reduce((sum, payment) => sum + payment.amount, 0) || 0),
     pendingInstallments: [],
     overdueInstallments: []
   };
 
   // Mock installments - in real app, this would come from sale data
-  const installments: PaymentRecord[] = [
+  const installments: PaymentRecord[] = sale ? [
     {
       id: '1',
       amount: sale.totalAmount / 3,
@@ -80,21 +65,15 @@ export const useCollection = (sale: Sale, isOpen: boolean) => {
       status: 'pending',
       note: '3. Taksit'
     }
-  ];
+  ] : [];
 
   calculations.pendingInstallments = installments.filter(inst => inst.status === 'pending');
   calculations.overdueInstallments = installments.filter(inst => 
     inst.status === 'pending' && new Date(inst.date) < new Date()
   );
 
-  // Load promissory notes when modal opens
-  useEffect(() => {
-    if (isOpen && sale?.id) {
-      loadPromissoryNotes();
-    }
-  }, [isOpen, sale?.id]);
-
   const loadPromissoryNotes = useCallback(() => {
+    if (!sale) return;
     // Mock promissory notes - in real app, this would come from API
     const mockNotes: PromissoryNote[] = [
       {
@@ -110,7 +89,19 @@ export const useCollection = (sale: Sale, isOpen: boolean) => {
       }
     ];
     setPromissoryNotes(mockNotes);
-  }, [sale.id, sale.totalAmount]);
+  }, [sale]);
+
+  // Load promissory notes when modal opens
+  useEffect(() => {
+    if (isOpen && sale?.id) {
+      loadPromissoryNotes();
+      // Update note number when sale changes
+      setNewPromissoryNote(prev => ({
+        ...prev,
+        noteNumber: `SN-${sale.id || 'TEMP'}-001`
+      }));
+    }
+  }, [isOpen, sale?.id, loadPromissoryNotes]);
 
   const updateState = (updates: Partial<CollectionState>) => {
     setState(prev => ({ ...prev, ...updates }));

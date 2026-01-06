@@ -5,7 +5,8 @@ import {
   PatientCreate,
   SaleCreate,
   SaleUpdate,
-  PatientNoteCreate
+  PatientNoteCreate,
+  SaleRead
 } from "@/api/generated/schemas";
 import { CreatePatientRequest, LegacyPatient, UpdatePatientRequest } from '../../api/client';
 import { unwrapArray, unwrapObject, unwrapProperty } from '../../utils/response-unwrap';
@@ -32,6 +33,9 @@ import {
 
 // Use LegacyPatient as the Patient type in this service
 type Patient = LegacyPatient;
+
+// Use SaleRead as Sale type
+type Sale = SaleRead;
 
 // Request deduplication and caching
 interface CacheEntry {

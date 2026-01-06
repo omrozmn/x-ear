@@ -10,9 +10,10 @@ interface Props {
 }
 
 export const LineChartSimple: React.FC<Props> = ({ data = [], width = 560, height = 200, stroke = '#3b82f6' }) => {
-  if (!data || data.length === 0) return <div className="text-gray-500">No data</div>;
-
   const [hover, setHover] = useState<{x:number,y:number,index:number}|null>(null);
+
+  // Early return after hooks
+  if (!data || data.length === 0) return <div className="text-gray-500">No data</div>;
 
   const left = 40; // space for Y axis labels
   const bottom = 28; // space for X labels

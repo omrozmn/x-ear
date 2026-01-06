@@ -190,13 +190,13 @@ export function DesktopSuppliersPage() {
   }, [sortedSuppliers]);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 p-6">
       <div className="max-w-full mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Tedarikçiler</h1>
-            <p className="text-sm text-gray-500 mt-1">Tedarikçi kayıtlarını yönetin ve takip edin</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Tedarikçiler</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Tedarikçi kayıtlarını yönetin ve takip edin</p>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" onClick={handleRefresh} className="bg-white">
@@ -212,43 +212,43 @@ export function DesktopSuppliersPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-all hover:shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Toplam Tedarikçi</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Toplam Tedarikçi</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
               </div>
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <Users className="h-6 w-6 text-blue-600" />
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-all hover:shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Aktif Tedarikçiler</p>
-                <p className="text-3xl font-bold text-green-600">{stats.active}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Aktif Tedarikçiler</p>
+                <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
               </div>
-              <div className="bg-green-50 p-3 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-all hover:shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Pasif Tedarikçiler</p>
-                <p className="text-3xl font-bold text-gray-600">{stats.inactive}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Pasif Tedarikçiler</p>
+                <p className="text-3xl font-bold text-gray-600 dark:text-gray-400">{stats.inactive}</p>
               </div>
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <Flame className="h-6 w-6 text-gray-600" />
+              <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                <Flame className="h-6 w-6 text-gray-600 dark:text-gray-400" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Search & Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -273,7 +273,7 @@ export function DesktopSuppliersPage() {
 
           {
             showFilters && (
-              <div className="mt-4 pt-4 border-t border-gray-100 animate-in fade-in slide-in-from-top-2">
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-top-2">
                 <SupplierFilters
                   filters={filters}
                   onFiltersChange={setFilters}
@@ -285,7 +285,7 @@ export function DesktopSuppliersPage() {
         </div>
 
         <Tabs defaultValue="all" className="space-y-6">
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
             <TabsList>
               <TabsTrigger value="all">Tedarikçiler</TabsTrigger>
               <TabsTrigger value="suggested">
@@ -301,7 +301,7 @@ export function DesktopSuppliersPage() {
 
           <TabsContent value="all">
             {/* Supplier List */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
               {
                 isLoading ? (
                   <div className="flex items-center justify-center h-64">
@@ -325,10 +325,10 @@ export function DesktopSuppliersPage() {
                 ) : sortedSuppliers.length === 0 ? (
                   <div className="flex items-center justify-center h-64">
                     <div className="text-center">
-                      <div className="bg-gray-50 p-4 rounded-full w-fit mx-auto mb-3">
-                        <Users className="h-8 w-8 text-gray-400" />
+                      <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-full w-fit mx-auto mb-3">
+                        <Users className="h-8 w-8 text-gray-400 dark:text-gray-300" />
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900">Tedarikçi Bulunamadı</h3>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Tedarikçi Bulunamadı</h3>
                       <p className="text-sm text-gray-500 mt-1 mb-4">Arama kriterlerinize uygun kayıt bulunmuyor.</p>
                       <Button onClick={handleNewSupplier} className="bg-blue-600 hover:bg-blue-700 text-white">
                         <Plus className="h-4 w-4 mr-2" />
@@ -363,7 +363,7 @@ export function DesktopSuppliersPage() {
           </TabsContent>
 
           <TabsContent value="suggested">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
               <SuggestedSuppliersList
                 suppliers={suggestedSuppliers}
                 isLoading={suggestedLoading}

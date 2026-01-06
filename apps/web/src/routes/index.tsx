@@ -113,13 +113,13 @@ function DesktopDashboard() {
   return (
     <div className="space-y-6">
       {/* Dashboard Controls */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 rounded-lg shadow-sm">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 rounded-lg shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               options={[
                 { value: "today", label: "Bugün" },
                 { value: "week", label: "Son 1 Hafta" },
@@ -129,7 +129,7 @@ function DesktopDashboard() {
             />
             <Button
               onClick={handleRefresh}
-              className="p-2 text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               variant='secondary'>
               <RefreshCw className="w-5 h-5" />
             </Button>
@@ -178,31 +178,31 @@ function DesktopDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Patient Distribution - Only show if user has analytics permission */}
         {canViewAnalytics ? (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Hasta Dağılımı</h3>
-            <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hasta Dağılımı</h3>
+            <div className="h-64 bg-gray-50 dark:bg-gray-900/50 rounded-lg flex items-center justify-center">
               <PatientDistribution />
             </div>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Hasta Dağılımı</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hasta Dağılımı</h3>
             <NoPermissionPlaceholder />
           </div>
         )}
 
         {/* Recent Activity - Only show if user has activity logs permission */}
         {canViewActivityLogs ? (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Son Aktiviteler</h3>
-            <div className="h-64 bg-gray-50 rounded-lg overflow-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Son Aktiviteler</h3>
+            <div className="h-64 bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-auto">
               {(!recentActivity || recentActivity.length === 0) ? (
-                <div className="h-full flex items-center justify-center text-gray-500">No recent activity</div>
+                <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">No recent activity</div>
               ) : (
                 <ul className="p-4 space-y-3">
                   {recentActivity.map((act: any, idx: number) => (
-                    <li key={idx} className="text-sm text-gray-700">
-                      <div className="text-sm text-gray-800">{formatActivitySentence(act)}</div>
+                    <li key={idx} className="text-sm text-gray-700 dark:text-gray-300">
+                      <div className="text-sm text-gray-800 dark:text-gray-200">{formatActivitySentence(act)}</div>
                     </li>
                   ))}
                 </ul>
@@ -210,8 +210,8 @@ function DesktopDashboard() {
             </div>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Son Aktiviteler</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Son Aktiviteler</h3>
             <NoPermissionPlaceholder />
           </div>
         )}

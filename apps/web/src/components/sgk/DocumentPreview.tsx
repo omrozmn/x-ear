@@ -60,9 +60,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  if (!result.result) return null;
-
-  const { result: data } = result;
+  const data = result.result;
 
   // Reset states when modal opens/closes
   useEffect(() => {
@@ -74,6 +72,9 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       setSearchTerm('');
     }
   }, [isOpen]);
+
+  // Early return after hooks
+  if (!data) return null;
 
   // Handle zoom controls
   const handleZoomIn = () => setImageZoom(prev => Math.min(prev + 0.25, 3));

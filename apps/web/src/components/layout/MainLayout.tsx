@@ -31,6 +31,13 @@ import { useAuthStore } from '../../stores/authStore';
 import { DebugRoleSwitcher } from './DebugRoleSwitcher';
 import { DebugTenantSwitcher } from './DebugTenantSwitcher';
 import { PagePermissionsViewer } from './PagePermissionsViewer';
+import { useTheme } from '../theme-provider';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: (string | undefined | null | false)[]) {
+  return twMerge(clsx(inputs));
+}
 
 // Route'tan page key mapping
 const getPageKeyFromPath = (pathname: string): { key: string; title: string } | null => {
@@ -88,13 +95,17 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }, [subscription, location.pathname, navigate]);
 
 
+  const { theme, setTheme } = useTheme();
+
+  // Derived state for backward compatibility and children props
+  // Note: We use a simple check here. For full accuracy we might need a listener, 
+  // but usually 'dark' class is enough for CSS. 
+  // For JS logic passed to children, we approximate.
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const darkMode = isDark;
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
-    return saved ? JSON.parse(saved) : false;
-  });
-
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
   });
 
@@ -105,21 +116,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
-  useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
+  // Removed direct DOM manipulation for dark mode as ThemeProvider handles it.
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
+    setTheme(isDark ? "light" : "dark");
   };
 
   const toggleUserDropdown = () => {
@@ -186,19 +190,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     const isExpanded = expandedMenus[item.key];
 
     return (
-      <li key={item.key} style={{ marginBottom: '0.25rem' }}>
+      <li key={item.key} className="mb-1">
         <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0.75rem 1rem',
-            color: darkMode ? '#d1d5db' : '#374151',
-            textDecoration: 'none',
-            borderRadius: '0.375rem',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            backgroundColor: 'transparent'
-          }}
+          className={cn(
+            "flex items-center py-3 px-4 rounded-md cursor-pointer transition-all duration-200",
+            "text-gray-700 dark:text-gray-300 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white"
+          )}
           onClick={() => {
             if (hasSubmenu) {
               toggleSubmenu(item.key);
@@ -206,26 +203,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               navigate({ to: item.href });
             }
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = darkMode ? '#374151' : '#f3f4f6';
-            e.currentTarget.style.color = darkMode ? '#ffffff' : '#1f2937';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.color = darkMode ? '#d1d5db' : '#374151';
-          }}
         >
-          <span style={{ marginRight: sidebarCollapsed ? '0' : '0.75rem' }}>
+          <span className={sidebarCollapsed ? 'mr-0' : 'mr-3'}>
             <item.icon size={20} />
           </span>
           {!sidebarCollapsed && (
             <>
-              <span style={{ flex: 1 }}>{item.label}</span>
+              <span className="flex-1">{item.label}</span>
               {hasSubmenu && (
-                <span style={{
-                  transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s ease'
-                }}>
+                <span className={cn(
+                  "transition-transform duration-200",
+                  isExpanded ? "rotate-90" : "rotate-0"
+                )}>
                   <ChevronRight size={16} />
                 </span>
               )}
@@ -234,33 +223,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </div>
 
         {hasSubmenu && !sidebarCollapsed && isExpanded && (
-          <ul style={{
-            listStyle: 'none',
-            padding: 0,
-            margin: '0.25rem 0 0 2rem',
-            borderLeft: `2px solid ${darkMode ? '#374151' : '#e5e7eb'}`
-          }}>
+          <ul className="list-none p-0 m-0 mt-1 ml-8 border-l-2 border-gray-200 dark:border-gray-700">
             {item.submenu.map((subItem: any, index: number) => (
               <li key={index}>
                 <Link
                   to={subItem.href}
-                  style={{
-                    display: 'block',
-                    padding: '0.5rem 1rem',
-                    color: darkMode ? '#9ca3af' : '#6b7280',
-                    textDecoration: 'none',
-                    fontSize: '0.875rem',
-                    borderRadius: '0.375rem',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = darkMode ? '#374151' : '#f3f4f6';
-                    e.currentTarget.style.color = darkMode ? '#ffffff' : '#1f2937';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = darkMode ? '#9ca3af' : '#6b7280';
-                  }}
+                  className={cn(
+                    "block py-2 px-4 text-sm rounded-md transition-all duration-200",
+                    "text-gray-500 dark:text-gray-400 no-underline",
+                    "hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
+                  )}
                 >
                   {subItem.label}
                 </Link>
@@ -281,309 +253,134 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }, []);
 
   return (
-    <div style={{
-      display: 'flex',
-      minHeight: '100vh',
-      backgroundColor: darkMode ? '#111827' : '#ffffff',
-      color: darkMode ? '#ffffff' : '#000000'
-    }}>
+    <div className="flex min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
       {/* Sidebar */}
-      <nav style={{
-        width: sidebarCollapsed ? '80px' : '240px',
-        backgroundColor: darkMode ? '#1f2937' : '#ffffff',
-        borderRight: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
-        transition: 'width 0.3s ease',
-        position: 'fixed',
-        height: '100vh',
-        overflowY: 'auto',
-        zIndex: 1000
-      }}>
-        <div style={{
-          padding: '1rem',
-          borderBottom: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: sidebarCollapsed ? 'center' : 'space-between'
-        }}>
+      <nav className={cn(
+        "fixed h-screen overflow-y-auto z-[1000] transition-[width] duration-300",
+        "bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700",
+        sidebarCollapsed ? "w-[80px]" : "w-[240px]"
+      )}>
+        <div className={cn(
+          "p-4 flex items-center border-b border-gray-200 dark:border-gray-700",
+          sidebarCollapsed ? "justify-center" : "justify-between"
+        )}>
           <Button
             onClick={toggleSidebar}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0.5rem',
-              borderRadius: '0.375rem',
-              color: darkMode ? '#ffffff' : '#1f2937',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
+            className="p-2 h-auto text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
             variant='ghost'>
             <Menu size={20} />
           </Button>
           {!sidebarCollapsed && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <img src="/logo/x.svg" alt="X-Ear Logo" style={{ width: '24px', height: '24px' }} />
-              <h2 style={{
-                margin: 0,
-                fontSize: '1.25rem',
-                fontWeight: 'bold',
-                color: darkMode ? '#ffffff' : '#1f2937'
-              }}>
+            <div className="flex items-center gap-2">
+              <img src="/logo/x.svg" alt="X-Ear Logo" className="w-6 h-6" />
+              <h2 className="m-0 text-xl font-bold text-gray-800 dark:text-white">
                 X-EAR CRM
               </h2>
             </div>
           )}
         </div>
 
-        <ul style={{
-          listStyle: 'none',
-          padding: '1rem 0.5rem',
-          margin: 0
-        }}>
+        <ul className="list-none py-4 px-2 m-0">
           {menuItems.map(renderMenuItem)}
         </ul>
       </nav>
       {/* Main Content */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        marginLeft: sidebarCollapsed ? '80px' : '240px',
-        transition: 'margin-left 0.3s ease'
-      }}>
+      {/* Main Content */}
+      <div className={cn(
+        "flex-1 flex flex-col transition-[margin] duration-300",
+        sidebarCollapsed ? "ml-[80px]" : "ml-[240px]"
+      )}>
         {/* Header */}
-        <header style={{
-          backgroundColor: darkMode ? '#1f2937' : '#ffffff',
-          padding: '1rem 2rem',
-          borderBottom: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 999
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <h1 style={{
-              margin: 0,
-              fontSize: '1.5rem',
-              color: darkMode ? '#ffffff' : '#1f2937',
-              fontWeight: '600'
-            }}>
+        <header className="sticky top-0 z-[999] px-8 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex justify-between items-center">
+            <h1 className="m-0 text-2xl font-semibold text-gray-800 dark:text-white">
               Dashboard
             </h1>
 
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem'
-            }}>
+            <div className="flex items-center gap-4">
               {/* Dark Mode Toggle */}
               <Button
                 onClick={toggleDarkMode}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '0.5rem',
-                  borderRadius: '0.375rem',
-                  color: darkMode ? '#ffffff' : '#1f2937',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                title={darkMode ? 'Açık Tema' : 'Koyu Tema'}
+                className="p-2 h-auto text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                title={isDark ? 'Açık Tema' : 'Koyu Tema'}
                 variant='ghost'>
-                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+                {isDark ? <Sun size={20} /> : <Moon size={20} />}
               </Button>
 
               {/* Notifications */}
               <Button
-                style={{
-                  position: 'relative',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '0.5rem',
-                  borderRadius: '0.375rem',
-                  color: darkMode ? '#ffffff' : '#1f2937',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
+                className="relative p-2 h-auto text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                 title="Bildirimler"
                 variant='ghost'>
                 <Bell size={20} />
-                <span style={{
-                  position: 'absolute',
-                  top: '0.25rem',
-                  right: '0.25rem',
-                  width: '8px',
-                  height: '8px',
-                  backgroundColor: '#ef4444',
-                  borderRadius: '50%'
-                }}></span>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </Button>
 
               {/* Debug Switchers (admin@x-ear.com only) */}
-              <DebugTenantSwitcher darkMode={darkMode} />
-              <DebugRoleSwitcher darkMode={darkMode} />
+              <DebugTenantSwitcher darkMode={isDark} />
+              <DebugRoleSwitcher darkMode={isDark} />
 
               {/* User Menu */}
-              <div style={{ position: 'relative' }}>
+              <div className="relative">
                 <Button
                   onClick={toggleUserDropdown}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '0.5rem',
-                    borderRadius: '0.375rem',
-                    backgroundColor: darkMode ? '#374151' : '#f3f4f6'
-                  }}
+                  className="flex items-center gap-2 p-2 h-auto rounded-md bg-gray-100 dark:bg-gray-700/50 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                   variant='ghost'>
-                  <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    backgroundColor: '#3b82f6',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: '0.875rem'
-                  }}>
+                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
                     <User size={16} />
                   </div>
-                  <div style={{
-                    textAlign: 'left',
-                    color: darkMode ? '#ffffff' : '#1f2937'
-                  }}>
-                    <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>
+                  <div className="text-left hidden sm:block">
+                    <div className="text-sm font-medium">
                       {user?.name || 'User'}
                     </div>
-                    <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+                    <div className="text-xs opacity-70">
                       {user?.role || 'Guest'}
                     </div>
                   </div>
-                  <ChevronDown size={12} style={{
-                    color: darkMode ? '#ffffff' : '#1f2937'
-                  }} />
+                  <ChevronDown size={12} />
                 </Button>
 
                 {/* User Dropdown */}
                 {showUserDropdown && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
-                    marginTop: '0.5rem',
-                    backgroundColor: darkMode ? '#1f2937' : '#ffffff',
-                    border: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
-                    borderRadius: '0.5rem',
-                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                    minWidth: '200px',
-                    zIndex: 1000
-                  }}>
-                    <div style={{ padding: '0.5rem 0' }}>
-                      <Link
-                        to="/profile"
-                        onClick={() => setShowUserDropdown(false)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '0.75rem 1rem',
-                          color: darkMode ? '#ffffff' : '#1f2937',
-                          textDecoration: 'none',
-                          fontSize: '0.875rem',
-                          borderBottom: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
-                          backgroundColor: 'transparent',
-                          transition: 'background-color 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = darkMode ? '#374151' : '#f3f4f6';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
-                      >
-                        <User size={16} style={{ marginRight: '0.5rem' }} />
-                        <span>Profil</span>
-                      </Link>
-                      <Link
-                        to={"/settings" as any}
-                        onClick={() => setShowUserDropdown(false)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '0.75rem 1rem',
-                          color: darkMode ? '#ffffff' : '#1f2937',
-                          textDecoration: 'none',
-                          fontSize: '0.875rem',
-                          borderBottom: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
-                          backgroundColor: 'transparent',
-                          transition: 'background-color 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = darkMode ? '#374151' : '#f3f4f6';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
-                      >
-                        <Settings size={16} style={{ marginRight: '0.5rem' }} />
-                        <span>Ayarlar</span>
-                      </Link>
-                      <Button
-                        onClick={() => {
-                          const { logout } = useAuthStore.getState();
+                  <div className="absolute top-full right-0 mt-2 min-w-[200px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[1000] py-2">
+                    <Link
+                      to="/profile"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left transition-colors border-b border-gray-100 dark:border-gray-700"
+                    >
+                      <User size={16} className="mr-2" />
+                      <span>Profil</span>
+                    </Link>
+                    <Link
+                      to={"/settings" as any}
+                      onClick={() => setShowUserDropdown(false)}
+                      className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left transition-colors border-b border-gray-100 dark:border-gray-700"
+                    >
+                      <Settings size={16} className="mr-2" />
+                      <span>Ayarlar</span>
+                    </Link>
+                    <Button
+                      onClick={() => {
+                        const { logout } = useAuthStore.getState();
+                        try {
+                          logout();
+                        } catch (e) {
                           try {
-                            logout();
-                          } catch (e) {
-                            // fallback: clear common keys
-                            try {
-                              localStorage.removeItem('token');
-                              localStorage.removeItem('refreshToken');
-                              localStorage.removeItem('auth_token');
-                              localStorage.removeItem('refresh_token');
-                              localStorage.removeItem('x-ear.auth.token@v1');
-                              delete (window as any).__AUTH_TOKEN__;
-                            } catch (err) { }
-                          }
-                          navigate({ to: '/login' as any });
-                        }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          width: '100%',
-                          padding: '0.75rem 1rem',
-                          color: '#ef4444',
-                          background: 'none',
-                          border: 'none',
-                          textAlign: 'left',
-                          fontSize: '0.875rem',
-                          cursor: 'pointer',
-                          backgroundColor: 'transparent',
-                          transition: 'background-color 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = darkMode ? '#374151' : '#f3f4f6';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
-                        variant='ghost'>
-                        <LogOut size={16} style={{ marginRight: '0.5rem' }} />
-                        <span>Çıkış Yap</span>
-                      </Button>
-                    </div>
+                            localStorage.removeItem('token');
+                            localStorage.removeItem('refreshToken');
+                            localStorage.removeItem('auth_token');
+                            localStorage.removeItem('refresh_token');
+                            localStorage.removeItem('x-ear.auth.token@v1');
+                            delete (window as any).__AUTH_TOKEN__;
+                          } catch (err) { }
+                        }
+                        navigate({ to: '/login' as any });
+                      }}
+                      className="flex items-center w-full px-4 py-3 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-600 transition-colors h-auto"
+                      variant='ghost'>
+                      <LogOut size={16} className="mr-2" />
+                      <span>Çıkış Yap</span>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -592,35 +389,19 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </header>
 
         {/* Content */}
-        <main style={{
-          flex: 1,
-          padding: '2rem',
-          backgroundColor: darkMode ? '#111827' : '#f9fafb',
-          minHeight: 'calc(100vh - 80px)'
-        }}>
+        <main className="flex-1 p-8 bg-gray-50 dark:bg-gray-950 min-h-[calc(100vh-80px)]">
           {/* Impersonation Warning Banner */}
           {((user as any)?.isImpersonatingTenant || (user as any)?.isImpersonating) && (
-            <div
-              style={{
-                marginBottom: '1rem',
-                padding: '0.75rem 1rem',
-                backgroundColor: darkMode ? '#065f46' : '#d1fae5',
-                border: `2px solid ${darkMode ? '#10b981' : '#059669'}`,
-                borderRadius: '0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Building2 size={16} style={{ color: darkMode ? '#34d399' : '#065f46' }} />
-                <span style={{ color: darkMode ? '#34d399' : '#065f46', fontWeight: '600', fontSize: '0.875rem' }}>
+            <div className="mb-4 p-3 rounded-lg flex items-center justify-between border-2 bg-emerald-100 dark:bg-emerald-900/30 border-emerald-600 dark:border-emerald-500">
+              <div className="flex items-center gap-2">
+                <Building2 size={16} className="text-emerald-800 dark:text-emerald-400" />
+                <span className="font-semibold text-sm text-emerald-800 dark:text-emerald-400">
                   {(user as any)?.isImpersonatingTenant && `🏢 Impersonating: ${(user as any)?.tenantName}`}
                   {(user as any)?.isImpersonating && !((user as any)?.isImpersonatingTenant) && `👤 Impersonating Role: ${user?.role}`}
                   {(user as any)?.isImpersonatingTenant && (user as any)?.isImpersonating && ` • Role: ${user?.role}`}
                 </span>
               </div>
-              <span style={{ color: darkMode ? '#6ee7b7' : '#047857', fontSize: '0.75rem' }}>
+              <span className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
                 QA Debug Mode
               </span>
             </div>
@@ -636,7 +417,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <PagePermissionsViewer
                   pageKey={pageInfo.key}
                   pageTitle={pageInfo.title}
-                  darkMode={darkMode}
+                  darkMode={isDark}
                 />
               );
             }

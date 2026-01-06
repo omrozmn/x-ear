@@ -353,14 +353,14 @@ export const DesktopInventoryPage: React.FC = () => {
                 placeholder="🔍 Barkod, seri no, marka, model veya isim ile ara..."
                 value={modalSearch}
                 onChange={(e) => setModalSearch(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div className="w-56">
               <select
                 value={modalCategoryFilter}
                 onChange={(e) => setModalCategoryFilter(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               >
                 <option value="">Tüm Kategoriler</option>
                 {categories.map((c) => (
@@ -406,28 +406,28 @@ export const DesktopInventoryPage: React.FC = () => {
                 const serials = item.availableSerials || item.available_serials || [];
                 const isSelected = modalSelectedItemId === (item.id || item.uniqueId);
                 return (
-                  <div key={item.id || item.uniqueId} className={`border rounded-lg p-4 ${isSelected ? 'border-blue-500 bg-blue-50 shadow' : 'bg-white'}`}>
+                  <div key={item.id || item.uniqueId} className={`border rounded-lg p-4 ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'}`}>
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h4 className="font-semibold text-gray-900">{item.brand} {item.model}</h4>
-                        <p className="text-xs text-gray-500">{item.name || ''}</p>
+                        <h4 className="font-semibold text-gray-900 dark:text-gray-100">{item.brand} {item.model}</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{item.name || ''}</p>
                       </div>
                       <div className="text-right text-sm">
-                        <div className="font-medium">₺{Number(price).toLocaleString()}</div>
-                        <div className="text-gray-500">Stok: {available}</div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">₺{Number(price).toLocaleString()}</div>
+                        <div className="text-gray-500 dark:text-gray-400">Stok: {available}</div>
                       </div>
                     </div>
 
                     {serials && serials.length > 0 ? (
                       <div className="mb-2">
-                        <label className="block text-xs text-gray-600 mb-1">Seri No</label>
+                        <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Seri No</label>
                         <select
                           value={modalSelectedItemId === (item.id || item.uniqueId) ? (modalSelectedSerial || '') : ''}
                           onChange={(e) => {
                             setModalSelectedItemId(item.id || item.uniqueId);
                             setModalSelectedSerial(e.target.value || null);
                           }}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         >
                           <option value="">Seri seçin (opsiyonel)</option>
                           {serials.map((s: string) => (

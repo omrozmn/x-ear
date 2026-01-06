@@ -1,11 +1,11 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Button, Loading, Badge, Checkbox, Modal } from '@x-ear/ui-web';
-import { 
-  User, 
-  Phone, 
-  Mail, 
-  Calendar, 
-  MapPin, 
+import {
+  User,
+  Phone,
+  Mail,
+  Calendar,
+  MapPin,
   CreditCard,
   AlertCircle,
   CheckCircle,
@@ -20,13 +20,13 @@ import {
 import { useDeletePatient } from '../../hooks/usePatients';
 import type { Patient } from '../../types/patient/index';
 import { PatientCommunicationIntegration } from './PatientCommunicationIntegration';
-import { 
-  getStatusBadge, 
-  formatDate, 
-  formatPhone, 
-  getSegmentBadge, 
-  getAcquisitionStatusBadge, 
-  getBranchBadge 
+import {
+  getStatusBadge,
+  formatDate,
+  formatPhone,
+  getSegmentBadge,
+  getAcquisitionStatusBadge,
+  getBranchBadge
 } from './PatientListHelpers';
 
 interface PatientListProps {
@@ -59,13 +59,12 @@ interface SortableHeaderProps {
 
 function SortableHeader({ field, label, sortBy, sortOrder, onSort }: SortableHeaderProps) {
   const isActive = sortBy === field;
-  
+
   return (
     <button
       onClick={() => onSort?.(field)}
-      className={`flex items-center space-x-1 text-left font-medium text-gray-700 hover:text-gray-900 ${
-        isActive ? 'text-blue-600' : ''
-      }`}
+      className={`flex items-center space-x-1 text-left font-medium text-gray-700 hover:text-gray-900 ${isActive ? 'text-blue-600' : ''
+        }`}
     >
       <span>{label}</span>
       {isActive && (
@@ -174,7 +173,7 @@ export function PatientList({
                     {patient.firstName} {patient.lastName}
                   </h3>
                 </div>
-                
+
                 <div className="mt-2 space-y-1">
                   {patient.tcNumber && (
                     <div className="flex items-center text-xs text-gray-500">
@@ -240,10 +239,10 @@ export function PatientList({
   // List view (default)
   return (
     <>
-      <div className={`bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden ${className}`}>
+      <div className={`bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden ${className}`}>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 {showSelection && (
                   <th className="px-4 py-3 text-left w-12">
@@ -254,7 +253,7 @@ export function PatientList({
                     />
                   </th>
                 )}
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[200px]">
                   <SortableHeader
                     field="name"
                     label="Ad Soyad"
@@ -263,25 +262,25 @@ export function PatientList({
                     onSort={onSort}
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
                   TC Kimlik
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px]">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[140px]">
                   Telefon
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">
                   Segment
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
                   Kazanım
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
                   Şube
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">
                   Durum
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
                   <SortableHeader
                     field="createdAt"
                     label="Kayıt Tarihi"
@@ -291,17 +290,17 @@ export function PatientList({
                   />
                 </th>
                 {showActions && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[160px]">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[160px]">
                     İşlemler
                   </th>
                 )}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {patients.map((patient) => (
                 <tr
                   key={patient.id}
-                  className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors duration-150"
                   onClick={() => {
                     console.log('=== TABLE ROW CLICK ===', patient);
                     console.log('onPatientClick:', onPatientClick);
@@ -329,33 +328,33 @@ export function PatientList({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                            {(() => {
-                              const g = String(patient.gender || '').toLowerCase();
-                              const isFemale = ['f','female','kadın','k','woman','w'].includes(g) || g.includes('kad');
-                              return (
-                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isFemale ? 'bg-pink-100' : 'bg-gradient-to-br from-blue-100 to-blue-200'}`}>
-                                  <User className={`h-5 w-5 ${isFemale ? 'text-pink-600' : 'text-blue-600'}`} />
-                                </div>
-                              );
-                            })()}
+                        {(() => {
+                          const g = String(patient.gender || '').toLowerCase();
+                          const isFemale = ['f', 'female', 'kadın', 'k', 'woman', 'w'].includes(g) || g.includes('kad');
+                          return (
+                            <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isFemale ? 'bg-pink-100 dark:bg-pink-900/30' : 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30'}`}>
+                              <User className={`h-5 w-5 ${isFemale ? 'text-pink-600 dark:text-pink-400' : 'text-blue-600 dark:text-blue-400'}`} />
+                            </div>
+                          );
+                        })()}
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {patient.firstName} {patient.lastName}
                         </div>
                         {patient.email && (
-                          <div className="text-sm text-gray-500 truncate max-w-[180px]">{patient.email}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[180px]">{patient.email}</div>
                         )}
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-mono">
                     {patient.tcNumber || '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                     {formatPhone(patient.phone)}
                   </td>
-                  <td 
+                  <td
                     className="px-6 py-4 whitespace-nowrap cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -365,7 +364,7 @@ export function PatientList({
                   >
                     {getSegmentBadge(patient.segment)}
                   </td>
-                  <td 
+                  <td
                     className="px-6 py-4 whitespace-nowrap cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -375,7 +374,7 @@ export function PatientList({
                   >
                     {getAcquisitionStatusBadge(patient.acquisitionType)}
                   </td>
-                  <td 
+                  <td
                     className="px-6 py-4 whitespace-nowrap cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -385,7 +384,7 @@ export function PatientList({
                   >
                     {getBranchBadge((patient as any).branchId, (patient as any).branch)}
                   </td>
-                  <td 
+                  <td
                     className="px-6 py-4 whitespace-nowrap cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -395,7 +394,7 @@ export function PatientList({
                   >
                     {getStatusBadge(patient.status)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {formatDate(patient.createdAt)}
                   </td>
                   {showActions && (
@@ -408,7 +407,7 @@ export function PatientList({
                             e.stopPropagation();
                             onEdit?.(patient);
                           }}
-                          className="h-9 w-9 p-0 hover:bg-blue-50 hover:text-blue-600"
+                          className="h-9 w-9 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 text-gray-400 dark:text-gray-500"
                           title="Düzenle"
                         >
                           <Edit className="h-5 w-5" />
@@ -420,7 +419,7 @@ export function PatientList({
                             e.stopPropagation();
                             setCommunicationPatient(patient);
                           }}
-                          className="h-9 w-9 p-0 hover:bg-green-50 hover:text-green-600"
+                          className="h-9 w-9 p-0 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 text-gray-400 dark:text-gray-500"
                           title="İletişim"
                         >
                           <MessageSquare className="h-5 w-5" />
@@ -432,7 +431,7 @@ export function PatientList({
                             e.stopPropagation();
                             onDelete?.(patient);
                           }}
-                          className="h-9 w-9 p-0 hover:bg-red-50 hover:text-red-600"
+                          className="h-9 w-9 p-0 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 text-gray-400 dark:text-gray-500"
                           title="Sil"
                         >
                           <Trash2 className="h-5 w-5" />
@@ -462,5 +461,5 @@ export function PatientList({
         </Modal>
       )}
     </>
-   );
+  );
 }

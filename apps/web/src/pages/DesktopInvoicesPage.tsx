@@ -42,6 +42,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   className = ''
 }) => {
   const navigate = useNavigate();
+  const { success: showSuccess, error: showError } = useToastHelpers();
 
   const [state, setState] = useState<PageState>({
     invoices: [],
@@ -519,7 +520,6 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         modalTitle={'Toplu Fatura Yükleme'}
         sampleDownloadUrl={'/import_samples/invoices_sample.csv'}
         onComplete={(res) => {
-          const { success: showSuccess, error: showError } = useToastHelpers();
           if (res.errors && res.errors.length > 0) {
             showError(`Fatura import tamamlandı — Hatalı satır: ${res.errors.length}`);
           } else {

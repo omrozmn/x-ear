@@ -25,7 +25,7 @@ import { PatientTagUpdateModal } from '../components/patients/PatientTagUpdateMo
 
 
 export function DesktopPatientsPage() {
-
+  const { success: showSuccess, error: showError } = useToastHelpers();
   const navigate = useNavigate();
   const { patientId } = useParams({ strict: false }) as { patientId?: string };
 
@@ -224,13 +224,13 @@ export function DesktopPatientsPage() {
   const paginatedPatients = sortedPatients.slice(startIndex, endIndex);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Hastalar</h1>
-            <p className="text-sm text-gray-600 mt-1">Hasta kayıtlarını yönetin</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Hastalar</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Hasta kayıtlarını yönetin</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={handleRefresh}>
@@ -262,38 +262,38 @@ export function DesktopPatientsPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Toplam</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Toplam</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
               </div>
               <Users className="h-8 w-8 text-blue-500" />
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Aktif</p>
-                <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Aktif</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Pasif</p>
-                <p className="text-2xl font-bold text-gray-600">{stats.inactive}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Pasif</p>
+                <p className="text-2xl font-bold text-gray-600 dark:text-gray-400">{stats.inactive}</p>
               </div>
               <Flame className="h-8 w-8 text-gray-400" />
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Cihazlı</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.withDevices}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Cihazlı</p>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.withDevices}</p>
               </div>
               <Headphones className="h-8 w-8 text-purple-500" />
             </div>
@@ -302,7 +302,7 @@ export function DesktopPatientsPage() {
       </div>
 
       {/* Search & Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
         <div className="flex gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -325,7 +325,7 @@ export function DesktopPatientsPage() {
         </div>
 
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <PatientFilters
               filters={filters}
               onChange={setFilters}
@@ -338,7 +338,7 @@ export function DesktopPatientsPage() {
       </div>
 
       {/* Patient List */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -467,7 +467,6 @@ export function DesktopPatientsPage() {
         modalTitle={'Toplu Hasta Yükleme'}
         sampleDownloadUrl={'/import_samples/patients_sample.csv'}
         onComplete={(res) => {
-          const { success: showSuccess, error: showError } = useToastHelpers();
           if (res.errors && res.errors.length > 0) {
             showError(`Hasta import tamamlandı — Hatalı satır: ${res.errors.length}`);
           } else {
