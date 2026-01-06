@@ -1,4 +1,4 @@
-import type { Supplier as BaseSupplier } from '@/api/generated/schemas';
+import type { SupplierRead as BaseSupplier } from '@/api/generated/schemas';
 
 // Define status type locally if not available
 export type SuppliersGetSuppliersStatus = 'ACTIVE' | 'INACTIVE';

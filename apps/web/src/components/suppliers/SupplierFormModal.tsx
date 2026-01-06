@@ -26,7 +26,7 @@ const cityOptions: AutocompleteOption[] = citiesData.map((c: any) => ({
 interface SupplierFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: Omit<SupplierExtended, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  onSave: (data: Omit<SupplierExtended, 'id' | 'createdAt' | 'updatedAt' | 'tenantId'>) => Promise<void>;
   supplier?: SupplierExtended | null;
   isLoading?: boolean;
 }

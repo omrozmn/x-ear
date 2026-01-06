@@ -27,14 +27,14 @@ const AdminSettingsPage: React.FC = () => {
     const backupMutation = useTriggerBackup();
 
     useEffect(() => {
-        if (settingsData?.data) {
-            setSettings(settingsData.data as any);
+        if ((settingsData as any)?.data) {
+            setSettings((settingsData as any).data);
         }
     }, [settingsData]);
 
     const handleSave = async () => {
         try {
-            await updateMutation.mutateAsync({ data: settings });
+            await updateMutation.mutateAsync({ data: settings as any });
             toast.success('Ayarlar kaydedildi');
             refetch();
         } catch (error) {

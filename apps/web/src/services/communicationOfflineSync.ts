@@ -481,13 +481,18 @@ class CommunicationOfflineSync {
     const metadata = await this.db.get('syncMetadata', 'messages');
     const since = metadata?.lastSyncTimestamp || new Date(0).toISOString();
 
-    const { communicationsGetMessages } = await import('@/api/generated');
-    const response = await communicationsGetMessages({ since, limit: 1000 } as any);
+    const { listMessages } = await import('@/api/generated');
+    const response = await listMessages({ since, limit: 1000 } as any);
 
+    // Orval response structure handling
     const result = (response as any).data || response;
-    if (!(result as any).success) return;
+    // Check if result has 'data' property (standard response envelope) or is the array itself
+    const dataList = Array.isArray(result) ? result : (result.data || []);
 
-    const messages: CommunicationMessage[] = (result as any).data.map((msg: any) => ({
+    // If wrapped in success/message envelope
+    if (result.success === false) return;
+
+    const messages: CommunicationMessage[] = dataList.map((msg: any) => ({
       ...msg,
       syncStatus: 'synced' as const
     }));
@@ -511,13 +516,16 @@ class CommunicationOfflineSync {
     const metadata = await this.db.get('syncMetadata', 'templates');
     const since = metadata?.lastSyncTimestamp || new Date(0).toISOString();
 
-    const { communicationsGetTemplates } = await import('@/api/generated');
-    const response = await communicationsGetTemplates({ since, limit: 1000 } as any);
+    const { listTemplates } = await import('@/api/generated');
+    const response = await listTemplates({ since, limit: 1000 } as any);
 
+    // Orval response structure handling
     const result = (response as any).data || response;
-    if (!(result as any).success) return;
+    const dataList = Array.isArray(result) ? result : (result.data || []);
 
-    const templates: CommunicationTemplate[] = (result as any).data.map((tpl: any) => ({
+    if (result.success === false) return;
+
+    const templates: CommunicationTemplate[] = dataList.map((tpl: any) => ({
       ...tpl,
       syncStatus: 'synced' as const
     }));

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import {
-  inventoryGetInventoryItem,
-  inventoryDeleteInventoryItem,
-  inventoryUpdateInventoryItem,
-  inventoryAddSerialNumbers
+  getInventoryItem,
+  deleteInventory,
+  updateInventory,
+  addSerials
 } from '@/api/generated';
 import { ArrowLeft, Edit, X, Trash2, Package, Save, AlertTriangle } from 'lucide-react';
 import { Button, Modal } from '@x-ear/ui-web';
@@ -69,7 +69,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
   const loadItem = async () => {
     try {
       setLoading(true);
-      const response = await inventoryGetInventoryItem(id);
+      const response = await getInventoryItem(id);
       const apiItem = unwrapObject<any>(response);
 
       if (apiItem) {
@@ -162,7 +162,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
     if (!item) return;
 
     try {
-      await inventoryDeleteInventoryItem(id);
+      await deleteInventory(id);
       setIsDeleteModalOpen(false);
       navigate({ to: '/inventory' });
     } catch (err) {
@@ -210,7 +210,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
     try {
       // include kdv in the payload so backend can persist kdv_rate
-      const response = await inventoryUpdateInventoryItem(id, {
+      const response = await updateInventory(id, {
         name: editedItem.name ?? item.name,
         brand: editedItem.brand ?? item.brand,
         model: editedItem.model,
@@ -251,7 +251,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         count: serials.length
       });
 
-      const response = await inventoryAddSerialNumbers(id, { serials });
+      const response = await addSerials(id, { serials });
 
       // If inventoryAddSerialNumbers returns void, remove the success check and just reload
       await loadItem();
@@ -271,7 +271,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         count: features.length
       });
 
-      const response = await inventoryUpdateInventoryItem(id, { features } as any);
+      const response = await updateInventory(id, { features } as any);
 
       if ((response as any).data?.success) {
         await loadItem();

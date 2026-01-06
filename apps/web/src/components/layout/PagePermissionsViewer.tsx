@@ -1,8 +1,48 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Eye, X, Check, Lock, Shield } from 'lucide-react';
-import { useAdminDebugPagePermissions, getAdminDebugPagePermissionsQueryKey } from '@/api/generated/admin/admin';
+import { useGetMyPermissions, getGetMyPermissionsQueryKey } from '@/api/generated/permissions/permissions';
 import { useAuthStore } from '../../stores/authStore';
+
+// Page permission mappings - maps pageKey to required permissions
+const PAGE_PERMISSION_MAP: Record<string, Array<{ code: string; label: string }>> = {
+  dashboard: [
+    { code: 'dashboard.view', label: 'Dashboard Görüntüleme' },
+    { code: 'dashboard.analytics', label: 'Analytics Görüntüleme' },
+  ],
+  patients: [
+    { code: 'patients.list', label: 'Hasta Listesi' },
+    { code: 'patients.create', label: 'Hasta Oluşturma' },
+    { code: 'patients.update', label: 'Hasta Güncelleme' },
+    { code: 'patients.delete', label: 'Hasta Silme' },
+  ],
+  inventory: [
+    { code: 'inventory.list', label: 'Envanter Listesi' },
+    { code: 'inventory.create', label: 'Ürün Ekleme' },
+    { code: 'inventory.update', label: 'Ürün Güncelleme' },
+    { code: 'inventory.delete', label: 'Ürün Silme' },
+  ],
+  invoices: [
+    { code: 'invoices.list', label: 'Fatura Listesi' },
+    { code: 'invoices.create', label: 'Fatura Oluşturma' },
+    { code: 'invoices.update', label: 'Fatura Güncelleme' },
+    { code: 'invoices.delete', label: 'Fatura Silme' },
+  ],
+  appointments: [
+    { code: 'appointments.list', label: 'Randevu Listesi' },
+    { code: 'appointments.create', label: 'Randevu Oluşturma' },
+    { code: 'appointments.update', label: 'Randevu Güncelleme' },
+    { code: 'appointments.delete', label: 'Randevu Silme' },
+  ],
+  settings: [
+    { code: 'settings.view', label: 'Ayarları Görüntüleme' },
+    { code: 'settings.update', label: 'Ayarları Güncelleme' },
+  ],
+  reports: [
+    { code: 'reports.view', label: 'Raporları Görüntüleme' },
+    { code: 'reports.export', label: 'Rapor Dışa Aktarma' },
+  ],
+};
 
 // Debug admin email
 const DEBUG_ADMIN_EMAIL = 'admin@x-ear.com';
@@ -20,28 +60,56 @@ export const PagePermissionsViewer: React.FC<PagePermissionsViewerProps> = ({
 }) => {
   const { user } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
-  
+
   // Only show for debug admin
-  const isDebugAdmin = user?.email === DEBUG_ADMIN_EMAIL;
-  
-  // Fetch page permissions
-  const { data: permissionsResponse, isLoading } = useAdminDebugPagePermissions(pageKey, {
+  const isDebugAdmin = user?.email === DEBUG_ADMIN_EMAIL || user?.role === 'super_admin';
+
+  // Fetch user's permissions
+  const { data: permissionsResponse, isLoading } = useGetMyPermissions({
     query: {
-      queryKey: getAdminDebugPagePermissionsQueryKey(pageKey),
+      queryKey: getGetMyPermissionsQueryKey(),
       enabled: isDebugAdmin && isOpen,
-      staleTime: 30 * 1000, // 30 saniye
+      staleTime: 30 * 1000, // 30 seconds
     }
   });
-  
+
+  // Calculate actions based on page permissions and user's permissions
+  const actions = useMemo(() => {
+    const pagePermissions = PAGE_PERMISSION_MAP[pageKey] || [];
+
+    // Extract user permissions from response
+    let userPermissions: string[] = [];
+    const respData = permissionsResponse as any;
+
+    if (respData?.data) {
+      if (Array.isArray(respData.data)) {
+        userPermissions = respData.data;
+      } else if (respData.data.permissions) {
+        userPermissions = respData.data.permissions;
+      }
+    } else if (Array.isArray(respData)) {
+      userPermissions = respData;
+    }
+
+    // Admin has all permissions
+    const isAdmin = user?.role === 'super_admin' || user?.role === 'admin';
+    const hasWildcard = userPermissions.includes('*');
+
+    return pagePermissions.map(perm => ({
+      code: perm.code,
+      label: perm.label,
+      allowed: isAdmin || hasWildcard || userPermissions.includes(perm.code),
+    }));
+  }, [pageKey, permissionsResponse, user?.role]);
+
+  const allowedCount = actions.filter(a => a.allowed).length;
+  const totalCount = actions.length;
+
   // Don't render if not debug admin
   if (!isDebugAdmin) {
     return null;
   }
-  
-  // Orval returns data directly
-  const data = permissionsResponse;
-  const actions = (data as any)?.actions || [];
-  
+
   return (
     <>
       {/* Floating Button */}
@@ -77,7 +145,7 @@ export const PagePermissionsViewer: React.FC<PagePermissionsViewerProps> = ({
       >
         <Eye size={20} />
       </button>
-      
+
       {/* Modal */}
       {isOpen && (
         <div
@@ -129,7 +197,7 @@ export const PagePermissionsViewer: React.FC<PagePermissionsViewerProps> = ({
                     color: darkMode ? '#9ca3af' : '#6b7280',
                     marginTop: '0.125rem',
                   }}>
-                    Rol: {(data as any)?.roleDisplayName || (data as any)?.role || user?.role}
+                    Rol: {user?.role || 'Unknown'}
                   </div>
                 </div>
               </div>
@@ -147,7 +215,7 @@ export const PagePermissionsViewer: React.FC<PagePermissionsViewerProps> = ({
                 <X size={20} />
               </button>
             </div>
-            
+
             {/* Content */}
             <div style={{
               padding: '1rem 1.5rem',
@@ -172,7 +240,7 @@ export const PagePermissionsViewer: React.FC<PagePermissionsViewerProps> = ({
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {actions.map((action: any) => (
+                  {actions.map((action) => (
                     <div
                       key={action.code}
                       style={{
@@ -187,7 +255,7 @@ export const PagePermissionsViewer: React.FC<PagePermissionsViewerProps> = ({
                         border: `1px solid ${action.allowed
                           ? (darkMode ? '#10b981' : '#a7f3d0')
                           : (darkMode ? '#ef4444' : '#fecaca')
-                        }`,
+                          }`,
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -234,7 +302,7 @@ export const PagePermissionsViewer: React.FC<PagePermissionsViewerProps> = ({
                 </div>
               )}
             </div>
-            
+
             {/* Footer */}
             <div style={{
               padding: '0.75rem 1.5rem',
@@ -248,7 +316,7 @@ export const PagePermissionsViewer: React.FC<PagePermissionsViewerProps> = ({
                 fontSize: '0.75rem',
                 color: darkMode ? '#6b7280' : '#9ca3af',
               }}>
-                {(data as any)?.allowedCount || 0} / {(data as any)?.totalCount || 0} izin aktif
+                {allowedCount} / {totalCount} izin aktif
               </span>
               <span style={{
                 fontSize: '0.65rem',

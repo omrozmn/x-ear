@@ -4,7 +4,11 @@ import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@x-ear/
 import { User, Mail, Shield, Key, Save, Phone, Eye, EyeOff, Edit2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { generateUsername } from '../utils/stringUtils';
-import { useUsersUpdateMe, useUsersChangePassword, useUsersGetCurrentUser } from '@/api/generated';
+import {
+    useGetMeApiUsersMeGet,
+    useUpdateMeApiUsersMePut,
+    useChangePasswordApiUsersMePasswordPost
+} from '@/api/generated';
 
 
 export const DesktopProfilePage: React.FC = () => {
@@ -45,7 +49,7 @@ export const DesktopProfilePage: React.FC = () => {
     const [isEditingPhone, setIsEditingPhone] = useState(false);
 
     // API Hooks (Query & Mutations)
-    const { data: userDataResponse, isError, isLoading, error } = useUsersGetCurrentUser({
+    const { data: userDataResponse, isError, isLoading, error } = useGetMeApiUsersMeGet({
         query: {
             retry: 1,
             refetchOnWindowFocus: false
@@ -66,7 +70,7 @@ export const DesktopProfilePage: React.FC = () => {
         });
     }, [isLoading, isError, userDataResponse, error]);
 
-    const updateMeMutation = useUsersUpdateMe({
+    const updateMeMutation = useUpdateMeApiUsersMePut({
         mutation: {
             onSuccess: (data: any) => {
                 toast.success('Profil bilgileri güncellendi');
@@ -84,7 +88,7 @@ export const DesktopProfilePage: React.FC = () => {
         }
     });
 
-    const changePasswordMutation = useUsersChangePassword({
+    const changePasswordMutation = useChangePasswordApiUsersMePasswordPost({
         mutation: {
             onSuccess: () => {
                 toast.success('Şifre başarıyla değiştirildi');

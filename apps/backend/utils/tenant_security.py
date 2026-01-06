@@ -5,17 +5,18 @@ from sqlalchemy.orm import Session, Query
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, get_jwt
 import logging
 
+# Import Single Source of Truth from database.py
+from database import (
+    get_current_tenant_id, 
+    set_current_tenant_id,
+    should_skip_tenant_filter,
+    _skip_tenant_filter as _skip_filter  # Alias for backward compat
+)
+
 logger = logging.getLogger(__name__)
 
-# Context variable to store the current tenant ID
-_current_tenant_id = ContextVar('tenant_id', default=None)
-_skip_filter = ContextVar('skip_filter', default=False)
-
-def get_current_tenant_id():
-    return _current_tenant_id.get()
-
-def set_current_tenant_id(tenant_id):
-    _current_tenant_id.set(tenant_id)
+# _current_tenant_id removed - usage via get/set methods
+# _skip_filter imported from database
 
 class UnboundSession:
     """Context manager to bypass tenant filter"""

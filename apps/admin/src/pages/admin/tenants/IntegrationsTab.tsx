@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react';
 import { CreditCard, FileText, MessageSquare } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiClient } from '@/lib/api';
-import { useUpdateTenant, Tenant } from '@/lib/api-client';
+import { useUpdateTenant } from '@/lib/api-client';
 
-interface ExtendedTenant extends Tenant {
+// Local type since Tenant is not exported from generated client
+interface ExtendedTenant {
+    id?: string;
+    settings?: Record<string, any>;
     current_plan_id?: string;
     subscription_start_date?: string;
     subscription_end_date?: string;
@@ -88,7 +91,7 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
             };
 
             await updateTenant({
-                id: tenant.id!,
+                tenantId: tenant.id!,
                 data: { settings: newSettings } as any
             });
             toast.success('Entegrasyon ayarları güncellendi');

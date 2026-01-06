@@ -3,14 +3,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { Building2, ChevronDown, Check, Loader2, Search, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  useAdminTenantsGetTenants,
-  useAdminDebugSwitchTenant,
-  useAdminDebugExitImpersonation,
-} from '@/api/generated/admin/admin';
+  useListAdminTenants,
+  useDebugSwitchTenant,
+  useDebugExitImpersonation,
+} from '@/api/generated';
 import { useAuthStore } from '../../stores/authStore';
 import { patientService } from '../../services/patient.service';
-
-const DEBUG_ADMIN_EMAIL = 'admin@x-ear.com';
+import { indexedDBManager } from '../../utils/indexeddb';
 
 interface DebugTenantSwitcherProps {
   darkMode?: boolean;
@@ -23,8 +22,10 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // Check if current user is the debug admin
-  const isDebugAdmin = user?.email === DEBUG_ADMIN_EMAIL || (user as any)?.realUserEmail === DEBUG_ADMIN_EMAIL;
+  // Check if current user is super admin (can use debug features)
+  const isDebugAdmin = (user as any)?.is_super_admin === true || 
+                       (user as any)?.role === 'super_admin' || 
+                       (user as any)?.isImpersonatingTenant === true;
 
   // Debounce search (300ms)
   useEffect(() => {
@@ -35,7 +36,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
   }, [searchQuery]);
 
   // Fetch tenants with search
-  const { data: tenantsResponse, isLoading: tenantsLoading } = useAdminTenantsGetTenants(
+  const { data: tenantsResponse, isLoading: tenantsLoading } = useListAdminTenants(
     { search: debouncedSearch, limit: 50 },
     {
       query: {
@@ -46,14 +47,24 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
   );
 
   // Tenant switch mutation
-  const { mutate: switchTenant, isPending: isSwitching } = useAdminDebugSwitchTenant({
+  const { mutate: switchTenant, isPending: isSwitching } = useDebugSwitchTenant({
     mutation: {
       onSuccess: async (response) => {
         console.log('[DebugTenantSwitcher] Tenant switch success:', response);
 
-        // CRITICAL: Clear patient cache to prevent data leakage between tenants
-        console.log('[DebugTenantSwitcher] Clearing patient cache for tenant isolation...');
+        // CRITICAL: Clear ALL caches to prevent data leakage between tenants
+        console.log('[DebugTenantSwitcher] Clearing ALL caches for tenant isolation...');
+        
+        // 1. Clear patient service cache
         await patientService.reset();
+        
+        // 2. Clear IndexedDB (contains offline patient data, appointments, etc.)
+        try {
+          await indexedDBManager.clearAll();
+          console.log('[DebugTenantSwitcher] IndexedDB cleared');
+        } catch (e) {
+          console.error('[DebugTenantSwitcher] Failed to clear IndexedDB:', e);
+        }
 
         const data = (response as any)?.data;
 
@@ -89,14 +100,24 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
   });
 
   // Exit impersonation mutation
-  const { mutate: exitImpersonation, isPending: isExiting } = useAdminDebugExitImpersonation({
+  const { mutate: exitImpersonation, isPending: isExiting } = useDebugExitImpersonation({
     mutation: {
       onSuccess: async (response) => {
         console.log('[DebugTenantSwitcher] Exit impersonation success');
 
-        // CRITICAL: Clear patient cache to prevent data leakage between tenants
-        console.log('[DebugTenantSwitcher] Clearing patient cache for tenant isolation...');
+        // CRITICAL: Clear ALL caches to prevent data leakage between tenants
+        console.log('[DebugTenantSwitcher] Clearing ALL caches for tenant isolation...');
+        
+        // 1. Clear patient service cache
         await patientService.reset();
+        
+        // 2. Clear IndexedDB
+        try {
+          await indexedDBManager.clearAll();
+          console.log('[DebugTenantSwitcher] IndexedDB cleared');
+        } catch (e) {
+          console.error('[DebugTenantSwitcher] Failed to clear IndexedDB:', e);
+        }
 
         const data = (response as any)?.data;
 
@@ -263,7 +284,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
                 marginTop: '0.25rem',
               }}
             >
-              Sadece {DEBUG_ADMIN_EMAIL} kullanabilir
+              Super Admin kullanabilir
             </div>
           </div>
 

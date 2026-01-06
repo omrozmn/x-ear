@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Card, Button, Input, useToastHelpers } from '@x-ear/ui-web';
-import { 
-  usePaymentIntegrationsInitiatePaytrPayment,
-  usePosCommissionGetInstallmentOptions 
+import {
+    useInitiatePaytrPaymentApiPaymentsPosPaytrInitiatePost,
+    useGetInstallmentOptionsApiPosCommissionInstallmentOptionsPost
 } from '@/api/generated';
 import { CreditCard, AlertTriangle, ShieldCheck, Check, TrendingDown, User, X } from 'lucide-react';
 
@@ -27,8 +27,8 @@ export default function PosPage() {
 
     const amount = watch('amount');
     const patientName = watch('patientName');
-    const { mutate: initiatePayment, isPending } = usePaymentIntegrationsInitiatePaytrPayment();
-    const { mutate: getInstallments, isPending: loadingInstallments } = usePosCommissionGetInstallmentOptions();
+    const { mutate: initiatePayment, isPending } = useInitiatePaytrPaymentApiPaymentsPosPaytrInitiatePost();
+    const { mutate: getInstallments, isPending: loadingInstallments } = useGetInstallmentOptionsApiPosCommissionInstallmentOptionsPost();
 
     // Fetch installment options when amount changes
     useEffect(() => {
@@ -236,8 +236,8 @@ export default function PosPage() {
                                                 type="button"
                                                 onClick={() => setSelectedInstallment(option.installment_count)}
                                                 className={`relative p-4 rounded-lg border-2 transition-all text-left ${selectedInstallment === option.installment_count
-                                                        ? 'border-blue-600 bg-blue-50 shadow-md'
-                                                        : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                                                    ? 'border-blue-600 bg-blue-50 shadow-md'
+                                                    : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                                                     }`}
                                             >
                                                 {selectedInstallment === option.installment_count && (

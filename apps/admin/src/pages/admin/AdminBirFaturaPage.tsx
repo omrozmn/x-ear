@@ -35,10 +35,10 @@ const AdminBirFaturaPage: React.FC = () => {
         limit: 20
     }, { query: { enabled: activeTab === 'logs' } });
 
-    const stats = statsData?.data;
-    const invoices = invoicesData?.data?.invoices || [];
-    const logs = logsData?.data?.logs || [];
-    const pagination = activeTab === 'logs' ? logsData?.data?.pagination : invoicesData?.data?.pagination;
+    const stats = (statsData as any)?.data;
+    const invoices = (invoicesData as any)?.data?.invoices || [];
+    const logs = (logsData as any)?.data?.logs || [];
+    const pagination = activeTab === 'logs' ? (logsData as any)?.data?.pagination : (invoicesData as any)?.data?.pagination;
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
@@ -112,8 +112,8 @@ const AdminBirFaturaPage: React.FC = () => {
                         <button
                             onClick={() => { setActiveTab('outgoing'); setPage(1); }}
                             className={`pb-4 -mb-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'outgoing'
-                                    ? 'border-blue-600 text-blue-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Giden Faturalar
@@ -121,8 +121,8 @@ const AdminBirFaturaPage: React.FC = () => {
                         <button
                             onClick={() => { setActiveTab('incoming'); setPage(1); }}
                             className={`pb-4 -mb-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'incoming'
-                                    ? 'border-blue-600 text-blue-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Gelen Faturalar
@@ -130,8 +130,8 @@ const AdminBirFaturaPage: React.FC = () => {
                         <button
                             onClick={() => { setActiveTab('logs'); setPage(1); }}
                             className={`pb-4 -mb-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'logs'
-                                    ? 'border-blue-600 text-blue-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Entegrasyon Logları
@@ -228,8 +228,8 @@ const AdminBirFaturaPage: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${(inv.edocumentStatus === 'approved' || inv.status === 'RECEIVED') ? 'bg-green-100 text-green-800' :
-                                                    (inv.edocumentStatus === 'rejected' || inv.status === 'error') ? 'bg-red-100 text-red-800' :
-                                                        'bg-yellow-100 text-yellow-800'
+                                                (inv.edocumentStatus === 'rejected' || inv.status === 'error') ? 'bg-red-100 text-red-800' :
+                                                    'bg-yellow-100 text-yellow-800'
                                                 }`}>
                                                 {activeTab === 'outgoing' ? inv.edocumentStatus : inv.status}
                                             </span>

@@ -9,8 +9,8 @@ const Features: React.FC = () => {
     const { data: plansData } = useGetAdminPlans();
     const { mutateAsync: updateSettings } = usePatchAdminSettings();
 
-    const features = (settingsData?.data?.settings as any)?.features || {};
-    const plans = plansData?.data?.plans || [];
+    const features = ((settingsData as any)?.data?.settings as any)?.features || {};
+    const plans = (plansData as any)?.data?.plans || [];
 
     const canToggle = Boolean(user && ["SUPER_ADMIN", "OWNER", "ADMIN"].includes(user.role));
 
@@ -25,7 +25,7 @@ const Features: React.FC = () => {
         };
 
         try {
-            await updateSettings({ data: { updates } });
+            await updateSettings({ data: { updates } as any });
             toast.success('Updated');
             refetchFeatures();
         } catch (e) {

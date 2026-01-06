@@ -22,13 +22,14 @@ import { INVOICES_DATA } from '../constants/storage-keys';
 import { outbox } from '../utils/outbox';
 import { unwrapObject, unwrapArray } from '../utils/response-unwrap';
 import {
-  invoicesCreateInvoice,
-  invoicesGetInvoice,
-  // invoicesSendToGib, // TODO: Check if this endpoint exists
-  invoicesGetInvoice,
-  invoicesActionsIssueInvoice,
-  invoicesActionsServeInvoicePdf
-} from '@/api/generated';
+  createInvoicesInvoice,
+  getInvoice,
+  getInvoices
+} from '@/api/generated/invoices/invoices';
+import {
+  issueInvoice,
+  serveInvoicePdf
+} from '@/api/generated/invoice-actions/invoice-actions';
 import { apiClient } from '../api/orval-mutator';
 
 
@@ -147,7 +148,7 @@ export class InvoiceService {
       currency: local.currency || 'TRY'
     };
 
-    const response = await invoicesCreateInvoice(payload) as any;
+    const response = await createInvoicesInvoice(payload);
     const serverInv = unwrapObject<any>(response);
 
     if (serverInv && typeof serverInv === 'object' && serverInv.id) {
@@ -292,7 +293,7 @@ export class InvoiceService {
     };
 
     try {
-      const response = await invoicesCreateInvoice(payload) as any;
+      const response = await createInvoicesInvoice(payload);
       const serverInv = unwrapObject<any>(response);
 
       if (serverInv && typeof serverInv === 'object' && serverInv.id) {
@@ -371,7 +372,7 @@ export class InvoiceService {
     };
 
     try {
-      const response = await invoicesCreateInvoice(payload) as any;
+      const response = await createInvoicesInvoice(payload);
       const created = unwrapObject<any>(response);
 
       if (created && typeof created === 'object' && created.id) {
@@ -411,7 +412,7 @@ export class InvoiceService {
     };
 
     try {
-      const response = await invoicesCreateInvoice(cancelPayload) as any;
+      const response = await createInvoicesInvoice(cancelPayload);
       const cancellation = unwrapObject<any>(response);
       if (cancellation && typeof cancellation === 'object' && cancellation.id) {
         const invoices = await this.loadInvoices();
@@ -498,7 +499,7 @@ export class InvoiceService {
     }
 
     try {
-      await invoicesGetInvoice(String(serverId));
+      await getInvoice(Number(serverId));
       // ensure local copy removed as well
       const invoices = await this.loadInvoices();
       const filtered = invoices.filter(inv => (inv.serverId ? String(inv.serverId) !== String(serverId) : inv.id !== String(serverId)));
@@ -669,7 +670,7 @@ export class InvoiceService {
     try {
       await apiClient.post(`/api/invoices/${id}/send-to-gib`);
       // Try to refresh server state
-      const response = await invoicesGetInvoice(id) as any;
+      const response = await getInvoice(Number(id));
       const serverInv = unwrapObject<any>(response);
       if (serverInv && typeof serverInv === 'object' && serverInv.id) {
         // Mirror server state locally
@@ -697,7 +698,7 @@ export class InvoiceService {
       const serverId = await this.resolveServerId(id);
       if (!serverId) return { success: false, error: 'Fatura henüz sunucuya gönderilmedi; önce senkronize edin.' };
 
-      const response = await invoicesActionsIssueInvoice(String(serverId)) as any;
+      const response = await issueInvoice(Number(serverId));
 
       if (!(response as any)?.success) {
         return { success: false, error: 'Issue failed' };
@@ -961,16 +962,8 @@ export class InvoiceService {
     }
 
     try {
-      const response = await invoicesActionsServeInvoicePdf(String(serverId)) as any;
-
-      if (response instanceof Blob) {
-        return { success: true, data: response };
-      }
-
-      // If it's not a blob, it might be an error object returned as JSON
-      const errorMsg = response?.message || (typeof response === 'string' ? response : JSON.stringify(response));
-      console.error('Invoice PDF generation failed:', errorMsg);
-      return { success: false, error: `Sunucu hatası: ${errorMsg}` };
+      const response = await serveInvoicePdf(Number(serverId)) as unknown as Blob;
+      return { success: true, data: response };
     } catch (error) {
       console.error('Error generating invoice PDF:', error);
       return {
@@ -988,7 +981,7 @@ export class InvoiceService {
       // Endpoint doesn't exist yet. Return error for now.
       // const response = await invoicesGenerateSaleInvoicePdf(saleId) as any;
       console.warn('generateSaleInvoicePdf not implemented for saleId:', saleId);
-      
+
       return {
         success: false,
         error: 'Satış faturası PDF oluşturma henüz desteklenmiyor.'

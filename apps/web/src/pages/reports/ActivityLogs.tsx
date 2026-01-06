@@ -9,8 +9,8 @@ import {
     FileText
 } from 'lucide-react';
 import {
-    useActivityLogsAdminGetActivityLogs,
-    useActivityLogsGetFilterOptions
+    useGetActivityLogsApiActivityLogsGet,
+    useGetActivityStatsApiActivityLogsStatsGet
 } from '@/api/generated';
 
 interface ActivityLogDetailModalProps {
@@ -127,7 +127,7 @@ export default function ActivityLogsPage() {
     const [perPage, setPerPage] = useState(20);
     const [selectedLog, setSelectedLog] = useState<any>(null);
 
-    const { data: logsResponse, isLoading } = useActivityLogsAdminGetActivityLogs({
+    const { data: logsResponse, isLoading } = useGetActivityLogsApiActivityLogsGet({
         branch_id: filters.branch_id || undefined,
         user_id: filters.user_id || undefined,
         action: filters.action || undefined,
@@ -138,7 +138,8 @@ export default function ActivityLogsPage() {
         per_page: perPage
     } as any);
 
-    const { data: filterResponse } = useActivityLogsGetFilterOptions();
+    // Filter options are not available in the new API, use empty defaults
+    const filterResponse = { data: { branches: [], users: [], actions: [] } };
 
     const logsData = logsResponse as any;
     const logs = logsData?.data || [];

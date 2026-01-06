@@ -1,11 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { paymentsCreatePaymentRecord } from '@/api/generated';
+import { createPaymentRecord } from '@/api/generated';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { Receipt, CreditCard, Banknote, DollarSign, Calendar } from 'lucide-react';
-import type { PaymentRecord, Sale } from '@/api/generated/schemas';
 import { Input, Select, Textarea } from '@x-ear/ui-web';
+
+// Local Sale type since it's not exported from schemas
+interface Sale {
+  id: string;
+  patientId: string;
+  totalAmount?: number;
+  patientPayment?: number;
+}
+
+// Local PaymentRecord type
+interface PaymentRecord {
+  id?: string;
+  amount: number;
+  paymentMethod: string;
+  paymentDate: string;
+  referenceNumber?: string;
+  notes?: string;
+}
 
 interface CollectionModalProps {
   isOpen: boolean;
@@ -78,7 +95,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
       };
 
       // Use Orval-generated function
-      const resp = await paymentsCreatePaymentRecord({
+      const resp = await createPaymentRecord({
         patient_id: sale.patientId,
         sale_id: sale.id,
         amount: paymentData.amount,
@@ -87,7 +104,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
         reference_number: paymentData.referenceNumber,
         notes: paymentData.notes,
         payment_type: 'payment'
-      });
+      } as any);
 
       const result = (resp as any)?.data || resp;
 

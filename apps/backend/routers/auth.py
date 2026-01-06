@@ -3,55 +3,61 @@ FastAPI Auth Router - Migrated from Flask routes/auth.py
 Handles login, logout, token refresh, OTP verification, password reset
 """
 from fastapi import APIRouter, Depends, HTTPException, status, Request
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from typing import Optional
 from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel, Field
 import logging
 import random
+import os
 
 from sqlalchemy.orm import Session
 from jose import jwt
 
-from dependencies import get_db, SECRET_KEY, ALGORITHM, oauth2_scheme
 from schemas.base import ResponseEnvelope, ApiError
+from schemas.auth import LoginRequest as CanonicalLoginRequest, TokenResponse as CanonicalTokenResponse, PasswordChangeRequest as CanonicalPasswordChangeRequest, RefreshTokenResponse
+from schemas.users import UserRead as CanonicalUserRead
 from models.user import User
 from models.admin_user import AdminUser
-from models.base import db
+
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Auth"])
 
+# JWT Configuration
+SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-dev-secret-key-change-in-prod')
+ALGORITHM = "HS256"
+
+# OAuth2 scheme for token extraction
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+
 # --- Request/Response Schemas ---
 
-class LoginRequest(BaseModel):
-    identifier: Optional[str] = None
-    username: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    password: str
+# RouterLoginRequest definition removed - using CanonicalLoginRequest (aliased as LoginRequest in import if needed, but imported as CanonicalLoginRequest)
 
-class LookupPhoneRequest(BaseModel):
+class RouterLookupPhoneRequest(BaseModel):
     identifier: str
 
-class ForgotPasswordRequest(BaseModel):
+class RouterForgotPasswordRequest(BaseModel):
     identifier: str
     captcha_token: str = Field(..., alias="captchaToken")
 
-class VerifyOTPRequest(BaseModel):
+class RouterVerifyOTPRequest(BaseModel):
     otp: str
     identifier: Optional[str] = None
 
-class ResetPasswordRequest(BaseModel):
+class RouterResetPasswordRequest(BaseModel):
     identifier: str
     otp: str
     new_password: str = Field(..., alias="newPassword", min_length=6)
 
-class SetPasswordRequest(BaseModel):
+class RouterSetPasswordRequest(BaseModel):
     password: str = Field(..., min_length=6)
 
-class SendVerificationOTPRequest(BaseModel):
+class RouterSendVerificationOTPRequest(BaseModel):
     phone: Optional[str] = None
 
 # --- Helper Functions ---
@@ -102,7 +108,7 @@ def get_otp_store():
 
 @router.post("/auth/lookup-phone")
 def lookup_phone(
-    request_data: LookupPhoneRequest,
+    request_data: RouterLookupPhoneRequest,
     db_session: Session = Depends(get_db)
 ):
     """Lookup user by identifier and return masked phone"""
@@ -111,11 +117,11 @@ def lookup_phone(
         
         from utils.tenant_security import UnboundSession
         with UnboundSession():
-            user = User.query.filter_by(username=identifier).first()
+            user = db_session.query(User).filter_by(username=identifier).first()
             if not user:
-                user = User.query.filter_by(email=identifier).first()
+                user = db_session.query(User).filter_by(email=identifier).first()
             if not user:
-                user = User.query.filter_by(phone=identifier).first()
+                user = db_session.query(User).filter_by(phone=identifier).first()
         
         if not user or not user.phone:
             raise HTTPException(
@@ -143,7 +149,7 @@ def lookup_phone(
 
 @router.post("/auth/forgot-password")
 def forgot_password(
-    request_data: ForgotPasswordRequest,
+    request_data: RouterForgotPasswordRequest,
     db_session: Session = Depends(get_db)
 ):
     """Send OTP for password reset"""
@@ -152,7 +158,7 @@ def forgot_password(
         
         from utils.tenant_security import UnboundSession
         with UnboundSession():
-            user = User.query.filter_by(phone=identifier).first()
+            user = db_session.query(User).filter_by(phone=identifier).first()
             if not user:
                 raise HTTPException(
                     status_code=404,
@@ -189,9 +195,9 @@ def forgot_password(
         logger.error(f"Forgot password error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/auth/verify-otp")
+@router.post("/auth/verify-otp", response_model=ResponseEnvelope[CanonicalTokenResponse])
 def verify_otp(
-    request_data: VerifyOTPRequest,
+    request_data: RouterVerifyOTPRequest,
     authorization: Optional[str] = None,
     db_session: Session = Depends(get_db)
 ):
@@ -254,11 +260,11 @@ def verify_otp(
                 
                 access_token = create_access_token(
                     identity=user.id,
-                    additional_claims={'tenant_id': user.tenant_id, 'role': user.role}
+                    additional_claims={'access.tenant_id': user.tenant_id, 'role': user.role}
                 )
                 refresh_token = create_refresh_token(
                     identity=user.id,
-                    additional_claims={'tenant_id': user.tenant_id, 'role': user.role}
+                    additional_claims={'access.tenant_id': user.tenant_id, 'role': user.role}
                 )
                 
                 return ResponseEnvelope(
@@ -279,7 +285,7 @@ def verify_otp(
 
 @router.post("/auth/reset-password")
 def reset_password(
-    request_data: ResetPasswordRequest,
+    request_data: RouterResetPasswordRequest,
     db_session: Session = Depends(get_db)
 ):
     """Reset password using verified OTP"""
@@ -311,7 +317,7 @@ def reset_password(
         
         from utils.tenant_security import UnboundSession
         with UnboundSession():
-            user = User.query.filter_by(phone=identifier).first()
+            user = db_session.query(User).filter_by(phone=identifier).first()
             if not user:
                 raise HTTPException(
                     status_code=404,
@@ -341,9 +347,9 @@ def reset_password(
         logger.error(f"Reset password error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/auth/login")
+@router.post("/auth/login", response_model=ResponseEnvelope[CanonicalTokenResponse])
 def login(
-    request_data: LoginRequest,
+    request_data: CanonicalLoginRequest,
     db_session: Session = Depends(get_db)
 ):
     """Login with username/email/phone and password"""
@@ -369,11 +375,11 @@ def login(
         
         from utils.tenant_security import UnboundSession
         with UnboundSession():
-            user = User.query.filter_by(username=identifier).first()
+            user = db_session.query(User).filter_by(username=identifier).first()
             if not user:
-                user = User.query.filter_by(email=identifier).first()
+                user = db_session.query(User).filter_by(email=identifier).first()
             if not user:
-                user = User.query.filter_by(phone=identifier).first()
+                user = db_session.query(User).filter_by(phone=identifier).first()
         
         if not user or not user.check_password(password):
             try:
@@ -424,22 +430,48 @@ def login(
         except Exception as e:
             logger.warning(f"Failed to log login activity: {e}")
         
+        # Get user permissions from role
+        role_permissions = []
+        try:
+            from models.role import Role
+            role = db_session.query(Role).filter_by(name=user.role).first()
+            if role and hasattr(role, 'permissions'):
+                role_permissions = [p.name for p in role.permissions]
+        except Exception as e:
+            logger.warning(f"Failed to load role permissions: {e}")
+        
+        # Get permissions version for token invalidation on permission changes
+        permissions_version = getattr(user, 'permissions_version', 1) or 1
+        
         access_token = create_access_token(
             identity=user.id,
-            additional_claims={'tenant_id': user.tenant_id, 'role': user.role}
+            additional_claims={
+                'tenant_id': user.tenant_id,
+                'role': user.role,
+                'role_permissions': role_permissions,
+                'perm_ver': permissions_version  # For permission change detection
+            }
         )
         refresh_token = create_refresh_token(
             identity=user.id,
-            additional_claims={'tenant_id': user.tenant_id, 'role': user.role}
+            additional_claims={
+                'tenant_id': user.tenant_id,
+                'role': user.role,
+                'role_permissions': role_permissions,
+                'perm_ver': permissions_version
+            }
         )
         
+        # CanonicalTokenResponse does not currently include requiresPhoneVerification.
+        # Keep the runtime payload stable by returning via ResponseEnvelope[Any] shape
+        # while still forcing the canonical schemas into OpenAPI through the typed endpoint.
+        token_payload = {
+            "accessToken": access_token,
+            "refreshToken": refresh_token,
+            "user": user.to_dict(),
+        }
         return ResponseEnvelope(
-            data={
-                "accessToken": access_token,
-                "refreshToken": refresh_token,
-                "user": user.to_dict(),
-                "requiresPhoneVerification": not user.is_phone_verified
-            }
+            data=token_payload | {"requiresPhoneVerification": not user.is_phone_verified}
         )
     except HTTPException:
         raise
@@ -447,7 +479,7 @@ def login(
         logger.error(f"Login error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/auth/refresh")
+@router.post("/auth/refresh", response_model=ResponseEnvelope[RefreshTokenResponse])
 def refresh_token(
     authorization: str = Depends(oauth2_scheme),
     db_session: Session = Depends(get_db)
@@ -520,7 +552,7 @@ def refresh_token(
             
             access_token = create_access_token(
                 identity=user.id,
-                additional_claims={'tenant_id': user.tenant_id, 'role': user.role}
+                additional_claims={'access.tenant_id': user.tenant_id, 'role': user.role}
             )
             
             return ResponseEnvelope(data={"accessToken": access_token})
@@ -546,7 +578,7 @@ def refresh_token(
         logger.error(f"Token refresh error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/auth/me")
+@router.get("/auth/me", response_model=ResponseEnvelope[CanonicalUserRead])
 def get_current_user(
     authorization: str = Depends(oauth2_scheme),
     db_session: Session = Depends(get_db)
@@ -573,4 +605,100 @@ def get_current_user(
         raise
     except Exception as e:
         logger.error(f"Get current user error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/auth/send-verification-otp")
+def send_verification_otp(
+    request_data: RouterSendVerificationOTPRequest,
+    authorization: str = Depends(oauth2_scheme),
+    db_session: Session = Depends(get_db)
+):
+    """Send OTP to the user's phone number (requires pre-auth token)"""
+    try:
+        payload = jwt.decode(authorization, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        
+        user = db_session.get(User, user_id)
+        if not user:
+            raise HTTPException(
+                status_code=401,
+                detail=ApiError(message="User context required", code="USER_REQUIRED").model_dump(mode="json")
+            )
+        
+        phone = request_data.phone
+        
+        if phone:
+            # Update phone if provided
+            existing = db_session.query(User).filter(User.phone == phone, User.id != user.id).first()
+            if existing:
+                raise HTTPException(
+                    status_code=400,
+                    detail=ApiError(message="Phone number already in use", code="PHONE_EXISTS").model_dump(mode="json")
+                )
+            user.phone = phone
+            db_session.commit()
+        
+        if not user.phone:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="Phone number required", code="PHONE_REQUIRED").model_dump(mode="json")
+            )
+        
+        otp_store = get_otp_store()
+        code = str(random.randint(100000, 999999))
+        otp_store.set_otp(user.id, code, ttl=300)
+        
+        # Send SMS
+        from services.communication_service import communication_service
+        msg = f"X-EAR dogrulama kodunuz: {code}. Bu kodu kimseyle paylasmayiniz."
+        result = communication_service.send_sms(user.phone, msg)
+        
+        if not result.get('success'):
+            logger.error(f"Failed to send SMS: {result}")
+            raise HTTPException(
+                status_code=500,
+                detail=ApiError(
+                    message=result.get('error', 'Failed to send SMS'),
+                    code="SMS_FAILED",
+                    details=result
+                ).model_dump(mode="json")
+            )
+        
+        return ResponseEnvelope(message="OTP sent")
+    except jwt.JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Send OTP error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/auth/set-password")
+def set_password(
+    request_data: RouterSetPasswordRequest,
+    authorization: str = Depends(oauth2_scheme),
+    db_session: Session = Depends(get_db)
+):
+    """Set password for authenticated user (Post-Registration Flow)"""
+    try:
+        payload = jwt.decode(authorization, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        
+        user = db_session.get(User, user_id)
+        if not user:
+            raise HTTPException(
+                status_code=401,
+                detail=ApiError(message="User context required", code="USER_REQUIRED").model_dump(mode="json")
+            )
+        
+        user.set_password(request_data.password)
+        db_session.commit()
+        
+        return ResponseEnvelope(message="Password set successfully")
+    except jwt.JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Set password error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

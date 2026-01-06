@@ -1,29 +1,38 @@
-from app import app, db
+"""Check admin user existence - Pure SQLAlchemy (No Flask)."""
+
+import os
+import sys
+import logging
+
+sys.path.append(os.path.dirname(__file__))
+
+from database import SessionLocal
 from models.user import User
 from models.admin_user import AdminUser
-import logging
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def check_admin():
-    with app.app_context():
-        email = "admin@x-ear.com"
-        logger.info(f"Checking for user: {email}")
-        
-        # Check AdminUser table first
-        admin = AdminUser.query.filter_by(email=email).first()
+
+def check_admin(email: str = "admin@x-ear.com"):
+    logger.info("Checking for user: %s", email)
+    db = SessionLocal()
+    try:
+        admin = db.query(AdminUser).filter_by(email=email).first()
         if admin:
-            logger.info(f"FOUND in AdminUser: {admin.email} (ID: {admin.id})")
+            logger.info("FOUND in AdminUser: %s (ID: %s)", admin.email, admin.id)
             return
 
-        # Check User table
-        user = User.query.filter_by(email=email).first()
+        user = db.query(User).filter_by(email=email).first()
         if user:
-            logger.info(f"FOUND in User: {user.email} (Role: {user.role})")
-        else:
-            logger.warning("User NOT FOUND in either table.")
-            # Optional: Create it? User just asked to "check".
-            
+            logger.info("FOUND in User: %s (Role: %s)", user.email, getattr(user, "role", None))
+            return
+
+        logger.warning("User NOT FOUND in either table.")
+    finally:
+        db.close()
+
+
 if __name__ == "__main__":
     check_admin()

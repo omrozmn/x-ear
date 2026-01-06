@@ -1,5 +1,5 @@
 # Patient Model
-from .base import db, BaseModel, gen_id, JSONMixin, now_utc
+from .base import db, BaseModel, gen_id, JSONMixin, now_utc, LowercaseEnum
 from .enums import PatientStatus
 from datetime import datetime
 import json
@@ -33,9 +33,9 @@ class Patient(BaseModel, JSONMixin):
     address_district = db.Column(db.String(100))
     address_full = db.Column(db.Text)
     
-    # CRM fields
-    status = db.Column(sa.Enum(PatientStatus, native_enum=False), default=PatientStatus.ACTIVE)
-    segment = db.Column(db.String(20), default='lead')  # Keep as string for now
+    # CRM fields - Custom type for case-insensitive enum handling
+    status = db.Column(LowercaseEnum(PatientStatus), default=PatientStatus.ACTIVE)
+    segment = db.Column(db.String(20), default='lead')
     acquisition_type = db.Column(db.String(50), default='walk-in')
     conversion_step = db.Column(db.String(50))
     referred_by = db.Column(db.String(100))
@@ -105,7 +105,7 @@ class Patient(BaseModel, JSONMixin):
             'addressCity': self.address_city,
             'addressDistrict': self.address_district,
             'addressFull': self.address_full,
-            'status': self.status.value if self.status else None,
+            'status': self.status.value if hasattr(self.status, 'value') else (self.status or 'active'),
             'segment': self.segment,
             'acquisitionType': self.acquisition_type,
             'conversionStep': self.conversion_step,
@@ -179,13 +179,9 @@ class Patient(BaseModel, JSONMixin):
         logger.info('🔍   address_district: %s', patient.address_district)
         logger.info('🔍   address_full: %s', patient.address_full)
         
-        # CRM fields
+        # CRM fields - use enum with proper conversion
         status_value = data.get('status', 'active')
-        if isinstance(status_value, str):
-            # Convert string to enum using from_legacy method
-            patient.status = PatientStatus.from_legacy(status_value)
-        else:
-            patient.status = status_value or PatientStatus.ACTIVE
+        patient.status = PatientStatus.from_legacy(status_value) if isinstance(status_value, str) else PatientStatus.ACTIVE
         patient.segment = data.get('segment', 'lead')
         patient.acquisition_type = data.get('acquisitionType') or data.get('acquisition_type') or 'walk-in'
         patient.conversion_step = data.get('conversionStep') or data.get('conversion_step')

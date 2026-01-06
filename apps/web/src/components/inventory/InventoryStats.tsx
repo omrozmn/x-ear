@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { inventoryGetInventoryStats } from '@/api/generated';
+import { getInventoryStats } from '@/api/generated';
 
 interface InventoryStatsProps {
   className?: string;
@@ -27,7 +27,7 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
     const loadStats = async () => {
       try {
         setLoading(true);
-        const response = await inventoryGetInventoryStats() as any;
+        const response = await getInventoryStats() as any;
         const data = response?.data || response || {};
 
         const calculatedStats: InventoryStats = {

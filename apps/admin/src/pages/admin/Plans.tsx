@@ -10,9 +10,9 @@ import {
   useCreatePlan,
   useUpdatePlan,
   useDeletePlan,
-  Plan,
-  PlanInput
+  Plan
 } from '@/lib/api-client';
+
 import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Pagination from '@/components/ui/Pagination';
 
@@ -25,15 +25,15 @@ const Plans: React.FC = () => {
   const [limit, setLimit] = useState(10);
   const { data: plansData, isLoading, error } = useGetAdminPlans({ page, limit } as any);
 
-  const plans = plansData?.data?.plans || [];
-  const pagination = plansData?.data?.pagination;
+  const plans = (plansData as any)?.data?.plans || [];
+  const pagination = (plansData as any)?.data?.pagination;
 
   const { mutateAsync: createPlan } = useCreatePlan();
   const { mutateAsync: updatePlan } = useUpdatePlan();
   const { mutateAsync: deletePlan } = useDeletePlan();
 
   // Local state interface for the form, where features is an array for easier UI handling
-  interface PlanFormState extends Omit<PlanInput, 'features'> {
+  interface PlanFormState extends Omit<any, 'features'> {
     features: any[];
   }
 
@@ -48,12 +48,12 @@ const Plans: React.FC = () => {
     name: '',
     description: '',
     price: 0,
-    plan_type: 'BASIC',
-    billing_interval: 'MONTHLY',
-    max_users: 1,
-    max_storage_gb: 1,
+    planType: 'BASIC',
+    billingInterval: 'MONTHLY',
+    maxUsers: 1,
+    maxStorageGb: 1,
     features: [],
-    is_active: true
+    isActive: true
   });
 
   const handleOpenModal = (plan?: Plan) => {
@@ -74,12 +74,12 @@ const Plans: React.FC = () => {
         name: plan.name || '',
         description: plan.description || '',
         price: plan.price || 0,
-        plan_type: plan.plan_type || 'BASIC',
-        billing_interval: plan.billing_interval || 'MONTHLY',
-        max_users: plan.max_users || 1,
-        max_storage_gb: plan.max_storage_gb || 1,
+        planType: plan.planType || 'BASIC',
+        billingInterval: plan.billingInterval || 'MONTHLY',
+        maxUsers: plan.maxUsers || 1,
+        maxStorageGb: plan.maxStorageGb || 1,
         features: featuresArray,
-        is_active: plan.is_active ?? true
+        isActive: plan.isActive ?? true
       });
     } else {
       setEditingPlan(null);
@@ -116,13 +116,13 @@ const Plans: React.FC = () => {
         return acc;
       }, {} as Record<string, any>);
 
-      const apiData: PlanInput = {
+      const apiData: any = {
         ...formData,
         features: featuresObject
       };
 
       if (editingPlan) {
-        await updatePlan({ id: editingPlan.id!, data: apiData });
+        await updatePlan({ planId: editingPlan.id!, data: apiData });
         toast.success('Plan güncellendi');
       } else {
         await createPlan({ data: apiData });
@@ -148,12 +148,12 @@ const Plans: React.FC = () => {
 
     try {
       await updatePlan({
-        id: togglingPlan.id,
+        planId: togglingPlan.id,
         data: {
           name: togglingPlan.name!,
           price: togglingPlan.price!,
-          is_active: !togglingPlan.is_active
-        }
+          isActive: !togglingPlan.isActive
+        } as any
       });
       // Invalidate to ensure consistency
       await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] });
@@ -176,7 +176,7 @@ const Plans: React.FC = () => {
     if (!deletingPlanId) return;
     setIsSubmitting(true);
     try {
-      await deletePlan({ id: deletingPlanId });
+      await deletePlan({ planId: deletingPlanId });
       await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] });
       toast.success('Plan silindi');
       setIsDeleteModalOpen(false);
@@ -236,30 +236,30 @@ const Plans: React.FC = () => {
                       <div className="text-xs text-gray-500">{plan.description}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {plan.plan_type} / {plan.billing_interval}
+                      {plan.planType} / {plan.billingInterval}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {plan.price?.toLocaleString('tr-TR')} {plan.currency || 'TRY'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {plan.max_users} Kullanıcı
+                      {plan.maxUsers} Kullanıcı
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${plan.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                        {plan.is_active ? 'Aktif' : 'Pasif'}
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${plan.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                        {plan.isActive ? 'Aktif' : 'Pasif'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
                         <button
                           onClick={() => handleToggleActiveClick(plan)}
-                          className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 ${plan.is_active
+                          className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 ${plan.isActive
                             ? 'text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500'
                             : 'text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500'
                             }`}
-                          title={plan.is_active ? 'Pasif Yap' : 'Aktif Yap'}
+                          title={plan.isActive ? 'Pasif Yap' : 'Aktif Yap'}
                         >
-                          {plan.is_active ? 'Pasife Al' : 'Aktifleştir'}
+                          {plan.isActive ? 'Pasife Al' : 'Aktifleştir'}
                         </button>
                         <button
                           onClick={() => handleOpenModal(plan)}
@@ -344,8 +344,8 @@ const Plans: React.FC = () => {
                     <select
                       id="plan-type"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
-                      value={formData.plan_type}
-                      onChange={(e) => setFormData({ ...formData, plan_type: e.target.value })}
+                      value={formData.planType}
+                      onChange={(e) => setFormData({ ...formData, planType: e.target.value })}
                     >
                       {PLAN_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
@@ -355,8 +355,8 @@ const Plans: React.FC = () => {
                     <select
                       id="billing-interval"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
-                      value={formData.billing_interval}
-                      onChange={(e) => setFormData({ ...formData, billing_interval: e.target.value })}
+                      value={formData.billingInterval}
+                      onChange={(e) => setFormData({ ...formData, billingInterval: e.target.value })}
                     >
                       {BILLING_INTERVALS.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
@@ -371,8 +371,8 @@ const Plans: React.FC = () => {
                       type="number"
                       min="1"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
-                      value={formData.max_users}
-                      onChange={(e) => setFormData({ ...formData, max_users: Number(e.target.value) })}
+                      value={formData.maxUsers}
+                      onChange={(e) => setFormData({ ...formData, maxUsers: Number(e.target.value) })}
                     />
                   </div>
                   <div>
@@ -382,8 +382,8 @@ const Plans: React.FC = () => {
                       type="number"
                       min="1"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
-                      value={formData.max_storage_gb}
-                      onChange={(e) => setFormData({ ...formData, max_storage_gb: Number(e.target.value) })}
+                      value={formData.maxStorageGb}
+                      onChange={(e) => setFormData({ ...formData, maxStorageGb: Number(e.target.value) })}
                     />
                   </div>
                 </div>
@@ -573,7 +573,7 @@ const Plans: React.FC = () => {
                 </Dialog.Title>
               </div>
               <div className="mb-6 text-sm text-gray-500">
-                Bu planın durumunu <strong>{togglingPlan?.is_active ? 'Pasif' : 'Aktif'}</strong> olarak değiştirmek istediğinize emin misiniz?
+                Bu planın durumunu <strong>{togglingPlan?.isActive ? 'Pasif' : 'Aktif'}</strong> olarak değiştirmek istediğinize emin misiniz?
               </div>
               <div className="flex justify-end space-x-3">
                 <Dialog.Close asChild>
@@ -587,9 +587,9 @@ const Plans: React.FC = () => {
                 <button
                   onClick={handleConfirmToggle}
                   disabled={isSubmitting}
-                  className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${togglingPlan?.is_active ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'}`}
+                  className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${togglingPlan?.isActive ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'}`}
                 >
-                  {isSubmitting ? 'Güncelleniyor...' : (togglingPlan?.is_active ? 'Pasifleştir' : 'Aktifleştir')}
+                  {isSubmitting ? 'Güncelleniyor...' : (togglingPlan?.isActive ? 'Pasifleştir' : 'Aktifleştir')}
                 </button>
               </div>
               <Dialog.Close asChild>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { FileText, AlertTriangle, Info, CheckCircle, User } from 'lucide-react';
+import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface PatientNote {
   id?: string;
@@ -41,7 +42,7 @@ export const PatientNoteForm: React.FC<PatientNoteFormProps> = ({
     priority: 'medium',
     category: 'general',
     isPrivate: false,
-    createdBy: 'current_user', // TODO: Get from auth context
+    createdBy: getCurrentUserId(),
     tags: []
   });
 
@@ -67,7 +68,7 @@ export const PatientNoteForm: React.FC<PatientNoteFormProps> = ({
           priority: 'medium',
           category: 'general',
           isPrivate: false,
-          createdBy: 'current_user', // TODO: Get from auth context
+          createdBy: getCurrentUserId(),
           tags: []
         });
         setTagInput('');

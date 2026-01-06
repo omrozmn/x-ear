@@ -12,7 +12,10 @@ export function SupplierDetailPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const { data: supplier, isLoading, error } = useSupplier(supplierId);
-  const { data: productsData, isLoading: productsLoading, error: productsError } = useSupplierProducts(supplierId);
+  // Cast to Extended type to access extra fields if needed
+  const supplierData = supplier as unknown as SupplierExtended;
+
+  const { data: productsData, isLoading: productsLoading, error: productsError } = useSupplierProducts(supplierData?.companyName || supplierData?.name);
   const deleteSupplierMutation = useDeleteSupplier();
   const updateSupplierMutation = useUpdateSupplier();
 
@@ -65,7 +68,7 @@ export function SupplierDetailPage() {
   }
 
   // Cast to Extended type to access extra fields if needed
-  const supplierData = supplier as unknown as SupplierExtended;
+
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">

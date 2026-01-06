@@ -3,7 +3,6 @@ import requests
 import json
 from app import app
 from models import User, Role, Permission, db
-from flask_jwt_extended import create_access_token
 
 def verify_persistence():
     with app.app_context():
@@ -12,9 +11,25 @@ def verify_persistence():
         if not admin:
             admin = User.query.filter_by(email='admin@x-ear.com').first()
         
-        token = create_access_token(identity=admin.id)
-        headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
         client = app.test_client()
+
+        # Use real admin login to obtain token (avoid Flask-JWT-Extended dependency)
+        login = client.post(
+            '/api/admin/auth/login',
+            json={'email': getattr(admin, 'email', 'admin@x-ear.com'), 'password': 'admin123'},
+            headers={'Content-Type': 'application/json'},
+        )
+        if login.status_code != 200:
+            print(f"Login failed: {login.status_code} - {login.get_json()}")
+            return
+
+        login_data = login.get_json() or {}
+        token = (login_data.get('data') or {}).get('token') or (login_data.get('data') or {}).get('accessToken')
+        if not token:
+            print(f"Login returned no token: {login_data}")
+            return
+
+        headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
 
         # 2. Verify Filtering (List all perms)
         print("\n--- 1. Checking Filtered Permissions List ---")

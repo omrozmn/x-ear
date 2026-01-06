@@ -1,5 +1,8 @@
 import React from 'react';
-import { Affiliate } from '@/lib/api-client';
+import { AffiliateRead } from '@/lib/api-client';
+
+// Local type alias
+type Affiliate = AffiliateRead;
 
 interface AffiliateCardProps {
   affiliate: Affiliate;
@@ -9,9 +12,10 @@ const AffiliateCard: React.FC<AffiliateCardProps> = ({ affiliate }) => (
   <div className="affiliate-card">
     <h3>{affiliate.email}</h3>
     <p>IBAN: {affiliate.iban}</p>
-    <p>Aktif: {affiliate.is_active ? 'Evet' : 'Hayır'}</p>
-    <p>Oluşturulma: {affiliate.created_at}</p>
+    <p>Aktif: {(affiliate as any).isActive ? 'Evet' : 'Hayır'}</p>
+    <p>Oluşturulma: {(affiliate as any).createdAt}</p>
   </div>
 );
 
 export default AffiliateCard;
+

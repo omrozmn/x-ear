@@ -1,27 +1,28 @@
-// TODO: UTS endpoints swagger'a eklenmeli ve ORVAL generate edilmeli
-// Backend /api/uts/* endpoints için OpenAPI spec gerekli
-// Şu an için customInstance kullanarak geçici çözüm:
-
-import { customInstance } from '../../api/orval-mutator';
+// UTS endpoints are now generated via Orval
+import {
+  listRegistrations,
+  startBulkRegistration,
+  getJobStatus,
+  cancelJob
+} from '../../api/generated/uts/uts';
 import { unwrapObject, unwrapArray } from '../../utils/response-unwrap';
-
-const base = '/api/uts';
+import { ListRegistrationsParams, BulkRegistration } from '../../api/generated/schemas';
 
 export const utsService = {
-  listRegistrations: async (params?: Record<string, any>) => {
-    const response = await customInstance({ url: `${base}/registrations`, method: 'GET', params });
+  listRegistrations: async (params?: ListRegistrationsParams) => {
+    const response = await listRegistrations(params);
     return unwrapArray<any>(response);
   },
-  startBulkRegistration: async (body: any) => {
-    const response = await customInstance({ url: `${base}/registrations/bulk`, method: 'POST', data: body });
+  startBulkRegistration: async (body: BulkRegistration) => {
+    const response = await startBulkRegistration(body);
     return unwrapObject<any>(response);
   },
   getJobStatus: async (jobId: string) => {
-    const response = await customInstance({ url: `${base}/jobs/${encodeURIComponent(jobId)}`, method: 'GET' });
+    const response = await getJobStatus(jobId);
     return unwrapObject<any>(response);
   },
   cancelJob: async (jobId: string) => {
-    const response = await customInstance({ url: `${base}/jobs/${encodeURIComponent(jobId)}/cancel`, method: 'POST' });
+    const response = await cancelJob(jobId);
     return unwrapObject<any>(response);
   },
 };

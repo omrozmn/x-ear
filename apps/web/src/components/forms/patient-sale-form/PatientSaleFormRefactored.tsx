@@ -1,9 +1,19 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { PatientApiService } from '../../../services/patient/patient-api.service';
-import { inventoryGetInventoryItems } from '@/api/generated';
-import type { InventoryItem } from '@/api/generated/schemas';
+import { getAllInventory } from '@/api/generated';
 import { unwrapArray } from '../../../utils/response-unwrap';
+
+// InventoryItem type definition (since schema may not export it directly)
+interface InventoryItem {
+  id?: string;
+  name: string;
+  category?: string;
+  brand?: string;
+  price: number;
+  availableInventory?: number;
+  inventory?: number;
+}
 
 // Product interface for the dropdown - mapped from InventoryItem
 interface Product {
@@ -50,7 +60,7 @@ const ProductDropdown: React.FC<ProductDropdownProps> = ({
     const loadProducts = async () => {
       setLoading(true);
       try {
-        const response = await inventoryGetInventoryItems();
+        const response = await getAllInventory();
         const inventoryItems = unwrapArray<InventoryItem>(response);
         const productList = inventoryItems.map(mapInventoryItemToProduct);
         setProducts(productList);

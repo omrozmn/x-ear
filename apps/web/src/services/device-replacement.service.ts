@@ -1,4 +1,5 @@
-import { inventoryGetInventoryItem } from '@/api/generated';
+import { getInventoryItem } from '@/api/generated';
+import { getCurrentUserId } from '@/utils/auth-utils';
 import type {
   DeviceReplacementRequest,
   DeviceReplacementResponse,
@@ -27,7 +28,7 @@ export class DeviceReplacementService {
         newDeviceInfo: request.newDeviceInfo as DeviceInfo || await this.getInventoryDeviceInfo(request.newInventoryId!),
         replacementReason: request.replacementReason,
         replacementDate: new Date().toISOString(),
-        replacedBy: 'current_user', // TODO: Get from auth context
+        replacedBy: getCurrentUserId(),
         status: 'pending',
         notes: request.notes,
         returnInvoiceId: request.createReturnInvoice ? `INV-${Date.now()}` : undefined,
@@ -223,7 +224,7 @@ export class DeviceReplacementService {
   private async getInventoryDeviceInfo(inventoryId: string): Promise<DeviceInfo> {
     try {
       // Try to get from API
-      const response = await inventoryGetInventoryItem(inventoryId);
+      const response = await getInventoryItem(inventoryId);
       if (response) {
         const item = response as any;
         return {

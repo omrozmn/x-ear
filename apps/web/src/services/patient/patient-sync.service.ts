@@ -4,10 +4,10 @@
  * @version 1.0.0
  */
 
-import type { Patient as OrvalPatient } from '@/api/generated/schemas';
+import type { PatientRead as OrvalPatient } from '@/api/generated/schemas';
 import { indexedDBManager } from '../../utils/indexeddb';
 import { outbox, OutboxOperation } from '../../utils/outbox';
-import { patientsGetPatients } from '@/api/generated';
+import { listPatients } from '@/api/generated/patients/patients';
 import type { Patient as LocalPatient } from '../../types/patient';
 
 export interface SyncResult {
@@ -37,7 +37,6 @@ export class PatientSyncService {
   private readonly SYNC_KEY = 'patient_last_sync';
   private readonly BATCH_SIZE = 50;
   private syncInProgress = false;
-  // API functions are now imported directly
 
   async syncPatients(options: SyncOptions = {}): Promise<SyncResult> {
     if (this.syncInProgress) {
@@ -218,7 +217,7 @@ export class PatientSyncService {
       const batchSize = options.batchSize || this.BATCH_SIZE;
 
       // Use Orval generated API for fetching patients
-      const response = await patientsGetPatients({ per_page: batchSize });
+      const response = await listPatients({ per_page: batchSize });
       const patients = response.data;
 
       if (patients && patients.length > 0) {

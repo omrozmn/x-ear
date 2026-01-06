@@ -5,7 +5,13 @@ import { useToastHelpers } from '@x-ear/ui-web';
 import { Upload, Eye, Download, Trash2, FileText, X, AlertCircle, CheckCircle, Clock, Search } from 'lucide-react';
 
 // API imports
-import { sgkGetPatientSgkDocuments, sgkUploadSgkDocument, sgkDeleteSgkDocument, ocrProcessDocument, automationTriggerSgkProcessing } from '@/api/generated';
+import {
+  getPatientDocuments,
+  addPatientDocument,
+  deletePatientDocument,
+  deleteSgkDocument
+} from '@/api/generated';
+import type { DocumentCreate } from '@/api/generated/schemas';
 
 interface Document {
   id: string;
@@ -49,11 +55,11 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
     try {
       setIsLoading(true);
       // Load documents from API using ORVAL-generated client
-      const { documentsGetPatientDocuments } = await import('@/api/generated');
-      const response = await documentsGetPatientDocuments(patientId);
-      
+      // const { documentsGetPatientDocuments } = await import('@/api/generated');
+      const response = await getPatientDocuments(patientId) as any;
+
       // Transform API response to component format
-      const apiDocuments: Document[] = (response?.data || []).map((doc: any) => ({
+      const apiDocuments: Document[] = (response?.data || response || []).map((doc: any) => ({
         id: doc.id || '',
         name: doc.fileName || doc.originalName || 'Untitled',
         type: (doc.type || 'other') as Document['type'],
@@ -118,7 +124,7 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
   const processFileUploads = async (files: File[]) => {
     try {
       setIsUploading(true);
-      const { documentsAddPatientDocument } = await import('@/api/generated');
+      // const { documentsAddPatientDocument } = await import('@/api/generated');
 
       for (const file of files) {
         const fileId = `${file.name}_${Date.now()}`;
@@ -150,20 +156,20 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
         });
 
         // Prepare document data for API
-        const documentData = {
+        const documentData: DocumentCreate = {
           fileName: file.name,
           originalName: file.name,
           type: selectedDocumentType === 'all' ? 'other' : selectedDocumentType,
           content: base64Content,
           mimeType: file.type || 'application/octet-stream',
-          size: file.size,
-          createdBy: 'current_user', // TODO: Get from auth context
-          status: 'completed' as const,
+          // size: file.size, // Not in schema
+          // createdBy: 'current_user', // Not in schema often
+          // status: 'completed' as const,
           metadata: documentNotes ? { notes: documentNotes } : {}
         };
 
         // Upload using ORVAL-generated client
-        await documentsAddPatientDocument(patientId, documentData);
+        await addPatientDocument(patientId, documentData);
 
         // Complete progress
         clearInterval(progressInterval);
@@ -227,7 +233,7 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
 
   const handleDeleteDocument = async (documentId: string) => {
     try {
-      await sgkDeleteSgkDocument(documentId);
+      await deletePatientDocument(patientId, documentId);
 
       success('Doküman başarıyla silindi.');
 
@@ -320,8 +326,8 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
               {/* Drag and Drop Area */}
               <div
                 className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-300 hover:border-gray-400'
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-300 hover:border-gray-400'
                   }`}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}

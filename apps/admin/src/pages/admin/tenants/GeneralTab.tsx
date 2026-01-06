@@ -38,7 +38,7 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
         e.preventDefault();
         try {
             await updateTenant({
-                id: tenant.id!,
+                tenantId: tenant.id!,
                 data: formData as any
             });
             toast.success('Abone bilgileri güncellendi');

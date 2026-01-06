@@ -1,28 +1,22 @@
-import {
-  sgkUploadSgkDocument,
-  sgkDeleteSgkDocument,
-  ocrProcessDocument,
-  automationTriggerSgkProcessing,
-  sgkGetPatientSgkDocuments
-} from '@/api/generated';
+
 import { sgkService as fullSgkService } from '../sgk.service';
 
 // SGK Service - handles SGK document operations
 export const sgkService = {
   // Upload SGK document
-  uploadDocument: (body?: any) => sgkUploadSgkDocument(body),
+  uploadDocument: (body?: any) => fullSgkService.createDocument(body),
 
   // Delete SGK document
-  deleteDocument: (documentId: string) => sgkDeleteSgkDocument(documentId),
+  deleteDocument: (documentId: string) => fullSgkService.deleteDocument(documentId),
 
   // List SGK documents for a patient
-  listDocuments: (patientId: string) => sgkGetPatientSgkDocuments(patientId),
+  listDocuments: (patientId: string) => fullSgkService.getDocuments({ patientId }),
 
   // Process OCR
-  processOcr: (body?: any) => ocrProcessDocument(body),
+  processOcr: (body?: any) => fullSgkService.processDocument(body),
 
   // Trigger SGK processing
-  triggerProcessing: (body?: any) => automationTriggerSgkProcessing(body),
+  triggerProcessing: (body?: any) => fullSgkService.createWorkflow(body?.patientId),
 
   // Workflow methods from the full SGK service
   getWorkflow: (workflowId: string) => fullSgkService.getWorkflow(workflowId),
@@ -33,7 +27,7 @@ export const sgkService = {
   validateDocument: (data: any) => fullSgkService.validateDocument(data),
   createDocument: (data: any) => fullSgkService.createDocument(data),
   processDocument: (request: any) => fullSgkService.processDocument(request),
-  updateDocumentStatus: (id: string, status: any) => fullSgkService.updateDocument(id, { processingStatus: status }),
+  updateDocumentStatus: (id: string, status: any) => fullSgkService.updateWorkflowStatus(id, status),
 };
 
 export default sgkService;

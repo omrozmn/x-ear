@@ -9,7 +9,10 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Helmet } from 'react-helmet-async';
-import { useGetAdminSettings, useUpdateAdminSettings, SystemSettings } from '@/lib/api-client';
+import { useGetAdminSettings, usePatchAdminSettings } from '@/lib/api-client';
+
+// Define SystemSettings type locally - flexible for form usage
+type SystemSettings = Record<string, unknown>;
 
 type SettingsTab = 'general' | 'email' | 'security' | 'backup' | 'integrations';
 
@@ -18,10 +21,10 @@ const Settings: React.FC = () => {
 
   // Fetch settings
   const { data: settingsData, isLoading: isLoadingSettings } = useGetAdminSettings();
-  const settings = settingsData?.data?.settings;
+  const settings = (settingsData as any)?.data?.settings;
 
   // Update settings mutation
-  const { mutateAsync: updateSettings, isPending: isUpdating } = useUpdateAdminSettings();
+  const { mutateAsync: updateSettings, isPending: isUpdating } = usePatchAdminSettings();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<SystemSettings>({
     defaultValues: {
@@ -76,8 +79,15 @@ const Settings: React.FC = () => {
 
   const onSubmit = async (data: SystemSettings) => {
     try {
-      // Cast to any to bypass strict type check against generated SystemSettings
-      await updateSettings({ data });
+      // Convert flat object to array of settings
+      const settingsArray = Object.entries(data).map(([key, value]) => ({
+        key,
+        value: String(value), // Ensure value is string or handle types as needed
+        is_encrypted: false,
+        description: ''
+      }));
+
+      await updateSettings({ data: settingsArray as any });
       toast.success('Ayarlar başarıyla kaydedildi');
     } catch (error: any) {
       console.error('Error saving settings:', error);

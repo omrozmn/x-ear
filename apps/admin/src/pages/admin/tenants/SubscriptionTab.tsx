@@ -8,10 +8,14 @@ import {
     useSubscribeTenant,
     useAddTenantAddon,
     useUpdateTenant,
-    Tenant
 } from '@/lib/api-client';
 
-interface ExtendedTenant extends Tenant {
+// Local type since Tenant is not exported from generated client
+interface ExtendedTenant {
+    id?: string;
+    settings?: Record<string, any>;
+    status?: string;
+    current_plan?: string;
     current_plan_id?: string;
     subscription_start_date?: string;
     subscription_end_date?: string;
@@ -19,11 +23,11 @@ interface ExtendedTenant extends Tenant {
 }
 
 export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, onUpdate: () => void }) => {
-    const { data: plansData } = useGetAdminPlans({ limit: 100 });
-    const plans = plansData?.data?.plans || [];
+    const { data: plansData } = useGetAdminPlans();
+    const plans = (plansData as any)?.data?.plans || (plansData as any)?.plans || [];
 
-    const { data: addonsData } = useGetAdminAddons({ limit: 100 });
-    const addons = addonsData?.data?.addons || [];
+    const { data: addonsData } = useGetAdminAddons();
+    const addons = (addonsData as any)?.data?.addons || (addonsData as any)?.addons || [];
 
     const [selectedPlanId, setSelectedPlanId] = useState(tenant.current_plan_id || '');
     const [billingInterval, setBillingInterval] = useState('YEARLY');
@@ -51,7 +55,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
         setLoadingSubscribe(true);
         try {
             await subscribeTenant({
-                id: tenant.id!,
+                tenantId: tenant.id!,
                 data: {
                     plan_id: selectedPlanId,
                     billing_interval: billingInterval
@@ -71,7 +75,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
         setLoadingAddon(true);
         try {
             await addTenantAddon({
-                id: tenant.id!,
+                tenantId: tenant.id!,
                 data: {
                     addon_id: selectedAddonId
                 }
@@ -128,7 +132,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
             };
 
             await updateTenant({
-                id: tenant.id!,
+                tenantId: tenant.id!,
                 data: {
                     feature_usage: currentUsage
                 } as any
@@ -168,7 +172,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant, 
             };
 
             await updateTenant({
-                id: tenant.id!,
+                tenantId: tenant.id!,
                 data: {
                     feature_usage: currentUsage
                 } as any

@@ -24,7 +24,20 @@ import {
   Plus,
   Trash2
 } from 'lucide-react';
-import type { Sale } from '@/api/generated/schemas/sale';
+import {
+  useGetPatientPaymentRecords,
+  useCreatePaymentRecord,
+  useGetSalePromissoryNotes
+} from '../../api/generated/payments/payments';
+import { RoutersPaymentsPaymentRecordCreate } from '../../api/generated/schemas';
+import { unwrapArray, unwrapObject } from '../../utils/response-unwrap';
+// Local Sale interface as it is missing in exports
+interface Sale {
+  id?: string;
+  patientId: string;
+  totalAmount?: number;
+  [key: string]: any;
+}
 
 interface PaymentRecord {
   id: string;
@@ -109,87 +122,44 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
     noteNumber: ''
   });
 
-  // Load payment data (using mock data for now until API endpoints are documented)
-  const loadPaymentData = async () => {
-    if (!sale.id) return;
+  // Orval Hooks for real data
+  const { data: paymentRecordsResponse } = useGetPatientPaymentRecords(sale.patientId, undefined, {
+    query: { enabled: isOpen && !!sale.patientId }
+  });
 
-    setIsLoading(true);
-    try {
-      // TODO: Replace with actual API calls once payment endpoints are documented in OpenAPI
-      // Mock payment records
-      const mockPayments: PaymentRecord[] = [
-        {
-          id: '1',
-          amount: 1000,
-          paymentDate: '2024-01-15',
-          paymentMethod: 'cash',
-          status: 'paid',
-          notes: 'Peşin ödeme',
-          referenceNumber: 'CASH001'
-        },
-        {
-          id: '2',
-          amount: 500,
-          paymentDate: '2024-02-15',
-          paymentMethod: 'card',
-          status: 'paid',
-          notes: 'Kredi kartı ile ödeme',
-          referenceNumber: 'CARD002'
-        }
-      ];
+  const { data: promissoryNotesResponse } = useGetSalePromissoryNotes(sale.id || '', {
+    query: { enabled: isOpen && !!sale.id }
+  });
 
-      // Mock installments
+  const createPaymentMutation = useCreatePaymentRecord();
+
+  // Unwrap data
+  const realPaymentRecords = unwrapArray<any>(paymentRecordsResponse) || [];
+  const realPromissoryNotes = unwrapArray<any>(promissoryNotesResponse) || [];
+
+  // Mock Installments (Backend Missing) and Data Sync
+  useEffect(() => {
+    if (isOpen) {
+      // Mock Installments
       const mockInstallments: Installment[] = [
-        {
-          id: '1',
-          installmentNumber: 1,
-          amount: 1000,
-          dueDate: '2024-01-15',
-          status: 'paid',
-          paidDate: '2024-01-15',
-          notes: 'İlk taksit'
-        },
-        {
-          id: '2',
-          installmentNumber: 2,
-          amount: 1000,
-          dueDate: '2024-02-15',
-          status: 'paid',
-          paidDate: '2024-02-15',
-          notes: 'İkinci taksit'
-        },
-        {
-          id: '3',
-          installmentNumber: 3,
-          amount: 1000,
-          dueDate: '2024-03-15',
-          status: 'pending',
-          notes: 'Üçüncü taksit'
-        },
-        {
-          id: '4',
-          installmentNumber: 4,
-          amount: 1000,
-          dueDate: '2024-04-15',
-          status: 'pending',
-          notes: 'Dördüncü taksit'
-        }
+        { id: '1', installmentNumber: 1, amount: 1000, dueDate: '2024-01-15', status: 'paid', paidDate: '2024-01-15', notes: 'İlk taksit' },
+        { id: '2', installmentNumber: 2, amount: 1000, dueDate: '2024-02-15', status: 'paid', paidDate: '2024-02-15', notes: 'İkinci taksit' }
       ];
-
-      setPaymentRecords(mockPayments);
       setInstallments(mockInstallments);
-
-      // Calculate summary
-      const summary = calculatePaymentSummary(mockPayments, mockInstallments);
-      setPaymentSummary(summary);
-
-    } catch (err) {
-      console.error('Error loading payment data:', err);
-      setError('Ödeme bilgileri yüklenirken hata oluştu');
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [isOpen]);
+
+  // Sync real data to state
+  useEffect(() => {
+    if (realPaymentRecords) setPaymentRecords(realPaymentRecords);
+    if (realPromissoryNotes) setPromissoryNotes(realPromissoryNotes);
+  }, [realPaymentRecords, realPromissoryNotes]);
+
+  // Calculate summary
+  useEffect(() => {
+    const summary = calculatePaymentSummary(paymentRecords, installments);
+    setPaymentSummary(summary);
+  }, [paymentRecords, installments]);
 
   const calculatePaymentSummary = (payments: PaymentRecord[], installmentList: Installment[]): PaymentSummary => {
     const totalPaid = payments
@@ -205,16 +175,16 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
       .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0];
 
     return {
-      totalAmount: sale.totalAmount,
+      totalAmount: sale.totalAmount || 0,
       totalPaid,
-      remainingBalance: sale.totalAmount - totalPaid,
+      remainingBalance: (sale.totalAmount || 0) - totalPaid,
       overdueAmount,
       nextDueDate: nextDue?.dueDate,
       nextDueAmount: nextDue?.amount
     };
   };
 
-  // Record new payment (mock implementation until API is available)
+  // Record new payment using Orval mutation
   const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sale.id) return;
@@ -234,19 +204,16 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call once payment endpoints are documented
-      // Mock payment creation
-      const newPaymentRecord: PaymentRecord = {
-        id: Date.now().toString(),
+      const paymentData: RoutersPaymentsPaymentRecordCreate = {
+        patientId: sale.patientId,
         amount: newPayment.amount,
         paymentDate: newPayment.paymentDate,
         paymentMethod: newPayment.paymentMethod,
-        status: 'paid',
-        notes: newPayment.notes,
-        referenceNumber: newPayment.referenceNumber
+        notes: newPayment.notes
       };
 
-      setPaymentRecords(prev => [...prev, newPaymentRecord]);
+      await createPaymentMutation.mutateAsync({ data: paymentData });
+
       setSuccess('Ödeme başarıyla kaydedildi');
       setNewPayment({
         amount: 0,
@@ -256,8 +223,6 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
         referenceNumber: ''
       });
 
-      // Reload data
-      await loadPaymentData();
       onPaymentUpdate();
 
     } catch (err) {
@@ -274,7 +239,6 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call once payment endpoints are documented
       // Mock installment payment
       setInstallments(prev => prev.map(installment =>
         installment.id === installmentId
@@ -283,7 +247,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
       ));
 
       setSuccess('Taksit ödemesi başarıyla kaydedildi');
-      await loadPaymentData();
+      // Installments are mock, no need to reload
       onPaymentUpdate();
 
     } catch (err) {
@@ -294,11 +258,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
     }
   };
 
-  useEffect(() => {
-    if (isOpen && sale.id) {
-      loadPaymentData();
-    }
-  }, [isOpen, sale.id]);
+
 
   if (!isOpen) return null;
 
@@ -419,8 +379,8 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                 key={key}
                 onClick={() => setActiveTab(key as any)}
                 className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center ${activeTab === key
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
               >
                 <Icon className="w-4 h-4 mr-2" />

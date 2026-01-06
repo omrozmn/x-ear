@@ -1,4 +1,4 @@
-import { adminApiInstance } from './api';
+import axios, { AxiosRequestConfig } from 'axios';
 
 /**
  * Retry configuration for failed requests
@@ -11,6 +11,28 @@ const RETRY_CONFIG = {
   retryableStatusCodes: [429, 503, 502, 504],
   retryableErrors: ['ECONNRESET', 'ETIMEDOUT', 'ECONNREFUSED', 'ERR_NETWORK']
 };
+
+/**
+ * Create axios instance for Orval mutator
+ * This is separate from api.ts to avoid import.meta issues during Orval generation
+ */
+const axiosInstance = axios.create({
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor for auth token
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('admin_token') : null;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 /**
  * Calculate exponential backoff delay
@@ -104,7 +126,7 @@ async function retryRequest<T>(
  * - Retries on network errors and 5xx status codes
  * - Configurable retry attempts and delays
  */
-export const adminApi = <T>(requestConfig: any): Promise<T> => {
+export const adminApi = <T>(requestConfig: AxiosRequestConfig): Promise<T> => {
     // Add /api prefix if missing (for Vite proxy to work)
     if (requestConfig.url && !requestConfig.url.startsWith('/api')) {
         requestConfig.url = `/api${requestConfig.url}`;
@@ -112,7 +134,7 @@ export const adminApi = <T>(requestConfig: any): Promise<T> => {
 
     // Wrap in retry logic
     return retryRequest(
-      () => adminApiInstance(requestConfig).then(response => response.data),
+      () => axiosInstance(requestConfig).then(response => response.data),
       requestConfig
     );
 };

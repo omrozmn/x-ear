@@ -73,7 +73,7 @@ export default function IntegrationsPage() {
     }, []);
 
 
-    const integrations = integrationsData?.data?.integrations || [];
+    const integrations = (integrationsData as any)?.data?.integrations || [];
 
     const handleSave = async () => {
         try {

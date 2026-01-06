@@ -11,12 +11,13 @@ import logging
 
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_current_context, AccessContext
 from schemas.base import ResponseEnvelope, ApiError
-from models.base import db
+
 from models.sales import Sale, PaymentRecord
 from models.promissory_note import PromissoryNote
 from models.patient import Patient
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -24,19 +25,19 @@ router = APIRouter(tags=["Payments"])
 
 # --- Helper Functions ---
 
-def tenant_scoped_query(ctx: AccessContext, model):
+def tenant_scoped_query(access: UnifiedAccess, model, session: Session):
     """Apply tenant scoping to query"""
-    query = model.query
-    if ctx.tenant_id:
-        query = query.filter_by(tenant_id=ctx.tenant_id)
+    query = session.query(model)
+    if access.tenant_id:
+        query = query.filter_by(tenant_id=access.tenant_id)
     return query
 
-def get_or_404_scoped(ctx: AccessContext, model, record_id: str):
+def get_or_404_scoped(session: Session, access: UnifiedAccess, model, record_id: str):
     """Get record with tenant scoping or raise 404"""
-    record = db.session.get(model, record_id)
+    record = session.get(model, record_id)
     if not record:
         return None
-    if ctx.tenant_id and hasattr(record, 'tenant_id') and record.tenant_id != ctx.tenant_id:
+    if access.tenant_id and hasattr(record, 'tenant_id') and record.tenant_id != access.tenant_id:
         return None
     return record
 
@@ -105,20 +106,20 @@ class CollectPaymentRequest(BaseModel):
 @router.post("/payment-records", status_code=201)
 def create_payment_record(
     payment_in: PaymentRecordCreate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Create a new payment record"""
     try:
-        tenant_id = ctx.tenant_id or payment_in.tenant_id
-        if not tenant_id:
+        access.tenant_id = access.tenant_id or payment_in.tenant_id
+        if not access.tenant_id:
             raise HTTPException(
                 status_code=400,
-                detail=ApiError(message="tenant_id is required", code="TENANT_REQUIRED").model_dump(mode="json")
+                detail=ApiError(message="access.tenant_id is required", code="TENANT_REQUIRED").model_dump(mode="json")
             )
         
         payment = PaymentRecord()
-        payment.tenant_id = tenant_id
+        payment.tenant_id = access.tenant_id
         payment.branch_id = payment_in.branch_id
         payment.patient_id = payment_in.patient_id
         payment.sale_id = payment_in.sale_id
@@ -143,7 +144,7 @@ def create_payment_record(
         if payment.sale_id:
             sale = db_session.query(Sale).filter_by(id=payment.sale_id).first()
             if sale:
-                existing_payments = PaymentRecord.query.filter_by(
+                existing_payments = db_session.query(PaymentRecord).filter_by(
                     sale_id=payment.sale_id,
                     status='paid'
                 ).all()
@@ -175,12 +176,12 @@ def get_patient_payment_records(
     patient_id: str,
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get all payment records for a patient"""
     try:
-        query = tenant_scoped_query(ctx, PaymentRecord).filter_by(patient_id=patient_id)
+        query = tenant_scoped_query(access, PaymentRecord, db_session).filter_by(patient_id=patient_id)
         
         total = query.count()
         payment_records = query.order_by(PaymentRecord.payment_date.desc()).offset((page - 1) * per_page).limit(per_page).all()
@@ -202,12 +203,12 @@ def get_patient_payment_records(
 def update_payment_record(
     record_id: str,
     payment_in: PaymentRecordUpdate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Update a payment record"""
     try:
-        payment = get_or_404_scoped(ctx, PaymentRecord, record_id)
+        payment = get_or_404_scoped(db_session, access, PaymentRecord, record_id)
         if not payment:
             raise HTTPException(
                 status_code=404,
@@ -237,12 +238,12 @@ def update_payment_record(
 def get_patient_promissory_notes(
     patient_id: str,
     sale_id: Optional[str] = Query(None, alias="sale_id"),
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get all promissory notes for a patient"""
     try:
-        query = tenant_scoped_query(ctx, PromissoryNote).filter_by(patient_id=patient_id)
+        query = tenant_scoped_query(access, PromissoryNote, db_session).filter_by(patient_id=patient_id)
         
         if sale_id:
             query = query.filter_by(sale_id=sale_id)
@@ -260,16 +261,16 @@ def get_patient_promissory_notes(
 @router.post("/promissory-notes", status_code=201)
 def create_promissory_notes(
     notes_in: PromissoryNotesCreate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Create multiple promissory notes"""
     try:
-        tenant_id = ctx.tenant_id or notes_in.tenant_id
-        if not tenant_id:
+        access.tenant_id = access.tenant_id or notes_in.tenant_id
+        if not access.tenant_id:
             raise HTTPException(
                 status_code=400,
-                detail=ApiError(message="tenant_id is required", code="TENANT_REQUIRED").model_dump(mode="json")
+                detail=ApiError(message="access.tenant_id is required", code="TENANT_REQUIRED").model_dump(mode="json")
             )
         
         if not notes_in.notes or len(notes_in.notes) == 0:
@@ -284,7 +285,7 @@ def create_promissory_notes(
             data = note_data.model_dump(by_alias=False)
             
             note = PromissoryNote()
-            note.tenant_id = tenant_id
+            note.tenant_id = access.tenant_id
             note.patient_id = notes_in.patient_id
             note.sale_id = notes_in.sale_id
             note.note_number = data['note_number']
@@ -334,12 +335,12 @@ def create_promissory_notes(
 def update_promissory_note(
     note_id: str,
     note_in: PromissoryNoteUpdate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Update a promissory note"""
     try:
-        note = get_or_404_scoped(ctx, PromissoryNote, note_id)
+        note = get_or_404_scoped(db_session, access, PromissoryNote, note_id)
         if not note:
             raise HTTPException(
                 status_code=404,
@@ -369,12 +370,12 @@ def update_promissory_note(
 def collect_promissory_note(
     note_id: str,
     collect_in: CollectPaymentRequest,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Collect payment for a promissory note"""
     try:
-        note = get_or_404_scoped(ctx, PromissoryNote, note_id)
+        note = get_or_404_scoped(db_session, access, PromissoryNote, note_id)
         if not note:
             raise HTTPException(
                 status_code=404,
@@ -401,10 +402,10 @@ def collect_promissory_note(
                 ).model_dump(mode="json")
             )
         
-        tenant_id = ctx.tenant_id or note.tenant_id
+        access.tenant_id = access.tenant_id or note.tenant_id
         
         payment = PaymentRecord()
-        payment.tenant_id = tenant_id
+        payment.tenant_id = access.tenant_id
         payment.patient_id = note.patient_id
         payment.sale_id = note.sale_id
         payment.promissory_note_id = note_id
@@ -434,7 +435,7 @@ def collect_promissory_note(
         if note.sale_id:
             sale = db_session.get(Sale, note.sale_id)
             if sale:
-                sale_payments = PaymentRecord.query.filter_by(
+                sale_payments = db_session.query(PaymentRecord).filter_by(
                     sale_id=note.sale_id,
                     status='paid'
                 ).all()
@@ -470,12 +471,12 @@ def collect_promissory_note(
 @router.get("/sales/{sale_id}/promissory-notes")
 def get_sale_promissory_notes(
     sale_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get all promissory notes for a specific sale"""
     try:
-        notes = tenant_scoped_query(ctx, PromissoryNote).filter_by(sale_id=sale_id).order_by(PromissoryNote.note_number.asc()).all()
+        notes = tenant_scoped_query(access, PromissoryNote, db_session).filter_by(sale_id=sale_id).order_by(PromissoryNote.note_number.asc()).all()
         
         return ResponseEnvelope(
             data=[note.to_dict() for note in notes],

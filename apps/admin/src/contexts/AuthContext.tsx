@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const login = async (credentials: LoginCredentials & { mfa_token?: string }) => {
         try {
-            const response = await adminLogin(credentials) as any;
+            const response = await adminLogin({ data: credentials }) as any;
 
             console.log('Login response after unwrap:', response);
 

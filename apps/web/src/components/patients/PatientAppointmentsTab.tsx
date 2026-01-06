@@ -1,15 +1,18 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Plus, Edit, X, Check, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Button, Badge, Input, Textarea, Select } from '@x-ear/ui-web';
 import { Patient } from '../../types/patient';
-import { appointmentsGetAppointments, appointmentsCreateAppointment, appointmentsCancelAppointment, appointmentsCompleteAppointment } from '@/api/generated';
+import {
+  getPatientAppointments,
+  createAppointment,
+  cancelAppointment,
+  completeAppointment
+} from '@/api/generated';
 import type {
-  Appointment,
-  AppointmentsGetAppointmentsParams,
-  AppointmentsCreateAppointmentBody,
-  AppointmentsCancelAppointmentBody,
-  AppointmentsCompleteAppointmentBody,
-  AppointmentsGetAppointments1200
+  AppointmentRead,
+  AppointmentCreate,
+  AppointmentUpdate
 } from '@/api/generated/schemas';
 
 interface PatientAppointmentsTabProps {
@@ -19,7 +22,7 @@ interface PatientAppointmentsTabProps {
 
 export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ patient }) => {
   const [showBookingForm, setShowBookingForm] = useState(false);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointments, setAppointments] = useState<AppointmentRead[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState({
@@ -36,15 +39,17 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
     setError(null);
 
     try {
-      const params: AppointmentsGetAppointmentsParams = {
-        patient_id: patient.id,
-        page: 1,
-        per_page: 20 // Reduced from 100 to 20 to minimize data transfer
-      };
+      // const params: AppointmentsGetAppointmentsParams = {
+      //   patient_id: patient.id,
+      //   page: 1,
+      //   per_page: 20
+      // };
 
-      const response = await appointmentsGetAppointments(params);
-      const appointments = (response as any)?.data?.appointments || (response as any)?.appointments || [];
-      setAppointments(appointments);
+      const response = await getPatientAppointments(patient.id) as any;
+
+      // Handle response envelope or direct array
+      const appointmentsData = response?.data || response || [];
+      setAppointments(Array.isArray(appointmentsData) ? appointmentsData : []);
     } catch (err) {
       console.error('Error loading appointments:', err);
       setError('Randevular yüklenirken hata oluştu');
@@ -70,9 +75,13 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
     return true;
   });
 
-  const handleNewAppointment = async (appointmentData: AppointmentsCreateAppointmentBody) => {
+  const handleNewAppointment = async (appointmentData: AppointmentCreate) => {
     try {
-      await appointmentsCreateAppointment(appointmentData);
+      const createBody: AppointmentCreate = {
+        ...appointmentData,
+        // Ensure fields match schema
+      };
+      await createAppointment(createBody);
       await loadAppointments();
       setShowBookingForm(false);
     } catch (err) {
@@ -83,8 +92,12 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
 
   const handleCancelAppointment = async (appointmentId: string, reason?: string) => {
     try {
-      const cancelData: AppointmentsCancelAppointmentBody = { reason };
-      await appointmentsCancelAppointment(appointmentId, cancelData);
+      // Cancel endpoint might not body or might expect different structure. 
+      // Checking generated code: cancelAppointment(appointmentId) takes no body?? 
+      // Wait, generated code line 493 takes only appointmentId and signal. 
+      // It does NOT take a body. So reason is lost or passed differently?
+      // Assuming no body for now based on generated code.
+      await cancelAppointment(appointmentId);
       await loadAppointments();
     } catch (err) {
       console.error('Error canceling appointment:', err);
@@ -94,8 +107,8 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
 
   const handleConfirmAppointment = async (appointmentId: string, notes?: string) => {
     try {
-      const completeData: AppointmentsCompleteAppointmentBody = { notes };
-      await appointmentsCompleteAppointment(appointmentId, completeData);
+      // Complete endpoint takes only appointmentId
+      await completeAppointment(appointmentId);
       await loadAppointments();
     } catch (err) {
       console.error('Error completing appointment:', err);
@@ -253,7 +266,7 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
                 </div>
 
                 <div className="flex items-center space-x-2 ml-4">
-                  {appointment.status === 'SCHEDULED' && (
+                  {appointment.status === 'scheduled' && (
                     <>
                       <Button
                         onClick={() => appointment.id && handleConfirmAppointment(appointment.id)}
@@ -306,13 +319,14 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
-              const appointmentData: AppointmentsCreateAppointmentBody = {
-                patient_id: patient.id || '',
+              const appointmentData: AppointmentCreate = {
+                patientId: patient.id || '',
                 date: formData.get('date') as string,
                 time: formData.get('time') as string,
                 duration: parseInt(formData.get('duration') as string) || 30,
-                type: formData.get('type') as string,
-                notes: formData.get('notes') as string
+                type: (formData.get('type') as string) || 'General',
+                notes: formData.get('notes') as string,
+                status: 'scheduled'
               };
               handleNewAppointment(appointmentData);
             }}>

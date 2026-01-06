@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { Plus, Trash2, Mail, User, Shield, AlertCircle, CheckCircle2, Lock, Eye, EyeOff, Building2, Pencil, AlertTriangle } from 'lucide-react';
-import { usersListUsers, usersCreateUser, usersDeleteUser, useUsersUpdateUser } from '@/api/generated';
+import {
+    useListUsersApiUsersGet,
+    useCreateUserApiUsersPost,
+    useDeleteUserApiUsersUserIdDelete,
+    useUpdateUserApiUsersUserIdPut
+} from '@/api/generated';
 import { branchService, Branch } from '../../services/branch.service';
 import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
@@ -74,40 +79,40 @@ export function TeamMembersTab() {
     const [inviteError, setInviteError] = useState('');
 
     // Queries and Mutations
-    const { data: usersResponse, isLoading: loading, error, refetch } = useQuery({
-        queryKey: ['users'],
-        queryFn: () => usersListUsers()
-    });
+    const { data: usersResponse, isLoading: loading, error, refetch } = useListUsersApiUsersGet();
 
-    const inviteMutation = useMutation({
-        mutationFn: (data: any) => usersCreateUser(data),
-        onSuccess: () => {
-            setInviteSuccess('Kullanici basariyla olusturuldu!');
-            refetch();
-            setInviteData({ username: '', password: '', email: '', firstName: '', lastName: '', role: 'user', branchId: '' });
-        },
-        onError: (err: any) => {
-            setInviteError(err.response?.data?.error || 'Davet gonderilemedi.');
+    const inviteMutation = useCreateUserApiUsersPost({
+        mutation: {
+            onSuccess: () => {
+                setInviteSuccess('Kullanici basariyla olusturuldu!');
+                refetch();
+                setInviteData({ username: '', password: '', email: '', firstName: '', lastName: '', role: 'user', branchId: '' });
+            },
+            onError: (err: any) => {
+                setInviteError(err?.response?.data?.error || 'Davet gonderilemedi.');
+            }
         }
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: (userId: string) => usersDeleteUser(userId),
-        onSuccess: () => {
-            refetch();
-        },
-        onError: () => {
-            toast.error('Kullanici silinemedi.');
+    const deleteMutation = useDeleteUserApiUsersUserIdDelete({
+        mutation: {
+            onSuccess: () => {
+                refetch();
+            },
+            onError: () => {
+                toast.error('Kullanici silinemedi.');
+            }
         }
     });
 
-    const updateUserMutation = useUsersUpdateUser();
+    const updateUserMutation = useUpdateUserApiUsersUserIdPut();
 
     const handleInvite = (e: React.FormEvent) => {
         e.preventDefault();
         setInviteError('');
         setInviteSuccess('');
-        inviteMutation.mutate(inviteData);
+        // @ts-ignore - Temporary fix for type mismatch if UserCreate differs slightly or strict check fails
+        inviteMutation.mutate({ data: inviteData });
     };
 
     const handleDelete = (userId: string) => {
@@ -117,7 +122,7 @@ export function TeamMembersTab() {
             message: 'Bu kullaniciyi silmek istediginize emin misiniz? Bu islem geri alinamaz.',
             type: 'danger',
             onConfirm: () => {
-                deleteMutation.mutate(userId);
+                deleteMutation.mutate({ userId });
                 setConfirmationModal(prev => ({ ...prev, isOpen: false }));
             }
         });
@@ -201,7 +206,7 @@ export function TeamMembersTab() {
                 });
 
                 try {
-                    await updateUserMutation.mutateAsync({ userId: user.id, data: { isActive: !user.isActive } });
+                    await updateUserMutation.mutateAsync({ userId: user.id, data: { isActive: !user.isActive } as any });
                     toast.success(`Kullanici ${user.isActive ? 'pasife alindi' : 'aktiflestirildi'}.`);
                     queryClient.invalidateQueries({ queryKey: ['tenantUsersList'] });
                 } catch {
@@ -261,8 +266,8 @@ export function TeamMembersTab() {
                     <AlertCircle className="w-5 h-5 mr-2" />
                     <div>
                         <div className="font-medium">Kullanicilar yuklenirken bir hata olustu.</div>
-                        {error?.message && (
-                            <div className="text-sm mt-1">{String(error.message)}</div>
+                        {(error as any)?.message && (
+                            <div className="text-sm mt-1">{String((error as any).message)}</div>
                         )}
                     </div>
                 </div>

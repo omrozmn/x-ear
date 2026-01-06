@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
-  communicationsGetTemplates,
-  communicationsUpdateTemplate,
-  communicationsCreateTemplate,
-  communicationsDeleteTemplate
+  listTemplates,
+  updateTemplate,
+  createTemplate,
+  deleteTemplate
 } from '@/api/generated';
-import type { CommunicationTemplate as _BaseCommunicationTemplate } from '@/api/generated/schemas/communicationTemplate';
+// CommunicationTemplate type defined locally since schema may not export it
 import { Button, Input, Select, Textarea, Checkbox } from '@x-ear/ui-web';
 
 interface CommunicationTemplate {
@@ -130,11 +130,11 @@ const CommunicationTemplates: React.FC = () => {
   const loadTemplates = async () => {
     try {
       setLoading(true);
-      const response = await communicationsGetTemplates();
+      const response = await listTemplates() as any;
 
-      if (response.success && response.data) {
+      if (response?.success && response?.data) {
         // Filter out templates with undefined id
-        const validTemplates = (response.data || []).filter(template => template.id !== undefined) as CommunicationTemplate[];
+        const validTemplates = (response.data || []).filter((template: any) => template.id !== undefined) as CommunicationTemplate[];
         setTemplates(validTemplates);
       } else {
         setTemplates([]);
@@ -209,12 +209,12 @@ const CommunicationTemplates: React.FC = () => {
 
       if (selectedTemplate?.id) {
         // Update existing template
-        const response = await communicationsUpdateTemplate(
+        const response = await updateTemplate(
           selectedTemplate.id,
           formData
-        );
+        ) as any;
 
-        if (response.success) {
+        if (response?.success) {
           await loadTemplates();
           setShowEditModal(false);
           setSelectedTemplate(null);
@@ -223,9 +223,9 @@ const CommunicationTemplates: React.FC = () => {
         }
       } else {
         // Create new template
-        const response = await communicationsCreateTemplate(formData);
+        const response = await createTemplate(formData) as any;
 
-        if (response.success) {
+        if (response?.success) {
           await loadTemplates();
           setShowCreateModal(false);
         } else {
@@ -247,7 +247,7 @@ const CommunicationTemplates: React.FC = () => {
     if (!confirm(`Are you sure you want to delete "${template.name}"?`)) return;
 
     try {
-      const response = await communicationsDeleteTemplate(template.id!);
+      const response = await deleteTemplate(template.id!) as any;
 
       if (response?.success) {
         await loadTemplates();

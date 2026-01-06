@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  communicationsCreateTemplate,
-  communicationsUpdateTemplate,
-  communicationsDeleteTemplate,
-  communicationsGetTemplates,
-  communicationsGetMessages,
-  communicationsSendSms,
-  communicationsSendEmail
+  createTemplate,
+  updateTemplate,
+  deleteTemplate,
+  listTemplates,
+  listMessages,
+  sendSms,
+  sendEmail
 } from '@/api/generated';
 
 // Simplified types without idb dependency for now
@@ -298,26 +298,26 @@ class SimpleCommunicationSync {
     try {
       if (item.entityType === 'template') {
         if (item.action === 'create') {
-          await communicationsCreateTemplate(item.data);
+          await createTemplate(item.data);
         } else if (item.action === 'update') {
-          await communicationsUpdateTemplate(item.entityId, item.data);
+          await updateTemplate(item.entityId, item.data);
         } else if (item.action === 'delete') {
-          await communicationsDeleteTemplate(item.entityId);
+          await deleteTemplate(item.entityId);
         }
       } else if (item.entityType === 'message') {
         if (item.action === 'create') {
           const msgData = item.data;
           if (msgData.type === 'sms') {
-            await communicationsSendSms({
-              recipient: msgData.recipient,
-              content: msgData.content,
+            await sendSms({
+              phoneNumber: msgData.recipient,
+              message: msgData.content,
               patientId: msgData.patientId
             });
           } else if (msgData.type === 'email') {
-            await communicationsSendEmail({
-              recipient: msgData.recipient,
-              subject: msgData.subject,
-              content: msgData.content,
+            await sendEmail({
+              toEmail: msgData.recipient,
+              subject: msgData.subject || 'No Subject',
+              bodyText: msgData.content,
               patientId: msgData.patientId
             });
           }
@@ -367,7 +367,7 @@ class SimpleCommunicationSync {
     if (!navigator.onLine) return;
 
     try {
-      const response = await communicationsGetMessages();
+      const response = await listMessages();
       const result = (response as any).data || response;
 
       if (!result.success) return;
@@ -395,7 +395,7 @@ class SimpleCommunicationSync {
 
   private async syncTemplatesFromServer(): Promise<void> {
     try {
-      const response = await communicationsGetTemplates();
+      const response = await listTemplates();
 
       const result = (response as any).data || response;
       if (!result.success) return;

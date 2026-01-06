@@ -11,7 +11,7 @@ import { Patient } from '../../../types/patient/patient-base.types';
 import { useInventory } from '../../../hooks/useInventory';
 import ProductSearch, { type Product } from '../../common/ProductSearch';
 import { useFuzzySearch } from '../../../utils/fuzzySearch';
-import { timelineAddTimelineEvent, timelineLogPatientActivity } from '@/api/generated';
+import { addTimelineEvent, logPatientActivity } from '@/api/generated';
 import { patientApiService } from '../../../services/patient/patient-api.service';
 
 interface SaleModalProps {
@@ -221,7 +221,7 @@ function SaleModal({ isOpen, onClose, patient, onSaleCreate }: SaleModalProps) {
         category: 'sales'
       };
 
-      await timelineAddTimelineEvent(patientId, timelineData);
+      await addTimelineEvent(patientId, timelineData as any);
       console.log('Timeline log created successfully');
     } catch (error) {
       console.error('Error creating timeline log:', error);
@@ -251,7 +251,7 @@ function SaleModal({ isOpen, onClose, patient, onSaleCreate }: SaleModalProps) {
         category: 'sales'
       };
 
-      await timelineLogPatientActivity(patientId, activityData);
+      await logPatientActivity(patientId, activityData as any);
       console.log('Sales activity log created successfully');
     } catch (error) {
       console.error('Error creating sales activity log:', error);

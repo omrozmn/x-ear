@@ -1,0 +1,38 @@
+{"timestamp": "2026-01-04T21:17:16.314912+00:00", "level": "INFO", "logger": "verification", "message": "Starting Critical Migration Verification..."}
+{"timestamp": "2026-01-04T21:17:16.315084+00:00", "level": "INFO", "logger": "verification", "message": "Initializing database..."}
+Traceback (most recent call last):
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/scripts/verify_migration_critical.py", line 101, in <module>
+    main()
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/scripts/verify_migration_critical.py", line 85, in main
+    setup_database()
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/scripts/verify_migration_critical.py", line 24, in setup_database
+    init_db()
+  File "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend/database.py", line 144, in init_db
+    Base.metadata.create_all(bind=engine)
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/sqlalchemy/sql/schema.py", line 5828, in create_all
+    bind._run_ddl_visitor(
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 3243, in _run_ddl_visitor
+    conn._run_ddl_visitor(visitorcallable, element, **kwargs)
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2447, in _run_ddl_visitor
+    visitorcallable(self.dialect, self, **kwargs).traverse_single(element)
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/sqlalchemy/sql/visitors.py", line 671, in traverse_single
+    return meth(obj, **kw)
+           ^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/sqlalchemy/sql/ddl.py", line 897, in visit_metadata
+    collection = sort_tables_and_constraints(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/sqlalchemy/sql/ddl.py", line 1327, in sort_tables_and_constraints
+    dependent_on = fkc.referred_table
+                   ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/sqlalchemy/sql/schema.py", line 4751, in referred_table
+    return self.elements[0].column.table
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py", line 1146, in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+                                           ^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/sqlalchemy/sql/schema.py", line 3159, in column
+    return self._resolve_column()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/lib/python3.12/site-packages/sqlalchemy/sql/schema.py", line 3182, in _resolve_column
+    raise exc.NoReferencedTableError(
+sqlalchemy.exc.NoReferencedTableError: Foreign key associated with column 'user_branches.branch_id' could not find table 'branches' with which to generate a foreign key to target column 'id'

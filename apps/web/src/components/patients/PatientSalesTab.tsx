@@ -31,7 +31,7 @@ import { SalesSummaryCards } from './SalesSummaryCards';
 import { SalesFilters } from './SalesFilters';
 import { PatientSaleCard } from './patient/PatientSaleCard';
 import { SalesTableView } from './patient/SalesTableView';
-import { patientsGetPatientSales } from '@/api/generated';
+import { getSales } from '@/api/generated';
 import { PATIENT_SALES_DATA } from '../../constants/storage-keys';
 
 interface DeviceReplacement {
@@ -117,7 +117,7 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
     try {
       console.log('🔄 Loading patient sales for:', patient.id);
 
-      const response = await patientsGetPatientSales(patient.id) as any;
+      const response = await getSales({ search: patient.id }) as any;
 
       console.log('📊 API Response:', response);
 

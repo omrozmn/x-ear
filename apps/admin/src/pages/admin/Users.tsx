@@ -14,9 +14,24 @@ import {
   useGetAllTenantUsers,
   useCreateAdminUser,
   useUpdateAnyTenantUser,
-  AdminUserRole,
-  AdminUser
 } from '@/lib/api-client';
+
+// Local type definitions (not exported from generated client)
+type AdminUserRole = 'super_admin' | 'admin' | 'support' | 'tenant_admin' | 'user' | 'doctor' | 'secretary';
+const AdminUserRoleValues = ['super_admin', 'admin', 'support', 'tenant_admin', 'user', 'doctor', 'secretary'];
+
+interface AdminUser {
+  id?: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  role?: string;
+  is_active?: boolean;
+  last_login?: string;
+  created_at?: string;
+  tenant_id?: string;
+  tenant_name?: string;
+}
 import Pagination from '@/components/ui/Pagination';
 import { TenantAutocomplete } from '@/components/ui/TenantAutocomplete';
 
@@ -52,8 +67,8 @@ const Users: React.FC = () => {
     search: searchTerm || undefined
   });
 
-  const users = usersData?.data?.users || [];
-  const pagination = usersData?.data?.pagination;
+  const users = (usersData as any)?.data?.users || (usersData as any)?.users || [];
+  const pagination = (usersData as any)?.data?.pagination || (usersData as any)?.pagination;
 
   // Mutations
   const { mutateAsync: updateAnyTenantUser } = useUpdateAnyTenantUser();
@@ -73,7 +88,7 @@ const Users: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await updateAnyTenantUser({ id: userToToggle.id, data: { is_active: newStatus } });
+      await updateAnyTenantUser({ userId: userToToggle.id, data: { isActive: newStatus } });
       await queryClient.invalidateQueries({ queryKey: ['/api/admin/users/all'] });
       toast.success('Kullanıcı durumu başarıyla güncellendi');
       setConfirmModalOpen(false);
@@ -156,7 +171,7 @@ const Users: React.FC = () => {
       if (formData.password) {
         updateData.password = formData.password;
       }
-      await updateAnyTenantUser({ id: selectedUser.id, data: updateData });
+      await updateAnyTenantUser({ userId: selectedUser.id, data: updateData });
       toast.success('Kullanıcı güncellendi');
       setIsEditModalOpen(false);
       await queryClient.invalidateQueries({ queryKey: ['/api/admin/users/all'] });
@@ -539,7 +554,7 @@ const Users: React.FC = () => {
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                 >
-                  {Object.values(AdminUserRole).map((role) => (
+                  {AdminUserRoleValues.map((role) => (
                     <option key={role} value={role}>{role}</option>
                   ))}
                 </select>
@@ -631,7 +646,7 @@ const Users: React.FC = () => {
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                 >
-                  {Object.values(AdminUserRole).map((role) => (
+                  {AdminUserRoleValues.map((role) => (
                     <option key={role} value={role}>{role}</option>
                   ))}
                 </select>

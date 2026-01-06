@@ -29,6 +29,10 @@ class User(BaseModel):
     is_active = db.Column(db.Boolean, default=True)
     is_phone_verified = db.Column(db.Boolean, default=False)
     
+    # Permission versioning - incremented when role permissions change
+    # Token contains this version, if mismatch -> force re-login
+    permissions_version = db.Column(db.Integer, default=1, nullable=False)
+    
     # Relationships
     branches = db.relationship('Branch', secondary=user_branches, lazy='subquery',
         backref=db.backref('users', lazy=True))
@@ -51,6 +55,7 @@ class User(BaseModel):
         base_dict = self.to_dict_base()
         user_dict = {
             'id': self.id,
+            'tenantId': self.tenant_id,
             'username': self.username,
             'email': self.email,
             'firstName': self.first_name,

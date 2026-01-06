@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PatientDevice } from '../../types/patient';
-import { usePatientSubresourcesGetPatientDevices, patientSubresourcesGetPatientDevices } from '@/api/generated';
+import {
+  useGetPatientDevices,
+  getPatientDevices
+} from '@/api/generated/patient-subresources/patient-subresources';
 
 interface ApiResponse {
   success?: boolean;
@@ -27,15 +30,15 @@ export function usePatientDevices(patientId: string) {
       setLoading(true);
       setError(null);
 
-      const response = await patientSubresourcesGetPatientDevices(patientId);
-      
+      const response = await getPatientDevices(patientId);
+
       // Handle different response structures
       let devicesData: unknown[] = [];
-      
+
       // Check if response.data is wrapped in an envelope
       if (response && typeof response === 'object') {
         const responseObj = response as Record<string, unknown>;
-        
+
         // Case 1: Direct array response
         if (Array.isArray(response)) {
           devicesData = response;
@@ -59,7 +62,7 @@ export function usePatientDevices(patientId: string) {
       }
 
       console.log('📥 Patient devices from backend:', devicesData);
-      
+
       if (devicesData.length > 0) {
         const firstDevice = devicesData[0] as Record<string, unknown>;
         console.log('📥 First device FULL:', JSON.stringify(firstDevice, null, 2));
@@ -85,7 +88,7 @@ export function usePatientDevices(patientId: string) {
           settings: d.settings as Record<string, unknown> | undefined,
         };
       });
-      
+
       setDevices(mappedDevices);
     } catch (err) {
       console.error('Failed to fetch patient devices:', err);

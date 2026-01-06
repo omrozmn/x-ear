@@ -1,25 +1,252 @@
 import os
-from fastapi import FastAPI, Request
+import logging
+import json
+from datetime import datetime, timezone
+from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from app import app as flask_app
-from routers import sms
 
-from fastapi_app.middleware import envelope_error, envelope_success, request_id_middleware
+# Load environment from .env FIRST (so JWT_SECRET_KEY etc. are available for middleware)
+try:
+    from dotenv import load_dotenv
+    load_dotenv(override=True)  # Override to ensure .env values are used
+except Exception:
+    # Optional dependency / best-effort load; env vars can still be provided by the process manager.
+    pass
 
-# Create FastAPI app
+from fastapi_app.middleware import envelope_error, request_id_middleware
+
+# Centralized permission enforcement (Flask-free)
+from middleware.permission_middleware import FastAPIPermissionMiddleware
+
+# ============================================================================
+# Custom Operation ID Generator for Clean OpenAPI Spec
+# ============================================================================
+from fastapi.routing import APIRoute
+
+def generate_operation_id(route: APIRoute) -> str:
+    """
+    Generate clean, unique operation IDs for OpenAPI spec.
+    
+    Uses path segments to ensure uniqueness while keeping names readable.
+    
+    Examples:
+    - GET /api/admin/tenants -> getAdminTenants
+    - POST /api/patients -> createPatients  
+    - GET /api/patients/{patient_id} -> getPatient
+    - PUT /api/admin/settings -> updateAdminSettings
+    """
+    # Get the function name
+    func_name = route.endpoint.__name__
+    
+    # Get path for context
+    path = route.path
+    
+    # Extract meaningful path segments (skip api, parameters)
+    segments = [s for s in path.split('/') if s and s != 'api' and not s.startswith('{')]
+    
+    # Convert function name to camelCase
+    parts = func_name.split('_')
+    base_name = parts[0] + ''.join(word.capitalize() for word in parts[1:])
+    base_lower = base_name.lower()
+    
+    # Build unique suffix from path if needed
+    # For generic names like 'init_db', 'health_check', 'get_me', etc.
+    generic_names = ['initdb', 'healthcheck', 'getme', 'createinvoice', 'getinvoices', 
+                     'getanalytics', 'getintegrations']
+    
+    if base_lower.replace('_', '') in generic_names or base_lower in generic_names:
+        # Use first 2 path segments for context
+        context_segments = segments[:2] if len(segments) >= 2 else segments
+        if context_segments:
+            context = ''.join(word.capitalize() for word in context_segments)
+            # Rebuild with context
+            action_verbs = ['get', 'list', 'create', 'update', 'delete', 'init', 'trigger', 'send', 'retry', 'health']
+            for verb in action_verbs:
+                if base_lower.startswith(verb):
+                    verb_len = len(verb)
+                    # Insert context after verb
+                    base_name = base_name[:verb_len] + context + base_name[verb_len:].replace(context, '')
+                    break
+            else:
+                # No verb found, prepend context
+                base_name = context + base_name
+    elif 'admin' in segments and 'admin' not in base_lower:
+        # Add Admin prefix for admin routes
+        action_verbs = ['get', 'list', 'create', 'update', 'delete', 'init', 'trigger', 'send', 'retry']
+        for verb in action_verbs:
+            if base_lower.startswith(verb):
+                verb_len = len(verb)
+                base_name = base_name[:verb_len] + 'Admin' + base_name[verb_len:]
+                break
+    
+    return base_name
+
+# ============================================================================
+# Structured JSON Logging Setup
+# ============================================================================
+class JSONFormatter(logging.Formatter):
+    """JSON formatter for structured logging"""
+    def format(self, record):
+        log_obj = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+        if hasattr(record, 'request_id'):
+            log_obj["requestId"] = record.request_id
+        if hasattr(record, 'tenant_id'):
+            log_obj["tenantId"] = record.tenant_id
+        if record.exc_info:
+            log_obj["exception"] = self.formatException(record.exc_info)
+        return json.dumps(log_obj)
+
+# Configure root logger with JSON format
+json_handler = logging.StreamHandler()
+json_handler.setFormatter(JSONFormatter())
+logging.basicConfig(level=logging.INFO, handlers=[json_handler])
+logger = logging.getLogger("x-ear")
+
+# Create FastAPI app with custom operation ID generator
 app = FastAPI(
     title="X-Ear CRM API",
-    description="FastAPI + Flask Hybrid Backend",
+    description="Auto-generated from Flask backend routes",
     version="1.0.0",
-    # Disable default docs to avoid conflict with legacy swagger if needed, 
-    # but usually we want them at /docs
     docs_url="/docs",
-    openapi_url="/openapi.json"
+    openapi_url="/openapi.json",
+    generate_unique_id_function=generate_operation_id
 )
+
+# ============================================================================
+# Health & Readiness Endpoints (Observability)
+# ============================================================================
+@app.get("/health", tags=["Health"])
+async def health_check():
+    """Health check endpoint for load balancers and orchestrators"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "version": "2.0.0"
+    }
+
+@app.get("/readiness", tags=["Health"])
+async def readiness_check():
+    """Readiness check - verifies database connectivity"""
+    from database import engine
+    from sqlalchemy import text
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+    
+    return {
+        "status": "ready" if db_status == "connected" else "not_ready",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "checks": {
+            "database": db_status
+        }
+    }
+
+# ============================================================================
+# Idempotency-Key Middleware
+# ============================================================================
+from models.idempotency import IdempotencyKey
+from database import SessionLocal
+
+async def idempotency_middleware(request: Request, call_next):
+    """
+    Idempotency-Key middleware for POST/PUT/PATCH requests.
+    If a request with the same key was already processed, return cached response.
+    """
+    # Only apply to write methods
+    if request.method not in ("POST", "PUT", "PATCH"):
+        return await call_next(request)
+    
+    idempotency_key = request.headers.get("Idempotency-Key")
+    if not idempotency_key:
+        return await call_next(request)
+    
+    endpoint = str(request.url.path)
+    
+    # Check if key exists
+    db = SessionLocal()
+    try:
+        existing = db.query(IdempotencyKey).filter(
+            IdempotencyKey.idempotency_key == idempotency_key,
+            IdempotencyKey.endpoint == endpoint
+        ).first()
+        
+        if existing and existing.response_json and not existing.processing:
+            # Return cached response
+            return Response(
+                content=existing.response_json,
+                status_code=existing.status_code or 200,
+                media_type="application/json",
+                headers={"X-Idempotency-Replayed": "true"}
+            )
+        
+        if existing and existing.processing:
+            # Request is still being processed
+            return Response(
+                content=json.dumps({"error": "Request is being processed"}),
+                status_code=409,
+                media_type="application/json"
+            )
+        
+        # Mark as processing
+        if not existing:
+            existing = IdempotencyKey(
+                idempotency_key=idempotency_key,
+                endpoint=endpoint,
+                processing=True
+            )
+            db.add(existing)
+            db.commit()
+        else:
+            existing.processing = True
+            db.commit()
+        
+        # Process request
+        response = await call_next(request)
+        
+        # Cache response for successful requests
+        if 200 <= response.status_code < 300:
+            body = b""
+            async for chunk in response.body_iterator:
+                body += chunk
+            
+            existing.status_code = response.status_code
+            existing.response_json = body.decode()
+            existing.processing = False
+            db.commit()
+            
+            return Response(
+                content=body,
+                status_code=response.status_code,
+                media_type=response.media_type,
+                headers=dict(response.headers)
+            )
+        
+        # Mark as not processing on failure
+        existing.processing = False
+        db.commit()
+        
+        return response
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Idempotency middleware error: {e}")
+        return await call_next(request)
+    finally:
+        db.close()
+
+app.middleware("http")(idempotency_middleware)
+
+# Permission middleware should run early (after request-id) to ensure consistent errors/logs.
+app.add_middleware(FastAPIPermissionMiddleware)
 
 # RequestId middleware (parity with Flask envelope expectations)
 app.middleware("http")(request_id_middleware)
@@ -101,18 +328,23 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*", "Idempotency-Key", "X-Request-Id", "sentry-trace", "baggage"],
+    expose_headers=["X-Request-Id", "X-Response-Time", "X-Idempotency-Replayed"],
 )
 
 # Import all FastAPI routers
 from routers import sms, campaigns, patients, inventory, sales
 from routers import auth, appointments, dashboard, devices
 from routers import notifications, branches, reports, roles
-from routers import payments, users, tenant_users, suppliers
+from routers import payments, users, tenant_users, suppliers, settings
 # Admin routers
 from routers import admin, admin_tenants, admin_dashboard, admin_plans, admin_addons, admin_analytics
 # Additional routers
 from routers import invoices, sgk
+# Newly migrated routers
+from routers import activity_logs, permissions, ocr
+from routers import upload, documents
+from routers import cash_records, unified_cash, payment_integrations
 
 # Include FastAPI Routers
 # All routers use /api prefix to match existing Flask structure
@@ -137,6 +369,7 @@ app.include_router(payments.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(tenant_users.router, prefix="/api")
 app.include_router(suppliers.router, prefix="/api")
+app.include_router(settings.router, prefix="/api")
 
 # Admin panel routers
 app.include_router(admin.router, prefix="/api")
@@ -150,46 +383,87 @@ app.include_router(admin_analytics.router, prefix="/api")
 app.include_router(invoices.router, prefix="/api")
 app.include_router(sgk.router, prefix="/api")
 
-# ============================================================================
-# FLASK FALLBACK - MIGRATION STATUS
-# ============================================================================
-# As of 2026-01-04, ALL MODULES have been migrated to FastAPI:
-# ✅ auth (login, logout, refresh, OTP, password reset)
-# ✅ patients (CRUD, search, devices, sales)
-# ✅ appointments (CRUD, reschedule, cancel, availability)
-# ✅ dashboard (KPIs, charts, activity)
-# ✅ devices (CRUD, categories, brands, stock)
-# ✅ inventory (CRUD, search, stats, movements)
-# ✅ sales (CRUD, payments, payment plans)
-# ✅ campaigns (CRUD)
-# ✅ sms (send, templates)
-# ✅ notifications (CRUD, settings, stats)
-# ✅ branches (CRUD)
-# ✅ reports (overview, financial, patients, campaigns, promissory notes)
-# ✅ roles (CRUD, permissions)
-# ✅ payments (payment records, promissory notes)
-# ✅ users (CRUD, profile, password)
-# ✅ tenant_users (tenant user management, company settings)
-# ✅ suppliers (CRUD, search, stats)
-# ✅ admin (admin auth, users, tickets, debug)
-# ✅ admin_tenants (tenant management)
-# ✅ admin_dashboard (admin metrics)
-# ✅ admin_plans (subscription plans)
-# ✅ admin_addons (add-on packages)
-# ✅ admin_analytics (analytics data)
-# ✅ invoices (invoice CRUD)
-# ✅ sgk (SGK documents, OCR)
-#
-# Flask fallback is DISABLED by default.
-# Set ENABLE_FLASK_FALLBACK=1 only for legacy integrations (birfatura, uts).
-# ============================================================================
-if os.getenv("ENABLE_FLASK_FALLBACK", "0") == "1":
-    import logging
-    logging.getLogger(__name__).warning(
-        "Flask fallback is ENABLED. This is deprecated and will be removed. "
-        "Please migrate remaining endpoints to FastAPI."
-    )
-    app.mount("/", WSGIMiddleware(flask_app))
+# Newly migrated routers (Phase 2)
+app.include_router(activity_logs.router, prefix="/api")
+app.include_router(permissions.router, prefix="/api")
+app.include_router(ocr.router, prefix="/api")  # Has /ocr prefix built-in
+app.include_router(upload.router, prefix="/api")  # Has /upload prefix built-in
+app.include_router(documents.router, prefix="/api")
+# Patient subresources router (devices, notes, hearing tests, ereceipts, appointments)
+from routers import patient_subresources
+app.include_router(patient_subresources.router, prefix="/api")
+app.include_router(cash_records.router, prefix="/api")
+app.include_router(unified_cash.router, prefix="/api")
+app.include_router(payment_integrations.router, prefix="/api")  # Has /payments/pos prefix built-in
+
+# Phase 3 migrated routers
+from routers import timeline, plans, addons, subscriptions
+app.include_router(timeline.router, prefix="/api")
+app.include_router(plans.router, prefix="/api")  # Has /plans prefix built-in
+app.include_router(addons.router, prefix="/api")  # Has /addons prefix built-in
+app.include_router(subscriptions.router, prefix="/api")  # Has /subscriptions prefix built-in
+
+# Phase 4 migrated routers
+from routers import admin_settings, admin_roles, config
+app.include_router(admin_settings.router, prefix="/api")  # Has /admin/settings prefix built-in
+app.include_router(admin_roles.router, prefix="/api")  # Has /admin prefix built-in
+app.include_router(config.router, prefix="/api")
+
+# Phase 5 migrated routers
+from routers import registration
+# sms_packages removed - endpoints already in sms.py
+app.include_router(registration.router, prefix="/api")
+
+# Phase 6 migrated routers - Admin modules
+from routers import (
+    admin_api_keys, admin_appointments, admin_birfatura,
+    admin_integrations, admin_inventory, admin_invoices, admin_marketplaces,
+    admin_notifications, admin_patients, admin_payments, admin_production,
+    admin_scan_queue, admin_suppliers
+)
+# admin_campaigns removed - endpoints already in campaigns.py
+# admin_tickets removed - duplicate endpoints
+app.include_router(admin_api_keys.router)
+app.include_router(admin_appointments.router)
+app.include_router(admin_birfatura.router)
+# admin_campaigns.router removed
+app.include_router(admin_integrations.router, prefix="/api")
+app.include_router(admin_inventory.router)
+app.include_router(admin_invoices.router)
+app.include_router(admin_marketplaces.router)
+app.include_router(admin_notifications.router)
+app.include_router(admin_patients.router)
+app.include_router(admin_payments.router)
+app.include_router(admin_production.router)
+app.include_router(admin_scan_queue.router)
+app.include_router(admin_suppliers.router)
+# admin_tickets.router removed
+
+# Phase 6 migrated routers - Other modules
+from routers import audit, automation, affiliates, checkout, replacements, birfatura
+from routers import apps, pos_commission, uts
+app.include_router(audit.router)
+app.include_router(automation.router)
+app.include_router(affiliates.router)
+app.include_router(checkout.router)
+app.include_router(replacements.router)
+app.include_router(birfatura.router)
+app.include_router(apps.router)
+app.include_router(pos_commission.router)
+app.include_router(uts.router)
+
+# Phase 7 migrated routers - Final modules
+from routers import invoice_management, invoices_actions, communications, sms_integration
+app.include_router(sms_integration.router)
+app.include_router(invoice_management.router)
+app.include_router(invoices_actions.router)
+app.include_router(communications.router)
+
+from routers import commissions
+app.include_router(commissions.router)
+
+from routers import schema_registry
+app.include_router(schema_registry.router, prefix="/api")
 
 if __name__ == "__main__":
     import uvicorn

@@ -10,12 +10,12 @@ import type {
   PatientLabel 
 } from '../../types/patient/patient-base.types';
 
+// Map backend PatientStatus values to Turkish labels
 export const PATIENT_STATUS: Record<PatientStatus, string> = {
-  ACTIVE: 'Aktif',
-  INACTIVE: 'Pasif',
-  LEAD: 'Potansiyel',
-  TRIAL: 'Deneme',
-  CUSTOMER: 'Müşteri'
+  active: 'Aktif',
+  passive: 'Pasif',
+  deceased: 'Vefat',
+  archived: 'Arşivlenmiş'
 } as const;
 
 export const PATIENT_SEGMENT: Record<PatientSegment, string> = {
@@ -38,11 +38,10 @@ export const PATIENT_LABEL: Record<PatientLabel, string> = {
 } as const;
 
 export const STATUS_COLORS: Record<PatientStatus, string> = {
-  ACTIVE: '#10B981',
-  INACTIVE: '#6B7280',
-  LEAD: '#8B5CF6',
-  TRIAL: '#F59E0B',
-  CUSTOMER: '#059669'
+  active: '#10B981',
+  passive: '#6B7280',
+  deceased: '#EF4444',
+  archived: '#9CA3AF'
 } as const;
 
 export const SEGMENT_COLORS: Record<PatientSegment, string> = {

@@ -13,7 +13,7 @@ interface UsersTabProps {
 export const UsersTab = ({ tenantId }: UsersTabProps) => {
     const queryClient = useQueryClient();
     const { data: usersData, isLoading } = useGetTenantUsers(tenantId);
-    const users = usersData?.data?.users || [];
+    const users = (usersData as any)?.data?.users || (usersData as any)?.users || [];
     const [isAdding, setIsAdding] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [newUser, setNewUser] = useState({ email: '', password: '', firstName: '', lastName: '', role: 'tenant_user', username: '' });
@@ -27,7 +27,6 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
         if (!userToToggle) return;
         try {
             await updateTenantUser({
-                id: tenantId,
                 userId: userToToggle.id,
                 data: { is_active: !userToToggle.is_active } as any
             });
@@ -45,7 +44,7 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
         setIsSubmitting(true);
         try {
             await createTenantUser({
-                id: tenantId,
+                tenantId,
                 data: {
                     email: newUser.email,
                     password: newUser.password,

@@ -10,16 +10,16 @@ import {
   Patient
 } from '../types/patient';
 import {
-  Patient as OrvalPatient,
-  PaginationInfo,
-  PatientsGetPatients200
+  PatientRead as OrvalPatient,
+  ResponseEnvelopeListPatientRead,
+  ResponseEnvelopePatientRead
 } from "@/api/generated/schemas";
 import {
-  patientsGetPatients,
-  patientsGetPatient,
-  patientsCreatePatient,
-  patientsUpdatePatient,
-  patientsDeletePatient
+  listPatients,
+  getPatient,
+  createPatient,
+  updatePatient,
+  deletePatient
 } from "@/api/generated";
 import { outbox } from '../utils/outbox';
 import { PATIENTS_DATA } from '../constants/storage-keys';
@@ -109,7 +109,7 @@ export class PatientService {
 
 
         // Orval's customInstance now returns the data directly (unwrapped)
-        const payload: PatientsGetPatients200 = await patientsGetPatients(params);
+        const payload = await listPatients(params);
         if (!payload || !Array.isArray(payload.data)) break;
 
         const chunk = payload.data || [];
@@ -121,12 +121,13 @@ export class PatientService {
         aggregated.push(...mappedChunk as any);
 
         // Check if there are more pages using cursor-based pagination
-        const pagination = payload.pagination;
-        if (!pagination?.hasNext || !pagination?.nextCursor) {
+        // ResponseEnvelopeListPatientRead has 'meta' for pagination info
+        const meta = payload.meta;
+        if (!meta?.hasNext || !meta?.nextCursor) {
           break;
         }
 
-        cursor = pagination.nextCursor;
+        cursor = meta.nextCursor;
 
         // Safety check to prevent infinite loops
         if (chunk.length === 0) break;
@@ -213,7 +214,7 @@ export class PatientService {
       }
 
       // **CRITICAL: POST to backend API first!**
-      const response = await patientsCreatePatient(patientData as any) as any;
+      const response = await createPatient(patientData as any) as any;
 
       // Extract data from wrapper if it exists, otherwise use response directly
       const userData = response?.data || response;
@@ -263,7 +264,7 @@ export class PatientService {
       }
 
       // **CRITICAL: PUT to backend API first!**
-      const response = await patientsUpdatePatient(id, updates as any) as any;
+      const response = await updatePatient(id, updates as any) as any;
 
       // Extract data from wrapper if it exists, otherwise use response directly
       const userData = response?.data || response;
@@ -307,7 +308,7 @@ export class PatientService {
       const patient = this.patients[index];
 
       // **CRITICAL: DELETE from backend API first!**
-      const response = await patientsDeletePatient(id) as any;
+      const response = await deletePatient(id) as any;
       const success = response?.success ?? (response?.status === 200 || response?.status === 204 || !!response);
 
       if (!success) {

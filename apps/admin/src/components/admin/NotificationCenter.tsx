@@ -11,21 +11,21 @@ export function NotificationCenter() {
     const { data: notificationsData, refetch } = useGetApiNotifications({
         user_id: userId,
         page: 1,
-        per_page: 5
+        limit: 5
     });
 
     const markReadMutation = usePutApiNotificationsNotificationIdRead();
 
     const handleMarkRead = async (id: string) => {
         try {
-            await markReadMutation.mutateAsync({ id });
+            await markReadMutation.mutateAsync({ notificationId: id } as any);
             refetch();
         } catch (error) {
             console.error(error);
         }
     };
 
-    const unreadCount = notificationsData?.data?.notifications?.filter((n: any) => !n.read).length || 0;
+    const unreadCount = (notificationsData as any)?.data?.notifications?.filter((n: any) => !n.read).length || 0;
 
     return (
         <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -50,9 +50,9 @@ export function NotificationCenter() {
                         )}
                     </div>
                     <div className="max-h-[400px] overflow-y-auto">
-                        {notificationsData?.data?.notifications && notificationsData.data.notifications.length > 0 ? (
+                        {(notificationsData as any)?.data?.notifications && (notificationsData as any).data.notifications.length > 0 ? (
                             <div className="divide-y">
-                                {notificationsData.data.notifications.map((notif: any) => (
+                                {(notificationsData as any).data.notifications.map((notif: any) => (
                                     <div key={notif.id} className={`p-4 hover:bg-gray-50 transition-colors ${!notif.read ? 'bg-indigo-50/50' : ''}`}>
                                         <div className="flex justify-between items-start mb-1">
                                             <h4 className={`text-sm ${!notif.read ? 'font-bold text-gray-900' : 'font-medium text-gray-700'}`}>

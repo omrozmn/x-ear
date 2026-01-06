@@ -2,10 +2,10 @@ import React from 'react';
 import { CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
 import {
-    useAddonsGetAddons,
-    useSmsIntegrationGetSmsCredit,
-    useSmsIntegrationGetSmsPackages,
-    useSubscriptionsGetCurrent
+    useListSmsPackagesApiSmsPackagesGet,
+    useGetSmsCreditApiSmsCreditGet,
+    useGetCurrentApiSubscriptionsCurrentGet,
+    useGetAddonsApiAddonsGet
 } from '@/api/generated';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -16,15 +16,15 @@ type FeatureUsageStats = {
 
 const Subscription: React.FC = () => {
     const { token, user } = useAuthStore();
-    const { data: subscriptionData, isLoading, isError } = useSubscriptionsGetCurrent();
-    const { data: creditData } = useSmsIntegrationGetSmsCredit({
+    const { data: subscriptionData, isLoading, isError } = useGetCurrentApiSubscriptionsCurrentGet();
+    const { data: creditData } = useGetSmsCreditApiSmsCreditGet({
         query: { enabled: !!token }
     });
     const info = (subscriptionData as any)?.data?.data;
 
     if (isLoading) return <div className="p-6">Yükleniyor...</div>;
     if (isError) return <div className="p-6">Abonelik bilgisi yüklenirken hata oluştu.</div>;
-    
+
     // Super admin check
     if (info?.is_super_admin || user?.role === 'super_admin') {
         return (
@@ -43,11 +43,11 @@ const Subscription: React.FC = () => {
             </div>
         );
     }
-    
+
     if (!info) return <div className="p-6">Abonelik bilgisi bulunamadı.</div>;
 
     const { plan, tenant, isExpired, daysRemaining } = info;
-    
+
     // Handle different response structures for credit balance
     let creditBalance = 0;
     if (creditData) {
@@ -167,7 +167,7 @@ const Subscription: React.FC = () => {
 };
 
 function SmsPackagesList() {
-    const { data: packagesData, isLoading, isError } = useSmsIntegrationGetSmsPackages();
+    const { data: packagesData, isLoading, isError } = useListSmsPackagesApiSmsPackagesGet();
     if (isLoading) return <div className="text-gray-500">SMS Paketleri yükleniyor...</div>;
     if (isError) return <div className="text-gray-500">SMS paketleri yüklenemedi.</div>;
 
@@ -202,7 +202,7 @@ function SmsPackagesList() {
 }
 
 function AddOnsList() {
-    const { data: addonsData, isLoading, isError } = useAddonsGetAddons();
+    const { data: addonsData, isLoading, isError } = useGetAddonsApiAddonsGet();
     if (isLoading) return <div className="text-gray-500">Eklentiler yükleniyor...</div>;
     if (isError) return <div className="text-gray-500">Eklentiler yüklenemedi.</div>;
 

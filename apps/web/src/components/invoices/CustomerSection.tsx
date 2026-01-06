@@ -2,6 +2,12 @@ import { Input, Select, Button } from '@x-ear/ui-web';
 import { useState, useEffect } from 'react';
 import { Edit2, Plus } from 'lucide-react';
 import { InvoiceFormData } from '../../types/invoice';
+import {
+  useSearchFirmCustomersMock,
+  useGetFirmPkInfoMock,
+  useGetFirmAddressInfoMock
+} from '../../api/generated/bir-fatura/bir-fatura';
+import { unwrapArray } from '../../utils/response-unwrap';
 
 interface CustomerSectionProps {
   isSGK?: boolean;
@@ -53,6 +59,11 @@ export function CustomerSection({
   const [showLabels, setShowLabels] = useState(false);
   const [showAddresses, setShowAddresses] = useState(false);
 
+  // Orval Hooks
+  const searchMutation = useSearchFirmCustomersMock();
+  const pkInfoMutation = useGetFirmPkInfoMock();
+  const addressInfoMutation = useGetFirmAddressInfoMock();
+
   // SGK durumu için önceki müşteri bilgilerini sakla
   const [previousCustomerState, setPreviousCustomerState] = useState<{
     customerId?: string;
@@ -85,7 +96,6 @@ export function CustomerSection({
     }
   }, [isSGK]);
 
-  // Müşteri arama
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
 
@@ -96,19 +106,13 @@ export function CustomerSection({
 
     setIsSearching(true);
     try {
-      // TODO: API integration pending backend implementation
-      // Endpoint: /api/Musteri/FirmaMusteriGetir
-      // When implemented, generate hook and use: const { data } = useGetCustomerQuery(...)
+      const response = await searchMutation.mutateAsync({
+        data: { search: query }
+      });
 
-      // Mock data
-      setSearchResults([
-        {
-          id: '1',
-          name: 'Örnek Müşteri A.Ş.',
-          taxNumber: '1234567890',
-          isEInvoiceUser: true
-        }
-      ]);
+      const results = unwrapArray<CustomerSearchResult>(response) || [];
+      setSearchResults(results);
+
     } catch (error) {
       console.error('Müşteri arama hatası:', error);
     } finally {
@@ -129,15 +133,10 @@ export function CustomerSection({
     // E-Fatura mükellefi kontrolü ve PK etiket listesi
     if (customer.isEInvoiceUser && customer.taxNumber) {
       try {
-        // TODO: API integration pending backend implementation
-        // Endpoint: /api/Firma/FirmaPKBilgisiGetir
-        // When implemented, generate hook and use: useGetCompanyPKInfo(...)
-
-        // Mock data
-        const labels = [
-          { value: 'TICARIFATURA', label: 'Ticari Fatura' },
-          { value: 'TEMELFATURA', label: 'Temel Fatura' }
-        ];
+        const response = await pkInfoMutation.mutateAsync({
+          data: { customer_id: customer.id }
+        });
+        const labels = unwrapArray<CustomerLabel>(response) || [];
 
         if (labels.length > 0) {
           setCustomerLabels(labels);
@@ -150,21 +149,10 @@ export function CustomerSection({
 
     // Adres listesi
     try {
-      // TODO: API integration pending backend implementation
-      // Endpoint: /api/Firma/FirmaAdresBilgisiGetir
-      // When implemented, generate hook and use: useGetCompanyAddresses(...)
-
-      // Mock data
-      const addresses = [
-        {
-          id: '1',
-          name: 'Merkez Ofis',
-          address: 'Atatürk Cad. No:123',
-          city: 'İstanbul',
-          district: 'Kadıköy',
-          postalCode: '34710'
-        }
-      ];
+      const response = await addressInfoMutation.mutateAsync({
+        data: { customer_id: customer.id }
+      });
+      const addresses = unwrapArray<CustomerAddress>(response) || [];
 
       if (addresses.length > 0) {
         setCustomerAddresses(addresses);

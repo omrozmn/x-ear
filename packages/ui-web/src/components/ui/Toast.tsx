@@ -42,9 +42,9 @@ interface ToastProviderProps {
   maxToasts?: number;
 }
 
-export const ToastProvider: React.FC<ToastProviderProps> = ({ 
-  children, 
-  maxToasts = 5 
+export const ToastProvider: React.FC<ToastProviderProps> = ({
+  children,
+  maxToasts = 5
 }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -162,7 +162,7 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast }) => {
         <div className="flex-shrink-0">
           {getIcon()}
         </div>
-        
+
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
@@ -171,11 +171,13 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast }) => {
               </h4>
               {toast.message && (
                 <p className="mt-1 text-sm text-gray-600 break-words">
-                  {toast.message}
+                  {typeof toast.message === 'object'
+                    ? (toast.message as any).message || JSON.stringify(toast.message)
+                    : toast.message}
                 </p>
               )}
             </div>
-            
+
             <button
               onClick={handleClose}
               className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition-colors"
@@ -183,7 +185,7 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast }) => {
               <X className="h-4 w-4 text-gray-400" />
             </button>
           </div>
-          
+
           {toast.action && (
             <div className="mt-3">
               <button
@@ -208,21 +210,21 @@ export const toast = {
     message,
     ...options,
   }),
-  
+
   error: (title: string, message?: string, options?: Partial<Toast>) => ({
     type: 'error' as const,
     title,
     message,
     ...options,
   }),
-  
+
   warning: (title: string, message?: string, options?: Partial<Toast>) => ({
     type: 'warning' as const,
     title,
     message,
     ...options,
   }),
-  
+
   info: (title: string, message?: string, options?: Partial<Toast>) => ({
     type: 'info' as const,
     title,
@@ -234,20 +236,20 @@ export const toast = {
 // Hook for easy toast usage
 export const useToastHelpers = () => {
   const { addToast } = useToast();
-  
+
   return {
     success: (title: string, message?: string, options?: Partial<Toast>) => {
       addToast(toast.success(title, message, options));
     },
-    
+
     error: (title: string, message?: string, options?: Partial<Toast>) => {
       addToast(toast.error(title, message, options));
     },
-    
+
     warning: (title: string, message?: string, options?: Partial<Toast>) => {
       addToast(toast.warning(title, message, options));
     },
-    
+
     info: (title: string, message?: string, options?: Partial<Toast>) => {
       addToast(toast.info(title, message, options));
     },

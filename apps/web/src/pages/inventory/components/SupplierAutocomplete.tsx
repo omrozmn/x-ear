@@ -6,10 +6,10 @@ import { useAuthStore } from '../../../stores/authStore';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
-  useSuppliersGetSuppliers,
-  getSuppliersGetSuppliersQueryKey,
-  useSuppliersCreateSupplier
-} from '@/api/generated';
+  useGetSuppliers,
+  getGetSuppliersQueryKey,
+  useCreateSupplier
+} from '@/api/generated/suppliers/suppliers';
 
 
 interface SupplierAutocompleteProps {
@@ -88,11 +88,11 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
 
   // Async Search using backend API
   // We request only 10 items for autocomplete performance
-  const { data: suppliersData, isLoading: isLoadingSuppliers, isError: isErrorSuppliers } = useSuppliersGetSuppliers(
+  const { data: suppliersData, isLoading: isLoadingSuppliers, isError: isErrorSuppliers } = useGetSuppliers(
     { search: debouncedSearch, per_page: 10 },
     {
       query: {
-        queryKey: getSuppliersGetSuppliersQueryKey({ search: debouncedSearch, per_page: 10 }),
+        queryKey: getGetSuppliersQueryKey({ search: debouncedSearch, per_page: 10 }),
         enabled: !!token,
         staleTime: 5000
       }
@@ -233,23 +233,23 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     inputRef.current?.blur();
   };
 
-  const createSupplierMutation = useSuppliersCreateSupplier();
+  const createSupplierMutation = useCreateSupplier();
 
   const handleCreateNew = async () => {
     const newSupplier = value.trim();
     if (!newSupplier) return;
 
     try {
-      await createSupplierMutation.mutateAsync({ data: { company_name: newSupplier } } as any);
+      await createSupplierMutation.mutateAsync({ data: { name: newSupplier } } as any);
       console.log('✅ New supplier created:', newSupplier);
 
       // Invalidate React Query cache to refetch suppliers
-      queryClient.invalidateQueries({ queryKey: getSuppliersGetSuppliersQueryKey() });
+      queryClient.invalidateQueries({ queryKey: getGetSuppliersQueryKey() });
     } catch (error: any) {
       if (error.response?.status === 409) {
         console.log('Supplier already exists, using existing:', newSupplier);
         // Invalidate cache
-        queryClient.invalidateQueries({ queryKey: getSuppliersGetSuppliersQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetSuppliersQueryKey() });
       } else {
         console.warn('Failed to persist supplier to API, using locally:', error);
       }

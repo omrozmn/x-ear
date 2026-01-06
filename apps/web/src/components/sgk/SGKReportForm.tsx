@@ -5,6 +5,7 @@ import { Calendar, FileText, User, Stethoscope, Building2, Hash, Save, X } from 
 import { Patient } from '../../types/patient/patient-base.types';
 import { SGKDocument, SGKDocumentType, CreateSGKDocumentData } from '../../types/sgk';
 import { sgkService } from '../../services/sgk.service';
+import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface SGKReportFormProps {
   patient?: Patient;
@@ -128,7 +129,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       showError('Lütfen tüm zorunlu alanları doldurun');
       return;
@@ -155,7 +156,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
         processingStatus: 'completed',
         uploadedAt: new Date().toISOString(),
         notes: formData.notes,
-        uploadedBy: 'current-user' // TODO: Get from auth context
+        uploadedBy: getCurrentUserId()
       };
 
       const document = await sgkService.createDocument(documentData);

@@ -9,7 +9,6 @@ from sqlalchemy import func
 import logging
 import json
 
-from dependencies import get_db, get_current_admin_user
 from schemas.base import ResponseEnvelope
 from models.admin_user import AdminUser
 from models.user import User
@@ -19,15 +18,17 @@ from models.appointment import Appointment
 from models.patient import Patient
 from models.device import Device
 from models.invoice import Invoice
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/dashboard", tags=["Admin Dashboard"])
 
-@router.get("/")
+@router.get("")
 def get_dashboard_metrics(
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Get dashboard metrics"""
     try:
@@ -148,4 +149,50 @@ def get_dashboard_metrics(
         })
     except Exception as e:
         logger.error(f"Dashboard metrics error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/stats")
+def get_dashboard_stats(
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
+):
+    """Get dashboard stats - quick summary endpoint"""
+    try:
+        # Total counts
+        total_tenants = db_session.query(Tenant).filter(Tenant.deleted_at.is_(None)).count()
+        active_tenants = db_session.query(Tenant).filter(
+            Tenant.deleted_at.is_(None),
+            Tenant.status == 'active'
+        ).count()
+        total_users = db_session.query(User).filter_by(is_active=True).count()
+        total_patients = db_session.query(Patient).count()
+        
+        # Today's stats
+        today = datetime.now().date()
+        today_start = datetime.combine(today, datetime.min.time())
+        today_end = datetime.combine(today, datetime.max.time())
+        
+        today_appointments = db_session.query(Appointment).filter(
+            Appointment.date >= today_start,
+            Appointment.date <= today_end
+        ).count()
+        
+        # Revenue (last 30 days)
+        last_30_days = datetime.utcnow() - timedelta(days=30)
+        monthly_revenue = db_session.query(func.sum(Invoice.device_price)).filter(
+            Invoice.created_at >= last_30_days,
+            Invoice.status != 'cancelled'
+        ).scalar() or 0.0
+        
+        return ResponseEnvelope(data={
+            "totalTenants": total_tenants,
+            "activeTenants": active_tenants,
+            "totalUsers": total_users,
+            "totalPatients": total_patients,
+            "todayAppointments": today_appointments,
+            "monthlyRevenue": float(monthly_revenue)
+        })
+    except Exception as e:
+        logger.error(f"Dashboard stats error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

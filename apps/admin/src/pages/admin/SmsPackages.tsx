@@ -45,7 +45,7 @@ export default function SMSPackagesPage() {
         try {
             if (editingPkg) {
                 await updateMutation.mutateAsync({
-                    id: editingPkg.id,
+                    pkgId: editingPkg.id,
                     data: {
                         name: formData.name,
                         description: formData.description,

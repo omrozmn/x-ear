@@ -3,17 +3,19 @@ FastAPI Branches Router - Migrated from Flask routes/branches.py
 Branch CRUD operations
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field
 import logging
 
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_current_context, AccessContext
 from schemas.base import ResponseEnvelope, ApiError
+from schemas.branches import BranchRead
 from models.branch import Branch
 from models.tenant import Tenant
-from models.base import db
+
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -36,14 +38,14 @@ class BranchUpdate(BaseModel):
 
 # --- Helper Functions ---
 
-def tenant_scoped_query(ctx: AccessContext, model):
+def tenant_scoped_query(access: UnifiedAccess, model, session: Session):
     """Apply tenant scoping to query"""
-    query = model.query
-    if ctx.tenant_id:
-        query = query.filter_by(tenant_id=ctx.tenant_id)
+    query = session.query(model)
+    if access.tenant_id:
+        query = query.filter_by(tenant_id=access.tenant_id)
     return query
 
-def get_branch_or_404(db_session: Session, branch_id: str, ctx: AccessContext) -> Branch:
+def get_branch_or_404(db_session: Session, branch_id: str, access: UnifiedAccess) -> Branch:
     """Get branch or raise 404"""
     branch = db_session.get(Branch, branch_id)
     if not branch:
@@ -51,7 +53,7 @@ def get_branch_or_404(db_session: Session, branch_id: str, ctx: AccessContext) -
             status_code=404,
             detail=ApiError(message="Branch not found", code="BRANCH_NOT_FOUND").model_dump(mode="json")
         )
-    if ctx.tenant_id and branch.tenant_id != ctx.tenant_id:
+    if access.tenant_id and branch.tenant_id != access.tenant_id:
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Branch not found", code="BRANCH_NOT_FOUND").model_dump(mode="json")
@@ -60,18 +62,18 @@ def get_branch_or_404(db_session: Session, branch_id: str, ctx: AccessContext) -
 
 # --- Routes ---
 
-@router.get("/branches")
+@router.get("/branches", response_model=ResponseEnvelope[List[BranchRead]])
 def get_branches(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get all branches for the current tenant"""
     try:
-        query = tenant_scoped_query(ctx, Branch)
+        query = tenant_scoped_query(access, Branch, db_session)
         
         # Branch filtering for tenant admins
-        if ctx.is_tenant_admin and ctx.user and hasattr(ctx.user, 'branches'):
-            user_branch_ids = [b.id for b in ctx.user.branches]
+        if access.is_tenant_admin and access.user and hasattr(access.user, 'branches'):
+            user_branch_ids = [b.id for b in access.user.branches]
             if user_branch_ids:
                 query = query.filter(Branch.id.in_(user_branch_ids))
         
@@ -81,40 +83,40 @@ def get_branches(
         logger.error(f"Get branches error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/branches", status_code=201)
+@router.post("/branches", status_code=201, response_model=ResponseEnvelope[BranchRead])
 def create_branch(
     branch_in: BranchCreate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Create a new branch"""
     try:
         # Only tenant admins or super admins can create branches
-        if not ctx.is_super_admin and not ctx.is_tenant_admin:
+        if not access.is_super_admin and not access.is_tenant_admin:
             raise HTTPException(
                 status_code=403,
                 detail=ApiError(message="Only tenant admins can create branches", code="FORBIDDEN").model_dump(mode="json")
             )
         
-        # Determine tenant_id
-        tenant_id = ctx.tenant_id
-        if not tenant_id:
-            tenant_id = branch_in.tenant_id
-            if not tenant_id:
+        # Determine access.tenant_id
+        access.tenant_id = access.tenant_id
+        if not access.tenant_id:
+            access.tenant_id = branch_in.tenant_id
+            if not access.tenant_id:
                 raise HTTPException(
                     status_code=400,
-                    detail=ApiError(message="tenant_id is required", code="TENANT_REQUIRED").model_dump(mode="json")
+                    detail=ApiError(message="access.tenant_id is required", code="TENANT_REQUIRED").model_dump(mode="json")
                 )
         
         # Check branch limits
-        tenant = db_session.get(Tenant, tenant_id)
+        tenant = db_session.get(Tenant, access.tenant_id)
         if not tenant:
             raise HTTPException(
                 status_code=404,
                 detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
             )
         
-        existing_branch_count = Branch.query.filter_by(tenant_id=tenant_id).count()
+        existing_branch_count = db_session.query(Branch).filter_by(tenant_id=access.tenant_id).count()
         max_branches = tenant.max_branches or 1
         
         if existing_branch_count >= max_branches:
@@ -133,7 +135,7 @@ def create_branch(
             )
         
         branch = Branch(
-            tenant_id=tenant_id,
+            tenant_id=access.tenant_id,
             name=branch_in.name,
             address=branch_in.address,
             phone=branch_in.phone,
@@ -147,7 +149,7 @@ def create_branch(
         
         db_session.commit()
         
-        logger.info(f"Branch created: {branch.id} by {ctx.principal_id}")
+        logger.info(f"Branch created: {branch.id} by {access.principal_id}")
         return ResponseEnvelope(data=branch.to_dict())
     except HTTPException:
         raise
@@ -156,22 +158,22 @@ def create_branch(
         logger.error(f"Create branch error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/branches/{branch_id}")
+@router.put("/branches/{branch_id}", response_model=ResponseEnvelope[BranchRead])
 def update_branch(
     branch_id: str,
     branch_in: BranchUpdate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Update a branch"""
     try:
-        if not ctx.is_super_admin and not ctx.is_tenant_admin:
+        if not access.is_super_admin and not access.is_tenant_admin:
             raise HTTPException(
                 status_code=403,
                 detail=ApiError(message="Only tenant admins can update branches", code="FORBIDDEN").model_dump(mode="json")
             )
         
-        branch = get_branch_or_404(db_session, branch_id, ctx)
+        branch = get_branch_or_404(db_session, branch_id, access)
         data = branch_in.model_dump(exclude_unset=True)
         
         if 'name' in data:
@@ -185,7 +187,7 @@ def update_branch(
         
         db_session.commit()
         
-        logger.info(f"Branch updated: {branch.id} by {ctx.principal_id}")
+        logger.info(f"Branch updated: {branch.id} by {access.principal_id}")
         return ResponseEnvelope(data=branch.to_dict())
     except HTTPException:
         raise
@@ -197,23 +199,23 @@ def update_branch(
 @router.delete("/branches/{branch_id}")
 def delete_branch(
     branch_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Delete a branch"""
     try:
-        if not ctx.is_super_admin and not ctx.is_tenant_admin:
+        if not access.is_super_admin and not access.is_tenant_admin:
             raise HTTPException(
                 status_code=403,
                 detail=ApiError(message="Only tenant admins can delete branches", code="FORBIDDEN").model_dump(mode="json")
             )
         
-        branch = get_branch_or_404(db_session, branch_id, ctx)
+        branch = get_branch_or_404(db_session, branch_id, access)
         
         db_session.delete(branch)
         db_session.commit()
         
-        logger.info(f"Branch deleted: {branch_id} by {ctx.principal_id}")
+        logger.info(f"Branch deleted: {branch_id} by {access.principal_id}")
         return ResponseEnvelope(message="Branch deleted")
     except HTTPException:
         raise

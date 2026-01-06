@@ -1,17 +1,20 @@
 import React, { useState, useMemo } from 'react';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { customInstance } from '@/api/orval-mutator';
-import { Shield, Check, Save, Loader2, AlertCircle, Users, ShoppingCart, DollarSign, FileText, Headphones, Package, Megaphone, Settings, BarChart, LayoutDashboard, Calendar, ClipboardList } from 'lucide-react';
+import { Shield, Check, Save, Loader2, AlertCircle, Users, ShoppingCart, DollarSign, FileText, Headphones, Package, Megaphone, Settings, BarChart, LayoutDashboard, Calendar, ClipboardList, Pencil, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
-  // useAdminRolesGetAdminPermissions,
-  usePermissionsGetRolePermissions,
-  usePermissionsUpdateRolePermissions,
-  getPermissionsGetRolePermissionsQueryKey,
-  getPermissionsGetMyPermissionsQueryKey,
+  useGetRolePermissionsApiPermissionsRoleRoleNameGet,
+  useUpdateRolePermissionsApiPermissionsRoleRoleNamePut,
+  getGetRolePermissionsQueryKey,
+  getGetMyPermissionsQueryKey,
+  useListRoles,
+  useCreateRole,
+  useUpdateRole,
+  getListRolesQueryKey,
 } from '@/api/generated';
-import { getAdminDebugAvailableRolesQueryKey } from '@/api/generated/admin/admin';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Modal } from '@/components/ui/Modal';
 import { AxiosError } from 'axios';
 
 // Permission categories with icons
@@ -47,8 +50,8 @@ const ROLE_LABELS: Record<string, string> = {
   stock_manager: 'Stok Yöneticisi',
 };
 
-// Editable roles (tenant_admin cannot be edited - has all permissions by default)
-const EDITABLE_ROLES = ['admin', 'odyolog', 'odyometrist', 'secretary', 'user'];
+// System roles that cannot be deleted (but can be renamed)
+const SYSTEM_ROLES = ['tenant_admin'];
 
 interface Permission {
   id: string;
@@ -82,13 +85,86 @@ interface RolePermissionsResponse {
   };
 }
 
+interface RoleItem {
+  id: string;
+  name: string;
+  description: string | null;
+  is_system: boolean;
+}
+
 export function RolePermissionsTab() {
   const queryClient = useQueryClient();
-  const [selectedRole, setSelectedRole] = useState<string>('odyolog');
+  const [selectedRole, setSelectedRole] = useState<string>('');
   const [localPermissions, setLocalPermissions] = useState<Set<string>>(new Set());
   const [hasChanges, setHasChanges] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [pendingRole, setPendingRole] = useState<string | null>(null);
+  
+  // Role edit/create modal states
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState<RoleItem | null>(null);
+  const [newRoleName, setNewRoleName] = useState('');
+  const [editRoleName, setEditRoleName] = useState('');
+
+  // Fetch roles from backend
+  const { data: rolesResponse, isLoading: loadingRoles } = useListRoles();
+  
+  // Extract roles list
+  const rolesList = useMemo(() => {
+    const data = rolesResponse?.data as RoleItem[] | undefined;
+    if (!data) return [];
+    // Filter out tenant_admin from editable list (it has all permissions)
+    return data.filter(r => r.name !== 'tenant_admin');
+  }, [rolesResponse]);
+
+  // Set default selected role when roles load
+  React.useEffect(() => {
+    if (rolesList.length > 0 && !selectedRole) {
+      setSelectedRole(rolesList[0].name);
+    }
+  }, [rolesList, selectedRole]);
+
+  // Create role mutation
+  const createRoleMutation = useCreateRole({
+    mutation: {
+      onSuccess: () => {
+        toast.success('Rol başarıyla oluşturuldu');
+        queryClient.invalidateQueries({ queryKey: getListRolesQueryKey() });
+        setCreateModalOpen(false);
+        setNewRoleName('');
+      },
+      onError: (error: AxiosError<{ error?: string; message?: string }>) => {
+        const errorMessage = error.response?.data?.error ||
+          error.response?.data?.message ||
+          'Rol oluşturulurken bir hata oluştu';
+        toast.error(errorMessage);
+      },
+    },
+  });
+
+  // Update role mutation
+  const updateRoleMutation = useUpdateRole({
+    mutation: {
+      onSuccess: () => {
+        toast.success('Rol adı başarıyla güncellendi');
+        queryClient.invalidateQueries({ queryKey: getListRolesQueryKey() });
+        // Update selected role if it was renamed
+        if (editingRole && selectedRole === editingRole.name) {
+          setSelectedRole(editRoleName);
+        }
+        setEditModalOpen(false);
+        setEditingRole(null);
+        setEditRoleName('');
+      },
+      onError: (error: AxiosError<{ error?: string; message?: string }>) => {
+        const errorMessage = error.response?.data?.error ||
+          error.response?.data?.message ||
+          'Rol güncellenirken bir hata oluştu';
+        toast.error(errorMessage);
+      },
+    },
+  });
 
   // Custom hook to fetch permissions from the correct endpoint (/api/permissions)
   // instead of the admin endpoint (/api/admin/permissions)
@@ -107,26 +183,24 @@ export function RolePermissionsTab() {
   const { data: allPermissionsResponse, isLoading: loadingPermissions } = usePermissionsGetAllPermissions();
 
   // Get role permissions using orval hook
-  const { data: rolePermissionsResponse, isLoading: loadingRole } = usePermissionsGetRolePermissions(
+  const { data: rolePermissionsResponse, isLoading: loadingRole } = useGetRolePermissionsApiPermissionsRoleRoleNameGet(
     selectedRole || '',
     {
       query: {
-        queryKey: getPermissionsGetRolePermissionsQueryKey(selectedRole || ''),
+        queryKey: getGetRolePermissionsQueryKey(selectedRole || ''),
         enabled: !!selectedRole,
       },
     }
   );
 
   // Update role permissions mutation using orval hook
-  const updateMutation = usePermissionsUpdateRolePermissions({
+  const updateMutation = useUpdateRolePermissionsApiPermissionsRoleRoleNamePut({
     mutation: {
       onSuccess: () => {
         toast.success('İzinler başarıyla güncellendi');
         // Invalidate role permissions query
-        queryClient.invalidateQueries({ queryKey: getPermissionsGetRolePermissionsQueryKey(selectedRole || '') });
-        queryClient.invalidateQueries({ queryKey: getPermissionsGetMyPermissionsQueryKey() });
-        // Invalidate debug role switcher to update counts
-        queryClient.invalidateQueries({ queryKey: getAdminDebugAvailableRolesQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetRolePermissionsQueryKey(selectedRole || '') });
+        queryClient.invalidateQueries({ queryKey: getGetMyPermissionsQueryKey() });
         setHasChanges(false);
       },
       onError: (error: AxiosError<{ error?: string; message?: string }>) => {
@@ -215,7 +289,36 @@ export function RolePermissionsTab() {
     }
   };
 
-  const isLoading = loadingPermissions || loadingRole;
+  // Role edit handlers
+  const handleEditRole = (role: RoleItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingRole(role);
+    setEditRoleName(role.name);
+    setEditModalOpen(true);
+  };
+
+  const handleSaveEditRole = () => {
+    if (!editingRole || !editRoleName.trim()) {
+      toast.error('Rol adı boş olamaz');
+      return;
+    }
+    updateRoleMutation.mutate({
+      roleId: editingRole.id,
+      data: { name: editRoleName.trim() },
+    });
+  };
+
+  const handleCreateRole = () => {
+    if (!newRoleName.trim()) {
+      toast.error('Rol adı boş olamaz');
+      return;
+    }
+    createRoleMutation.mutate({
+      data: { name: newRoleName.trim() },
+    });
+  };
+
+  const isLoading = loadingPermissions || loadingRole || loadingRoles;
 
   return (
     <div>
@@ -250,29 +353,140 @@ export function RolePermissionsTab() {
 
       {/* Role Selector */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rol Seçin</label>
+        <div className="flex justify-between items-center mb-3">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rol Seçin</label>
+          <button
+            onClick={() => {
+              setNewRoleName('');
+              setCreateModalOpen(true);
+            }}
+            className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            Yeni Rol Oluştur
+          </button>
+        </div>
         <div className="flex flex-wrap gap-2">
-          {EDITABLE_ROLES.map(role => (
-            <button
-              key={role}
-              onClick={() => {
-                if (hasChanges) {
-                  setPendingRole(role);
-                  setConfirmDialogOpen(true);
-                } else {
-                  setSelectedRole(role);
-                }
-              }}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedRole === role
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
-            >
-              {ROLE_LABELS[role] || role}
-            </button>
+          {rolesList.map(role => (
+            <div key={role.id} className="flex items-center">
+              <button
+                onClick={() => {
+                  if (hasChanges) {
+                    setPendingRole(role.name);
+                    setConfirmDialogOpen(true);
+                  } else {
+                    setSelectedRole(role.name);
+                  }
+                }}
+                className={`px-4 py-2.5 rounded-l-lg font-medium transition-colors ${selectedRole === role.name
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+              >
+                {ROLE_LABELS[role.name] || role.name}
+              </button>
+              <button
+                onClick={(e) => handleEditRole(role, e)}
+                className={`px-2 py-2.5 rounded-r-lg transition-colors border-l ${selectedRole === role.name
+                  ? 'bg-indigo-700 text-white border-indigo-500 hover:bg-indigo-800'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+                title="Rol adını düzenle"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+            </div>
           ))}
         </div>
       </div>
+
+      {/* Edit Role Modal */}
+      <Modal
+        open={editModalOpen}
+        title="Rol Adını Düzenle"
+        onClose={() => {
+          setEditModalOpen(false);
+          setEditingRole(null);
+          setEditRoleName('');
+        }}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Rol Adı</label>
+            <input
+              type="text"
+              value={editRoleName}
+              onChange={(e) => setEditRoleName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Rol adı girin"
+            />
+          </div>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => {
+                setEditModalOpen(false);
+                setEditingRole(null);
+                setEditRoleName('');
+              }}
+              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              İptal
+            </button>
+            <button
+              onClick={handleSaveEditRole}
+              disabled={updateRoleMutation.isPending}
+              className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {updateRoleMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Kaydet
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Create Role Modal */}
+      <Modal
+        open={createModalOpen}
+        title="Yeni Rol Oluştur"
+        onClose={() => {
+          setCreateModalOpen(false);
+          setNewRoleName('');
+        }}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Rol Adı</label>
+            <input
+              type="text"
+              value={newRoleName}
+              onChange={(e) => setNewRoleName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Yeni rol adı girin"
+            />
+          </div>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => {
+                setCreateModalOpen(false);
+                setNewRoleName('');
+              }}
+              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              İptal
+            </button>
+            <button
+              onClick={handleCreateRole}
+              disabled={createRoleMutation.isPending}
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+            >
+              {createRoleMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Oluştur
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Confirm Dialog for unsaved changes */}
       <ConfirmDialog

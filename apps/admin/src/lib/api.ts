@@ -27,7 +27,8 @@ const hybridCamelize = (data: any): any => {
 // API Configuration
 // API Configuration
 // Ensure base URL doesn't end with /api/ to prevent double prefixing with Orval mutator
-const rawBaseUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5003';
+const rawBaseUrl = (typeof window !== 'undefined' && (import.meta as any).env?.VITE_API_URL) || 'http://localhost:5003';
+// const rawBaseUrl = 'http://localhost:5003';
 const API_BASE_URL = rawBaseUrl.endsWith('/api') ? rawBaseUrl.slice(0, -4) : rawBaseUrl.endsWith('/api/') ? rawBaseUrl.slice(0, -5) : rawBaseUrl;
 
 export const apiClient = axios.create({
@@ -78,11 +79,11 @@ apiClient.interceptors.response.use(
         // Handle offline errors - queue for later processing
         if (!error.response && (error.code === 'ERR_NETWORK' || !navigator.onLine)) {
             console.warn('[Admin API] Network error detected, queuing request for offline processing');
-            
+
             // Dynamically import to avoid circular dependency
             const { offlineQueue } = await import('./offlineQueue');
             offlineQueue.addRequest(error.config);
-            
+
             const offlineError = new Error('Request queued for offline processing');
             offlineError.name = 'OfflineError';
             (offlineError as any).isOffline = true;

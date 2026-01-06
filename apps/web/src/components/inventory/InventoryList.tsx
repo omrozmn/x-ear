@@ -7,12 +7,15 @@ import { Link } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { unwrapPaginated } from '../../utils/response-unwrap';
 import {
-  useInventoryGetInventoryItems,
-  useInventoryDeleteInventoryItem,
-  useInventoryUpdateInventoryItem,
-  getInventoryGetInventoryItemsQueryKey
-} from '@/api/generated';
-import { InventoryItem as InventoryItemSchema, InventoryGetInventoryItemsParams } from '@/api/generated/schemas';
+  useGetAllInventory,
+  useDeleteInventory,
+  useUpdateInventory,
+  getGetAllInventoryQueryKey
+} from '@/api/generated/inventory/inventory';
+import type { GetAllInventoryParams } from '@/api/generated/schemas';
+
+// Alias for backward compatibility
+type InventoryItemSchema = Record<string, unknown>;
 import { AlertTriangle, Eye, Edit, Trash2 } from 'lucide-react';
 import { InventoryItem as FrontendInventoryItem, InventoryFilters, InventoryStatus, InventoryCategory } from '../../types/inventory';
 import type { AxiosError } from 'axios';
@@ -37,10 +40,11 @@ interface InventoryListProps {
 }
 
 // Define specific type for extended params to handle backend filters not in OpenAPI
-interface ExtendedInventoryParams extends InventoryGetInventoryItemsParams {
+interface ExtendedInventoryParams extends GetAllInventoryParams {
   brand?: string;
   supplier?: string;
   out_of_stock?: boolean;
+  low_stock?: boolean;
 }
 
 export const InventoryList: React.FC<InventoryListProps> = ({
@@ -75,8 +79,8 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     // Stock status filter
     if (filters.stockStatus && filters.stockStatus !== 'all') {
       if (filters.stockStatus === 'low_stock') {
-        // Backend key from OpenAPI is camelCase 'lowStock'
-        params.lowStock = true;
+        // Backend key from OpenAPI is snake_case 'low_stock'
+        params.low_stock = true;
       } else if (filters.stockStatus === 'out_of_stock') {
         // Custom param not in OpenAPI yet
         params.out_of_stock = true;
@@ -92,15 +96,15 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     isLoading,
     error: fetchError,
     refetch
-  } = useInventoryGetInventoryItems(queryParams as InventoryGetInventoryItemsParams, {
+  } = useGetAllInventory(queryParams as GetAllInventoryParams, {
     query: {
       staleTime: 5000
     }
   });
 
   // Mutations
-  const deleteItemMutation = useInventoryDeleteInventoryItem();
-  const updateItemMutation = useInventoryUpdateInventoryItem();
+  const deleteItemMutation = useDeleteInventory();
+  const updateItemMutation = useUpdateInventory();
 
   // Reload when parent signals refresh
   useEffect(() => {
@@ -243,7 +247,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       await Promise.all(selectedIds.map(id => deleteItemMutation.mutateAsync({ itemId: id })));
       setSelectedIds([]);
       // Invalidate specific query keys
-      await queryClient.invalidateQueries({ queryKey: getInventoryGetInventoryItemsQueryKey() });
+      await queryClient.invalidateQueries({ queryKey: getGetAllInventoryQueryKey() });
     } catch (err) {
       console.error('Bulk delete failed:', err);
       alert('Toplu silme başarısız oldu');
@@ -333,7 +337,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         setFailureModalOpen(true);
       }
 
-      await queryClient.invalidateQueries({ queryKey: getInventoryGetInventoryItemsQueryKey() });
+      await queryClient.invalidateQueries({ queryKey: getGetAllInventoryQueryKey() });
       setSelectedIds([]);
       setIsBulkModalOpen(false);
     } catch (err: any) {
@@ -479,7 +483,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
             // Default delete behavior/fallback
             try {
               await deleteItemMutation.mutateAsync({ itemId: record.id });
-              await queryClient.invalidateQueries({ queryKey: getInventoryGetInventoryItemsQueryKey() });
+              await queryClient.invalidateQueries({ queryKey: getGetAllInventoryQueryKey() });
             } catch (e) {
               console.error("Delete failed", e);
               alert("Silme başarısız");

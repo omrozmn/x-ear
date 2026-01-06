@@ -33,10 +33,8 @@ const Analytics: React.FC = () => {
 
   // Fetch analytics data
   const { data: analyticsData, isLoading, error } = useGetAdminAnalytics({
-    start_date: startDate || undefined,
-    end_date: endDate || undefined,
     metric: selectedMetric
-  });
+  } as any);
 
   // Robust Data Extraction: Handle wrapping and potential stale backend structure
   const rawData = analyticsData as any;

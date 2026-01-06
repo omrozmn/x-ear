@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useDashboardGetDashboard } from '@/api/generated';
+import { useGetDashboardApiDashboardGet } from '@/api/generated';
 
 interface DashboardStats {
   totalPatients: number;
@@ -47,7 +47,7 @@ export const useDashboardData = (): DashboardData => {
     error: null,
   });
 
-  const query = useDashboardGetDashboard();
+  const query = useGetDashboardApiDashboardGet();
 
   useEffect(() => {
     // Map query result into local shape and handle missing fields gracefully

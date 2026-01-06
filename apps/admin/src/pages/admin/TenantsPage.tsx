@@ -27,8 +27,8 @@ export default function TenantsPage() {
         status: statusFilter !== 'all' ? (statusFilter as TenantStatus) : undefined
     });
 
-    const tenants = tenantsData?.data?.tenants || [];
-    const pagination = tenantsData?.data?.pagination;
+    const tenants = (tenantsData as any)?.data?.tenants || (tenantsData as any)?.tenants || [];
+    const pagination = (tenantsData as any)?.data?.pagination || (tenantsData as any)?.pagination;
 
     const { mutateAsync: updateStatus } = useUpdateTenantStatus();
 
@@ -38,7 +38,7 @@ export default function TenantsPage() {
             await toast.promise(
                 (async () => {
                     await updateStatus({
-                        id: tenantId,
+                        tenantId,
                         data: { status: newStatus as any }
                     });
                     await queryClient.invalidateQueries({ queryKey: ['/admin/tenants'] });

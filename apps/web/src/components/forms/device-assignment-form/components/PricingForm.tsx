@@ -1,4 +1,4 @@
-import { useGetPricingSettings } from '@/api/generated/settings/settings';
+import { useGetPricingSettings } from '@/api/generated';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Input, Select } from '@x-ear/ui-web';
 import { CreditCard, Calculator, Percent, DollarSign } from 'lucide-react';

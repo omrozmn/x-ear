@@ -123,18 +123,29 @@ class AppointmentStatus(Enum):
             return cls.SCHEDULED  # Default fallback
 
 class PatientStatus(Enum):
-    """Patient status in CRM"""
-    ACTIVE = 'ACTIVE'              # Aktif hasta
-    INACTIVE = 'INACTIVE'          # Pasif hasta
-    LEAD = 'LEAD'                  # Potansiyel hasta
-    TRIAL = 'TRIAL'                # Deneme aşamasında
-    CUSTOMER = 'CUSTOMER'          # Müşteri oldu
+    """Patient status in CRM - values are lowercase for DB compatibility"""
+    ACTIVE = 'active'
+    INACTIVE = 'inactive'
+    LEAD = 'lead'
+    TRIAL = 'trial'
+    CUSTOMER = 'customer'
+    NEW = 'new'  # New patient, not yet processed
+    
+    @classmethod
+    def _missing_(cls, value):
+        """Handle case-insensitive lookup"""
+        if isinstance(value, str):
+            value_lower = value.lower().strip()
+            for member in cls:
+                if member.value == value_lower:
+                    return member
+        return None
     
     @classmethod
     def from_legacy(cls, value):
         """Convert legacy values to new enum"""
         if not value:
-            return cls.ACTIVE  # Default
+            return cls.ACTIVE
         
         value_lower = str(value).lower().strip()
         
@@ -148,5 +159,7 @@ class PatientStatus(Enum):
             return cls.TRIAL
         elif value_lower in ['customer', 'müşteri']:
             return cls.CUSTOMER
+        elif value_lower in ['new', 'yeni']:
+            return cls.NEW
         else:
-            return cls.ACTIVE  # Default fallback
+            return cls.ACTIVE

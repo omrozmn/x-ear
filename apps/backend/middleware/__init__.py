@@ -1,13 +1,10 @@
-"""Middleware package for Flask application."""
+"""Backend middleware helpers.
 
-from .permission_middleware import (
-    init_permission_middleware,
-    register_permission_blueprint,
-    validate_permission_map
-)
+This package is FastAPI-first. Legacy Flask middleware has been migrated.
+"""
+
+from .permission_middleware import FastAPIPermissionMiddleware
 
 __all__ = [
-    'init_permission_middleware',
-    'register_permission_blueprint',
-    'validate_permission_map'
+    "FastAPIPermissionMiddleware",
 ]

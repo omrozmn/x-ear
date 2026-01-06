@@ -3,7 +3,8 @@ import sys
 import os
 import json
 import logging
-from flask_jwt_extended import create_access_token, decode_token
+
+import jwt as pyjwt
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -73,16 +74,28 @@ def verify_role_switcher():
         else:
              admin_identity = admin_id_str
 
-        initial_token = create_access_token(
-            identity=admin_identity,
-            additional_claims={'role': 'super_admin', 'type': 'admin'}
+        # Prefer calling the real login endpoint when available; this avoids
+        # coupling this script to any specific JWT implementation.
+        client = app.test_client()
+        login = client.post(
+            '/api/admin/auth/login',
+            json={'email': admin_email, 'password': os.environ.get('ADMIN_PASSWORD', 'admin123')},
+            headers={'Content-Type': 'application/json'},
         )
+        if login.status_code != 200:
+            logger.error(f"Admin login failed: {login.status_code} - {login.get_json()}")
+            return False
+
+        login_data = login.get_json() or {}
+        data_block = login_data.get('data') or {}
+        initial_token = data_block.get('token') or data_block.get('accessToken')
+        if not initial_token:
+            logger.error(f"Admin login returned no token: {login_data}")
+            return False
         logger.info(f"Initial Token Generated for {admin_identity}")
         
         # 3. Call Switch Role Endpoint
         logger.info(f"--- Switching Role to {target_role_name} ---")
-        client = app.test_client()
-        
         headers = {
             'Authorization': f'Bearer {initial_token}',
             'Content-Type': 'application/json'
@@ -125,7 +138,7 @@ def verify_role_switcher():
         logger.info(f"Permissions returned: {len(perms_data)}")
         
         # Check claims in token
-        decoded = decode_token(new_token)
+        decoded = pyjwt.decode(new_token, options={"verify_signature": False})
         claims = decoded.get('is_impersonating')
         logger.info(f"Token Claim 'is_impersonating': {claims}")
         

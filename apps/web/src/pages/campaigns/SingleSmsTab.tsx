@@ -14,9 +14,9 @@ import {
     X
 } from 'lucide-react';
 import {
-    useSmsGetHeaders,
-    getSmsGetHeadersQueryKey,
-    useCommunicationsSendSms,
+    useListSmsHeadersApiSmsHeadersGet,
+    getListSmsHeadersQueryKey,
+    useSendSmsApiCommunicationsMessagesSendSmsPost,
 } from '@/api/generated';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -47,9 +47,12 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
     const { token } = useAuthStore();
 
     // Get SMS headers for sender selection - only fetch if authenticated
-    const { data: headersData, isLoading: headersLoading, isError: headersError } = useSmsGetHeaders({
-        query: { queryKey: getSmsGetHeadersQueryKey(), enabled: !!token }
-    });
+    const { data: headersData, isLoading: headersLoading, isError: headersError } = useListSmsHeadersApiSmsHeadersGet(
+        { query: { queryKey: getListSmsHeadersQueryKey(), enabled: !!token } }
+    );
+
+    // Mutation for sending SMS
+    const { mutateAsync: sendSms } = useSendSmsApiCommunicationsMessagesSendSmsPost();
 
     // Parse SMS headers and filter only approved ones
     let headersRaw: Array<{ id?: string; headerText?: string; status?: string; isDefault?: boolean }> = [];
@@ -150,9 +153,14 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
 
         setIsSending(true);
         try {
-            // TODO: Implement actual SMS sending via API
-            // For now, simulate success
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await sendSms({
+                data: {
+                    phoneNumber: phoneNumber,
+                    message: message,
+                    // Note: recipientName is used for preview but not sent to API as SendSMS schema does not include it
+                    // Note: headerId is currently not supported in SendSMS schema
+                }
+            });
 
             showSuccessToast('SMS Gönderildi', `${phoneNumber} numarasına SMS başarıyla gönderildi.`);
 
@@ -160,7 +168,8 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
             setPhoneNumber('');
             setRecipientName('');
             setMessage('');
-        } catch {
+        } catch (error) {
+            console.error('SMS sending failed:', error);
             showErrorToast('Gönderim Hatası', 'SMS gönderilemedi. Lütfen tekrar deneyin.');
         } finally {
             setIsSending(false);

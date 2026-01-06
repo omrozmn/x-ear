@@ -25,7 +25,7 @@ const AdminScanQueuePage: React.FC = () => {
 
     const handleRetry = async (id: string) => {
         try {
-            await retryMutation.mutateAsync({ id });
+            await retryMutation.mutateAsync({ scanId: id });
             toast.success('İşlem tekrar kuyruğa alındı');
             refetch();
         } catch (error) {

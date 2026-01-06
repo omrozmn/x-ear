@@ -12,6 +12,7 @@ import {
   FileText,
   CheckCircle
 } from 'lucide-react';
+import { getCurrentUserName } from '@/utils/auth-utils';
 
 interface DeviceEditModalProps {
   open: boolean;
@@ -296,7 +297,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
       paymentMethod: formData.paymentMethod,
       trialEndDate: formData.status === 'trial' ? formData.trialEndDate : undefined,
       notes: formData.notes,
-      assignedBy: 'Current User', // TODO: Get from auth context
+      assignedBy: getCurrentUserName(),
       purchaseDate: formData.assignedDate, // For compatibility
       price: formData.salePrice, // For compatibility
       reportStatus: formData.reportStatus // Include reportStatus in save
@@ -418,8 +419,8 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 type="button"
                 onClick={() => handleInputChange('ear', option.value)}
                 className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${formData.ear === option.value
-                    ? `border-${option.color}-500 bg-${option.color}-50 text-${option.color}-700`
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                  ? `border-${option.color}-500 bg-${option.color}-50 text-${option.color}-700`
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                   }`}
               >
                 {option.label}
@@ -486,8 +487,8 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 type="button"
                 onClick={() => handleInputChange('status', status.value)}
                 className={`p-2 rounded-lg border text-sm font-medium transition-colors ${formData.status === status.value
-                    ? `border-${status.color}-500 bg-${status.color}-50 text-${status.color}-700`
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                  ? `border-${status.color}-500 bg-${status.color}-50 text-${status.color}-700`
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                   }`}
               >
                 {status.label}
@@ -614,8 +615,8 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                   type="button"
                   onClick={() => handleInputChange('paymentMethod', method.value)}
                   className={`p-3 rounded-lg border text-sm font-medium transition-colors flex items-center justify-center space-x-2 ${formData.paymentMethod === method.value
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                     }`}
                 >
                   <Icon className="w-4 h-4" />

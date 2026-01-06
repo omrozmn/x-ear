@@ -17,8 +17,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "type-check": "tsc --noEmit",
-    "gen:api": "orval && node scripts/generate-admin-api-exports.mjs",
-    "generate-api-exports": "node scripts/generate-admin-api-exports.mjs",
+    "gen:api": "orval && node scripts/generate-api-aliases.mjs",
+    "gen:aliases": "node scripts/generate-api-aliases.mjs",
     "gen:key": "node scripts/gen-storage-key.cjs"
   },
   "dependencies": {

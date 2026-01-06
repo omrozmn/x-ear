@@ -3,17 +3,19 @@ FastAPI Users Router - Migrated from Flask routes/users.py
 User profile and management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field
 import logging
 
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_current_context, AccessContext
 from schemas.base import ResponseEnvelope, ApiError
-from models.base import db
+from schemas.users import UserRead
+
 from models.user import User
 from models.tenant import Tenant
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -21,19 +23,19 @@ router = APIRouter(tags=["Users"])
 
 # --- Helper Functions ---
 
-def tenant_scoped_query(ctx: AccessContext, model):
+def tenant_scoped_query(access: UnifiedAccess, model, session: Session):
     """Apply tenant scoping to query"""
-    query = model.query
-    if ctx.tenant_id:
-        query = query.filter_by(tenant_id=ctx.tenant_id)
+    query = session.query(model)
+    if access.tenant_id:
+        query = query.filter_by(tenant_id=access.tenant_id)
     return query
 
-def get_or_404_scoped(ctx: AccessContext, model, record_id: str):
+def get_or_404_scoped(session: Session, access: UnifiedAccess, model, record_id: str):
     """Get record with tenant scoping or raise 404"""
-    record = db.session.get(model, record_id)
+    record = session.get(model, record_id)
     if not record:
         return None
-    if ctx.tenant_id and hasattr(record, 'tenant_id') and record.tenant_id != ctx.tenant_id:
+    if access.tenant_id and hasattr(record, 'tenant_id') and record.tenant_id != access.tenant_id:
         return None
     return record
 
@@ -62,21 +64,16 @@ class PasswordChange(BaseModel):
 
 # --- Routes ---
 
-@router.get("/users")
+@router.get("/users", response_model=ResponseEnvelope[List[UserRead]])
 def list_users(
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access("users.view")),
     db_session: Session = Depends(get_db)
 ):
     """List users"""
-    if not ctx.is_super_admin and not ctx.is_tenant_admin:
-        raise HTTPException(
-            status_code=403,
-            detail=ApiError(message="Forbidden", code="FORBIDDEN").model_dump(mode="json")
-        )
     
-    query = tenant_scoped_query(ctx, User)
+    query = tenant_scoped_query(access, User, db_session)
     total = query.count()
     
     offset = (page - 1) * per_page
@@ -92,31 +89,31 @@ def list_users(
         }
     )
 
-@router.post("/users", status_code=201)
+@router.post("/users", status_code=201, response_model=ResponseEnvelope[UserRead])
 def create_user(
     user_in: UserCreate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Create user"""
-    if not ctx.is_super_admin and not ctx.is_tenant_admin:
+    if not access.is_super_admin and not access.is_tenant_admin:
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="Forbidden", code="FORBIDDEN").model_dump(mode="json")
         )
     
-    tenant_id = ctx.tenant_id or user_in.tenant_id
-    if not tenant_id:
+    access.tenant_id = access.tenant_id or user_in.tenant_id
+    if not access.tenant_id:
         raise HTTPException(
             status_code=400,
-            detail=ApiError(message="tenant_id is required", code="TENANT_REQUIRED").model_dump(mode="json")
+            detail=ApiError(message="access.tenant_id is required", code="TENANT_REQUIRED").model_dump(mode="json")
         )
     
     # Check tenant limits
     try:
-        tenant = db_session.get(Tenant, tenant_id)
+        tenant = db_session.get(Tenant, access.tenant_id)
         if tenant:
-            existing_users_count = User.query.filter_by(tenant_id=tenant_id).count()
+            existing_users_count = db_session.query(User).filter_by(tenant_id=access.tenant_id).count()
             max_users = tenant.max_users or 5
             if existing_users_count >= max_users:
                 raise HTTPException(
@@ -131,7 +128,7 @@ def create_user(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-    if User.query.filter_by(username=user_in.username).first():
+    if db_session.query(User).filter_by(username=user_in.username).first():
         raise HTTPException(
             status_code=409,
             detail=ApiError(message="username already exists", code="USERNAME_EXISTS").model_dump(mode="json")
@@ -143,7 +140,7 @@ def create_user(
     user.first_name = user_in.first_name
     user.last_name = user_in.last_name
     user.role = user_in.role
-    user.tenant_id = tenant_id
+    user.tenant_id = access.tenant_id
     user.set_password(user_in.password)
     
     db_session.add(user)
@@ -155,9 +152,9 @@ def create_user(
     logger.info(f"User created: {user.id}")
     return ResponseEnvelope(data=user.to_dict())
 
-@router.get("/users/me")
+@router.get("/users/me", response_model=ResponseEnvelope[UserRead])
 def get_me(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get current user profile"""
@@ -168,6 +165,15 @@ def get_me(
             payload['role'] = 'super_admin'
             payload['globalPermissions'] = ['*']
             payload['apps'] = []
+            # Add required fields for UserRead schema compatibility
+            payload['tenantId'] = payload.get('tenant_id') or 'admin'  # Admin users don't have tenant
+            payload['tenant_id'] = payload.get('tenant_id') or 'admin'
+            payload['fullName'] = f"{payload.get('first_name', '')} {payload.get('last_name', '')}".strip() or payload.get('email', '')
+            payload['full_name'] = payload['fullName']
+            payload['firstName'] = payload.get('first_name', '')
+            payload['lastName'] = payload.get('last_name', '')
+            payload['isActive'] = payload.get('is_active', True)
+            payload['permissions'] = list(payload.get('globalPermissions', ['*']))
             return payload
         
         apps = {}
@@ -193,30 +199,29 @@ def get_me(
         payload['globalPermissions'] = global_permissions
         return payload
     
-    user = ctx.user
+    user = access.user
+    
+    # Check if this is an admin user - access.is_admin is set for admin tokens
+    if access.is_admin and user:
+        return ResponseEnvelope(data=build_payload(user, is_admin_user=True))
+    
+    # Regular tenant user
     if user:
         return ResponseEnvelope(data=build_payload(user, is_admin_user=False))
-    
-    # Check for admin
-    if hasattr(ctx, 'admin') and ctx.admin:
-        return ResponseEnvelope(data=build_payload(ctx.admin, is_admin_user=True))
-    
-    if ctx.is_super_admin and ctx.user:
-        return ResponseEnvelope(data=build_payload(ctx.user, is_admin_user=True))
     
     raise HTTPException(
         status_code=404,
         detail=ApiError(message="Not found", code="USER_NOT_FOUND").model_dump(mode="json")
     )
 
-@router.put("/users/me")
+@router.put("/users/me", response_model=ResponseEnvelope[UserRead])
 def update_me(
     user_in: UserUpdate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Update current user profile"""
-    user = ctx.user
+    user = access.user
     if user:
         data = user_in.model_dump(exclude_unset=True, by_alias=False)
         if 'first_name' in data:
@@ -238,11 +243,11 @@ def update_me(
 @router.post("/users/me/password")
 def change_password(
     password_in: PasswordChange,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Change password"""
-    user = ctx.user
+    user = access.user
     if not user:
         raise HTTPException(
             status_code=404,
@@ -260,21 +265,21 @@ def change_password(
     
     return ResponseEnvelope(message="Password updated")
 
-@router.put("/users/{user_id}")
+@router.put("/users/{user_id}", response_model=ResponseEnvelope[UserRead])
 def update_user(
     user_id: str,
     user_in: UserUpdate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Update user"""
-    if not ctx.is_super_admin and not ctx.is_tenant_admin and ctx.principal_id != user_id:
+    if not access.is_super_admin and not access.is_tenant_admin and access.principal_id != user_id:
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="Forbidden", code="FORBIDDEN").model_dump(mode="json")
         )
     
-    user = get_or_404_scoped(ctx, User, user_id)
+    user = get_or_404_scoped(db_session, access, User, user_id)
     if not user:
         raise HTTPException(
             status_code=404,
@@ -289,7 +294,7 @@ def update_user(
         user.last_name = data['last_name']
     if 'email' in data:
         user.email = data['email']
-    if 'role' in data and (ctx.is_super_admin or ctx.is_tenant_admin):
+    if 'role' in data and (access.is_super_admin or access.is_tenant_admin):
         user.role = data['role']
     if 'password' in data and data['password']:
         user.set_password(data['password'])
@@ -302,17 +307,17 @@ def update_user(
 @router.delete("/users/{user_id}")
 def delete_user(
     user_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Delete user"""
-    if not ctx.is_super_admin and not ctx.is_tenant_admin:
+    if not access.is_super_admin and not access.is_tenant_admin:
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="Forbidden", code="FORBIDDEN").model_dump(mode="json")
         )
     
-    user = get_or_404_scoped(ctx, User, user_id)
+    user = get_or_404_scoped(db_session, access, User, user_id)
     if not user:
         raise HTTPException(
             status_code=404,

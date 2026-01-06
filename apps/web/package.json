@@ -5,7 +5,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --port 8080",
+    "dev": "npm run type-check && vite --port 8080",
+    "dev:fast": "vite --port 8080",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
@@ -17,7 +18,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "type-check": "tsc --noEmit",
-    "gen:api": "orval && node scripts/generate-api-index.mjs && npm run type-check",
+    "type-check:watch": "tsc --noEmit --watch",
+    "gen:api": "orval && node scripts/generate-api-aliases.mjs && node scripts/generate-api-index.mjs",
     "gen:key": "node scripts/gen-storage-key.cjs"
   },
   "dependencies": {

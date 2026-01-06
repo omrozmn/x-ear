@@ -1,15 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import { Input } from '@x-ear/ui-web';
-import { useAuthStore } from '../../../stores/authStore';
+import { useGetDeviceBrands, useCreateDeviceBrand, getGetDeviceBrandsQueryKey } from '@/api/generated/devices/devices';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  useInventoryGetBrands,
-  getInventoryGetBrandsQueryKey,
-  useInventoryCreateBrand
-} from '../../../api/generated/index';
-
 
 interface BrandAutocompleteProps {
   value: string;
@@ -32,11 +26,25 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredBrands, setFilteredBrands] = useState<string[]>([]);
-  const [allBrands, setAllBrands] = useState<string[]>([]);
+  const [localBrands, setLocalBrands] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement | null>(null);
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+
+  const queryClient = useQueryClient();
+
+  // Fetch brands from API
+  const { data: brandsData, isLoading, isError } = useGetDeviceBrands();
+
+  // Create brand mutation
+  const createBrandMutation = useCreateDeviceBrand({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getGetDeviceBrandsQueryKey() });
+      }
+    }
+  });
 
   // Default hearing aid brands (fallback)
   const defaultBrands = [
@@ -52,76 +60,50 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
     'Sonic',
     'GN Hearing',
     'Amplifon',
-    'Audika',
-    'Hear Clear',
     'Beltone',
-    'Miracle-Ear',
-    'Connect Hearing',
-    'Audiology',
-    'Hearing Life',
-    'HearingPlanet',
     'Siemens',
-    'Interton',
-    'Audio Service',
     'Rexton',
-    'Coselgi',
-    'Audifon',
-    'Bellman',
+    'Audio Service',
     'Cochlear',
     'Med-El',
     'Advanced Bionics',
-    'Nurotron',
-    'Oticon Medical',
     'Sennheiser',
     'Sony',
     'Bose',
     'Jabra',
-    'Eargo',
-    'Lively',
-    'Audicus',
-    'MDHearing'
+    'Eargo'
   ];
 
-  const { token } = useAuthStore();
-  const queryClient = useQueryClient();
-
-  // React Query hook for brands - only fetch if authenticated
-  const { data: brandsData, isLoading, isError } = useInventoryGetBrands({
-    query: {
-      enabled: !!token
-    }
-  });
-
-  // Load brands from API data
-  useEffect(() => {
+  // Merge API brands with defaults and local additions
+  const allBrands = useMemo(() => {
     let apiBrands: string[] = [];
 
-    // Handle different response structures (same as SupplierAutocomplete)
+    // Handle different response structures
     if (brandsData) {
-      if (Array.isArray(brandsData)) {
-        apiBrands = brandsData;
-      } else if ((brandsData as any)?.data) {
-        const innerData = (brandsData as any).data;
+      const responseData = brandsData as any;
+      if (Array.isArray(responseData)) {
+        apiBrands = responseData;
+      } else if (responseData?.data) {
+        const innerData = responseData.data;
         if (Array.isArray(innerData)) {
-          apiBrands = innerData;
+          apiBrands = innerData.map((b: any) => typeof b === 'string' ? b : b.name || b.brandName || String(b));
         } else if (innerData?.brands && Array.isArray(innerData.brands)) {
           apiBrands = innerData.brands;
-        } else if (innerData?.data && Array.isArray(innerData.data)) {
-          apiBrands = innerData.data;
+        }
+      } else if (responseData?.success && responseData?.data) {
+        const innerData = responseData.data;
+        if (Array.isArray(innerData)) {
+          apiBrands = innerData.map((b: any) => typeof b === 'string' ? b : b.name || b.brandName || String(b));
         }
       }
     }
 
-    if (apiBrands.length > 0) {
-      const combined = [...new Set([...apiBrands, ...defaultBrands])];
-      setAllBrands(combined.sort());
-    } else {
-      setAllBrands(defaultBrands);
-    }
-  }, [brandsData]);
+    // Combine all sources: API, local, and defaults
+    const combined = [...new Set([...apiBrands, ...localBrands, ...defaultBrands])];
+    return combined.sort();
+  }, [brandsData, localBrands]);
 
   useEffect(() => {
-    const brands = allBrands.length > 0 ? allBrands : defaultBrands;
     if (value && isOpen) {
       // Normalize Turkish characters for better matching
       const normalizeTurkish = (str: string) => {
@@ -138,7 +120,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
       const normalizedValue = normalizeTurkish(value);
 
       // Score each brand
-      const scored = brands.map(brand => {
+      const scored = allBrands.map(brand => {
         const normalizedBrand = normalizeTurkish(brand);
         let score = 0;
 
@@ -169,16 +151,15 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
 
       setFilteredBrands(filtered);
     } else if (isOpen) {
-      setFilteredBrands(brands.slice(0, 10));
+      setFilteredBrands(allBrands.slice(0, 10));
     } else {
       setFilteredBrands([]);
     }
   }, [value, isOpen, allBrands]);
 
   // Check if current value is an exact match
-  const brands = allBrands.length > 0 ? allBrands : defaultBrands;
   const valStr = value || '';
-  const hasExactMatch = brands.some(brand => (brand || '').toLowerCase() === valStr.toLowerCase());
+  const hasExactMatch = allBrands.some(brand => (brand || '').toLowerCase() === valStr.toLowerCase());
   const showCreateNew = valStr.trim() && !hasExactMatch && isOpen;
 
   useEffect(() => {
@@ -238,33 +219,18 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
     setIsOpen(false);
   };
 
-  const createBrandMutation = useInventoryCreateBrand();
-
   const handleCreateNew = async () => {
     const newBrand = value.trim();
     if (!newBrand) return;
 
     try {
+      // Try to create via API
       await createBrandMutation.mutateAsync({ data: { name: newBrand } });
-      console.log('✅ New brand created:', newBrand);
-      // Add to local list immediately
-      setAllBrands(prev => [...new Set([...prev, newBrand])].sort());
-      
-      // Invalidate React Query cache to refetch brands
-      queryClient.invalidateQueries({ queryKey: getInventoryGetBrandsQueryKey() });
+      console.log('✅ New brand created via API:', newBrand);
     } catch (error: any) {
-      if (error.response?.status === 409) {
-        console.log('Brand already exists, using existing:', newBrand);
-        // Still add to local list
-        setAllBrands(prev => [...new Set([...prev, newBrand])].sort());
-        
-        // Invalidate cache
-        queryClient.invalidateQueries({ queryKey: getInventoryGetBrandsQueryKey() });
-      } else {
-        console.warn('Failed to persist brand to API, using locally:', error);
-        // Add to local list anyway
-        setAllBrands(prev => [...new Set([...prev, newBrand])].sort());
-      }
+      console.warn('Failed to create brand via API, adding locally:', error);
+      // Add to local list as fallback
+      setLocalBrands(prev => [...new Set([...prev, newBrand])].sort());
     }
 
     onChange(newBrand);

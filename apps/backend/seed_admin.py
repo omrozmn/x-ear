@@ -1,16 +1,22 @@
+"""
+Seed Admin User - Pure SQLAlchemy (No Flask)
+"""
+import sys
+import os
+sys.path.append(os.path.dirname(__file__))
 
-from app import app
-from models.base import db
+from database import SessionLocal
 from models.admin_user import AdminUser
 import uuid
 
 def seed_admin():
-    with app.app_context():
-        print("Seeding admin user...")
-        email = "admin@x-ear.com"
-        
+    print("Seeding admin user...")
+    email = "admin@x-ear.com"
+    
+    db = SessionLocal()
+    try:
         # Check if already exists
-        existing = AdminUser.query.filter_by(email=email).first()
+        existing = db.query(AdminUser).filter_by(email=email).first()
         if existing:
             print(f"Admin user {email} already exists.")
             return
@@ -26,9 +32,11 @@ def seed_admin():
         )
         admin.set_password("password123")
         
-        db.session.add(admin)
-        db.session.commit()
+        db.add(admin)
+        db.commit()
         print(f"✅ Successfully created admin user: {email} / password123")
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     seed_admin()

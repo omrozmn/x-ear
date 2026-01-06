@@ -3,17 +3,43 @@ import { Button, Input, Select, Badge } from '@x-ear/ui-web';
 import { FileText, Plus, Calendar, DollarSign, Settings, Trash2, Edit, X, XCircle } from 'lucide-react';
 import { Patient } from '../../types/patient';
 import { useToastHelpers } from '@x-ear/ui-web';
-import { inventoryGetInventoryItems, inventoryAssignToPatient, devicesCreateDevice, devicesDeleteDevice, salesCreateSale, useSalesUpdateDeviceAssignment, useReplacementsCreatePatientReplacement } from '@/api/generated';
+import {
+  getAllInventory,
+  createDevice,
+  deleteDevice,
+  createSale,
+  useCreatePatientReplacement
+} from '@/api/generated';
+import { apiClient } from '@/api/orval-mutator';
 import type {
-  Device,
-  /* DevicesGetDevicesParams, */
-  DevicesCreateDeviceBody,
-  InventoryItem,
-  InventoryGetInventoryItemsParams,
-  InventoryAssignToPatientBody,
-  Sale,
-  SalesCreateSaleBody
+  DeviceRead,
+  DeviceCreate,
+  GetAllInventoryParams,
+  SaleCreate
 } from '@/api/generated/schemas';
+
+// Fallback interfaces for types not exported in schema index
+interface InventoryItemRead {
+  id?: string;
+  name?: string;
+  brand?: string;
+  model?: string;
+  type?: string; // or deviceType
+  serialNumber?: string;
+  availableInventory?: number;
+  [key: string]: any;
+}
+
+interface SaleRead {
+  id?: string;
+  totalAmount?: number;
+  [key: string]: any;
+}
+
+// Backward compatibility aliases
+type Device = DeviceRead;
+type InventoryItem = InventoryItemRead;
+type Sale = SaleRead;
 import DeviceEditModal from './modals/DeviceEditModal';
 import { PatientDeviceCard } from './patient/PatientDeviceCard';
 import DeviceReplacementHistory from '../DeviceReplacementHistory';
@@ -28,12 +54,12 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
   const { success: showSuccess, error: showError, warning: showWarning } = useToastHelpers();
 
   // Orval mutation hooks
-  const updateDeviceAssignmentMutation = useSalesUpdateDeviceAssignment();
-  const createReplacementMutation = useReplacementsCreatePatientReplacement();
+  // const updateDeviceAssignmentMutation = useUpdateDeviceAssignmentApiSalesAssignmentsAssignmentIdPut(); // Hook missing
+  const createReplacementMutation = useCreatePatientReplacement();
 
   const [showDeviceForm, setShowDeviceForm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editingDevice, setEditingDevice] = useState<Device | null>(null);
+  const [editingDevice, setEditingDevice] = useState<DeviceRead | null>(null);
   const [rightEarMode, setRightEarMode] = useState<'inventory' | 'manual'>('inventory');
   const [leftEarMode, setLeftEarMode] = useState<'inventory' | 'manual'>('manual');
   const [rightEarReason, setRightEarReason] = useState<'Trial' | 'Sale'>('Trial');
@@ -44,21 +70,21 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
   const { data: devices, isLoading: devicesLoading, error: devicesError, refetch: refetchDevices } = usePatientDevices(patient?.id || '') as any;
 
   // State for other API data
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
-  const [sales, setSales] = useState<Sale[]>([]);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItemRead[]>([]);
+  const [sales, setSales] = useState<SaleRead[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadInventoryItems = useCallback(async () => {
     try {
-      const params: InventoryGetInventoryItemsParams = {
+      const params: GetAllInventoryParams = {
         page: 1,
-        per_page: 20, // Reduced from 100 to 20 to minimize data transfer
-        status: 'IN_STOCK'
+        per_page: 20,
+        // status: 'IN_STOCK' // Removed, not in new API params. Default shows available inventory.
       };
 
-      const response = await inventoryGetInventoryItems(params);
-      setInventoryItems(response?.data || []);
+      const response = await getAllInventory(params);
+      setInventoryItems((response?.data || []) as InventoryItemRead[]);
     } catch (err) {
       console.error('Error loading inventory:', err);
     }
@@ -87,59 +113,55 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
       setLoading(true);
 
       if (deviceData.mode === 'inventory') {
-        // Assign from inventory
-        const assignData: InventoryAssignToPatientBody = {
-          patientId: patient.id,
-          quantity: 1,
-          reason: deviceData.reason,
-          ear: deviceData.ear,
-          deliveryStatus: deviceData.deliveryStatus || 'pending',
-          isLoaner: deviceData.isLoaner
+        const invItem = inventoryItems.find(i => i.id === deviceData.inventoryId);
+        if (!invItem) throw new Error('Seçilen envanter öğesi bulunamadı');
+
+        const createData: DeviceCreate = {
+          patientId: patient.id!,
+          inventoryId: String(deviceData.inventoryId),
+          brand: invItem.brand || 'Unknown',
+          model: invItem.model || 'Unknown',
+          type: invItem.type || invItem.deviceType || 'Unknown',
+          ear: String(deviceData.ear),
+          status: 'assigned',
+          notes: `Assigned from Inventory: ${invItem.name}`,
+          serialNumber: invItem.serialNumber || undefined
         } as any;
 
-        const response = await inventoryAssignToPatient(deviceData.inventoryId as string, assignData) as any;
-        const responseData = response?.data || response;
+        if (deviceData.isLoaner) (createData as any).isLoaner = true;
+        if (deviceData.deliveryStatus) (createData as any).deliveryStatus = deviceData.deliveryStatus;
 
-        if (responseData.warnings && Array.isArray(responseData.warnings) && responseData.warnings.length > 0) {
-          responseData.warnings.forEach((w: string) => showWarning('Stok Uyarısı', w));
-        } else {
-          showSuccess('Başarılı', 'Cihaz başarıyla atandı');
-        }
+        await createDevice(createData);
+        showSuccess('Başarılı', 'Cihaz başarıyla atandı');
+
       } else {
-        // Create new device manually
-        const createData: DevicesCreateDeviceBody = {
-          patientId: patient.id,
+        const createData: DeviceCreate = {
+          patientId: patient.id!,
           serialNumber: deviceData.serialNumber as string,
           brand: deviceData.brand as string,
           model: deviceData.model as string,
-          deviceType: deviceData.deviceType as string,
+          type: deviceData.deviceType as string,
           ear: deviceData.ear as string,
-          status: deviceData.reason === 'Trial' ? 'assigned' : 'assigned',
-          deliveryStatus: deviceData.deliveryStatus || 'pending',
-          isLoaner: deviceData.isLoaner
+          status: 'assigned',
         } as any;
 
-        await devicesCreateDevice(createData);
+        if (deviceData.isLoaner) (createData as any).isLoaner = true;
+        if (deviceData.deliveryStatus) (createData as any).deliveryStatus = deviceData.deliveryStatus;
+
+        await createDevice(createData);
       }
 
-      // If it's a sale, create sale record
       if (deviceData.reason === 'Sale') {
-        const saleData: SalesCreateSaleBody = {
-          patientId: patient.id,
-          productId: deviceData.inventoryId as string, // Map inventoryId to productId for sale
+        const saleData: SaleCreate = {
+          patientId: patient.id!,
+          productId: deviceData.inventoryId as string || 'manual',
           amount: Number(deviceData.salePrice),
-          // Backend expects 'base_price' or 'price' to override list price for KDV calculation
-          // We pass it as 'price' in additional properties if needed, or 'amount' is used by our backend fix
           paymentMethod: deviceData.paymentMethod as string || 'cash',
           notes: `${deviceData.brand} ${deviceData.model} satışı`,
-          // Pass explicit price override to backend to ensure KDV is calculated on this price
-          // The backend fix looks for 'price' or 'amount'
         } as any;
 
-        // Add explicit price field for backend override
         (saleData as any).price = Number(deviceData.salePrice);
-
-        await salesCreateSale(saleData);
+        await createSale(saleData);
       }
 
       await refetchDevices();
@@ -156,7 +178,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
 
   const handleRemoveDevice = async (deviceId: string) => {
     try {
-      await devicesDeleteDevice(deviceId);
+      await deleteDevice(deviceId);
       await refetchDevices();
     } catch (err) {
       console.error('Error removing device:', err);
@@ -164,7 +186,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
     }
   };
 
-  const handleEditDevice = (device: Device) => {
+  const handleEditDevice = (device: DeviceRead) => {
     setEditingDevice(device);
     setShowEditModal(true);
   };
@@ -181,15 +203,14 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
     try {
       setLoading(true);
 
-      // Use Orval mutation hook instead of apiClient
-      const response = await updateDeviceAssignmentMutation.mutateAsync({
-        assignmentId: deviceId,
+      // Use apiClient for manual update since hook is missing
+      await apiClient({
+        url: `/api/device-assignments/${deviceId}`,
+        method: 'PUT',
         data: updates
       });
-      console.log('📥 [handleUpdateDevice] Backend yanıtı:', response);
 
       // Refresh devices
-      console.log('🔄 [handleUpdateDevice] refetchDevices çağrılıyor...');
       await refetchDevices();
 
       // Dispatch custom event to notify other tabs (e.g., Sales)
@@ -266,7 +287,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
       }
 
       // Remove old device
-      await handleRemoveDevice(oldDeviceId);
+      await deleteDevice(oldDeviceId);
 
       // Add new device (from inventory or manual)
       await handleAssignDevice({ inventoryId: newInventoryId, reason, ...newDeviceInfo });
@@ -423,7 +444,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
               device={device as any}
               inventoryItems={inventoryItems}
               onUpdate={handleUpdateDevice}
-              onEditClick={() => handleEditDevice(device as Device)}
+              onEditClick={() => handleEditDevice(device as DeviceRead)}
               onDeleteClick={() => device.id && handleRemoveDevice(device.id)}
               onLoanerReturn={async (id) => {
                 await handleUpdateDevice(id, {

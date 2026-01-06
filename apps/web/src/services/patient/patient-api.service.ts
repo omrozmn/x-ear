@@ -1,32 +1,34 @@
 // Patient API Service - Simplified Version
 import {
-  PatientsGetPatients200,
-  Sale,
-  SalesCreateSaleBody,
-  SalesUpdateSale1Body,
-  PaginationInfo
+  ResponseMeta,
+  PatientRead,
+  PatientCreate,
+  SaleCreate,
+  SaleUpdate,
+  PatientNoteCreate
 } from "@/api/generated/schemas";
-import { apiClient, LegacyPatient, CreatePatientRequest, UpdatePatientRequest } from '../../api/client';
-import { unwrapObject, unwrapArray, unwrapProperty } from '../../utils/response-unwrap';
+import { CreatePatientRequest, LegacyPatient, UpdatePatientRequest } from '../../api/client';
+import { unwrapArray, unwrapObject, unwrapProperty } from '../../utils/response-unwrap';
 import {
-  patientsGetPatients,
-  patientsGetPatient,
-  patientsCreatePatient,
-  patientsUpdatePatient,
-  patientsDeletePatient,
-  patientsGetPatientSales,
-  salesCreateSale,
-  salesUpdateSale,
-  timelineGetPatientTimeline,
-  sgkGetPatientSgkDocuments,
-  appointmentsGetAppointments,
-  patientSubresourcesCreatePatientNote,
-  patientSubresourcesDeletePatientNote,
-  patientSubresourcesGetPatientNotes,
-  documentsGetPatientDocuments
-} from '@/api/generated';
-import { PatientSubresourcesCreatePatientNoteBody } from '@/api/generated/schemas';
-import type { Patient as OrvalPatient, PatientsCreatePatientBody } from '@/api/generated/schemas';
+  listPatients,
+  createPatient,
+  getPatient,
+  updatePatient,
+  deletePatient
+} from '@/api/generated/patients/patients';
+import { getAdminPatientSales } from '@/api/generated/admin-patients/admin-patients';
+import { createSale, updateSale } from '@/api/generated/sales/sales';
+import { getTimeline } from '@/api/generated/timeline/timeline';
+import { getPatientSgkDocuments } from '@/api/generated/sgk/sgk';
+import { getPatientDocuments } from '@/api/generated/documents/documents';
+import {
+  getPatientAppointments,
+  getPatientHearingTests,
+  getPatientNotes,
+  createPatientNote,
+  deletePatientNote
+} from '@/api/generated/patient-subresources/patient-subresources';
+
 
 // Use LegacyPatient as the Patient type in this service
 type Patient = LegacyPatient;
@@ -44,7 +46,7 @@ type ApiEnvelope<T> = {
   success: boolean;
   message?: string;
   error?: string;
-  meta?: PaginationInfo | Record<string, unknown>;
+  meta?: ResponseMeta | Record<string, unknown>;
 };
 
 class RequestThrottler {
@@ -131,20 +133,21 @@ export class PatientApiService {
     console.log(`🔄 Starting to fetch all patients (per_page: ${perPage})...`);
 
     try {
-      const response = await patientsGetPatients({ page: 1, per_page: perPage });
-      const payload = (response as unknown) as { data?: PatientsGetPatients200 };
-      const payloadData = payload?.data;
-      const list = payloadData?.data ?? [];
+      const response = await listPatients({ page: 1, per_page: perPage });
+      // Orval response unwrapping - check if data is directly valid or nested
+      const rawData = (response as unknown) as any;
+      const list = Array.isArray(rawData) ? rawData : (rawData?.data?.data || rawData?.data || []);
+
       console.log(`✅ Successfully fetched ${list.length} patients`);
       // Map Orval Patient schema to local Patient shape
-      return list.map((p: OrvalPatient) => ({
-        id: p.id ?? '',
-        name: [p.firstName, p.lastName].filter(Boolean).join(' ').trim(),
-        email: p.email,
-        phone: p.phone ?? '',
-        birth_date: p.birthDate,
-        created_at: p.createdAt ?? '',
-        updated_at: p.updatedAt ?? ''
+      return list.map((p: PatientRead) => ({
+        id: p.id,
+        name: p.fullName || [p.firstName, p.lastName].filter(Boolean).join(' ').trim(),
+        email: p.email || '',
+        phone: p.phone || '',
+        birth_date: p.birthDate || p.dob || '',
+        created_at: p.createdAt?.toString() || '',
+        updated_at: p.updatedAt?.toString() || ''
       })) as Patient[];
     } catch (error) {
       console.error('❌ Error fetching patients:', error);
@@ -158,13 +161,15 @@ export class PatientApiService {
   async getSales(patientId: string): Promise<ApiEnvelope<Sale[]>> {
     try {
       const response = await this.throttler.throttle(async () => {
-        return await patientsGetPatientSales(patientId);
+        return await getAdminPatientSales(patientId);
       });
-      const res = response as unknown as { data?: { data?: Sale[]; meta?: PaginationInfo } };
-      const salesArray = Array.isArray(res.data?.data) ? (res.data?.data as Sale[]) : [];
+      const res = response as unknown as { data?: { data?: Sale[]; meta?: ResponseMeta } };
+      // Unwrap logic depends on backend response structure. Orval might already return parsed JSON.
+      // Assuming response is the standard envelope or array
+      const salesArray = Array.isArray(response) ? response : (res.data?.data || (response as any).data || []);
 
       return {
-        data: salesArray,
+        data: salesArray as Sale[],
         success: true,
         message: 'Sales data retrieved successfully',
         meta: res.data?.meta
@@ -191,18 +196,19 @@ export class PatientApiService {
 
   async fetchPatient(id: string): Promise<Patient | null> {
     try {
-      const response = await patientsGetPatient(id);
+      const response = await getPatient(id);
       const payload = unwrapObject<any>(response);
       const patientData = payload?.patient || payload;
       if (patientData) {
+        const p = patientData as PatientRead;
         return {
-          id: patientData.id ?? '',
-          name: [patientData.firstName, patientData.lastName].filter(Boolean).join(' ').trim(),
-          email: patientData.email,
-          phone: patientData.phone ?? '',
-          birth_date: patientData.birthDate,
-          created_at: patientData.createdAt ?? '',
-          updated_at: patientData.updatedAt ?? ''
+          id: p.id,
+          name: p.fullName || [p.firstName, p.lastName].filter(Boolean).join(' ').trim(),
+          email: p.email || '',
+          phone: p.phone || '',
+          birth_date: p.birthDate || p.dob || '',
+          created_at: p.createdAt?.toString() || '',
+          updated_at: p.updatedAt?.toString() || ''
         } as Patient;
       }
       return null;
@@ -214,27 +220,28 @@ export class PatientApiService {
 
   async createPatient(patientData: CreatePatientRequest): Promise<Patient> {
     try {
-      const body: PatientsCreatePatientBody = {
-        first_name: (patientData as any).firstName || (patientData as any).name?.split(' ')[0] || '',
-        last_name: (patientData as any).lastName || (patientData as any).name?.split(' ').slice(1).join(' ') || '',
+      const body: PatientCreate = {
+        firstName: (patientData as any).firstName || (patientData as any).name?.split(' ')[0] || '',
+        lastName: (patientData as any).lastName || (patientData as any).name?.split(' ').slice(1).join(' ') || '',
         phone: patientData.phone || '',
         email: patientData.email,
-        birth_date: (patientData as any).birthDate || patientData.birth_date,
-        tc_number: (patientData as any).tcNumber
+        birthDate: (patientData as any).birthDate || patientData.birth_date,
+        tcNumber: (patientData as any).tcNumber
       };
-      const response = await patientsCreatePatient(body);
+      const response = await createPatient(body);
       const payload = unwrapObject<any>(response);
       const newPatient = payload?.patient || payload;
       if (newPatient) {
         this.invalidateCache();
+        const p = newPatient as PatientRead; // assuming response is PatientRead
         return {
-          id: newPatient.id ?? '',
-          name: [newPatient.firstName, newPatient.lastName].filter(Boolean).join(' ').trim(),
-          email: newPatient.email,
-          phone: newPatient.phone ?? '',
-          birth_date: newPatient.birthDate,
-          created_at: newPatient.createdAt ?? '',
-          updated_at: newPatient.updatedAt ?? ''
+          id: p.id,
+          name: p.fullName || [p.firstName, p.lastName].filter(Boolean).join(' ').trim(),
+          email: p.email || '',
+          phone: p.phone || '',
+          birth_date: p.birthDate || p.dob || '',
+          created_at: p.createdAt?.toString() || '',
+          updated_at: p.updatedAt?.toString() || ''
         } as Patient;
       }
       throw new Error('Failed to create patient');
@@ -246,27 +253,28 @@ export class PatientApiService {
 
   async updatePatient(id: string, updates: UpdatePatientRequest): Promise<Patient | null> {
     try {
-      const body: Partial<PatientsCreatePatientBody> = {
-        first_name: (updates as any).firstName,
-        last_name: (updates as any).lastName,
+      const body: Partial<PatientCreate> = {
+        firstName: (updates as any).firstName,
+        lastName: (updates as any).lastName,
         phone: updates.phone,
         email: updates.email,
-        birth_date: (updates as any).birthDate || updates.birth_date,
-        tc_number: (updates as any).tcNumber
+        birthDate: (updates as any).birthDate || updates.birth_date,
+        tcNumber: (updates as any).tcNumber
       };
-      const response = await patientsUpdatePatient(id, body as any);
+      const response = await updatePatient(id, body as any);
       const payload = unwrapObject<any>(response);
       const updatedPatient = payload?.patient || payload;
       if (updatedPatient) {
         this.invalidateCache();
+        const p = updatedPatient as PatientRead;
         return {
-          id: updatedPatient.id ?? '',
-          name: [updatedPatient.firstName, updatedPatient.lastName].filter(Boolean).join(' ').trim(),
-          email: updatedPatient.email,
-          phone: updatedPatient.phone ?? '',
-          birth_date: updatedPatient.birthDate,
-          created_at: updatedPatient.createdAt ?? '',
-          updated_at: updatedPatient.updatedAt ?? ''
+          id: p.id,
+          name: p.fullName || [p.firstName, p.lastName].filter(Boolean).join(' ').trim(),
+          email: p.email || '',
+          phone: p.phone || '',
+          birth_date: p.birthDate || p.dob || '',
+          created_at: p.createdAt?.toString() || '',
+          updated_at: p.updatedAt?.toString() || ''
         } as Patient;
       }
       return null;
@@ -278,7 +286,7 @@ export class PatientApiService {
 
   async deletePatient(id: string): Promise<boolean> {
     try {
-      const response = await patientsDeletePatient(id);
+      const response = await deletePatient(id);
       const success = unwrapProperty<boolean>(response, 'success', false);
       if (success) {
         this.invalidateCache();
@@ -306,19 +314,19 @@ export class PatientApiService {
         throw new Error('Product ID is required for sale creation');
       }
 
-      const body: SalesCreateSaleBody = {
-        patient_id: patientId,
-        product_id: productId,
-        discount_amount: ((saleData as Record<string, unknown>)?.discount as number) || 0,
-        payment_method: ((saleData as Record<string, unknown>)?.paymentMethod as string) || 'cash',
-        notes: ((saleData as Record<string, unknown>)?.notes as string) || '',
-        paid_amount: ((saleData as Record<string, unknown>)?.paidAmount as number),
-        sale_date: ((saleData as Record<string, unknown>)?.saleDate as string),
-        sgk_coverage: ((saleData as Record<string, unknown>)?.sgkAmount as number),
-        report_status: ((saleData as Record<string, unknown>)?.reportStatus as string)
-      } as unknown as SalesCreateSaleBody;
+      const body: SaleCreate = {
+        patientId: patientId,
+        productId: productId,
+        discountAmount: ((saleData as Record<string, unknown>)?.discount as number) || 0,
+        paymentMethod: ((saleData as Record<string, unknown>)?.paymentMethod as any) || 'cash',
+        notes: ((saleData as Record<string, unknown>)?.notes as any) || '',
+        paidAmount: ((saleData as Record<string, unknown>)?.paidAmount as any),
+        saleDate: ((saleData as Record<string, unknown>)?.saleDate as any),
+        sgkCoverage: ((saleData as Record<string, unknown>)?.sgkAmount as any),
+        reportStatus: ((saleData as Record<string, unknown>)?.reportStatus as any)
+      } as unknown as SaleCreate;
 
-      const response = await salesCreateSale(body);
+      const response = await createSale(body);
 
       const payload = (response as unknown) as { data?: unknown };
       return { data: payload?.data ?? null, success: true };
@@ -328,13 +336,10 @@ export class PatientApiService {
     }
   }
 
-  async updateSale(saleId: string, updates: SalesUpdateSale1Body): Promise<ApiEnvelope<unknown>> {
+  async updateSale(saleId: string, updates: SaleUpdate): Promise<ApiEnvelope<unknown>> {
     try {
       const response = await this.throttler.throttle(async () => {
-        // TODO: The generated client for salesUpdateSale currently only accepts saleId.
-        // We need to verify if the backend supports body or if the generator is missing it.
-        // For now, we are calling it without body to satisfy the type checker, but this is likely broken functionality.
-        return await salesUpdateSale(saleId, updates);
+        return await updateSale(saleId, updates);
       });
       const payload = (response as unknown) as { data?: unknown };
       return {
@@ -354,7 +359,7 @@ export class PatientApiService {
 
   async getTimeline(patientId: string): Promise<ApiEnvelope<unknown[]>> {
     try {
-      const response = await timelineGetPatientTimeline(patientId);
+      const response = await getTimeline({ patient_id: patientId } as any);
       const payload = unwrapObject<any>(response);
       return {
         data: unwrapArray<unknown>(response),
@@ -374,7 +379,7 @@ export class PatientApiService {
   async getSgk(patientId: string): Promise<ApiEnvelope<unknown[]>> {
     try {
       const response = await this.throttler.throttle(async () => {
-        return await sgkGetPatientSgkDocuments(patientId);
+        return await getPatientSgkDocuments(patientId);
       });
       return {
         data: unwrapArray<unknown>(response),
@@ -393,18 +398,13 @@ export class PatientApiService {
   async getAppointments(patientId: string): Promise<ApiEnvelope<unknown[]>> {
     try {
       const response = await this.throttler.throttle(async () => {
-        // Use correct list endpoint and cast to any since generated type is void but runtime returns data
-        return await appointmentsGetAppointments({ patient_id: patientId }) as any;
+        // Direct endpoint for patient appointments
+        return await getPatientAppointments(patientId);
       });
 
-      // Filter appointments by patient ID on the client side since the API doesn't support filtering
       const allAppointments = unwrapArray<any>(response);
-      const patientAppointments = allAppointments.filter((appointment: Record<string, unknown>) =>
-        (appointment as Record<string, unknown>)['patientId'] === patientId || (appointment as Record<string, unknown>)['patient_id'] === patientId
-      );
-
       return {
-        data: patientAppointments,
+        data: allAppointments,
         success: true
       };
     } catch (error) {
@@ -418,15 +418,11 @@ export class PatientApiService {
   }
 
   async getHearingTests(patientId: string): Promise<ApiEnvelope<unknown[]>> {
-    void patientId;
     try {
-      // Note: There's no direct hearing tests endpoint in the generated client
-      // This would need to be implemented when the backend endpoint is available
-      console.warn('Hearing tests endpoint not yet available in generated client');
+      const response = await getPatientHearingTests(patientId);
       return {
-        data: [],
-        success: true,
-        message: 'Hearing tests endpoint not yet implemented in backend'
+        data: unwrapArray<unknown>(response),
+        success: true
       };
     } catch (error) {
       console.error('Failed to fetch patient hearing tests:', error);
@@ -440,7 +436,7 @@ export class PatientApiService {
 
   async getNotes(patientId: string): Promise<ApiEnvelope<unknown[]>> {
     try {
-      const response = await patientSubresourcesGetPatientNotes(patientId);
+      const response = await getPatientNotes(patientId);
       return {
         data: unwrapArray<unknown>(response),
         success: true,
@@ -458,7 +454,7 @@ export class PatientApiService {
 
   async getDocuments(patientId: string): Promise<ApiEnvelope<unknown[]>> {
     try {
-      const response = await documentsGetPatientDocuments(patientId);
+      const response = await getPatientDocuments(patientId);
       return {
         data: unwrapArray<unknown>(response),
         success: true,
@@ -502,7 +498,7 @@ export class PatientApiService {
   async createNote(patientId: string, noteData: unknown): Promise<unknown> {
     try {
       const response = await this.throttler.throttle(async () => {
-        return await patientSubresourcesCreatePatientNote(patientId, noteData as PatientSubresourcesCreatePatientNoteBody);
+        return await createPatientNote(patientId, noteData as PatientNoteCreate);
       });
       return {
         data: (response as any).data,
@@ -521,7 +517,7 @@ export class PatientApiService {
   async deleteNote(patientId: string, noteId: string): Promise<unknown> {
     try {
       const response = await this.throttler.throttle(async () => {
-        return await patientSubresourcesDeletePatientNote(patientId, noteId);
+        return await deletePatientNote(patientId, noteId);
       });
       return {
         data: (response as any).data,

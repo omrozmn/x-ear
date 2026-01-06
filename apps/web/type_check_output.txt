@@ -1,0 +1,110 @@
+
+> @x-ear/web@0.1.0 type-check
+> tsc --noEmit
+
+src/api/dashboard.ts(4,10): error TS2305: Module '"@/api/generated"' has no exported member 'dashboardPatientDistribution'.
+src/components/communication/CommunicationAnalytics.tsx(18,10): error TS2305: Module '"@/api/generated"' has no exported member 'communicationsCommunicationStats'.
+src/components/CommunicationTemplates.tsx(3,3): error TS2305: Module '"@/api/generated"' has no exported member 'communicationsGetTemplates'.
+src/components/CommunicationTemplates.tsx(4,3): error TS2305: Module '"@/api/generated"' has no exported member 'communicationsUpdateTemplate'.
+src/components/CommunicationTemplates.tsx(5,3): error TS2305: Module '"@/api/generated"' has no exported member 'communicationsCreateTemplate'.
+src/components/CommunicationTemplates.tsx(6,3): error TS2305: Module '"@/api/generated"' has no exported member 'communicationsDeleteTemplate'.
+src/components/CommunicationTemplates.tsx(8,74): error TS2307: Cannot find module '@/api/generated/schemas/communicationTemplate' or its corresponding type declarations.
+src/components/finance/PosPaymentForm.tsx(8,10): error TS2305: Module '"@/api/generated"' has no exported member 'usePaymentIntegrationsInitiatePaytrPayment'.
+src/components/forms/device-assignment-form/components/PricingForm.tsx(1,10): error TS2305: Module '"@/api/generated/settings/settings"' has no exported member 'useGetPricingSettings'.
+src/components/forms/patient-sale-form/PatientSaleFormRefactored.tsx(4,10): error TS2305: Module '"@/api/generated"' has no exported member 'inventoryGetInventoryItems'.
+src/components/invoices/ProductLinesSection.tsx(14,3): error TS2305: Module '"@/api/generated"' has no exported member 'inventoryGetInventoryItems'.
+src/components/invoices/ProductLinesSection.tsx(15,3): error TS2305: Module '"@/api/generated"' has no exported member 'inventoryGetInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(16,3): error TS2305: Module '"@/api/generated"' has no exported member 'inventoryCreateInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(198,15): error TS2322: Type '{ id: string; name: string; brand: string | undefined; model: any; category: InventoryCategory; barcode: any; stockCode: undefined; supplier: any; unit: undefined; description: any; ... 21 more ...; lastUpdated: any; }[]' is not assignable to type 'InventoryItem[]'.
+  Type '{ id: string; name: string; brand: string | undefined; model: any; category: InventoryCategory; barcode: any; stockCode: undefined; supplier: any; unit: undefined; description: any; ... 21 more ...; lastUpdated: any; }' is not assignable to type 'InventoryItem'.
+    Types of property 'brand' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/components/invoices/ProductLinesSection.tsx(202,23): error TS2339: Property 'model' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(204,25): error TS2339: Property 'barcode' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(206,26): error TS2339: Property 'supplier' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(208,29): error TS2339: Property 'description' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(209,90): error TS2339: Property 'stock' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(210,32): error TS2339: Property 'totalInventory' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(211,31): error TS2551: Property 'usedInventory' does not exist on type 'ApiInventoryItem'. Did you mean 'inventory'?
+src/components/invoices/ProductLinesSection.tsx(212,25): error TS2339: Property 'onTrial' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(213,30): error TS2339: Property 'reorderLevel' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(214,34): error TS2339: Property 'availableSerials' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(217,32): error TS2339: Property 'vatRate' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(217,48): error TS2339: Property 'kdv' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(221,34): error TS2339: Property 'vatIncludedPrice' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(223,26): error TS2339: Property 'features' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(228,26): error TS2339: Property 'warranty' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(230,27): error TS2339: Property 'createdAt' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductLinesSection.tsx(231,56): error TS2339: Property 'createdAt' does not exist on type 'ApiInventoryItem'.
+src/components/invoices/ProductSearchModal.tsx(3,10): error TS2305: Module '"@/api/generated"' has no exported member 'inventoryGetInventoryItems'.
+src/components/layout/DebugRoleSwitcher.tsx(161,16): error TS2554: Expected 0 arguments, but got 1.
+src/components/layout/DebugTenantSwitcher.tsx(148,18): error TS2554: Expected 0 arguments, but got 1.
+src/components/modals/CollectionModal.tsx(2,10): error TS2305: Module '"@/api/generated"' has no exported member 'paymentsCreatePaymentRecord'.
+src/components/modals/CollectionModal.tsx(7,15): error TS2305: Module '"@/api/generated/schemas"' has no exported member 'PaymentRecord'.
+src/components/modals/CollectionModal.tsx(7,30): error TS2305: Module '"@/api/generated/schemas"' has no exported member 'Sale'.
+src/components/modals/PromissoryNotesModal.tsx(6,10): error TS2305: Module '"@/api/generated"' has no exported member 'paymentsGetSalePromissoryNotes'.
+src/components/patient/DeviceReplaceModal.tsx(16,3): error TS2305: Module '"@/api/generated"' has no exported member 'useReplacementsGetReplacement'.
+src/components/patient/DeviceReplaceModal.tsx(17,3): error TS2305: Module '"@/api/generated"' has no exported member 'useReplacementsCreateReturnInvoice'.
+src/components/patient/DeviceReplaceModal.tsx(21,8): error TS2307: Cannot find module '@/api/generated/return-invoices/return-invoices' or its corresponding type declarations.
+src/components/patients/modals/edit-sale-modal/components/SaleFormFields.tsx(14,15): error TS2305: Module '"@/api/generated/schemas"' has no exported member 'InventoryItem'.
+src/components/patients/modals/edit-sale-modal/hooks/useEditSale.ts(2,10): error TS2305: Module '"@/api/generated"' has no exported member 'inventoryGetInventoryItems'.
+src/components/patients/modals/edit-sale-modal/hooks/useEditSale.ts(2,38): error TS2305: Module '"@/api/generated"' has no exported member 'inventoryGetInventoryItem'.
+src/components/patients/modals/edit-sale-modal/hooks/useEditSale.ts(2,65): error TS2724: '"@/api/generated"' has no exported member named 'salesUpdateSale'. Did you mean 'SaleUpdate'?
+src/components/patients/modals/edit-sale-modal/hooks/useEditSale.ts(4,3): error TS2305: Module '"@/api/generated/schemas"' has no exported member 'InventoryItem'.
+src/components/patients/modals/edit-sale-modal/hooks/useEditSale.ts(5,3): error TS2305: Module '"@/api/generated/schemas"' has no exported member 'SalesUpdateSale1Body'.
+src/components/patients/modals/PaymentSummary.tsx(4,10): error TS2305: Module '"@/api/generated"' has no exported member 'paymentsGetSalePromissoryNotes'.
+src/components/patients/modals/PaymentSummary.tsx(5,15): error TS2305: Module '"@/api/generated/schemas"' has no exported member 'Sale'.
+src/components/patients/modals/ProformaModal.tsx(21,10): error TS2305: Module '"@/api/generated"' has no exported member 'proformasCreateProforma'.
+src/components/patients/modals/PromissoryNoteModal.tsx(5,10): error TS2305: Module '"@/api/generated/schemas"' has no exported member 'Sale'.
+src/components/patients/modals/ReturnExchangeModal.tsx(25,10): error TS2724: '"@/api/generated"' has no exported member named 'salesUpdateSale'. Did you mean 'SaleUpdate'?
+src/components/patients/modals/ReturnExchangeModal.tsx(26,15): error TS2305: Module '"@/api/generated/schemas"' has no exported member 'Sale'.
+src/components/patients/modals/ReturnExchangeModal.tsx(26,32): error TS2305: Module '"@/api/generated/schemas"' has no exported member 'SalesUpdateSale1Body'.
+src/components/patients/modals/ReturnExchangeModal.tsx(26,54): error TS2305: Module '"@/api/generated/schemas"' has no exported member 'InventoryItem'.
+src/components/patients/modals/SaleFormFields.tsx(8,10): error TS2305: Module '"@/api/generated/schemas"' has no exported member 'SaleStatus'.
+src/components/patients/modals/SaleItemRow.tsx(4,15): error TS2305: Module '"@/api/generated/schemas"' has no exported member 'InventoryItem'.
+src/components/patients/modals/SaleModal.tsx(14,10): error TS2305: Module '"@/api/generated"' has no exported member 'timelineAddTimelineEvent'.
+src/components/patients/modals/SaleModal.tsx(14,36): error TS2305: Module '"@/api/generated"' has no exported member 'timelineLogPatientActivity'.
+src/components/patients/PatientSalesTab.tsx(34,10): error TS2305: Module '"@/api/generated"' has no exported member 'patientsGetPatientSales'.
+src/components/PatientTabContent.stories.tsx(2,35): error TS2307: Cannot find module './PatientTabContent' or its corresponding type declarations.
+src/components/payments/PaymentTrackingModal.tsx(27,27): error TS2307: Cannot find module '@/api/generated/schemas/sale' or its corresponding type declarations.
+src/components/suppliers/supplier-search.types.ts(1,15): error TS2305: Module '"@/api/generated/schemas"' has no exported member 'Supplier'.
+src/hooks/usePatients.ts(256,67): error TS2345: Argument of type 'Omit<Patient, "id" | "updatedAt" | "createdAt">' is not assignable to parameter of type 'Partial<PatientRead>'.
+  Types of property 'address' are incompatible.
+    Type 'string | { street?: string | undefined; city?: string | undefined; district?: string | undefined; postalCode?: string | undefined; country?: string | undefined; full?: string | undefined; } | undefined' is not assignable to type 'PatientReadAddress | undefined'.
+      Type 'string' is not assignable to type 'PatientReadAddressAnyOf'.
+src/hooks/usePatients.ts(416,65): error TS2345: Argument of type 'Partial<Patient>' is not assignable to parameter of type 'Partial<PatientRead>'.
+  Types of property 'address' are incompatible.
+    Type 'string | { street?: string | undefined; city?: string | undefined; district?: string | undefined; postalCode?: string | undefined; country?: string | undefined; full?: string | undefined; } | undefined' is not assignable to type 'PatientReadAddress | undefined'.
+      Type 'string' is not assignable to type 'PatientReadAddressAnyOf'.
+src/pages/DesktopInventoryPage.tsx(13,10): error TS2305: Module '"@/api/generated"' has no exported member 'inventoryGetInventoryItems'.
+src/pages/DesktopInventoryPage.tsx(13,38): error TS2305: Module '"@/api/generated"' has no exported member 'inventoryDeleteInventoryItem'.
+src/pages/DesktopProfilePage.tsx(7,10): error TS2305: Module '"@/api/generated"' has no exported member 'useUsersUpdateMe'.
+src/pages/DesktopProfilePage.tsx(7,28): error TS2305: Module '"@/api/generated"' has no exported member 'useUsersChangePassword'.
+src/pages/DesktopProfilePage.tsx(7,52): error TS2305: Module '"@/api/generated"' has no exported member 'useUsersGetCurrentUser'.
+src/pages/DesktopSuppliersPage.tsx(43,5): error TS2353: Object literal may only specify known properties, and 'status' does not exist in type 'GetSuppliersApiSuppliersGetParams'.
+src/pages/inventory/components/SupplierAutocomplete.tsx(9,3): error TS2305: Module '"@/api/generated"' has no exported member 'useSuppliersGetSuppliers'.
+src/pages/inventory/components/SupplierAutocomplete.tsx(10,3): error TS2724: '"@/api/generated"' has no exported member named 'getSuppliersGetSuppliersQueryKey'. Did you mean 'getGetSuppliersApiSuppliersGetQueryKey'?
+src/pages/inventory/components/SupplierAutocomplete.tsx(11,3): error TS2305: Module '"@/api/generated"' has no exported member 'useSuppliersCreateSupplier'.
+src/pages/InventoryDetailPage.tsx(4,3): error TS2305: Module '"@/api/generated"' has no exported member 'inventoryGetInventoryItem'.
+src/pages/InventoryDetailPage.tsx(5,3): error TS2305: Module '"@/api/generated"' has no exported member 'inventoryDeleteInventoryItem'.
+src/pages/InventoryDetailPage.tsx(6,3): error TS2305: Module '"@/api/generated"' has no exported member 'inventoryUpdateInventoryItem'.
+src/pages/InventoryDetailPage.tsx(7,3): error TS2305: Module '"@/api/generated"' has no exported member 'inventoryAddSerialNumbers'.
+src/pages/PosPage.tsx(5,3): error TS2305: Module '"@/api/generated"' has no exported member 'usePaymentIntegrationsInitiatePaytrPayment'.
+src/pages/PosPage.tsx(6,3): error TS2305: Module '"@/api/generated"' has no exported member 'usePosCommissionGetInstallmentOptions'.
+src/pages/reports/ActivityLogs.tsx(12,5): error TS2724: '"@/api/generated"' has no exported member named 'useActivityLogsAdminGetActivityLogs'. Did you mean 'useGetActivityLogsApiActivityLogsGet'?
+src/pages/reports/ActivityLogs.tsx(13,5): error TS2305: Module '"@/api/generated"' has no exported member 'useActivityLogsGetFilterOptions'.
+src/pages/settings/Integration.tsx(3,10): error TS2305: Module '"@/api/generated"' has no exported member 'useSmsGetConfig'.
+src/pages/settings/Integration.tsx(3,27): error TS2305: Module '"@/api/generated"' has no exported member 'useSmsGetHeaders'.
+src/pages/settings/Integration.tsx(3,45): error TS2305: Module '"@/api/generated"' has no exported member 'useSmsIntegrationGetSmsCredit'.
+src/pages/settings/PosSettings.tsx(5,3): error TS2305: Module '"@/api/generated"' has no exported member 'usePaymentIntegrationsUpdatePaytrConfig'.
+src/pages/settings/PosSettings.tsx(6,3): error TS2305: Module '"@/api/generated"' has no exported member 'usePaymentIntegrationsGetPaytrConfig'.
+src/pages/settings/Subscription.tsx(5,5): error TS2305: Module '"@/api/generated"' has no exported member 'useAddonsGetAddons'.
+src/pages/settings/Subscription.tsx(6,5): error TS2305: Module '"@/api/generated"' has no exported member 'useSmsIntegrationGetSmsCredit'.
+src/pages/settings/Subscription.tsx(7,5): error TS2305: Module '"@/api/generated"' has no exported member 'useSmsIntegrationGetSmsPackages'.
+src/pages/settings/Subscription.tsx(8,5): error TS2305: Module '"@/api/generated"' has no exported member 'useSubscriptionsGetCurrent'.
+src/pages/settings/TeamMembersTab.tsx(4,10): error TS2305: Module '"@/api/generated"' has no exported member 'usersListUsers'.
+src/pages/settings/TeamMembersTab.tsx(4,26): error TS2724: '"@/api/generated"' has no exported member named 'usersCreateUser'. Did you mean 'UserCreate'?
+src/pages/settings/TeamMembersTab.tsx(4,43): error TS2305: Module '"@/api/generated"' has no exported member 'usersDeleteUser'.
+src/pages/settings/TeamMembersTab.tsx(4,60): error TS2305: Module '"@/api/generated"' has no exported member 'useUsersUpdateUser'.
+src/pages/SupplierDetailPage.tsx(5,61): error TS2305: Module '"../hooks/useSuppliers"' has no exported member 'useSupplierProducts'.

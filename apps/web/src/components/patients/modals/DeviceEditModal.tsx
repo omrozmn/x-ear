@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import { X, Settings, RefreshCw, DollarSign, Shield, CreditCard } from 'lucide-react';
-import type { Device, InventoryItem } from '@/api/generated/schemas';
-import { inventoryGetInventoryItems } from '@/api/generated';
+import type { DeviceRead, InventoryItemCreate } from '@/api/generated/schemas';
+import { getAllInventory } from '@/api/generated';
+
+// Type aliases for backward compatibility
+type Device = DeviceRead;
+// Flexible InventoryItem type that accepts any object with common inventory fields
+type InventoryItem = {
+  id?: string;
+  name?: string;
+  brand?: string;
+  model?: string;
+  category?: string;
+  price?: number;
+  availableInventory?: number;
+  availableSerials?: string[];
+  [key: string]: any;
+};
 
 interface DeviceEditModalProps {
   isOpen: boolean;
@@ -85,7 +100,7 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
     const timer = setTimeout(async () => {
       if (loanerSearch.length >= 2) {
         try {
-          const response = await inventoryGetInventoryItems({ search: loanerSearch });
+          const response = await getAllInventory({ search: loanerSearch });
           const result = (response as any).data || response;
 
           if (result.success) {
@@ -277,7 +292,7 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
       if (formData.replaceMode === 'inventory' && formData.inventoryId) {
         const selectedItem = inventoryItems.find(item => item.id === formData.inventoryId);
         if (selectedItem) {
-          const replacementDevice: Partial<Device> = {
+          const replacementDevice: any = {
             id: device.id,
             inventoryId: selectedItem.id,
             brand: selectedItem.brand,
@@ -289,7 +304,7 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
           await onReplace(device.id!, replacementDevice);
         }
       } else {
-        const replacementDevice: Partial<Device> = {
+        const replacementDevice: any = {
           id: device.id,
           brand: formData.brand,
           model: formData.model,

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import {
     useGetAdminSuppliers,
-    usePostAdminSuppliers,
-    usePutAdminSuppliersId,
-    useDeleteAdminSuppliersId
-} from '@/lib/api/suppliers/suppliers';
-import {
-    Supplier,
-    SupplierInput
-} from '@/lib/api/index.schemas';
+    useCreateAdminSupplier,
+    useUpdateAdminSupplier,
+    useDeleteAdminSupplier,
+    SupplierRead,
+    SupplierCreate
+} from '@/lib/api-client';
+
+// Local type aliases
+type Supplier = SupplierRead;
+type SupplierInput = SupplierCreate;
 import {
     PlusIcon,
     MagnifyingGlassIcon,
@@ -38,7 +40,7 @@ const AdminSuppliersPage: React.FC = () => {
     });
 
     // Mutations
-    const createMutation = usePostAdminSuppliers({
+    const createMutation = useCreateAdminSupplier({
         mutation: {
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['/admin/suppliers'] });
@@ -51,7 +53,7 @@ const AdminSuppliersPage: React.FC = () => {
         }
     });
 
-    const updateMutation = usePutAdminSuppliersId({
+    const updateMutation = useUpdateAdminSupplier({
         mutation: {
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['/admin/suppliers'] });
@@ -64,7 +66,7 @@ const AdminSuppliersPage: React.FC = () => {
         }
     });
 
-    const deleteMutation = useDeleteAdminSuppliersId({
+    const deleteMutation = useDeleteAdminSupplier({
         mutation: {
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['/admin/suppliers'] });
@@ -88,12 +90,12 @@ const AdminSuppliersPage: React.FC = () => {
 
     const handleDelete = async (id: number) => {
         if (window.confirm('Bu tedarikçiyi silmek istediğinizden emin misiniz?')) {
-            deleteMutation.mutate({ id });
+            deleteMutation.mutate({ supplierId: id });
         }
     };
 
-    const suppliers = suppliersData?.data?.suppliers || [];
-    const pagination = suppliersData?.data?.pagination;
+    const suppliers = (suppliersData as any)?.data?.suppliers || [];
+    const pagination = (suppliersData as any)?.data?.pagination;
 
     return (
         <div className="space-y-6">
@@ -164,11 +166,11 @@ const AdminSuppliersPage: React.FC = () => {
                                     suppliers.map((supplier) => (
                                         <tr key={supplier.id}>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">{supplier.company_name}</div>
-                                                <div className="text-sm text-gray-500">{supplier.tax_id ? `VN: ${supplier.tax_id}` : ''}</div>
+                                                <div className="text-sm font-medium text-gray-900">{(supplier as any).companyName}</div>
+                                                <div className="text-sm text-gray-500">{(supplier as any).taxId ? `VN: ${(supplier as any).taxId}` : ''}</div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {supplier.contact_name || '-'}
+                                                {(supplier as any).contactName || '-'}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 <div>{supplier.email}</div>
@@ -256,7 +258,7 @@ const AdminSuppliersPage: React.FC = () => {
                     initialData={editingSupplier}
                     onSubmit={(data) => {
                         if (editingSupplier) {
-                            updateMutation.mutate({ id: editingSupplier.id!, data });
+                            updateMutation.mutate({ supplierId: parseInt(editingSupplier.id!), data });
                         } else {
                             createMutation.mutate({ data });
                         }
@@ -283,15 +285,15 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
     onSubmit,
     isLoading
 }) => {
-    const [formData, setFormData] = useState<SupplierInput>({
-        company_name: initialData?.company_name || '',
-        contact_name: initialData?.contact_name || '',
+    const [formData, setFormData] = useState<any>({
+        companyName: (initialData as any)?.companyName || '',
+        contactName: (initialData as any)?.contactName || '',
         email: initialData?.email || '',
         phone: initialData?.phone || '',
         address: initialData?.address || '',
-        tax_id: initialData?.tax_id || '',
-        tax_office: initialData?.tax_office || '',
-        status: (initialData?.status as 'active' | 'inactive') || 'active'
+        taxId: (initialData as any)?.taxId || '',
+        taxOffice: (initialData as any)?.taxOffice || '',
+        status: (initialData as any)?.status || 'active'
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -320,8 +322,8 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                             <input
                                 type="text"
                                 required
-                                value={formData.company_name}
-                                onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                                value={formData.companyName}
+                                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                             />
                         </div>
@@ -329,8 +331,8 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                             <label className="block text-sm font-medium text-gray-700">İletişim Kişisi</label>
                             <input
                                 type="text"
-                                value={formData.contact_name}
-                                onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
+                                value={formData.contactName || ''}
+                                onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                             />
                         </div>
@@ -341,7 +343,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                             <label className="block text-sm font-medium text-gray-700">E-posta</label>
                             <input
                                 type="email"
-                                value={formData.email}
+                                value={formData.email || ''}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                             />
@@ -350,7 +352,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                             <label className="block text-sm font-medium text-gray-700">Telefon</label>
                             <input
                                 type="text"
-                                value={formData.phone}
+                                value={formData.phone || ''}
                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                             />
@@ -361,7 +363,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                         <label className="block text-sm font-medium text-gray-700">Adres</label>
                         <textarea
                             rows={3}
-                            value={formData.address}
+                            value={formData.address || ''}
                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         />
@@ -372,8 +374,8 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                             <label className="block text-sm font-medium text-gray-700">Vergi No</label>
                             <input
                                 type="text"
-                                value={formData.tax_id}
-                                onChange={(e) => setFormData({ ...formData, tax_id: e.target.value })}
+                                value={formData.taxId || ''}
+                                onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                             />
                         </div>
@@ -381,8 +383,8 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                             <label className="block text-sm font-medium text-gray-700">Vergi Dairesi</label>
                             <input
                                 type="text"
-                                value={formData.tax_office}
-                                onChange={(e) => setFormData({ ...formData, tax_office: e.target.value })}
+                                value={formData.taxOffice || ''}
+                                onChange={(e) => setFormData({ ...formData, taxOffice: e.target.value })}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                             />
                         </div>
@@ -391,8 +393,8 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Durum</label>
                         <select
-                            value={formData.status}
-                            onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })}
+                            value={formData.status || 'active'}
+                            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         >
                             <option value="active">Aktif</option>

@@ -38,7 +38,7 @@ export default function AdminDashboardPage() {
         }
     });
 
-    const metrics = (dashboardData as any)?.metrics || dashboardData?.data?.metrics;
+    const metrics = (dashboardData as any)?.data?.metrics || (dashboardData as any)?.metrics;
     const loading = metricsLoading;
     const errorMessage = metricsError ? (metricsError as any).response?.data?.error?.message || (metricsError as any).message || 'Sunucuyla bağlantı kurulamadı' : null;
 

@@ -1,8 +1,8 @@
-import { inventoryUpdateInventoryItem } from '@/api/generated';
-import type { InventoryItem } from '@/api/generated/schemas';
+import { updateInventory } from '@/api/generated';
+import type { InventoryItemUpdate } from '@/api/generated/schemas';
 
-export async function updateInventoryItem(itemId: string, payload: Partial<InventoryItem>) {
-  return inventoryUpdateInventoryItem(itemId, payload as any);
+export async function updateInventoryItem(itemId: string, payload: Partial<InventoryItemUpdate>) {
+  return updateInventory(itemId, payload as InventoryItemUpdate);
 }
 
 export default { updateInventoryItem };

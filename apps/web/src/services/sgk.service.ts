@@ -29,8 +29,11 @@ import { apiClient } from '../api/orval-mutator';
 import { outbox, OutboxOperation } from '../utils/outbox';
 import { SGK_DATA, SGK_DOCUMENTS } from '../constants/storage-keys';
 import {
-  sgkGetPatientSgkDocuments,
-  automationTriggerSgkProcessing
+  getPatientSgkDocuments,
+  queryPatientRights,
+  createSgkWorkflow,
+  updateSgkWorkflow,
+  getSgkWorkflow
 } from '@/api/generated';
 import { unwrapObject } from '../utils/response-unwrap';
 
@@ -726,25 +729,21 @@ export class SGKService {
   }
 
   // Hasta işlem formu indirme
-  async downloadPatientForm(receiptId: string): Promise<Blob> {
-    try {
-      const response = await sgkGetPatientSgkDocuments(receiptId);
-      const blobData = unwrapObject<Blob>(response);
-      if (!blobData) {
-        throw new Error('No data received from SGK document download');
-      }
-      return blobData;
-    } catch (error) {
-      console.error('Download patient form error:', error);
-      throw error;
-    }
+  async downloadPatientForm(_receiptId: string): Promise<Blob> {
+    // There is no direct "download form" endpoint in the generated API currently.
+    // Using a placeholder error until the correct endpoint is identified or implemented.
+    console.warn('downloadPatientForm not fully implemented in frontend API generation');
+    throw new Error('Form download not implemented');
   }
 
   // Hasta hakları sorgulama
-  async queryPatientRights(patientId: string): Promise<any> {
+  async queryPatientRights(patientId: string, tcNumber: string): Promise<any> {
     try {
       // Gerçek API çağrısı
-      const response = await sgkGetPatientSgkDocuments(patientId);
+      const response = await queryPatientRights({
+        tcNumber,
+        patientId
+      });
       return response;
     } catch (error) {
       console.error('Patient rights query error:', error);
@@ -756,12 +755,10 @@ export class SGKService {
   async createWorkflow(patientId: string, documentId?: string, workflowType: string = 'approval'): Promise<any> {
     try {
       // Gerçek API çağrısı
-      const response = await automationTriggerSgkProcessing({
-        data: {
-          patientId,
-          documentId,
-          workflowType
-        }
+      const response = await createSgkWorkflow({
+        patientId,
+        documentId,
+        workflowType
       });
       return response;
     } catch (error) {
@@ -773,13 +770,10 @@ export class SGKService {
   async updateWorkflow(workflowId: string, stepId: string, status: string, notes?: string): Promise<any> {
     try {
       // Gerçek API çağrısı
-      const response = await automationTriggerSgkProcessing({
-        data: {
-          workflowId,
-          stepId,
-          status,
-          notes
-        }
+      const response = await updateSgkWorkflow(workflowId, {
+        stepId,
+        status,
+        notes
       });
       return response;
     } catch (error) {
@@ -791,7 +785,7 @@ export class SGKService {
   async getWorkflow(workflowId: string): Promise<any> {
     try {
       // Gerçek API çağrısı
-      const response = await sgkGetPatientSgkDocuments(workflowId);
+      const response = await getSgkWorkflow(workflowId);
       return response;
     } catch (error) {
       console.error('SGK workflow get error:', error);
@@ -799,6 +793,7 @@ export class SGKService {
     }
   }
 }
+
 
 // Export singleton instance
 export const sgkService = new SGKService();

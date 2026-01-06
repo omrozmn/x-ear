@@ -1,24 +1,19 @@
-# Python Requirements for Backend Service
+# Python Requirements for Backend Service - FastAPI Only (No Flask)
 gunicorn
-Flask
 scikit-learn
 PaddleOCR==2.7.3
 paddlepaddle==3.1.1
-Flask-Cors
 opencv-python-headless<4.8
 numpy<2
 spacy
 
-# Database support
-Flask-SQLAlchemy
-SQLAlchemy
-alembic
-Flask-Migrate
+# Database support - Pure SQLAlchemy
+SQLAlchemy>=2.0.0
+alembic>=1.13.0
 psycopg[binary]
 
-# Authentication
-Flask-JWT-Extended
-Flask-Mail
+# Authentication - PyJWT (no Flask-JWT-Extended)
+PyJWT>=2.8.0
 
 # HTTP requests
 requests
@@ -64,9 +59,13 @@ pandas
 openpyxl
 boto3
 
-# FastAPI Migration
+# FastAPI Stack
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
 python-multipart>=0.0.9
 pydantic>=2.6.0
 pydantic-settings>=2.1.0
+
+# Email support (no Flask-Mail)
+aiosmtplib>=3.0.0
+email-validator>=2.1.0

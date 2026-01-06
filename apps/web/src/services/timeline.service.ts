@@ -1,5 +1,5 @@
-import { timelineAddTimelineEvent } from '@/api/generated';
-import { TimelineAddTimelineEventBody } from '../generated/orval-types';
+import { addTimelineEvent as addTimelineEventApi } from '@/api/generated/timeline/timeline';
+import type { TimelineEventCreate } from '@/api/generated/schemas';
 import { outbox } from '../utils/outbox';
 
 export interface TimelineEventData {
@@ -37,7 +37,7 @@ class TimelineService {
   async addTimelineEvent(patientId: string, eventData: TimelineEventData): Promise<TimelineServiceResponse> {
     try {
       // Prepare the request body according to the API schema
-      const requestBody: TimelineAddTimelineEventBody = {
+      const requestBody: TimelineEventCreate = {
         type: eventData.type,
         title: eventData.title,
         description: eventData.description,
@@ -53,11 +53,11 @@ class TimelineService {
 
       // Try to make the API call
       try {
-        const response = await timelineAddTimelineEvent(patientId, requestBody);
+        const response = await addTimelineEventApi(patientId, requestBody);
 
         return {
           success: true,
-          data: response.data,
+          data: response,
           timestamp: new Date().toISOString()
         };
       } catch (apiError) {

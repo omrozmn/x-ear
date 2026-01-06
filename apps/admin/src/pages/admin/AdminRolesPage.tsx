@@ -49,9 +49,9 @@ const AdminRolesPage: React.FC = () => {
             await createRoleMutation.mutateAsync({
                 data: {
                     name: roleName,
-                    description: roleDescription,
-                    permissions: [] // Permissions are handled separately or could be added here
-                }
+                    description: roleDescription
+                    // Note: permissions are handled separately via updateRolePermissions
+                } as any
             });
             toast.success('Rol oluşturuldu');
             setIsCreateModalOpen(false);
@@ -67,7 +67,7 @@ const AdminRolesPage: React.FC = () => {
         if (!confirm('Bu rolü silmek istediğinize emin misiniz?')) return;
 
         try {
-            await deleteRoleMutation.mutateAsync({ id: roleId });
+            await deleteRoleMutation.mutateAsync({ roleId: roleId });
             toast.success('Rol silindi');
             refetch();
         } catch (error: any) {
@@ -86,8 +86,8 @@ const AdminRolesPage: React.FC = () => {
 
         try {
             await updatePermissionsMutation.mutateAsync({
-                id: selectedRole.id,
-                permissions: selectedPermissions
+                roleName: selectedRole.name,
+                data: { permissions: selectedPermissions }
             });
             toast.success('İzinler güncellendi');
             setIsPermissionModalOpen(false);

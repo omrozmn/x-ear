@@ -1,19 +1,48 @@
-from flask import Flask, request, jsonify
-app = Flask('mock_birfatura')
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+import uvicorn
 
-@app.route('/api/outEBelgeV2/SendDocument', methods=['POST'])
-def send_document():
-    data = request.get_json() or {}
-    # Echo headers for diagnostics so the caller can verify forwarded headers
-    return jsonify({'Success': True, 'Message': 'Mock SendDocument received', 'Received': data, 'Headers': dict(request.headers)}), 200
+app = FastAPI(title="mock_birfatura")
 
-@app.route('/api/outEBelgeV2/SendBasicInvoiceFromModel', methods=['POST'])
-def send_basic_invoice():
-    data = request.get_json() or {}
-    # Minimal validation
+
+@app.post('/api/outEBelgeV2/SendDocument')
+async def send_document(request: Request):
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
+    return JSONResponse(
+        {
+            'Success': True,
+            'Message': 'Mock SendDocument received',
+            'Received': data,
+            'Headers': dict(request.headers),
+        },
+        status_code=200,
+    )
+
+
+@app.post('/api/outEBelgeV2/SendBasicInvoiceFromModel')
+async def send_basic_invoice(request: Request):
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
     if not data.get('invoiceNumber') and not data.get('items'):
-        return jsonify({'Success': False, 'Message': 'Missing invoiceNumber or items'}), 400
-    return jsonify({'Success': True, 'Message': 'Mock SendBasicInvoiceFromModel ok', 'data': {'providerId': 'mock-12345'}, 'Headers': dict(request.headers)}), 200
+        return JSONResponse({'Success': False, 'Message': 'Missing invoiceNumber or items'}, status_code=400)
+
+    return JSONResponse(
+        {
+            'Success': True,
+            'Message': 'Mock SendBasicInvoiceFromModel ok',
+            'data': {'providerId': 'mock-12345'},
+            'Headers': dict(request.headers),
+        },
+        status_code=200,
+    )
+
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5010)
+    uvicorn.run(app, host='127.0.0.1', port=5010)

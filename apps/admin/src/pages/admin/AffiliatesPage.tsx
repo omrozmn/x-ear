@@ -7,7 +7,7 @@ import { PlusIcon } from 'lucide-react';
 
 const AffiliatesPage: React.FC = () => {
   const { data: affiliatesData, isLoading, error, refetch } = useListAffiliates();
-  const [selectedAffiliateId, setSelectedAffiliateId] = useState<number | null>(null);
+  const [selectedAffiliateId, setSelectedAffiliateId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Backend returns array directly, not wrapped
@@ -56,18 +56,18 @@ const AffiliatesPage: React.FC = () => {
                   onClick={() => setSelectedAffiliateId(a.id)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-indigo-600">
-                    {a.display_id || a.id}
+                    {a.id}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{a.account_holder_name || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{a.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{a.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.phone_number || '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.phone ? String(a.phone) : '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.iban || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${a.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                      {a.is_active ? 'Evet' : 'Hayır'}
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${a.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      {a.isActive ? 'Evet' : 'Hayır'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.created_at ? new Date(a.created_at).toLocaleDateString('tr-TR') : '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{a.createdAt ? new Date(a.createdAt).toLocaleDateString('tr-TR') : '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <button
                       onClick={(e) => {

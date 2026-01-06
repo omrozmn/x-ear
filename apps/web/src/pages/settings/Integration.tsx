@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Loader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink } from 'lucide-react';
-import { useSmsGetConfig, useSmsGetHeaders, useSmsIntegrationGetSmsCredit } from '@/api/generated';
+import {
+    useGetSmsConfigApiSmsConfigGet,
+    useListSmsHeadersApiSmsHeadersGet,
+    useGetSmsCreditApiSmsCreditGet,
+    useUploadSmsDocumentApiSmsDocumentsUploadPost,
+    useDeleteSmsDocumentApiSmsDocumentsDocumentTypeDelete,
+    useSubmitSmsDocumentsApiSmsDocumentsSubmitPost,
+    useRequestSmsHeaderApiSmsHeadersPost
+} from '@/api/generated';
 import { Button, useToastHelpers } from '@x-ear/ui-web';
 import * as Tabs from '@radix-ui/react-tabs';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -35,9 +43,14 @@ export default function IntegrationSettings() {
     const uploadInputsRef = useRef<Record<string, HTMLInputElement | null>>({});
     const { token } = useAuthStore();
 
-    const { data: configData, isLoading: configLoading, refetch: refetchConfig } = useSmsGetConfig({ query: { enabled: !!token } });
-    const { data: creditData } = useSmsIntegrationGetSmsCredit({ query: { enabled: !!token } });
-    const { data: headersData, refetch: refetchHeaders } = useSmsGetHeaders({ query: { enabled: !!token } });
+    const { data: configData, isLoading: configLoading, refetch: refetchConfig } = useGetSmsConfigApiSmsConfigGet({ query: { enabled: !!token } });
+    const { data: creditData } = useGetSmsCreditApiSmsCreditGet({ query: { enabled: !!token } });
+    const { data: headersData, refetch: refetchHeaders } = useListSmsHeadersApiSmsHeadersGet({ query: { enabled: !!token } });
+
+    const { mutateAsync: uploadDocument } = useUploadSmsDocumentApiSmsDocumentsUploadPost();
+    const { mutateAsync: deleteDocument } = useDeleteSmsDocumentApiSmsDocumentsDocumentTypeDelete();
+    const { mutateAsync: submitDocuments } = useSubmitSmsDocumentsApiSmsDocumentsSubmitPost();
+    const { mutateAsync: requestHeader } = useRequestSmsHeaderApiSmsHeadersPost();
 
     const [isUploading, setIsUploading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -70,10 +83,7 @@ export default function IntegrationSettings() {
         if (!canUpload(docType)) return;
         setIsUploading(true);
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('documentType', docType);
-            await customInstance({ url: '/api/sms/documents/upload', method: 'POST', data: formData, headers: { 'Content-Type': 'multipart/form-data' } });
+            await uploadDocument({ data: { file }, params: { document_type: docType } });
             showSuccessToast('Belge yüklendi');
             refetchConfig();
         } catch (error: any) {
@@ -88,7 +98,7 @@ export default function IntegrationSettings() {
         setDeleteConfirmDoc(null);
         setIsDeleting(true);
         try {
-            await customInstance({ url: `/api/sms/documents/${docType}`, method: 'DELETE' });
+            await deleteDocument({ documentType: docType });
             showSuccessToast('Belge silindi');
             refetchConfig();
         } catch (error: any) {
@@ -119,7 +129,7 @@ export default function IntegrationSettings() {
         if (!allDocsUploaded) return;
         setIsSubmitting(true);
         try {
-            await customInstance({ url: '/api/sms/documents/submit', method: 'POST' });
+            await submitDocuments({ data: {} as any }); // Schema requires body but it might be empty
             showSuccessToast('Belgeler gönderildi');
             setDocumentsSubmitted(true);
             refetchConfig();
@@ -135,9 +145,18 @@ export default function IntegrationSettings() {
         if (!newHeader) return showErrorToast('Başlık giriniz');
         if (newHeader.length > 11) return showErrorToast('Başlık en fazla 11 karakter olabilir');
         try {
-            const documents: Array<{ type: string; filename: string }> = [];
-            if (headerDocument) documents.push({ type: newHeaderType, filename: headerDocument.name });
-            await customInstance({ url: '/api/sms/headers', method: 'POST', data: { headerText: newHeader, headerType: newHeaderType, documents } });
+            // Note: The generated API expects documents as strings (filenames).
+            const documents: string[] = [];
+            if (headerDocument) documents.push(headerDocument.name);
+
+            await requestHeader({
+                data: {
+                    headerText: newHeader,
+                    headerType: newHeaderType as any,
+                    documents
+                }
+            });
+
             showSuccessToast('Başlık talebi oluşturuldu');
             setNewHeader('');
             setNewHeaderType('company_title');

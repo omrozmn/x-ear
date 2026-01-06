@@ -10,11 +10,14 @@ import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 
-from dependencies import get_db, get_current_context, AccessContext
 from schemas.base import ResponseEnvelope, ApiError
-from models.base import db
+from schemas.suppliers import SupplierCreate as SupplierCreateSchema
+from schemas.suppliers import SupplierRead, SupplierUpdate as SupplierUpdateSchema
+
 from models.suppliers import Supplier, ProductSupplier
 from models.tenant import Tenant
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -22,19 +25,19 @@ router = APIRouter(tags=["Suppliers"])
 
 # --- Helper Functions ---
 
-def tenant_scoped_query(ctx: AccessContext, model):
+def tenant_scoped_query(access: UnifiedAccess, model, session: Session):
     """Apply tenant scoping to query"""
-    query = model.query
-    if ctx.tenant_id:
-        query = query.filter_by(tenant_id=ctx.tenant_id)
+    query = session.query(model)
+    if access.tenant_id:
+        query = query.filter_by(tenant_id=access.tenant_id)
     return query
 
-def get_or_404_scoped(ctx: AccessContext, model, record_id):
+def get_or_404_scoped(session: Session, access: UnifiedAccess, model, record_id):
     """Get record with tenant scoping or raise 404"""
-    record = db.session.get(model, record_id)
+    record = session.get(model, record_id)
     if not record:
         return None
-    if ctx.tenant_id and hasattr(record, 'tenant_id') and record.tenant_id != ctx.tenant_id:
+    if access.tenant_id and hasattr(record, 'tenant_id') and record.tenant_id != access.tenant_id:
         return None
     return record
 
@@ -85,7 +88,7 @@ class SupplierUpdate(BaseModel):
 
 # --- Routes ---
 
-@router.get("/suppliers")
+@router.get("/suppliers", response_model=ResponseEnvelope[List[SupplierRead]])
 def get_suppliers(
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
@@ -94,12 +97,12 @@ def get_suppliers(
     city: Optional[str] = None,
     sort_by: str = "company_name",
     sort_order: str = "asc",
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get all suppliers with filtering and pagination"""
     try:
-        query = tenant_scoped_query(ctx, Supplier)
+        query = tenant_scoped_query(access, Supplier, db_session)
         
         if is_active is not None:
             query = query.filter(Supplier.is_active == is_active)
@@ -147,7 +150,7 @@ def get_suppliers(
 def search_suppliers(
     q: str = Query("", min_length=0),
     limit: int = Query(10, ge=1, le=50),
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Fast supplier search for autocomplete"""
@@ -156,7 +159,7 @@ def search_suppliers(
             return ResponseEnvelope(data={"suppliers": []})
         
         search_term = f'%{q}%'
-        query = tenant_scoped_query(ctx, Supplier).filter(
+        query = tenant_scoped_query(access, Supplier, db_session).filter(
             Supplier.is_active == True,
             or_(
                 Supplier.company_name.ilike(search_term),
@@ -174,26 +177,26 @@ def search_suppliers(
 
 @router.get("/suppliers/stats")
 def get_supplier_stats(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get supplier statistics"""
     try:
-        base_query = tenant_scoped_query(ctx, Supplier)
+        base_query = tenant_scoped_query(access, Supplier, db_session)
         
         total_suppliers = base_query.count()
         active_suppliers = base_query.filter_by(is_active=True).count()
         inactive_suppliers = total_suppliers - active_suppliers
         
         # Total product relationships
-        if ctx.tenant_id:
+        if access.tenant_id:
             supplier_ids = [s.id for s in base_query.all()]
-            total_relationships = ProductSupplier.query.filter(
+            total_relationships = db_session.query(ProductSupplier).filter(
                 ProductSupplier.supplier_id.in_(supplier_ids),
                 ProductSupplier.is_active == True
             ).count() if supplier_ids else 0
         else:
-            total_relationships = ProductSupplier.query.filter_by(is_active=True).count()
+            total_relationships = db_session.query(ProductSupplier).filter_by(is_active=True).count()
         
         # Average rating
         avg_rating_result = base_query.filter(
@@ -216,15 +219,15 @@ def get_supplier_stats(
         logger.error(f"Get supplier stats error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/suppliers/{supplier_id}")
+@router.get("/suppliers/{supplier_id}", response_model=ResponseEnvelope[SupplierRead])
 def get_supplier(
     supplier_id: int,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get a single supplier by ID"""
     try:
-        supplier = get_or_404_scoped(ctx, Supplier, supplier_id)
+        supplier = get_or_404_scoped(db_session, access, Supplier, supplier_id)
         if not supplier:
             raise HTTPException(
                 status_code=404,
@@ -245,30 +248,30 @@ def get_supplier(
         logger.error(f"Get supplier error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/suppliers", status_code=201)
+@router.post("/suppliers", status_code=201, response_model=ResponseEnvelope[SupplierRead])
 def create_supplier(
-    supplier_in: SupplierCreate,
-    ctx: AccessContext = Depends(get_current_context),
+    supplier_in: SupplierCreateSchema,
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Create a new supplier"""
     try:
-        tenant_id = ctx.tenant_id or supplier_in.tenant_id
+        access.tenant_id = access.tenant_id or supplier_in.tenant_id
         
-        if not tenant_id:
-            tenant = Tenant.query.first()
+        if not access.tenant_id:
+            tenant = db_session.query(Tenant).first()
             if tenant:
-                tenant_id = tenant.id
+                access.tenant_id = tenant.id
         
-        if not tenant_id:
+        if not access.tenant_id:
             raise HTTPException(
                 status_code=400,
-                detail=ApiError(message="tenant_id is required", code="TENANT_REQUIRED").model_dump(mode="json")
+                detail=ApiError(message="access.tenant_id is required", code="TENANT_REQUIRED").model_dump(mode="json")
             )
         
         # Check for duplicate
-        existing = Supplier.query.filter_by(
-            tenant_id=tenant_id,
+        existing = db_session.query(Supplier).filter_by(
+            tenant_id=access.tenant_id,
             company_name=supplier_in.company_name
         ).first()
         if existing:
@@ -277,14 +280,14 @@ def create_supplier(
                 detail=ApiError(message="Supplier with this company name already exists", code="DUPLICATE").model_dump(mode="json")
             )
         
-        data = supplier_in.model_dump(by_alias=False, exclude={'tenant_id'})
-        supplier = Supplier(tenant_id=tenant_id, **data)
+        data = supplier_in.model_dump(by_alias=False)
+        supplier = Supplier(tenant_id=access.tenant_id, **data)
         
         db_session.add(supplier)
         db_session.commit()
         
         logger.info(f"Supplier created: {supplier.id}")
-        return ResponseEnvelope(data=supplier.to_dict())
+        return ResponseEnvelope(data=supplier)
     except HTTPException:
         raise
     except Exception as e:
@@ -292,16 +295,16 @@ def create_supplier(
         logger.error(f"Create supplier error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/suppliers/{supplier_id}")
+@router.put("/suppliers/{supplier_id}", response_model=ResponseEnvelope[SupplierRead])
 def update_supplier(
     supplier_id: int,
-    supplier_in: SupplierUpdate,
-    ctx: AccessContext = Depends(get_current_context),
+    supplier_in: SupplierUpdateSchema,
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Update an existing supplier"""
     try:
-        supplier = get_or_404_scoped(ctx, Supplier, supplier_id)
+        supplier = get_or_404_scoped(db_session, access, Supplier, supplier_id)
         if not supplier:
             raise HTTPException(
                 status_code=404,
@@ -312,7 +315,7 @@ def update_supplier(
         
         # Check for duplicate name
         if 'company_name' in data and data['company_name'] != supplier.company_name:
-            existing = Supplier.query.filter_by(
+            existing = db_session.query(Supplier).filter_by(
                 tenant_id=supplier.tenant_id,
                 company_name=data['company_name']
             ).first()
@@ -329,7 +332,7 @@ def update_supplier(
         db_session.commit()
         
         logger.info(f"Supplier updated: {supplier.id}")
-        return ResponseEnvelope(data=supplier.to_dict())
+        return ResponseEnvelope(data=supplier)
     except HTTPException:
         raise
     except Exception as e:
@@ -337,15 +340,15 @@ def update_supplier(
         logger.error(f"Update supplier error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/suppliers/{supplier_id}")
+@router.delete("/suppliers/{supplier_id}", response_model=ResponseEnvelope[None])
 def delete_supplier(
     supplier_id: int,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Delete a supplier (soft delete)"""
     try:
-        supplier = get_or_404_scoped(ctx, Supplier, supplier_id)
+        supplier = get_or_404_scoped(db_session, access, Supplier, supplier_id)
         if not supplier:
             raise HTTPException(
                 status_code=404,

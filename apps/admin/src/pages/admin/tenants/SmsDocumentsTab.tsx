@@ -5,8 +5,8 @@ import * as Dialog from '@radix-ui/react-dialog';
 import toast from 'react-hot-toast';
 import {
     useGetTenantSmsDocuments,
-    useUpdateSmsDocumentStatus,
-    useSendSmsDocumentsEmail
+    useUpdateAdminTenantSmsDocumentStatus,
+    useSendAdminTenantSmsDocumentsEmail
 } from '@/lib/api-client';
 import { adminApi } from '@/lib/apiMutator';
 
@@ -32,18 +32,18 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
         query: { enabled: !!tenantId }
     });
 
-    const { mutateAsync: updateStatus } = useUpdateSmsDocumentStatus();
-    const { mutateAsync: sendEmail } = useSendSmsDocumentsEmail();
+    const { mutateAsync: updateStatus } = useUpdateAdminTenantSmsDocumentStatus();
+    const { mutateAsync: sendEmail } = useSendAdminTenantSmsDocumentsEmail();
 
-    const documents = documentsData?.data?.documents || [];
-    const documentsSubmitted = documentsData?.data?.documentsSubmitted || false;
-    const allDocumentsApproved = documentsData?.data?.allDocumentsApproved || false;
+    const documents = (documentsData as any)?.data?.documents || [];
+    const documentsSubmitted = (documentsData as any)?.data?.documentsSubmitted || false;
+    const allDocumentsApproved = (documentsData as any)?.data?.allDocumentsApproved || false;
 
     const handleApprove = async (docType: string) => {
         setActionLoading(docType);
         try {
             await updateStatus({
-                id: tenantId,
+                tenantId,
                 documentType: docType,
                 data: { status: 'approved' }
             });
@@ -62,9 +62,9 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
         setActionLoading(docType);
         try {
             await updateStatus({
-                id: tenantId,
+                tenantId,
                 documentType: docType,
-                data: { status: 'revision_requested', note: note || '' }
+                data: { status: 'revision_requested', notes: note || '' }
             });
             toast.success('Revizyon istendi');
             await refetch();
@@ -80,7 +80,7 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
         if (!window.confirm('Tüm belgeleri e-posta ile göndermek istediğinize emin misiniz?')) return;
         setActionLoading('send-email');
         try {
-            await sendEmail({ id: tenantId });
+            await sendEmail({ tenantId, data: { subject: 'SMS Başvuru Belgeleri', body: 'Belgeleriniz ektedir.' } });
             toast.success('E-posta gönderildi');
         } catch (error: any) {
             toast.error(error.response?.data?.error?.message || 'E-posta gönderilemedi');

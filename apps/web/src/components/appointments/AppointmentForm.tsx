@@ -4,6 +4,7 @@ import { Appointment, CreateAppointmentData, UpdateAppointmentData, AppointmentT
 import { useAppointments } from '../../hooks/useAppointments';
 import { usePatients } from '../../hooks/usePatients';
 import { PatientAutocomplete } from './PatientAutocomplete';
+import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface AppointmentFormProps {
   appointment?: Appointment;
@@ -215,7 +216,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
           clinicianId: formData.clinicianId.trim() || undefined,
           location: formData.location.trim() || undefined,
           branchId: formData.branchId.trim() || undefined,
-          createdBy: 'current-user' // TODO: Get from auth context
+          createdBy: getCurrentUserId()
         };
 
         const newAppointment = await createAppointment(appointmentData);

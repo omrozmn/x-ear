@@ -12,21 +12,23 @@ const VatanSmsSettingsPage: React.FC = () => {
     const [emailBody, setEmailBody] = useState('');
 
     useEffect(() => {
-        if (configData?.data) {
-            setApprovalEmail(configData.data.approvalEmail || '');
-            setEmailSubject(configData.data.emailTemplate?.emailSubject || '[X-Ear CRM] {{tenant_name}} - Yeni Belge Onayı');
-            setEmailBody(configData.data.emailTemplate?.emailBodyHtml || '<h3>Merhaba,</h3><p>{{tenant_name}} adlı müşterimiz yeni belge yükledi.</p><p><strong>Belge Türleri:</strong> {{document_types}}</p><p><strong>Yükleyen:</strong> {{uploaded_by}}</p><p><strong>Tarih:</strong> {{uploaded_at}}</p><p>İyi çalışmalar,<br>X-Ear CRM Sistemi</p>');
+        if ((configData as any)?.data) {
+            setApprovalEmail((configData as any).data.approvalEmail || '');
+            setEmailSubject((configData as any).data.emailTemplate?.emailSubject || '[X-Ear CRM] {{tenant_name}} - Yeni Belge Onayı');
+            setEmailBody((configData as any).data.emailTemplate?.emailBodyHtml || '<h3>Merhaba,</h3><p>{{tenant_name}} adlı müşterimiz yeni belge yükledi.</p><p><strong>Belge Türleri:</strong> {{document_types}}</p><p><strong>Yükleyen:</strong> {{uploaded_by}}</p><p><strong>Tarih:</strong> {{uploaded_at}}</p><p>İyi çalışmalar,<br>X-Ear CRM Sistemi</p>');
         }
     }, [configData]);
 
     const handleSave = async () => {
         try {
             await updateMutation.mutateAsync({
-                approvalEmail,
-                emailTemplate: {
-                    name: 'VatanSMS Document Approval',
-                    emailSubject,
-                    emailBodyHtml: emailBody
+                data: {
+                    approvalEmail,
+                    emailTemplate: {
+                        name: 'VatanSMS Document Approval',
+                        emailSubject,
+                        emailBodyHtml: emailBody
+                    }
                 }
             });
             toast.success('VatanSMS ayarları başarıyla kaydedildi');
@@ -149,9 +151,9 @@ const VatanSmsSettingsPage: React.FC = () => {
                     <button
                         type="button"
                         onClick={() => {
-                            setApprovalEmail(configData?.data?.approvalEmail || '');
-                            setEmailSubject(configData?.data?.emailTemplate?.emailSubject || '');
-                            setEmailBody(configData?.data?.emailTemplate?.emailBodyHtml || '');
+                            setApprovalEmail((configData as any)?.data?.approvalEmail || '');
+                            setEmailSubject((configData as any)?.data?.emailTemplate?.emailSubject || '');
+                            setEmailBody((configData as any)?.data?.emailTemplate?.emailBodyHtml || '');
                         }}
                         className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                     >

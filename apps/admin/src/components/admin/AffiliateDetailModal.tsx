@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
 interface AffiliateDetailModalProps {
-    affiliateId: number;
+    affiliateId: string;
     isOpen: boolean;
     onClose: () => void;
     onStatusChange: () => void;
@@ -320,8 +320,8 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                             onClick={() => toggleStatusMutation.mutate()}
                             disabled={toggleStatusMutation.isPending}
                             className={`px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white ${data.is_active
-                                    ? 'bg-red-600 hover:bg-red-700'
-                                    : 'bg-green-600 hover:bg-green-700'
+                                ? 'bg-red-600 hover:bg-red-700'
+                                : 'bg-green-600 hover:bg-green-700'
                                 } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {toggleStatusMutation.isPending ? 'Güncelleniyor...' : (data.is_active ? 'Pasif Yap' : 'Aktif Yap')}

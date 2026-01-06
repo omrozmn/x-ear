@@ -1,7 +1,10 @@
 export default {
   'x-ear-api': {
     input: {
-      target: '../../openapi.yaml',
+      // CI'da statik dosya, development'ta runtime kullan
+      // CI: OPENAPI_SOURCE=./openapi.json npx orval
+      // Dev: Backend çalışırken npx orval
+      target: process.env.OPENAPI_SOURCE || 'http://localhost:5003/openapi.json',
     },
     output: {
       mode: 'tags-split',
@@ -15,8 +18,8 @@ export default {
       override: {
         mutator: {
           path: './src/api/orval-mutator.ts',
-          name: 'customInstance'
-        }
+          name: 'customInstance',
+        },
       },
     },
   },

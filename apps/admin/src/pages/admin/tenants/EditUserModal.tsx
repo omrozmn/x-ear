@@ -40,7 +40,7 @@ export const EditUserModal = ({ isOpen, onClose, user, tenantId, onSuccess }: Ed
         setLoading(true);
         try {
             await updateTenantUser({
-                id: tenantId,
+
                 userId: user.id,
                 data: {
                     first_name: formData.firstName,

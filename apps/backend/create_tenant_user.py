@@ -1,13 +1,20 @@
+"""
+Create Tenant User - Pure SQLAlchemy (FastAPI Compatible)
+"""
+import sys
+import os
+sys.path.append(os.path.dirname(__file__))
 
-from app import app, db
+from database import SessionLocal
 from models.user import User
 from models.tenant import Tenant
 import uuid
 
 def create_tenant_user():
-    with app.app_context():
+    db = SessionLocal()
+    try:
         # Get Tenant
-        tenant = Tenant.query.filter_by(slug="tenant-1").first()
+        tenant = db.query(Tenant).filter_by(slug="tenant-1").first()
         if not tenant:
             print("Tenant not found! Creating one...")
             tenant = Tenant(
@@ -16,32 +23,43 @@ def create_tenant_user():
                 owner_email="admin@x-ear.com",
                 billing_email="billing@x-ear.com"
             )
-            db.session.add(tenant)
-            db.session.commit()
+            db.add(tenant)
+            db.commit()
             print(f"Created tenant: {tenant.id}")
 
         # Check if user exists
-        user = User.query.filter_by(email="crm_user@x-ear.com").first()
+        # Note: compehensive_api_test.py uses admin@x-ear.com for BOTH admin and user login
+        # So we should probably ensure admin@x-ear.com exists in the User table too for simplicity of that test script.
+        target_email = "admin@x-ear.com" 
+        
+        user = db.query(User).filter_by(email=target_email).first()
         if user:
             print(f"User {user.email} already exists. Resetting password and active status...")
             user.set_password("password123")
             user.is_active = True
             user.tenant_id = tenant.id
-            db.session.commit()
+            user.first_name = "Admin"
+            user.last_name = "User"
+            db.commit()
             print("User updated.")
         else:
-            print("Creating crm_user@x-ear.com...")
+            print(f"Creating {target_email} in User table...")
             user = User(
-                email="crm_user@x-ear.com",
-                username="crm_user",
+                email=target_email,
+                username="admin_user", # Username for CRM login
+                first_name="Admin",
+                last_name="User",
                 role="admin",  # Tenant Admin
                 tenant_id=tenant.id,
                 is_active=True
             )
             user.set_password("password123")
-            db.session.add(user)
-            db.session.commit()
+            db.add(user)
+            db.commit()
             print(f"Created user {user.email} in tenant {tenant.id}")
+            
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     create_tenant_user()

@@ -18,9 +18,28 @@ import {
   useUpdateAdminTicket,
   useGetAdminUsers,
   useCreateTicketResponse,
-  SupportTicket,
-  AdminUser
 } from '@/lib/api-client';
+
+// Local type definitions (not exported from generated client)
+interface SupportTicket {
+  id?: string;
+  title?: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  tenant_name?: string;
+  assigned_to?: string;
+  assigned_admin_name?: string;
+  sla_due_date?: string;
+  created_at?: string;
+}
+
+interface AdminUser {
+  id?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+}
 import Pagination from '@/components/ui/Pagination';
 
 const Support: React.FC = () => {
@@ -42,14 +61,14 @@ const Support: React.FC = () => {
     search: searchTerm || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
     priority: priorityFilter !== 'all' ? priorityFilter : undefined
-  });
+  } as any);
 
-  const tickets = ticketsData?.data?.tickets || [];
-  const pagination = ticketsData?.data?.pagination;
+  const tickets = (ticketsData as any)?.data?.tickets || (ticketsData as any)?.tickets || [];
+  const pagination = (ticketsData as any)?.data?.pagination || (ticketsData as any)?.pagination;
 
   // Fetch admin users for assignment
   const { data: adminUsersData } = useGetAdminUsers({ limit: 100 });
-  const adminUsers = adminUsersData?.data?.users || [];
+  const adminUsers = (adminUsersData as any)?.data?.users || (adminUsersData as any)?.users || [];
 
   // Mutations
   const { mutateAsync: updateTicket } = useUpdateAdminTicket();
@@ -60,7 +79,7 @@ const Support: React.FC = () => {
   const handleUpdateTicket = async (id: string, data: any) => {
     setIsSubmitting(true);
     try {
-      await updateTicket({ id, data });
+      await updateTicket({ ticketId: id, data });
       await queryClient.invalidateQueries({ queryKey: ['/admin/tickets'] });
       toast.success('Ticket başarıyla güncellendi');
     } catch (error: any) {

@@ -36,7 +36,8 @@ def get_token(role, email, password):
     try:
         r = requests.post(url, json=payload)
         if r.status_code == 200:
-            return r.json().get('data', {}).get('token') or r.json().get('access_token')
+            data = r.json().get('data', {})
+            return data.get('token') or data.get('access_token') or data.get('accessToken') or r.json().get('access_token')
         else:
             print_result(f"Login {role}", False, f"Status: {r.status_code}, Resp: {r.text}")
             return None
@@ -87,8 +88,9 @@ def test_crm_panel(token):
         "lastName": "Patient",
         "phone": f"0555{datetime.now().strftime('%H%M%S')}",
         "email": f"test_{datetime.now().strftime('%H%M%S')}@example.com",
-        "gender": "male",
-        "birthDate": "1990-01-01"
+        "gender": "M",
+        "birthDate": "1990-01-01",
+        "status": "active"
     }
     r = requests.post(f"{BASE_URL}/api/patients", json=patient_data, headers=headers)
     print_result("CRM Create Patient", r.status_code == 201, r.text[:100])
@@ -246,11 +248,12 @@ def main():
 
     # 5. Test Extended CRM/Admin Endpoints (Manual/Hardcoded Paths)
     # We reuse the admin token or crm token depending on the route requirements
-    if crm_token:
-        test_invoices_detailed_routes(crm_token)
-        test_sgk_routes_existence(crm_token)
-        test_communications_routes_existence(crm_token)
-        test_efatura_routes_existence(crm_token)
+    if admin_token:
+        test_invoices_detailed_routes(admin_token)
+        test_sgk_routes_existence(admin_token)
+        test_communications_routes_existence(admin_token)
+        test_efatura_routes_existence(admin_token)
+        test_restored_reports_and_sgk_routes(admin_token)
 
 def test_invoices_detailed_routes(token):
     print(f"\n{Colors.HEADER}--- Testing Detailed Invoice Routes (Manual/Hardcoded) ---{Colors.ENDC}")
@@ -337,6 +340,34 @@ def test_efatura_routes_existence(token):
     r = requests.post(url, headers=headers)
     exists = r.status_code != 404
     print_result(f"POST {url} (Existence Check)", exists, f"Status: {r.status_code}")
+
+def test_restored_reports_and_sgk_routes(token):
+    print(f"\n{Colors.HEADER}--- Testing Restored Reports & SGK Routes ---{Colors.ENDC}")
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    # Reports
+    routes = [
+        "/api/reports/cashflow-summary",
+        "/api/reports/pos-movements",
+        "/api/reports/promissory-notes",
+        "/api/reports/promissory-notes/list",
+        "/api/reports/promissory-notes/by-patient"
+    ]
+    
+    for route in routes:
+        url = f"{BASE_URL}{route}"
+        r = requests.get(url, headers=headers)
+        exists = r.status_code != 404
+        # Also check for 500s which would indicate logic errors in porting
+        success = r.status_code == 200
+        print_result(f"GET {route}", success, f"Status: {r.status_code}")
+        
+    # SGK Seed (Dev only)
+    url = f"{BASE_URL}/api/sgk/seed-test-patients"
+    r = requests.post(url, headers=headers)
+    # 404 means it's missing (Fail). 403 or 200 or 500 means it exists.
+    exists = r.status_code != 404
+    print_result(f"POST {url}", exists, f"Status: {r.status_code}")
 
 if __name__ == "__main__":
     main()

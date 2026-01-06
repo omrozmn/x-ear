@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { DeviceInventoryItem } from '../components/DeviceSearchForm';
 import { DeviceAssignment } from '../components/AssignmentDetailsForm';
-
-import { inventoryGetInventoryItems } from '@/api/generated';
+import { getCurrentUserId } from '@/utils/auth-utils';
+import { getAllInventory } from '@/api/generated';
 
 
 interface UseDeviceAssignmentProps {
@@ -54,7 +54,7 @@ export const useDeviceAssignment = ({
     patientId,
     assignedDate: new Date().toISOString().split('T')[0],
     status: 'assigned',
-    assignedBy: 'current_user', // TODO: Get from auth context
+    assignedBy: getCurrentUserId(),
     ear: 'left',
     reason: 'sale',
     discountType: 'none',
@@ -165,7 +165,7 @@ export const useDeviceAssignment = ({
           patientId,
           assignedDate: new Date().toISOString().split('T')[0],
           status: 'assigned',
-          assignedBy: 'current_user', // TODO: Get from auth context
+          assignedBy: getCurrentUserId(),
           ear: 'left',
           reason: 'sale',
           discountType: 'none',
@@ -184,7 +184,7 @@ export const useDeviceAssignment = ({
   useEffect(() => {
     const loadInventory = async () => {
       try {
-        const response = await inventoryGetInventoryItems({
+        const response = await getAllInventory({
           category: 'hearing_aid',
           per_page: 100
         });
@@ -236,18 +236,18 @@ export const useDeviceAssignment = ({
           } else {
             // Fallback: Create synthetic device from assignment data if not found in inventory
             console.warn('Device not found in loaded inventory, using assignment data fallback');
-            
+
             // Extract brand and model from various possible field names
             const assignmentAny = assignment as any;
             let brand = assignmentAny.brand || assignmentAny.deviceBrand;
             let model = assignmentAny.model || assignmentAny.deviceModel;
-            
+
             // For loaner devices, check loaner-specific fields
             if (assignmentAny.isLoaner || assignmentAny.is_loaner) {
               brand = brand || assignmentAny.loanerBrand || assignmentAny.loaner_brand;
               model = model || assignmentAny.loanerModel || assignmentAny.loaner_model;
             }
-            
+
             // Extract from deviceName if available (e.g., "ReSound hb-2477")
             if (!brand || !model) {
               const deviceName = assignmentAny.deviceName || assignmentAny.device_name;
@@ -259,7 +259,7 @@ export const useDeviceAssignment = ({
                 }
               }
             }
-            
+
             const syntheticDevice: DeviceInventoryItem = {
               id: assignment.deviceId,
               brand: brand || 'Bilinmiyor',
@@ -455,7 +455,7 @@ export const useDeviceAssignment = ({
       patientId,
       assignedDate: new Date().toISOString().split('T')[0],
       status: 'assigned',
-      assignedBy: 'current_user',
+      assignedBy: getCurrentUserId(),
       ear: 'left',
       reason: 'sale',
       discountType: 'none',

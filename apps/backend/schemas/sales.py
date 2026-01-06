@@ -158,18 +158,32 @@ class SaleBase(AppBaseModel):
     right_ear_assignment_id: Optional[str] = Field(None, alias="rightEarAssignmentId")
     left_ear_assignment_id: Optional[str] = Field(None, alias="leftEarAssignmentId")
 
-class SaleRead(IDMixin, TimestampMixin, SaleBase):
-    tenant_id: str = Field(..., alias="tenantId")
+class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
+    """Schema for reading a sale - matches Sale.to_dict() output"""
+    patient_id: str = Field(..., alias="patientId")
+    product_id: Optional[str] = Field(None, alias="productId")
+    tenant_id: Optional[str] = Field(None, alias="tenantId")
     branch_id: Optional[str] = Field(None, alias="branchId")
-    sale_number: Optional[str] = Field(None, alias="saleNumber")
-    report_status: Optional[str] = Field(None, alias="reportStatus")
     
-    # Relations (optional/enriched)
-    patient: Optional[dict] = None # Or PatientRead (circular import risk)
-    devices: List[DeviceAssignmentRead] = []
-    payment_plan: Optional[PaymentPlanRead] = Field(None, alias="paymentPlan")
-    payment_records: List[PaymentRecordRead] = Field([], alias="paymentRecords")
-    invoice: Optional[dict] = None
+    sale_date: Optional[datetime] = Field(None, alias="saleDate")
+    status: Optional[str] = None
+    payment_method: Optional[str] = Field(None, alias="paymentMethod")
+    notes: Optional[str] = None
+    
+    # Financials - all optional to match to_dict() which may return None
+    list_price_total: Optional[float] = Field(None, alias="listPriceTotal")
+    total_amount: Optional[float] = Field(None, alias="totalAmount")
+    discount_amount: Optional[float] = Field(0.0, alias="discountAmount")
+    sgk_coverage: Optional[float] = Field(0.0, alias="sgkCoverage")
+    final_amount: Optional[float] = Field(None, alias="finalAmount")
+    paid_amount: Optional[float] = Field(0.0, alias="paidAmount")
+    patient_payment: Optional[float] = Field(None, alias="patientPayment")
+    
+    # Assignments
+    right_ear_assignment_id: Optional[str] = Field(None, alias="rightEarAssignmentId")
+    left_ear_assignment_id: Optional[str] = Field(None, alias="leftEarAssignmentId")
+    
+    report_status: Optional[str] = Field(None, alias="reportStatus")
 
 class SaleCreate(AppBaseModel):
     patient_id: str = Field(..., alias="patientId")

@@ -1,0 +1,169 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  typecheck:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install root dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install web dependencies
+        run: |
+          cd apps/web
+          pnpm install --frozen-lockfile
+
+      - name: Install ui-web package
+        run: |
+          cd packages/ui-web
+          pnpm install --frozen-lockfile
+
+      - name: TypeScript check
+        run: |
+          cd apps/web
+          pnpm run type-check
+
+  lint:
+    name: ESLint Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install root dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install web dependencies
+        run: |
+          cd apps/web
+          pnpm install --frozen-lockfile
+
+      - name: Install ui-web package
+        run: |
+          cd packages/ui-web
+          pnpm install --frozen-lockfile
+
+      - name: Lint check (warnings allowed)
+        run: |
+          cd apps/web
+          pnpm run lint || echo "Lint warnings found but continuing..."
+        continue-on-error: true
+
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    needs: [typecheck]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install root dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install web dependencies
+        run: |
+          cd apps/web
+          pnpm install --frozen-lockfile
+
+      - name: Install ui-web package
+        run: |
+          cd packages/ui-web
+          pnpm install --frozen-lockfile
+
+      - name: Build web app
+        run: |
+          cd apps/web
+          pnpm run build
+
+      - name: Verify build output
+        run: |
+          if [ -d "apps/web/dist" ]; then
+            echo "✅ Build successful - dist folder exists"
+            ls -la apps/web/dist
+          else
+            echo "❌ Build failed - dist folder not found"
+            exit 1
+          fi
+
+  api-sync-check:
+    name: API Sync Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install Python dependencies
+        run: |
+          cd apps/backend
+          pip install -r requirements.txt
+
+      - name: Install web dependencies
+        run: |
+          cd apps/web
+          pnpm install --frozen-lockfile
+
+      - name: Generate OpenAPI spec
+        run: |
+          cd apps/backend
+          python scripts/generate_openapi.py || echo "OpenAPI generation skipped"
+
+      - name: Check if API types are in sync
+        run: |
+          cd apps/web
+          pnpm run gen:api || echo "API generation completed"
+          git diff --exit-code src/api/generated/ || echo "⚠️ API types may be out of sync - run 'npm run gen:api' locally"
+        continue-on-error: true

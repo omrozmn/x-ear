@@ -11,7 +11,7 @@ import { patientSearchService, PatientSearchResult } from '../services/patient/p
 import { patientCacheService, SimpleCacheFilters, PatientSearchResult as CacheSearchResult } from '../services/patient/patient-cache.service';
 import { patientValidationService } from '../services/patient/patient-validation.service';
 import { patientSyncService } from '../services/patient/patient-sync.service';
-import { usePatientSubresourcesGetPatientDevices, patientSubresourcesGetPatientDevices } from '@/api/generated';
+import { getPatientDevices } from '@/api/generated';
 
 // Unified search result type for internal use
 interface UnifiedSearchResult {
@@ -253,7 +253,7 @@ export function usePatients(options: UsePatientsOptions = {}) {
       setError(null);
 
       // Validate patient data
-      const validation = patientValidationService.validatePatient(patientData);
+      const validation = patientValidationService.validatePatient(patientData as any);
       if (!validation.isValid) {
         throw new Error(`Validation failed: ${validation.errors.map(e => e.message).join(', ')}`);
       }
@@ -413,7 +413,7 @@ export function usePatients(options: UsePatientsOptions = {}) {
 
   // Validate patient
   const validatePatient = useCallback((patient: Partial<Patient>) => {
-    const validation = patientValidationService.validatePatient(patient);
+    const validation = patientValidationService.validatePatient(patient as any);
     return {
       isValid: validation.isValid,
       errors: validation.errors.map(e => e.message)
@@ -525,12 +525,14 @@ export function usePatientDevices(patientId: string) {
       setLoading(true);
       setError(null);
 
-      const response = await patientSubresourcesGetPatientDevices(patientId);
+      const response = await getPatientDevices(patientId);
+
+      const data = (response as any)?.data || response;
 
       // Orval returns data directly
-      if (Array.isArray(response)) {
+      if (Array.isArray(data)) {
         // Map Device[] to PatientDevice[] with required fields
-        const mappedDevices: PatientDevice[] = response.map((device: any) => ({
+        const mappedDevices: PatientDevice[] = data.map((device: any) => ({
           id: device.id || device.deviceId || '',
           brand: device.brand || '',
           model: device.model || '',

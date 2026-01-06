@@ -11,7 +11,9 @@ Ensures consistency across all endpoints in the format:
 }
 """
 
-from flask import jsonify
+import json
+
+from fastapi.responses import JSONResponse
 
 def success_response(data=None, meta=None, message=None, status_code=200):
     """
@@ -34,7 +36,7 @@ def success_response(data=None, meta=None, message=None, status_code=200):
     if meta:
         response['meta'] = meta
         
-    return jsonify(response), status_code
+    return JSONResponse(content=json.loads(json.dumps(response, default=str)), status_code=status_code)
 
 def error_response(message, code=None, details=None, status_code=400):
     """
@@ -56,10 +58,11 @@ def error_response(message, code=None, details=None, status_code=400):
     if details:
         error_obj['details'] = details
         
-    return jsonify({
+    payload = {
         'success': False,
         'error': error_obj
-    }), status_code
+    }
+    return JSONResponse(content=json.loads(json.dumps(payload, default=str)), status_code=status_code)
 
 def forbidden_response(message="Insufficient permissions"):
     return error_response(message, code="FORBIDDEN", status_code=403)

@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Alert } from '@x-ear/ui-web';
 import { CreditCard, AlertCircle } from 'lucide-react';
-import { paymentsGetSalePromissoryNotes } from '@/api/generated';
-import type { Sale } from '@/api/generated/schemas';
+import { getSalePromissoryNotes } from '@/api/generated';
+
+// Local Sale type since it's not exported from schemas
+interface Sale {
+  id?: string;
+  patientId: string;
+  totalAmount?: number;
+  patientPayment?: number;
+  saleDate?: string;
+}
 import PaymentTrackingModal from '../../payments/PaymentTrackingModal';
 
 interface PaymentRecord {
@@ -45,7 +53,7 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale, onPaymentU
     try {
       // Try API call first
       try {
-        const response = await paymentsGetSalePromissoryNotes(sale.id);
+        const response = await getSalePromissoryNotes(sale.id);
         console.log('Payment records loaded:', response);
       } catch (apiError) {
         console.warn('API unavailable, using mock data:', apiError);

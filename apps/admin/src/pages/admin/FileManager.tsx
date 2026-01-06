@@ -20,7 +20,7 @@ const FileManager: React.FC = () => {
     // Fetch files
     const { data: filesData, isLoading } = useListFiles({ folder: currentFolder });
     // Accessing nested data structure based on the API response schema
-    const files = (filesData?.data as any)?.data?.files || [];
+    const files = (filesData as any)?.data?.files || [];
 
     // Get presigned URL mutation
     const { mutateAsync: getPresignedUrl } = useGetPresignedUploadUrl();
@@ -49,7 +49,7 @@ const FileManager: React.FC = () => {
 
             // Accessing nested data structure
             // The response structure is: response.data.data.url / fields
-            const { url, fields } = (presignedData.data as any).data;
+            const { url, fields } = ((presignedData as any).data as any).data;
 
             // 2. Upload to S3
             const formData = new FormData();
@@ -104,7 +104,7 @@ const FileManager: React.FC = () => {
 
         const toastId = toast.loading('Dosya siliniyor...');
         try {
-            await deleteFile({ fileId: key });
+            await deleteFile({ key } as any);
             toast.success('Dosya silindi', { id: toastId });
             queryClient.invalidateQueries({ queryKey: ['/api/upload/files'] });
         } catch (error) {

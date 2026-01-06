@@ -4,7 +4,9 @@
  * @version 1.0.0
  */
 
-import type { Patient, Device, Sale, PatientStatus } from '@/api/generated';
+import type { PatientRead, DeviceRead, PatientReadStatus } from '@/api/generated/schemas';
+// Fallback type for Sale since strict type is missing in schemas
+export type SaleRead = any;
 
 export interface AnalyticsTimeRange {
   start: string;
@@ -60,7 +62,7 @@ export interface CityStats {
 }
 
 export interface StatusStats {
-  status: PatientStatus;
+  status: PatientReadStatus;
   count: number;
   percentage: number;
 }
@@ -85,7 +87,7 @@ export interface PatientStats {
 
 export class PatientAnalyticsService {
 
-  calculatePatientStats(patients: Patient[], devices: Device[] = [], sales: Sale[] = []): PatientStats {
+  calculatePatientStats(patients: PatientRead[], devices: DeviceRead[] = [], sales: SaleRead[] = []): PatientStats {
     const totalPatients = patients.length;
     const activePatients = patients.filter(p => p.status === 'ACTIVE').length;
 
@@ -109,9 +111,9 @@ export class PatientAnalyticsService {
     const patientsWithBirthDate = patients.filter(p => p.birthDate);
     const averageAge = patientsWithBirthDate.length > 0
       ? patientsWithBirthDate.reduce((sum, p) => {
-          const age = this.calculateAge(p.birthDate!);
-          return sum + age;
-        }, 0) / patientsWithBirthDate.length
+        const age = this.calculateAge(p.birthDate!);
+        return sum + age;
+      }, 0) / patientsWithBirthDate.length
       : 0;
 
     const topCities = this.calculateTopCities(patients);
@@ -131,7 +133,7 @@ export class PatientAnalyticsService {
     };
   }
 
-  calculateDeviceAnalytics(patients: Patient[], devices: Device[]): DeviceAnalytics {
+  calculateDeviceAnalytics(patients: PatientRead[], devices: DeviceRead[]): DeviceAnalytics {
     const totalDevices = devices.length;
 
     const devicesByType: Record<string, number> = {};
@@ -139,7 +141,7 @@ export class PatientAnalyticsService {
 
     devices.forEach(device => {
       // Count by device type
-      const deviceType = device.deviceType || device.category || 'unknown';
+      const deviceType = device.category || 'unknown';
       devicesByType[deviceType] = (devicesByType[deviceType] || 0) + 1;
 
       // Count by ear/side
@@ -165,7 +167,7 @@ export class PatientAnalyticsService {
     };
   }
 
-  calculateSGKAnalytics(patients: Patient[]): SGKAnalytics {
+  calculateSGKAnalytics(patients: PatientRead[]): SGKAnalytics {
     const totalWithSGK = patients.filter(p =>
       p.sgkInfo && Object.keys(p.sgkInfo).length > 0
     ).length;
@@ -192,7 +194,7 @@ export class PatientAnalyticsService {
     };
   }
 
-  calculateAgeDistribution(patients: Patient[]): AgeDistribution[] {
+  calculateAgeDistribution(patients: PatientRead[]): AgeDistribution[] {
     const ageGroups = {
       '0-18': 0,
       '19-30': 0,
@@ -224,13 +226,13 @@ export class PatientAnalyticsService {
     }));
   }
 
-  calculatePatientTrends(patients: Patient[], timeRange: AnalyticsTimeRange): PatientTrend[] {
+  calculatePatientTrends(patients: PatientRead[], timeRange: AnalyticsTimeRange): PatientTrend[] {
     const startDate = new Date(timeRange.start);
     const endDate = new Date(timeRange.end);
     const trends: PatientTrend[] = [];
 
     // Group patients by date
-    const patientsByDate: Record<string, Patient[]> = {};
+    const patientsByDate: Record<string, PatientRead[]> = {};
 
     patients.forEach(patient => {
       const createdDate = patient.createdAt ? new Date(patient.createdAt) : new Date();
@@ -268,7 +270,7 @@ export class PatientAnalyticsService {
     return trends;
   }
 
-  calculateRevenueAnalytics(patients: Patient[], sales: Sale[]): RevenueAnalytics {
+  calculateRevenueAnalytics(patients: PatientRead[], sales: SaleRead[]): RevenueAnalytics {
     let totalRevenue = 0;
     let outstandingBalance = 0;
 
@@ -301,7 +303,7 @@ export class PatientAnalyticsService {
     };
   }
 
-  private calculateTopCities(patients: Patient[]): CityStats[] {
+  private calculateTopCities(patients: PatientRead[]): CityStats[] {
     const cityCount: Record<string, number> = {};
     const total = patients.length;
 
@@ -320,7 +322,7 @@ export class PatientAnalyticsService {
       .slice(0, 10); // Top 10 cities
   }
 
-  private calculateStatusDistribution(patients: Patient[]): StatusStats[] {
+  private calculateStatusDistribution(patients: PatientRead[]): StatusStats[] {
     const statusCount: Record<string, number> = {};
     const total = patients.length;
 
@@ -329,9 +331,9 @@ export class PatientAnalyticsService {
       statusCount[status] = (statusCount[status] || 0) + 1;
     });
 
-    const allowedStatuses: PatientStatus[] = ['ACTIVE', 'INACTIVE', 'LEAD', 'TRIAL', 'CUSTOMER'];
+    const allowedStatuses: PatientReadStatus[] = ['ACTIVE', 'INACTIVE', 'LEAD', 'TRIAL', 'CUSTOMER'];
     return Object.entries(statusCount).map(([status, count]) => {
-      const validStatus = allowedStatuses.includes(status as PatientStatus) ? status as PatientStatus : 'ACTIVE';
+      const validStatus = allowedStatuses.includes(status as PatientReadStatus) ? status as PatientReadStatus : 'ACTIVE';
       return {
         status: validStatus,
         count,
@@ -340,7 +342,7 @@ export class PatientAnalyticsService {
     });
   }
 
-  private calculateSegmentDistribution(patients: Patient[]): SegmentStats[] {
+  private calculateSegmentDistribution(patients: PatientRead[]): SegmentStats[] {
     const segmentCount: Record<string, number> = {};
     const total = patients.length;
 

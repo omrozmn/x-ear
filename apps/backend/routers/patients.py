@@ -5,6 +5,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 import json
 import base64
+from enum import Enum
 
 from schemas.patients import (
     PatientRead, PatientCreate, PatientUpdate, PatientSearchFilters
@@ -14,8 +15,9 @@ from schemas.base import ApiError
 from models.patient import Patient
 from models.sales import Sale, DeviceAssignment, PaymentRecord
 from models.inventory import InventoryItem
-from models.base import db
-from dependencies import get_db, get_current_context, AccessContext
+
+from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 
 import logging
 
@@ -25,14 +27,14 @@ router = APIRouter(tags=["Patients"])
 
 # --- HELPERS ---
 
-def get_patient_or_404(db: Session, patient_id: str, ctx: AccessContext) -> Patient:
-    patient = db.session.get(Patient, patient_id)
+def get_patient_or_404(db_session: Session, patient_id: str, access: UnifiedAccess) -> Patient:
+    patient = db_session.get(Patient, patient_id)
     if not patient:
             raise HTTPException(
                 status_code=404,
                 detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
             )
-    if ctx.tenant_id and patient.tenant_id != ctx.tenant_id:
+    if access.tenant_id and patient.tenant_id != access.tenant_id:
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
@@ -50,31 +52,23 @@ def list_patients(
     city: Optional[str] = None,
     district: Optional[str] = None,
     cursor: Optional[str] = None,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access("patients.view")),
     db: Session = Depends(get_db)
 ):
     """List patients with filtering and pagination"""
     try:
-        query = Patient.query
+        query = db.query(Patient)
         
         # Tenant Scope
-        if ctx.tenant_id:
-            query = query.filter_by(tenant_id=ctx.tenant_id)
+        if access.tenant_id:
+            query = query.filter_by(tenant_id=access.tenant_id)
             
         # Branch Logic (Legacy Admin restriction)
-        # Assuming `ctx.user` has `branches` relationship loaded or accessible
-        if ctx.is_tenant_admin and ctx.user.role == 'admin':
-             # Note: ctx.user is the SQLAlchemy model object attached in dependencies.py
-             user_branch_ids = [b.id for b in getattr(ctx.user, 'branches', [])]
+        if access.is_tenant_admin and access.user and access.user.role == 'admin':
+             user_branch_ids = [b.id for b in getattr(access.user, 'branches', [])]
              if user_branch_ids:
                  query = query.filter(Patient.branch_id.in_(user_branch_ids))
-             # If admin has no branches, they might see nothing or everything depending on business rule.
-             # Legacy code returned empty. Let's stick to legacy behavior if list provided but empty?
-             # Actually existing code: if user_branch_ids checks if list is not empty.
-             # If list empty, query not filtered? No, legacy code says:
-             # if user_branch_ids: ... else: return success_response([], meta=...total=0)
-             # So if admin has NO branches, they see NOTHING.
-             elif getattr(ctx.user, 'branches', []): # Check if relation exists and is empty
+             elif getattr(access.user, 'branches', []):
                   return ResponseEnvelope(data=[], meta=ResponseMeta(total=0, page=page, perPage=per_page, totalPages=0))
         
         # Search
@@ -92,7 +86,14 @@ def list_patients(
             
         # Filters
         if status_filter:
-            query = query.filter(Patient.status == status_filter)
+            from models.enums import PatientStatus
+            # Convert status filter to enum value if possible
+            try:
+                status_enum = PatientStatus.from_legacy(status_filter)
+                # Use .value for safe comparison with SQLAlchemy
+                query = query.filter(Patient.status == status_enum.value)
+            except:
+                query = query.filter(Patient.status == status_filter)
         if city:
             query = query.filter(Patient.address_city == city)
         if district:
@@ -129,7 +130,7 @@ def list_patients(
             total_pages = (total + per_page - 1) // per_page
             
         return ResponseEnvelope(
-            data=items,
+            data=[item.to_dict() for item in items],
             meta={
                 "total": total,
                 "page": page,
@@ -142,16 +143,17 @@ def list_patients(
     except Exception as e:
         logger.error(f"List patients error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+# ... imports ...
 
 @router.post("/patients", response_model=ResponseEnvelope[PatientRead], status_code=201)
 def create_patient(
     patient_in: PatientCreate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access("patients.create")),
     db: Session = Depends(get_db)
 ):
     """Create a new patient"""
     try:
-        if not ctx.tenant_id:
+        if not access.tenant_id:
               raise HTTPException(
                   status_code=400,
                   detail=ApiError(message="Tenant context required", code="TENANT_REQUIRED").model_dump(mode="json"),
@@ -162,6 +164,15 @@ def create_patient(
         # Note: We need to handle aliasing. patient_in has fields like 'firstName', 
         # but model expects 'first_name'. Pydantic v2 model_dump(by_alias=False) gives snake_case default names.
         data = patient_in.model_dump(exclude_unset=True)
+
+        # Force conversion just in case
+        if 'birth_date' in data and data['birth_date']:
+             d = data['birth_date']
+             from datetime import date, datetime, time
+             if type(d) == date:  # Strict type check to catch pure date
+                 data['birth_date'] = datetime.combine(d, time.min)
+        
+        # Manual overrides/handling
         
         # Manual overrides/handling
         tags = data.pop('tags', [])
@@ -177,7 +188,24 @@ def create_patient(
         # Database has `address_city`, `address_district`, `address_full`.
         address_data = data.pop('address', None)
         
-        patient = Patient(tenant_id=ctx.tenant_id, **data)
+        if 'status' in data:
+             from models.enums import PatientStatus as ModelPatientStatus
+             # Convert schema status (lowercase) to model status (UPPERCASE)
+             status_val = data['status']
+             if isinstance(status_val, str) or isinstance(status_val, Enum):
+                 # Handle Pydantic Enum or string
+                 val_str = status_val.value if hasattr(status_val, 'value') else str(status_val)
+                 data['status'] = ModelPatientStatus.from_legacy(val_str)
+
+        # Handle Date -> DateTime conversion for SQLite
+        if 'birth_date' in data and data['birth_date']:
+            logger.info(f"Birthdate type before: {type(data['birth_date'])} value: {data['birth_date']}")
+            from datetime import date as date_type, datetime as datetime_type
+            if isinstance(data['birth_date'], date_type) and not isinstance(data['birth_date'], datetime_type):
+                data['birth_date'] = datetime_type.combine(data['birth_date'], datetime_type.min.time())
+            logger.info(f"Birthdate type after: {type(data['birth_date'])}")
+        
+        patient = Patient(tenant_id=access.tenant_id, **data)
         
         # Set JSON fields
         patient.tags_json = tags if tags else []
@@ -191,36 +219,37 @@ def create_patient(
             patient.address_full = address_data.get('fullAddress') or address_data.get('address')
             
         # Defaults
-        if not patient.status: patient.status = 'new'
+        if not patient.status: 
+             patient.status = 'ACTIVE'
         
-        db.session.add(patient)
-        db.session.commit()
+        db.add(patient)
+        db.commit()
         
-        return ResponseEnvelope(data=patient)
+        return ResponseEnvelope(data=patient.to_dict())
     except Exception as e:
-        db.session.rollback()
+        db.rollback()
         logger.error(f"Create patient error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/patients/{patient_id}", response_model=ResponseEnvelope[PatientRead])
 def get_patient(
     patient_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access("patients.view")),
     db: Session = Depends(get_db)
 ):
     """Get single patient"""
-    patient = get_patient_or_404(db, patient_id, ctx)
-    return ResponseEnvelope(data=patient)
+    patient = get_patient_or_404(db, patient_id, access)
+    return ResponseEnvelope(data=patient.to_dict())
 
 @router.put("/patients/{patient_id}", response_model=ResponseEnvelope[PatientRead])
 def update_patient(
     patient_id: str,
     patient_in: PatientUpdate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access("patients.edit")),
     db: Session = Depends(get_db)
 ):
     """Update patient"""
-    patient = get_patient_or_404(db, patient_id, ctx)
+    patient = get_patient_or_404(db, patient_id, access)
     
     data = patient_in.model_dump(exclude_unset=True)
     
@@ -243,195 +272,42 @@ def update_patient(
             setattr(patient, k, v)
             
     try:
-        db.session.commit()
-        return ResponseEnvelope(data=patient)
+        db.commit()
+        return ResponseEnvelope(data=patient.to_dict())
     except Exception as e:
-        db.session.rollback()
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/patients/{patient_id}")
 def delete_patient(
     patient_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access("patients.delete")),
     db: Session = Depends(get_db)
 ):
     """Delete patient"""
-    patient = get_patient_or_404(db, patient_id, ctx)
+    patient = get_patient_or_404(db, patient_id, access)
     try:
-        db.session.delete(patient)
-        db.session.commit()
+        db.delete(patient)
+        db.commit()
         return ResponseEnvelope(message="Patient deleted")
     except Exception as e:
-        db.session.rollback()
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/patients/{patient_id}/devices")
-def get_patient_devices(
-    patient_id: str,
-    ctx: AccessContext = Depends(get_current_context),
-    db: Session = Depends(get_db)
-):
-    """Get devices assigned to patient"""
-    patient = get_patient_or_404(db, patient_id, ctx)
-    
-    assignments = DeviceAssignment.query.filter_by(patient_id=patient_id).all()
-    devices_data = []
-    
-    for assignment in assignments:
-        # Inventory Logic
-        inventory_item = None
-        if assignment.inventory_id:
-             inventory_item = db.session.get(InventoryItem, assignment.inventory_id)
-             
-        device_dict = assignment.to_dict()
-        
-        # Enrich
-        if inventory_item:
-            device_dict['brand'] = inventory_item.brand
-            device_dict['model'] = inventory_item.model
-            device_dict['deviceName'] = f"{inventory_item.brand} {inventory_item.model}"
-            device_dict['category'] = inventory_item.category
-            device_dict['barcode'] = inventory_item.barcode
-        else:
-             device_dict['deviceName'] = f"{assignment.loaner_brand or 'Unknown'} {assignment.loaner_model or 'Device'}" if assignment.is_loaner else f"Device {assignment.device_id or ''}"
-             
-        device_dict['earSide'] = assignment.ear
-        device_dict['status'] = 'assigned'
-        if 'deliveryStatus' not in device_dict:
-             device_dict['deliveryStatus'] = getattr(assignment, 'delivery_status', 'pending')
-             
-        # Loaner
-        if 'isLoaner' not in device_dict:
-            device_dict['isLoaner'] = getattr(assignment, 'is_loaner', False)
-        if 'loanerInventoryId' not in device_dict:
-            device_dict['loanerInventoryId'] = getattr(assignment, 'loaner_inventory_id', None)
-            
-        device_dict['saleId'] = assignment.sale_id
-        
-        # Payment Info
-        device_dict['downPayment'] = 0.0
-        if assignment.sale_id:
-            sale = db.session.get(Sale, assignment.sale_id)
-            if sale:
-                 rec = PaymentRecord.query.filter_by(sale_id=sale.id, payment_type='down_payment').first()
-                 if rec:
-                     device_dict['downPayment'] = float(rec.amount)
-                 else:
-                     device_dict['downPayment'] = float(sale.paid_amount) if sale.paid_amount else 0.0
-                     
-        device_dict['assignedDate'] = assignment.created_at.isoformat() if assignment.created_at else None
-        
-        # Price Conversions
-        try:
-             device_dict['sgkReduction'] = float(assignment.sgk_support) if getattr(assignment, 'sgk_support', None) is not None else 0.0
-             device_dict['patientPayment'] = float(assignment.net_payable) if getattr(assignment, 'net_payable', None) is not None else 0.0
-             device_dict['salePrice'] = float(assignment.sale_price) if getattr(assignment, 'sale_price', None) is not None else 0.0
-             device_dict['listPrice'] = float(assignment.list_price) if getattr(assignment, 'list_price', None) is not None else 0.0
-             device_dict['sgkSupportType'] = assignment.sgk_scheme
-        except (ValueError, TypeError):
-             pass
-             
-        devices_data.append(device_dict)
-        
-    return ResponseEnvelope(
-        data=devices_data,
-        meta={
-            "patientId": patient_id,
-            "patientName": f"{patient.first_name} {patient.last_name}",
-            "deviceCount": len(devices_data)
-        }
-    )
-
-@router.get("/patients/{patient_id}/sales")
-def get_patient_sales(
-    patient_id: str,
-    ctx: AccessContext = Depends(get_current_context),
-    db: Session = Depends(get_db)
-):
-    """Get sales for patient"""
-    patient = get_patient_or_404(db, patient_id, ctx)
-    
-    sales = Sale.query.filter_by(patient_id=patient_id).order_by(Sale.sale_date.desc()).all()
-    sales_data = []
-    
-    for sale in sales:
-        sale_dict = sale.to_dict()
-        
-        # Devices in sale
-        devices = []
-        # Note: In Flask logic loop uses DeviceAssignment.query.filter_by(sale_id=sale.id)
-        assignments = DeviceAssignment.query.filter_by(sale_id=sale.id).all()
-        for assignment in assignments:
-            inv_item = None
-            if assignment.inventory_id:
-                inv_item = db.session.get(InventoryItem, assignment.inventory_id)
-                
-            if inv_item:
-                d_name = f"{inv_item.brand} {inv_item.model}"
-                brand = inv_item.brand
-                model = inv_item.model
-                barcode = inv_item.barcode
-            else:
-                d_name = f"{assignment.loaner_brand or 'Unknown'} {assignment.loaner_model or 'Device'}".strip()
-                brand = assignment.loaner_brand or ''
-                model = assignment.loaner_model or ''
-                barcode = None
-                
-            devices.append({
-                'id': assignment.inventory_id or assignment.device_id,
-                'name': d_name,
-                'brand': brand,
-                'model': model,
-                'serialNumber': assignment.serial_number or assignment.serial_number_left or assignment.serial_number_right,
-                'barcode': barcode,
-                'ear': assignment.ear,
-                'listPrice': float(assignment.list_price) if assignment.list_price else None,
-                'salePrice': float(assignment.sale_price) if assignment.sale_price else None,
-                'sgkCoverageAmount': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
-                'patientResponsibleAmount': float(assignment.net_payable) if assignment.net_payable else None
-            })
-            
-        sale_dict['devices'] = devices
-        
-        # Payments
-        payment_records = []
-        payments = PaymentRecord.query.filter_by(sale_id=sale.id).all()
-        for p in payments:
-            payment_records.append({
-                'id': p.id,
-                'amount': float(p.amount) if p.amount else 0.0,
-                'paymentDate': p.payment_date.isoformat() if p.payment_date else None,
-                'paymentMethod': p.payment_method,
-                'paymentType': p.payment_type,
-                'status': 'paid',
-                'referenceNumber': None,
-                'notes': None
-            })
-        
-        sale_dict['paymentRecords'] = payment_records
-        sales_data.append(sale_dict)
-        
-    return ResponseEnvelope(
-        data=sales_data,
-        meta={
-            "patientId": patient_id,
-            "patientName": f"{patient.first_name} {patient.last_name}",
-            "salesCount": len(sales_data)
-        }
-    )
+# Endpoints moved to routers/patient_subresources.py and routers/sales.py
 
 @router.get("/patients/count")
 def count_patients(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access("patients.view")),
     db: Session = Depends(get_db),
     status: Optional[str] = None,
     segment: Optional[str] = None
 ):
     """Count patients"""
-    if not ctx.tenant_id:
+    if not access.tenant_id:
         return {"data": {"count": 0}}
         
-    query = Patient.query.filter_by(tenant_id=ctx.tenant_id)
+    query = db.query(Patient).filter_by(tenant_id=access.tenant_id)
     # Filter valid phone
     query = query.filter(Patient.phone.isnot(None))
     

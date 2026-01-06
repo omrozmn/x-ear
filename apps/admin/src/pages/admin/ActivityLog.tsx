@@ -142,7 +142,7 @@ export default function ActivityLogPage() {
     const logs = (logsData?.data as any)?.logs || [];
     const meta = (logsData?.data as any)?.meta;
     const stats = statsData?.data as any;
-    const options = filterOptions?.data as any || {};
+    const options = (filterOptions as any)?.data || {};
 
     return (
         <div className="p-6 max-w-7xl mx-auto">

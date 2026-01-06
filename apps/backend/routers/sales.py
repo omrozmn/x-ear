@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, or_, text
 
-from dependencies import get_db, get_current_context, AccessContext
+from database import gen_sale_id
 from models.sales import Sale, DeviceAssignment, PaymentPlan, PaymentRecord, PaymentInstallment
 from models.patient import Patient
 from models.inventory import InventoryItem
@@ -22,6 +22,8 @@ from schemas.sales import (
     DeviceAssignmentRead, DeviceAssignmentUpdate
 )
 from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 # Logger
 logger = logging.getLogger(__name__)
@@ -30,14 +32,14 @@ router = APIRouter(tags=["Sales"])
 
 # ============= HELPER FUNCTIONS =============
 
-def get_sale_or_404(db: Session, sale_id: str, ctx: AccessContext) -> Sale:
-    sale = db.session.get(Sale, sale_id)
+def get_sale_or_404(db: Session, sale_id: str, access: UnifiedAccess) -> Sale:
+    sale = db.get(Sale, sale_id)
     if not sale:
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Sale not found", code="SALE_NOT_FOUND").model_dump(mode="json"),
         )
-    if ctx.tenant_id and sale.tenant_id != ctx.tenant_id:
+    if access.tenant_id and sale.tenant_id != access.tenant_id:
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Sale not found", code="SALE_NOT_FOUND").model_dump(mode="json"),
@@ -55,12 +57,12 @@ def _build_device_info_with_lookup(assignment: DeviceAssignment, db: Session) ->
     # Here we can use assignment.device relationship if loaded, or fetch.
     
     from models.device import Device
-    device = db.session.get(Device, assignment.device_id)
+    device = db.get(Device, assignment.device_id)
     if not device:
         return None
         
     if device.inventory_id:
-        inv_item = db.session.get(InventoryItem, device.inventory_id)
+        inv_item = db.get(InventoryItem, device.inventory_id)
         if inv_item:
             device_name = inv_item.name
             barcode = inv_item.barcode
@@ -122,28 +124,26 @@ def get_sales(
     per_page: int = Query(50, ge=1, le=100),
     search: Optional[str] = None,
     db: Session = Depends(get_db),
-    ctx: AccessContext = Depends(get_current_context)
+    access: UnifiedAccess = Depends(require_access())
 ):
     """Get all sales with tenant scoping."""
-    ctx.require_resource_permission("sales", "read")
-    
     query = db.query(Sale)
     
-    if ctx.tenant_id:
-        query = query.filter(Sale.tenant_id == ctx.tenant_id)
+    if access.tenant_id:
+        query = query.filter(Sale.tenant_id == access.tenant_id)
         
         # Branch scoping for Tenant Users (if admin role check logic applies)
-        if ctx.is_tenant_admin and ctx.user.role == 'admin':
+        if access.is_tenant_admin and access.user.role == 'admin':
              # Replicate logic: if user has branches, filter by them
-             user_branch_ids = [b.id for b in getattr(ctx.user, 'branches', [])]
+             user_branch_ids = [b.id for b in getattr(access.user, 'branches', [])]
              if user_branch_ids:
                  query = query.filter(Sale.branch_id.in_(user_branch_ids))
-             elif getattr(ctx.user, 'branches', []):
+             elif getattr(access.user, 'branches', []):
                  # Has branches attribute but empty list? OR if user is restricted?
                  # Should probably return empty if they are assigned branches but none match
                  # Logic in read.py: "if user_branch_ids: filter... else: return empty"
                  # Only if they ARE assigned branches. If branches is empty list, maybe they see all?
-                 # Flask logic: `if ctx.user.branches` -> filter.
+                 # Flask logic: `if access.user.branches` -> filter.
                  # So if they have branches, we constrain.
                  pass 
                  
@@ -162,13 +162,12 @@ def get_sales(
     items = query.offset((page - 1) * per_page).limit(per_page).all()
     
     # Transform items to match schema
-    # SaleRead expects a strict structure. Pydantic can load from ORM.
-    # But we might need to populate 'patient' if we want it embedded.
     results = []
     for s in items:
-        # We ensure patient is loaded or dict is created
-        s_dto = s # ORM object
-        results.append(s_dto)
+        try:
+            results.append(s.to_dict() if hasattr(s, 'to_dict') else s)
+        except Exception:
+            results.append(s)
 
     return ResponseEnvelope(
         data=results,
@@ -180,97 +179,7 @@ def get_sales(
         },
     )
 
-@router.get("/patients/{patient_id}/sales", operation_id="get_patient_sales_from_sales_router")
-def get_patient_sales(
-    patient_id: str,
-    page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1),
-    db: Session = Depends(get_db),
-    ctx: AccessContext = Depends(get_current_context)
-):
-    """Get sales for specific patient."""
-    # Check patient access
-    patient = db.session.get(Patient, patient_id)
-    if not patient:
-        raise HTTPException(
-            status_code=404,
-            detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
-        )
-    if ctx.tenant_id and patient.tenant_id != ctx.tenant_id:
-        raise HTTPException(
-            status_code=404,
-            detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
-        )
-        
-    query = db.query(Sale).filter(Sale.patient_id == patient_id).order_by(desc(Sale.created_at))
-    
-    total = query.count()
-    sales = query.offset((page - 1) * per_page).limit(per_page).all()
-    
-    sales_data = []
-    for sale in sales:
-        # Build complex object as per read.py logic
-        
-        # 1. Assignments
-        assignments = db.query(DeviceAssignment).filter(DeviceAssignment.sale_id == sale.id).all()
-        if not assignments:
-             # Legacy fallback
-             lids = []
-             if getattr(sale, 'right_ear_assignment_id', None): lids.append(sale.right_ear_assignment_id)
-             if getattr(sale, 'left_ear_assignment_id', None): lids.append(sale.left_ear_assignment_id)
-             if lids:
-                 assignments = db.query(DeviceAssignment).filter(DeviceAssignment.id.in_(lids)).all()
-                 
-        devices = []
-        for a in assignments:
-            d_info = _build_device_info_with_lookup(a, db)
-            if d_info: devices.append(d_info)
-            
-        # 2. Payment Plan
-        plan = db.query(PaymentPlan).filter(PaymentPlan.sale_id == sale.id).first()
-        plan_dict = None
-        if plan:
-            # Build plan dict manually or use schema dump
-            # We can use our helper/schema later. For now, basic fields.
-            # Using PaymentPlanRead from ORM would be easiest via Pydantic using .from_orm() but here we build dict.
-            # We'll use a simple dict construction as placeholder or reuse _build_payment_plan_data if we port it.
-            plan_dict = {
-                'id': plan.id,
-                'planType': plan.plan_type,
-                'installmentCount': plan.installment_count,
-                'totalAmount': float(plan.total_amount or 0),
-                'status': plan.status
-            }
-
-        # 3. Payments
-        payments = db.query(PaymentRecord).filter(PaymentRecord.sale_id == sale.id).order_by(desc(PaymentRecord.payment_date)).all()
-        payments_data = []
-        for p in payments:
-            payments_data.append({
-                'id': p.id,
-                'amount': float(p.amount or 0),
-                'paymentDate': p.payment_date.isoformat(),
-                'paymentMethod': p.payment_method,
-                'status': p.status
-            })
-            
-        # 4. Invoice
-        invoice = db.query(Invoice).filter(Invoice.sale_id == sale.id).first()
-        
-        # 5. SGK
-        sgk_val = float(sale.sgk_coverage or 0)
-        
-        sales_data.append(_build_sale_data(sale, devices, plan_dict, payments_data, invoice, sgk_val))
-
-    return ResponseEnvelope(
-        data=sales_data,
-        meta={
-            "total": total,
-            "page": page,
-            "perPage": per_page,
-            "totalPages": (total + per_page - 1) // per_page,
-        },
-    )
+# Note: /patients/{patient_id}/sales endpoint moved to patients.py to avoid duplication
 
 # ============= PAYMENT ENDPOINTS =============
 
@@ -278,9 +187,9 @@ def get_patient_sales(
 def get_sale_payments(
     sale_id: str,
     db: Session = Depends(get_db),
-    ctx: AccessContext = Depends(get_current_context)
+    access: UnifiedAccess = Depends(require_access())
 ):
-    sale = get_sale_or_404(db, sale_id, ctx)
+    sale = get_sale_or_404(db, sale_id, access)
     
     payments = db.query(PaymentRecord).filter(PaymentRecord.sale_id == sale_id).order_by(desc(PaymentRecord.payment_date)).all()
     
@@ -323,11 +232,11 @@ def record_sale_payment(
     sale_id: str,
     payment_in: PaymentRecordCreate,
     db: Session = Depends(get_db),
-    ctx: AccessContext = Depends(get_current_context)
+    access: UnifiedAccess = Depends(require_access())
 ):
-    ctx.require_resource_permission("sales", "write") # Assume write permission
+    access.require_resource_permission("sales", "write") # Assume write permission
     
-    sale = get_sale_or_404(db, sale_id, ctx)
+    sale = get_sale_or_404(db, sale_id, access)
     
     # Validation logic from payments.py
     amount = payment_in.amount
@@ -343,7 +252,14 @@ def record_sale_payment(
     remaining = float(sale.total_amount) - paid_total
     
     if amount > remaining + 0.01:
-        raise HTTPException(400, f"Amount {amount} exceeds remaining {remaining}")
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(
+                message=f"Amount {amount} exceeds remaining {remaining}",
+                code="PAYMENT_EXCEEDS_REMAINING",
+                details={"amount": amount, "remaining": remaining},
+            ).model_dump(mode="json"),
+        )
         
     payment = PaymentRecord(
         id=f"payment_{uuid4().hex[:8]}",
@@ -362,8 +278,8 @@ def record_sale_payment(
         updated_at=datetime.utcnow()
     )
     
-    db.session.add(payment)
-    db.session.commit()
+    db.add(payment)
+    db.commit()
 
     return ResponseEnvelope(
         data={
@@ -377,9 +293,9 @@ def record_sale_payment(
 def get_sale_payment_plan(
     sale_id: str,
     db: Session = Depends(get_db),
-    ctx: AccessContext = Depends(get_current_context)
+    access: UnifiedAccess = Depends(require_access())
 ):
-    sale = get_sale_or_404(db, sale_id, ctx)
+    sale = get_sale_or_404(db, sale_id, access)
     plans = db.query(PaymentPlan).filter_by(sale_id=sale_id).all()
     
     # We would convert plans to schema, but for now returning as is logic
@@ -432,7 +348,7 @@ def _update_inventory_stock(db: Session, product: InventoryItem, qty: int, trans
     # Decrease stock
     product.available_inventory -= qty
     product.used_inventory += qty
-    db.session.add(product)
+    db.add(product)
     
     # Stock movement
     create_stock_movement(
@@ -442,7 +358,7 @@ def _update_inventory_stock(db: Session, product: InventoryItem, qty: int, trans
         tenant_id=product.tenant_id,
         transaction_id=transaction_id,
         created_by=user_id,
-        session=db.session
+        session=db
     )
 
 # ============= WRITE ENDPOINTS =============
@@ -451,26 +367,26 @@ def _update_inventory_stock(db: Session, product: InventoryItem, qty: int, trans
 def create_sale(
     sale_in: SaleCreate,
     db: Session = Depends(get_db),
-    ctx: AccessContext = Depends(get_current_context)
+    access: UnifiedAccess = Depends(require_access())
 ):
     """Create a new sale."""
-    ctx.require_resource_permission("sales", "create")
+    access.require_resource_permission("sales", "create")
     
     # 1. Validate Patient
-    patient = db.session.get(Patient, sale_in.patient_id)
+    patient = db.get(Patient, sale_in.patient_id)
     if not patient:
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
         )
-    if ctx.tenant_id and patient.tenant_id != ctx.tenant_id:
+    if access.tenant_id and patient.tenant_id != access.tenant_id:
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
         ) # Cross-tenant protection
         
     # 2. Validate Product
-    product = db.session.get(InventoryItem, sale_in.product_id)
+    product = db.get(InventoryItem, sale_in.product_id)
     if not product:
         raise HTTPException(
             status_code=404,
@@ -486,8 +402,7 @@ def create_sale(
     base_price, discount, final_price = _calculate_product_pricing(product, sale_in, sale_in.sales_price)
     
     # 4. Create Sale Record
-    from models.base import gen_sale_id
-    sale_id = gen_sale_id(tenant_id=ctx.tenant_id or patient.tenant_id)
+    sale_id = gen_sale_id(db)
     
     # KDV Logic (20%)
     kdv_rate = 0.20
@@ -511,8 +426,8 @@ def create_sale(
     
     sale = Sale(
         id=sale_id,
-        tenant_id=ctx.tenant_id or patient.tenant_id,
-        branch_id=ctx.branch_id, # If applicable
+        tenant_id=access.tenant_id or patient.tenant_id,
+        branch_id=access.branch_id, # If applicable
         patient_id=sale_in.patient_id,
         product_id=sale_in.product_id,
         sale_date=sale_in.sale_date or datetime.utcnow(),
@@ -528,14 +443,16 @@ def create_sale(
         patient_payment=patient_pay,
         report_status=sale_in.report_status
     )
-    db.session.add(sale)
-    db.session.flush() # Get ID
+    db.add(sale)
+    db.flush() # Get ID
     
     # 5. Device Assignment
     assignment = DeviceAssignment(
         tenant_id=sale.tenant_id,
+        branch_id=access.branch_id,
         patient_id=sale.patient_id,
         device_id=product.id,
+        inventory_id=product.id,
         sale_id=sale.id,
         reason='Sale',
         from_inventory=True,
@@ -551,14 +468,14 @@ def create_sale(
     if sale_in.serial_number_left: assignment.serial_number_left = sale_in.serial_number_left
     if sale_in.serial_number_right: assignment.serial_number_right = sale_in.serial_number_right
     
-    db.session.add(assignment)
+    db.add(assignment)
     
     # 6. Update Inventory
     # Should decrease by quantity? Sales usually 1 unless bulk?
     # Monolithic logic was -1 or raw update.
-    _update_inventory_stock(db, product, 1, sale.id, ctx.principal_id)
+    _update_inventory_stock(db, product, 1, sale.id, access.principal_id)
     
-    db.session.commit()
+    db.commit()
 
     return ResponseEnvelope(
         data={
@@ -574,11 +491,11 @@ def update_sale(
     sale_id: str,
     sale_in: SaleUpdate,
     db: Session = Depends(get_db),
-    ctx: AccessContext = Depends(get_current_context)
+    access: UnifiedAccess = Depends(require_access())
 ):
-    ctx.require_resource_permission("sales", "write")
+    access.require_resource_permission("sales", "write")
     
-    sale = get_sale_or_404(db, sale_id, ctx)
+    sale = get_sale_or_404(db, sale_id, access)
     
     if sale_in.list_price_total is not None: sale.list_price_total = Decimal(str(sale_in.list_price_total))
     if sale_in.discount_amount is not None: sale.discount_amount = Decimal(str(sale_in.discount_amount))
@@ -592,6 +509,6 @@ def update_sale(
     if sale_in.status: sale.status = sale_in.status
     if sale_in.notes: sale.notes = sale_in.notes
     
-    db.session.commit()
+    db.commit()
 
     return ResponseEnvelope(data=sale.to_dict(), message="Sale updated")

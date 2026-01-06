@@ -1,8 +1,24 @@
 import { Input, Button } from '@x-ear/ui-web';
 import { useState, useEffect } from 'react';
-import { inventoryGetInventoryItems } from '@/api/generated';
+import { getAllInventory } from '@/api/generated';
 import { AUTH_TOKEN } from '@/constants/storage-keys';
-import type { InventoryItem } from '@/api/generated/schemas/inventoryItem';
+
+// Local InventoryItem type for API responses
+interface InventoryItem {
+  id?: string;
+  name: string;
+  category?: string;
+  brand?: string;
+  model?: string;
+  price: number;
+  availableInventory?: number;
+  inventory?: number;
+  stockCode?: string;
+  barcode?: string;
+  stock?: number;
+  vatRate?: number;
+  kdv?: number;
+}
 
 interface Product {
   id: string;
@@ -53,17 +69,15 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
       console.debug('[ProductSearchModal] Searching inventory', {
         page: 1,
         per_page: 20,
-        status: 'IN_STOCK',
         search: searchQuery,
         authTokenPresent: hasToken,
       });
       // OpenAPI/Orval üzerinden backend envanter araması
-      const res = await inventoryGetInventoryItems({
+      const res = await getAllInventory({
         page: 1,
         per_page: 20,
-        status: 'IN_STOCK',
         search: searchQuery,
-      });
+      } as any);
       
       console.debug('[ProductSearchModal] Inventory response', {
         itemsCount: Array.isArray(res) ? res.length : 0,
@@ -71,7 +85,7 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
       const items: InventoryItem[] = (res ?? []) as InventoryItem[];
 
       // InventoryItem'ları UI Product formatına dönüştür
-      const mappedProducts: Product[] = items.map((item: InventoryItem) => ({
+      const mappedProducts: Product[] = items.map((item: any) => ({
         id: item.id || '',
         name: item.name,
         code: item.barcode,

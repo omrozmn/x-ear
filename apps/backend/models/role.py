@@ -1,6 +1,6 @@
 from .base import db, BaseModel, gen_id
 from sqlalchemy import Table, Column, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, joinedload
 from .permission import Permission
 
 # Association table for role <-> permission
@@ -19,7 +19,13 @@ class Role(BaseModel):
     description = db.Column(db.Text, nullable=True)
     is_system = db.Column(db.Boolean, default=False)
 
-    permissions = relationship('Permission', secondary=role_permissions, backref='roles')
+    # Eager loading with subqueryload for better performance on permission fetching
+    permissions = relationship(
+        'Permission', 
+        secondary=role_permissions, 
+        backref='roles',
+        lazy='subquery'  # Eager load permissions in a single subquery
+    )
 
     def to_dict(self):
         base = self.to_dict_base()

@@ -14,12 +14,13 @@ from io import BytesIO
 
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_current_context, AccessContext
 from schemas.base import ResponseEnvelope, ApiError
-from models.base import db
+
 from models.user import User
 from models.tenant import Tenant
 from models.branch import Branch
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -78,28 +79,28 @@ class AssetUpload(BaseModel):
 
 @router.get("/tenant/users")
 def list_tenant_users(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """List users belonging to the current tenant"""
-    if not ctx.tenant_id and not ctx.is_admin:
+    if not access.tenant_id and not access.is_admin:
         raise HTTPException(
             status_code=400,
             detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
         )
     
-    query = User.query
+    query = db_session.query(User)
     
-    if ctx.tenant_id:
-        query = query.filter_by(tenant_id=ctx.tenant_id)
+    if access.tenant_id:
+        query = query.filter_by(tenant_id=access.tenant_id)
         
-        if ctx.user and ctx.user.role == 'admin':
-            user_branch_ids = [b.id for b in ctx.user.branches] if ctx.user.branches else []
+        if access.user and access.user.role == 'admin':
+            user_branch_ids = [b.id for b in access.user.branches] if access.user.branches else []
             if user_branch_ids:
                 from models.user import user_branches
                 query = query.join(user_branches).filter(user_branches.c.branch_id.in_(user_branch_ids))
             else:
-                return ResponseEnvelope(data=[ctx.user.to_dict()])
+                return ResponseEnvelope(data=[access.user.to_dict()])
     
     users = query.all()
     return ResponseEnvelope(data=[u.to_dict() for u in users])
@@ -107,17 +108,17 @@ def list_tenant_users(
 @router.post("/tenant/users", status_code=201)
 def invite_tenant_user(
     user_in: TenantUserCreate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Create a new user for the tenant"""
-    if not ctx.tenant_id:
+    if not access.tenant_id:
         raise HTTPException(
             status_code=400,
             detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
         )
     
-    if ctx.user and ctx.user.role not in ['tenant_admin', 'admin']:
+    if access.user and access.user.role not in ['tenant_admin', 'admin']:
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="Only admins can create users", code="FORBIDDEN").model_dump(mode="json")
@@ -129,13 +130,13 @@ def invite_tenant_user(
             detail=ApiError(message="Password must be at least 6 characters", code="WEAK_PASSWORD").model_dump(mode="json")
         )
     
-    if User.query.filter_by(username=user_in.username).first():
+    if db_session.query(User).filter_by(username=user_in.username).first():
         raise HTTPException(
             status_code=409,
             detail=ApiError(message="Username already exists", code="USERNAME_EXISTS").model_dump(mode="json")
         )
     
-    if user_in.email and User.query.filter_by(email=user_in.email).first():
+    if user_in.email and db_session.query(User).filter_by(email=user_in.email).first():
         raise HTTPException(
             status_code=409,
             detail=ApiError(message="Email already exists", code="EMAIL_EXISTS").model_dump(mode="json")
@@ -143,18 +144,18 @@ def invite_tenant_user(
     
     new_user = User(
         username=user_in.username,
-        email=user_in.email or f"{user_in.username}@{ctx.tenant_id}.local",
+        email=user_in.email or f"{user_in.username}@{access.tenant_id}.local",
         first_name=user_in.first_name,
         last_name=user_in.last_name,
-        tenant_id=ctx.tenant_id,
+        tenant_id=access.tenant_id,
         role=user_in.role
     )
     new_user.set_password(user_in.password)
     
     if user_in.branch_ids:
-        branches = Branch.query.filter(
+        branches = db_session.query(Branch).filter(
             Branch.id.in_(user_in.branch_ids),
-            Branch.tenant_id == ctx.tenant_id
+            Branch.tenant_id == access.tenant_id
         ).all()
         new_user.branches = branches
     
@@ -166,17 +167,17 @@ def invite_tenant_user(
 @router.delete("/tenant/users/{user_id}")
 def delete_tenant_user(
     user_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Remove a user from the tenant"""
-    if not ctx.tenant_id and not ctx.is_admin:
+    if not access.tenant_id and not access.is_admin:
         raise HTTPException(
             status_code=400,
             detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
         )
     
-    if ctx.user and ctx.user.role not in ['tenant_admin', 'admin']:
+    if access.user and access.user.role not in ['tenant_admin', 'admin']:
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="Only admins can remove users", code="FORBIDDEN").model_dump(mode="json")
@@ -189,13 +190,13 @@ def delete_tenant_user(
             detail=ApiError(message="User not found", code="USER_NOT_FOUND").model_dump(mode="json")
         )
     
-    if ctx.tenant_id and user_to_delete.tenant_id != ctx.tenant_id:
+    if access.tenant_id and user_to_delete.tenant_id != access.tenant_id:
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="User does not belong to your tenant", code="FORBIDDEN").model_dump(mode="json")
         )
     
-    if ctx.user and user_to_delete.id == ctx.user.id:
+    if access.user and user_to_delete.id == access.user.id:
         raise HTTPException(
             status_code=400,
             detail=ApiError(message="Cannot delete yourself", code="SELF_DELETE").model_dump(mode="json")
@@ -210,17 +211,17 @@ def delete_tenant_user(
 def update_tenant_user(
     user_id: str,
     user_in: TenantUserUpdate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Update a user in the tenant"""
-    if not ctx.tenant_id and not ctx.is_admin:
+    if not access.tenant_id and not access.is_admin:
         raise HTTPException(
             status_code=400,
             detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
         )
     
-    if ctx.user and ctx.user.role not in ['tenant_admin', 'admin']:
+    if access.user and access.user.role not in ['tenant_admin', 'admin']:
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="Only admins can update users", code="FORBIDDEN").model_dump(mode="json")
@@ -233,13 +234,13 @@ def update_tenant_user(
             detail=ApiError(message="User not found", code="USER_NOT_FOUND").model_dump(mode="json")
         )
     
-    if ctx.tenant_id and user_to_update.tenant_id != ctx.tenant_id:
+    if access.tenant_id and user_to_update.tenant_id != access.tenant_id:
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="User does not belong to your tenant", code="FORBIDDEN").model_dump(mode="json")
         )
     
-    if ctx.user and ctx.user.role == 'admin' and user_to_update.role == 'tenant_admin':
+    if access.user and access.user.role == 'admin' and user_to_update.role == 'tenant_admin':
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="Admins cannot edit Tenant Admins", code="FORBIDDEN").model_dump(mode="json")
@@ -248,7 +249,7 @@ def update_tenant_user(
     data = user_in.model_dump(exclude_unset=True, by_alias=False)
     
     if 'username' in data and data['username'] != user_to_update.username:
-        if User.query.filter_by(username=data['username']).first():
+        if db_session.query(User).filter_by(username=data['username']).first():
             raise HTTPException(
                 status_code=409,
                 detail=ApiError(message="Username already exists", code="USERNAME_EXISTS").model_dump(mode="json")
@@ -256,7 +257,7 @@ def update_tenant_user(
         user_to_update.username = data['username']
     
     if 'email' in data and data['email'] != user_to_update.email:
-        if User.query.filter_by(email=data['email']).first():
+        if db_session.query(User).filter_by(email=data['email']).first():
             raise HTTPException(
                 status_code=409,
                 detail=ApiError(message="Email already exists", code="EMAIL_EXISTS").model_dump(mode="json")
@@ -281,9 +282,9 @@ def update_tenant_user(
         user_to_update.is_active = data['is_active']
     
     if 'branch_ids' in data and data['branch_ids'] is not None:
-        branches = Branch.query.filter(
+        branches = db_session.query(Branch).filter(
             Branch.id.in_(data['branch_ids']),
-            Branch.tenant_id == ctx.tenant_id
+            Branch.tenant_id == access.tenant_id
         ).all()
         user_to_update.branches = branches
     
@@ -293,17 +294,17 @@ def update_tenant_user(
 
 @router.get("/tenant/company")
 def get_tenant_company(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get the current tenant's company information"""
-    if not ctx.tenant_id:
+    if not access.tenant_id:
         raise HTTPException(
             status_code=400,
             detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
         )
     
-    tenant = db_session.get(Tenant, ctx.tenant_id)
+    tenant = db_session.get(Tenant, access.tenant_id)
     if not tenant:
         raise HTTPException(
             status_code=404,
@@ -324,23 +325,23 @@ def get_tenant_company(
 @router.put("/tenant/company")
 def update_tenant_company(
     company_in: CompanyInfoUpdate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Update the current tenant's company information"""
-    if not ctx.tenant_id:
+    if not access.tenant_id:
         raise HTTPException(
             status_code=400,
             detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
         )
     
-    if ctx.user and ctx.user.role != 'tenant_admin':
+    if access.user and access.user.role != 'tenant_admin':
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="Only Tenant Admin can update company information", code="FORBIDDEN").model_dump(mode="json")
         )
     
-    tenant = db_session.get(Tenant, ctx.tenant_id)
+    tenant = db_session.get(Tenant, access.tenant_id)
     if not tenant:
         raise HTTPException(
             status_code=404,
@@ -377,17 +378,17 @@ def update_tenant_company(
 def upload_tenant_asset(
     asset_type: str,
     asset_in: AssetUpload,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Upload a company asset (logo, stamp, or signature)"""
-    if not ctx.tenant_id:
+    if not access.tenant_id:
         raise HTTPException(
             status_code=400,
             detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
         )
     
-    if ctx.user and ctx.user.role != 'tenant_admin':
+    if access.user and access.user.role != 'tenant_admin':
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="Only Tenant Admin can upload company assets", code="FORBIDDEN").model_dump(mode="json")
@@ -399,7 +400,7 @@ def upload_tenant_asset(
             detail=ApiError(message="Invalid asset type. Use: logo, stamp, signature", code="INVALID_TYPE").model_dump(mode="json")
         )
     
-    tenant = db_session.get(Tenant, ctx.tenant_id)
+    tenant = db_session.get(Tenant, access.tenant_id)
     if not tenant:
         raise HTTPException(
             status_code=404,
@@ -459,17 +460,17 @@ def upload_tenant_asset(
 @router.delete("/tenant/company/upload/{asset_type}")
 def delete_tenant_asset(
     asset_type: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Delete a company asset"""
-    if not ctx.tenant_id:
+    if not access.tenant_id:
         raise HTTPException(
             status_code=400,
             detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
         )
     
-    if ctx.user and ctx.user.role != 'tenant_admin':
+    if access.user and access.user.role != 'tenant_admin':
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="Only Tenant Admin can delete company assets", code="FORBIDDEN").model_dump(mode="json")
@@ -481,7 +482,7 @@ def delete_tenant_asset(
             detail=ApiError(message="Invalid asset type", code="INVALID_TYPE").model_dump(mode="json")
         )
     
-    tenant = db_session.get(Tenant, ctx.tenant_id)
+    tenant = db_session.get(Tenant, access.tenant_id)
     if not tenant:
         raise HTTPException(
             status_code=404,
@@ -498,3 +499,68 @@ def delete_tenant_asset(
     db_session.commit()
     
     return ResponseEnvelope(message=f'{asset_type} deleted')
+
+# --- Additional Tenant Endpoints (Migrated from Flask) ---
+
+from fastapi.responses import FileResponse
+import os
+
+@router.get("/tenant/assets/{access.tenant_id}/{filename}")
+def get_tenant_asset(
+    tenant_id: str,
+    filename: str,
+    db_session: Session = Depends(get_db)
+):
+    """Get tenant asset file"""
+    try:
+        # Check if file exists in uploads directory
+        uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "tenant_assets", access.tenant_id)
+        file_path = os.path.join(uploads_dir, filename)
+        
+        if os.path.exists(file_path):
+            return FileResponse(file_path)
+        
+        # Return placeholder if not found
+        raise HTTPException(status_code=404, detail="Asset not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/tenant/company/assets/{asset_type}/url")
+def get_tenant_asset_url(
+    asset_type: str,
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """Get URL for a specific tenant asset type"""
+    if not access.tenant_id:
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
+        )
+    
+    if asset_type not in ['logo', 'stamp', 'signature']:
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(message="Invalid asset type. Use: logo, stamp, signature", code="INVALID_TYPE").model_dump(mode="json")
+        )
+    
+    tenant = db_session.get(Tenant, access.tenant_id)
+    if not tenant:
+        raise HTTPException(
+            status_code=404,
+            detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
+        )
+    
+    company_info = tenant.company_info or {}
+    url_field = f"{asset_type}Url"
+    asset_url = company_info.get(url_field)
+    
+    return ResponseEnvelope(
+        data={
+            'type': asset_type,
+            'url': asset_url,
+            'exists': asset_url is not None
+        }
+    )

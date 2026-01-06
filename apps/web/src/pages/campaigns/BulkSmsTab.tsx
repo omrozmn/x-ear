@@ -17,16 +17,16 @@ import {
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import {
-    useBranchesGetBranches,
-    usePatientsCountPatients,
-    usePatientsGetPatients,
-    getBranchesGetBranchesQueryKey,
-    getPatientsGetPatientsQueryKey,
-    getPatientsCountPatientsQueryKey,
-    useSmsGetHeaders,
-    getSmsGetHeadersQueryKey
+    useGetBranchesApiBranchesGet,
+    useCountPatientsApiPatientsCountGet,
+    useListPatientsApiPatientsGet,
+    getGetBranchesQueryKey,
+    getListPatientsQueryKey,
+    getCountPatientsQueryKey,
+    useListSmsHeadersApiSmsHeadersGet,
+    getListSmsHeadersQueryKey
 } from '@/api/generated';
-import type { PatientsCountPatientsParams } from '@/api/generated/schemas/patientsCountPatientsParams';
+import type { ListPatientsParams } from '@/api/generated/schemas';
 
 import { useAuthStore } from '@/stores/authStore';
 
@@ -99,13 +99,13 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
     const { success: showSuccessToast, error: showErrorToast, warning: showWarningToast } = useToastHelpers();
     const { token } = useAuthStore();
 
-    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useBranchesGetBranches({
-        query: { queryKey: getBranchesGetBranchesQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
+    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useGetBranchesApiBranchesGet({
+        query: { queryKey: getGetBranchesQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
     });
 
     // Get SMS headers for sender selection
-    const { data: headersData, isLoading: headersLoading, isError: headersError } = useSmsGetHeaders({
-        query: { queryKey: getSmsGetHeadersQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
+    const { data: headersData, isLoading: headersLoading, isError: headersError } = useListSmsHeadersApiSmsHeadersGet({
+        query: { queryKey: getListSmsHeadersQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
     });
 
     const branchOptions = useMemo(() => {
@@ -169,9 +169,9 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
     }, [headerOptions, selectedHeader]);
 
     // Fetch first patient for preview
-    const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = usePatientsGetPatients(
+    const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = useListPatientsApiPatientsGet(
         { page: 1, per_page: 1 },
-        { query: { queryKey: getPatientsGetPatientsQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters' && !!token, refetchOnWindowFocus: false } }
+        { query: { queryKey: getListPatientsQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters' && !!token, refetchOnWindowFocus: false } }
     );
 
     // Handle different response structures for first patient
@@ -189,22 +189,20 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
         }
     }
 
-    const normalizedParams = useMemo<PatientsCountPatientsParams>(() => {
-        const params: PatientsCountPatientsParams = {};
+    const normalizedParams = useMemo<ListPatientsParams>(() => {
+        const params: ListPatientsParams = {};
         if (audienceFilters.status) params.status = audienceFilters.status;
-        if (audienceFilters.segment) params.segment = audienceFilters.segment;
-        if (audienceFilters.acquisitionType) params.acquisitionType = audienceFilters.acquisitionType;
-        if (audienceFilters.branchId) params.branchId = audienceFilters.branchId;
-        if (audienceFilters.dateStart) params.dateStart = audienceFilters.dateStart;
-        if (audienceFilters.dateEnd) params.dateEnd = audienceFilters.dateEnd;
+        if (audienceFilters.segment) (params as any).segment = audienceFilters.segment;
+        // Note: acquisition_type, branch_id, date_start, date_end are not supported by the current API
+        // These filters are applied client-side or need backend extension
         return params;
     }, [audienceFilters]);
 
-    const patientsCountQuery = usePatientsCountPatients(
+    const patientsCountQuery = useCountPatientsApiPatientsCountGet(
         mode === 'filters' ? normalizedParams : undefined,
         {
             query: {
-                queryKey: getPatientsCountPatientsQueryKey(mode === 'filters' ? normalizedParams : undefined),
+                queryKey: getCountPatientsQueryKey(mode === 'filters' ? normalizedParams : undefined),
                 enabled: mode === 'filters',
                 refetchOnWindowFocus: false
             }

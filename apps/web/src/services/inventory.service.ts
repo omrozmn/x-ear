@@ -21,6 +21,7 @@ import { INVENTORY_DATA } from '../constants/storage-keys';
 import { outbox } from '../utils/outbox';
 import { searchProducts, FuzzySearchResult } from '../utils/fuzzy-search';
 import { searchAnalytics } from '../utils/search-analytics';
+import { getCurrentUserId } from '../utils/auth-utils';
 
 export class InventoryService {
   private storageKey = INVENTORY_DATA;
@@ -437,7 +438,7 @@ export class InventoryService {
       reason: update.reason || 'Stock adjustment',
       reference: update.notes,
       serialNumbers: update.serialNumbers,
-      performedBy: 'system', // TODO: Get from auth context
+      performedBy: getCurrentUserId(),
       createdAt: new Date().toISOString(),
       notes: update.notes
     });

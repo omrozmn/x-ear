@@ -1,7 +1,7 @@
 import React from 'react';
-import { 
-  Input, 
-  Label, 
+import {
+  Input,
+  Label,
   Textarea,
   Card,
   CardContent,
@@ -11,7 +11,16 @@ import {
 } from '@x-ear/ui-web';
 import { Package, Search, Calendar } from 'lucide-react';
 import type { SaleFormData, EditSaleState } from '../types';
-import type { InventoryItem } from '@/api/generated/schemas';
+// Local type for inventory items to avoid import errors
+interface InventoryItem {
+  id?: string;
+  name: string;
+  category?: string;
+  brand?: string;
+  model?: string;
+  price?: number;
+  [key: string]: any;
+}
 
 interface SaleFormFieldsProps {
   formData: SaleFormData;

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@x-ear/ui-web';
 import { Download, Eye, FileText, Calendar, Filter, CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { useToastHelpers } from '@x-ear/ui-web';
+import { useListDeliveredEreceipts } from '../../api/generated/sgk/sgk';
+import { unwrapArray } from '../../utils/response-unwrap';
 
 interface DeliveredEReceipt {
   id: string;
@@ -42,7 +44,20 @@ export const SGKDownloadsPage: React.FC = () => {
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState({ current: 0, total: 0 });
   const [downloadLogs, setDownloadLogs] = useState<string[]>([]);
+
   const [selectedEReceipt, setSelectedEReceipt] = useState<DeliveredEReceipt | null>(null);
+
+  // Orval Hook
+  const { data: apiResponse, isLoading: isApiLoading } = useListDeliveredEreceipts();
+
+  // Sync data from API
+  useEffect(() => {
+    const data = unwrapArray<PatientWithEReceipts>(apiResponse) || [];
+    if (data.length > 0) {
+      setPatients(data);
+    }
+    setLoading(isApiLoading);
+  }, [apiResponse, isApiLoading]);
 
   // Bulk download options
   const [bulkOptions, setBulkOptions] = useState({
@@ -64,97 +79,13 @@ export const SGKDownloadsPage: React.FC = () => {
     return Array.from(months).sort().reverse();
   }, [patients]);
 
-  useEffect(() => {
-    loadPatients();
-  }, []);
+
 
   useEffect(() => {
     filterPatients();
   }, [patients, selectedMonth]);
 
-  const loadPatients = async () => {
-    setLoading(true);
-    try {
-      // TODO: Backend endpoint '/api/sgk/e-receipts/delivered' is not implemented/documented in OpenAPI.
-      // Manual fetch is banned. Using mock data until endpoint is available via generated client.
-      // TODO: Backend endpoint '/api/sgk/e-receipts/delivered' is missing.
-      // Keeping mock data until backend implementation is complete and generated hook exists.
 
-      // Expected usage with generated hook:
-      // const { data } = useGetDeliveredEReceipts();
-      // setPatients(data?.patients || []);
-      // API başarısız olursa mock data kullan
-      console.warn('API endpoint not available, using mock data');
-      const mockPatients: PatientWithEReceipts[] = [
-        {
-          id: 'pat1',
-          name: 'Ahmet Yılmaz',
-          tcNumber: '12345678901',
-          phone: '0555 123 4567',
-          email: 'ahmet@example.com',
-          currentMonthReceipts: [
-            {
-              id: 'er1',
-              number: 'ER20241001',
-              date: '2024-10-15',
-              doctorName: 'Dr. Zeynep Kaya',
-              validUntil: '2026-10-15',
-              patientName: 'Ahmet Yılmaz',
-              patientTcNumber: '12345678901',
-              materials: [
-                {
-                  code: 'DMT001',
-                  name: 'Dijital programlanabilir işitme cihazı - sağ',
-                  applicationDate: '2024-10-15',
-                  deliveryStatus: 'delivered'
-                }
-              ],
-              sgkDocumentAvailable: true,
-              patientFormAvailable: true,
-              sgkStatus: 'success'
-            }
-          ]
-        },
-        {
-          id: 'pat2',
-          name: 'Ayşe Demir',
-          tcNumber: '23456789012',
-          phone: '0555 234 5678',
-          email: 'ayse@example.com',
-          currentMonthReceipts: [
-            {
-              id: 'er2',
-              number: 'ER20241002',
-              date: '2024-10-20',
-              doctorName: 'Dr. Mehmet Öz',
-              validUntil: '2026-10-20',
-              patientName: 'Ayşe Demir',
-              patientTcNumber: '23456789012',
-              materials: [
-                {
-                  code: 'DMT002',
-                  name: 'Dijital programlanabilir işitme cihazı - sol',
-                  applicationDate: '2024-10-20',
-                  deliveryStatus: 'delivered'
-                }
-              ],
-              sgkDocumentAvailable: true,
-              patientFormAvailable: true,
-              sgkStatus: 'success'
-            }
-          ]
-        }
-      ];
-
-      setPatients(mockPatients);
-      // }
-    } catch (error) {
-      console.error('Error loading patients:', error);
-      showError('Hata', 'Hastalar yüklenirken bir hata oluştu');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filterPatients = () => {
     if (!selectedMonth) {

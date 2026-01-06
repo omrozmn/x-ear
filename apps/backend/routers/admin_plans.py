@@ -2,63 +2,41 @@
 FastAPI Admin Plans Router - Migrated from Flask routes/admin_plans.py
 Handles subscription plan management
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel
 import logging
 import uuid
 
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_current_admin_user
 from schemas.base import ResponseEnvelope
+from schemas.plans import PlanCreate, PlanUpdate, PlanRead
 from models.admin_user import AdminUser
 from models.plan import Plan, PlanType, BillingInterval
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/plans", tags=["Admin Plans"])
 
-# --- Request Schemas ---
+# Response models
+class PlanListResponse(ResponseEnvelope):
+    data: Optional[dict] = None
 
-class CreatePlanRequest(BaseModel):
-    name: str
-    price: float
-    slug: Optional[str] = None
-    description: Optional[str] = None
-    plan_type: Optional[str] = "BASIC"
-    billing_interval: Optional[str] = "MONTHLY"
-    features: Optional[Dict[str, Any]] = {}
-    max_users: Optional[int] = None
-    max_storage_gb: Optional[int] = None
-    is_active: Optional[bool] = True
-    is_public: Optional[bool] = True
+class PlanDetailResponse(ResponseEnvelope):
+    data: Optional[dict] = None
 
-class UpdatePlanRequest(BaseModel):
-    name: Optional[str] = None
-    slug: Optional[str] = None
-    description: Optional[str] = None
-    plan_type: Optional[str] = None
-    price: Optional[float] = None
-    billing_interval: Optional[str] = None
-    features: Optional[Dict[str, Any]] = None
-    max_users: Optional[int] = None
-    max_storage_gb: Optional[int] = None
-    is_active: Optional[bool] = None
-    is_public: Optional[bool] = None
-
-# --- Routes ---
-
-@router.get("")
+@router.get("", response_model=PlanListResponse)
 def list_plans(
-    page: int = 1,
-    limit: int = 20,
-    type: str = "",
-    is_active: str = "",
-    is_public: str = "",
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    type: Optional[str] = Query(None),
+    is_active: Optional[str] = Query(None),
+    is_public: Optional[str] = Query(None),
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """List all plans"""
     try:
@@ -83,11 +61,11 @@ def list_plans(
         logger.error(f"List plans error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("")
+@router.post("", response_model=PlanDetailResponse)
 def create_plan(
-    request_data: CreatePlanRequest,
+    request_data: PlanCreate,
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Create a new plan"""
     try:
@@ -113,11 +91,11 @@ def create_plan(
         logger.error(f"Create plan error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{plan_id}")
+@router.get("/{plan_id}", response_model=PlanDetailResponse)
 def get_plan(
     plan_id: str,
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Get plan details"""
     plan = db_session.get(Plan, plan_id)
@@ -125,12 +103,12 @@ def get_plan(
         raise HTTPException(status_code=404, detail={"message": "Plan not found", "code": "NOT_FOUND"})
     return ResponseEnvelope(data={"plan": plan.to_dict(include_relationships=True)})
 
-@router.put("/{plan_id}")
+@router.put("/{plan_id}", response_model=PlanDetailResponse)
 def update_plan(
     plan_id: str,
-    request_data: UpdatePlanRequest,
+    request_data: PlanUpdate,
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Update plan"""
     try:
@@ -158,11 +136,11 @@ def update_plan(
         logger.error(f"Update plan error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{plan_id}")
+@router.delete("/{plan_id}", response_model=ResponseEnvelope)
 def delete_plan(
     plan_id: str,
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Delete plan (soft delete)"""
     try:

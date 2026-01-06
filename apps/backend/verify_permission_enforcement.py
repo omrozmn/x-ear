@@ -3,7 +3,6 @@ import requests
 import json
 from app import app
 from models import User, Role, Permission, db
-from flask_jwt_extended import create_access_token
 
 def verify_enforcement():
     with app.app_context():
@@ -49,18 +48,27 @@ def verify_enforcement():
             
         # Helper to test endpoint
         client = app.test_client()
-        token = create_access_token(identity=user.id)
+
+        # Prefer real login endpoint to obtain a token for the test user.
+        login = client.post(
+            '/api/auth/login',
+            json={'username': user.email, 'password': 'password'},
+            headers={'Content-Type': 'application/json'},
+        )
+        if login.status_code != 200:
+            print(f"Login failed for enforcement test user: {login.status_code} - {login.get_json()}")
+            return
+
+        login_data = login.get_json() or {}
+        token_payload = login_data.get('data') or login_data
+        token = token_payload.get('access_token') or token_payload.get('token') or token_payload.get('accessToken')
+        if not token:
+            print(f"Login returned no token: {login_data}")
+            return
+
         headers = {'Authorization': f'Bearer {token}'}
 
         def check_access(endpoint, method='GET', expected_code=200):
-            # Clear access context to force reload permissions from DB
-            from flask import g
-            if hasattr(g, '_access_context'):
-                try: 
-                     del g._access_context
-                except Exception:
-                     pass
-
             if method == 'GET':
                 resp = client.get(endpoint, headers=headers)
             elif method == 'POST':

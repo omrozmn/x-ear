@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card } from '@x-ear/ui-web';
 import { MessageSquare, Users, Zap } from 'lucide-react';
-import { useSmsIntegrationGetSmsCredit } from '@/api/generated';
+import { useGetSmsCreditApiSmsCreditGet } from '@/api/generated';
 import SingleSmsTab from './SingleSmsTab';
 import BulkSmsTab from './BulkSmsTab';
 import SmsAutomationTab from './SmsAutomationTab';
@@ -22,10 +22,10 @@ const TABS: Tab[] = [
 
 export default function SmsPage() {
     const [activeTab, setActiveTab] = useState<TabId>('single');
-    
+
     // Fetch SMS credit - shared across all tabs
-    const { data: creditData, isLoading: creditLoading } = useSmsIntegrationGetSmsCredit();
-    const creditBalance = (creditData?.data as any)?.data?.balance ?? 0;
+    const { data: creditData, isLoading: creditLoading } = useGetSmsCreditApiSmsCreditGet();
+    const creditBalance = (creditData as any)?.data?.credit ?? 0;
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">

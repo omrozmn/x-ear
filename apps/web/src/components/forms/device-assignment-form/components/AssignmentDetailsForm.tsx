@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { inventoryGetInventoryItems } from '@/api/generated';
+import { getAllInventory } from '@/api/generated';
 import { unwrapObject } from '@/utils/response-unwrap';
 import { Input, Select, Textarea } from '@x-ear/ui-web';
 import { Calendar, User, FileText, AlertCircle, CheckCircle, Clock, RotateCcw } from 'lucide-react';
@@ -81,7 +81,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
     const timer = setTimeout(async () => {
       if (loanerSearch.length >= 2) {
         try {
-          const response = await inventoryGetInventoryItems({
+          const response = await getAllInventory({
             search: loanerSearch,
             category: 'hearing_aid'
           });

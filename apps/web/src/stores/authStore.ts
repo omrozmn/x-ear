@@ -2,12 +2,12 @@ import { create } from 'zustand';
 import { apiClient } from '../api/orval-mutator';
 import { persist } from 'zustand/middleware';
 import {
-  authRefresh,
-  authVerifyOtp,
-  authSendVerificationOtp,
-  authForgotPassword
+  refreshToken as refreshTokenApi,
+  verifyOtp as verifyOtpApi,
+  sendVerificationOtp as sendVerificationOtpApi,
+  forgotPassword as forgotPasswordApi
 } from '@/api/generated/auth/auth';
-import { adminAdminLogin } from '@/api/generated/admin/admin';
+import { adminLogin } from '@/api/generated/admin/admin';
 import { DEV_CONFIG } from '../config/dev-config';
 import { subscriptionService } from '../services/subscription.service';
 import { tokenManager } from '../utils/token-manager';
@@ -48,6 +48,8 @@ interface User {
   isPhoneVerified?: boolean;
   isImpersonating?: boolean;
   realUserEmail?: string;
+  // Super admin flag
+  is_super_admin?: boolean;
   // Tenant impersonation
   effectiveTenantId?: string;
   tenantName?: string;
@@ -169,6 +171,12 @@ export const useAuthStore = create<AuthStore>()(
 
       checkSubscription: async () => {
         try {
+          // Skip subscription check for admin users - they don't have tenant subscriptions
+          const { user } = get();
+          if (user?.role === 'super_admin' || user?.role === 'admin') {
+            return;
+          }
+
           const subInfo = await subscriptionService.getCurrentSubscription();
           if (subInfo) {
             set({
@@ -192,7 +200,7 @@ export const useAuthStore = create<AuthStore>()(
           setError(null);
 
           // Use admin login endpoint for admin panel
-          const response = await adminAdminLogin({ email: credentials.username, password: credentials.password });
+          const response = await adminLogin({ email: credentials.username, password: credentials.password });
 
           // customInstance extracts axios response.data, which contains our backend response
           const responseData = response as any;
@@ -216,7 +224,8 @@ export const useAuthStore = create<AuthStore>()(
                   : userData.email,
                 role: userData.role || 'user',
                 phone: undefined, // Admin users don't have phone
-                isPhoneVerified: true // Admin users are always verified
+                isPhoneVerified: true, // Admin users are always verified
+                is_super_admin: userData.is_super_admin || userData.role === 'super_admin'
               };
 
               // Check if tenant has changed (extract from JWT token)
@@ -280,10 +289,13 @@ export const useAuthStore = create<AuthStore>()(
               await checkSubscription();
 
               // Trigger lazy services that need auth (don't await, fire-and-forget)
-              try {
-                const { appointmentService } = await import('../services/appointment.service');
-                appointmentService.triggerServerSync();
-              } catch (e) { /* ignore */ }
+              // Skip for admin users who don't have tenant context
+              if (user.role !== 'super_admin' && user.role !== 'admin') {
+                try {
+                  const { appointmentService } = await import('../services/appointment.service');
+                  appointmentService.triggerServerSync();
+                } catch (e) { /* ignore */ }
+              }
             } else {
               console.error('Missing required fields:', {
                 success: responseData?.success,
@@ -354,7 +366,7 @@ export const useAuthStore = create<AuthStore>()(
           setError(null);
 
           // Use Orval-generated function
-          const data = await authVerifyOtp({ otp }) as any;
+          const data = await verifyOtpApi({ otp }) as any;
 
           if (data?.success) {
             const { access_token: newToken, refreshToken, data: userData } = data;
@@ -408,7 +420,7 @@ export const useAuthStore = create<AuthStore>()(
           setLoading(true);
           setError(null);
 
-          await authSendVerificationOtp({ phone });
+          await sendVerificationOtpApi({ phone });
 
           // If success, we might want to update state to show OTP input if it wasn't shown
           // But usually we just show a success message
@@ -435,9 +447,9 @@ export const useAuthStore = create<AuthStore>()(
           console.log('Phone:', phone);
           console.log('Making request to:', '/api/auth/forgot-password');
 
-          const data = await authForgotPassword({
+          const data = await forgotPasswordApi({
             identifier: phone,
-            captcha_token: 'dummy' // TODO: Implement proper captcha
+            captchaToken: 'dummy' // TODO: Implement proper captcha
           }) as any;
 
           console.log('Response received:', data);
@@ -522,7 +534,7 @@ export const useAuthStore = create<AuthStore>()(
           setLoading(true);
           setError(null);
 
-          const data = await authVerifyOtp({
+          const data = await verifyOtpApi({
             identifier: phone,
             otp: otp
           }) as any;
@@ -592,7 +604,7 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           // authRefresh uses refresh token from Authorization header (set by apiClient interceptor)
-          const responseData = await authRefresh() as any;
+          const responseData = await refreshTokenApi() as any;
           if (responseData && (responseData.access_token || responseData.accessToken)) {
             // Backend should return { access_token, data: user } format
             const newToken = responseData.access_token || responseData.accessToken;
@@ -628,8 +640,8 @@ export const useAuthStore = create<AuthStore>()(
         if (storedToken && !tokenManager.isAccessTokenExpired()) {
           try {
             // Get current user info from API
-            const { usersGetMe } = await import('../api/generated/users/users');
-            const response = await usersGetMe();
+            const { getUsersMeMe } = await import('../api/generated/users/users');
+            const response = await getUsersMeMe();
 
             // customInstance returns response.data directly: {success, data: {...}}
             const responseData = response as any;
@@ -657,6 +669,7 @@ export const useAuthStore = create<AuthStore>()(
                 isPhoneVerified,
                 isImpersonating,
                 realUserEmail,
+                is_super_admin: userData.is_super_admin || userData.role === 'super_admin',
                 // Preserve tenant impersonation details from token
                 effectiveTenantId: payload?.effective_tenant_id as string | undefined,
                 // If tenant name is in token, use it. Backend doesn't strictly put name in token usually, 
@@ -689,11 +702,13 @@ export const useAuthStore = create<AuthStore>()(
 
               await checkSubscription();
 
-              // Trigger lazy services that need auth
-              try {
-                const { appointmentService } = await import('../services/appointment.service');
-                appointmentService.triggerServerSync();
-              } catch (e) { /* ignore */ }
+              // Trigger lazy services that need auth (skip for admins)
+              if (transformedUser.role !== 'super_admin' && transformedUser.role !== 'admin') {
+                try {
+                  const { appointmentService } = await import('../services/appointment.service');
+                  appointmentService.triggerServerSync();
+                } catch (e) { /* ignore */ }
+              }
 
               console.log('Auth state restored successfully with user:', transformedUser);
               return;

@@ -1,14 +1,18 @@
 import React from 'react';
-import { useGetAffiliate, useGetAffiliateCommissions, Commission } from '@/lib/api-client';
+import { useGetAffiliateDetails, useGetAffiliateCommissions, Commission } from '@/lib/api-client';
 import { Link } from '@tanstack/react-router';
 
 interface AffiliateDetailPageProps {
-  affiliateId: number;
+  affiliateId: string;
 }
 
 const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }) => {
-  const { data: affiliate, isLoading: loadingAffiliate } = useGetAffiliate(affiliateId);
-  const { data: commissions, isLoading: loadingCommissions } = useGetAffiliateCommissions(affiliateId);
+  const idAsNumber = parseInt(affiliateId, 10);
+  const { data: affiliateData, isLoading: loadingAffiliate } = useGetAffiliateDetails(idAsNumber);
+  const { data: commissionsData, isLoading: loadingCommissions } = useGetAffiliateCommissions(idAsNumber);
+
+  const affiliate = (affiliateData as any)?.data;
+  const commissions = (commissionsData as any)?.data;
 
   if (loadingAffiliate) return <div className="p-8 text-center text-gray-500">Yükleniyor...</div>;
   if (!affiliate) return <div className="p-8 text-center text-red-500">Affiliate bulunamadı.</div>;
@@ -22,7 +26,7 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
         <div className="flex items-center gap-4">
           {/* Note: In a real app, use history.back() or a parent link if strictly typed */}
           <Link to="/affiliates" className="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 text-sm">← Geri</Link>
-          <h1 className="text-2xl font-bold text-gray-900">Affiliate Detayı: {affiliate.display_id || affiliate.id}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Affiliate Detayı: {affiliate.id}</h1>
         </div>
       </div>
 
@@ -32,19 +36,19 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase">Referans Kodu</label>
-            <div className="mt-1 font-mono text-lg text-indigo-600 bg-indigo-50 px-2 py-1 rounded inline-block">{affiliate.code}</div>
+            <div className="mt-1 font-mono text-lg text-indigo-600 bg-indigo-50 px-2 py-1 rounded inline-block">{affiliate.referralCode}</div>
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase">Durum</label>
             <div className="mt-1">
-              <span className={`px-2 py-1 rounded-full text-xs font-bold ${affiliate.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                {affiliate.is_active ? 'AKTİF' : 'PASİF'}
+              <span className={`px-2 py-1 rounded-full text-xs font-bold ${affiliate.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                {affiliate.isActive ? 'AKTİF' : 'PASİF'}
               </span>
             </div>
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase">Ad Soyad (Hesap Sahibi)</label>
-            <div className="mt-1 text-gray-900">{affiliate.account_holder_name || '-'}</div>
+            <div className="mt-1 text-gray-900">{affiliate.name}</div>
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase">Email</label>
@@ -52,7 +56,7 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase">Telefon</label>
-            <div className="mt-1 text-gray-900">{affiliate.phone_number || '-'}</div>
+            <div className="mt-1 text-gray-900">{affiliate.phone ? String(affiliate.phone) : '-'}</div>
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase">IBAN</label>
@@ -85,7 +89,7 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
           <tbody className="bg-white divide-y divide-gray-200">
             {commissions?.map((c) => (
               <tr key={c.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{c.created_at ? new Date(c.created_at).toLocaleDateString('tr-TR') : '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('tr-TR') : '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{c.event}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full

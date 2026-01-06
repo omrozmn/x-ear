@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Button, Input, Card, CardContent } from '@x-ear/ui-web';
 import { Search, X, Trash2 } from 'lucide-react';
-import type { InventoryItem } from '@/api/generated/schemas';
+// import type { InventoryItem } from '@/api/generated/schemas';
+type InventoryItem = any;
 
 interface SaleItem {
   id: string;

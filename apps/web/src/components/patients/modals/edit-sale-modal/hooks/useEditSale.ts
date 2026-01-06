@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
-import { inventoryGetInventoryItems, inventoryGetInventoryItem, salesUpdateSale } from '@/api/generated';
-import type {
-  InventoryItem,
-  SalesUpdateSale1Body
-} from '@/api/generated/schemas';
+import { getAllInventory, getInventoryItem, updateSale } from '@/api/generated';
+import type { SaleUpdate } from '@/api/generated/schemas';
 import type {
   Sale,
   SaleFormData,
@@ -12,6 +9,19 @@ import type {
   SGKScheme,
   ServiceInfo
 } from '../types';
+
+// Local type for inventory items
+interface InventoryItem {
+  id?: string;
+  name: string;
+  category?: string;
+  brand?: string;
+  model?: string;
+  price: number;
+  availableInventory?: number;
+  inventory?: number;
+  availableSerials?: string[];
+}
 
 export const useEditSale = (sale: Sale, isOpen: boolean) => {
   // Form data state
@@ -70,11 +80,10 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
   // Load available devices for assignment
   const loadAvailableDevices = async () => {
     try {
-      const response = await inventoryGetInventoryItems({
+      const response = await getAllInventory({
         page: 1,
-        per_page: 50,
-        status: 'IN_STOCK'
-      });
+        per_page: 50
+      }) as any;
       setAvailableDevices(response?.data || []);
     } catch (err) {
       console.error('Error loading devices:', err);
@@ -110,8 +119,8 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     if (!sale.productId) return;
 
     try {
-      const response = await inventoryGetInventoryItem(sale.productId);
-      setProductDetails(response?.data || null);
+      const response = await getInventoryItem(sale.productId);
+      setProductDetails((response?.data as any) || null);
     } catch (err) {
       console.error('Error loading product details:', err);
     }
@@ -208,22 +217,16 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     updateState({ isSubmitting: true, error: null });
 
     try {
-      const updateData: SalesUpdateSale1Body = {
-        paid_amount: formData.salePrice, // mapped to paid_amount as it seems closest to "Amount Paid" conceptualization, or verify if patient_payment is better. Given the schema has patient_payment, let's use that if salePrice is user payment.
-        // Actually, looking at useEditSale, the salePrice is the 'total amount' of the sale. 
-        // generated schema: patient_payment, sgk_coverage, discount_amount.
-        // There is no total_amount.
-        // I will map to patient_payment for now to satisfy the type.
-        patient_payment: formData.salePrice,
-        discount_amount: formData.discountAmount,
-        sgk_coverage: formData.sgkCoverage,
+      const updateData: SaleUpdate = {
+        patientPayment: formData.salePrice,
+        discountAmount: formData.discountAmount,
+        sgkCoverage: formData.sgkCoverage,
         notes: formData.notes,
         status: state.saleStatus,
-        payment_method: state.paymentMethod,
-        sale_date: formData.saleDate
+        paymentMethod: state.paymentMethod
       };
 
-      const response = await salesUpdateSale(sale.id!, updateData) as any;
+      const response = await updateSale(sale.id!, updateData) as any;
 
       if (response?.data) {
         onSaleUpdate(response.data as Sale);

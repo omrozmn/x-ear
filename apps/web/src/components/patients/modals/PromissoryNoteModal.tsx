@@ -2,8 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Button, Input, Textarea, Alert, AlertDescription, Loading } from '@x-ear/ui-web';
 import { X, FileText, User, Building, AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 import { Patient } from '../../../types/patient';
-import { Sale as APISale } from '@/api/generated/schemas';
 import { Sale } from '../../../types/patient/patient-communication.types';
+
+// Local Sale type for API compatibility
+interface APISale {
+  id: string;
+  patientId?: string;
+  totalAmount?: number;
+  patientPayment?: number;
+}
 
 interface PromissoryNote {
   id?: string;

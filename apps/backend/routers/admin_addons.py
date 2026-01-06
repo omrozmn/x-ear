@@ -2,59 +2,41 @@
 FastAPI Admin Addons Router - Migrated from Flask routes/admin_addons.py
 Handles add-on/package management
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel
 import logging
 import uuid
 import re
 
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_current_admin_user
 from schemas.base import ResponseEnvelope
+from schemas.addons import AddonCreate, AddonUpdate, AddonRead
 from models.admin_user import AdminUser
 from models.addon import AddOn, AddOnType
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/addons", tags=["Admin Addons"])
 
-# --- Request Schemas ---
+# Response models
+class AddonListResponse(ResponseEnvelope):
+    data: Optional[dict] = None
 
-class CreateAddonRequest(BaseModel):
-    name: str
-    price: float
-    slug: Optional[str] = None
-    description: Optional[str] = None
-    addon_type: Optional[str] = "FLAT_FEE"
-    currency: Optional[str] = "TRY"
-    unit_name: Optional[str] = None
-    limit_amount: Optional[int] = None
-    is_active: Optional[bool] = True
+class AddonDetailResponse(ResponseEnvelope):
+    data: Optional[dict] = None
 
-class UpdateAddonRequest(BaseModel):
-    name: Optional[str] = None
-    slug: Optional[str] = None
-    description: Optional[str] = None
-    addon_type: Optional[str] = None
-    price: Optional[float] = None
-    currency: Optional[str] = None
-    unit_name: Optional[str] = None
-    limit_amount: Optional[int] = None
-    is_active: Optional[bool] = None
-
-# --- Routes ---
-
-@router.get("")
+@router.get("", response_model=AddonListResponse)
 def list_addons(
-    page: int = 1,
-    limit: int = 20,
-    type: str = "",
-    is_active: str = "",
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    type: Optional[str] = Query(None),
+    is_active: Optional[str] = Query(None),
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """List all add-ons"""
     try:
@@ -77,11 +59,11 @@ def list_addons(
         logger.error(f"List addons error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("")
+@router.post("", response_model=AddonDetailResponse)
 def create_addon(
-    request_data: CreateAddonRequest,
+    request_data: AddonCreate,
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Create a new add-on"""
     try:
@@ -110,11 +92,11 @@ def create_addon(
         logger.error(f"Create addon error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{addon_id}")
+@router.get("/{addon_id}", response_model=AddonDetailResponse)
 def get_addon(
     addon_id: str,
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Get add-on details"""
     addon = db_session.get(AddOn, addon_id)
@@ -122,12 +104,12 @@ def get_addon(
         raise HTTPException(status_code=404, detail={"message": "Add-on not found", "code": "NOT_FOUND"})
     return ResponseEnvelope(data={"addon": addon.to_dict()})
 
-@router.put("/{addon_id}")
+@router.put("/{addon_id}", response_model=AddonDetailResponse)
 def update_addon(
     addon_id: str,
-    request_data: UpdateAddonRequest,
+    request_data: AddonUpdate,
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Update add-on"""
     try:
@@ -153,11 +135,11 @@ def update_addon(
         logger.error(f"Update addon error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{addon_id}")
+@router.delete("/{addon_id}", response_model=ResponseEnvelope)
 def delete_addon(
     addon_id: str,
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Delete add-on (soft delete)"""
     try:

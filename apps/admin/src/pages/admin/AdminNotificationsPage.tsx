@@ -9,7 +9,7 @@ import {
 import toast from 'react-hot-toast';
 
 const AdminNotificationsPage: React.FC = () => {
-    const { data: templatesData, isLoading: templatesLoading } = useGetNotificationTemplates();
+    const { data: templatesData, isLoading: templatesLoading } = useGetNotificationTemplates({} as any);
     const sendNotificationMutation = useSendNotification();
 
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);

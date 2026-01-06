@@ -8,41 +8,21 @@ from schemas.sms import (
     SMSProviderConfigRead, SMSProviderConfigUpdate,
     TenantSMSCreditRead, TargetAudienceRead, TargetAudienceCreate
 )
-from dependencies import get_db, get_current_context, require_permission
 from schemas.base import ResponseEnvelope, EmptyResponse
 from schemas.base import ApiError
 from models.sms_package import SmsPackage
 from models.sms_integration import (
     SMSProviderConfig, SMSHeaderRequest, TenantSMSCredit, TargetAudience
 )
-from models.base import db
+
 from models.user import User
 from models.notification import Notification
-# We need to access Flask app for context if using Flask-SQLAlchemy legacy models
-from flask import current_app
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 router = APIRouter(tags=["SMS"])
 
-# Dependency to get DB session (bridge for Flask-SQLAlchemy)
-# In a pure FastAPI app, we would use a simpler session maker. 
-# Here we piggyback on Flask's db session which is thread-local.
-def get_db():
-    # This assumes we are running in a context where db.session is usable
-    # Since we use sync endpoints (def), FastAPI runs them in threads.
-    # Flask-SQLAlchemy should work if the app context is pushed or if queries don't rely on it strictly (scoped_session).
-    try:
-        yield db.session
-    except Exception:
-        db.session.rollback()
-        raise
-
-# --- Public Routes ---
-
-@router.get("/sms/packages", response_model=ResponseEnvelope[List[SMSPackageRead]])
-def list_sms_packages(db: Session = Depends(get_db)):
-    """List available SMS packages (Public)"""
-    packages = SmsPackage.query.filter_by(is_active=True).order_by(SmsPackage.price).all()
-    return ResponseEnvelope(data=packages)
+# --- Public Routes removed (handled in sms_integration.py) ---
 
 # --- Admin Routes ---
 
@@ -53,15 +33,19 @@ def list_admin_packages(
     db: Session = Depends(get_db)
 ):
     """List all SMS packages (Admin)"""
-    pagination = SmsPackage.query.order_by(SmsPackage.price).paginate(page=page, per_page=limit, error_out=False)
+    query = db.query(SmsPackage).order_by(SmsPackage.price)
+    
+    total = query.count()
+    total_pages = (total + limit - 1) // limit
+    items = query.offset((page - 1) * limit).limit(limit).all()
     
     return ResponseEnvelope(
-        data=pagination.items,
+        data=items,
         meta={
-            "total": pagination.total,
-            "page": pagination.page,
-            "perPage": pagination.per_page,
-            "totalPages": pagination.pages
+            "total": total,
+            "page": page,
+            "perPage": limit,
+            "totalPages": total_pages
         }
     )
 
@@ -76,14 +60,14 @@ def create_package(pkg_in: SMSPackageCreate, db: Session = Depends(get_db)):
         currency=pkg_in.currency,
         is_active=pkg_in.is_active
     )
-    db.session.add(pkg)
-    db.session.commit()
+    db.add(pkg)
+    db.commit()
     return ResponseEnvelope(data=pkg)
 
 @router.put("/admin/sms/packages/{pkg_id}", response_model=ResponseEnvelope[SMSPackageRead])
 def update_package(pkg_id: str, pkg_in: SMSPackageUpdate, db: Session = Depends(get_db)):
     """Update an SMS package"""
-    pkg = SmsPackage.query.get(pkg_id)
+    pkg = db.get(SmsPackage, pkg_id)
     if not pkg:
         raise HTTPException(
             status_code=404,
@@ -97,32 +81,8 @@ def update_package(pkg_id: str, pkg_in: SMSPackageUpdate, db: Session = Depends(
     if pkg_in.currency is not None: pkg.currency = pkg_in.currency
     if pkg_in.is_active is not None: pkg.is_active = pkg_in.is_active
     
-    db.session.commit()
+    db.commit()
     return ResponseEnvelope(data=pkg)
 
-# --- Tenant Routes ---
-
-@router.get("/sms/config", response_model=ResponseEnvelope[Optional[SMSProviderConfigRead]])
-def get_sms_config(
-        db: Session = Depends(get_db),
-        ctx = Depends(get_current_context)
-    ):
-    """Get SMS configuration for tenant"""
-    # Use tenant_scoped_query logic manually or via helper if available
-    # For now, explicit filter since we have ctx.tenant_id
-    if not ctx.tenant_id:
-        return ResponseEnvelope(data=None)
-
-    config = SMSProviderConfig.query.filter_by(tenant_id=ctx.tenant_id).first()
-    
-    if not config:
-        # For tenant users, create default config
-        if ctx.tenant_id:
-            config = SMSProviderConfig(tenant_id=ctx.tenant_id)
-            db.session.add(config)
-            db.session.commit()
-        else:
-            return ResponseEnvelope(data=None)
-            
-    return ResponseEnvelope(data=config)
+# --- Tenant Routes removed (handled in sms_integration.py) ---
 

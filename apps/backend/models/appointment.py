@@ -45,25 +45,48 @@ class Appointment(BaseModel):
         patient_name = None
         if self.patient_id:
             try:
-                from .patient import Patient
-                patient = Patient.query.get(self.patient_id)
-                if patient:
-                    patient_name = f"{patient.first_name or ''} {patient.last_name or ''}".strip() or 'Hasta bilgisi yok'
+                # Use relationship backref (defined in Patient model as backref='patient')
+                if self.patient:
+                     patient_name = f"{self.patient.first_name or ''} {self.patient.last_name or ''}".strip() or 'Hasta bilgisi yok'
             except Exception:
                 patient_name = 'Hasta bilgisi yok'
         
+        # Normalize appointment_type to valid enum values
+        apt_type = self.appointment_type or 'consultation'
+        type_mapping = {
+            'checkup': 'control',
+            'check-up': 'control',
+            'follow-up': 'control',
+            'followup': 'control',
+            'fitting': 'device_fitting',
+            'trial': 'device_trial',
+            'test': 'hearing_test',
+        }
+        normalized_type = type_mapping.get(apt_type.lower(), apt_type.lower())
+        # Validate against known types
+        valid_types = ['consultation', 'hearing_test', 'device_trial', 'device_fitting', 'control', 'repair', 'other']
+        if normalized_type not in valid_types:
+            normalized_type = 'other'
+        
+        # Format status to lowercase for schema compatibility
+        status_value = self.status.value.lower() if self.status else 'scheduled'
+        
+        # Format date as ISO datetime string for Pydantic datetime field  
+        date_iso = self.date.isoformat() if self.date else None
+        
         appointment_dict = {
             'id': self.id,
+            'tenantId': self.tenant_id,  # Required by AppointmentRead schema
             'patientId': self.patient_id,
             'patientName': patient_name,
             'clinicianId': self.clinician_id,
             'branchId': self.branch_id,
-            'date': self.date.strftime('%Y-%m-%d') if self.date else None,
+            'date': date_iso,
             'time': self.time,
             'duration': self.duration,
-            'appointmentType': self.appointment_type,  # Match Orval schema
-            'type': self.appointment_type,  # Keep for backward compatibility
-            'status': self.status.value if self.status else None,
+            'appointmentType': normalized_type,
+            'type': normalized_type,
+            'status': status_value,
             'notes': self.notes
         }
         appointment_dict.update(base_dict)

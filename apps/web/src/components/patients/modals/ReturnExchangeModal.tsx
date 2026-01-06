@@ -22,10 +22,44 @@ import {
   Search
 } from 'lucide-react';
 import { Patient } from '../../../types/patient';
-import { salesUpdateSale } from '@/api/generated';
-import type { Sale as APISale, SalesUpdateSale1Body, InventoryItem } from '@/api/generated/schemas';
+import { updateSale } from '@/api/generated';
+import type { SaleUpdate } from '@/api/generated/schemas';
 import { useInventory } from '../../../hooks/useInventory';
 import { useFuzzySearch } from '../../../hooks/useFuzzySearch';
+
+interface LocalInventoryItem {
+  id?: string;
+  name: string;
+  brand?: any;
+  model?: any;
+  category?: any;
+  barcode?: any;
+  serialNumber?: any;
+  price?: number;
+  stock?: number;
+  [key: string]: any;
+}
+
+// Local types for API compatibility
+interface APISale {
+  id: string;
+  patientId?: string;
+  totalAmount?: number;
+  patientPayment?: number;
+}
+
+interface SalesUpdateSale1Body {
+  status?: string;
+  notes?: string;
+}
+
+interface InventoryItem {
+  id: string;
+  name: string;
+  brand?: string;
+  model?: string;
+  price?: number;
+}
 
 interface ReturnInvoice {
   id: string;
@@ -116,7 +150,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
   const [gibError, setGibError] = useState('');
 
   // New product selection for exchange
-  const [selectedNewProduct, setSelectedNewProduct] = useState<InventoryItem | null>(null);
+  const [selectedNewProduct, setSelectedNewProduct] = useState<LocalInventoryItem | null>(null);
   const [showProductSearch, setShowProductSearch] = useState(false);
   const [productSearchTerm, setProductSearchTerm] = useState('');
 
@@ -131,7 +165,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
     'Diğer'
   ];
 
-  const { results, search, clearSearch } = useFuzzySearch<InventoryItem>(products, {
+  const { results, search, clearSearch } = useFuzzySearch<LocalInventoryItem>(products, {
     threshold: 0.3,
     maxDistance: 3,
     keys: ['name', 'brand', 'model', 'category', 'barcode', 'serialNumber']
@@ -145,7 +179,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
     }
   }, [productSearchTerm, showProductSearch, search, clearSearch]);
 
-  const filteredProducts: InventoryItem[] = useMemo(() => {
+  const filteredProducts: LocalInventoryItem[] = useMemo(() => {
     if (!showProductSearch) return [];
     if (!productSearchTerm.trim()) {
       return products.slice(0, 10);
@@ -351,12 +385,12 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
       };
 
       // Update sale status based on return/exchange type
-      const updateData: SalesUpdateSale1Body = {
+      const updateData: SaleUpdate = {
         status: type === 'return' ? 'RETURNED' : 'EXCHANGED',
         notes: `${type === 'return' ? 'İade' : 'Değişim'} - Neden: ${reason}${notes ? ` - Notlar: ${notes}` : ''}`
       };
 
-      await salesUpdateSale(sale.id || '', updateData);
+      await updateSale(sale.id || '', updateData);
 
       // Create return invoice if requested
       if (createReturnInvoice && type === 'return') {
@@ -728,8 +762,8 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                               İade Faturası: {returnInvoice.invoiceNumber}
                             </span>
                             <span className={`text-xs px-2 py-1 rounded-full ${returnInvoice.status === 'gib_sent'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-yellow-100 text-yellow-800'
                               }`}>
                               {returnInvoice.status === 'gib_sent' ? 'GİB\'e Gönderildi' : 'Hazırlanıyor'}
                             </span>
@@ -904,7 +938,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                           {product.price?.toLocaleString('tr-TR')} ₺
                         </p>
                         <p className={`text-sm ${(product.stock || 0) === 0 ? 'text-red-600' :
-                            (product.stock || 0) <= 5 ? 'text-orange-600' : 'text-green-600'
+                          (product.stock || 0) <= 5 ? 'text-orange-600' : 'text-green-600'
                           }`}>
                           Stok: {product.stock || 0}
                         </p>

@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Edit2, Shield, Lock, Save, X, AlertCircle, CheckCircle2, Search } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { customInstance } from '../../api/orval-mutator';
+import {
+    useListRoles,
+    useCreateRole,
+    useUpdateRole,
+    useDeleteRole
+} from '../../api/generated/roles/roles';
+import { RoutersRolesRoleCreate, RoleUpdate } from '../../api/generated/schemas';
 import { unwrapArray, unwrapObject } from '../../utils/response-unwrap';
 
 interface Role {
@@ -13,72 +18,7 @@ interface Role {
     createdAt?: string;
 }
 
-/**
- * TODO: BACKEND SWAGGER REQUIRED
- * /roles endpoints need to be added to OpenAPI spec
- * Required endpoints:
- * - GET /roles -> List all roles
- * - POST /roles -> Create new role
- * - PUT /roles/{roleId} -> Update role
- * - DELETE /roles/{roleId} -> Delete role
- * 
- * After swagger update: npm run generate:api
- * Then replace these manual hooks with ORVAL-generated:
- * - useRolesListRoles
- * - useRolesCreateRole  
- * - useRolesUpdateRole
- * - useRolesDeleteRole
- */
-
-// Temporary hooks using customInstance (maintains auth + retry logic)
-const useRolesListRoles = () => {
-    return useQuery({
-        queryKey: ['roles'],
-        queryFn: async () => {
-            const response = await customInstance({ url: '/roles', method: 'GET' });
-            return unwrapArray<Role>(response);
-        }
-    });
-};
-
-const useRolesCreateRole = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (variables: { data: { name: string; description?: string } }) => {
-            const response = await customInstance({ url: '/roles', method: 'POST', data: variables.data });
-            return unwrapObject<Role>(response);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['roles'] });
-        }
-    });
-};
-
-const useRolesUpdateRole = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ roleId, data }: { roleId: string; data: any }) => {
-            const response = await customInstance({ url: `/roles/${roleId}`, method: 'PUT', data });
-            return unwrapObject<Role>(response);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['roles'] });
-        }
-    });
-};
-
-const useRolesDeleteRole = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ roleId }: { roleId: string }) => {
-            const response = await customInstance({ url: `/roles/${roleId}`, method: 'DELETE' });
-            return unwrapObject<any>(response);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['roles'] });
-        }
-    });
-};
+// Manual hooks replaced by Orval generated hooks
 
 export default function RolesSettings() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -94,14 +34,14 @@ export default function RolesSettings() {
     const [createSuccess, setCreateSuccess] = useState('');
     const [createError, setCreateError] = useState('');
 
-    // React Query hooks
-    const { data: rolesData, isLoading: loading, error: fetchError, refetch } = useRolesListRoles();
-    const createRoleMutation = useRolesCreateRole();
-    const updateRoleMutation = useRolesUpdateRole();
-    const deleteRoleMutation = useRolesDeleteRole();
+    // React Query hooks (Orval)
+    const { data: rolesResponse, isLoading: loading, error: fetchError, refetch } = useListRoles();
+    const createRoleMutation = useCreateRole();
+    const updateRoleMutation = useUpdateRole();
+    const deleteRoleMutation = useDeleteRole();
 
     // Extract roles from response
-    const roles = rolesData || [];
+    const roles = unwrapArray<Role>(rolesResponse);
     const error = fetchError ? 'Roller yüklenemedi' : null;
 
     const handleCreateRole = async (e: React.FormEvent) => {
@@ -276,14 +216,14 @@ export default function RolesSettings() {
                             {role.permissions && role.permissions.length > 0 && (
                                 <div className="flex flex-wrap gap-1">
                                     {role.permissions.slice(0, 3).map((perm, idx) => (
-                    <span
-                        key={idx}
-                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-                    >
-                        <Lock className="w-3 h-3 mr-1" />
-                        {perm}
-                    </span>
-                ))}
+                                        <span
+                                            key={idx}
+                                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                                        >
+                                            <Lock className="w-3 h-3 mr-1" />
+                                            {perm}
+                                        </span>
+                                    ))}
                                     {role.permissions.length > 3 && (
                                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                                             +{role.permissions.length - 3} daha

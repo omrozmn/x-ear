@@ -1,18 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import { Input } from '@x-ear/ui-web';
 import { getCategoryDisplay, getCategoryValue } from '../../../utils/category-mapping';
-import { useAuthStore } from '../../../stores/authStore';
-import { useQueryClient } from '@tanstack/react-query';
-
-import {
-  useInventoryGetCategories,
-  getInventoryGetCategoriesQueryKey,
-  useInventoryCreateCategory
-} from '@/api/generated';
-
-
+import { useGetDeviceCategories } from '@/api/generated/devices/devices';
 
 interface CategoryAutocompleteProps {
   value: string;
@@ -35,17 +26,15 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
-  const [allCategories, setAllCategories] = useState<string[]>([]);
+  const [localCategories, setLocalCategories] = useState<string[]>([]);
   const [displayValue, setDisplayValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement | null>(null);
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
-  // Update display value when value changes
-  useEffect(() => {
-    setDisplayValue(getCategoryDisplay(value));
-  }, [value]);
+  // Fetch categories from API
+  const { data: categoriesData, isLoading, isError } = useGetDeviceCategories();
 
   // Common product categories (fallback)
   const defaultCategories = [
@@ -76,47 +65,41 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
     'Koruma Kılıfı'
   ];
 
-  const { token } = useAuthStore();
-  const queryClient = useQueryClient();
-
-  // React Query hook for categories - only fetch if authenticated
-  const { data: categoriesData, isLoading, isError } = useInventoryGetCategories({
-    query: {
-      queryKey: getInventoryGetCategoriesQueryKey(),
-      enabled: !!token,
-    }
-  });
-
-  // Load categories from API data
+  // Update display value when value changes
   useEffect(() => {
+    setDisplayValue(getCategoryDisplay(value));
+  }, [value]);
+
+  // Merge API categories with defaults and local additions
+  const allCategories = useMemo(() => {
     let apiCategories: string[] = [];
 
-    // Handle different response structures (same as SupplierAutocomplete)
+    // Handle different response structures
     if (categoriesData) {
-      if (Array.isArray(categoriesData)) {
-        apiCategories = categoriesData;
-      } else if ((categoriesData as any)?.data) {
-        const innerData = (categoriesData as any).data;
+      const responseData = categoriesData as any;
+      if (Array.isArray(responseData)) {
+        apiCategories = responseData;
+      } else if (responseData?.data) {
+        const innerData = responseData.data;
         if (Array.isArray(innerData)) {
           apiCategories = innerData;
         } else if (innerData?.categories && Array.isArray(innerData.categories)) {
           apiCategories = innerData.categories;
-        } else if (innerData?.data && Array.isArray(innerData.data)) {
-          apiCategories = innerData.data;
+        }
+      } else if (responseData?.success && responseData?.data) {
+        const innerData = responseData.data;
+        if (Array.isArray(innerData)) {
+          apiCategories = innerData;
         }
       }
     }
 
-    if (apiCategories.length > 0) {
-      const combined = [...new Set([...apiCategories, ...defaultCategories])];
-      setAllCategories(combined.sort());
-    } else {
-      setAllCategories(defaultCategories);
-    }
-  }, [categoriesData]);
+    // Combine all sources: API, local, and defaults
+    const combined = [...new Set([...apiCategories, ...localCategories, ...defaultCategories])];
+    return combined.sort();
+  }, [categoriesData, localCategories]);
 
   useEffect(() => {
-    const categories = allCategories.length > 0 ? allCategories : defaultCategories;
     if (displayValue && isOpen) {
       // Normalize Turkish characters
       const normalizeTurkish = (str: string) => {
@@ -132,7 +115,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
 
       const normalizedValue = normalizeTurkish(displayValue);
 
-      const scored = categories.map(cat => {
+      const scored = allCategories.map(cat => {
         const normalizedCat = normalizeTurkish(cat);
         let score = 0;
 
@@ -158,16 +141,15 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
 
       setFilteredCategories(filtered);
     } else if (isOpen) {
-      setFilteredCategories(categories.slice(0, 10));
+      setFilteredCategories(allCategories.slice(0, 10));
     } else {
       setFilteredCategories([]);
     }
   }, [displayValue, isOpen, allCategories]);
 
   // Check if current value is an exact match
-  const categories = allCategories.length > 0 ? allCategories : defaultCategories;
   const dv = displayValue || '';
-  const hasExactMatch = categories.some(cat => (cat || '').toLowerCase() === dv.toLowerCase());
+  const hasExactMatch = allCategories.some(cat => (cat || '').toLowerCase() === dv.toLowerCase());
   const showCreateNew = dv.trim() && !hasExactMatch && isOpen;
 
   useEffect(() => {
@@ -231,32 +213,13 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
     setIsOpen(false);
   };
 
-  const createCategoryMutation = useInventoryCreateCategory();
-
-  const handleCreateNew = async () => {
+  const handleCreateNew = () => {
     const newCategory = displayValue.trim();
     if (!newCategory) return;
 
-    try {
-      await createCategoryMutation.mutateAsync({ data: { name: newCategory } } as any);
-      console.log('✅ New category created:', newCategory);
-      // Add to local list immediately
-      setAllCategories(prev => [...new Set([...prev, newCategory])].sort());
-      
-      // Invalidate React Query cache to refetch categories
-      queryClient.invalidateQueries({ queryKey: getInventoryGetCategoriesQueryKey() });
-    } catch (error: any) {
-      if (error.response?.status === 409) {
-        console.log('Category already exists, using existing:', newCategory);
-        
-        // Invalidate cache
-        queryClient.invalidateQueries({ queryKey: getInventoryGetCategoriesQueryKey() });
-      } else {
-        console.warn('Failed to persist category to API, using locally:', error);
-      }
-      // Add to local list anyway
-      setAllCategories(prev => [...new Set([...prev, newCategory])].sort());
-    }
+    // Add to local categories immediately
+    setLocalCategories(prev => [...new Set([...prev, newCategory])].sort());
+    console.log('✅ New category added locally:', newCategory);
 
     onChange(newCategory);
     setDisplayValue(newCategory);

@@ -37,7 +37,7 @@ export function TenantAutocomplete({
         }
     });
 
-    const tenants = tenantsData?.data?.tenants || [];
+    const tenants = (tenantsData as any)?.data?.tenants || [];
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

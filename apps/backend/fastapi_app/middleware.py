@@ -33,7 +33,7 @@ def envelope_success(data=None, *, request_id: str | None = None, meta: dict | N
     payload = ResponseEnvelope(
         data=data,
         meta=meta,
-        requestId=request_id,
+        request_id=request_id,
     ).model_dump(mode="json", by_alias=True)
     return JSONResponse(payload, status_code=status_code)
 
@@ -42,6 +42,6 @@ def envelope_error(message: str, *, request_id: str | None = None, code: str = "
     payload = ResponseEnvelope(
         success=False,
         error=ApiError(message=message, code=code, details=details).model_dump(by_alias=True),
-        requestId=request_id,
+        request_id=request_id,
     ).model_dump(mode="json", by_alias=True)
     return JSONResponse(payload, status_code=status_code)

@@ -29,7 +29,7 @@ const AdminMarketplacesPage: React.FC = () => {
     const createMutation = useCreateMarketplaceIntegration();
     const syncMutation = useSyncMarketplaceIntegration();
 
-    const integrations = integrationsData?.data || [];
+    const integrations = (integrationsData as any)?.data || [];
 
     const handleCreate = async () => {
         if (!name || !tenantId || !apiKey || !sellerId) {
@@ -61,7 +61,7 @@ const AdminMarketplacesPage: React.FC = () => {
 
     const handleSync = async (id: string) => {
         try {
-            await syncMutation.mutateAsync({ id });
+            await syncMutation.mutateAsync({ integrationId: id });
             toast.success('Senkronizasyon başlatıldı');
             refetch();
         } catch (error) {
@@ -100,9 +100,9 @@ const AdminMarketplacesPage: React.FC = () => {
                             <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center space-x-3">
                                     <div className={`p-2 rounded-lg ${integration.platform === 'trendyol' ? 'bg-orange-100 text-orange-600' :
-                                            integration.platform === 'hepsiburada' ? 'bg-orange-100 text-orange-800' :
-                                                integration.platform === 'n11' ? 'bg-red-100 text-red-600' :
-                                                    'bg-gray-100 text-gray-600'
+                                        integration.platform === 'hepsiburada' ? 'bg-orange-100 text-orange-800' :
+                                            integration.platform === 'n11' ? 'bg-red-100 text-red-600' :
+                                                'bg-gray-100 text-gray-600'
                                         }`}>
                                         <ShoppingBag className="w-6 h-6" />
                                     </div>

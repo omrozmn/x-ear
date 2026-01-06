@@ -3,24 +3,27 @@ FastAPI Roles Router - Migrated from Flask routes/roles.py
 Role CRUD and permission management
 """
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 import logging
 import re
 
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_current_context, AccessContext
 from schemas.base import ResponseEnvelope, ApiError
+from schemas.roles import RoleRead, RoleCreate as SchemaRoleCreate, RoleUpdate as SchemaRoleUpdate
 from models.role import Role
 from models.permission import Permission
-from models.base import db
+from models.user import User
+
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Roles"])
 
-# --- Request Schemas ---
+# --- Request Schemas (local, for backwards compat) ---
 
 class RoleCreate(BaseModel):
     name: str
@@ -42,21 +45,42 @@ def is_valid_role_name(name: str) -> bool:
         return False
     return bool(re.match(r'^[a-zA-Z][a-zA-Z0-9_-]*$', name))
 
+
+def invalidate_role_permissions(db_session: Session, role_name: str):
+    """
+    Increment permissions_version for all users with this role.
+    This forces them to re-login to get updated permissions.
+    """
+    try:
+        users = db_session.query(User).filter_by(role=role_name).all()
+        for user in users:
+            current_version = getattr(user, 'permissions_version', 1) or 1
+            user.permissions_version = current_version + 1
+        db_session.commit()
+        logger.info(f"Invalidated permissions for {len(users)} users with role '{role_name}'")
+    except Exception as e:
+        logger.error(f"Failed to invalidate role permissions: {e}")
+        db_session.rollback()
+
 # --- Routes ---
 
-@router.get("/roles")
+@router.get("/roles", response_model=ResponseEnvelope[List[RoleRead]])
 def list_roles(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get all roles"""
-    roles = Role.query.order_by(Role.name).all()
-    return ResponseEnvelope(data=[r.to_dict() for r in roles])
+    try:
+        roles = db_session.query(Role).order_by(Role.name).all()
+        return ResponseEnvelope(data=[r.to_dict() for r in roles])
+    except Exception as e:
+        logger.error(f"List roles error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/roles", status_code=201)
+@router.post("/roles", status_code=201, response_model=ResponseEnvelope[RoleRead])
 def create_role(
     role_in: RoleCreate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Create a new role"""
@@ -73,7 +97,7 @@ def create_role(
                 detail=ApiError(message="invalid role name", code="INVALID_NAME").model_dump(mode="json")
             )
         
-        if Role.query.filter_by(name=role_in.name).first():
+        if db_session.query(Role).filter_by(name=role_in.name).first():
             raise HTTPException(
                 status_code=409,
                 detail=ApiError(message="role exists", code="ROLE_EXISTS").model_dump(mode="json")
@@ -95,11 +119,11 @@ def create_role(
         logger.error(f"Create role error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/roles/{role_id}")
+@router.put("/roles/{role_id}", response_model=ResponseEnvelope[RoleRead])
 def update_role(
     role_id: str,
     role_in: RoleUpdate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Update a role"""
@@ -119,7 +143,7 @@ def update_role(
                     status_code=400,
                     detail=ApiError(message="invalid role name", code="INVALID_NAME").model_dump(mode="json")
                 )
-            existing = Role.query.filter_by(name=data['name']).first()
+            existing = db_session.query(Role).filter_by(name=data['name']).first()
             if existing and existing.id != role_id:
                 raise HTTPException(
                     status_code=409,
@@ -144,7 +168,7 @@ def update_role(
 @router.delete("/roles/{role_id}")
 def delete_role(
     role_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Delete a role"""
@@ -156,7 +180,7 @@ def delete_role(
                 detail=ApiError(message="role not found", code="ROLE_NOT_FOUND").model_dump(mode="json")
             )
         
-        if role.is_system:
+        if getattr(role, 'is_system', False):
             raise HTTPException(
                 status_code=403,
                 detail=ApiError(message="cannot delete system role", code="SYSTEM_ROLE").model_dump(mode="json")
@@ -173,14 +197,18 @@ def delete_role(
         logger.error(f"Delete role error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/roles/{role_id}/permissions")
+# NOTE: GET /permissions endpoint is now in permissions.py
+# This duplicate was causing OpenAPI conflicts
+
+
+@router.post("/roles/{role_id}/permissions", response_model=ResponseEnvelope[RoleRead])
 def add_permission_to_role(
     role_id: str,
     perm_in: PermissionAssign,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access("role:write")),
     db_session: Session = Depends(get_db)
 ):
-    """Add permission to role"""
+    """Add a permission to a role"""
     try:
         role = db_session.get(Role, role_id)
         if not role:
@@ -189,39 +217,37 @@ def add_permission_to_role(
                 detail=ApiError(message="role not found", code="ROLE_NOT_FOUND").model_dump(mode="json")
             )
         
-        perm = Permission.query.filter_by(name=perm_in.permission).first()
-        if not perm:
+        permission = db_session.query(Permission).filter_by(name=perm_in.permission).first()
+        if not permission:
             raise HTTPException(
                 status_code=404,
                 detail=ApiError(message="permission not found", code="PERMISSION_NOT_FOUND").model_dump(mode="json")
             )
         
-        if perm in role.permissions:
-            raise HTTPException(
-                status_code=409,
-                detail=ApiError(message="permission already assigned", code="ALREADY_ASSIGNED").model_dump(mode="json")
-            )
-        
-        role.permissions.append(perm)
-        db_session.add(role)
-        db_session.commit()
+        if permission not in role.permissions:
+            role.permissions.append(permission)
+            db_session.commit()
+            
+            # Invalidate tokens for users with this role
+            invalidate_role_permissions(db_session, role.name)
         
         return ResponseEnvelope(data=role.to_dict())
     except HTTPException:
         raise
     except Exception as e:
         db_session.rollback()
-        logger.error(f"Add permission error: {e}")
+        logger.error(f"Add permission to role error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/roles/{role_id}/permissions/{permission_id}")
+
+@router.delete("/roles/{role_id}/permissions/{permission_name}")
 def remove_permission_from_role(
     role_id: str,
-    permission_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    permission_name: str,
+    access: UnifiedAccess = Depends(require_access("role:write")),
     db_session: Session = Depends(get_db)
 ):
-    """Remove permission from role"""
+    """Remove a permission from a role"""
     try:
         role = db_session.get(Role, role_id)
         if not role:
@@ -230,27 +256,63 @@ def remove_permission_from_role(
                 detail=ApiError(message="role not found", code="ROLE_NOT_FOUND").model_dump(mode="json")
             )
         
-        perm = db_session.get(Permission, permission_id)
-        if not perm:
+        permission = db_session.query(Permission).filter_by(name=permission_name).first()
+        if not permission:
             raise HTTPException(
                 status_code=404,
                 detail=ApiError(message="permission not found", code="PERMISSION_NOT_FOUND").model_dump(mode="json")
             )
         
-        if perm not in role.permissions:
+        if permission in role.permissions:
+            role.permissions.remove(permission)
+            db_session.commit()
+            
+            # Invalidate tokens for users with this role
+            invalidate_role_permissions(db_session, role.name)
+        
+        return ResponseEnvelope(message="permission removed")
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Remove permission from role error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/roles/{role_id}/permissions", response_model=ResponseEnvelope[RoleRead])
+def set_role_permissions(
+    role_id: str,
+    permissions: List[str],
+    access: UnifiedAccess = Depends(require_access("role:write")),
+    db_session: Session = Depends(get_db)
+):
+    """Set all permissions for a role (replaces existing)"""
+    try:
+        role = db_session.get(Role, role_id)
+        if not role:
             raise HTTPException(
                 status_code=404,
-                detail=ApiError(message="permission not assigned", code="NOT_ASSIGNED").model_dump(mode="json")
+                detail=ApiError(message="role not found", code="ROLE_NOT_FOUND").model_dump(mode="json")
             )
         
-        role.permissions.remove(perm)
-        db_session.add(role)
+        # Get all requested permissions
+        new_permissions = []
+        for perm_name in permissions:
+            perm = db_session.query(Permission).filter_by(name=perm_name).first()
+            if perm:
+                new_permissions.append(perm)
+        
+        # Replace permissions
+        role.permissions = new_permissions
         db_session.commit()
+        
+        # Invalidate tokens for users with this role
+        invalidate_role_permissions(db_session, role.name)
         
         return ResponseEnvelope(data=role.to_dict())
     except HTTPException:
         raise
     except Exception as e:
         db_session.rollback()
-        logger.error(f"Remove permission error: {e}")
+        logger.error(f"Set role permissions error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -3,7 +3,7 @@ FastAPI Notifications Router - Migrated from Flask routes/notifications.py
 Notification CRUD, settings, stats
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 from uuid import uuid4
@@ -11,11 +11,13 @@ import logging
 
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_current_context, AccessContext
+from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope, ApiError
+from schemas.notifications import NotificationCreate as NotificationCreateSchema
+from schemas.notifications import NotificationRead, NotificationUpdate, NotificationStats, NotificationSettings
 from models.notification import Notification
 from models.system import Settings
-from models.base import db
 
 logger = logging.getLogger(__name__)
 
@@ -24,15 +26,6 @@ router = APIRouter(tags=["Notifications"])
 def now_utc():
     return datetime.now(timezone.utc)
 
-# --- Request Schemas ---
-
-class NotificationCreate(BaseModel):
-    user_id: Optional[str] = Field(None, alias="userId")
-    title: str
-    message: Optional[str] = None
-    type: str = "info"
-    data: Optional[dict] = None
-
 class NotificationSettingsUpdate(BaseModel):
     user_id: str = Field(..., alias="userId")
     preferences: Optional[dict] = None
@@ -40,9 +33,10 @@ class NotificationSettingsUpdate(BaseModel):
 
 # --- Routes ---
 
-@router.post("/notifications", status_code=201)
+@router.post("/notifications", status_code=201, response_model=ResponseEnvelope[NotificationRead])
 def create_notification(
-    notif_in: NotificationCreate,
+    notif_in: NotificationCreateSchema,
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Create a new notification"""
@@ -57,28 +51,40 @@ def create_notification(
         db_session.add(notif)
         db_session.commit()
         
-        return ResponseEnvelope(data=notif.to_dict())
+        return ResponseEnvelope(data=notif)
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create notification error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/notifications")
+@router.get("/notifications", response_model=ResponseEnvelope[List[NotificationRead]])
 def list_notifications(
-    user_id: str = Query(..., alias="user_id"),
+    user_id: Optional[str] = Query(None, alias="user_id"),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """List notifications for a user"""
     try:
-        query = Notification.query.filter_by(user_id=user_id).order_by(Notification.created_at.desc())
+        query = db_session.query(Notification)
+        
+        # Filter by tenant
+        if access.tenant_id:
+            query = query.filter(Notification.tenant_id == access.tenant_id)
+        
+        # Filter by user if provided, otherwise use current user
+        target_user_id = user_id or access.user_id
+        if target_user_id:
+            query = query.filter(Notification.user_id == target_user_id)
+        
+        query = query.order_by(Notification.created_at.desc())
         
         total = query.count()
         notifications = query.offset((page - 1) * per_page).limit(per_page).all()
         
         return ResponseEnvelope(
-            data=[n.to_dict() for n in notifications],
+            data=notifications,
             meta={
                 "total": total,
                 "page": page,
@@ -90,9 +96,10 @@ def list_notifications(
         logger.error(f"List notifications error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/notifications/{notification_id}/read")
+@router.put("/notifications/{notification_id}/read", response_model=ResponseEnvelope[NotificationRead])
 def mark_notification_read(
     notification_id: str,
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Mark notification as read"""
@@ -104,10 +111,11 @@ def mark_notification_read(
                 detail=ApiError(message="Notification not found", code="NOTIFICATION_NOT_FOUND").model_dump(mode="json")
             )
         
-        notif.read = True
+        # Model uses is_read
+        notif.is_read = True
         db_session.commit()
         
-        return ResponseEnvelope(data=notif.to_dict())
+        return ResponseEnvelope(data=notif)
     except HTTPException:
         raise
     except Exception as e:
@@ -115,15 +123,49 @@ def mark_notification_read(
         logger.error(f"Mark notification read error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/notifications/stats")
+@router.put("/notifications/{notification_id}", response_model=ResponseEnvelope[NotificationRead])
+def update_notification(
+    notification_id: str,
+    notif_in: NotificationUpdate,
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """Update a notification"""
+    try:
+        notif = db_session.get(Notification, notification_id)
+        if not notif:
+            raise HTTPException(
+                status_code=404,
+                detail=ApiError(message="Notification not found", code="NOTIFICATION_NOT_FOUND").model_dump(mode="json")
+            )
+        
+        data = notif_in.model_dump(exclude_unset=True)
+        if 'is_read' in data:
+            notif.is_read = data['is_read']
+            
+        db_session.commit()
+        return ResponseEnvelope(data=notif)
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Update notification error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/notifications/stats", response_model=ResponseEnvelope[NotificationStats])
 def notification_stats(
     user_id: str = Query(..., alias="user_id"),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get notification stats for a user"""
     try:
-        total = Notification.query.filter_by(user_id=user_id).count()
-        unread = Notification.query.filter_by(user_id=user_id, is_read=False).count()
+        total = db_session.query(Notification).filter(Notification.user_id == user_id).count()
+        unread = (
+            db_session.query(Notification)
+            .filter(Notification.user_id == user_id, Notification.is_read == False)  # noqa: E712
+            .count()
+        )
         
         return ResponseEnvelope(
             data={"total": total, "unread": unread}
@@ -132,9 +174,10 @@ def notification_stats(
         logger.error(f"Notification stats error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/notifications/{notification_id}")
+@router.delete("/notifications/{notification_id}", response_model=ResponseEnvelope[None])
 def delete_notification(
     notification_id: str,
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Delete a notification"""
@@ -157,7 +200,7 @@ def delete_notification(
         logger.error(f"Delete notification error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/notifications/settings")
+@router.get("/notifications/settings", response_model=ResponseEnvelope[NotificationSettings])
 def get_user_notification_settings(
     user_id: str = Query(..., alias="user_id"),
     db_session: Session = Depends(get_db)
@@ -176,7 +219,7 @@ def get_user_notification_settings(
         logger.error(f"Get user notification settings error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/notifications/settings")
+@router.put("/notifications/settings", response_model=ResponseEnvelope[NotificationSettings])
 def set_user_notification_settings(
     settings_in: NotificationSettingsUpdate,
     db_session: Session = Depends(get_db)

@@ -26,7 +26,7 @@ import {
     X,
     Zap
 } from 'lucide-react';
-import { useSmsGetHeaders, getSmsGetHeadersQueryKey } from '@/api/generated';
+import { useListSmsHeadersApiSmsHeadersGet, getListSmsHeadersQueryKey } from '@/api/generated';
 import { useAuthStore } from '@/stores/authStore';
 
 // SMS Automation Trigger Types
@@ -261,8 +261,8 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
     const { token } = useAuthStore();
 
     // Get SMS headers for sender selection
-    const { data: headersData, isLoading: headersLoading, isError: headersError } = useSmsGetHeaders({
-        query: { queryKey: getSmsGetHeadersQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
+    const { data: headersData, isLoading: headersLoading, isError: headersError } = useListSmsHeadersApiSmsHeadersGet({
+        query: { queryKey: getListSmsHeadersQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
     });
 
     // Parse SMS headers and filter only approved ones
@@ -336,7 +336,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
     const totalSent = rules.reduce((acc, r) => acc + (r.stats?.sent || 0), 0);
 
     const handleToggleRule = (ruleId: string) => {
-        setRules(prev => prev.map(r => 
+        setRules(prev => prev.map(r =>
             r.id === ruleId ? { ...r, isActive: !r.isActive } : r
         ));
         showSuccessToast('Otomasyon güncellendi', 'Kural durumu değiştirildi.');
@@ -447,7 +447,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
             .replace(/\{\{TAKSIT_SAYISI\}\}/g, '12')
             .replace(/\{\{SON_KONTROL\}\}/g, '02 Haziran 2024')
             .replace(/\{\{YAS\}\}/g, '65');
-        
+
         setPreviewContent(preview);
         setShowPreview(true);
     };
@@ -559,7 +559,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
                                                                 </div>
                                                                 <p className="text-sm text-gray-500 mt-1">{triggerConfig?.label}</p>
                                                                 <p className="text-xs text-gray-400 mt-2 line-clamp-2">{rule.templateContent}</p>
-                                                                
+
                                                                 {rule.timing && rule.timing.type !== 'immediate' && (
                                                                     <p className="text-xs text-indigo-600 mt-2 flex items-center gap-1">
                                                                         <Clock className="w-3 h-3" />
@@ -798,27 +798,29 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
 
                             {/* Message Template */}
                             <div className="flex-1">
-                                <label className="text-sm font-medium text-gray-700 mb-1 block">Mesaj Şablonu</label>
+                                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                    Mesaj Şablonu
+                                    <span className="text-gray-400 font-normal ml-2">({formData.templateContent.length} karakter)</span>
+                                </label>
                                 <Textarea
                                     ref={textareaRef}
-                                    className="w-full min-h-[150px] resize-none"
                                     value={formData.templateContent}
                                     onChange={(e) => setFormData(prev => ({ ...prev, templateContent: e.target.value }))}
-                                    placeholder="SMS mesajınızı buraya yazın. Dinamik alanları kullanarak kişiselleştirilmiş mesajlar oluşturabilirsiniz."
+                                    className="w-full h-full min-h-[150px] resize-none"
+                                    placeholder="Mesaj şablonunu buraya yazın..."
                                 />
-                                <div className="flex items-center justify-between mt-1">
-                                    <p className="text-xs text-gray-500">
-                                        {formData.templateContent.length} karakter / {smsSegments} SMS
-                                    </p>
+                                <div className="flex items-center justify-between mt-1 text-xs text-gray-500">
+                                    <span>
+                                        SMS Sayısı: {Math.max(1, Math.ceil(formData.templateContent.length / SMS_SEGMENT_LENGTH))}
+                                    </span>
                                     <Button
-                                        variant="ghost"
+                                        variant="outline"
                                         size="sm"
                                         onClick={() => handlePreview(formData.templateContent)}
-                                        disabled={!formData.templateContent.trim()}
-                                        className="flex items-center gap-1"
+                                        className="h-6 text-xs"
+                                        disabled={!formData.templateContent}
                                     >
-                                        <Eye className="w-4 h-4" />
-                                        Önizle
+                                        <Eye className="w-3 h-3 mr-1" /> Önizle
                                     </Button>
                                 </div>
                             </div>
@@ -837,7 +839,6 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
                             <Button
                                 variant="primary"
                                 onClick={handleCreateRule}
-                                disabled={!formData.name.trim() || !formData.templateContent.trim()}
                             >
                                 {editingRule ? 'Güncelle' : 'Oluştur'}
                             </Button>
@@ -861,7 +862,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
                         </div>
                         <div className="p-4 space-y-4">
                             <div className="bg-gray-100 rounded-lg p-4">
-                                <p className="text-xs text-gray-500 mb-2">Örnek verilerle önizleme:</p>
+                                <p className="text-xs text-gray-500 mb-2">Örnek veri göserimi:</p>
                                 <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
                                     <p className="text-sm text-gray-800 whitespace-pre-wrap">{previewContent}</p>
                                 </div>

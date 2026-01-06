@@ -11,7 +11,7 @@ import {
 import { Button, Input, Select } from '@x-ear/ui-web';
 import {
     useGetApiAdminSmsHeaders,
-    usePutApiAdminSmsHeadersHeaderIdStatus
+    useUpdateAdminHeaderStatus
 } from '../../lib/api-client';
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -30,7 +30,7 @@ export default function SMSHeadersPage() {
         limit
     } as any);
 
-    const updateStatusMutation = usePutApiAdminSmsHeadersHeaderIdStatus();
+    const updateStatusMutation = useUpdateAdminHeaderStatus();
 
     const handleStatusUpdate = async (status: 'approved' | 'rejected') => {
         if (!selectedHeader) return;
@@ -44,7 +44,7 @@ export default function SMSHeadersPage() {
                 headerId: selectedHeader.id,
                 data: {
                     status,
-                    rejectionReason: status === 'rejected' ? rejectionReason : undefined
+                    rejection_reason: status === 'rejected' ? rejectionReason : undefined
                 }
             });
             toast.success(`Başlık ${status === 'approved' ? 'onaylandı' : 'reddedildi'}`);
@@ -97,7 +97,7 @@ export default function SMSHeadersPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {headersData?.data?.map((header: any) => (
+                                {(headersData as any)?.data?.map((header: any) => (
                                     <tr key={header.id} className="hover:bg-gray-50">
                                         <td className="px-6 py-4 font-mono text-xs text-gray-500">{header.tenantId}</td>
                                         <td className="px-6 py-4 font-bold text-gray-900">{header.headerText}</td>
@@ -143,7 +143,7 @@ export default function SMSHeadersPage() {
                                         </td>
                                     </tr>
                                 ))}
-                                {headersData?.data?.length === 0 && (
+                                {(headersData as any)?.data?.length === 0 && (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                                             Bu filtrede kayıt bulunamadı.

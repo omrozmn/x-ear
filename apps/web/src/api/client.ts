@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
 // API Client for X-Ear Web Application
 
-// Re-export Patient from generated schemas for consistency
-export type { Patient } from '@/api/generated/schemas';
+// Re-export PatientRead as Patient from generated schemas for consistency
+export type { PatientRead as Patient } from '@/api/generated/schemas';
 import { tokenManager } from '../utils/token-manager';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5003';

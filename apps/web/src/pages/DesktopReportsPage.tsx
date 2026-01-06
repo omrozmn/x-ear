@@ -30,24 +30,21 @@ import { Button } from '@x-ear/ui-web';
 import { usePermissions } from '../hooks/usePermissions';
 import { unwrapObject, unwrapArray, unwrapPaginated } from '../utils/response-unwrap';
 import {
-  useReportsReportOverview,
-  useReportsReportPatients,
-  useReportsReportFinancial,
-  useReportsReportPromissoryNotes,
-  useReportsReportPromissoryNotesByPatient,
-  useReportsReportPromissoryNotesList,
-  useReportsReportRemainingPayments,
-  useReportsReportCashflowSummary,
-  useReportsReportPosMovements,
-  useActivityLogsAdminGetActivityLogs,
-  useActivityLogsGetFilterOptions,
-  getReportsReportOverviewQueryKey,
-  getReportsReportFinancialQueryKey,
-  getReportsReportPatientsQueryKey,
-  getReportsReportPromissoryNotesQueryKey,
-  getReportsReportPosMovementsQueryKey,
-  getActivityLogsAdminGetActivityLogsQueryKey,
-  getReportsReportPromissoryNotesListQueryKey,
+  useReportOverview,
+  useReportPatients,
+  useReportFinancial,
+  useGetActivityLogs,
+  useReportPromissoryNotes,
+  useReportPromissoryNotesByPatient,
+  useReportPromissoryNotesList,
+  useReportRemainingPayments,
+  useReportCashflowSummary,
+  useReportPosMovements,
+  getReportOverviewQueryKey,
+  getReportFinancialQueryKey,
+  getReportPatientsQueryKey,
+  getGetActivityLogsQueryKey,
+  useGetActivityLogFilterOptions,
 } from '@/api/generated';
 
 type TabId = 'overview' | 'sales' | 'patients' | 'promissory' | 'remaining' | 'activity' | 'pos_movements';
@@ -196,13 +193,15 @@ function KPICard({ title, value, icon: Icon, color, trend, subtitle }: {
 
 // Overview Tab Content
 function OverviewTab({ filters }: { filters: FilterState }) {
-  const { data: overviewData, isLoading, error, refetch } = useReportsReportOverview({
-    query: { queryKey: [...getReportsReportOverviewQueryKey(), { days: filters.days }] }
-  });
+  const { data: overviewData, isLoading, error, refetch } = useReportOverview(
+    { days: filters.days },
+    { query: { queryKey: [...getReportOverviewQueryKey({ days: filters.days })] } }
+  );
 
-  const { data: financialData } = useReportsReportFinancial({
-    query: { queryKey: [...getReportsReportFinancialQueryKey(), { days: filters.days }] }
-  });
+  const { data: financialData } = useReportFinancial(
+    { days: filters.days },
+    { query: { queryKey: [...getReportFinancialQueryKey({ days: filters.days })] } }
+  );
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
@@ -307,9 +306,10 @@ function OverviewTab({ filters }: { filters: FilterState }) {
 
 // Sales Tab Content
 function SalesTab({ filters }: { filters: FilterState }) {
-  const { data: financialData, isLoading, error, refetch } = useReportsReportFinancial({
-    query: { queryKey: [...getReportsReportFinancialQueryKey(), { days: filters.days }] }
-  });
+  const { data: financialData, isLoading, error, refetch } = useReportFinancial(
+    { days: filters.days },
+    { query: { queryKey: [...getReportFinancialQueryKey({ days: filters.days })] } }
+  );
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
@@ -404,9 +404,10 @@ function SalesTab({ filters }: { filters: FilterState }) {
 
 // Patients Tab Content
 function PatientsTab({ filters }: { filters: FilterState }) {
-  const { data: patientsData, isLoading, error, refetch } = useReportsReportPatients({
-    query: { queryKey: [...getReportsReportPatientsQueryKey(), { days: filters.days }] }
-  });
+  const { data: patientsData, isLoading, error, refetch } = useReportPatients(
+    { days: filters.days },
+    { query: { queryKey: [...getReportPatientsQueryKey({ days: filters.days })] } }
+  );
 
   if (isLoading) {
     return (
@@ -515,26 +516,21 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
   const [listFilter, setListFilter] = useState<'active' | 'overdue' | 'paid' | 'all'>('active');
   const [listPage, setListPage] = useState(1);
 
-  const { data: notesData, isLoading, error, refetch } = useReportsReportPromissoryNotes({
+  // Using Orval-generated hooks for promissory notes reports
+  const { data: notesData, isLoading, error, refetch } = useReportPromissoryNotes({
     days: 365
   });
 
-  const { data: byPatientData, isLoading: patientLoading } = useReportsReportPromissoryNotesByPatient({
+  const { data: byPatientData, isLoading: patientLoading } = useReportPromissoryNotesByPatient({
     status: 'active',
     page: 1,
     per_page: 10
   });
 
-  const { data: listData, isLoading: listLoading } = useQuery({
-    queryKey: ['/api/reports/promissory-notes/list', { status: listFilter, page: listPage, per_page: 20 }],
-    queryFn: ({ signal }) => customInstance<any>({
-      url: `/api/reports/promissory-notes/list`,
-      method: 'GET',
-      params: { status: listFilter, page: listPage, per_page: 20 },
-      signal
-    }),
-    enabled: showListModal
-  });
+  const { data: listData, isLoading: listLoading } = useReportPromissoryNotesList(
+    { status: listFilter, page: listPage, per_page: 20 },
+    { query: { enabled: showListModal } }
+  );
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
@@ -895,15 +891,14 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
   const [page, setPage] = useState(1);
   const [minAmount, setMinAmount] = useState(0);
 
-  const { data: paymentsData, isLoading, error, refetch } = useReportsReportRemainingPayments({
-    page,
-    per_page: 20,
-    min_amount: minAmount
-  });
+  // Using Orval-generated hooks for reports API
+  const { data: paymentsData, isLoading, error, refetch } = useReportRemainingPayments(
+    { page, per_page: 20, min_amount: minAmount }
+  );
 
-  const { data: cashflowData } = useReportsReportCashflowSummary({
-    days: filters.days
-  });
+  const { data: cashflowData } = useReportCashflowSummary(
+    { days: filters.days }
+  );
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
@@ -1128,15 +1123,16 @@ function ActivityTab() {
     search: ''
   });
 
-  const { data: logsResponse, isLoading } = useActivityLogsAdminGetActivityLogs({
+  const { data: logsResponse, isLoading } = useGetActivityLogs({
     action: activityFilters.action || undefined,
     user_id: activityFilters.user_id || undefined,
     search: activityFilters.search || undefined,
     page,
-    per_page: perPage
+    limit: perPage
   });
 
-  const { data: filterOptions } = useActivityLogsGetFilterOptions();
+  // Replace stub with generated hook
+  const { data: filterOptions } = useGetActivityLogFilterOptions();
 
   const { data: logs, pagination } = unwrapPaginated<any>(logsResponse);
   const options = unwrapObject<any>(filterOptions);
@@ -1319,11 +1315,10 @@ function ActivityTab() {
 // POS Movements Tab Content
 function PosMovementsTab({ filters }: { filters: FilterState }) {
   const [page, setPage] = useState(1);
-  const { data: reportData, isLoading, error, refetch } = useReportsReportPosMovements({
-    page,
-    per_page: 20,
-    days: filters.days
-  });
+  // Using Orval-generated hook for POS movements
+  const { data: reportData, isLoading, error, refetch } = useReportPosMovements(
+    { page, per_page: 20, days: filters.days }
+  );
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {

@@ -1,11 +1,11 @@
 """
-FastAPI Admin Router - Migrated from Flask routes/admin.py
+FastAPI Admin Router - Pure SQLAlchemy (No Flask)
 Handles admin authentication, user management, tickets, debug endpoints
 """
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone, timedelta
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 import logging
 import uuid
 import os
@@ -13,19 +13,34 @@ import os
 from sqlalchemy.orm import Session
 from jose import jwt
 
-from dependencies import get_db, SECRET_KEY, ALGORITHM, get_current_admin_user
-from schemas.base import ResponseEnvelope, ApiError
+from database import get_db
+from schemas.base import ResponseEnvelope
 from models.admin_user import AdminUser
 from models.user import User
 from models.role import Role
 from models.tenant import Tenant
-from models.base import db
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
+# JWT Configuration
+SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-dev-secret-key-change-in-prod')
+ALGORITHM = "HS256"
+
 DEBUG_ADMIN_EMAIL = 'admin@x-ear.com'
+
+def _is_debug_authorized(access: UnifiedAccess) -> bool:
+    """Check if user is authorized for debug operations"""
+    # Super admins can always use debug features
+    if access.is_super_admin:
+        return True
+    # Legacy: specific email check
+    if access.user and access.user.email == DEBUG_ADMIN_EMAIL:
+        return True
+    return False
 
 # --- Request/Response Schemas ---
 
@@ -66,10 +81,36 @@ class TicketResponseRequest(BaseModel):
     message: str
 
 class SwitchRoleRequest(BaseModel):
-    targetRole: str
+    target_role: str = Field(default=None, alias="targetRole")
+    
+    @model_validator(mode='before')
+    @classmethod
+    def accept_both_formats(cls, data):
+        if isinstance(data, dict):
+            # Accept both snake_case and camelCase
+            if 'target_role' in data and 'targetRole' not in data:
+                data['targetRole'] = data['target_role']
+            elif 'targetRole' in data and 'target_role' not in data:
+                data['target_role'] = data['targetRole']
+        return data
+    
+    model_config = {"populate_by_name": True}
 
 class SwitchTenantRequest(BaseModel):
-    targetTenantId: str
+    target_tenant_id: str = Field(default=None, alias="targetTenantId")
+    
+    @model_validator(mode='before')
+    @classmethod
+    def accept_both_formats(cls, data):
+        if isinstance(data, dict):
+            # Accept both snake_case and camelCase
+            if 'target_tenant_id' in data and 'targetTenantId' not in data:
+                data['targetTenantId'] = data['target_tenant_id']
+            elif 'targetTenantId' in data and 'target_tenant_id' not in data:
+                data['target_tenant_id'] = data['targetTenantId']
+        return data
+    
+    model_config = {"populate_by_name": True}
 
 # In-memory ticket store
 MOCK_TICKETS: List[Dict[str, Any]] = []
@@ -93,48 +134,45 @@ def create_refresh_token(identity: str, additional_claims: dict = None, expires_
 # --- Routes ---
 
 @router.post("/auth/login")
-async def admin_login(request_data: AdminLoginRequest):
+def admin_login(request_data: AdminLoginRequest, db: Session = Depends(get_db)):
     """Admin login endpoint"""
-    from app import app
-    
     try:
-        with app.app_context():
-            admin = AdminUser.query.filter_by(email=request_data.email).first()
-            if not admin or not admin.check_password(request_data.password):
-                raise HTTPException(status_code=401, detail={"message": "Invalid credentials", "code": "INVALID_CREDENTIALS"})
-            
-            if not admin.is_active:
-                raise HTTPException(status_code=403, detail={"message": "Account is disabled", "code": "ACCOUNT_DISABLED"})
-            
-            if admin.mfa_enabled and not request_data.mfa_token:
-                return ResponseEnvelope(data={"requires_mfa": True})
-            
-            admin.last_login = datetime.utcnow()
-            db.session.commit()
-            
-            admin_identity = admin.id if admin.id.startswith('admin_') else f'admin_{admin.id}'
-            access_token = create_access_token(admin_identity, {'role': admin.role, 'user_type': 'admin'})
-            refresh_token = create_refresh_token(admin_identity, {'role': admin.role, 'user_type': 'admin'})
-            
-            user_data = {
-                'id': admin.id,
-                'email': admin.email,
-                'first_name': admin.first_name,
-                'last_name': admin.last_name,
-                'role': admin.role,
-                'is_active': admin.is_active,
-                'mfa_enabled': admin.mfa_enabled,
-                'last_login': admin.last_login.isoformat() if admin.last_login else None,
-                'created_at': admin.created_at.isoformat() if admin.created_at else None,
-                'is_super_admin': admin.role == 'super_admin'
-            }
-            
-            return ResponseEnvelope(data={
-                "token": access_token,
-                "refreshToken": refresh_token,
-                "user": user_data,
-                "requires_mfa": False
-            })
+        admin = db.query(AdminUser).filter_by(email=request_data.email).first()
+        if not admin or not admin.check_password(request_data.password):
+            raise HTTPException(status_code=401, detail={"message": "Invalid credentials", "code": "INVALID_CREDENTIALS"})
+        
+        if not admin.is_active:
+            raise HTTPException(status_code=403, detail={"message": "Account is disabled", "code": "ACCOUNT_DISABLED"})
+        
+        if admin.mfa_enabled and not request_data.mfa_token:
+            return ResponseEnvelope(data={"requires_mfa": True})
+        
+        admin.last_login = datetime.utcnow()
+        db.commit()
+        
+        admin_identity = admin.id if admin.id.startswith('admin_') else f'admin_{admin.id}'
+        access_token = create_access_token(admin_identity, {'role': admin.role, 'user_type': 'admin'})
+        refresh_token = create_refresh_token(admin_identity, {'role': admin.role, 'user_type': 'admin'})
+        
+        user_data = {
+            'id': admin.id,
+            'email': admin.email,
+            'first_name': admin.first_name,
+            'last_name': admin.last_name,
+            'role': admin.role,
+            'is_active': admin.is_active,
+            'mfa_enabled': admin.mfa_enabled,
+            'last_login': admin.last_login.isoformat() if admin.last_login else None,
+            'created_at': admin.created_at.isoformat() if admin.created_at else None,
+            'is_super_admin': admin.role == 'super_admin'
+        }
+        
+        return ResponseEnvelope(data={
+            "token": access_token,
+            "refreshToken": refresh_token,
+            "user": user_data,
+            "requires_mfa": False
+        })
     except HTTPException:
         raise
     except Exception as e:
@@ -144,20 +182,20 @@ async def admin_login(request_data: AdminLoginRequest):
 @router.post("/users")
 def create_admin_user(
     request_data: CreateAdminUserRequest,
-    db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Create admin user or tenant user"""
     try:
         if request_data.tenant_id:
             # Create Tenant User
-            if db_session.query(User).filter_by(email=request_data.email).first():
+            if db.query(User).filter_by(email=request_data.email).first():
                 raise HTTPException(status_code=400, detail={"message": "User already exists", "code": "CONFLICT"})
             
             username = request_data.username or request_data.email.split('@')[0]
             base_username = username
             counter = 1
-            while db_session.query(User).filter_by(username=username).first():
+            while db.query(User).filter_by(username=username).first():
                 username = f"{base_username}{counter}"
                 counter += 1
             
@@ -172,12 +210,12 @@ def create_admin_user(
                 is_active=True
             )
             user.set_password(request_data.password)
-            db_session.add(user)
-            db_session.commit()
+            db.add(user)
+            db.commit()
             return ResponseEnvelope(data={"user": user.to_dict()})
         else:
             # Create Admin User
-            if db_session.query(AdminUser).filter_by(email=request_data.email).first():
+            if db.query(AdminUser).filter_by(email=request_data.email).first():
                 raise HTTPException(status_code=400, detail={"message": "User already exists", "code": "CONFLICT"})
             
             admin = AdminUser(
@@ -189,13 +227,13 @@ def create_admin_user(
                 is_active=True
             )
             admin.set_password(request_data.password)
-            db_session.add(admin)
-            db_session.commit()
+            db.add(admin)
+            db.commit()
             return ResponseEnvelope(data={"user": admin.to_dict()})
     except HTTPException:
         raise
     except Exception as e:
-        db_session.rollback()
+        db.rollback()
         logger.error(f"Create user error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -205,12 +243,12 @@ def get_admin_users(
     limit: int = 10,
     search: str = "",
     role: str = "",
-    db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Get list of admin users"""
     try:
-        query = db_session.query(AdminUser)
+        query = db.query(AdminUser)
         
         if search:
             query = query.filter(
@@ -237,12 +275,12 @@ def get_all_tenant_users(
     page: int = 1,
     limit: int = 10,
     search: str = "",
-    db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Get list of ALL users from ALL tenants"""
     try:
-        query = db_session.query(User)
+        query = db.query(User)
         
         if search:
             query = query.filter(
@@ -259,7 +297,7 @@ def get_all_tenant_users(
         for u in users:
             u_dict = u.to_dict()
             if u.tenant_id:
-                tenant = db_session.get(Tenant, u.tenant_id)
+                tenant = db.get(Tenant, u.tenant_id)
                 if tenant:
                     u_dict['tenant_name'] = tenant.name
             users_list.append(u_dict)
@@ -276,12 +314,12 @@ def get_all_tenant_users(
 def update_any_tenant_user(
     user_id: str,
     request_data: UpdateTenantUserRequest,
-    db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Update any tenant user (Admin Panel)"""
     try:
-        user = db_session.get(User, user_id)
+        user = db.get(User, user_id)
         if not user:
             raise HTTPException(status_code=404, detail={"message": "User not found", "code": "NOT_FOUND"})
         
@@ -298,7 +336,7 @@ def update_any_tenant_user(
         if request_data.password:
             user.set_password(request_data.password)
         
-        db_session.commit()
+        db.commit()
         return ResponseEnvelope(data=user.to_dict())
     except HTTPException:
         raise
@@ -312,7 +350,7 @@ def update_any_tenant_user(
 def get_admin_tickets(
     page: int = 1,
     limit: int = 10,
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Get support tickets"""
     total = len(MOCK_TICKETS)
@@ -327,7 +365,7 @@ def get_admin_tickets(
 @router.post("/tickets")
 def create_admin_ticket(
     request_data: CreateTicketRequest,
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Create support ticket"""
     ticket = {
@@ -337,9 +375,9 @@ def create_admin_ticket(
         "status": "open",
         "priority": request_data.priority,
         "category": request_data.category,
-        "tenant_id": request_data.tenant_id,
+        "access.tenant_id": request_data.tenant_id,
         "tenant_name": "Demo Tenant",
-        "created_by": current_admin.id,
+        "created_by": access.user_id,
         "created_at": datetime.utcnow().isoformat(),
         "sla_due_date": (datetime.utcnow() + timedelta(days=1)).isoformat()
     }
@@ -350,7 +388,7 @@ def create_admin_ticket(
 def update_admin_ticket(
     ticket_id: str,
     request_data: UpdateTicketRequest,
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Update support ticket"""
     ticket = next((t for t in MOCK_TICKETS if t['id'] == ticket_id), None)
@@ -369,7 +407,7 @@ def update_admin_ticket(
 def create_ticket_response(
     ticket_id: str,
     request_data: TicketResponseRequest,
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Create response for support ticket"""
     ticket = next((t for t in MOCK_TICKETS if t['id'] == ticket_id), None)
@@ -384,33 +422,41 @@ def create_ticket_response(
 def debug_switch_role(
     request_data: SwitchRoleRequest,
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Switch to a different role for debugging"""
     if os.getenv('ENABLE_DEBUG_ROLE_SWITCH', 'true').lower() != 'true':
         raise HTTPException(status_code=403, detail={"message": "Debug role switch is disabled", "code": "DEBUG_DISABLED"})
     
-    if current_admin.email != DEBUG_ADMIN_EMAIL:
+    if not _is_debug_authorized(access):
         raise HTTPException(status_code=403, detail="Bu özellik sadece sistem yöneticisi için kullanılabilir")
     
-    role = db_session.query(Role).filter_by(name=request_data.targetRole).first()
+    target_role = request_data.target_role
+    
+    # Try to find role by name first, then by id
+    role = db_session.query(Role).filter_by(name=target_role).first()
     if not role:
-        raise HTTPException(status_code=404, detail=f'Role "{request_data.targetRole}" not found')
+        role = db_session.query(Role).filter_by(id=target_role).first()
+    if not role:
+        raise HTTPException(status_code=404, detail=f'Role "{target_role}" not found')
+    
+    # Use the actual role name from database
+    effective_role_name = role.name
     
     role_permissions = [p.name for p in role.permissions]
     if 'platform.debug.use' not in role_permissions:
         role_permissions.append('platform.debug.use')
     
-    admin_identity = current_admin.id if current_admin.id.startswith('admin_') else f'admin_{current_admin.id}'
+    admin_identity = access.user_id if access.user_id.startswith('admin_') else f'admin_{access.user_id}'
     
     additional_claims = {
-        'effective_role': request_data.targetRole,
-        'real_user_id': current_admin.id,
-        'real_user_email': current_admin.email,
+        'effective_role': effective_role_name,
+        'real_user_id': access.user_id,
+        'real_user_email': access.user.email,
         'is_impersonating': True,
         'role_permissions': role_permissions,
         'user_type': 'admin',
-        'role': current_admin.role or 'super_admin',
+        'role': access.role or 'super_admin',
     }
     
     access_token = create_access_token(admin_identity, additional_claims)
@@ -419,61 +465,77 @@ def debug_switch_role(
     return ResponseEnvelope(data={
         "accessToken": access_token,
         "refreshToken": refresh_token,
-        "effectiveRole": request_data.targetRole,
+        "effectiveRole": effective_role_name,
         "permissions": role_permissions,
         "isImpersonating": True,
-        "realUserEmail": current_admin.email
+        "realUserEmail": access.user.email
     })
 
 @router.get("/debug/available-roles")
 def debug_available_roles(
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Get all available roles for debugging"""
     if os.getenv('ENABLE_DEBUG_ROLE_SWITCH', 'true').lower() != 'true':
         raise HTTPException(status_code=403, detail="Debug role switch is disabled")
     
-    if current_admin.email != DEBUG_ADMIN_EMAIL:
+    if not _is_debug_authorized(access):
         raise HTTPException(status_code=403, detail="Unauthorized")
     
     roles = db_session.query(Role).all()
+    
+    # Display name mapping - use role name if not in mapping
     role_display_names = {
-        'tenant_admin': 'Tenant Admin', 'admin': 'Yönetici', 'odyolog': 'Odyolog',
-        'odyometrist': 'Odyometrist', 'secretary': 'Sekreter', 'user': 'Kullanıcı'
+        'tenant_admin': 'Tenant Admin',
+        'admin': 'Yönetici',
+        'manager': 'Yönetici',
+        'staff': 'Personel',
+        'clinician': 'Klinisyen',
+        'odyolog': 'Odyolog',
+        'odyometrist': 'Odyometrist',
+        'secretary': 'Sekreter',
+        'user': 'Kullanıcı',
+        'super_admin': 'Super Admin',
     }
     
     return ResponseEnvelope(data={
-        "roles": [{"name": r.name, "displayName": role_display_names.get(r.name, r.name), "description": r.description, "permissionCount": len(r.permissions)} for r in roles]
+        "roles": [{
+            "id": r.id,
+            "name": r.name,
+            "displayName": role_display_names.get(r.name, r.name.replace('_', ' ').title()),
+            "description": r.description,
+            "permissionCount": len(r.permissions)
+        } for r in roles]
     })
 
 @router.post("/debug/switch-tenant")
 def debug_switch_tenant(
     request_data: SwitchTenantRequest,
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Switch to a different tenant context for debugging"""
     if os.getenv('ENABLE_DEBUG_ROLE_SWITCH', 'true').lower() != 'true':
         raise HTTPException(status_code=403, detail="Debug tenant switch is disabled")
     
-    if current_admin.email != DEBUG_ADMIN_EMAIL:
+    if not _is_debug_authorized(access):
         raise HTTPException(status_code=403, detail="Bu özellik sadece sistem yöneticisi için kullanılabilir")
     
-    tenant = db_session.get(Tenant, request_data.targetTenantId)
+    tenant = db_session.get(Tenant, request_data.target_tenant_id)
     if not tenant:
-        raise HTTPException(status_code=404, detail=f'Tenant "{request_data.targetTenantId}" not found')
+        raise HTTPException(status_code=404, detail=f'Tenant "{request_data.target_tenant_id}" not found')
     
-    admin_identity = current_admin.id if current_admin.id.startswith('admin_') else f'admin_{current_admin.id}'
+    admin_identity = access.user_id if access.user_id.startswith('admin_') else f'admin_{access.user_id}'
     
     additional_claims = {
-        'tenant_id': request_data.targetTenantId,
-        'effective_tenant_id': request_data.targetTenantId,
-        'real_user_id': current_admin.id,
-        'real_user_email': current_admin.email,
+        'tenant_id': request_data.target_tenant_id,
+        'effective_tenant_id': request_data.target_tenant_id,
+        'real_user_id': access.user_id,
+        'real_user_email': access.user.email,
         'is_impersonating_tenant': True,
         'user_type': 'admin',
-        'role': current_admin.role or 'super_admin',
+        'role': access.role or 'super_admin',
     }
     
     access_token = create_access_token(admin_identity, additional_claims)
@@ -482,23 +544,23 @@ def debug_switch_tenant(
     return ResponseEnvelope(data={
         "accessToken": access_token,
         "refreshToken": refresh_token,
-        "effectiveTenantId": request_data.targetTenantId,
+        "effectiveTenantId": request_data.target_tenant_id,
         "tenantName": tenant.name,
         "tenantStatus": tenant.status,
         "isImpersonatingTenant": True,
-        "realUserEmail": current_admin.email
+        "realUserEmail": access.user.email
     })
 
 @router.post("/debug/exit-impersonation")
 def debug_exit_impersonation(
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Exit tenant/role impersonation"""
-    if current_admin.email != DEBUG_ADMIN_EMAIL:
+    if not _is_debug_authorized(access):
         raise HTTPException(status_code=403, detail="Bu özellik sadece sistem yöneticisi için kullanılabilir")
     
-    admin_identity = current_admin.id if current_admin.id.startswith('admin_') else f'admin_{current_admin.id}'
+    admin_identity = access.user_id if access.user_id.startswith('admin_') else f'admin_{access.user_id}'
     
     access_token = create_access_token(admin_identity, {'role': 'super_admin', 'user_type': 'admin'})
     refresh_token = create_refresh_token(admin_identity, {'role': 'super_admin', 'user_type': 'admin'})
@@ -506,6 +568,37 @@ def debug_exit_impersonation(
     return ResponseEnvelope(data={
         "accessToken": access_token,
         "refreshToken": refresh_token,
-        "user": current_admin.to_dict(),
+        "user": access.user.to_dict(),
         "isImpersonating": False
+    })
+
+@router.get("/debug/page-permissions/{page_key}")
+def debug_page_permissions(
+    page_key: str,
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
+):
+    """Get permissions required for a specific page"""
+    if os.getenv('ENABLE_DEBUG_ROLE_SWITCH', 'true').lower() != 'true':
+        raise HTTPException(status_code=403, detail="Debug mode is disabled")
+    
+    # Page permission mappings
+    PAGE_PERMISSIONS = {
+        'dashboard': ['dashboard.view'],
+        'patients': ['patients.view', 'patients.read'],
+        'appointments': ['appointments.view', 'appointments.read'],
+        'inventory': ['inventory.view', 'inventory.read'],
+        'sales': ['sales.view', 'sales.read'],
+        'reports': ['reports.view', 'reports.read'],
+        'settings': ['settings.view', 'settings.read'],
+        'users': ['users.view', 'users.read'],
+        'admin': ['admin.view', 'admin.read'],
+    }
+    
+    permissions = PAGE_PERMISSIONS.get(page_key, [])
+    
+    return ResponseEnvelope(data={
+        "pageKey": page_key,
+        "requiredPermissions": permissions,
+        "found": len(permissions) > 0
     })

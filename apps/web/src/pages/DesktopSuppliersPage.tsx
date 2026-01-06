@@ -40,7 +40,7 @@ export function DesktopSuppliersPage() {
   // Hooks
   const { data, isLoading, error, refetch } = useSuppliers({
     search: searchValue,
-    status: filters?.status as any,
+    is_active: (filters?.status as any) === 'active' ? true : (filters?.status as any) === 'inactive' ? false : undefined,
     page: currentPage,
     per_page: itemsPerPage,
   });
@@ -139,7 +139,7 @@ export function DesktopSuppliersPage() {
     }
   };
 
-  const handleSaveSupplier = async (supplierData: Omit<SupplierExtended, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleSaveSupplier = async (supplierData: Omit<SupplierExtended, 'id' | 'createdAt' | 'updatedAt' | 'tenantId'>) => {
     try {
       if (editingSupplier && editingSupplier.id) {
         await updateSupplierMutation.mutateAsync({

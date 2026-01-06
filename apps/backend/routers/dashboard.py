@@ -10,14 +10,15 @@ import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from dependencies import get_db, get_current_context, AccessContext
 from schemas.base import ResponseEnvelope, ApiError
-from models.base import db
+
 from models.user import ActivityLog
 from models.patient import Patient
 from models.device import Device
 from models.sales import Sale
 from models.appointment import Appointment
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -25,37 +26,37 @@ router = APIRouter(tags=["Dashboard"])
 
 # --- Helper Functions ---
 
-def tenant_scoped_query(ctx: AccessContext, model):
+def tenant_scoped_query(access: UnifiedAccess, model, session: Session):
     """Apply tenant scoping to query"""
-    query = model.query
-    if ctx.tenant_id:
-        query = query.filter_by(tenant_id=ctx.tenant_id)
+    query = session.query(model)
+    if access.tenant_id:
+        query = query.filter_by(tenant_id=access.tenant_id)
     return query
 
 # --- Routes ---
 
 @router.get("/dashboard")
 def get_dashboard(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Main dashboard endpoint with KPIs and recent activity"""
     try:
         # KPIs
         try:
-            total_patients = tenant_scoped_query(ctx, Patient).count()
+            total_patients = tenant_scoped_query(access, Patient, db_session).count()
         except Exception as e:
             logger.error(f"KPI total_patients error: {e}")
             total_patients = 0
 
         try:
-            total_devices = tenant_scoped_query(ctx, Device).count()
+            total_devices = tenant_scoped_query(access, Device, db_session).count()
         except Exception as e:
             logger.error(f"KPI total_devices error: {e}")
             total_devices = 0
 
         try:
-            available_devices = tenant_scoped_query(ctx, Device).filter(
+            available_devices = tenant_scoped_query(access, Device, db_session).filter(
                 (Device.status == 'IN_STOCK') | 
                 (Device.patient_id == None) | 
                 (Device.patient_id == '')
@@ -64,7 +65,7 @@ def get_dashboard(
             available_devices = 0
 
         try:
-            base_query = tenant_scoped_query(ctx, Sale)
+            base_query = tenant_scoped_query(access, Sale, db_session)
             estimated_revenue = float(db_session.query(
                 func.coalesce(func.sum(Sale.total_amount), 0)
             ).filter(Sale.id.in_([s.id for s in base_query.all()])).scalar() or 0.0)
@@ -74,7 +75,7 @@ def get_dashboard(
         try:
             today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             today_end = today_start + timedelta(days=1)
-            today_appointments = tenant_scoped_query(ctx, Appointment).filter(
+            today_appointments = tenant_scoped_query(access, Appointment, db_session).filter(
                 Appointment.date >= today_start,
                 Appointment.date < today_end
             ).count()
@@ -82,7 +83,7 @@ def get_dashboard(
             today_appointments = 0
 
         try:
-            active_trials = tenant_scoped_query(ctx, Device).filter(
+            active_trials = tenant_scoped_query(access, Device, db_session).filter(
                 Device.status == 'TRIAL'
             ).count()
         except Exception:
@@ -90,13 +91,13 @@ def get_dashboard(
 
         try:
             today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-            daily_sales = tenant_scoped_query(ctx, Sale).filter(Sale.sale_date >= today_start).all()
+            daily_sales = tenant_scoped_query(access, Sale, db_session).filter(Sale.sale_date >= today_start).all()
             daily_revenue = float(sum(s.total_amount or 0 for s in daily_sales))
         except Exception:
             daily_revenue = 0.0
 
         try:
-            pending_appointments = tenant_scoped_query(ctx, Appointment).filter(
+            pending_appointments = tenant_scoped_query(access, Appointment, db_session).filter(
                 Appointment.status == 'SCHEDULED'
             ).count()
         except Exception:
@@ -105,7 +106,7 @@ def get_dashboard(
         try:
             today = datetime.now()
             next_week = today + timedelta(days=7)
-            ending_trials = tenant_scoped_query(ctx, Device).filter(
+            ending_trials = tenant_scoped_query(access, Device, db_session).filter(
                 Device.status == 'TRIAL',
                 Device.trial_end_date <= next_week,
                 Device.trial_end_date >= today
@@ -115,10 +116,10 @@ def get_dashboard(
 
         # Recent activity
         try:
-            log_query = tenant_scoped_query(ctx, ActivityLog)
+            log_query = tenant_scoped_query(access, ActivityLog, db_session)
             
-            if ctx.user and ctx.user.role not in ['admin', 'manager', 'platform_admin', 'owner']:
-                log_query = log_query.filter_by(user_id=ctx.user.id)
+            if access.user and access.user.role not in ['admin', 'manager', 'platform_admin', 'owner']:
+                log_query = log_query.filter_by(user_id=access.user.id)
             
             logs = log_query.order_by(ActivityLog.id.desc()).limit(20).all()
             recent_activity = [l.to_dict_with_user() for l in logs]
@@ -150,18 +151,18 @@ def get_dashboard(
 
 @router.get("/dashboard/kpis")
 def get_kpis(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get KPIs only"""
     try:
-        total_patients = tenant_scoped_query(ctx, Patient).count()
-        total_devices = tenant_scoped_query(ctx, Device).count()
-        available_devices = tenant_scoped_query(ctx, Device).filter(
+        total_patients = tenant_scoped_query(access, Patient, db_session).count()
+        total_devices = tenant_scoped_query(access, Device, db_session).count()
+        available_devices = tenant_scoped_query(access, Device, db_session).filter(
             (Device.patient_id == None) | (Device.patient_id == '')
         ).count()
         
-        sales = tenant_scoped_query(ctx, Sale).all()
+        sales = tenant_scoped_query(access, Sale, db_session).all()
         estimated_revenue = float(sum(s.final_amount or s.total_amount or 0 for s in sales))
 
         return ResponseEnvelope(
@@ -178,7 +179,7 @@ def get_kpis(
 
 @router.get("/dashboard/charts/patient-trends")
 def patient_trends(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Patient trends chart data"""
@@ -187,7 +188,7 @@ def patient_trends(
         labels = []
         data = []
         
-        base_query = tenant_scoped_query(ctx, Patient)
+        base_query = tenant_scoped_query(access, Patient, db_session)
         
         for i in range(5, -1, -1):
             month_dt = (now.replace(day=1) - timedelta(days=30*i))
@@ -210,7 +211,7 @@ def patient_trends(
 
 @router.get("/dashboard/charts/revenue-trends")
 def revenue_trends(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Revenue trends chart data"""
@@ -219,7 +220,7 @@ def revenue_trends(
         labels = []
         data = []
         
-        base_query = tenant_scoped_query(ctx, Sale)
+        base_query = tenant_scoped_query(access, Sale, db_session)
         
         for i in range(5, -1, -1):
             month_dt = (now.replace(day=1) - timedelta(days=30*i))
@@ -244,12 +245,12 @@ def revenue_trends(
 
 @router.get("/dashboard/recent-activity")
 def recent_activity(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Recent activity list"""
     try:
-        logs = tenant_scoped_query(ctx, ActivityLog).order_by(ActivityLog.id.desc()).limit(20).all()
+        logs = tenant_scoped_query(access, ActivityLog, db_session).order_by(ActivityLog.id.desc()).limit(20).all()
         return ResponseEnvelope(
             data={"activity": [l.to_dict_with_user() for l in logs]}
         )
@@ -259,14 +260,14 @@ def recent_activity(
 
 @router.get("/dashboard/charts/patient-distribution")
 def patient_distribution(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Patient distribution by branch"""
     try:
         from models.branch import Branch
         
-        branch_query = tenant_scoped_query(ctx, Branch)
+        branch_query = tenant_scoped_query(access, Branch, db_session)
         branch_objs = branch_query.all()
 
         results = []
@@ -278,8 +279,8 @@ def patient_distribution(
                     Patient.status, func.count(Patient.id)
                 ).filter(Patient.branch_id == b_id)
                 
-                if ctx.tenant_id:
-                    status_counts = status_counts.filter(Patient.tenant_id == ctx.tenant_id)
+                if access.tenant_id:
+                    status_counts = status_counts.filter(Patient.tenant_id == access.tenant_id)
                 
                 status_counts = status_counts.group_by(Patient.status).all()
                 status_map = {s.value if hasattr(s, 'value') else str(s): int(c) for s, c in status_counts}
@@ -291,8 +292,8 @@ def patient_distribution(
                     Patient.segment, func.count(Patient.id)
                 ).filter(Patient.branch_id == b_id)
                 
-                if ctx.tenant_id:
-                    seg_counts = seg_counts.filter(Patient.tenant_id == ctx.tenant_id)
+                if access.tenant_id:
+                    seg_counts = seg_counts.filter(Patient.tenant_id == access.tenant_id)
                 
                 seg_counts = seg_counts.group_by(Patient.segment).all()
                 seg_map = {s: int(c) for s, c in seg_counts}
@@ -304,8 +305,8 @@ def patient_distribution(
                     Patient.acquisition_type, func.count(Patient.id)
                 ).filter(Patient.branch_id == b_id)
                 
-                if ctx.tenant_id:
-                    acq_counts = acq_counts.filter(Patient.tenant_id == ctx.tenant_id)
+                if access.tenant_id:
+                    acq_counts = acq_counts.filter(Patient.tenant_id == access.tenant_id)
                 
                 acq_counts = acq_counts.group_by(Patient.acquisition_type).all()
                 acq_map = {s: int(c) for s, c in acq_counts}

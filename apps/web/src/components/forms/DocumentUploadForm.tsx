@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Button, Input, Textarea } from '@x-ear/ui-web';
 import { Modal } from '../ui/Modal';
 import { Upload, X, AlertCircle, CheckCircle } from 'lucide-react';
+import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface DocumentUploadFormProps {
   patientId: string;
@@ -122,7 +123,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
       formData.append('documentType', documentType);
       formData.append('description', description);
       formData.append('tags', tags);
-      formData.append('uploadedBy', 'current_user'); // TODO: Get from auth context
+      formData.append('uploadedBy', getCurrentUserId());
 
       await onUpload(formData);
       handleClose();
@@ -152,13 +153,12 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
             Dosya Seçimi *
           </label>
           <div
-            className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-              dragActive
+            className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${dragActive
                 ? 'border-blue-400 bg-blue-50'
                 : selectedFile
-                ? 'border-green-400 bg-green-50'
-                : 'border-gray-300 hover:border-gray-400'
-            }`}
+                  ? 'border-green-400 bg-green-50'
+                  : 'border-gray-300 hover:border-gray-400'
+              }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}

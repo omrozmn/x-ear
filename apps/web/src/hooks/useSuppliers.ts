@@ -1,36 +1,38 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  suppliersGetSuppliers,
-  suppliersCreateSupplier,
-  suppliersDeleteSupplier,
-  suppliersGetSupplierProducts,
-  suppliersUpdateSupplier,
-} from '@/api/generated';
+  getSuppliers,
+  createSupplier,
+  deleteSupplier,
+  getSupplier,
+  updateSupplier,
+  getGetSuppliersQueryKey,
+} from '@/api/generated/suppliers/suppliers';
 import {
-  type Supplier,
-  type SuppliersCreateSupplierBody,
-  type SuppliersGetSuppliersParams,
-  type SuppliersUpdateSupplierBody,
+  useGetAllInventory
+} from '@/api/generated/inventory/inventory';
+import type {
+  SupplierRead,
+  SupplierCreate,
+  GetSuppliersParams,
+  SupplierUpdate,
 } from '@/api/generated/schemas';
 
-export const useSuppliers = (params: SuppliersGetSuppliersParams) => {
+export const useSuppliers = (params: GetSuppliersParams) => {
   return useQuery({
-    queryKey: ['suppliers', params],
-    queryFn: () => suppliersGetSuppliers(params),
-    placeholderData: (previousData, previousQuery) => previousData,
+    queryKey: getGetSuppliersQueryKey(params),
+    queryFn: () => getSuppliers(params),
+    placeholderData: (previousData) => previousData,
   });
 };
 
 export const useSupplier = (id: string) => {
   return useQuery({
     queryKey: ['suppliers', id],
-    queryFn: () => suppliersGetSuppliers({ search: id }),
+    queryFn: () => getSupplier(Number(id)),
     enabled: !!id,
-    select: (data) => data?.data?.find(s => String(s.id) === String(id) || (s as any)._id === id),
+    select: (data) => data?.data,
   });
 };
-
-// Idempotency key generation is now handled by the API client interceptor
 
 // Local interface matching UI form data
 export interface SupplierFormData {
@@ -54,15 +56,29 @@ export interface SupplierFormData {
   isActive?: boolean;
 }
 
+// Map UI form data to API schema
+const mapFormDataToApiSchema = (formData: SupplierFormData): SupplierCreate => ({
+  name: formData.companyName,
+  code: formData.companyCode,
+  taxNumber: formData.taxNumber,
+  taxOffice: formData.taxOffice,
+  contactName: formData.contactPerson,
+  email: formData.email,
+  phone: formData.phone || formData.mobile,
+  address: formData.address,
+  city: formData.city,
+  notes: formData.notes,
+});
+
 export const useCreateSupplier = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (newSupplier: SupplierFormData) => {
-      // Interceptor handles snake_case conversion and Idempotency-Key
-      return suppliersCreateSupplier(newSupplier as unknown as SuppliersCreateSupplierBody);
+      const apiData = mapFormDataToApiSchema(newSupplier);
+      return createSupplier(apiData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/suppliers'] });
     },
   });
 };
@@ -71,11 +87,23 @@ export const useUpdateSupplier = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ supplierId, updates }: { supplierId: string; updates: SupplierFormData }) => {
-      // Interceptor handles snake_case conversion and Idempotency-Key
-      return suppliersUpdateSupplier(supplierId, updates as unknown as SuppliersUpdateSupplierBody);
+      const apiData: SupplierUpdate = {
+        name: updates.companyName,
+        code: updates.companyCode,
+        taxNumber: updates.taxNumber,
+        taxOffice: updates.taxOffice,
+        contactName: updates.contactPerson,
+        email: updates.email,
+        phone: updates.phone || updates.mobile,
+        address: updates.address,
+        city: updates.city,
+        notes: updates.notes,
+        isActive: updates.isActive,
+      };
+      return updateSupplier(Number(supplierId), apiData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/suppliers'] });
     },
   });
 };
@@ -83,34 +111,33 @@ export const useUpdateSupplier = () => {
 export const useDeleteSupplier = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => suppliersDeleteSupplier(id),
+    mutationFn: (id: string) => deleteSupplier(Number(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/suppliers'] });
     },
   });
 };
 
-interface SupplierProductsResponse {
-  data: {
-    products: Array<{
-      id: string;
-      supplier_product_name?: string;
-      supplier_product_code?: string;
-      unit_cost?: number;
-      currency?: string;
-      lead_time_days?: number;
-      product?: {
-        name: string;
-        sku?: string;
-      };
-    }>;
-  };
-}
-
-export const useSupplierProducts = (supplierId: string) => {
-  return useQuery<SupplierProductsResponse>({
-    queryKey: ['supplier-products', supplierId],
-    queryFn: () => (suppliersGetSupplierProducts(supplierId) as unknown) as Promise<SupplierProductsResponse>,
-    enabled: !!supplierId,
-  });
+export const useSupplierProducts = (supplierName?: string): any => {
+  return useGetAllInventory(
+    { supplier: supplierName, per_page: 100 },
+    {
+      query: {
+        enabled: !!supplierName,
+        select: (data) => {
+          // We need to return data in a structure that matches { data: { products: [...] } }
+          // Because SupplierDetailPage expects productsData.data.products
+          const items = (data as any)?.data || [];
+          return {
+            data: {
+              products: items
+            }
+          };
+        }
+      }
+    }
+  );
 };
+
+// Re-export types for consumers
+export type { SupplierRead, GetSuppliersParams };

@@ -1,14 +1,16 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { Bug, ChevronDown, Check, Loader2, Shield, LogOut } from 'lucide-react';
-import { useAdminDebugAvailableRoles, useAdminDebugSwitchRole, useAdminDebugExitImpersonation } from '@/api/generated/admin/admin';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  useDebugAvailableRoles,
+  useDebugSwitchRole,
+  useDebugExitImpersonation,
+} from '@/api/generated';
 import { useAuthStore } from '../../stores/authStore';
 import { AUTH_TOKEN, REFRESH_TOKEN } from '../../constants/storage-keys';
 import { patientService } from '../../services/patient.service';
 import { indexedDBManager } from '../../utils/indexeddb';
-
-// Debug rol switcher sadece admin@x-ear.com için gösterilir
-const DEBUG_ADMIN_EMAIL = 'admin@x-ear.com';
 
 interface DebugRoleSwitcherProps {
   darkMode?: boolean;
@@ -16,13 +18,16 @@ interface DebugRoleSwitcherProps {
 
 export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode = false }) => {
   const { user, setUser, setAuth } = useAuthStore();
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Check if current user is the debug admin OR is already impersonating
-  const isDebugAdmin = user?.email === DEBUG_ADMIN_EMAIL || user?.isImpersonating === true;
+  // Check if current user is super admin (can use debug features)
+  const isDebugAdmin = (user as any)?.is_super_admin === true || 
+                       (user as any)?.role === 'super_admin' || 
+                       user?.isImpersonating === true;
 
   // Fetch available roles only if debug admin AND dropdown is open
-  const { data: rolesResponse, isLoading: rolesLoading } = useAdminDebugAvailableRoles({
+  const { data: rolesResponse, isLoading: rolesLoading } = useDebugAvailableRoles({
     query: {
       enabled: isDebugAdmin && isOpen,
       staleTime: 5 * 60 * 1000, // 5 dakika
@@ -36,7 +41,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
   // console.log('[DebugRoleSwitcher] Render. isDebugAdmin:', isDebugAdmin, 'Current Role:', user?.role, 'IsImpersonating:', user?.isImpersonating);
 
   // Role switch mutation
-  const { mutate: switchRole, isPending: isSwitching } = useAdminDebugSwitchRole({
+  const { mutate: switchRole, isPending: isSwitching } = useDebugSwitchRole({
     mutation: {
       onMutate: () => {
         console.log('[DebugRoleSwitcher] Mutation starting...');
@@ -44,9 +49,19 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
       onSuccess: async (response) => {
         console.log('[DebugRoleSwitcher] ===== ROLE SWITCH SUCCESS =====');
 
-        // CRITICAL: Clear patient cache to prevent data leakage between tenant contexts
-        console.log('[DebugRoleSwitcher] Clearing patient cache for tenant isolation...');
+        // CRITICAL: Clear ALL caches to prevent data leakage between tenant contexts
+        console.log('[DebugRoleSwitcher] Clearing ALL caches for tenant isolation...');
+        
+        // 1. Clear patient service cache
         await patientService.reset();
+        
+        // 2. Clear IndexedDB
+        try {
+          await indexedDBManager.clearAll();
+          console.log('[DebugRoleSwitcher] IndexedDB cleared');
+        } catch (e) {
+          console.error('[DebugRoleSwitcher] Failed to clear IndexedDB:', e);
+        }
 
         console.log('[DebugRoleSwitcher] Raw response:', response);
 
@@ -66,6 +81,9 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
 
             // Pass both access and refresh tokens to setAuth
             setAuth(updatedUser, data.accessToken, data.refreshToken || null);
+
+            // Clear React Query cache
+            queryClient.clear();
 
             console.log('[DebugRoleSwitcher] Updated Zustand store with setAuth()');
             console.log('[DebugRoleSwitcher] New role:', data.effectiveRole);
@@ -91,14 +109,24 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
   });
 
   // Exit impersonation mutation
-  const { mutate: exitImpersonation, isPending: isExiting } = useAdminDebugExitImpersonation({
+  const { mutate: exitImpersonation, isPending: isExiting } = useDebugExitImpersonation({
     mutation: {
       onSuccess: async (response) => {
         console.log('[DebugRoleSwitcher] Exit impersonation success:', response);
 
-        // CRITICAL: Clear patient cache to prevent data leakage between tenant contexts
-        console.log('[DebugRoleSwitcher] Clearing patient cache for tenant isolation...');
+        // CRITICAL: Clear ALL caches to prevent data leakage between tenant contexts
+        console.log('[DebugRoleSwitcher] Clearing ALL caches for tenant isolation...');
+        
+        // 1. Clear patient service cache
         await patientService.reset();
+        
+        // 2. Clear IndexedDB
+        try {
+          await indexedDBManager.clearAll();
+          console.log('[DebugRoleSwitcher] IndexedDB cleared');
+        } catch (e) {
+          console.error('[DebugRoleSwitcher] Failed to clear IndexedDB:', e);
+        }
 
         const data = (response as any)?.data || response;
 
@@ -111,6 +139,9 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
           };
 
           setAuth(updatedUser, data.accessToken, data.refreshToken || null);
+
+          // Clear React Query cache
+          queryClient.clear();
 
           await new Promise(resolve => setTimeout(resolve, 300));
           window.location.href = '/';
@@ -227,7 +258,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
               color: darkMode ? '#9ca3af' : '#6b7280',
               marginTop: '0.25rem',
             }}>
-              Sadece {DEBUG_ADMIN_EMAIL} kullanabilir
+              Super Admin kullanabilir
             </div>
           </div>
 

@@ -10,13 +10,15 @@ import logging
 
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, get_current_context, AccessContext
+from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
+from schemas.appointments import AppointmentRead
 from models.appointment import Appointment
 from models.enums import AppointmentStatus
 from models.patient import Patient
 from models.tenant import Tenant
-from models.base import db
+
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +53,7 @@ class RescheduleRequest(BaseModel):
 
 # --- Helper Functions ---
 
-def get_appointment_or_404(db_session: Session, appointment_id: str, ctx: AccessContext) -> Appointment:
+def get_appointment_or_404(db_session: Session, appointment_id: str, access: UnifiedAccess) -> Appointment:
     """Get appointment or raise 404"""
     appointment = db_session.get(Appointment, appointment_id)
     if not appointment:
@@ -59,7 +61,7 @@ def get_appointment_or_404(db_session: Session, appointment_id: str, ctx: Access
             status_code=404,
             detail=ApiError(message="Appointment not found", code="APPOINTMENT_NOT_FOUND").model_dump(mode="json")
         )
-    if ctx.tenant_id and appointment.tenant_id != ctx.tenant_id:
+    if access.tenant_id and appointment.tenant_id != access.tenant_id:
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Appointment not found", code="APPOINTMENT_NOT_FOUND").model_dump(mode="json")
@@ -74,7 +76,7 @@ def parse_date(date_str: str) -> datetime:
 
 # --- Routes ---
 
-@router.get("/appointments")
+@router.get("/appointments", response_model=ResponseEnvelope[List[AppointmentRead]])
 def get_appointments(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
@@ -82,16 +84,16 @@ def get_appointments(
     status: Optional[str] = None,
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get appointments with filtering and pagination"""
     try:
-        query = Appointment.query
+        query = db_session.query(Appointment)
         
         # Tenant scope
-        if ctx.tenant_id:
-            query = query.filter_by(tenant_id=ctx.tenant_id)
+        if access.tenant_id:
+            query = query.filter_by(tenant_id=access.tenant_id)
         
         # Date filters
         if start_date:
@@ -129,17 +131,17 @@ def get_appointments(
                 "page": page,
                 "perPage": per_page,
                 "totalPages": (total + per_page - 1) // per_page,
-                "tenantScope": ctx.tenant_id
+                "tenantScope": access.tenant_id
             }
         )
     except Exception as e:
         logger.error(f"Get appointments error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/appointments", status_code=201)
+@router.post("/appointments", status_code=201, response_model=ResponseEnvelope[AppointmentRead])
 def create_appointment(
     appointment_in: AppointmentCreate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Create a new appointment"""
@@ -155,15 +157,15 @@ def create_appointment(
         appointment.clinician_id = data.get('clinician_id')
         appointment.branch_id = data.get('branch_id')
         
-        # Handle tenant_id
-        if ctx.tenant_id:
-            appointment.tenant_id = ctx.tenant_id
+        # Handle access.tenant_id
+        if access.tenant_id:
+            appointment.tenant_id = access.tenant_id
         else:
             patient = db_session.get(Patient, data['patient_id'])
             if patient and patient.tenant_id:
                 appointment.tenant_id = patient.tenant_id
             else:
-                tenant = Tenant.query.first()
+                tenant = db_session.query(Tenant).first()
                 if tenant:
                     appointment.tenant_id = tenant.id
                 else:
@@ -201,21 +203,21 @@ def create_appointment(
         logger.error(f"Create appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/appointments/{appointment_id}")
+@router.get("/appointments/{appointment_id}", response_model=ResponseEnvelope[AppointmentRead])
 def get_appointment(
     appointment_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get a single appointment"""
     appointment = get_appointment_or_404(db_session, appointment_id, ctx)
     return ResponseEnvelope(data=appointment.to_dict())
 
-@router.put("/appointments/{appointment_id}")
+@router.put("/appointments/{appointment_id}", response_model=ResponseEnvelope[AppointmentRead])
 def update_appointment(
     appointment_id: str,
     appointment_in: AppointmentUpdate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Update appointment"""
@@ -252,7 +254,7 @@ def update_appointment(
 @router.delete("/appointments/{appointment_id}")
 def delete_appointment(
     appointment_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Delete an appointment"""
@@ -268,11 +270,11 @@ def delete_appointment(
         logger.error(f"Delete appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/appointments/{appointment_id}/reschedule")
+@router.post("/appointments/{appointment_id}/reschedule", response_model=ResponseEnvelope[AppointmentRead])
 def reschedule_appointment(
     appointment_id: str,
     reschedule_data: RescheduleRequest,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Reschedule an appointment"""
@@ -292,10 +294,10 @@ def reschedule_appointment(
         logger.error(f"Reschedule appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/appointments/{appointment_id}/cancel")
+@router.post("/appointments/{appointment_id}/cancel", response_model=ResponseEnvelope[AppointmentRead])
 def cancel_appointment(
     appointment_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Cancel an appointment"""
@@ -311,10 +313,10 @@ def cancel_appointment(
         logger.error(f"Cancel appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/appointments/{appointment_id}/complete")
+@router.post("/appointments/{appointment_id}/complete", response_model=ResponseEnvelope[AppointmentRead])
 def complete_appointment(
     appointment_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Mark appointment as completed"""
@@ -334,20 +336,20 @@ def complete_appointment(
 def get_availability(
     date: str,
     duration: int = Query(30, ge=15, le=120),
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get available time slots for a date"""
     try:
         target_date = datetime.fromisoformat(date).date()
         
-        query = Appointment.query.filter(
+        query = db_session.query(Appointment).filter(
             db.func.date(Appointment.date) == target_date,
             Appointment.status.in_(['scheduled', 'confirmed'])
         )
         
-        if ctx.tenant_id:
-            query = query.filter_by(tenant_id=ctx.tenant_id)
+        if access.tenant_id:
+            query = query.filter_by(tenant_id=access.tenant_id)
         
         appointments = query.all()
         
@@ -383,7 +385,7 @@ def get_availability(
         logger.error(f"Get availability error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/appointments/list")
+@router.get("/appointments/list", response_model=ResponseEnvelope[List[AppointmentRead]])
 def list_appointments(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
@@ -391,15 +393,15 @@ def list_appointments(
     status: Optional[str] = None,
     start_date: Optional[str] = Query(None, alias="start_date"),
     end_date: Optional[str] = Query(None, alias="end_date"),
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """List appointments with filters"""
     try:
-        query = Appointment.query
+        query = db_session.query(Appointment)
         
-        if ctx.tenant_id:
-            query = query.filter_by(tenant_id=ctx.tenant_id)
+        if access.tenant_id:
+            query = query.filter_by(tenant_id=access.tenant_id)
         
         if patient_id:
             query = query.filter_by(patient_id=patient_id)

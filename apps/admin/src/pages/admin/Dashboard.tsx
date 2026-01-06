@@ -3,8 +3,7 @@ import { AxiosError } from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   useGetAdminAnalytics,
-  AnalyticsOverview,
-  RevenueTrend
+
 } from '@/lib/api-client';
 
 const Dashboard = () => {
@@ -12,7 +11,7 @@ const Dashboard = () => {
 
   // Use new Analytics hook
   const { data: analyticsData, isLoading, error } = useGetAdminAnalytics();
-  const data = analyticsData?.data;
+  const data = (analyticsData as any)?.data;
   const overview = data?.overview;
 
   const formatNumber = (num: number | undefined) => {

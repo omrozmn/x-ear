@@ -12,6 +12,7 @@ import {
   FileText,
   CheckCircle
 } from 'lucide-react';
+import { getCurrentUserName } from '@/utils/auth-utils';
 
 interface DeviceEditModalProps {
   open: boolean;
@@ -45,19 +46,19 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
   // Form state
   const [formData, setFormData] = useState<ExtendedFormData>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+
   // Device selection and inventory
   const [availableDevices, setAvailableDevices] = useState<DeviceInventoryItem[]>([]);
   const [deviceSearch, setDeviceSearch] = useState('');
   const [selectedDevice, setSelectedDevice] = useState<DeviceInventoryItem | null>(null);
-  
+
   // SGK and pricing
   const sgkAmounts = {
     hearingAid: 2500,
     cochlearImplant: 15000,
     boneAnchored: 8000
   };
-  
+
   // Mock device inventory
   useEffect(() => {
     const mockDevices: DeviceInventoryItem[] = [
@@ -116,9 +117,9 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
         discountType: 'amount',
         downPayment: 0
       });
-      
+
       // Find and set the selected device
-      const foundDevice = availableDevices.find(d => 
+      const foundDevice = availableDevices.find(d =>
         d.brand === device.brand && d.model === device.model
       );
       if (foundDevice) {
@@ -166,11 +167,11 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
       salePrice: device.listPrice,
       serialNumber: '', // Reset serial number when device changes
     }));
-    
+
     // Auto-calculate SGK reduction based on device type
-    const sgkAmount = sgkAmounts[device.type === 'hearing_aid' ? 'hearingAid' : 
-                                device.type === 'cochlear_implant' ? 'cochlearImplant' : 'boneAnchored'];
-    
+    const sgkAmount = sgkAmounts[device.type === 'hearing_aid' ? 'hearingAid' :
+      device.type === 'cochlear_implant' ? 'cochlearImplant' : 'boneAnchored'];
+
     setFormData(prev => ({
       ...prev,
       sgkReduction: Math.min(sgkAmount, device.listPrice),
@@ -182,7 +183,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
     const listPrice = formData.listPrice || 0;
     const discountValue = formData.discountValue || 0;
     const discountType = formData.discountType || 'amount';
-    
+
     if (discountType === 'percentage') {
       return listPrice * (1 - discountValue / 100);
     } else {
@@ -192,12 +193,12 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
 
   const handleInputChange = (field: keyof ExtendedFormData, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
-    
+
     // Auto-calculate dependent fields
     if (field === 'listPrice' || field === 'discountValue' || field === 'discountType') {
       const newSalePrice = calculateSalePrice();
@@ -207,7 +208,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
         patientPayment: Math.max(0, newSalePrice - (prev.sgkReduction || 0))
       }));
     }
-    
+
     if (field === 'sgkReduction') {
       const salePrice = formData.salePrice || calculateSalePrice();
       const numericValue = typeof value === 'number' ? value : (parseFloat(value as string) || 0);
@@ -220,48 +221,48 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.brand) newErrors.brand = 'Marka seçimi zorunludur';
     if (!formData.model) newErrors.model = 'Model seçimi zorunludur';
     if (!formData.serialNumber) newErrors.serialNumber = 'Seri numarası zorunludur';
     if (!formData.ear) newErrors.ear = 'Kulak seçimi zorunludur';
     if (!formData.assignedDate) newErrors.assignedDate = 'Atama tarihi zorunludur';
     if (!formData.reason) newErrors.reason = 'Atama sebebi zorunludur';
-    
+
     // Validate pricing
     if ((formData.listPrice || 0) <= 0) {
       newErrors.listPrice = 'Liste fiyatı 0\'dan büyük olmalıdır';
     }
-    
+
     if ((formData.salePrice || 0) > (formData.listPrice || 0)) {
       newErrors.salePrice = 'Satış fiyatı liste fiyatından büyük olamaz';
     }
-    
+
     if ((formData.sgkReduction || 0) > (formData.salePrice || 0)) {
       newErrors.sgkReduction = 'SGK katkısı satış fiyatından büyük olamaz';
     }
-    
+
     // Validate serial number availability
     if (selectedDevice && formData.serialNumber) {
       const isSerialAvailable = selectedDevice.availableSerials.includes(formData.serialNumber);
       const isCurrentSerial = device?.serialNumber === formData.serialNumber;
-      
+
       if (!isSerialAvailable && !isCurrentSerial) {
         newErrors.serialNumber = 'Bu seri numarası mevcut değil';
       }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     const deviceData: PatientDevice = {
       id: formData.id || `device_${Date.now()}`,
       brand: formData.brand!,
@@ -280,11 +281,11 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
       paymentMethod: formData.paymentMethod,
       trialEndDate: formData.status === 'trial' ? formData.trialEndDate : undefined,
       notes: formData.notes,
-      assignedBy: 'Current User', // TODO: Get from auth context
+      assignedBy: getCurrentUserName(),
       purchaseDate: formData.assignedDate, // For compatibility
       price: formData.salePrice // For compatibility
     };
-    
+
     onSave(deviceData);
   };
 
@@ -308,7 +309,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
         {/* Device Search and Selection */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-gray-900">Cihaz Seçimi</h3>
-          
+
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
@@ -318,16 +319,15 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
               onChange={(e) => setDeviceSearch(e.target.value)}
             />
           </div>
-          
+
           {deviceSearch && (
             <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
               {filteredDevices.map((device) => (
                 <div
                   key={device.id}
                   onClick={() => handleDeviceSelect(device)}
-                  className={`p-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${
-                    selectedDevice?.id === device.id ? 'bg-blue-50 border-blue-200' : ''
-                  }`}
+                  className={`p-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${selectedDevice?.id === device.id ? 'bg-blue-50 border-blue-200' : ''
+                    }`}
                 >
                   <div className="flex justify-between items-center">
                     <div>
@@ -348,7 +348,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
               )}
             </div>
           )}
-          
+
           {selectedDevice && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center space-x-2 mb-2">
@@ -359,7 +359,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
               <p className="text-sm text-blue-600">{selectedDevice.listPrice.toLocaleString('tr-TR')} ₺</p>
             </div>
           )}
-          
+
           {errors.brand && <p className="text-red-600 text-sm">{errors.brand}</p>}
         </div>
 
@@ -401,11 +401,10 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 key={option.value}
                 type="button"
                 onClick={() => handleInputChange('ear', option.value)}
-                className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
-                  formData.ear === option.value
+                className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${formData.ear === option.value
                     ? `border-${option.color}-500 bg-${option.color}-50 text-${option.color}-700`
                     : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                }`}
+                  }`}
               >
                 {option.label}
               </button>
@@ -470,11 +469,10 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 key={status.value}
                 type="button"
                 onClick={() => handleInputChange('status', status.value)}
-                className={`p-2 rounded-lg border text-sm font-medium transition-colors ${
-                  formData.status === status.value
+                className={`p-2 rounded-lg border text-sm font-medium transition-colors ${formData.status === status.value
                     ? `border-${status.color}-500 bg-${status.color}-50 text-${status.color}-700`
                     : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                }`}
+                  }`}
               >
                 {status.label}
               </button>
@@ -505,7 +503,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
             <DollarSign className="w-5 h-5 mr-2" />
             Fiyatlandırma
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
@@ -599,11 +597,10 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                   key={method.value}
                   type="button"
                   onClick={() => handleInputChange('paymentMethod', method.value)}
-                  className={`p-3 rounded-lg border text-sm font-medium transition-colors flex items-center justify-center space-x-2 ${
-                    formData.paymentMethod === method.value
+                  className={`p-3 rounded-lg border text-sm font-medium transition-colors flex items-center justify-center space-x-2 ${formData.paymentMethod === method.value
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
                       : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{method.label}</span>

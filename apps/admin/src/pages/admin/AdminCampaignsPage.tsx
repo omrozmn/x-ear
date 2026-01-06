@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import {
-    useGetAdminCampaigns,
-    usePostAdminCampaigns,
-    usePutAdminCampaignsId,
-    useDeleteAdminCampaignsId
-} from '@/lib/api/campaigns/campaigns';
-import {
-    Campaign,
-    CampaignInput
-} from '@/lib/api/index.schemas';
+    useGetCampaigns,
+    useCreateCampaign,
+    useUpdateCampaign,
+    useDeleteCampaign,
+    CampaignRead,
+    CampaignCreate
+} from '@/lib/api-client';
+
+// Local type aliases
+type Campaign = CampaignRead;
+type CampaignInput = CampaignCreate;
 import {
     PlusIcon,
     MagnifyingGlassIcon,
@@ -32,15 +34,15 @@ const AdminCampaignsPage: React.FC = () => {
     const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
 
     // Queries
-    const { data: campaignsData, isLoading } = useGetAdminCampaigns({
+    const { data: campaignsData, isLoading } = useGetCampaigns({
         page,
         limit,
         search: search || undefined,
         status: statusFilter !== 'all' ? statusFilter : undefined
-    });
+    } as any);
 
     // Mutations
-    const createMutation = usePostAdminCampaigns({
+    const createMutation = useCreateCampaign({
         mutation: {
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['/admin/campaigns'] });
@@ -53,7 +55,7 @@ const AdminCampaignsPage: React.FC = () => {
         }
     });
 
-    const updateMutation = usePutAdminCampaignsId({
+    const updateMutation = useUpdateCampaign({
         mutation: {
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['/admin/campaigns'] });
@@ -66,7 +68,7 @@ const AdminCampaignsPage: React.FC = () => {
         }
     });
 
-    const deleteMutation = useDeleteAdminCampaignsId({
+    const deleteMutation = useDeleteCampaign({
         mutation: {
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['/admin/campaigns'] });
@@ -90,12 +92,12 @@ const AdminCampaignsPage: React.FC = () => {
 
     const handleDelete = async (id: number) => {
         if (window.confirm('Bu kampanyayı silmek istediğinizden emin misiniz?')) {
-            deleteMutation.mutate({ id });
+            deleteMutation.mutate({ campaignId: String(id) });
         }
     };
 
-    const campaigns = campaignsData?.data?.campaigns || [];
-    const pagination = campaignsData?.data?.pagination;
+    const campaigns = (campaignsData as any)?.data?.campaigns || [];
+    const pagination = (campaignsData as any)?.data?.pagination;
 
     const formatDate = (dateString?: string) => {
         if (!dateString) return '-';
@@ -176,19 +178,19 @@ const AdminCampaignsPage: React.FC = () => {
                                                 <div className="text-sm text-gray-500 truncate max-w-xs">{campaign.description}</div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {campaign.discount_type === 'PERCENTAGE' ? `%${campaign.discount_value}` : `${campaign.discount_value} TL`}
+                                                {(campaign as any).discountType === 'PERCENTAGE' ? `%${(campaign as any).discountValue}` : `${(campaign as any).discountValue} TL`}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <div>{formatDate(campaign.start_date)}</div>
-                                                <div>{formatDate(campaign.end_date)}</div>
+                                                <div>{formatDate((campaign as any).startDate)}</div>
+                                                <div>{formatDate((campaign as any).endDate)}</div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {campaign.target_audience === 'ALL' ? 'Tümü' : campaign.target_audience}
+                                                {(campaign as any).targetAudience === 'ALL' ? 'Tümü' : (campaign as any).targetAudience}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${campaign.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${(campaign as any).isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                                                     }`}>
-                                                    {campaign.is_active ? 'Aktif' : 'Pasif'}
+                                                    {(campaign as any).isActive ? 'Aktif' : 'Pasif'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -267,7 +269,7 @@ const AdminCampaignsPage: React.FC = () => {
                     initialData={editingCampaign}
                     onSubmit={(data) => {
                         if (editingCampaign) {
-                            updateMutation.mutate({ id: editingCampaign.id!, data });
+                            updateMutation.mutate({ campaignId: String(editingCampaign.id!), data });
                         } else {
                             createMutation.mutate({ data });
                         }
@@ -294,15 +296,15 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
     onSubmit,
     isLoading
 }) => {
-    const [formData, setFormData] = useState<CampaignInput>({
+    const [formData, setFormData] = useState<any>({
         name: initialData?.name || '',
         description: initialData?.description || '',
-        discount_type: (initialData?.discount_type as 'PERCENTAGE' | 'FIXED_AMOUNT') || 'PERCENTAGE',
-        discount_value: initialData?.discount_value || 0,
-        start_date: initialData?.start_date ? new Date(initialData.start_date).toISOString().split('T')[0] : '',
-        end_date: initialData?.end_date ? new Date(initialData.end_date).toISOString().split('T')[0] : '',
-        is_active: initialData?.is_active ?? true,
-        target_audience: initialData?.target_audience || 'ALL'
+        discountType: (initialData as any)?.discountType || 'PERCENTAGE',
+        discountValue: (initialData as any)?.discountValue || 0,
+        startDate: (initialData as any)?.startDate ? new Date((initialData as any).startDate).toISOString().split('T')[0] : '',
+        endDate: (initialData as any)?.endDate ? new Date((initialData as any).endDate).toISOString().split('T')[0] : '',
+        isActive: (initialData as any)?.isActive ?? true,
+        targetAudience: (initialData as any)?.targetAudience || 'ALL'
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -311,10 +313,10 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
         // The input type="date" returns YYYY-MM-DD. We might need to append time.
         const submitData = {
             ...formData,
-            start_date: formData.start_date ? new Date(formData.start_date).toISOString() : undefined,
-            end_date: formData.end_date ? new Date(formData.end_date).toISOString() : undefined
+            startDate: formData.startDate ? new Date(formData.startDate).toISOString() : undefined,
+            endDate: formData.endDate ? new Date(formData.endDate).toISOString() : undefined
         };
-        onSubmit(submitData);
+        onSubmit(submitData as any);
     };
 
     if (!isOpen) return null;
@@ -357,8 +359,8 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
                         <div>
                             <label className="block text-sm font-medium text-gray-700">İndirim Tipi</label>
                             <select
-                                value={formData.discount_type}
-                                onChange={(e) => setFormData({ ...formData, discount_type: e.target.value as 'PERCENTAGE' | 'FIXED_AMOUNT' })}
+                                value={formData.discountType}
+                                onChange={(e) => setFormData({ ...formData, discountType: e.target.value as 'PERCENTAGE' | 'FIXED_AMOUNT' })}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                             >
                                 <option value="PERCENTAGE">Yüzde (%)</option>
@@ -371,8 +373,8 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
                                 type="number"
                                 min="0"
                                 step="0.01"
-                                value={formData.discount_value}
-                                onChange={(e) => setFormData({ ...formData, discount_value: Number(e.target.value) })}
+                                value={formData.discountValue}
+                                onChange={(e) => setFormData({ ...formData, discountValue: Number(e.target.value) })}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                             />
                         </div>
@@ -383,8 +385,8 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
                             <label className="block text-sm font-medium text-gray-700">Başlangıç Tarihi</label>
                             <input
                                 type="date"
-                                value={formData.start_date}
-                                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                                value={formData.startDate}
+                                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                             />
                         </div>
@@ -392,8 +394,8 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
                             <label className="block text-sm font-medium text-gray-700">Bitiş Tarihi</label>
                             <input
                                 type="date"
-                                value={formData.end_date}
-                                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                                value={formData.endDate}
+                                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                             />
                         </div>
@@ -402,8 +404,8 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Hedef Kitle</label>
                         <select
-                            value={formData.target_audience}
-                            onChange={(e) => setFormData({ ...formData, target_audience: e.target.value })}
+                            value={formData.targetAudience}
+                            onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
                             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         >
                             <option value="ALL">Tümü</option>
@@ -414,13 +416,13 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
 
                     <div className="flex items-center">
                         <input
-                            id="is_active"
+                            id="isActive"
                             type="checkbox"
-                            checked={formData.is_active}
-                            onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                            checked={formData.isActive}
+                            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                             className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                         />
-                        <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
+                        <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
                             Kampanya Aktif
                         </label>
                     </div>

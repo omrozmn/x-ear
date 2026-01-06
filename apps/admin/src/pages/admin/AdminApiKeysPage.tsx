@@ -57,7 +57,7 @@ const AdminApiKeysPage: React.FC = () => {
         if (!confirm('Bu anahtarı silmek istediğinize emin misiniz?')) return;
 
         try {
-            await revokeApiKeyMutation.mutateAsync({ id: keyId });
+            await revokeApiKeyMutation.mutateAsync({ keyId });
             toast.success('API Anahtarı silindi');
             refetch();
         } catch (error) {

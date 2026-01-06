@@ -2,21 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Button, Textarea, useToastHelpers } from '@x-ear/ui-web';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import {
-  timelineGetPatientTimeline,
-  timelineAddTimelineEvent,
-  patientSubresourcesCreatePatientNote,
-  patientSubresourcesDeletePatientNote
+  getPatientTimeline,
+  addTimelineEvent,
+  createPatientNote,
+  deletePatientNote,
+  updatePatientNote
 } from '@/api/generated';
 import type {
-  PatientSubresourcesCreatePatientNoteBody
-} from '@/api/generated/schemas/patientSubresourcesCreatePatientNoteBody';
-import type {
-  TimelineAddTimelineEventBody
-} from '@/api/generated/schemas/timelineAddTimelineEventBody';
-import type {
-  TimelineGetPatientTimeline200DataItem
-} from '@/api/generated/schemas/timelineGetPatientTimeline200DataItem';
+  PatientNoteCreate,
+  PatientNoteUpdate,
+  // TimelineEventRead // Assuming this exists or we use any for timeline items
+} from '@/api/generated/schemas';
 import type { Patient, PatientNote } from '../../types/patient/index';
+import { getCurrentUserId, getCurrentUserName } from '@/utils/auth-utils';
 
 interface PatientNotesTabProps {
   patient: Patient;
@@ -39,13 +37,13 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
 
     try {
       setIsLoading(true);
-      const response = await timelineGetPatientTimeline(patient.id);
+      const response = await getPatientTimeline(patient.id) as any;
 
-      if (response && Array.isArray(response)) {
+      if (response?.data && Array.isArray(response.data)) {
         // Filter timeline events to get only notes
-        const noteEvents = response
-          .filter((event: TimelineGetPatientTimeline200DataItem) => event.type === 'note')
-          .map((event: TimelineGetPatientTimeline200DataItem) => ({
+        const noteEvents = response.data
+          .filter((event: any) => event.type === 'note')
+          .map((event: any) => ({
             id: event.id || '',
             text: event.description || '',
             date: event.timestamp || new Date().toISOString(),
@@ -61,7 +59,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
     } finally {
       setIsLoading(false);
     }
-  }, [patient?.id, timelineGetPatientTimeline, error, isLoading]);
+  }, [patient?.id, error, isLoading]);
 
   // Load notes from API on mount only once
   useEffect(() => {
@@ -87,24 +85,24 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
       setIsLoading(true);
 
       // Create note via patient notes API
-      const noteBody: PatientSubresourcesCreatePatientNoteBody = {
+      const noteBody: PatientNoteCreate = {
         content: newNoteContent,
         type: 'general',
-        createdBy: 'current_user' // This should come from auth context
+        createdBy: getCurrentUserId()
       };
 
-      await patientSubresourcesCreatePatientNote(patient.id || '', noteBody);
+      await createPatientNote(patient.id || '', noteBody);
 
       // Also add to timeline
-      const timelineBody: TimelineAddTimelineEventBody = {
+      const timelineBody: any = { // TimelineEventCreate
         type: 'note',
         title: 'Yeni Not Eklendi',
         description: newNoteContent,
-        user: 'current_user', // This should come from auth context
+        user: getCurrentUserName(),
         category: 'general'
       };
 
-      await timelineAddTimelineEvent(patient.id || '', timelineBody);
+      await addTimelineEvent(patient.id || '', timelineBody);
 
       // Reload notes to get the updated list
       await loadNotes();
@@ -132,28 +130,25 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
     try {
       setIsLoading(true);
 
-      // For editing, we need to delete the old note and create a new one
-      // since the API doesn't have an update endpoint
-      await patientSubresourcesDeletePatientNote(patient.id || '', editingNote.id);
-
-      const noteBody: PatientSubresourcesCreatePatientNoteBody = {
+      // Use new update endpoint
+      const updateBody: PatientNoteUpdate = {
         content: editNoteContent,
-        type: editingNote.type || 'general',
-        createdBy: editingNote.author
+        // type: editingNote.type || 'general', // Update schema might not need type if not changing
+        // createdBy: editingNote.author
       };
 
-      await patientSubresourcesCreatePatientNote(patient.id || '', noteBody);
+      await updatePatientNote(patient.id || '', editingNote.id, updateBody);
 
       // Add timeline event for the edit
-      const timelineBody: TimelineAddTimelineEventBody = {
+      const timelineBody: any = {
         type: 'note',
         title: 'Not Güncellendi',
         description: editNoteContent,
-        user: 'current_user',
+        user: getCurrentUserName(),
         category: 'general'
       };
 
-      await timelineAddTimelineEvent(patient.id || '', timelineBody);
+      await addTimelineEvent(patient.id || '', timelineBody);
 
       // Reload notes
       await loadNotes();
@@ -174,18 +169,18 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
     try {
       setIsLoading(true);
 
-      await patientSubresourcesDeletePatientNote(patient.id || '', noteId);
+      await deletePatientNote(patient.id || '', noteId);
 
       // Add timeline event for the deletion
-      const timelineBody: TimelineAddTimelineEventBody = {
+      const timelineBody: any = {
         type: 'note',
         title: 'Not Silindi',
         description: 'Bir not silindi',
-        user: 'current_user',
+        user: getCurrentUserName(),
         category: 'general'
       };
 
-      await timelineAddTimelineEvent(patient.id || '', timelineBody);
+      await addTimelineEvent(patient.id || '', timelineBody);
 
       // Reload notes
       await loadNotes();

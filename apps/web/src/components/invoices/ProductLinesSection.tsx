@@ -11,13 +11,22 @@ import MedicalDeviceModal from './MedicalDeviceModal';
 import type { MedicalDeviceData, LineWithholdingData } from '../../types/invoice';
 import type { InventoryItem as LocalInventoryItem, InventoryCategory } from '../../types/inventory';
 import {
-  inventoryGetInventoryItems,
-  inventoryGetInventoryItem,
-  inventoryCreateInventoryItem,
-} from '@/api/generated';
-// Import generated API type from schemas file (direct path)
-import type { InventoryItem as ApiInventoryItem } from '@/api/generated/schemas/inventoryItem';
+  getAllInventory,
+  getInventoryItem,
+  createInventory,
+} from '@/api/generated/inventory/inventory';
 import { AUTH_TOKEN } from '../../constants/storage-keys';
+
+// Local InventoryItem type for API responses
+interface ApiInventoryItem {
+  id?: string;
+  name: string;
+  category?: string;
+  brand?: string;
+  price: number;
+  availableInventory?: number;
+  inventory?: number;
+}
 
 interface ProductLine {
   id: string;
@@ -181,12 +190,12 @@ export function ProductLinesSection({
       setIsLoadingProducts(true);
       try {
         const params = {}; // Define empty params
-        const resp = await inventoryGetInventoryItems(params);
+        const resp = await getAllInventory(params);
         const apiItems: ApiInventoryItem[] = (resp as any)?.data?.data ?? [];
         console.log('✅ API inventory response', { status: (resp as any)?.status, itemsCount: apiItems.length });
 
         const nowIso = new Date().toISOString();
-        const mapped: LocalInventoryItem[] = apiItems.map((item) => ({
+        const mapped: LocalInventoryItem[] = apiItems.map((item: any) => ({
           id: String(item.id ?? ''),
           name: item.name,
           brand: item.brand,
@@ -197,11 +206,11 @@ export function ProductLinesSection({
           supplier: item.supplier,
           unit: undefined,
           description: item.description,
-          availableInventory: item.availableInventory ?? (item as any).inventory ?? item.stock ?? 0,
+          availableInventory: item.availableInventory ?? item.inventory ?? item.stock ?? 0,
           totalInventory: item.totalInventory ?? 0,
           usedInventory: item.usedInventory ?? 0,
           onTrial: item.onTrial,
-          reorderLevel: item.reorderLevel ?? (item as any).minInventory ?? 0,
+          reorderLevel: item.reorderLevel ?? item.minInventory ?? 0,
           availableSerials: item.availableSerials,
           availableBarcodes: undefined,
           price: item.price,
@@ -212,14 +221,14 @@ export function ProductLinesSection({
           vatIncludedPrice: item.vatIncludedPrice,
           totalValue: undefined,
           features: item.features,
-          ear: (item as any).ear,
-          direction: (item as any).direction,
+          ear: item.ear,
+          direction: item.direction,
           sgkCode: undefined,
           isMinistryTracked: undefined,
           warranty: item.warranty,
           // Ensure required audit fields exist on local type
           createdAt: item.createdAt ?? nowIso,
-          lastUpdated: (item as any).updatedAt ?? item.createdAt ?? nowIso,
+          lastUpdated: item.updatedAt ?? item.createdAt ?? nowIso,
         }));
 
         console.log('🧭 Mapped products to local shape', { count: mapped.length });
@@ -282,7 +291,7 @@ export function ProductLinesSection({
       // Fallback: if not found in local cache, fetch single item from API
       if (!product) {
         try {
-          const resp = await inventoryGetInventoryItem(productIdOrObject);
+          const resp = await getInventoryItem(productIdOrObject);
           const it = (resp as any)?.data?.data ?? (resp as any)?.data ?? null;
           if (it) {
             product = {
@@ -307,7 +316,7 @@ export function ProductLinesSection({
       // If product exists but missing taxRate, fetch details to get the current rate
       if (product && (product.taxRate === undefined || product.taxRate === null)) {
         try {
-          const resp = await inventoryGetInventoryItem(product.id);
+          const resp = await getInventoryItem(product.id);
           const it = (resp as any)?.data?.data ?? (resp as any)?.data ?? null;
           if (it) {
             product.taxRate = Number(it.vatRate ?? it.kdv ?? product.taxRate ?? 18);
@@ -416,7 +425,7 @@ export function ProductLinesSection({
     };
 
     try {
-      const resp = await inventoryCreateInventoryItem(body as any);
+      const resp = await createInventory(body as any);
       const created: any = (resp as any)?.data;
       console.log('✅ Envanter’e eklendi', { id: created?.id, name: created?.name });
 
@@ -427,7 +436,7 @@ export function ProductLinesSection({
 
       // Refresh products list
       const params = {};
-      const prodResp = await inventoryGetInventoryItems(params);
+      const prodResp = await getAllInventory(params);
       // ... (logic to update allProducts could go here, or just rely on handleProductSelect fetching it)
 
     } catch (err) {

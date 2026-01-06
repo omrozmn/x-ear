@@ -3,7 +3,7 @@ FastAPI Devices Router - Migrated from Flask routes/devices.py
 Device CRUD, categories, brands, stock management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
 from pydantic import BaseModel, Field
 import logging
@@ -12,17 +12,59 @@ import random
 from sqlalchemy.orm import Session, load_only
 from sqlalchemy import or_
 
-from dependencies import get_db, get_current_context, AccessContext
 from schemas.base import ResponseEnvelope, ApiError
-from models.base import db
+from schemas.devices import DeviceRead
+from schemas.auth import PasswordChangeRequest
+from schemas.notifications import NotificationUpdate
+from schemas.campaigns import CampaignUpdate, SMSLogRead
+from schemas.sales import DeviceAssignmentUpdate, InstallmentPayment, PaymentPlanCreate
+from schemas.inventory import StockMovementRead
+from schemas.sms import SMSHeaderRequestUpdate, SMSProviderConfigCreate
+from schemas.tenants import TenantCreate, TenantRead, TenantStats, TenantUpdate
+from schemas.users import PermissionRead, RoleRead, UserProfile
+from schemas.patients import PatientSearchFilters
+
 from models.device import Device
 from models.inventory import InventoryItem
 from models.enums import DeviceSide, DeviceStatus, DeviceCategory
 from constants import CANONICAL_CATEGORY_HEARING_AID
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Devices"])
+
+@router.get(
+    "/__internal/openapi-schema-registry",
+    include_in_schema=False,
+    response_model=ResponseEnvelope[
+        List[
+            Union[
+                CampaignUpdate,
+                DeviceAssignmentUpdate,
+                InstallmentPayment,
+                NotificationUpdate,
+                PasswordChangeRequest,
+                PatientSearchFilters,
+                PaymentPlanCreate,
+                PermissionRead,
+                RoleRead,
+                SMSHeaderRequestUpdate,
+                SMSLogRead,
+                SMSProviderConfigCreate,
+                StockMovementRead,
+                TenantCreate,
+                TenantRead,
+                TenantStats,
+                TenantUpdate,
+                UserProfile,
+            ]
+        ]
+    ],
+)
+def _openapi_schema_registry():
+    return ResponseEnvelope(data=[])
 
 # --- Request Schemas ---
 
@@ -79,7 +121,7 @@ class BrandCreate(BaseModel):
 
 # --- Helper Functions ---
 
-def get_device_or_404(db_session: Session, device_id: str, ctx: AccessContext) -> Device:
+def get_device_or_404(db_session: Session, device_id: str, access: UnifiedAccess) -> Device:
     """Get device or raise 404"""
     device = db_session.get(Device, device_id)
     if not device:
@@ -87,7 +129,7 @@ def get_device_or_404(db_session: Session, device_id: str, ctx: AccessContext) -
             status_code=404,
             detail=ApiError(message="Device not found", code="DEVICE_NOT_FOUND").model_dump(mode="json")
         )
-    if ctx.tenant_id and device.tenant_id != ctx.tenant_id:
+    if access.tenant_id and device.tenant_id != access.tenant_id:
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Device not found", code="DEVICE_NOT_FOUND").model_dump(mode="json")
@@ -96,7 +138,7 @@ def get_device_or_404(db_session: Session, device_id: str, ctx: AccessContext) -
 
 # --- Routes ---
 
-@router.get("/devices")
+@router.get("/devices", response_model=ResponseEnvelope[List[DeviceRead]])
 def get_devices(
     category: Optional[str] = None,
     status: Optional[str] = None,
@@ -105,16 +147,16 @@ def get_devices(
     inventory_only: bool = Query(False, alias="inventory_only"),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get devices with filtering"""
     try:
-        query = Device.query
+        query = db_session.query(Device)
         
         # Tenant scope
-        if ctx.tenant_id:
-            query = query.filter_by(tenant_id=ctx.tenant_id)
+        if access.tenant_id:
+            query = query.filter_by(tenant_id=access.tenant_id)
         
         # Inventory only filter
         if inventory_only:
@@ -151,23 +193,23 @@ def get_devices(
         devices = query.offset((page - 1) * per_page).limit(per_page).all()
         
         return ResponseEnvelope(
-            data=[device.to_dict() for device in devices],
+            data=devices,
             meta={
                 "total": total,
                 "page": page,
                 "perPage": per_page,
                 "totalPages": (total + per_page - 1) // per_page,
-                "tenantScope": ctx.tenant_id
+                "tenantScope": access.tenant_id
             }
         )
     except Exception as e:
         logger.error(f"Get devices error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/devices", status_code=201)
+@router.post("/devices", response_model=ResponseEnvelope[DeviceRead], status_code=201)
 def create_device(
     device_in: DeviceCreate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Create a new device"""
@@ -179,7 +221,7 @@ def create_device(
         
         device = Device()
         device.id = device_id
-        device.tenant_id = ctx.tenant_id
+        device.tenant_id = access.tenant_id
         device.patient_id = data['patient_id']
         device.inventory_id = data.get('inventory_id')
         
@@ -245,7 +287,7 @@ def create_device(
 
 @router.get("/devices/categories")
 def get_device_categories(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get available device categories"""
@@ -254,16 +296,16 @@ def get_device_categories(
             Device.category.isnot(None),
             Device.category != ''
         )
-        if ctx.tenant_id:
-            query = query.filter(Device.tenant_id == ctx.tenant_id)
+        if access.tenant_id:
+            query = query.filter(Device.tenant_id == access.tenant_id)
         
         categories = query.all()
         category_list = [cat[0].value if hasattr(cat[0], 'value') else str(cat[0]) for cat in categories if cat[0]]
         
         if not category_list:
             type_query = db_session.query(Device.device_type).distinct().filter(Device.device_type.isnot(None))
-            if ctx.tenant_id:
-                type_query = type_query.filter(Device.tenant_id == ctx.tenant_id)
+            if access.tenant_id:
+                type_query = type_query.filter(Device.tenant_id == access.tenant_id)
             types = type_query.all()
             type_list = [t[0] for t in types if t[0]]
             
@@ -283,7 +325,7 @@ def get_device_categories(
 
 @router.get("/devices/brands")
 def get_device_brands(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get available device brands"""
@@ -293,7 +335,7 @@ def get_device_brands(
         # From Brand table
         try:
             from models.brand import Brand
-            brand_models = Brand.query.all()
+            brand_models = db_session.query(Brand).all()
             for brand in brand_models:
                 if brand.name:
                     brands_set.add(brand.name)
@@ -305,8 +347,8 @@ def get_device_brands(
             Device.brand.isnot(None),
             Device.brand != ''
         )
-        if ctx.tenant_id:
-            device_query = device_query.filter(Device.tenant_id == ctx.tenant_id)
+        if access.tenant_id:
+            device_query = device_query.filter(Device.tenant_id == access.tenant_id)
         
         for brand in device_query.all():
             if brand[0]:
@@ -317,8 +359,8 @@ def get_device_brands(
             InventoryItem.brand.isnot(None),
             InventoryItem.brand != ''
         )
-        if ctx.tenant_id:
-            inv_query = inv_query.filter(InventoryItem.tenant_id == ctx.tenant_id)
+        if access.tenant_id:
+            inv_query = inv_query.filter(InventoryItem.tenant_id == access.tenant_id)
         
         for brand in inv_query.all():
             if brand[0]:
@@ -333,7 +375,7 @@ def get_device_brands(
 @router.post("/devices/brands", status_code=201)
 def create_device_brand(
     brand_in: BrandCreate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Create a new device brand"""
@@ -347,8 +389,8 @@ def create_device_brand(
         
         # Check if exists
         query = db_session.query(Device.brand).filter(Device.brand == brand_name)
-        if ctx.tenant_id:
-            query = query.filter(Device.tenant_id == ctx.tenant_id)
+        if access.tenant_id:
+            query = query.filter(Device.tenant_id == access.tenant_id)
         
         if query.first():
             raise HTTPException(
@@ -358,7 +400,7 @@ def create_device_brand(
         
         # Create placeholder device
         placeholder_device = Device(
-            tenant_id=ctx.tenant_id,
+            tenant_id=access.tenant_id,
             serial_number=f"BRAND_PLACEHOLDER_{brand_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             brand=brand_name,
             model=f"Placeholder for {brand_name}",
@@ -390,14 +432,14 @@ def create_device_brand(
 
 @router.get("/devices/low-stock")
 def get_low_stock_devices(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get devices with low stock levels"""
     try:
-        query = Device.query.filter(Device.status == 'IN_STOCK')
-        if ctx.tenant_id:
-            query = query.filter_by(tenant_id=ctx.tenant_id)
+        query = db_session.query(Device).filter(Device.status == 'IN_STOCK')
+        if access.tenant_id:
+            query = query.filter_by(tenant_id=access.tenant_id)
         
         devices = query.limit(10).all()
         
@@ -414,23 +456,23 @@ def get_low_stock_devices(
 @router.get("/devices/{device_id}")
 def get_device(
     device_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get a specific device"""
-    device = get_device_or_404(db_session, device_id, ctx)
+    device = get_device_or_404(db_session, device_id, access)
     return ResponseEnvelope(data=device.to_dict())
 
 @router.put("/devices/{device_id}")
 def update_device(
     device_id: str,
     device_in: DeviceUpdate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Update a device"""
     try:
-        device = get_device_or_404(db_session, device_id, ctx)
+        device = get_device_or_404(db_session, device_id, access)
         data = device_in.model_dump(exclude_unset=True, by_alias=False)
         
         if 'brand' in data:
@@ -489,14 +531,14 @@ def update_device(
 @router.delete("/devices/{device_id}")
 def delete_device(
     device_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Delete a device or device assignment"""
     try:
         device = db_session.get(Device, device_id)
         if device:
-            if ctx.tenant_id and device.tenant_id != ctx.tenant_id:
+            if access.tenant_id and device.tenant_id != access.tenant_id:
                 raise HTTPException(
                     status_code=404,
                     detail=ApiError(message="Device not found", code="DEVICE_NOT_FOUND").model_dump(mode="json")
@@ -510,7 +552,7 @@ def delete_device(
         assignment = db_session.get(DeviceAssignment, device_id)
         
         if assignment:
-            if ctx.tenant_id and assignment.tenant_id != ctx.tenant_id:
+            if access.tenant_id and assignment.tenant_id != access.tenant_id:
                 raise HTTPException(
                     status_code=404,
                     detail=ApiError(message="Device not found", code="DEVICE_NOT_FOUND").model_dump(mode="json")
@@ -546,12 +588,12 @@ def delete_device(
 def update_device_stock(
     device_id: str,
     stock_update: StockUpdateRequest,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Update device stock levels"""
     try:
-        device = get_device_or_404(db_session, device_id, ctx)
+        device = get_device_or_404(db_session, device_id, access)
         
         if stock_update.notes:
             device.notes = (device.notes or '') + f"\n[stock-update] {stock_update.operation} x{stock_update.quantity}: {stock_update.notes}"

@@ -4,13 +4,13 @@ import { PatientTab } from './PatientTabs';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { PatientOverviewTab } from './PatientOverviewTab';
-import { PatientDevicesTab } from '../PatientDevicesTab';
+import { PatientDevicesTab } from './PatientDevicesTab';
 import PatientSalesTab from './PatientSalesTab';
-import { PatientTimelineTab } from '../PatientTimelineTab';
-import { PatientDocumentsTab } from '../PatientDocumentsTab';
-import { PatientAppointmentsTab } from '../PatientAppointmentsTab';
-import { PatientHearingTestsTab } from '../PatientHearingTestsTab';
-import { PatientNotesTab } from '../PatientNotesTab';
+import { PatientTimelineTab } from './PatientTimelineTab';
+import { PatientDocumentsTab } from './PatientDocumentsTab';
+import { PatientAppointmentsTab } from './PatientAppointmentsTab';
+import { PatientHearingTestsTab } from './PatientHearingTestsTab';
+import { PatientNotesTab } from './PatientNotesTab';
 import { PatientSGKTab } from './PatientSGKTab';
 import { Clock } from 'lucide-react';
 
@@ -72,7 +72,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
     case 'devices':
       return (
         <ErrorBoundary>
-          <PatientDevicesTab patientId={patient?.id || ''} />
+          <PatientDevicesTab patient={patient} />
         </ErrorBoundary>
       );
     case 'sales':
@@ -84,7 +84,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
     case 'timeline':
       return (
         <ErrorBoundary>
-          <PatientTimelineTab patientId={patient?.id || ''} />
+          <PatientTimelineTab patient={patient} />
         </ErrorBoundary>
       );
     case 'documents':
@@ -96,7 +96,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
     case 'appointments':
       return (
         <ErrorBoundary>
-          <PatientAppointmentsTab patientId={patient?.id || ''} />
+          <PatientAppointmentsTab patient={patient} onPatientUpdate={onPatientUpdate || (() => { })} />
         </ErrorBoundary>
       );
     case 'hearing-tests':
@@ -114,7 +114,7 @@ export const PatientTabContent: React.FC<PatientTabContentProps> = ({
     case 'notes':
       return (
         <ErrorBoundary>
-          <PatientNotesTab patientId={patient?.id || ''} />
+          <PatientNotesTab patient={patient} onPatientUpdate={onPatientUpdate} />
         </ErrorBoundary>
       );
     case 'settings':

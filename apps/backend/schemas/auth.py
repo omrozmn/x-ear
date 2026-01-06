@@ -1,72 +1,53 @@
-from typing import Optional, List, Any, Dict
-from datetime import datetime
-from pydantic import Field, EmailStr
-from .base import AppBaseModel, IDMixin, TimestampMixin
+"""
+Auth Schemas - Pydantic models for Authentication domain
+"""
+from typing import Optional, Dict, Any
+from pydantic import Field
+from .base import AppBaseModel
 
-# --- User Schemas ---
-class UserBase(AppBaseModel):
-    username: str
-    email: EmailStr
-    first_name: Optional[str] = Field(None, alias="firstName")
-    last_name: Optional[str] = Field(None, alias="lastName")
-    phone: Optional[str] = None
-    role: str = "user"
-    is_active: bool = Field(True, alias="isActive")
 
-class UserCreate(UserBase):
-    tenant_id: str = Field(..., alias="tenantId")
-    password: str
-
-class UserUpdate(AppBaseModel):
-    first_name: Optional[str] = Field(None, alias="firstName")
-    last_name: Optional[str] = Field(None, alias="lastName")
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = None
-    role: Optional[str] = None
-    is_active: Optional[bool] = Field(None, alias="isActive")
-    is_phone_verified: Optional[bool] = Field(None, alias="isPhoneVerified")
-
-class UserRead(UserBase, IDMixin):
-    tenant_id: str = Field(..., alias="tenantId")
-    full_name: str = Field(..., alias="fullName")
-    is_phone_verified: bool = Field(False, alias="isPhoneVerified")
-    last_login: Optional[datetime] = Field(None, alias="lastLogin")
-    branches: List[Dict[str, Any]] = [] # Simplified branch info
-
-# --- Auth Schemas ---
 class LoginRequest(AppBaseModel):
-    username: str
-    password: str
+    """Login request schema"""
+    identifier: Optional[str] = Field(None, description="Username, email or phone")
+    username: Optional[str] = Field(None, description="Username")
+    email: Optional[str] = Field(None, description="Email")
+    phone: Optional[str] = Field(None, description="Phone")
+    password: str = Field(..., description="Password")
+
 
 class TokenResponse(AppBaseModel):
-    access_token: str = Field(..., alias="accessToken")
-    refresh_token: Optional[str] = Field(None, alias="refreshToken")
-    user: UserRead
+    """Token response schema"""
+    access_token: str = Field(..., alias="accessToken", description="JWT access token")
+    refresh_token: str = Field(..., alias="refreshToken", description="JWT refresh token")
+    user: Dict[str, Any] = Field(..., description="User data")
+    requires_phone_verification: bool = Field(False, alias="requiresPhoneVerification")
+
+
+class RefreshTokenResponse(AppBaseModel):
+    """Refresh token response schema"""
+    access_token: str = Field(..., alias="accessToken", description="New JWT access token")
+
 
 class PasswordChangeRequest(AppBaseModel):
-    current_password: str = Field(..., alias="currentPassword")
-    new_password: str = Field(..., alias="newPassword")
+    """Password change request schema"""
+    current_password: str = Field(..., alias="currentPassword", description="Current password")
+    new_password: str = Field(..., alias="newPassword", min_length=6, description="New password")
 
-# --- Activity Log Schemas ---
-class ActivityLogBase(AppBaseModel):
-    action: str
-    message: Optional[str] = None
-    entity_type: Optional[str] = Field(None, alias="entityType")
-    entity_id: Optional[str] = Field(None, alias="entityId")
-    data: Optional[Dict[str, Any]] = None
-    is_critical: bool = Field(False, alias="isCritical")
 
-class ActivityLogCreate(ActivityLogBase):
-    tenant_id: Optional[str] = Field(None, alias="tenantId")
-    branch_id: Optional[str] = Field(None, alias="branchId")
-    ip_address: Optional[str] = Field(None, alias="ipAddress")
-    user_agent: Optional[str] = Field(None, alias="userAgent")
+class OTPVerifyRequest(AppBaseModel):
+    """OTP verification request schema"""
+    otp: str = Field(..., description="OTP code")
+    identifier: Optional[str] = Field(None, description="User identifier")
 
-class ActivityLogRead(ActivityLogBase, IDMixin, TimestampMixin):
-    tenant_id: Optional[str] = Field(None, alias="tenantId")
-    branch_id: Optional[str] = Field(None, alias="branchId")
-    user_id: Optional[str] = Field(None, alias="userId")
-    user_name: Optional[str] = Field(None, alias="userName")
-    user_email: Optional[str] = Field(None, alias="userEmail")
-    tenant_name: Optional[str] = Field(None, alias="tenantName")
-    branch_name: Optional[str] = Field(None, alias="branchName")
+
+class ForgotPasswordRequest(AppBaseModel):
+    """Forgot password request schema"""
+    identifier: str = Field(..., description="Phone number")
+    captcha_token: str = Field(..., alias="captchaToken", description="Captcha token")
+
+
+class ResetPasswordRequest(AppBaseModel):
+    """Reset password request schema"""
+    identifier: str = Field(..., description="Phone number")
+    otp: str = Field(..., description="OTP code")
+    new_password: str = Field(..., alias="newPassword", min_length=6, description="New password")

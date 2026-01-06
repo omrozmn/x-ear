@@ -8,8 +8,21 @@ import {
     useCreateAdminAddon,
     useUpdateAdminAddon,
     useDeleteAdminAddon,
-    AddOn,
 } from '@/lib/api-client';
+
+// Local type definition (not exported from generated client)
+interface AddOn {
+    id?: string;
+    name?: string;
+    slug?: string;
+    price?: number;
+    addon_type?: string;
+    is_active?: boolean;
+    description?: string;
+    limit_amount?: number;
+    unit_name?: string;
+    currency?: string;
+}
 import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import * as Dialog from '@radix-ui/react-dialog';
 import Pagination from '@/components/ui/Pagination';
@@ -19,8 +32,8 @@ const AddOns: React.FC = () => {
     const [page, setPage] = React.useState(1);
     const [limit, setLimit] = React.useState(10);
     const { data: addonsData, isLoading, error } = useGetAdminAddons({ page, limit } as any);
-    const addons = addonsData?.data?.addons || [];
-    const pagination = addonsData?.data?.pagination;
+    const addons = (addonsData as any)?.data?.addons || (addonsData as any)?.addons || [];
+    const pagination = (addonsData as any)?.data?.pagination || (addonsData as any)?.pagination;
 
     const { mutateAsync: createAddon } = useCreateAdminAddon();
     const { mutateAsync: updateAddon } = useUpdateAdminAddon();
@@ -72,7 +85,7 @@ const AddOns: React.FC = () => {
         try {
             if (editingAddon) {
                 await updateAddon({
-                    id: editingAddon.id!,
+                    addonId: editingAddon.id!,
                     data: formData as any
                 });
                 toast.success('Eklenti güncellendi');
@@ -100,7 +113,7 @@ const AddOns: React.FC = () => {
         if (!deletingAddonId) return;
         setIsSubmitting(true);
         try {
-            await deleteAddon({ id: deletingAddonId });
+            await deleteAddon({ addonId: deletingAddonId });
             await queryClient.invalidateQueries({ queryKey: ['/admin/addons'] });
             toast.success('Eklenti silindi');
             setIsDeleteModalOpen(false);
@@ -121,11 +134,11 @@ const AddOns: React.FC = () => {
         setIsSubmitting(true);
         try {
             await updateAddon({
-                id: statusAddon.id,
+                addonId: statusAddon.id,
                 data: {
                     name: statusAddon.name!,
                     price: statusAddon.price!,
-                    is_active: !statusAddon.is_active
+                    isActive: !statusAddon.is_active
                 }
             });
             await queryClient.invalidateQueries({ queryKey: ['/admin/addons'] });

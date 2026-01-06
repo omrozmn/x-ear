@@ -1,27 +1,28 @@
 
+"""Legacy data inspection script.
+
+Reason: This script previously booted a Flask app context to access SQLAlchemy; the backend no longer uses Flask.
+Expected outcome: Script remains usable without Flask installed by using `database.SessionLocal` directly.
+"""
+
 import sys
 import os
-from flask import Flask
+
+from database import SessionLocal, set_current_tenant_id
 from models.sales import Sale, PaymentRecord, DeviceAssignment
-from extensions import db
-
-# Initialize Flask App
-app = Flask(__name__)
-base_dir = os.path.abspath(os.path.dirname(__file__))
-# Check if instance folder exists, if not use current dir
-db_path = os.path.join(base_dir, 'instance', 'xear.db')
-if not os.path.exists(db_path):
-    db_path = os.path.join(base_dir, 'xear.db')
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db.init_app(app)
 
 def check_sale(sale_id):
-    with app.app_context():
-        print(f"--- Checking Sale ID: {sale_id} ---")
-        # Try finding by string or integer
-        sale = Sale.query.filter_by(id=sale_id).first()
+    print(f"--- Checking Sale ID: {sale_id} ---")
+
+    # Optional for scripts: allow tenant scoping via env
+    tenant_id = os.getenv("TENANT_ID")
+    if tenant_id:
+        set_current_tenant_id(tenant_id)
+
+    with SessionLocal() as session:
+        sale = session.get(Sale, sale_id)
+        if not sale:
+            sale = session.query(Sale).filter(Sale.id == str(sale_id)).first()
         if not sale:
             print(f"Sale {sale_id} NOT FOUND.")
             return
@@ -32,15 +33,13 @@ def check_sale(sale_id):
         print(f"  Final Amount: {sale.final_amount}")
         print(f"  Discount Amount: {sale.discount_amount}")
         print(f"  SGK Coverage: {sale.sgk_coverage}")
-        
-        # Check payments
-        payments = PaymentRecord.query.filter_by(sale_id=str(sale.id)).all()
+
+        payments = session.query(PaymentRecord).filter(PaymentRecord.sale_id == str(sale.id)).all()
         print(f"  Payment Records: {len(payments)}")
         for p in payments:
             print(f"    - ID: {p.id}, Type: {p.payment_type}, Amount: {p.amount}, Date: {p.payment_date}")
 
-        # Check assignments
-        assignments = DeviceAssignment.query.filter_by(sale_id=str(sale.id)).all()
+        assignments = session.query(DeviceAssignment).filter(DeviceAssignment.sale_id == str(sale.id)).all()
         print(f"  Assignments: {len(assignments)}")
         for a in assignments:
             print(f"    - ID: {a.id}, SGK: {a.sgk_scheme}, Support: {a.sgk_support}, Net: {a.net_payable}")

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button, Input, Select, useToastHelpers } from '@x-ear/ui-web';
-import { 
-  usePaymentIntegrationsUpdatePaytrConfig, 
-  usePaymentIntegrationsGetPaytrConfig 
+import {
+    useUpdatePaytrConfigApiPaymentsPosPaytrConfigPut,
+    useGetPaytrConfigApiPaymentsPosPaytrConfigGet
 } from '@/api/generated';
 import { CreditCard, Building2, Check, AlertCircle } from 'lucide-react';
 
@@ -36,8 +36,8 @@ export const PosSettings = () => {
     });
     const { success, error } = useToastHelpers();
 
-  const updateConfigMutation = usePaymentIntegrationsUpdatePaytrConfig();
-  const { data: configData, isLoading } = usePaymentIntegrationsGetPaytrConfig();
+    const updateConfigMutation = useUpdatePaytrConfigApiPaymentsPosPaytrConfigPut();
+    const { data: configData, isLoading } = useGetPaytrConfigApiPaymentsPosPaytrConfigGet();
 
     const selectedProvider = watch('provider');
 

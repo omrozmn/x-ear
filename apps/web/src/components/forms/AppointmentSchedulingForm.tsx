@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { Calendar, Clock, User, FileText, AlertCircle, MapPin } from 'lucide-react';
+import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface Appointment {
   id?: string;
@@ -42,7 +43,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
     appointmentTime: '',
     duration: 30,
     status: 'scheduled',
-    createdBy: 'current_user' // TODO: Get from auth context
+    createdBy: getCurrentUserId()
   });
 
   const [availableDoctors, setAvailableDoctors] = useState<any[]>([]);
@@ -66,7 +67,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
           appointmentTime: '',
           duration: 30,
           status: 'scheduled',
-          createdBy: 'current_user' // TODO: Get from auth context
+          createdBy: getCurrentUserId()
         });
       }
       setErrors({});

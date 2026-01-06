@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DatePicker } from '@x-ear/ui-web';
-import { useInventoryGetInventoryMovements } from '@/api/generated';
+import { useGetMovementsApiInventoryItemIdMovementsGet } from '@/api/generated';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ArrowUpRight, ArrowDownLeft, Calendar, User, Search } from 'lucide-react';
 
@@ -26,8 +26,9 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
 
     // Use orval-generated hook with CORRECT endpoint (path param, not query)
     // Note: Backend supports startTime/endTime
-    const { data: movementsResponseRaw, isLoading, error } = useInventoryGetInventoryMovements(
+    const { data: movementsResponseRaw, isLoading, error } = useGetMovementsApiInventoryItemIdMovementsGet(
         inventoryId || '', // item_id as path parameter
+        {},
         {
             query: {
                 enabled: !!inventoryId

@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-import type { Patient } from '@/api/generated';
+import type { PatientRead as Patient } from "@/api/generated/schemas";
 import { PatientFilters } from '../../types/patient';
 import Fuse from 'fuse.js';
 
@@ -74,7 +74,7 @@ export class PatientSearchService {
       } else {
         // Fallback to simple text search
         const searchTerm = filters.search.toLowerCase();
-        filteredPatients = patients.filter(patient => 
+        filteredPatients = patients.filter(patient =>
           patient.firstName?.toLowerCase().includes(searchTerm) ||
           patient.lastName?.toLowerCase().includes(searchTerm) ||
           patient.phone?.includes(searchTerm) ||
@@ -123,7 +123,7 @@ export class PatientSearchService {
       // Tags filter
       if (filters.tags && filters.tags.length > 0) {
         const hasMatchingTag = filters.tags.some(tag =>
-          patient.tags?.includes(tag)
+          (patient.tags as any[])?.includes(tag)
         );
         if (!hasMatchingTag) {
           return false;
@@ -217,12 +217,12 @@ export class PatientSearchService {
   private calculateStringSimilarity(str1: string, str2: string): number {
     const s1 = str1.toLowerCase().trim();
     const s2 = str2.toLowerCase().trim();
-    
+
     if (s1 === s2) return 1;
-    
+
     const maxLength = Math.max(s1.length, s2.length);
     if (maxLength === 0) return 1;
-    
+
     const distance = this.levenshteinDistance(s1, s2);
     return 1 - (distance / maxLength);
   }
@@ -230,16 +230,16 @@ export class PatientSearchService {
   private calculatePhoneSimilarity(phone1: string, phone2: string): number {
     // Normalize phone numbers (remove spaces, dashes, parentheses)
     const normalize = (phone: string) => phone.replace(/[\s\-\(\)]/g, '');
-    
+
     const p1 = normalize(phone1);
     const p2 = normalize(phone2);
-    
+
     // Exact match
     if (p1 === p2) return 1;
-    
+
     // Check if one is a substring of the other (for international vs local format)
     if (p1.includes(p2) || p2.includes(p1)) return 0.9;
-    
+
     // Use string similarity as fallback
     return this.calculateStringSimilarity(p1, p2);
   }

@@ -8,22 +8,24 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 import logging
 
-from dependencies import get_db, get_current_admin_user
 from schemas.base import ResponseEnvelope
 from models.admin_user import AdminUser
 from models.tenant import Tenant
 from models.user import User
 from models.plan import Plan
 from models.invoice import Invoice
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/analytics", tags=["Admin Analytics"])
 
-@router.get("")
+@router.get("", operation_id="getAdminAnalytics")
+@router.get("/overview", operation_id="getAdminAnalyticsOverview")
 def get_admin_analytics(
     db_session: Session = Depends(get_db),
-    current_admin: AdminUser = Depends(get_current_admin_user)
+    access: UnifiedAccess = Depends(require_admin())
 ):
     """Get admin analytics data"""
     try:
@@ -153,4 +155,92 @@ def get_admin_analytics(
         })
     except Exception as e:
         logger.error(f"Analytics error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/revenue")
+def get_revenue_analytics(
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
+):
+    """Get revenue analytics"""
+    try:
+        today = datetime.now()
+        six_months_ago = today - timedelta(days=180)
+        
+        total_revenue = db_session.query(func.sum(Invoice.device_price)).scalar() or 0
+        
+        tr_months = {1: "Ocak", 2: "Şubat", 3: "Mart", 4: "Nisan", 5: "Mayıs", 6: "Haziran",
+                     7: "Temmuz", 8: "Ağustos", 9: "Eylül", 10: "Ekim", 11: "Kasım", 12: "Aralık"}
+        
+        revenue_query = db_session.query(
+            func.extract('year', Invoice.created_at).label('year'),
+            func.extract('month', Invoice.created_at).label('month'),
+            func.sum(Invoice.device_price).label('revenue')
+        ).filter(Invoice.created_at >= six_months_ago).group_by(
+            func.extract('year', Invoice.created_at),
+            func.extract('month', Invoice.created_at)
+        ).all()
+        
+        revenue_trend = []
+        for year, month, rev in revenue_query:
+            revenue_trend.append({
+                "month": tr_months.get(int(month), str(month)),
+                "revenue": float(rev or 0)
+            })
+        
+        return ResponseEnvelope(data={
+            "total_revenue": float(total_revenue),
+            "revenue_trend": revenue_trend
+        })
+    except Exception as e:
+        logger.error(f"Revenue analytics error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/users")
+def get_user_analytics(
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
+):
+    """Get user analytics"""
+    try:
+        today = datetime.now()
+        thirty_days_ago = today - timedelta(days=30)
+        
+        total_users = db_session.query(User).count()
+        active_users = db_session.query(User).filter_by(is_active=True).count()
+        monthly_active = db_session.query(User).filter(User.last_login >= thirty_days_ago).count()
+        
+        return ResponseEnvelope(data={
+            "total_users": total_users,
+            "active_users": active_users,
+            "monthly_active_users": monthly_active
+        })
+    except Exception as e:
+        logger.error(f"User analytics error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/tenants")
+def get_tenant_analytics(
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_admin())
+):
+    """Get tenant analytics"""
+    try:
+        total_tenants = db_session.query(Tenant).count()
+        active_tenants = db_session.query(Tenant).filter_by(status='active').count()
+        
+        tenants_by_status = db_session.query(
+            Tenant.status, func.count(Tenant.id)
+        ).group_by(Tenant.status).all()
+        
+        return ResponseEnvelope(data={
+            "total_tenants": total_tenants,
+            "active_tenants": active_tenants,
+            "by_status": {status: count for status, count in tenants_by_status}
+        })
+    except Exception as e:
+        logger.error(f"Tenant analytics error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

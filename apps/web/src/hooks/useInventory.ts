@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
-import { inventoryGetInventoryItems } from '@/api/generated';
-import type { InventoryItem } from '@/api/generated/schemas';
+import { getAllInventory } from '@/api/generated';
+import type { InventoryItemCreate } from '@/api/generated/schemas';
 import { unwrapArray } from '../utils/response-unwrap';
 
+// Use InventoryItemCreate as base type since InventoryItemRead doesn't exist
+type InventoryItemRead = InventoryItemCreate & { id?: string };
+
 interface UseInventoryResult {
-  products: InventoryItem[];
+  products: InventoryItemRead[];
   loading: boolean;
   error: string | null;
-  searchProducts: (query: string) => InventoryItem[];
+  searchProducts: (query: string) => InventoryItemRead[];
   refetch: () => Promise<void>;
 }
 
 export const useInventory = (): UseInventoryResult => {
-  const [products, setProducts] = useState<InventoryItem[]>([]);
+  const [products, setProducts] = useState<InventoryItemRead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,14 +24,14 @@ export const useInventory = (): UseInventoryResult => {
       setLoading(true);
       setError(null);
 
-      const response = await inventoryGetInventoryItems({
+      const response = await getAllInventory({
         category: 'hearing_aid', // Focus on hearing aids for sales
         search: undefined,
-        lowStock: false
+        low_stock: false
       });
 
       // Use unwrap helper for consistent response handling
-      const items = unwrapArray<InventoryItem>(response);
+      const items = unwrapArray<InventoryItemRead>(response);
       setProducts(items);
     } catch (err) {
       console.error('Error fetching inventory:', err);
@@ -39,7 +42,7 @@ export const useInventory = (): UseInventoryResult => {
     }
   };
 
-  const searchProducts = (query: string): InventoryItem[] => {
+  const searchProducts = (query: string): InventoryItemRead[] => {
     if (!query.trim()) return products;
 
     const searchTerm = query.toLowerCase();
@@ -67,3 +70,6 @@ export const useInventory = (): UseInventoryResult => {
     refetch
   };
 };
+
+// Re-export types for consumers
+export type { InventoryItemRead };

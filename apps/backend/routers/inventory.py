@@ -12,23 +12,24 @@ from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
 from models.inventory import InventoryItem
 from models.stock_movement import StockMovement
 from models.tenant import Tenant
-from models.base import db
-from dependencies import get_db, get_current_context, AccessContext
+
 
 import logging
+from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Inventory"])
 
-def get_inventory_or_404(db: Session, item_id: str, ctx: AccessContext) -> InventoryItem:
-    item = db.session.get(InventoryItem, item_id)
+def get_inventory_or_404(db_session: Session, item_id: str, access: UnifiedAccess) -> InventoryItem:
+    item = db_session.get(InventoryItem, item_id)
     if not item:
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Item not found", code="INVENTORY_ITEM_NOT_FOUND").model_dump(mode="json"),
         )
-    if ctx.tenant_id and item.tenant_id != ctx.tenant_id:
+    if access.tenant_id and item.tenant_id != access.tenant_id:
         raise HTTPException(
             status_code=404,
             detail=ApiError(message="Item not found", code="INVENTORY_ITEM_NOT_FOUND").model_dump(mode="json"),
@@ -45,21 +46,21 @@ def get_all_inventory(
     low_stock: bool = False,
     out_of_stock: bool = False,
     search: Optional[str] = None,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Get all inventory items"""
-    query = InventoryItem.query
-    if ctx.tenant_id:
-        query = query.filter_by(tenant_id=ctx.tenant_id)
+    query = db.query(InventoryItem)
+    if access.tenant_id:
+        query = query.filter_by(tenant_id=access.tenant_id)
         
     # Branch filtering for Tenant Admin (Legacy)
-    if ctx.is_tenant_admin and ctx.user.role == 'admin':
-        user_branch_ids = [b.id for b in getattr(ctx.user, 'branches', [])]
+    if access.is_tenant_admin and access.user.role == 'admin':
+        user_branch_ids = [b.id for b in getattr(access.user, 'branches', [])]
         if user_branch_ids:
             query = query.filter(InventoryItem.branch_id.in_(user_branch_ids))
-        elif getattr(ctx.user, 'branches', []): # If list exists but empty
-             return ResponseEnvelope(data=[], meta=ResponseMeta(total=0, page=page, perPage=per_page, totalPages=0))
+        elif getattr(access.user, 'branches', []): # If list exists but empty
+             return ResponseEnvelope(data=[], meta={"total": 0, "page": page, "perPage": per_page, "totalPages": 0})
 
     if category: query = query.filter_by(category=category)
     if brand: query = query.filter(InventoryItem.brand.ilike(f'%{brand}%'))
@@ -81,13 +82,10 @@ def get_all_inventory(
     total = query.count()
     items = query.order_by(InventoryItem.name).offset((page - 1) * per_page).limit(per_page).all()
     
-    # Handle serialization errors gracefully? 
-    # Logic in Flask was try/except item.to_dict(). Pydantic model validation handles safe fields.
-    
     total_pages = (total + per_page - 1) // per_page
     
     return ResponseEnvelope(
-        data=items,
+        data=[item.to_dict() for item in items],
         meta={
             "total": total,
             "page": page,
@@ -112,24 +110,24 @@ def advanced_search(
     sortOrder: str = 'asc',
     page: int = 1,
     limit: int = 20,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Advanced product search"""
     # ... logic port ...
-    query = InventoryItem.query
-    if ctx.tenant_id:
-        query = query.filter_by(tenant_id=ctx.tenant_id)
+    query = db.query(InventoryItem)
+    if access.tenant_id:
+        query = query.filter_by(tenant_id=access.tenant_id)
         
     # Branch filtering
-    if ctx.is_tenant_admin and ctx.user.role == 'admin':
-        user_branch_ids = [b.id for b in getattr(ctx.user, 'branches', [])]
+    if access.is_tenant_admin and access.user.role == 'admin':
+        user_branch_ids = [b.id for b in getattr(access.user, 'branches', [])]
         if user_branch_ids:
             query = query.filter(InventoryItem.branch_id.in_(user_branch_ids))
-        elif getattr(ctx.user, 'branches', []):
+        elif getattr(access.user, 'branches', []):
              return ResponseEnvelope(
                  data={"items": [], "pagination": {"total": 0}, "filters": {}},
-                 meta={"total": 0, "page": page, "perPage": limit, "totalPages": 0},
+                 meta={"total": 0, "page": page, "per_page": limit, "total_pages": 0},
              )
              
     if q:
@@ -166,22 +164,22 @@ def advanced_search(
     
     # Filter metadata
     # ... logic from read.py ...
-    cat_q = db.session.query(InventoryItem.category).filter(InventoryItem.category.isnot(None))
-    brand_q = db.session.query(InventoryItem.brand).filter(InventoryItem.brand.isnot(None))
-    supp_q = db.session.query(InventoryItem.supplier).filter(InventoryItem.supplier.isnot(None))
+    cat_q = db.query(InventoryItem.category).filter(InventoryItem.category.isnot(None))
+    brand_q = db.query(InventoryItem.brand).filter(InventoryItem.brand.isnot(None))
+    supp_q = db.query(InventoryItem.supplier).filter(InventoryItem.supplier.isnot(None))
     
-    if ctx.tenant_id:
-        cat_q = cat_q.filter_by(tenant_id=ctx.tenant_id)
-        brand_q = brand_q.filter_by(tenant_id=ctx.tenant_id)
-        supp_q = supp_q.filter_by(tenant_id=ctx.tenant_id)
+    if access.tenant_id:
+        cat_q = cat_q.filter_by(tenant_id=access.tenant_id)
+        brand_q = brand_q.filter_by(tenant_id=access.tenant_id)
+        supp_q = supp_q.filter_by(tenant_id=access.tenant_id)
         
     categories = [c[0] for c in cat_q.distinct().all() if c[0]]
     brands_list = [b[0] for b in brand_q.distinct().all() if b[0]]
     suppliers = [s[0] for s in supp_q.distinct().all() if s[0]]
     
     # Price stats
-    price_q = db.session.query(func.min(InventoryItem.price), func.max(InventoryItem.price))
-    if ctx.tenant_id: price_q = price_q.filter_by(tenant_id=ctx.tenant_id)
+    price_q = db.query(func.min(InventoryItem.price), func.max(InventoryItem.price))
+    if access.tenant_id: price_q = price_q.filter_by(tenant_id=access.tenant_id)
     price_stats = price_q.first()
     
     return ResponseEnvelope(
@@ -206,19 +204,19 @@ def advanced_search(
         meta={
             "total": total,
             "page": page,
-            "perPage": limit,
-            "totalPages": (total + limit - 1) // limit,
+            "per_page": limit,
+            "total_pages": (total + limit - 1) // limit,
         },
     )
 
 @router.get("/inventory/stats", response_model=ResponseEnvelope[InventoryStats])
 def get_inventory_stats(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Get inventory stats"""
-    query = InventoryItem.query
-    if ctx.tenant_id: query = query.filter_by(tenant_id=ctx.tenant_id)
+    query = db.query(InventoryItem)
+    if access.tenant_id: query = query.filter_by(tenant_id=access.tenant_id)
     
     total = query.count()
     low = query.filter(InventoryItem.available_inventory <= InventoryItem.reorder_level).count()
@@ -226,8 +224,8 @@ def get_inventory_stats(
     
     # Value
     # Note: query already filtered by tenant
-    val_query = db.session.query(func.sum(InventoryItem.price * InventoryItem.available_inventory))
-    if ctx.tenant_id: val_query = val_query.filter(InventoryItem.tenant_id == ctx.tenant_id)
+    val_query = db.query(func.sum(InventoryItem.price * InventoryItem.available_inventory))
+    if access.tenant_id: val_query = val_query.filter(InventoryItem.tenant_id == access.tenant_id)
     
     total_value = val_query.scalar() or 0
     
@@ -240,32 +238,32 @@ def get_inventory_stats(
 
 @router.get("/inventory/low-stock", response_model=ResponseEnvelope[List[InventoryItemRead]])
 def get_low_stock(
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Get low stock items"""
-    query = InventoryItem.query
-    if ctx.tenant_id: query = query.filter_by(tenant_id=ctx.tenant_id)
+    query = db.query(InventoryItem)
+    if access.tenant_id: query = query.filter_by(tenant_id=access.tenant_id)
     items = query.filter(InventoryItem.available_inventory <= InventoryItem.reorder_level).all()
-    return ResponseEnvelope(data=items)
+    return ResponseEnvelope(data=[item.to_dict() for item in items])
 
 @router.post("/inventory", response_model=ResponseEnvelope[InventoryItemRead], status_code=201)
 def create_inventory(
     item_in: InventoryItemCreate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Create inventory item"""
     data = item_in.model_dump(exclude_unset=True)
     
     # Determine tenant
-    tenant_id = ctx.tenant_id
-    if not tenant_id:
-        tenant_id = data.get('tenant_id')
+    access.tenant_id = access.tenant_id
+    if not access.tenant_id:
+        access.tenant_id = data.get('access.tenant_id')
     # Fallback logic from write.py
-    if not tenant_id:
-        t = Tenant.query.first()
-        if t: tenant_id = t.id
+    if not access.tenant_id:
+        t = db.query(Tenant).first()
+        if t: access.tenant_id = t.id
         else:
              # Create default tenant? Maybe overly defensive for new API
              pass
@@ -277,79 +275,79 @@ def create_inventory(
     serials = data.pop('serials', [])
     
     try:
-        item = InventoryItem(tenant_id=tenant_id, **data)
-        db.session.add(item)
-        db.session.commit() # Commit to get ID
+        item = InventoryItem(tenant_id=access.tenant_id, **data)
+        db.add(item)
+        db.commit() # Commit to get ID
         
         # Add serials if any
         if serials:
             for s in serials:
                 item.add_serial_number(s)
-            db.session.commit()
+            db.commit()
             
-        return ResponseEnvelope(data=item)
+        return ResponseEnvelope(data=item.to_dict())
     except Exception as e:
-        db.session.rollback()
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/inventory/{item_id}", response_model=ResponseEnvelope[InventoryItemRead])
 def get_inventory_item(
     item_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Get item"""
-    item = get_inventory_or_404(db, item_id, ctx)
-    return ResponseEnvelope(data=item)
+    item = get_inventory_or_404(db, item_id, access)
+    return ResponseEnvelope(data=item.to_dict())
 
 @router.put("/inventory/{item_id}", response_model=ResponseEnvelope[InventoryItemRead])
 def update_inventory(
     item_id: str,
     item_in: InventoryItemUpdate,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Update item"""
-    item = get_inventory_or_404(db, item_id, ctx)
+    item = get_inventory_or_404(db, item_id, access)
     data = item_in.model_dump(exclude_unset=True)
     
     for k, v in data.items():
         if hasattr(item, k):
             setattr(item, k, v)
             
-    db.session.commit()
-    return ResponseEnvelope(data=item)
+    db.commit()
+    return ResponseEnvelope(data=item.to_dict())
 
 @router.delete("/inventory/{item_id}")
 def delete_inventory(
     item_id: str,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Delete item"""
-    item = get_inventory_or_404(db, item_id, ctx)
-    db.session.delete(item)
-    db.session.commit()
+    item = get_inventory_or_404(db, item_id, access)
+    db.delete(item)
+    db.commit()
     return ResponseEnvelope(message="Item deleted")
 
 @router.post("/inventory/{item_id}/serials")
 def add_serials(
     item_id: str,
     payload: Dict[str, List[str]], # manual schema
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Add serial numbers"""
-    item = get_inventory_or_404(db, item_id, ctx)
+    item = get_inventory_or_404(db, item_id, access)
     serials = payload.get('serials', [])
     count = 0
     for s in serials:
         if item.add_serial_number(s):
             count += 1
-    db.session.commit()
+    db.commit()
     return ResponseEnvelope(message=f"{count} serial numbers added", data=item)
 
-@router.get("/inventory/{item_id}/movements") # response_model List[StockMovementRead]
+@router.get("/inventory/{item_id}/movements", response_model=ResponseEnvelope[List[StockMovementRead]])
 def get_movements(
     item_id: str,
     startTime: Optional[str] = None,
@@ -357,11 +355,11 @@ def get_movements(
     type: Optional[str] = None,
     page: int = 1,
     limit: int = 20,
-    ctx: AccessContext = Depends(get_current_context),
+    access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
     """Get movements"""
-    item = get_inventory_or_404(db, item_id, ctx)
+    item = get_inventory_or_404(db, item_id, access)
     query = item.movements
     
     if startTime:
@@ -382,7 +380,7 @@ def get_movements(
         data=results,
         meta={
             "page": page,
-            "perPage": limit,
+            "per_page": limit,
             "total": pagination.total
         }
     )

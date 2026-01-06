@@ -8,13 +8,16 @@
     "dev": "cd apps/web && npm run dev",
     "dev:web": "cd apps/web && npm run dev",
     "dev:backend": "cd apps/backend && python app.py",
+    "dev:typecheck": "concurrently \"npm run dev:web\" \"npm run typecheck:watch\"",
     "build": "cd apps/web && npm run build",
     "build:web": "cd apps/web && npm run build",
     "test": "cd apps/web && npm run test",
     "lint": "cd apps/web && npm run lint",
     "typecheck": "cd apps/web && npm run type-check",
+    "typecheck:watch": "cd apps/web && npx tsc --noEmit --watch",
     "clean": "rm -rf apps/web/node_modules apps/web/dist",
     "gen:api": "cd apps/web && npm run gen:api",
+    "gen:api:check": "npm run gen:api && git diff --exit-code apps/web/src/api/generated/",
     "sync:api": "bash apps/backend/scripts/auto_sync_openapi.sh",
     "sync:api:web": "cd apps/backend && python scripts/generate_openapi.py && python scripts/merge_openapi.py && cd ../web && npm run gen:api",
     "sync:api:admin": "cd apps/backend && python scripts/generate_openapi.py && python scripts/merge_openapi.py && cd ../admin && npm run gen:api",
@@ -22,7 +25,8 @@
     "gen:storage-keys": "node scripts/generate-storage-keys.cjs",
     "db:migrate": "cd apps/backend && python -m alembic upgrade head",
     "db:migration": "cd apps/backend && python -m alembic revision --autogenerate",
-    "backend:setup": "cd apps/backend && pip install -r requirements.txt"
+    "backend:setup": "cd apps/backend && pip install -r requirements.txt",
+    "precommit:typecheck": "cd apps/web && npm run type-check"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "^8.6.14",
