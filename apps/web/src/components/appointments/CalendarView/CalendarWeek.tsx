@@ -49,7 +49,7 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
 
     for (let i = 0; i < 7; i++) {
       const date = addDays(start, i);
-      const dayAppointments = appointments.filter(apt => 
+      const dayAppointments = appointments.filter(apt =>
         isSameDay(new Date(apt.date), date)
       );
 
@@ -111,10 +111,10 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
       <div
         ref={setNodeRef}
         className={`
-          min-h-[60px] border-r border-b border-gray-200 p-1 transition-colors
-          ${isOver ? 'bg-blue-50 border-blue-300' : ''}
-          ${isCurrentHour(day, slot.hour) ? 'bg-yellow-50' : ''}
-          hover:bg-gray-50 cursor-pointer
+          min-h-[60px] border-r border-b border-gray-200 dark:border-gray-700 p-1 transition-colors
+          ${isOver ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700' : ''}
+          ${isCurrentHour(day, slot.hour) ? 'bg-yellow-50 dark:bg-yellow-900/20' : ''}
+          hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer
         `}
         onClick={() => onTimeSlotClick(day.date, slot.time)}
       >
@@ -122,16 +122,16 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
           {slotAppointments.map((appointment) => (
             <div
               key={appointment.id}
-              className="text-xs p-1 rounded bg-blue-50 border border-blue-200 cursor-pointer hover:bg-blue-100"
+              className="text-xs p-1 rounded bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/50"
               onClick={(e) => {
                 e.stopPropagation();
                 onAppointmentClick(appointment);
               }}
             >
-              <div className="font-medium truncate">
+              <div className="font-medium truncate text-gray-900 dark:text-gray-200">
                 {appointment.patientName || 'Hasta bilgisi yok'}
               </div>
-              <div className="text-gray-500">
+              <div className="text-gray-500 dark:text-gray-400">
                 {appointment.time}
               </div>
             </div>
@@ -147,7 +147,7 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-4">
           <Button
             variant="outline"
@@ -160,7 +160,7 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
           >
             ←
           </Button>
-          <Text className="text-lg font-semibold">
+          <Text className="text-lg font-semibold dark:text-white">
             {format(weekStart, 'dd MMM', { locale: tr })} - {format(weekEnd, 'dd MMM yyyy', { locale: tr })}
           </Text>
           <Button
@@ -188,8 +188,8 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
       <div className="flex-1 overflow-auto">
         <div className="grid grid-cols-8 min-w-full">
           {/* Time column header */}
-          <div className="border-r border-gray-200 bg-gray-50 p-2">
-            <Text className="text-sm font-medium text-gray-600">Saat</Text>
+          <div className="border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2">
+            <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">Saat</Text>
           </div>
 
           {/* Day headers */}
@@ -197,15 +197,15 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
             <div
               key={day.date.toISOString()}
               className={`
-                border-r border-gray-200 bg-gray-50 p-2 text-center cursor-pointer
-                ${day.isToday ? 'bg-blue-50' : ''}
+                border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 text-center cursor-pointer
+                ${day.isToday ? 'bg-blue-50 dark:bg-blue-900/30' : ''}
               `}
               onClick={() => onDateChange(day.date)}
             >
-              <Text className="text-sm font-medium">
+              <Text className="text-sm font-medium dark:text-gray-300">
                 {format(day.date, 'EEE', { locale: tr })}
               </Text>
-              <Text className={`text-lg ${day.isToday ? 'text-blue-600 font-bold' : ''}`}>
+              <Text className={`text-lg ${day.isToday ? 'text-blue-600 dark:text-blue-400 font-bold' : 'dark:text-white'}`}>
                 {format(day.date, 'dd')}
               </Text>
             </div>
@@ -215,8 +215,8 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
           {timeSlots.map((slot) => (
             <React.Fragment key={slot.time}>
               {/* Time label */}
-              <div className="border-r border-b border-gray-200 bg-gray-50 p-2 text-center">
-                <Text className="text-xs text-gray-600">{slot.time}</Text>
+              <div className="border-r border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 text-center">
+                <Text className="text-xs text-gray-600 dark:text-gray-400">{slot.time}</Text>
               </div>
 
               {/* Day cells */}

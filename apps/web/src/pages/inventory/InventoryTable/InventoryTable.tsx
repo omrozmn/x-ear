@@ -62,7 +62,7 @@ const InventoryTable: React.FC<Props> = ({
             <th className="px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">İşlemler</th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
           {items.map((item) => (
             <InventoryRow
               key={item.id}

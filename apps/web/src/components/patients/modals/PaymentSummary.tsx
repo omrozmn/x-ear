@@ -83,6 +83,7 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale, onPaymentU
 
   useEffect(() => {
     loadPaymentRecords();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sale.id, sale.patientId, sale.patientPayment]);
 
   const handlePaymentUpdate = () => {

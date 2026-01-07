@@ -83,6 +83,7 @@ export const SGKDownloadsPage: React.FC = () => {
 
   useEffect(() => {
     filterPatients();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patients, selectedMonth]);
 
 

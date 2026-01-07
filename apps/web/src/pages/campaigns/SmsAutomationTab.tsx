@@ -303,6 +303,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
         if (showCreateModal && !editingRule && defaultHeaderId && !formData.headerId) {
             setFormData(prev => ({ ...prev, headerId: defaultHeaderId }));
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showCreateModal, editingRule, defaultHeaderId]);
 
     // Form state for create/edit
@@ -462,36 +463,36 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
         <div className="space-y-6">
             {/* Stats Header */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="p-4 bg-gradient-to-br from-indigo-50 to-white border border-indigo-100">
+                <Card className="p-4 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-900/40 dark:to-gray-800 border border-indigo-100 dark:border-indigo-800">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-indigo-100 text-indigo-600">
+                        <div className="p-2 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400">
                             <Zap className="w-5 h-5" />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500">Aktif Otomasyon</p>
-                            <p className="text-2xl font-semibold text-gray-900">{activeCount}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Aktif Otomasyon</p>
+                            <p className="text-2xl font-semibold text-gray-900 dark:text-white">{activeCount}</p>
                         </div>
                     </div>
                 </Card>
-                <Card className="p-4">
+                <Card className="p-4 dark:bg-gray-800 dark:border-gray-700">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-emerald-100 text-emerald-600">
+                        <div className="p-2 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
                             <CheckCircle className="w-5 h-5" />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500">Toplam Gönderim</p>
-                            <p className="text-2xl font-semibold text-gray-900">{totalSent.toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Toplam Gönderim</p>
+                            <p className="text-2xl font-semibold text-gray-900 dark:text-white">{totalSent.toLocaleString('tr-TR')}</p>
                         </div>
                     </div>
                 </Card>
-                <Card className="p-4">
+                <Card className="p-4 dark:bg-gray-800 dark:border-gray-700">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-gray-100 text-gray-600">
+                        <div className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                             <Settings className="w-5 h-5" />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500">Toplam Kural</p>
-                            <p className="text-2xl font-semibold text-gray-900">{rules.length}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Toplam Kural</p>
+                            <p className="text-2xl font-semibold text-gray-900 dark:text-white">{rules.length}</p>
                         </div>
                     </div>
                 </Card>
@@ -518,23 +519,23 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
                     const isExpanded = expandedCategory === category;
 
                     return (
-                        <Card key={category} className="overflow-hidden">
+                        <Card key={category} className="overflow-hidden dark:bg-gray-800 dark:border-gray-700">
                             <button
                                 type="button"
-                                className="w-full p-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
+                                className="w-full p-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-800 transition-colors"
                                 onClick={() => setExpandedCategory(isExpanded ? null : category)}
                             >
                                 <div className="flex items-center gap-3">
-                                    <span className="font-semibold text-gray-900">{label}</span>
-                                    <span className="text-sm text-gray-500">({categoryRules.length} kural)</span>
+                                    <span className="font-semibold text-gray-900 dark:text-gray-100">{label}</span>
+                                    <span className="text-sm text-gray-500 dark:text-gray-400">({categoryRules.length} kural)</span>
                                 </div>
-                                {isExpanded ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+                                {isExpanded ? <ChevronUp className="w-5 h-5 text-gray-400 dark:text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-400 dark:text-gray-500" />}
                             </button>
 
                             {isExpanded && (
                                 <div className="p-4 space-y-3">
                                     {categoryRules.length === 0 ? (
-                                        <p className="text-sm text-gray-500 text-center py-4">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
                                             Bu kategoride henüz otomasyon kuralı bulunmuyor.
                                         </p>
                                     ) : (
@@ -543,32 +544,32 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
                                             return (
                                                 <div
                                                     key={rule.id}
-                                                    className={`p-4 rounded-lg border ${rule.isActive ? 'border-indigo-200 bg-indigo-50/50' : 'border-gray-200 bg-gray-50'}`}
+                                                    className={`p-4 rounded-lg border ${rule.isActive ? 'border-indigo-200 bg-indigo-50/50 dark:bg-indigo-900/20 dark:border-indigo-800' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'}`}
                                                 >
                                                     <div className="flex items-start justify-between gap-4">
                                                         <div className="flex items-start gap-3 flex-1">
-                                                            <div className={`p-2 rounded-lg ${rule.isActive ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-200 text-gray-500'}`}>
+                                                            <div className={`p-2 rounded-lg ${rule.isActive ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
                                                                 {triggerConfig?.icon}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="flex items-center gap-2">
-                                                                    <h4 className="font-medium text-gray-900">{rule.name}</h4>
-                                                                    <span className={`px-2 py-0.5 text-xs rounded-full ${rule.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-600'}`}>
+                                                                    <h4 className="font-medium text-gray-900 dark:text-white">{rule.name}</h4>
+                                                                    <span className={`px-2 py-0.5 text-xs rounded-full ${rule.isActive ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'}`}>
                                                                         {rule.isActive ? 'Aktif' : 'Pasif'}
                                                                     </span>
                                                                 </div>
-                                                                <p className="text-sm text-gray-500 mt-1">{triggerConfig?.label}</p>
-                                                                <p className="text-xs text-gray-400 mt-2 line-clamp-2">{rule.templateContent}</p>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{triggerConfig?.label}</p>
+                                                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 line-clamp-2">{rule.templateContent}</p>
 
                                                                 {rule.timing && rule.timing.type !== 'immediate' && (
-                                                                    <p className="text-xs text-indigo-600 mt-2 flex items-center gap-1">
+                                                                    <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-2 flex items-center gap-1">
                                                                         <Clock className="w-3 h-3" />
                                                                         {rule.timing.value} {rule.timing.unit === 'days' ? 'gün' : rule.timing.unit === 'hours' ? 'saat' : 'dakika'} {rule.timing.type === 'before' ? 'önce' : 'sonra'}
                                                                     </p>
                                                                 )}
 
                                                                 {rule.stats && (
-                                                                    <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+                                                                    <div className="flex items-center gap-4 mt-3 text-xs text-gray-500 dark:text-gray-400">
                                                                         <span>Gönderildi: {rule.stats.sent}</span>
                                                                         <span>İletildi: {rule.stats.delivered}</span>
                                                                         <span>Başarısız: {rule.stats.failed}</span>
@@ -605,7 +606,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
                                                                 variant="ghost"
                                                                 size="sm"
                                                                 onClick={() => handleDeleteRule(rule.id)}
-                                                                className="text-red-500 hover:text-red-700"
+                                                                className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                                                                 title="Sil"
                                                             >
                                                                 <Trash2 className="w-4 h-4" />
@@ -618,8 +619,8 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
                                     )}
 
                                     {/* Available triggers for this category */}
-                                    <div className="mt-4 pt-4 border-t border-gray-200">
-                                        <p className="text-xs font-medium text-gray-500 mb-2">Kullanılabilir tetikleyiciler:</p>
+                                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Kullanılabilir tetikleyiciler:</p>
                                         <div className="flex flex-wrap gap-2">
                                             {Object.entries(TRIGGER_CONFIG)
                                                 .filter(([_, config]) => config.category === category)
@@ -638,7 +639,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
                                                             });
                                                             setShowCreateModal(true);
                                                         }}
-                                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs text-gray-600 bg-white border border-gray-200 rounded-md hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+                                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:border-indigo-300 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                                                     >
                                                         <Plus className="w-3 h-3" />
                                                         {config.label}
@@ -654,237 +655,241 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
             </div>
 
             {/* Create/Edit Modal */}
-            {showCreateModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-                        <div className="flex items-center justify-between p-4 border-b">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                                {editingRule ? 'Otomasyonu Düzenle' : 'Yeni Otomasyon Oluştur'}
-                            </h3>
-                            <button
-                                onClick={() => {
-                                    setShowCreateModal(false);
-                                    setEditingRule(null);
-                                }}
-                                className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
-                            >
-                                <X className="w-5 h-5 text-gray-500" />
-                            </button>
-                        </div>
-
-                        <div className="p-4 space-y-4 overflow-y-auto flex-1">
-                            {/* Trigger Selection */}
-                            <div>
-                                <label className="text-sm font-medium text-gray-700 mb-1 block">Tetikleyici</label>
-                                <Select
-                                    value={formData.trigger}
-                                    onChange={(e) => {
-                                        const newTrigger = e.target.value as TriggerType;
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            trigger: newTrigger,
-                                            timing: TRIGGER_CONFIG[newTrigger].defaultTiming
-                                        }));
+            {
+                showCreateModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+                            <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {editingRule ? 'Otomasyonu Düzenle' : 'Yeni Otomasyon Oluştur'}
+                                </h3>
+                                <button
+                                    onClick={() => {
+                                        setShowCreateModal(false);
+                                        setEditingRule(null);
                                     }}
-                                    options={Object.entries(TRIGGER_CONFIG).map(([key, config]) => ({
-                                        value: key,
-                                        label: `${config.label} (${CATEGORY_LABELS[config.category]})`
-                                    }))}
-                                    fullWidth
-                                />
-                                <p className="text-xs text-gray-500 mt-1">{selectedTriggerConfig?.description}</p>
+                                    className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-gray-500" />
+                                </button>
                             </div>
 
-                            {/* Rule Name */}
-                            <div>
-                                <label className="text-sm font-medium text-gray-700 mb-1 block">Kural Adı</label>
-                                <Input
-                                    type="text"
-                                    placeholder="Örn: Hoşgeldiniz Mesajı"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                    className="w-full"
-                                />
-                            </div>
-
-                            {/* SMS Header Selection */}
-                            <div>
-                                <label className="text-sm font-medium text-gray-700 mb-1 block">Gönderici Başlığı</label>
-                                <Select
-                                    value={formData.headerId || ''}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, headerId: e.target.value }))}
-                                    options={headersLoading
-                                        ? [{ value: '', label: 'Başlıklar Yükleniyor...' }]
-                                        : headersError
-                                            ? [{ value: '', label: 'Başlık Hatası' }]
-                                            : [{ value: '', label: 'Varsayılan' }, ...headerOptions]
-                                    }
-                                    fullWidth
-                                    disabled={headersLoading}
-                                />
-                                <p className="text-xs text-gray-500 mt-1">Sadece onaylı başlıklar gösterilir</p>
-                            </div>
-
-                            {/* Timing Configuration */}
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="p-4 space-y-4 overflow-y-auto flex-1">
+                                {/* Trigger Selection */}
                                 <div>
-                                    <label className="text-sm font-medium text-gray-700 mb-1 block">Zamanlama</label>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Tetikleyici</label>
                                     <Select
-                                        value={formData.timing.type}
-                                        onChange={(e) => setFormData(prev => ({
-                                            ...prev,
-                                            timing: { ...prev.timing, type: e.target.value as 'immediate' | 'before' | 'after' }
+                                        value={formData.trigger}
+                                        onChange={(e) => {
+                                            const newTrigger = e.target.value as TriggerType;
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                trigger: newTrigger,
+                                                timing: TRIGGER_CONFIG[newTrigger].defaultTiming
+                                            }));
+                                        }}
+                                        options={Object.entries(TRIGGER_CONFIG).map(([key, config]) => ({
+                                            value: key,
+                                            label: `${config.label} (${CATEGORY_LABELS[config.category]})`
                                         }))}
-                                        options={[
-                                            { value: 'immediate', label: 'Anında' },
-                                            { value: 'before', label: 'Önce' },
-                                            { value: 'after', label: 'Sonra' }
-                                        ]}
                                         fullWidth
                                     />
+                                    <p className="text-xs text-gray-500 mt-1">{selectedTriggerConfig?.description}</p>
                                 </div>
-                                {formData.timing.type !== 'immediate' && (
-                                    <>
-                                        <div>
-                                            <label className="text-sm font-medium text-gray-700 mb-1 block">Değer</label>
-                                            <Input
-                                                type="number"
-                                                min={1}
-                                                value={formData.timing.value || 1}
-                                                onChange={(e) => setFormData(prev => ({
-                                                    ...prev,
-                                                    timing: { ...prev.timing, value: parseInt(e.target.value) || 1 }
-                                                }))}
-                                                className="w-full"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-sm font-medium text-gray-700 mb-1 block">Birim</label>
-                                            <Select
-                                                value={formData.timing.unit || 'days'}
-                                                onChange={(e) => setFormData(prev => ({
-                                                    ...prev,
-                                                    timing: { ...prev.timing, unit: e.target.value as 'minutes' | 'hours' | 'days' }
-                                                }))}
-                                                options={[
-                                                    { value: 'minutes', label: 'Dakika' },
-                                                    { value: 'hours', label: 'Saat' },
-                                                    { value: 'days', label: 'Gün' }
-                                                ]}
-                                                fullWidth
-                                            />
-                                        </div>
-                                    </>
-                                )}
-                            </div>
 
-                            {/* Dynamic Fields */}
-                            <div>
-                                <p className="text-sm font-medium text-gray-700 mb-2">Dinamik Alanlar</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {selectedTriggerConfig?.dynamicFields.map((field) => (
-                                        <button
-                                            key={field}
-                                            type="button"
-                                            onClick={() => insertDynamicField(field)}
-                                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-md hover:bg-indigo-100 transition-colors"
+                                {/* Rule Name */}
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Kural Adı</label>
+                                    <Input
+                                        type="text"
+                                        placeholder="Örn: Hoşgeldiniz Mesajı"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                        className="w-full"
+                                    />
+                                </div>
+
+                                {/* SMS Header Selection */}
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Gönderici Başlığı</label>
+                                    <Select
+                                        value={formData.headerId || ''}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, headerId: e.target.value }))}
+                                        options={headersLoading
+                                            ? [{ value: '', label: 'Başlıklar Yükleniyor...' }]
+                                            : headersError
+                                                ? [{ value: '', label: 'Başlık Hatası' }]
+                                                : [{ value: '', label: 'Varsayılan' }, ...headerOptions]
+                                        }
+                                        fullWidth
+                                        disabled={headersLoading}
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">Sadece onaylı başlıklar gösterilir</p>
+                                </div>
+
+                                {/* Timing Configuration */}
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Zamanlama</label>
+                                        <Select
+                                            value={formData.timing.type}
+                                            onChange={(e) => setFormData(prev => ({
+                                                ...prev,
+                                                timing: { ...prev.timing, type: e.target.value as 'immediate' | 'before' | 'after' }
+                                            }))}
+                                            options={[
+                                                { value: 'immediate', label: 'Anında' },
+                                                { value: 'before', label: 'Önce' },
+                                                { value: 'after', label: 'Sonra' }
+                                            ]}
+                                            fullWidth
+                                        />
+                                    </div>
+                                    {formData.timing.type !== 'immediate' && (
+                                        <>
+                                            <div>
+                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Değer</label>
+                                                <Input
+                                                    type="number"
+                                                    min={1}
+                                                    value={formData.timing.value || 1}
+                                                    onChange={(e) => setFormData(prev => ({
+                                                        ...prev,
+                                                        timing: { ...prev.timing, value: parseInt(e.target.value) || 1 }
+                                                    }))}
+                                                    className="w-full"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Birim</label>
+                                                <Select
+                                                    value={formData.timing.unit || 'days'}
+                                                    onChange={(e) => setFormData(prev => ({
+                                                        ...prev,
+                                                        timing: { ...prev.timing, unit: e.target.value as 'minutes' | 'hours' | 'days' }
+                                                    }))}
+                                                    options={[
+                                                        { value: 'minutes', label: 'Dakika' },
+                                                        { value: 'hours', label: 'Saat' },
+                                                        { value: 'days', label: 'Gün' }
+                                                    ]}
+                                                    fullWidth
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+
+                                {/* Dynamic Fields */}
+                                <div>
+                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dinamik Alanlar</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedTriggerConfig?.dynamicFields.map((field) => (
+                                            <button
+                                                key={field}
+                                                type="button"
+                                                onClick={() => insertDynamicField(field)}
+                                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+                                            >
+                                                <Plus className="w-3 h-3" />
+                                                {field.replace(/\{\{|\}\}/g, '')}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Message Template */}
+                                <div className="flex-1">
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                        Mesaj Şablonu
+                                        <span className="text-gray-400 font-normal ml-2">({formData.templateContent.length} karakter)</span>
+                                    </label>
+                                    <Textarea
+                                        ref={textareaRef}
+                                        value={formData.templateContent}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, templateContent: e.target.value }))}
+                                        className="w-full h-full min-h-[150px] resize-none"
+                                        placeholder="Mesaj şablonunu buraya yazın..."
+                                    />
+                                    <div className="flex items-center justify-between mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        <span>
+                                            SMS Sayısı: {Math.max(1, Math.ceil(formData.templateContent.length / SMS_SEGMENT_LENGTH))}
+                                        </span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handlePreview(formData.templateContent)}
+                                            className="h-6 text-xs"
+                                            disabled={!formData.templateContent}
                                         >
-                                            <Plus className="w-3 h-3" />
-                                            {field.replace(/\{\{|\}\}/g, '')}
-                                        </button>
-                                    ))}
+                                            <Eye className="w-3 h-3 mr-1" /> Önizle
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Message Template */}
-                            <div className="flex-1">
-                                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                                    Mesaj Şablonu
-                                    <span className="text-gray-400 font-normal ml-2">({formData.templateContent.length} karakter)</span>
-                                </label>
-                                <Textarea
-                                    ref={textareaRef}
-                                    value={formData.templateContent}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, templateContent: e.target.value }))}
-                                    className="w-full h-full min-h-[150px] resize-none"
-                                    placeholder="Mesaj şablonunu buraya yazın..."
-                                />
-                                <div className="flex items-center justify-between mt-1 text-xs text-gray-500">
-                                    <span>
-                                        SMS Sayısı: {Math.max(1, Math.ceil(formData.templateContent.length / SMS_SEGMENT_LENGTH))}
-                                    </span>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handlePreview(formData.templateContent)}
-                                        className="h-6 text-xs"
-                                        disabled={!formData.templateContent}
-                                    >
-                                        <Eye className="w-3 h-3 mr-1" /> Önizle
-                                    </Button>
-                                </div>
+                            <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex justify-end gap-3">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        setShowCreateModal(false);
+                                        setEditingRule(null);
+                                    }}
+                                >
+                                    İptal
+                                </Button>
+                                <Button
+                                    variant="primary"
+                                    onClick={handleCreateRule}
+                                >
+                                    {editingRule ? 'Güncelle' : 'Oluştur'}
+                                </Button>
                             </div>
-                        </div>
-
-                        <div className="p-4 border-t bg-gray-50 flex justify-end gap-3">
-                            <Button
-                                variant="outline"
-                                onClick={() => {
-                                    setShowCreateModal(false);
-                                    setEditingRule(null);
-                                }}
-                            >
-                                İptal
-                            </Button>
-                            <Button
-                                variant="primary"
-                                onClick={handleCreateRule}
-                            >
-                                {editingRule ? 'Güncelle' : 'Oluştur'}
-                            </Button>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Preview Modal */}
-            {showPreview && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
-                        <div className="flex items-center justify-between p-4 border-b">
-                            <h3 className="text-lg font-semibold text-gray-900">SMS Önizleme</h3>
-                            <button
-                                onClick={() => setShowPreview(false)}
-                                className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
-                            >
-                                <X className="w-5 h-5 text-gray-500" />
-                            </button>
-                        </div>
-                        <div className="p-4 space-y-4">
-                            <div className="bg-gray-100 rounded-lg p-4">
-                                <p className="text-xs text-gray-500 mb-2">Örnek veri göserimi:</p>
-                                <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
-                                    <p className="text-sm text-gray-800 whitespace-pre-wrap">{previewContent}</p>
+            {
+                showPreview && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
+                            <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">SMS Önizleme</h3>
+                                <button
+                                    onClick={() => setShowPreview(false)}
+                                    className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-gray-500" />
+                                </button>
+                            </div>
+                            <div className="p-4 space-y-4">
+                                <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                                    <p className="text-xs text-gray-500 dark:text-gray-300 mb-2">Örnek veri göserimi:</p>
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-600">
+                                        <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{previewContent}</p>
+                                    </div>
+                                </div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                                    <p>Karakter sayısı: {previewContent.length}</p>
+                                    <p>SMS sayısı: {Math.max(1, Math.ceil(previewContent.length / SMS_SEGMENT_LENGTH))}</p>
                                 </div>
                             </div>
-                            <div className="text-xs text-gray-500 space-y-1">
-                                <p>Karakter sayısı: {previewContent.length}</p>
-                                <p>SMS sayısı: {Math.max(1, Math.ceil(previewContent.length / SMS_SEGMENT_LENGTH))}</p>
+                            <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                                <Button
+                                    variant="primary"
+                                    className="w-full"
+                                    onClick={() => setShowPreview(false)}
+                                >
+                                    Tamam
+                                </Button>
                             </div>
                         </div>
-                        <div className="p-4 border-t bg-gray-50">
-                            <Button
-                                variant="primary"
-                                className="w-full"
-                                onClick={() => setShowPreview(false)}
-                            >
-                                Tamam
-                            </Button>
-                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

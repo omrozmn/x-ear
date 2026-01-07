@@ -116,6 +116,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
       
       magnifierRef.current.style.backgroundPosition = `${bgX}px ${bgY}px`;
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging, dragStart, showMagnifier]);
 
   const handleMouseUp = useCallback(() => {

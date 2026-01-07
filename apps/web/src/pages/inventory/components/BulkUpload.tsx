@@ -41,12 +41,12 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
     if (!file) return;
 
     // Validate file type
-    const isValidFile = file.type === 'text/csv' || 
-                       file.name.endsWith('.csv') ||
-                       file.type === 'application/vnd.ms-excel' ||
-                       file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-                       file.name.endsWith('.xlsx') ||
-                       file.name.endsWith('.xls');
+    const isValidFile = file.type === 'text/csv' ||
+      file.name.endsWith('.csv') ||
+      file.type === 'application/vnd.ms-excel' ||
+      file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      file.name.endsWith('.xlsx') ||
+      file.name.endsWith('.xls');
 
     if (!isValidFile) {
       alert('Lütfen CSV veya Excel dosyası seçin');
@@ -87,7 +87,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
         // Map CSV columns to item properties
         headers.forEach((header, headerIndex) => {
           const value = cells[headerIndex] || '';
-          
+
           switch (header) {
             case 'name':
             case 'ürün adı':
@@ -256,7 +256,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
         // Map CSV columns to item properties
         headers.forEach((header, index) => {
           const value = cells[index] || '';
-          
+
           switch (header) {
             case 'name':
             case 'ürün adı':
@@ -362,11 +362,11 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    
+
     link.setAttribute('href', url);
     link.setAttribute('download', 'ornek_urun_listesi.csv');
     link.style.visibility = 'hidden';
-    
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -388,7 +388,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
-            <Upload className="w-6 h-6 text-blue-600" />
+            <Upload className="w-6 h-6 text-blue-600 dark:text-blue-500" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               Toplu Ürün Yükleme
             </h2>
@@ -443,7 +443,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
                 className="hidden"
                 data-allow-raw="true"
               />
-              <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+              <Upload className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
               <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Dosyayı sürükleyip bırakın veya seçmek için tıklayın
               </p>
@@ -457,9 +457,9 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
 
             {/* Selected File Info */}
             {selectedFile && (
-              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                 <div className="flex items-center space-x-3">
-                  <FileText className="w-5 h-5 text-gray-500" />
+                  <FileText className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   <div>
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {selectedFile.name}

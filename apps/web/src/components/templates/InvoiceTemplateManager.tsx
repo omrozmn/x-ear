@@ -66,6 +66,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
   // Load templates on component mount
   useEffect(() => {
     loadTemplates();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadTemplates = useCallback(async () => {

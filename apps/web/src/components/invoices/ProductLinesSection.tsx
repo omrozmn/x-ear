@@ -171,6 +171,7 @@ export function ProductLinesSection({
         onChange(updatedLines);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReturnWithholdingType, invoiceType]);
 
   // KDV oranları
@@ -377,6 +378,7 @@ export function ProductLinesSection({
     onChange(newLines);
     // Hide suggestions after selecting a product
     setFocusedLineIndex(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allProducts, lines, onChange]);
 
   const addLine = () => {

@@ -102,7 +102,8 @@ export function usePatientDevices(patientId: string) {
   // Fetch devices when patientId changes
   useEffect(() => {
     fetchDevices();
-  }, [patientId]); // Only depend on patientId, not fetchDevices
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [patientId]); // Intentionally only depend on patientId to avoid infinite loops
 
   // Listen for device updates
   useEffect(() => {
@@ -119,7 +120,8 @@ export function usePatientDevices(patientId: string) {
       window.removeEventListener('device:updated', handleDeviceUpdate);
       window.removeEventListener('device:removed', handleDeviceUpdate);
     };
-  }, [patientId]); // Only depend on patientId, not fetchDevices
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [patientId]); // Intentionally only depend on patientId
 
   // Clear error
   const clearError = useCallback(() => {

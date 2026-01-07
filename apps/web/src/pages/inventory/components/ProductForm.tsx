@@ -15,7 +15,7 @@ interface ProductFormProps {
 }
 
 const BRANDS = [
-  'Phonak', 'Oticon', 'Widex', 'Signia', 'ReSound', 
+  'Phonak', 'Oticon', 'Widex', 'Signia', 'ReSound',
   'Starkey', 'Unitron', 'Bernafon', 'Hansaton', 'Sonic'
 ];
 
@@ -212,7 +212,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -254,7 +254,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
               Temel Bilgiler
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Select
@@ -263,7 +263,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   onChange={(e) => handleInputChange('category', e.target.value as InventoryCategory)}
                   options={CATEGORIES.map(cat => ({ value: cat.value, label: `${cat.icon} ${cat.label}` }))}
                   required
-                  className="w-full"
+                  className="w-full bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
@@ -277,7 +277,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Ürün adını girin"
-                  className="w-full"
+                  className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   required
                 />
               </div>
@@ -302,7 +302,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   value={formData.model}
                   onChange={(e) => handleInputChange('model', e.target.value)}
                   placeholder="Model adını girin"
-                  className="w-full"
+                  className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
@@ -316,7 +316,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   value={formData.barcode}
                   onChange={(e) => handleInputChange('barcode', e.target.value)}
                   placeholder="Barkod numarasını girin"
-                  className="w-full"
+                  className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
@@ -345,7 +345,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
               Ek Bilgiler
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -377,7 +377,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   <Input
                     type="text"
                     placeholder="Seri numaraları buraya eklenecek"
-                    className="flex-1"
+                    className="flex-1 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     disabled
                   />
                   <Button
@@ -402,7 +402,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   placeholder="Ürün açıklamasını girin"
                   rows={3}
-                  className="w-full"
+                  className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
             </div>
@@ -413,7 +413,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
               Stok Bilgileri
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -425,7 +425,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   value={formData.availableInventory}
                   onChange={(e) => handleInputChange('availableInventory', parseInt(e.target.value) || 0)}
                   min="0"
-                  className="w-full"
+                  className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
@@ -439,7 +439,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   value={formData.reorderLevel}
                   onChange={(e) => handleInputChange('reorderLevel', parseInt(e.target.value) || 0)}
                   min="0"
-                  className="w-full"
+                  className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
@@ -453,7 +453,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   value={extendedData.onTrialQuantity}
                   onChange={(e) => handleExtendedChange('onTrialQuantity', parseInt(e.target.value) || 0)}
                   min="0"
-                  className="w-full"
+                  className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
             </div>
@@ -464,7 +464,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
               Fiyat Bilgileri
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -477,7 +477,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
                   min="0"
                   step="0.01"
-                  className="w-full"
+                  className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
@@ -487,7 +487,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   value={extendedData.vatRate}
                   onChange={(e) => handleExtendedChange('vatRate', e.target.value)}
                   options={VAT_RATES.map(rate => ({ value: rate.value, label: rate.label }))}
-                  className="w-full"
+                  className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
@@ -499,7 +499,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   type="number"
                   value={extendedData.priceWithVat.toFixed(2)}
                   disabled
-                  className="w-full bg-gray-50 dark:bg-gray-700"
+                  className="w-full bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"
                 />
               </div>
 
@@ -511,7 +511,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   type="number"
                   value={extendedData.totalInventoryValue.toFixed(2)}
                   disabled
-                  className="w-full bg-gray-50 dark:bg-gray-700"
+                  className="w-full bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"
                 />
               </div>
             </div>
@@ -522,7 +522,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
               Garanti Bilgileri
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -535,7 +535,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   onChange={(e) => handleInputChange('warranty', parseInt(e.target.value) || 0)}
                   min="0"
                   max="120"
-                  className="w-full"
+                  className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
 
@@ -549,7 +549,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   value={formData.sgkCode}
                   onChange={(e) => handleInputChange('sgkCode', e.target.value)}
                   placeholder="SGK kodunu girin"
-                  className="w-full"
+                  className="w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 />
               </div>
             </div>

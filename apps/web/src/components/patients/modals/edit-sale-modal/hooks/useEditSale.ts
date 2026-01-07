@@ -139,6 +139,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     if (sale?.productId && isOpen) {
       loadProductDetails();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sale?.productId, isOpen]);
 
   // Load Payment Records

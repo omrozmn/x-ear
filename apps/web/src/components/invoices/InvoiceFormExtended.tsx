@@ -91,6 +91,7 @@ export function InvoiceFormExtended({
     if (extendedData.invoiceType && !allowed.includes(String(extendedData.invoiceType))) {
       handleExtendedFieldChange('invoiceType', '');
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extendedData.scenario, extendedData.scenarioData?.scenario]);
 
   // Özel durumlar
@@ -108,6 +109,7 @@ export function InvoiceFormExtended({
     if (autoCurrency !== extendedData.currency) {
       handleExtendedFieldChange('currency', autoCurrency);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extendedData.scenario, extendedData.invoiceType]);
 
   // Tip 14, 15, 35 için otomatik Temel'e geçiş
@@ -118,6 +120,7 @@ export function InvoiceFormExtended({
         currentScenarioType: '2'
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldForceBasic, extendedData.scenarioData?.currentScenarioType]);
 
   // İhracat tipi (13) seçildiğinde sidebar'ı aç

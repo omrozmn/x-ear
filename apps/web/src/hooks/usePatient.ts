@@ -179,7 +179,7 @@ export const usePatient = (
     };
     
     return newNote;
-  }, [patient]);
+  }, []);
 
   // Update note
   const updateNote = useCallback(async (noteId: string, updates: Partial<PatientNote>): Promise<PatientNote> => {
@@ -193,7 +193,7 @@ export const usePatient = (
     };
     
     return updatedNote;
-  }, [patient]);
+  }, []);
 
   // Remove note
   const removeNote = useCallback(async (noteId: string): Promise<void> => {

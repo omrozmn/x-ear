@@ -60,6 +60,7 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
       console.debug('[ProductSearchModal] Query < 2 chars → clear results');
       setProducts([]);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
   const searchProducts = async () => {

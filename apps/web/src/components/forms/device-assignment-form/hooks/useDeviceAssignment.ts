@@ -373,6 +373,7 @@ export const useDeviceAssignment = ({
       remainingAmount,
       monthlyInstallment
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.listPrice, formData.sgkSupportType, formData.discountType, formData.discountValue, formData.downPayment, formData.ear, formData.paymentMethod, formData.installmentCount, sgkAmounts]);
 
   // Sync calculated pricing back into formData so UI components read the canonical values

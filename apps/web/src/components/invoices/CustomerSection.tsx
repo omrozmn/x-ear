@@ -84,6 +84,7 @@ export function CustomerSection({
       onChange('customerId', '0');
       onChange('customerName', SGK_CUSTOMER_TEXT);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSGK]);
 
   // SGK modundan çıkıldığında önceki müşteri bilgilerini geri yükle
@@ -94,6 +95,7 @@ export function CustomerSection({
       setSearchQuery(previousCustomerState.searchQuery || '');
       setPreviousCustomerState(null);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSGK]);
 
   const handleSearch = async (query: string) => {

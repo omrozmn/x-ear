@@ -181,18 +181,18 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
             {/* Top Row - Recipient Info & Credit Summary */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Recipient Card */}
-                <Card className="p-6 space-y-5 lg:col-span-2">
+                <Card className="p-6 space-y-5 lg:col-span-2 dark:bg-gray-800 dark:border-gray-700">
                     <div className="flex items-center gap-2">
-                        <Phone className="w-5 h-5 text-indigo-500" />
+                        <Phone className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                         <div>
-                            <p className="text-lg font-semibold text-gray-900">Alıcı Bilgileri</p>
-                            <p className="text-sm text-gray-500">SMS göndermek istediğiniz kişinin bilgilerini girin</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">Alıcı Bilgileri</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">SMS göndermek istediğiniz kişinin bilgilerini girin</p>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
-                            <label className="text-xs font-semibold text-gray-600 flex items-center gap-1 mb-1">
+                            <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-1 mb-1">
                                 <Phone className="w-3 h-3" /> Telefon Numarası *
                             </label>
                             <Input
@@ -211,7 +211,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
                         </div>
 
                         <div>
-                            <label className="text-xs font-semibold text-gray-600 flex items-center gap-1 mb-1">
+                            <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-1 mb-1">
                                 <User className="w-3 h-3" /> Alıcı Adı (Opsiyonel)
                             </label>
                             <Input
@@ -228,7 +228,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
 
                         {headers.length > 0 && (
                             <div>
-                                <label className="text-xs font-semibold text-gray-600 mb-1 block">
+                                <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1 block">
                                     Gönderici Başlığı
                                 </label>
                                 <Select
@@ -253,25 +253,25 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
                 </Card>
 
                 {/* Credit Summary Card */}
-                <Card className="p-6 space-y-4">
+                <Card className="p-6 space-y-4 dark:bg-gray-800 dark:border-gray-700">
                     <div className="flex items-center gap-2">
-                        <CreditCard className="w-5 h-5 text-indigo-500" />
-                        <p className="text-lg font-semibold text-gray-900">Kredi Özeti</p>
+                        <CreditCard className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                        <p className="text-lg font-semibold text-gray-900 dark:text-white">Kredi Özeti</p>
                     </div>
                     <div className="space-y-3">
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">SMS Sayısı</span>
-                            <span className="font-semibold">{smsSegments || '-'}</span>
+                            <span className="text-gray-500 dark:text-gray-400">SMS Sayısı</span>
+                            <span className="font-semibold dark:text-gray-200">{smsSegments || '-'}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Gerekli Kredi</span>
-                            <span className="font-semibold">{creditsNeeded || '-'}</span>
+                            <span className="text-gray-500 dark:text-gray-400">Gerekli Kredi</span>
+                            <span className="font-semibold dark:text-gray-200">{creditsNeeded || '-'}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Mevcut Kredi</span>
-                            <span className="font-semibold text-indigo-600">{formatNumber(creditBalance)}</span>
+                            <span className="text-gray-500 dark:text-gray-400">Mevcut Kredi</span>
+                            <span className="font-semibold text-indigo-600 dark:text-indigo-400">{formatNumber(creditBalance)}</span>
                         </div>
-                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${creditEnough ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${creditEnough ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
                             {creditEnough ? (
                                 <CheckCircle className="w-4 h-4" />
                             ) : (
@@ -286,13 +286,13 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
             </div>
 
             {/* Message Card - Full Width */}
-            <Card className="p-6 space-y-4">
+            <Card className="p-6 space-y-4 dark:bg-gray-800 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <MessageSquare className="w-5 h-5 text-indigo-500" />
+                        <MessageSquare className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                         <div>
-                            <p className="text-lg font-semibold text-gray-900">SMS Mesajı</p>
-                            <p className="text-sm text-gray-500">Göndermek istediğiniz mesajı yazın</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">SMS Mesajı</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Göndermek istediğiniz mesajı yazın</p>
                         </div>
                     </div>
                     {creditEnough && message.trim() ? (
@@ -304,14 +304,14 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
 
                 {/* Dynamic Fields */}
                 <div className="space-y-2">
-                    <p className="text-xs font-medium text-gray-600">Dinamik Alanlar</p>
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Dinamik Alanlar</p>
                     <div className="flex flex-wrap gap-2">
                         {DYNAMIC_FIELDS.map((field) => (
                             <button
                                 key={field.key}
                                 type="button"
                                 onClick={() => insertDynamicField(field.key)}
-                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-md hover:bg-indigo-100 transition-colors"
+                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
                                 title={field.description}
                             >
                                 <Plus className="w-3 h-3" />
@@ -333,7 +333,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
 Örnek: Sayın {{AD}} {{SOYAD}}, X-Ear ailesi olarak sizlere hoş geldiniz demekten mutluluk duyarız."
                     />
                     <div className="flex items-center justify-between">
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                             {message.length} karakter / {smsSegments} SMS
                         </p>
                         <Button
@@ -372,32 +372,32 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
             {/* Preview Modal */}
             {showPreview && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
-                        <div className="flex items-center justify-between p-4 border-b">
-                            <h3 className="text-lg font-semibold text-gray-900">SMS Önizleme</h3>
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
+                        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">SMS Önizleme</h3>
                             <button
                                 onClick={() => setShowPreview(false)}
-                                className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             >
                                 <X className="w-5 h-5 text-gray-500" />
                             </button>
                         </div>
                         <div className="p-4 space-y-4">
-                            <div className="bg-gray-100 rounded-lg p-4">
-                                <p className="text-xs text-gray-500 mb-2">
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                                <p className="text-xs text-gray-500 dark:text-gray-300 mb-2">
                                     Alıcı: {phoneNumber || '05XX XXX XX XX'}
                                     {recipientName && ` (${recipientName})`}
                                 </p>
-                                <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
-                                    <p className="text-sm text-gray-800 whitespace-pre-wrap">{getPreviewMessage}</p>
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-600">
+                                    <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{getPreviewMessage}</p>
                                 </div>
                             </div>
-                            <div className="text-xs text-gray-500 space-y-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
                                 <p>Karakter sayısı: {getPreviewMessage.length}</p>
                                 <p>SMS sayısı: {Math.max(1, Math.ceil(getPreviewMessage.length / SMS_SEGMENT_LENGTH))}</p>
                             </div>
                         </div>
-                        <div className="p-4 border-t bg-gray-50">
+                        <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
                             <Button
                                 variant="primary"
                                 className="w-full"

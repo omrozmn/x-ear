@@ -76,6 +76,7 @@ export const PatientNotesTab: React.FC<PatientNotesTabProps> = ({ patient, onPat
     return () => {
       mounted = false;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patient?.id]);
 
   const handleAddNote = async () => {

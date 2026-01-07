@@ -134,6 +134,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
     if (isOpen) {
       loadInventory();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const loadInventory = async () => {

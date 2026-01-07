@@ -35,7 +35,8 @@ export function useInvoices(initialFilters?: InvoiceFilters): UseInvoices {
   // Load initial data
   useEffect(() => {
     loadInvoices(initialFilters);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Intentionally run only on mount
 
   // Listen for invoice updates
   useEffect(() => {

@@ -114,6 +114,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     const suppliers: string[] = [];
 
     // 1. Add API Results
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     if (suppliersData) {
       let supplierArray: any[] = [];
       // Handle response wrapping (using unwrapPaginated logic concepts)
@@ -153,6 +154,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     const unique = [...new Set(suppliers)].slice(0, 10); // Limit to 10
     setFilteredSuppliers(unique);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [suppliersData, value, isOpen]);
 
   // Check if current value is an exact match (check filtered and defaults)
@@ -285,13 +287,13 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
           placeholder={placeholder}
           required={required}
           error={error}
-          className="pr-8"
+          className="pr-8 dark:bg-gray-700 dark:text-white dark:border-gray-600"
         />
 
         {/* Dropdown arrow */}
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none mt-6">
           <svg
-            className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''
+            className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''
               }`}
             fill="currentColor"
             viewBox="0 0 20 20"
@@ -313,13 +315,13 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
           className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
         >
           {isLoading && (
-            <div className="px-4 py-3 text-sm text-gray-500 italic">
+            <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 italic">
               Yükleniyor...
             </div>
           )}
 
           {isError && (
-            <div className="px-4 py-3 text-sm text-red-500">
+            <div className="px-4 py-3 text-sm text-red-500 dark:text-red-400">
               Tedarikçiler yüklenirken hata oluştu.
             </div>
           )}
@@ -343,7 +345,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
               }}
             >
               <div className="flex items-center">
-                <svg className="w-4 h-4 text-gray-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z" clipRule="evenodd" />
                   <path d="M6 8h8v2H6V8zm0 4h8v2H6v-2z" />
                 </svg>
@@ -367,8 +369,8 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
               className="px-4 py-2 cursor-pointer bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 focus:bg-green-100 dark:focus:bg-green-900/40 focus:outline-none transition-colors border-t border-gray-200 dark:border-gray-700"
             >
               <div className="flex items-center gap-2">
-                <Plus className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium text-green-600">
+                <Plus className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-medium text-green-600 dark:text-green-400">
                   "{value}" tedarikçisini ekle
                 </span>
               </div>

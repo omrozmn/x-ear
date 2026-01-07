@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Building2, 
-  Upload, 
-  Trash2, 
-  Save, 
-  AlertCircle, 
+import {
+  Building2,
+  Upload,
+  Trash2,
+  AlertCircle,
   CheckCircle,
   Image as ImageIcon,
   FileSignature,
   Stamp,
-  Loader2
+  Loader2,
 } from 'lucide-react';
+import { Button, Input, Textarea } from '@x-ear/ui-web';
 import toast from 'react-hot-toast';
-import { companyService, CompanyInfo, TenantCompanyResponse } from '../../services/company.service';
+import { companyService, CompanyInfo } from '../../services/company.service';
 import { useAuthStore } from '../../stores/authStore';
 
 interface AssetUploadProps {
@@ -28,7 +28,6 @@ interface AssetUploadProps {
 }
 
 const AssetUpload: React.FC<AssetUploadProps> = ({
-  type,
   label,
   description,
   currentUrl,
@@ -59,14 +58,14 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
       toast.error('Dosya boyutu 5MB\'dan küçük olmalıdır');
       return;
     }
-    
+
     // Show preview immediately
     const reader = new FileReader();
     reader.onload = () => {
       setPreview(reader.result as string);
     };
     reader.readAsDataURL(file);
-    
+
     await onUpload(file);
   };
 
@@ -93,7 +92,7 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
     e.preventDefault();
     setIsDragging(false);
     if (disabled || isUploading) return;
-    
+
     const file = e.dataTransfer.files?.[0];
     if (file) {
       handleFileSelect(file);
@@ -125,9 +124,11 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
         </div>
       </div>
 
+      {/* eslint-disable-next-line no-restricted-syntax */}
       <input
         ref={fileInputRef}
         type="file"
+        data-allow-raw="true"
         accept="image/png,image/jpeg,image/gif,image/webp"
         onChange={handleInputChange}
         className="hidden"
@@ -143,9 +144,10 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
           />
           {!disabled && (
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-4">
-              <button
+              <Button
                 onClick={handleClick}
-                className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
+                variant="secondary"
+                className="p-2 rounded-full !w-auto !h-auto"
                 disabled={isUploading}
               >
                 {isUploading ? (
@@ -153,14 +155,15 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
                 ) : (
                   <Upload className="w-5 h-5 text-gray-700" />
                 )}
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleDelete}
-                className="p-2 bg-white rounded-full hover:bg-red-100 transition-colors"
+                variant="danger"
+                className="p-2 rounded-full !w-auto !h-auto bg-white hover:bg-red-50 border-none"
                 disabled={isUploading}
               >
                 <Trash2 className="w-5 h-5 text-red-600" />
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -173,8 +176,8 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
           className={`
             border-2 border-dashed rounded-lg p-8 text-center transition-colors
             ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}
-            ${isDragging 
-              ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
+            ${isDragging
+              ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
               : 'border-gray-300 dark:border-gray-600 hover:border-indigo-400 dark:hover:border-indigo-500'
             }
             ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}
@@ -200,7 +203,7 @@ export default function CompanySettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingAsset, setUploadingAsset] = useState<string | null>(null);
-  const [companyData, setCompanyData] = useState<TenantCompanyResponse | null>(null);
+  // const [companyData, setCompanyData] = useState<TenantCompanyResponse | null>(null);
   const [formData, setFormData] = useState<CompanyInfo>({});
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -214,7 +217,7 @@ export default function CompanySettings() {
     try {
       setLoading(true);
       const data = await companyService.getCompanyInfo();
-      setCompanyData(data);
+      // setCompanyData(data);
       setFormData(data.companyInfo || {});
     } catch (error) {
       console.error('Failed to load company info:', error);
@@ -238,7 +241,7 @@ export default function CompanySettings() {
     try {
       setSaving(true);
       const updated = await companyService.updateCompanyInfo(formData);
-      setCompanyData(updated);
+      // setCompanyData(updated);
       setFormData(updated.companyInfo || {});
       setHasChanges(false);
       toast.success('Firma bilgileri kaydedildi');
@@ -317,18 +320,15 @@ export default function CompanySettings() {
           </p>
         </div>
         {hasChanges && isTenantAdmin && (
-          <button
+          <Button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            loading={saving}
+            variant="primary"
+            className="flex items-center"
           >
-            {saving ? (
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            ) : (
-              <Save className="w-5 h-5 mr-2" />
-            )}
             {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -395,17 +395,16 @@ export default function CompanySettings() {
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
               Temel Bilgiler
             </h3>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Firma Unvanı
               </label>
-              <input
+              <Input
                 type="text"
                 value={formData.name || ''}
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 disabled={!isTenantAdmin}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Örnek Firma Ltd. Şti."
               />
             </div>
@@ -415,12 +414,11 @@ export default function CompanySettings() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   VKN / TCKN
                 </label>
-                <input
+                <Input
                   type="text"
                   value={formData.taxId || ''}
                   onChange={(e) => handleInputChange('taxId', e.target.value)}
                   disabled={!isTenantAdmin}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500"
                   placeholder="1234567890"
                 />
               </div>
@@ -428,12 +426,11 @@ export default function CompanySettings() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Vergi Dairesi
                 </label>
-                <input
+                <Input
                   type="text"
                   value={formData.taxOffice || ''}
                   onChange={(e) => handleInputChange('taxOffice', e.target.value)}
                   disabled={!isTenantAdmin}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500"
                   placeholder="Kadıköy V.D."
                 />
               </div>
@@ -443,12 +440,11 @@ export default function CompanySettings() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Adres
               </label>
-              <textarea
+              <Textarea
                 value={formData.address || ''}
                 onChange={(e) => handleInputChange('address', e.target.value)}
                 disabled={!isTenantAdmin}
                 rows={2}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500"
                 placeholder="Cadde No: 123, Kat: 4"
               />
             </div>
@@ -458,12 +454,11 @@ export default function CompanySettings() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   İlçe
                 </label>
-                <input
+                <Input
                   type="text"
                   value={formData.district || ''}
                   onChange={(e) => handleInputChange('district', e.target.value)}
                   disabled={!isTenantAdmin}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500"
                   placeholder="Kadıköy"
                 />
               </div>
@@ -471,12 +466,11 @@ export default function CompanySettings() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   İl
                 </label>
-                <input
+                <Input
                   type="text"
                   value={formData.city || ''}
                   onChange={(e) => handleInputChange('city', e.target.value)}
                   disabled={!isTenantAdmin}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500"
                   placeholder="İstanbul"
                 />
               </div>
@@ -484,12 +478,11 @@ export default function CompanySettings() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Posta Kodu
                 </label>
-                <input
+                <Input
                   type="text"
                   value={formData.postalCode || ''}
                   onChange={(e) => handleInputChange('postalCode', e.target.value)}
                   disabled={!isTenantAdmin}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500"
                   placeholder="34000"
                 />
               </div>
@@ -507,12 +500,11 @@ export default function CompanySettings() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Telefon
                 </label>
-                <input
+                <Input
                   type="tel"
                   value={formData.phone || ''}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   disabled={!isTenantAdmin}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500"
                   placeholder="0216 123 45 67"
                 />
               </div>
@@ -520,12 +512,11 @@ export default function CompanySettings() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Faks
                 </label>
-                <input
+                <Input
                   type="tel"
                   value={formData.fax || ''}
                   onChange={(e) => handleInputChange('fax', e.target.value)}
                   disabled={!isTenantAdmin}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500"
                   placeholder="0216 123 45 68"
                 />
               </div>
@@ -535,12 +526,11 @@ export default function CompanySettings() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 E-posta
               </label>
-              <input
+              <Input
                 type="email"
                 value={formData.email || ''}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 disabled={!isTenantAdmin}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500"
                 placeholder="info@firma.com"
               />
             </div>
@@ -549,12 +539,11 @@ export default function CompanySettings() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Web Sitesi
               </label>
-              <input
+              <Input
                 type="url"
                 value={formData.website || ''}
                 onChange={(e) => handleInputChange('website', e.target.value)}
                 disabled={!isTenantAdmin}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500"
                 placeholder="https://www.firma.com"
               />
             </div>
@@ -568,12 +557,11 @@ export default function CompanySettings() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     SGK Mükellef Kodu
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={formData.sgkMukellefKodu || ''}
                     onChange={(e) => handleInputChange('sgkMukellefKodu', e.target.value)}
                     disabled={!isTenantAdmin}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500"
                     placeholder="1234567"
                   />
                 </div>
@@ -581,12 +569,11 @@ export default function CompanySettings() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     SGK Mükellef Adı
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={formData.sgkMukellefAdi || ''}
                     onChange={(e) => handleInputChange('sgkMukellefAdi', e.target.value)}
                     disabled={!isTenantAdmin}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500"
                     placeholder="Firma SGK Adı"
                   />
                 </div>
@@ -601,12 +588,11 @@ export default function CompanySettings() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Banka Adı
                 </label>
-                <input
+                <Input
                   type="text"
                   value={formData.bankName || ''}
                   onChange={(e) => handleInputChange('bankName', e.target.value)}
                   disabled={!isTenantAdmin}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500"
                   placeholder="Banka Adı"
                 />
               </div>
@@ -614,12 +600,12 @@ export default function CompanySettings() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   IBAN
                 </label>
-                <input
+                <Input
                   type="text"
                   value={formData.iban || ''}
                   onChange={(e) => handleInputChange('iban', e.target.value)}
                   disabled={!isTenantAdmin}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500 font-mono"
+                  className="font-mono"
                   placeholder="TR00 0000 0000 0000 0000 0000 00"
                 />
               </div>
@@ -630,18 +616,16 @@ export default function CompanySettings() {
         {/* Save Button (bottom) */}
         {hasChanges && isTenantAdmin && (
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-            <button
+            <Button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              loading={saving}
+              variant="success"
+              className="flex items-center"
             >
-              {saving ? (
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              ) : (
-                <CheckCircle className="w-5 h-5 mr-2" />
-              )}
+              <CheckCircle className="w-5 h-5 mr-2" />
               {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-            </button>
+            </Button>
           </div>
         )}
       </div>

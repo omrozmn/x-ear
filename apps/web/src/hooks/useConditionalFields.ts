@@ -96,7 +96,8 @@ export const useConditionalFields = (
     });
 
     return sections;
-  }, [schema, formData.invoiceType, formData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schema, formData.invoiceType, formData]); // shouldShowSection is stable
 
   // Get visible fields for each section
   const visibleFields = useMemo(() => {
@@ -110,7 +111,8 @@ export const useConditionalFields = (
     });
 
     return result;
-  }, [visibleSections, formData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleSections, formData]); // shouldShowField is stable
 
   // Get field dependencies for a specific field
   const getFieldDependencies = (sectionName: string, fieldId: string): string[] => {

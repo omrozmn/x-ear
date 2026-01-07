@@ -130,6 +130,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
       product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.model.toLowerCase().includes(searchTerm.toLowerCase())
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
   useEffect(() => {

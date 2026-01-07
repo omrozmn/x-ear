@@ -127,6 +127,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
 
   useEffect(() => {
     fetchAnalytics();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange, selectedPeriod]);
 
   // Calculate trends

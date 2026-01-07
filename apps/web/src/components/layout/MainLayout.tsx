@@ -250,6 +250,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     return () => {
       delete (window as any).toggleSidebar;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

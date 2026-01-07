@@ -77,7 +77,8 @@ export const useDashboardData = (): DashboardData => {
     const recentActivity = (payload as any)?.recentActivity || (payload as any)?.activity || [];
 
     setData({ stats: mappedStats, recentActivity, loading: false, error: null });
-  }, [query.isLoading, query.isError, query.data]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query.isLoading, query.isError, query.data]); // query.error is only used when isError is true
 
   return data;
 };

@@ -65,9 +65,13 @@ function ActivityLogDetailModal({ log, onClose }: { log: any; onClose: () => voi
       <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Aktivite Log Detayı</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400 !w-auto !h-auto"
+          >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
         <div className="p-4 overflow-y-auto">
           <div className="space-y-4">
@@ -761,9 +765,13 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Senet Listesi</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Tüm senetleri görüntüle ve filtrele</p>
               </div>
-              <button onClick={() => setShowListModal(false)} className="p-1 hover:bg-gray-100 rounded">
+              <Button
+                onClick={() => setShowListModal(false)}
+                variant="ghost"
+                className="p-1 hover:bg-gray-100 rounded !w-auto !h-auto"
+              >
                 <X className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
 
             {/* Filter Tabs */}
@@ -775,16 +783,17 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
                   { key: 'paid', label: 'Ödendi' },
                   { key: 'all', label: 'Tümü' }
                 ].map(tab => (
-                  <button
+                  <Button
                     key={tab.key}
                     onClick={() => { setListFilter(tab.key as any); setListPage(1); }}
-                    className={`px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${listFilter === tab.key
+                    variant="ghost"
+                    className={`px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors !w-auto !h-auto rounded-none rounded-t-md ${listFilter === tab.key
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/10'
                       : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                       }`}
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -1499,6 +1508,7 @@ export function DesktopReportsPage() {
     if (search.tab && search.tab !== activeTab) {
       setActiveTab(search.tab);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.tab]);
 
   // Update URL when tab changes

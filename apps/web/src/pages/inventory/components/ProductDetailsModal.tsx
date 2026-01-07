@@ -25,15 +25,15 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300';
       case 'low_stock':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300';
       case 'out_of_stock':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300';
       case 'inactive':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -58,7 +58,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
 
     const printContent = `
       <!DOCTYPE html>
-      <html>
+      <html class="dark">
         <head>
           <title>Ürün Detayları - ${product.name}</title>
           <style>
@@ -70,6 +70,10 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
             .value { margin-top: 2px; }
             .barcode { text-align: center; margin: 20px 0; font-size: 24px; font-family: monospace; }
             @media print { body { margin: 0; } }
+            @media (prefers-color-scheme: dark) {
+              body { background-color: #1f2937; color: #f3f4f6; }
+              .label { color: #d1d5db; }
+            }
           </style>
         </head>
         <body>
@@ -184,8 +188,8 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               size="sm"
               onClick={() => setActiveTab('details')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'details'
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
                 }`}
             >
               Genel Bilgiler
@@ -195,8 +199,8 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               size="sm"
               onClick={() => setActiveTab('inventory')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'inventory'
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
                 }`}
             >
               Stok Bilgileri
@@ -206,8 +210,8 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               size="sm"
               onClick={() => setActiveTab('history')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'history'
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
                 }`}
             >
               Geçmiş
@@ -385,10 +389,10 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full ${product.availableInventory <= product.reorderLevel
-                        ? 'bg-red-500'
-                        : product.availableInventory <= product.reorderLevel * 2
-                          ? 'bg-yellow-500'
-                          : 'bg-green-500'
+                      ? 'bg-red-500'
+                      : product.availableInventory <= product.reorderLevel * 2
+                        ? 'bg-yellow-500'
+                        : 'bg-green-500'
                       }`}
                     style={{ width: `${Math.min((product.availableInventory / product.totalInventory) * 100, 100)}%` }}
                   ></div>
@@ -427,7 +431,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
 
         {activeTab === 'history' && (
           <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg text-center">
-            <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <Package className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Stok Geçmişi</h3>
             <p className="text-gray-600 dark:text-gray-400">
               Stok hareketleri ve geçmiş kayıtları burada görüntülenecek.

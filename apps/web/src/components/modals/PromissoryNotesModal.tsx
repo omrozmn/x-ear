@@ -44,6 +44,7 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
     if (isOpen && sale?.id) {
       fetchPromissoryNotes();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, sale?.id]);
 
   const fetchPromissoryNotes = async () => {

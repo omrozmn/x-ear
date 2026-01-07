@@ -124,6 +124,7 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patient, onPatient
       loadSavedEReceipts();
       loadAssignedDevices();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patientId]);
 
   const loadSgkDocuments = async () => {

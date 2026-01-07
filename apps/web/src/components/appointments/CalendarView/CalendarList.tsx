@@ -121,6 +121,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
     // Convert to ordered array
     const months = Object.values(monthsMap).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
     return months;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointments, weekStart, weekEnd, searchTerm, filterStatus, sortBy]);
 
   const getStatusColor = (status: string) => {

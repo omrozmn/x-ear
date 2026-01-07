@@ -166,7 +166,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
     <div className={`appointment-list ${className}`}>
       {/* Filters */}
       {showFilters && (
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <Select
@@ -207,32 +207,32 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Başlangıç Tarihi
               </label>
               <Input
                 type="date"
                 value={filters.startDate || ''}
                 onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Bitiş Tarihi
               </label>
               <Input
                 type="date"
                 value={filters.endDate || ''}
                 onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Arama
             </label>
             <Input
@@ -240,7 +240,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
               placeholder="Hasta adı, doktor, notlar..."
               value={filters.search || ''}
               onChange={(e) => handleFilterChange('search', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -251,86 +251,86 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
           <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2h3z" />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Randevu bulunamadı</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Randevu bulunamadı</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Belirtilen kriterlere uygun randevu bulunmuyor.
           </p>
         </div>
       ) : (
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Hasta
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Tarih & Saat
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Tür
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Durum
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Doktor
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Süre
                   </th>
                   {showActions && (
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       İşlemler
                     </th>
                   )}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {sortedAppointments.map((appointment, index) => (
                   <tr
                     key={appointment.id}
                     className={`
-                      hover:bg-gray-50 
+                      hover:bg-gray-50 dark:hover:bg-gray-700
                       ${onAppointmentClick ? 'cursor-pointer' : ''} 
-                      ${selectedIndex === index ? 'bg-blue-50 border-blue-200' : ''}
+                      ${selectedIndex === index ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''}
                     `}
                     onClick={() => onAppointmentClick?.(appointment)}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <span className="text-sm font-medium text-blue-800">
+                          <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                            <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
                               {appointment.patientName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'N/A'}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {appointment.patientName || 'İsimsiz Hasta'}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
                             ID: {appointment.patientId}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-white">
                         {formatDate(appointment.date)}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {formatTime(appointment.time)} ({appointment.duration} dk)
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-white">
                         {getTypeLabel(appointment.type)}
                       </div>
                       {appointment.title && appointment.title !== getTypeLabel(appointment.type) && (
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                           {appointment.title}
                         </div>
                       )}
@@ -340,10 +340,10 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                         {getStatusLabel(appointment.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {appointment.clinician || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {appointment.duration} dakika
                     </td>
                     {showActions && (
@@ -356,7 +356,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                                   e.stopPropagation();
                                   handleStatusChange(appointment, 'completed');
                                 }}
-                                className="text-green-600 hover:text-green-900 text-xs"
+                                className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 text-xs"
                                 title="Tamamla"
                                 variant='default'>
                                 Tamamla
@@ -366,7 +366,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                                   e.stopPropagation();
                                   handleStatusChange(appointment, 'no_show');
                                 }}
-                                className="text-orange-600 hover:text-orange-900 text-xs"
+                                className="text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300 text-xs"
                                 title="Gelmedi"
                                 variant='default'>
                                 Gelmedi
@@ -376,7 +376,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                                   e.stopPropagation();
                                   handleStatusChange(appointment, 'cancelled');
                                 }}
-                                className="text-red-600 hover:text-red-900 text-xs"
+                                className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-xs"
                                 title="İptal Et"
                                 variant='default'>
                                 İptal
@@ -389,7 +389,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                                 e.stopPropagation();
                                 onEditAppointment(appointment);
                               }}
-                              className="text-blue-600 hover:text-blue-900 text-xs"
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-xs"
                               title="Düzenle"
                               variant='default'>
                               Düzenle
@@ -401,7 +401,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
                                 e.stopPropagation();
                                 onDeleteAppointment(appointment);
                               }}
-                              className="text-red-600 hover:text-red-900 text-xs"
+                              className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-xs"
                               title="Sil"
                               variant='default'>
                               Sil
@@ -418,7 +418,7 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
         </div>
       )}
       {/* Summary */}
-      <div className="mt-4 text-sm text-gray-500 text-center">
+      <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 text-center">
         Toplam {sortedAppointments.length} randevu gösteriliyor
       </div>
     </div>

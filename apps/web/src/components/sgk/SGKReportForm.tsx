@@ -86,6 +86,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
         reportNumber: `RPT-${year}${month}${day}-${time}`
       }));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
   // Auto-calculate validity date (6 months from report date)

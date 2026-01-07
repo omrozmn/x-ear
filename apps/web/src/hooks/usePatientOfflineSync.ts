@@ -68,7 +68,8 @@ export const usePatientOfflineSync = (): UsePatientOfflineSyncReturn => {
     return () => {
       patientOfflineSync.destroy();
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only on mount
 
   // Setup sync status listener
   useEffect(() => {
@@ -84,7 +85,8 @@ export const usePatientOfflineSync = (): UsePatientOfflineSyncReturn => {
     return () => {
       patientOfflineSync.removeListener(handleSyncUpdate);
     };
-  }, [isInitialized]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInitialized]); // refreshPatients and updateSyncStatus are stable callbacks
 
   // Update sync status
   const updateSyncStatus = useCallback(async () => {

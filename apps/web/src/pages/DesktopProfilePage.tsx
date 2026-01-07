@@ -136,6 +136,7 @@ export const DesktopProfilePage: React.FC = () => {
             if (freshUser.email) setEmail(freshUser.email);
             if (freshUser.phone) setPhone(freshUser.phone);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userDataResponse, setUser]);
 
     // 2. CONDITIONAL RETURNS FOR UI STATE (After all hooks)

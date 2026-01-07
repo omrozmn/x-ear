@@ -304,7 +304,8 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
   // Computed stats
   const stats = useMemo((): AppointmentStats => {
     return appointmentService.getAppointmentStats(currentFilters);
-  }, [appointments, currentFilters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentFilters]); // appointments is intentionally excluded - stats come from service
 
   return {
     // Data

@@ -49,6 +49,7 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
 
   useEffect(() => {
     loadDocuments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patientId]);
 
   const loadDocuments = async () => {

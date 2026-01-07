@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
-import { 
-  format, 
-  startOfMonth, 
-  endOfMonth, 
-  startOfWeek, 
-  endOfWeek, 
-  addDays, 
-  isSameDay, 
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  addDays,
+  isSameDay,
   isSameMonth,
   isToday as isDateToday
 } from 'date-fns';
@@ -53,7 +53,7 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
     let currentDate = calendarStart;
 
     while (currentDate <= calendarEnd) {
-      const dayAppointments = appointments.filter(apt => 
+      const dayAppointments = appointments.filter(apt =>
         isSameDay(new Date(apt.date), currentDate)
       );
 
@@ -103,11 +103,11 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
       <div
         ref={setNodeRef}
         className={`
-          min-h-[120px] border border-gray-200 p-2 cursor-pointer transition-all
-          ${isOver ? 'bg-blue-50 border-blue-300' : ''}
-          ${day.isToday ? 'bg-yellow-50 border-yellow-300' : ''}
-          ${!day.isCurrentMonth ? 'bg-gray-50 text-gray-400' : ''}
-          hover:bg-gray-50
+          min-h-[120px] border border-gray-200 dark:border-gray-700 p-2 cursor-pointer transition-all
+          ${isOver ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700' : ''}
+          ${day.isToday ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700' : ''}
+          ${!day.isCurrentMonth ? 'bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-600' : ''}
+          hover:bg-gray-50 dark:hover:bg-gray-800
         `}
         onClick={() => onDateClick(day.date)}
         onDoubleClick={handleDoubleClick}
@@ -115,11 +115,11 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
         <div className="flex flex-col h-full">
           {/* Day number */}
           <div className="flex items-center justify-between mb-2">
-            <Text 
+            <Text
               className={`
                 text-sm font-medium
-                ${day.isToday ? 'text-blue-600 font-bold' : ''}
-                ${!day.isCurrentMonth ? 'text-gray-400' : ''}
+                ${day.isToday ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-gray-900 dark:text-gray-100'}
+                ${!day.isCurrentMonth ? 'text-gray-400 dark:text-gray-600' : ''}
               `}
             >
               {format(day.date, 'd')}
@@ -155,7 +155,7 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
               day.appointments.slice(0, 3).map((appointment) => (
                 <div
                   key={appointment.id}
-                  className="text-xs p-1 rounded bg-blue-50 border border-blue-200 cursor-pointer hover:bg-blue-100 truncate"
+                  className="text-xs p-1 rounded bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/50 truncate text-gray-900 dark:text-gray-200"
                   onClick={(e) => {
                     e.stopPropagation();
                     onAppointmentClick(appointment);
@@ -167,7 +167,7 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
                 </div>
               ))
             )}
-            
+
             {day.appointments.length > 3 && !isCompactView && (
               <Text className="text-xs text-gray-500 text-center">
                 +{day.appointments.length - 3} daha
@@ -184,7 +184,7 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-4">
           <Button
             variant="outline"
@@ -197,7 +197,7 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
           >
             ←
           </Button>
-          <Text className="text-lg font-semibold">
+          <Text className="text-lg font-semibold dark:text-white">
             {format(selectedDate, 'MMMM yyyy', { locale: tr })}
           </Text>
           <Button
@@ -224,10 +224,10 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
       {/* Calendar grid */}
       <div className="flex-1 flex flex-col">
         {/* Week day headers */}
-        <div className="grid grid-cols-7 border-b border-gray-200">
+        <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-700">
           {weekDays.map((day) => (
-            <div key={day} className="p-3 text-center bg-gray-50">
-              <Text className="text-sm font-medium text-gray-600">{day}</Text>
+            <div key={day} className="p-3 text-center bg-gray-50 dark:bg-gray-800">
+              <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">{day}</Text>
             </div>
           ))}
         </div>

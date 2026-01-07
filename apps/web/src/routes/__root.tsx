@@ -12,15 +12,15 @@ export const Route = createRootRoute({
     </>
   ),
   notFoundComponent: () => (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 max-w-md w-full text-center">
-        <div className="text-gray-400 mb-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 max-w-md w-full text-center">
+        <div className="text-gray-400 dark:text-gray-500 mb-4">
           <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33" />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Sayfa Bulunamadı</h2>
-        <p className="text-gray-600 mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Sayfa Bulunamadı</h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
           Aradığınız sayfa mevcut değil veya taşınmış olabilir.
         </p>
         <a

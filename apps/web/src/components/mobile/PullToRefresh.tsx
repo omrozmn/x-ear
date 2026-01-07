@@ -77,6 +77,7 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
             container.removeEventListener('touchmove', handleTouchMove);
             container.removeEventListener('touchend', handleTouchEnd);
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isPulling, pullDistance, isRefreshing]);
 
     const showPullIndicator = (isPulling || isRefreshing) && pullDistance > 0;

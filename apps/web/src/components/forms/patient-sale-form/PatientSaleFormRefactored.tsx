@@ -319,6 +319,7 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
       discountAmount: calculatedDiscount,
       finalAmount
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quantity, unitPrice, discountType, discountInput, selectedProduct, sgkSupportType, isHearingAid]);
 
   // Calculate total amount

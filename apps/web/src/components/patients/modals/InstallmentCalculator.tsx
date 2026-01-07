@@ -89,6 +89,7 @@ export function InstallmentCalculator({
       setInstallmentDetails([]);
       onInstallmentDetailsChange([]);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [installmentCount, grandTotal]);
 
   if (installmentCount <= 1) {

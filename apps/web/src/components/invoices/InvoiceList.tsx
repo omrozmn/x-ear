@@ -1,5 +1,5 @@
 import { Button, Input } from '@x-ear/ui-web';
-import { Eye, Edit2, FileText, Truck, FilePlus, Copy, Trash2 } from 'lucide-react';
+import { Eye, Edit2, FileText, Truck, FilePlus } from 'lucide-react';
 import InvoiceBulkOperations from '../invoice/InvoiceBulkOperations';
 import { InvoicePreviewModal } from '../modals/InvoicePreviewModal';
 import { useState, useEffect } from 'react';
@@ -15,13 +15,13 @@ interface InvoiceListProps {
   compact?: boolean;
 }
 
-export function InvoiceList({ 
-  onInvoiceSelect, 
-  filters, 
+export function InvoiceList({
+  onInvoiceSelect,
+  filters,
   onFiltersChange,
   onSelectionChange,
-  showActions = true, 
-  compact = false 
+  showActions = true,
+  compact = false
 }: InvoiceListProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -40,14 +40,14 @@ export function InvoiceList({
     try {
       setLoading(true);
       setError(null);
-      
+
       const result = await invoiceService.getInvoices({
         ...filters,
         ...searchFilters,
         page: currentPage,
         limit: 10
       });
-      
+
       setInvoices(result.invoices);
       setTotalPages(result.totalPages);
     } catch (err) {
@@ -62,6 +62,7 @@ export function InvoiceList({
     invoiceService.initializeData().then(() => {
       loadInvoices();
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   useEffect(() => {
@@ -84,6 +85,7 @@ export function InvoiceList({
     }, 300);
 
     return () => clearTimeout(delayedSearch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, filters]);
 
   // Notify parent when selection changes
@@ -98,6 +100,7 @@ export function InvoiceList({
     if (filters?.search !== undefined && filters.search !== searchTerm) {
       setSearchTerm(filters.search || '');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters?.search]);
 
   const handleInvoiceClick = (invoice: Invoice) => {
@@ -122,55 +125,7 @@ export function InvoiceList({
     }
   };
 
-  const handleBulkDelete = async () => {
-    if (selectedIds.size === 0) return;
-    if (!window.confirm('Seçili faturaları silmek istediğinize emin misiniz?')) return;
-    try {
-      for (const id of Array.from(selectedIds)) {
-        await invoiceService.deleteInvoice(id);
-      }
-      setSelectedIds(new Set());
-      loadInvoices();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Toplu silme hatası');
-    }
-  };
 
-  const handleBulkCopy = async () => {
-    try {
-      for (const id of Array.from(selectedIds)) {
-        await invoiceService.copyInvoice(id);
-      }
-      setSelectedIds(new Set());
-      loadInvoices();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Toplu kopyalama hatası');
-    }
-  };
-
-  const handleBulkCopyCancel = async () => {
-    try {
-      for (const id of Array.from(selectedIds)) {
-        await invoiceService.copyInvoiceWithCancellation(id);
-      }
-      setSelectedIds(new Set());
-      loadInvoices();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Toplu kopyala+iptal hatası');
-    }
-  };
-
-  const handleBulkIssue = async () => {
-    try {
-      for (const id of Array.from(selectedIds)) {
-        await invoiceService.sendInvoice(id);
-      }
-      setSelectedIds(new Set());
-      loadInvoices();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Toplu gönderim hatası');
-    }
-  };
 
   const openPreview = (invoice: Invoice, event?: React.MouseEvent) => {
     event?.stopPropagation();
@@ -211,7 +166,7 @@ export function InvoiceList({
 
   const handleDeleteInvoice = async (invoice: Invoice, event: React.MouseEvent) => {
     event.stopPropagation();
-    
+
     if (window.confirm(`${invoice.invoiceNumber} numaralı faturayı silmek istediğinizden emin misiniz?`)) {
       try {
         await invoiceService.deleteInvoice(invoice.id);
@@ -222,29 +177,16 @@ export function InvoiceList({
     }
   };
 
-  const handleStatusChange = async (invoice: Invoice, newStatus: InvoiceStatus) => {
-    try {
-      if (newStatus === 'sent') {
-        await invoiceService.sendInvoice(invoice.id);
-      } else if (newStatus === 'paid') {
-        await invoiceService.markAsPaid(invoice.id);
-      } else if (newStatus === 'cancelled') {
-        await invoiceService.cancelInvoice(invoice.id);
-      }
-      loadInvoices(); // Reload list
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fatura durumu güncellenirken hata oluştu');
-    }
-  };
+
 
   const getStatusColor = (status: InvoiceStatus): string => {
     switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'sent': return 'bg-blue-100 text-blue-800';
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'draft': return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300';
+      case 'sent': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
+      case 'paid': return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
+      case 'overdue': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+      case 'cancelled': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300';
     }
   };
 
@@ -274,7 +216,7 @@ export function InvoiceList({
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">Faturalar yükleniyor...</span>
+        <span className="ml-2 text-gray-600 dark:text-gray-400">Faturalar yükleniyor...</span>
       </div>
     );
   }
@@ -312,20 +254,20 @@ export function InvoiceList({
       {/* Search Bar */}
       <div className="flex items-center space-x-4">
         <div className="flex-1">
-            <Input
-              type="text"
-              placeholder="Belge ara (numara, müşteri adı, vergi no...)"
+          <Input
+            type="text"
+            placeholder="Belge ara (numara, müşteri adı, vergi no...)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
       </div>
       {/* header area — removed dev badge */}
       {/* Invoice List with headers */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
+      <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
         {/* Header Row */}
-        <div className="hidden sm:grid grid-cols-5 gap-4 px-6 py-3 text-xs font-semibold text-gray-500 bg-gray-50 border-b">
+        <div className="hidden sm:grid grid-cols-5 gap-4 px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border-b dark:border-gray-700">
           <div className="flex flex-col">
             <label className="flex items-center gap-2 text-xs text-gray-400">
               <input
@@ -343,15 +285,15 @@ export function InvoiceList({
           <div className="text-left">Tutar</div>
           <div className="text-right">İşlemler</div>
         </div>
-        <ul className="divide-y divide-gray-200">
+        <ul className="divide-y divide-gray-200 dark:divide-gray-700">
           {invoices.length === 0 ? (
-            <li className="px-6 py-8 text-center text-gray-500">Fatura bulunamadı</li>
+            <li className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">Fatura bulunamadı</li>
           ) : (
             invoices.map((invoice) => {
               return (
                 <li
                   key={invoice.id}
-                  className={`px-6 py-4 hover:bg-gray-50 cursor-pointer transition-colors ${selectedInvoice?.id === invoice.id ? 'bg-blue-50' : ''}`}
+                  className={`px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${selectedInvoice?.id === invoice.id ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
                   onClick={() => handleInvoiceClick(invoice)}
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 items-center">
@@ -365,14 +307,14 @@ export function InvoiceList({
                         className="h-5 w-5"
                       />
                       <div>
-                        <p className="text-sm font-medium text-gray-900 truncate">{invoice.invoiceNumber}</p>
-                        <p className="text-xs text-gray-500">{formatDate(invoice.createdAt || '')}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{invoice.invoiceNumber}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(invoice.createdAt || '')}</p>
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{invoice.patientName}</div>
-                      <div className="text-xs text-gray-500">{invoice.billingAddress?.taxNumber ? `VN: ${invoice.billingAddress?.taxNumber}` : invoice.patientPhone}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{invoice.patientName}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{invoice.billingAddress?.taxNumber ? `VN: ${invoice.billingAddress?.taxNumber}` : invoice.patientPhone}</div>
                     </div>
 
                     <div>
@@ -380,48 +322,49 @@ export function InvoiceList({
                     </div>
 
                     <div className="text-left">
-                      <p className="text-sm font-medium text-gray-900">{formatCurrency(invoice.grandTotal || 0)}</p>
-                      <div className="text-xs text-gray-500">{invoice.currency}</div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{formatCurrency(invoice.grandTotal || 0)}</p>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{invoice.currency}</div>
                     </div>
 
                     <div className="flex items-center justify-end space-x-2">
                       {showActions && (
                         <div className="flex items-center space-x-2">
-                          <Button onClick={(e) => openPreview(invoice, e)} className="text-gray-700 hover:text-gray-900 p-1" variant='default' title="Önizle" aria-label="Önizle">
+                          <Button onClick={(e) => openPreview(invoice, e)} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Önizle" aria-label="Önizle">
                             <Eye size={16} />
                           </Button>
 
-                          <Button onClick={(e) => { e.stopPropagation(); onInvoiceSelect?.(invoice); }} className="text-indigo-600 hover:text-indigo-800 p-1" variant='default' title="Düzenle" aria-label="Düzenle">
+                          <Button onClick={(e) => { e.stopPropagation(); onInvoiceSelect?.(invoice); }} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 p-1" variant='default' title="Düzenle" aria-label="Düzenle">
                             <Edit2 size={16} />
                           </Button>
 
                           {invoice.status === 'draft' && (
-                            <Button onClick={async (e) => { e.stopPropagation(); try { const res = await invoiceService.issueInvoice(invoice.id); if (!res.success) { setError(res.error || 'Fatura kesme başarısız'); } else { await loadInvoices(); } } catch(err) { setError(err instanceof Error ? err.message : 'Fatura keserken hata'); } }} className="text-blue-600 hover:text-blue-800 p-1" variant='default' title="Fatura Kes" aria-label="Fatura Kes">
+                            <Button onClick={async (e) => { e.stopPropagation(); try { const res = await invoiceService.issueInvoice(invoice.id); if (!res.success) { setError(res.error || 'Fatura kesme başarısız'); } else { await loadInvoices(); } } catch (err) { setError(err instanceof Error ? err.message : 'Fatura keserken hata'); } }} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 p-1" variant='default' title="Fatura Kes" aria-label="Fatura Kes">
                               <FilePlus size={16} />
                             </Button>
                           )}
 
                           {invoice.status === 'sent' && (
                             <>
-                              <Button onClick={(e) => { e.stopPropagation(); invoiceService.generateInvoicePdf(invoice.id).then(res => { if (res.success && res.data) invoiceService.previewPdfBlob(res.data); }); }} className="text-gray-700 hover:text-gray-900 p-1" variant='default' title="Fatura Aç" aria-label="Fatura Aç">
+                              <Button onClick={(e) => { e.stopPropagation(); invoiceService.generateInvoicePdf(invoice.id).then(res => { if (res.success && res.data) invoiceService.previewPdfBlob(res.data); }); }} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Fatura Aç" aria-label="Fatura Aç">
                                 <FileText size={16} />
                               </Button>
-                              <Button onClick={(e) => { e.stopPropagation(); const saleId = (invoice as any).saleId || ''; invoiceService.generateSaleInvoicePdf(saleId); }} className="text-gray-700 hover:text-gray-900 p-1" variant='default' title="Kargo Aç" aria-label="Kargo Aç">
+                              <Button onClick={(e) => { e.stopPropagation(); const saleId = (invoice as any).saleId || ''; invoiceService.generateSaleInvoicePdf(saleId); }} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Kargo Aç" aria-label="Kargo Aç">
                                 <Truck size={16} />
                               </Button>
                             </>
                           )}
 
                           <div className="relative">
-                            <button data-invoice-menu-button onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === invoice.id ? null : invoice.id); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenMenuId(openMenuId === invoice.id ? null : invoice.id); } }} className="p-1 text-gray-600 hover:text-gray-800 rounded-md" aria-label="İşlemler" aria-expanded={openMenuId === invoice.id}>
-                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+
+                            <button data-invoice-menu-button onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === invoice.id ? null : invoice.id); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenMenuId(openMenuId === invoice.id ? null : invoice.id); } }} className="p-1 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white rounded-md" aria-label="İşlemler" aria-expanded={openMenuId === invoice.id}>
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                             </button>
 
                             {openMenuId === invoice.id && (
-                              <div data-invoice-menu className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-20">
-                                <button onClick={(e) => { e.stopPropagation(); handleDeleteInvoice(invoice, e); setOpenMenuId(null); }} className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-gray-50">Kaydı Sil</button>
-                                <button onClick={async (e) => { e.stopPropagation(); try { await invoiceService.copyInvoice(invoice.id); await loadInvoices(); } catch(err){ setError(err instanceof Error ? err.message : 'Kopyalama hatası'); } finally { setOpenMenuId(null); } }} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Kopyala</button>
-                                <button onClick={async (e) => { e.stopPropagation(); try { await invoiceService.copyInvoiceWithCancellation(invoice.id); await loadInvoices(); } catch(err){ setError(err instanceof Error ? err.message : 'Kopyala+İptal hatası'); } finally { setOpenMenuId(null); } }} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Kopyala ve İptal Et</button>
+                              <div data-invoice-menu className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-20">
+                                <button onClick={(e) => { e.stopPropagation(); handleDeleteInvoice(invoice, e); setOpenMenuId(null); }} className="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700">Kaydı Sil</button>
+                                <button onClick={async (e) => { e.stopPropagation(); try { await invoiceService.copyInvoice(invoice.id); await loadInvoices(); } catch (err) { setError(err instanceof Error ? err.message : 'Kopyalama hatası'); } finally { setOpenMenuId(null); } }} className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Kopyala</button>
+                                <button onClick={async (e) => { e.stopPropagation(); try { await invoiceService.copyInvoiceWithCancellation(invoice.id); await loadInvoices(); } catch (err) { setError(err instanceof Error ? err.message : 'Kopyala+İptal hatası'); } finally { setOpenMenuId(null); } }} className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Kopyala ve İptal Et</button>
                               </div>
                             )}
                           </div>
@@ -443,26 +386,26 @@ export function InvoiceList({
       </div>
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
+        <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sm:px-6">
           <div className="flex-1 flex justify-between sm:hidden">
             <Button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               variant='default'>
               Önceki
             </Button>
             <Button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               variant='default'>
               Sonraki
             </Button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-400">
                 Sayfa <span className="font-medium">{currentPage}</span> / <span className="font-medium">{totalPages}</span>
               </p>
             </div>
@@ -471,14 +414,14 @@ export function InvoiceList({
                 <Button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   variant='default'>
                   Önceki
                 </Button>
                 <Button
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   variant='default'>
                   Sonraki
                 </Button>

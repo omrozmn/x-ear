@@ -60,6 +60,7 @@ function SaleModal({ isOpen, onClose, patient, onSaleCreate }: SaleModalProps) {
 
     const searchResults = fuzzySearchUtil.search(productSearchTerm, products, ['name', 'brand', 'model', 'barcode', 'serialNumber']);
     return searchResults.slice(0, 10).map(result => result.item);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productSearchTerm, products]);  // Click outside handler for dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
