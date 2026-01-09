@@ -88,7 +88,7 @@ class SupplierUpdate(BaseModel):
 
 # --- Routes ---
 
-@router.get("/suppliers", response_model=ResponseEnvelope[List[SupplierRead]])
+@router.get("/suppliers", operation_id="listSuppliers", response_model=ResponseEnvelope[List[SupplierRead]])
 def get_suppliers(
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
@@ -146,7 +146,7 @@ def get_suppliers(
         logger.error(f"Get suppliers error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/suppliers/search")
+@router.get("/suppliers/search", operation_id="listSupplierSearch")
 def search_suppliers(
     q: str = Query("", min_length=0),
     limit: int = Query(10, ge=1, le=50),
@@ -175,7 +175,7 @@ def search_suppliers(
         logger.error(f"Search suppliers error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/suppliers/stats")
+@router.get("/suppliers/stats", operation_id="listSupplierStats")
 def get_supplier_stats(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -219,7 +219,7 @@ def get_supplier_stats(
         logger.error(f"Get supplier stats error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/suppliers/{supplier_id}", response_model=ResponseEnvelope[SupplierRead])
+@router.get("/suppliers/{supplier_id}", operation_id="getSupplier", response_model=ResponseEnvelope[SupplierRead])
 def get_supplier(
     supplier_id: int,
     access: UnifiedAccess = Depends(require_access()),
@@ -248,7 +248,7 @@ def get_supplier(
         logger.error(f"Get supplier error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/suppliers", status_code=201, response_model=ResponseEnvelope[SupplierRead])
+@router.post("/suppliers", operation_id="createSuppliers", status_code=201, response_model=ResponseEnvelope[SupplierRead])
 def create_supplier(
     supplier_in: SupplierCreateSchema,
     access: UnifiedAccess = Depends(require_access()),
@@ -295,7 +295,7 @@ def create_supplier(
         logger.error(f"Create supplier error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/suppliers/{supplier_id}", response_model=ResponseEnvelope[SupplierRead])
+@router.put("/suppliers/{supplier_id}", operation_id="updateSupplier", response_model=ResponseEnvelope[SupplierRead])
 def update_supplier(
     supplier_id: int,
     supplier_in: SupplierUpdateSchema,
@@ -340,7 +340,7 @@ def update_supplier(
         logger.error(f"Update supplier error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/suppliers/{supplier_id}", response_model=ResponseEnvelope[None])
+@router.delete("/suppliers/{supplier_id}", operation_id="deleteSupplier", response_model=ResponseEnvelope[None])
 def delete_supplier(
     supplier_id: int,
     access: UnifiedAccess = Depends(require_access()),

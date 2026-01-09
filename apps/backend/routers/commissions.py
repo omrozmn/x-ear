@@ -30,7 +30,7 @@ class CommissionCreate(BaseModel):
 class CommissionStatusUpdate(BaseModel):
     status: str
 
-@router.post("/create")
+@router.post("/create", operation_id="createCommissionCreate")
 def create_commission(
     data: CommissionCreate,
     access: UnifiedAccess = Depends(require_access(admin_only=True)),
@@ -50,7 +50,7 @@ def create_commission(
         logger.error(f"Create commission error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.post("/update-status")
+@router.post("/update-status", operation_id="createCommissionUpdateStatus")
 def update_commission_status(
     commission_id: int = Query(..., description="ID of commission to update"),
     status: str = Query(..., description="New status"),
@@ -73,7 +73,7 @@ def update_commission_status(
         logger.error(f"Update commission status error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/by-affiliate")
+@router.get("/by-affiliate", operation_id="listCommissionByAffiliate")
 def get_commissions_by_affiliate(
     affiliate_id: int,
     access: UnifiedAccess = Depends(require_access(admin_only=True)),
@@ -94,7 +94,7 @@ def get_commissions_by_affiliate(
         logger.error(f"Get commissions by affiliate error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/audit")
+@router.get("/audit", operation_id="listCommissionAudit")
 def audit_trail(
     commission_id: int,
     access: UnifiedAccess = Depends(require_access(admin_only=True)),

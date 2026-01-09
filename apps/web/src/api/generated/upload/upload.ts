@@ -25,9 +25,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  DeleteFileParams,
+  DeleteUploadFilesParams,
   HTTPValidationError,
-  ListFilesParams,
+  ListUploadFilesParams,
   PresignedUploadRequest
 } from '.././schemas';
 
@@ -52,7 +52,7 @@ Returns:
     }
  * @summary Get Presigned Upload Url
  */
-export const getPresignedUploadUrl = (
+export const createUploadPresigned = (
     presignedUploadRequest: PresignedUploadRequest,
  signal?: AbortSignal
 ) => {
@@ -68,11 +68,11 @@ export const getPresignedUploadUrl = (
   
 
 
-export const getGetPresignedUploadUrlMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getPresignedUploadUrl>>, TError,{data: PresignedUploadRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof getPresignedUploadUrl>>, TError,{data: PresignedUploadRequest}, TContext> => {
+export const getCreateUploadPresignedMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUploadPresigned>>, TError,{data: PresignedUploadRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createUploadPresigned>>, TError,{data: PresignedUploadRequest}, TContext> => {
 
-const mutationKey = ['getPresignedUploadUrl'];
+const mutationKey = ['createUploadPresigned'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -82,10 +82,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof getPresignedUploadUrl>>, {data: PresignedUploadRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createUploadPresigned>>, {data: PresignedUploadRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  getPresignedUploadUrl(data,)
+          return  createUploadPresigned(data,)
         }
 
         
@@ -93,23 +93,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type GetPresignedUploadUrlMutationResult = NonNullable<Awaited<ReturnType<typeof getPresignedUploadUrl>>>
-    export type GetPresignedUploadUrlMutationBody = PresignedUploadRequest
-    export type GetPresignedUploadUrlMutationError = HTTPValidationError
+    export type CreateUploadPresignedMutationResult = NonNullable<Awaited<ReturnType<typeof createUploadPresigned>>>
+    export type CreateUploadPresignedMutationBody = PresignedUploadRequest
+    export type CreateUploadPresignedMutationError = HTTPValidationError
 
     /**
  * @summary Get Presigned Upload Url
  */
-export const useGetPresignedUploadUrl = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getPresignedUploadUrl>>, TError,{data: PresignedUploadRequest}, TContext>, }
+export const useCreateUploadPresigned = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUploadPresigned>>, TError,{data: PresignedUploadRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof getPresignedUploadUrl>>,
+        Awaited<ReturnType<typeof createUploadPresigned>>,
         TError,
         {data: PresignedUploadRequest},
         TContext
       > => {
 
-      const mutationOptions = getGetPresignedUploadUrlMutationOptions(options);
+      const mutationOptions = getCreateUploadPresignedMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -120,8 +120,8 @@ Query Params:
     folder (str): Folder name (default: 'uploads')
  * @summary List Files
  */
-export const listFiles = (
-    params?: ListFilesParams,
+export const listUploadFiles = (
+    params?: ListUploadFilesParams,
  signal?: AbortSignal
 ) => {
       
@@ -136,69 +136,69 @@ export const listFiles = (
 
 
 
-export const getListFilesQueryKey = (params?: ListFilesParams,) => {
+export const getListUploadFilesQueryKey = (params?: ListUploadFilesParams,) => {
     return [
     `/api/upload/files`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListFilesQueryOptions = <TData = Awaited<ReturnType<typeof listFiles>>, TError = HTTPValidationError>(params?: ListFilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listFiles>>, TError, TData>>, }
+export const getListUploadFilesQueryOptions = <TData = Awaited<ReturnType<typeof listUploadFiles>>, TError = HTTPValidationError>(params?: ListUploadFilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUploadFiles>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListFilesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListUploadFilesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFiles>>> = ({ signal }) => listFiles(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listUploadFiles>>> = ({ signal }) => listUploadFiles(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFiles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listUploadFiles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListFilesQueryResult = NonNullable<Awaited<ReturnType<typeof listFiles>>>
-export type ListFilesQueryError = HTTPValidationError
+export type ListUploadFilesQueryResult = NonNullable<Awaited<ReturnType<typeof listUploadFiles>>>
+export type ListUploadFilesQueryError = HTTPValidationError
 
 
-export function useListFiles<TData = Awaited<ReturnType<typeof listFiles>>, TError = HTTPValidationError>(
- params: undefined |  ListFilesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listFiles>>, TError, TData>> & Pick<
+export function useListUploadFiles<TData = Awaited<ReturnType<typeof listUploadFiles>>, TError = HTTPValidationError>(
+ params: undefined |  ListUploadFilesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUploadFiles>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listFiles>>,
+          Awaited<ReturnType<typeof listUploadFiles>>,
           TError,
-          Awaited<ReturnType<typeof listFiles>>
+          Awaited<ReturnType<typeof listUploadFiles>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListFiles<TData = Awaited<ReturnType<typeof listFiles>>, TError = HTTPValidationError>(
- params?: ListFilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listFiles>>, TError, TData>> & Pick<
+export function useListUploadFiles<TData = Awaited<ReturnType<typeof listUploadFiles>>, TError = HTTPValidationError>(
+ params?: ListUploadFilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUploadFiles>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listFiles>>,
+          Awaited<ReturnType<typeof listUploadFiles>>,
           TError,
-          Awaited<ReturnType<typeof listFiles>>
+          Awaited<ReturnType<typeof listUploadFiles>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListFiles<TData = Awaited<ReturnType<typeof listFiles>>, TError = HTTPValidationError>(
- params?: ListFilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listFiles>>, TError, TData>>, }
+export function useListUploadFiles<TData = Awaited<ReturnType<typeof listUploadFiles>>, TError = HTTPValidationError>(
+ params?: ListUploadFilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUploadFiles>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Files
  */
 
-export function useListFiles<TData = Awaited<ReturnType<typeof listFiles>>, TError = HTTPValidationError>(
- params?: ListFilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listFiles>>, TError, TData>>, }
+export function useListUploadFiles<TData = Awaited<ReturnType<typeof listUploadFiles>>, TError = HTTPValidationError>(
+ params?: ListUploadFilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUploadFiles>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListFilesQueryOptions(params,options)
+  const queryOptions = getListUploadFilesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -217,8 +217,8 @@ Query Params:
     key (str): S3 key of the file to delete
  * @summary Delete File
  */
-export const deleteFile = (
-    params: DeleteFileParams,
+export const deleteUploadFiles = (
+    params: DeleteUploadFilesParams,
  ) => {
       
       
@@ -231,11 +231,11 @@ export const deleteFile = (
   
 
 
-export const getDeleteFileMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFile>>, TError,{params: DeleteFileParams}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteFile>>, TError,{params: DeleteFileParams}, TContext> => {
+export const getDeleteUploadFilesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUploadFiles>>, TError,{params: DeleteUploadFilesParams}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteUploadFiles>>, TError,{params: DeleteUploadFilesParams}, TContext> => {
 
-const mutationKey = ['deleteFile'];
+const mutationKey = ['deleteUploadFiles'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -245,10 +245,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFile>>, {params: DeleteFileParams}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteUploadFiles>>, {params: DeleteUploadFilesParams}> = (props) => {
           const {params} = props ?? {};
 
-          return  deleteFile(params,)
+          return  deleteUploadFiles(params,)
         }
 
         
@@ -256,23 +256,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteFileMutationResult = NonNullable<Awaited<ReturnType<typeof deleteFile>>>
+    export type DeleteUploadFilesMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUploadFiles>>>
     
-    export type DeleteFileMutationError = HTTPValidationError
+    export type DeleteUploadFilesMutationError = HTTPValidationError
 
     /**
  * @summary Delete File
  */
-export const useDeleteFile = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFile>>, TError,{params: DeleteFileParams}, TContext>, }
+export const useDeleteUploadFiles = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUploadFiles>>, TError,{params: DeleteUploadFilesParams}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteFile>>,
+        Awaited<ReturnType<typeof deleteUploadFiles>>,
         TError,
-        {params: DeleteFileParams},
+        {params: DeleteUploadFilesParams},
         TContext
       > => {
 
-      const mutationOptions = getDeleteFileMutationOptions(options);
+      const mutationOptions = getDeleteUploadFilesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

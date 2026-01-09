@@ -36,7 +36,7 @@ def get_inventory_or_404(db_session: Session, item_id: str, access: UnifiedAcces
         )
     return item
 
-@router.get("/inventory", response_model=ResponseEnvelope[List[InventoryItemRead]])
+@router.get("/inventory", operation_id="listInventory", response_model=ResponseEnvelope[List[InventoryItemRead]])
 def get_all_inventory(
     page: int = 1,
     per_page: int = 20,
@@ -94,7 +94,7 @@ def get_all_inventory(
         }
     )
 
-@router.get("/inventory/search") # Note: No strict response model due to dynamic meta 'filters'
+@router.get("/inventory/search", operation_id="listInventorySearch") # Note: No strict response model due to dynamic meta 'filters'
 def advanced_search(
     q: Optional[str] = None,
     category: Optional[str] = None,
@@ -209,7 +209,7 @@ def advanced_search(
         },
     )
 
-@router.get("/inventory/stats", response_model=ResponseEnvelope[InventoryStats])
+@router.get("/inventory/stats", operation_id="listInventoryStats", response_model=ResponseEnvelope[InventoryStats])
 def get_inventory_stats(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -236,7 +236,7 @@ def get_inventory_stats(
         "total_value": float(total_value)
     })
 
-@router.get("/inventory/low-stock", response_model=ResponseEnvelope[List[InventoryItemRead]])
+@router.get("/inventory/low-stock", operation_id="listInventoryLowStock", response_model=ResponseEnvelope[List[InventoryItemRead]])
 def get_low_stock(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -247,7 +247,7 @@ def get_low_stock(
     items = query.filter(InventoryItem.available_inventory <= InventoryItem.reorder_level).all()
     return ResponseEnvelope(data=[item.to_dict() for item in items])
 
-@router.post("/inventory", response_model=ResponseEnvelope[InventoryItemRead], status_code=201)
+@router.post("/inventory", operation_id="createInventory", response_model=ResponseEnvelope[InventoryItemRead], status_code=201)
 def create_inventory(
     item_in: InventoryItemCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -290,7 +290,7 @@ def create_inventory(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/inventory/{item_id}", response_model=ResponseEnvelope[InventoryItemRead])
+@router.get("/inventory/{item_id}", operation_id="getInventory", response_model=ResponseEnvelope[InventoryItemRead])
 def get_inventory_item(
     item_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -300,7 +300,7 @@ def get_inventory_item(
     item = get_inventory_or_404(db, item_id, access)
     return ResponseEnvelope(data=item.to_dict())
 
-@router.put("/inventory/{item_id}", response_model=ResponseEnvelope[InventoryItemRead])
+@router.put("/inventory/{item_id}", operation_id="updateInventory", response_model=ResponseEnvelope[InventoryItemRead])
 def update_inventory(
     item_id: str,
     item_in: InventoryItemUpdate,
@@ -318,7 +318,7 @@ def update_inventory(
     db.commit()
     return ResponseEnvelope(data=item.to_dict())
 
-@router.delete("/inventory/{item_id}")
+@router.delete("/inventory/{item_id}", operation_id="deleteInventory")
 def delete_inventory(
     item_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -330,7 +330,7 @@ def delete_inventory(
     db.commit()
     return ResponseEnvelope(message="Item deleted")
 
-@router.post("/inventory/{item_id}/serials")
+@router.post("/inventory/{item_id}/serials", operation_id="createInventorySerials")
 def add_serials(
     item_id: str,
     payload: Dict[str, List[str]], # manual schema
@@ -347,7 +347,7 @@ def add_serials(
     db.commit()
     return ResponseEnvelope(message=f"{count} serial numbers added", data=item)
 
-@router.get("/inventory/{item_id}/movements", response_model=ResponseEnvelope[List[StockMovementRead]])
+@router.get("/inventory/{item_id}/movements", operation_id="listInventoryMovements", response_model=ResponseEnvelope[List[StockMovementRead]])
 def get_movements(
     item_id: str,
     startTime: Optional[str] = None,
@@ -364,10 +364,10 @@ def get_movements(
     
     if startTime:
          try: query = query.filter(StockMovement.created_at >= datetime.fromisoformat(startTime.replace('Z', '+00:00')))
-         except: pass
+         except (ValueError, TypeError): pass
     if endTime:
          try: query = query.filter(StockMovement.created_at <= datetime.fromisoformat(endTime.replace('Z', '+00:00')))
-         except: pass
+         except (ValueError, TypeError): pass
     if type: query = query.filter(StockMovement.movement_type == type)
     
     pagination = query.order_by(StockMovement.created_at.desc()).paginate(page=page, per_page=limit, error_out=False)

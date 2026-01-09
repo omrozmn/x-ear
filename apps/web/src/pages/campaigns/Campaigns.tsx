@@ -17,13 +17,13 @@ import {
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import {
-    useGetBranchesApiBranchesGet,
-    useCountPatientsApiPatientsCountGet,
-    useListPatientsApiPatientsGet,
-    useGetSmsCreditApiSmsCreditGet,
-    getGetBranchesQueryKey,
+    useListBranches,
+    useListPatientCount,
+    useListPatients,
+    useListSmCredit,
+    getListBranchesQueryKey,
     getListPatientsQueryKey,
-    getCountPatientsQueryKey
+    getListPatientCountQueryKey
 } from '@/api/generated';
 import type { ListPatientsParams } from '@/api/generated/schemas';
 
@@ -88,7 +88,7 @@ const CampaignsPage: React.FC = () => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const { success: showSuccessToast, error: showErrorToast, warning: showWarningToast } = useToastHelpers();
 
-    const { data: creditData, isFetching: creditLoading } = useGetSmsCreditApiSmsCreditGet();
+    const { data: creditData, isFetching: creditLoading } = useListSmCredit();
 
     // Handle different response structures for credit balance
     let creditBalance = 0;
@@ -109,8 +109,8 @@ const CampaignsPage: React.FC = () => {
         }
     }
 
-    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useGetBranchesApiBranchesGet({
-        query: { queryKey: getGetBranchesQueryKey(), refetchOnWindowFocus: false }
+    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useListBranches({
+        query: { queryKey: getListBranchesQueryKey(), refetchOnWindowFocus: false }
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -125,7 +125,7 @@ const CampaignsPage: React.FC = () => {
     }, []);
 
     // Fetch first patient for preview
-    const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = useListPatientsApiPatientsGet(
+    const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = useListPatients(
         { page: 1, per_page: 1 },
         { query: { queryKey: getListPatientsQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters', refetchOnWindowFocus: false } }
     );
@@ -154,11 +154,11 @@ const CampaignsPage: React.FC = () => {
         return params;
     }, [audienceFilters]);
 
-    const patientsCountQuery = useCountPatientsApiPatientsCountGet(
+    const patientsCountQuery = useListPatientCount(
         mode === 'filters' ? normalizedParams : undefined,
         {
             query: {
-                queryKey: getCountPatientsQueryKey(mode === 'filters' ? normalizedParams : undefined),
+                queryKey: getListPatientCountQueryKey(mode === 'filters' ? normalizedParams : undefined),
                 enabled: mode === 'filters',
                 refetchOnWindowFocus: false
             }

@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Config"])
 
-@router.get("/config")
+@router.get("/config", operation_id="listConfig")
 def get_config():
     """Get public configuration"""
     admin_url = os.getenv('ADMIN_PANEL_URL', '/admin-panel/')

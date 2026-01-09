@@ -10,6 +10,8 @@ import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
 
+import { Appointment } from '@/types/appointment';
+
 export const MobileAppointmentsPage: React.FC = () => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -17,9 +19,13 @@ export const MobileAppointmentsPage: React.FC = () => {
     const { triggerSelection } = useHaptic();
 
     // Filter appointments for selected date
-    const dailyAppointments = (appointments || []).filter((apt: any) =>
-        isSameDay(new Date(apt.startTime), selectedDate)
-    ).sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    const dailyAppointments = (appointments as Appointment[] || []).filter((apt) =>
+        apt.startTime && isSameDay(new Date(apt.startTime), selectedDate)
+    ).sort((a, b) => {
+        const timeA = a.startTime ? new Date(a.startTime).getTime() : 0;
+        const timeB = b.startTime ? new Date(b.startTime).getTime() : 0;
+        return timeA - timeB;
+    });
 
     const handlePrevDay = () => {
         setSelectedDate(prev => subDays(prev, 1));
@@ -88,9 +94,9 @@ export const MobileAppointmentsPage: React.FC = () => {
                     </div>
                 ) : dailyAppointments.length > 0 ? (
                     <div className="space-y-4">
-                        {dailyAppointments.map((apt: any) => {
-                            const start = new Date(apt.startTime);
-                            const end = new Date(apt.endTime);
+                        {dailyAppointments.map((apt) => {
+                            const start = apt.startTime ? new Date(apt.startTime) : new Date();
+                            const end = apt.endTime ? new Date(apt.endTime) : new Date();
 
                             return (
                                 <div key={apt.id} className="flex gap-4">
@@ -116,7 +122,7 @@ export const MobileAppointmentsPage: React.FC = () => {
                                             </h3>
                                             <span className={cn("text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wide", getStatusColor(apt.status))}>
                                                 {apt.status === 'confirmed' ? 'Onaylı' :
-                                                    apt.status === 'pending' ? 'Bekliyor' :
+                                                    (apt.status as string) === 'pending' ? 'Bekliyor' :
                                                         apt.status === 'cancelled' ? 'İptal' :
                                                             apt.status === 'completed' ? 'Tamamlandı' : apt.status}
                                             </span>

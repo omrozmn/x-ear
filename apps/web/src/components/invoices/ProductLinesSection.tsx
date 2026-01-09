@@ -11,8 +11,8 @@ import MedicalDeviceModal from './MedicalDeviceModal';
 import type { MedicalDeviceData, LineWithholdingData } from '../../types/invoice';
 import type { InventoryItem as LocalInventoryItem, InventoryCategory } from '../../types/inventory';
 import {
-  getAllInventory,
-  getInventoryItem,
+  listInventory,
+  getInventory,
   createInventory,
 } from '@/api/generated/inventory/inventory';
 import { AUTH_TOKEN } from '../../constants/storage-keys';
@@ -191,7 +191,7 @@ export function ProductLinesSection({
       setIsLoadingProducts(true);
       try {
         const params = {}; // Define empty params
-        const resp = await getAllInventory(params);
+        const resp = await listInventory(params);
         const apiItems: ApiInventoryItem[] = (resp as any)?.data?.data ?? [];
         console.log('✅ API inventory response', { status: (resp as any)?.status, itemsCount: apiItems.length });
 
@@ -292,7 +292,7 @@ export function ProductLinesSection({
       // Fallback: if not found in local cache, fetch single item from API
       if (!product) {
         try {
-          const resp = await getInventoryItem(productIdOrObject);
+          const resp = await getInventory(productIdOrObject);
           const it = (resp as any)?.data?.data ?? (resp as any)?.data ?? null;
           if (it) {
             product = {
@@ -317,7 +317,7 @@ export function ProductLinesSection({
       // If product exists but missing taxRate, fetch details to get the current rate
       if (product && (product.taxRate === undefined || product.taxRate === null)) {
         try {
-          const resp = await getInventoryItem(product.id);
+          const resp = await getInventory(product.id);
           const it = (resp as any)?.data?.data ?? (resp as any)?.data ?? null;
           if (it) {
             product.taxRate = Number(it.vatRate ?? it.kdv ?? product.taxRate ?? 18);
@@ -438,7 +438,7 @@ export function ProductLinesSection({
 
       // Refresh products list
       const params = {};
-      const prodResp = await getAllInventory(params);
+      const prodResp = await listInventory(params);
       // ... (logic to update allProducts could go here, or just rely on handleProductSelect fetching it)
 
     } catch (err) {

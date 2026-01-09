@@ -12,7 +12,7 @@ export type InventoryItem = {
 };
 
 export const apiClientExtended = {
-  async getInventoryItems(): Promise<InventoryItem[]> {
+  async getInventorys(): Promise<InventoryItem[]> {
     // In real app wrap orval client calls here
     // Since customInstance unwraps data, we just return it
     const response = await apiClient.get<InventoryItem[]>('/inventory');

@@ -132,8 +132,6 @@ class AppointmentService {
 
   // CRUD Operations
   async createAppointment(data: CreateAppointmentData): Promise<Appointment> {
-    console.log('📝 Creating appointment:', data);
-
     try {
       // Call backend API directly instead of using outbox
       const { appointmentsApi } = await import('../api/appointments');
@@ -152,10 +150,7 @@ class AppointmentService {
         branchId: data.branchId
       };
 
-      console.log('📤 Sending to backend:', backendData);
-
       const backendAppointment = await appointmentsApi.createAppointment(backendData, idempotencyKey);
-      console.log('✅ Backend created appointment:', backendAppointment);
 
       // Also save to localStorage for offline access
       const appointment: Appointment = {
@@ -483,14 +478,14 @@ class AppointmentService {
     });
   }
 
-  async cancelAppointment(id: string, reason?: string): Promise<Appointment> {
+  async createAppointmentCancel(id: string, reason?: string): Promise<Appointment> {
     return this.updateAppointment(id, {
       status: 'cancelled',
       notes: reason ? `Cancelled: ${reason}` : 'Cancelled'
     });
   }
 
-  async completeAppointment(id: string, notes?: string): Promise<Appointment> {
+  async createAppointmentComplete(id: string, notes?: string): Promise<Appointment> {
     return this.updateAppointment(id, {
       status: 'completed',
       notes: notes || 'Appointment completed'
@@ -517,10 +512,10 @@ class AppointmentService {
       try {
         switch (operation.operation) {
           case 'cancel':
-            await this.cancelAppointment(appointmentId, operation.data?.reason);
+            await this.createAppointmentCancel(appointmentId, operation.data?.reason);
             break;
           case 'complete':
-            await this.completeAppointment(appointmentId, operation.data?.reason);
+            await this.createAppointmentComplete(appointmentId, operation.data?.reason);
             break;
           case 'reschedule':
             if (operation.data?.newDate && operation.data?.newTime) {

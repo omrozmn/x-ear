@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { Bug, ChevronDown, Check, Loader2, Shield, LogOut } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  useDebugAvailableRoles,
-  useDebugSwitchRole,
-  useDebugExitImpersonation,
+  useListAdminDebugAvailableRoles,
+  useCreateAdminDebugSwitchRole,
+  useCreateAdminDebugExitImpersonation,
 } from '@/api/generated';
 import { useAuthStore } from '../../stores/authStore';
 import { AUTH_TOKEN, REFRESH_TOKEN } from '../../constants/storage-keys';
@@ -27,7 +27,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
                        user?.isImpersonating === true;
 
   // Fetch available roles only if debug admin AND dropdown is open
-  const { data: rolesResponse, isLoading: rolesLoading } = useDebugAvailableRoles({
+  const { data: rolesResponse, isLoading: rolesLoading } = useListAdminDebugAvailableRoles({
     query: {
       enabled: isDebugAdmin && isOpen,
       staleTime: 5 * 60 * 1000, // 5 dakika
@@ -41,7 +41,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
   // console.log('[DebugRoleSwitcher] Render. isDebugAdmin:', isDebugAdmin, 'Current Role:', user?.role, 'IsImpersonating:', user?.isImpersonating);
 
   // Role switch mutation
-  const { mutate: switchRole, isPending: isSwitching } = useDebugSwitchRole({
+  const { mutate: switchRole, isPending: isSwitching } = useCreateAdminDebugSwitchRole({
     mutation: {
       onMutate: () => {
         console.log('[DebugRoleSwitcher] Mutation starting...');
@@ -80,14 +80,14 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
             };
 
             // Pass both access and refresh tokens to setAuth
-            setAuth(updatedUser, data.accessToken, data.refreshToken || null);
+            setAuth(updatedUser, data.accessToken, data.createAuthRefresh || null);
 
             // Clear React Query cache
             queryClient.clear();
 
             console.log('[DebugRoleSwitcher] Updated Zustand store with setAuth()');
             console.log('[DebugRoleSwitcher] New role:', data.effectiveRole);
-            console.log('[DebugRoleSwitcher] Has refresh token:', !!data.refreshToken);
+            console.log('[DebugRoleSwitcher] Has refresh token:', !!data.createAuthRefresh);
           }
 
           console.log('[DebugRoleSwitcher] Waiting for Zustand persist...');
@@ -109,7 +109,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
   });
 
   // Exit impersonation mutation
-  const { mutate: exitImpersonation, isPending: isExiting } = useDebugExitImpersonation({
+  const { mutate: exitImpersonation, isPending: isExiting } = useCreateAdminDebugExitImpersonation({
     mutation: {
       onSuccess: async (response) => {
         console.log('[DebugRoleSwitcher] Exit impersonation success:', response);
@@ -138,7 +138,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
             realUserEmail: undefined,
           };
 
-          setAuth(updatedUser, data.accessToken, data.refreshToken || null);
+          setAuth(updatedUser, data.accessToken, data.createAuthRefresh || null);
 
           // Clear React Query cache
           queryClient.clear();

@@ -1,6 +1,6 @@
 import { Input, Button } from '@x-ear/ui-web';
 import { useState, useEffect } from 'react';
-import { getAllInventory } from '@/api/generated';
+import { listInventory } from '@/api/generated';
 import { AUTH_TOKEN } from '@/constants/storage-keys';
 
 // Local InventoryItem type for API responses
@@ -74,7 +74,7 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
         authTokenPresent: hasToken,
       });
       // OpenAPI/Orval üzerinden backend envanter araması
-      const res = await getAllInventory({
+      const res = await listInventory({
         page: 1,
         per_page: 20,
         search: searchQuery,

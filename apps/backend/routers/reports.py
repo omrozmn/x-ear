@@ -71,7 +71,7 @@ def tenant_filter(query, model, access: UnifiedAccess):
 
 # --- Routes ---
 
-@router.get("/reports/overview")
+@router.get("/reports/overview", operation_id="listReportOverview")
 def report_overview(
     days: int = Query(30, ge=1, le=365),
     branch_id: Optional[str] = Query(None, alias="branch_id"),
@@ -138,7 +138,7 @@ def report_overview(
         logger.error(f"Overview report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/patients")
+@router.get("/reports/patients", operation_id="listReportPatients")
 def report_patients(
     days: int = Query(30, ge=1, le=365),
     access: UnifiedAccess = Depends(require_access()),
@@ -203,7 +203,7 @@ def report_patients(
         logger.error(f"Patients report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/financial")
+@router.get("/reports/financial", operation_id="listReportFinancial")
 def report_financial(
     days: int = Query(30, ge=1, le=365),
     branch_id: Optional[str] = Query(None, alias="branch_id"),
@@ -294,7 +294,7 @@ def report_financial(
         logger.error(f"Financial report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/campaigns")
+@router.get("/reports/campaigns", operation_id="listReportCampaigns")
 def report_campaigns(
     days: int = Query(30, ge=1, le=365),
     access: UnifiedAccess = Depends(require_access()),
@@ -361,7 +361,7 @@ def report_campaigns(
         logger.error(f"Campaigns report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/revenue")
+@router.get("/reports/revenue", operation_id="listReportRevenue")
 def report_revenue(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -371,7 +371,7 @@ def report_revenue(
         data={"monthly": [12000, 15000, 15500]}
     )
 
-@router.get("/reports/appointments")
+@router.get("/reports/appointments", operation_id="listReportAppointments")
 def report_appointments(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
@@ -384,7 +384,7 @@ def report_appointments(
         meta={"total": 0, "page": page, "per_page": per_page, "total_pages": 0}
     )
 
-@router.get("/reports/promissory-notes")
+@router.get("/reports/promissory-notes", operation_id="listReportPromissoryNotes")
 def report_promissory_notes(
     days: int = Query(365, ge=1),
     access: UnifiedAccess = Depends(require_access()),
@@ -498,7 +498,7 @@ def report_promissory_notes(
         logger.error(f"Promissory notes report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/promissory-notes/by-patient")
+@router.get("/reports/promissory-notes/by-patient", operation_id="listReportPromissoryNoteByPatient")
 def report_promissory_notes_by_patient(
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
@@ -586,7 +586,7 @@ def report_promissory_notes_by_patient(
         logger.error(f"Promissory notes by patient report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/promissory-notes/list")
+@router.get("/reports/promissory-notes/list", operation_id="listReportPromissoryNoteList")
 def report_promissory_notes_list(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
@@ -659,7 +659,7 @@ def report_promissory_notes_list(
         logger.error(f"Promissory notes list report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/remaining-payments")
+@router.get("/reports/remaining-payments", operation_id="listReportRemainingPayments")
 def report_remaining_payments(
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
@@ -753,7 +753,7 @@ def report_remaining_payments(
         logger.error(f"Remaining payments report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/cashflow-summary")
+@router.get("/reports/cashflow-summary", operation_id="listReportCashflowSummary")
 def report_cashflow_summary(
     days: int = Query(30, ge=1, le=365),
     access: UnifiedAccess = Depends(require_access()),
@@ -823,7 +823,7 @@ def report_cashflow_summary(
         logger.error(f"Cashflow summary report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/reports/pos-movements")
+@router.get("/reports/pos-movements", operation_id="listReportPosMovements")
 def report_pos_movements(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),

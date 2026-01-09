@@ -6,8 +6,8 @@ import { Upload, Eye, Download, Trash2, FileText, X, AlertCircle, CheckCircle, C
 
 // API imports
 import {
-  getPatientDocuments,
-  addPatientDocument,
+  listPatientDocuments,
+  createPatientDocuments,
   deletePatientDocument,
   deleteSgkDocument
 } from '@/api/generated';
@@ -57,7 +57,7 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
       setIsLoading(true);
       // Load documents from API using ORVAL-generated client
       // const { documentsGetPatientDocuments } = await import('@/api/generated');
-      const response = await getPatientDocuments(patientId) as any;
+      const response = await listPatientDocuments(patientId) as any;
 
       // Transform API response to component format
       const apiDocuments: Document[] = (response?.data || response || []).map((doc: any) => ({
@@ -170,7 +170,7 @@ export const PatientDocumentsTab: React.FC<PatientDocumentsTabProps> = ({ patien
         };
 
         // Upload using ORVAL-generated client
-        await addPatientDocument(patientId, documentData);
+        await createPatientDocuments(patientId, documentData);
 
         // Complete progress
         clearInterval(progressInterval);

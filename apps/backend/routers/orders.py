@@ -25,7 +25,7 @@ class CreateOrderRequest(BaseModel):
     items: list[CreateOrderItem]
 
 
-@router.post("/init-db")
+@router.post("/init-db", operation_id="createOrderInitDb")
 def init_db(access: UnifiedAccess = Depends(require_access("system.manage", admin_only=True)), db: Session = Depends(get_db)):
     try:
         Order.__table__.create(db.get_bind(), checkfirst=True)
@@ -36,7 +36,7 @@ def init_db(access: UnifiedAccess = Depends(require_access("system.manage", admi
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, operation_id="createOrder")
 def create_order(req: CreateOrderRequest, access: UnifiedAccess = Depends(require_access()), db: Session = Depends(get_db)):
     try:
         tenant_id = access.tenant_id or None
@@ -63,7 +63,7 @@ def create_order(req: CreateOrderRequest, access: UnifiedAccess = Depends(requir
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{order_id}")
+@router.get("/{order_id}", operation_id="getOrder")
 def get_order(order_id: str, access: UnifiedAccess = Depends(require_access()), db: Session = Depends(get_db)):
     order = db.get(Order, order_id)
     if not order:

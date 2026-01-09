@@ -144,7 +144,7 @@ def create_tenant(
         logger.error(f"Create tenant error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{tenant_id}")
+@router.get("/{tenant_id}", operation_id="getAdminTenant")
 def get_tenant(
     tenant_id: str,
     db_session: Session = Depends(get_db),
@@ -156,7 +156,7 @@ def get_tenant(
         raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
     return ResponseEnvelope(data={"tenant": tenant.to_dict()})
 
-@router.put("/{tenant_id}", response_model=ResponseEnvelope[TenantRead])
+@router.put("/{tenant_id}", operation_id="updateAdminTenant", response_model=ResponseEnvelope[TenantRead])
 def update_tenant(
     tenant_id: str,
     request_data: TenantUpdate,
@@ -184,7 +184,7 @@ def update_tenant(
         logger.error(f"Update tenant error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{tenant_id}")
+@router.delete("/{tenant_id}", operation_id="deleteAdminTenant")
 def delete_tenant(
     tenant_id: str,
     db_session: Session = Depends(get_db),
@@ -206,7 +206,7 @@ def delete_tenant(
         logger.error(f"Delete tenant error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{tenant_id}/users")
+@router.get("/{tenant_id}/users", operation_id="listAdminTenantUsers")
 def get_tenant_users(
     tenant_id: str,
     db_session: Session = Depends(get_db),
@@ -229,7 +229,7 @@ def get_tenant_users(
         } for u in users]
     })
 
-@router.post("/{tenant_id}/users")
+@router.post("/{tenant_id}/users", operation_id="createAdminTenantUsers")
 def create_tenant_user(
     tenant_id: str,
     request_data: CreateTenantUserRequest,
@@ -270,7 +270,7 @@ def create_tenant_user(
         logger.error(f"Create tenant user error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.put("/{tenant_id}/users/{user_id}")
+@router.put("/{tenant_id}/users/{user_id}", operation_id="updateAdminTenantUser")
 def update_tenant_user(
     tenant_id: str,
     user_id: str,
@@ -324,7 +324,7 @@ def update_tenant_user(
         logger.error(f"Update tenant user error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.post("/{tenant_id}/subscribe")
+@router.post("/{tenant_id}/subscribe", operation_id="createAdminTenantSubscribe")
 def subscribe_tenant(
     tenant_id: str,
     request_data: SubscribeTenantRequest,
@@ -378,7 +378,7 @@ def subscribe_tenant(
         logger.error(f"Subscribe tenant error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/{tenant_id}/addons")
+@router.post("/{tenant_id}/addons", operation_id="createAdminTenantAddons")
 def add_tenant_addon(
     tenant_id: str,
     request_data: AddAddonRequest,
@@ -429,7 +429,7 @@ def add_tenant_addon(
         logger.error(f"Add tenant addon error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/{tenant_id}/addons")
+@router.delete("/{tenant_id}/addons", operation_id="deleteAdminTenantAddons")
 def remove_tenant_addon(
     tenant_id: str,
     addon_id: str,
@@ -476,7 +476,7 @@ def remove_tenant_addon(
         logger.error(f"Remove tenant addon error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/{tenant_id}/status")
+@router.put("/{tenant_id}/status", operation_id="updateAdminTenantStatus")
 def update_tenant_status(
     tenant_id: str,
     request_data: UpdateStatusRequest,
@@ -503,7 +503,7 @@ def update_tenant_status(
 
 # --- SMS Config Endpoints (Migrated from Flask) ---
 
-@router.get("/{tenant_id}/sms-config")
+@router.get("/{tenant_id}/sms-config", operation_id="listAdminTenantSmsConfig")
 def get_tenant_sms_config(
     tenant_id: str,
     db_session: Session = Depends(get_db),
@@ -534,7 +534,7 @@ def get_tenant_sms_config(
         logger.error(f"Get tenant SMS config error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{tenant_id}/sms-documents")
+@router.get("/{tenant_id}/sms-documents", operation_id="listAdminTenantSmsDocuments")
 def get_tenant_sms_documents(
     tenant_id: str,
     db_session: Session = Depends(get_db),
@@ -559,7 +559,7 @@ def get_tenant_sms_documents(
 
 from fastapi.responses import Response
 
-@router.get("/{tenant_id}/sms-documents/{document_type}/download")
+@router.get("/{tenant_id}/sms-documents/{document_type}/download", operation_id="listAdminTenantSmsDocumentDownload")
 def download_tenant_sms_document(
     tenant_id: str,
     document_type: str,
@@ -584,7 +584,7 @@ class DocumentStatusUpdate(BaseModel):
     status: str
     notes: Optional[str] = None
 
-@router.put("/{tenant_id}/sms-documents/{document_type}/status")
+@router.put("/{tenant_id}/sms-documents/{document_type}/status", operation_id="updateAdminTenantSmsDocumentStatus")
 def update_tenant_sms_document_status(
     tenant_id: str,
     document_type: str,
@@ -627,7 +627,7 @@ class SendEmailRequest(BaseModel):
     body: str
     to_email: Optional[str] = None
 
-@router.post("/{tenant_id}/sms-documents/send-email")
+@router.post("/{tenant_id}/sms-documents/send-email", operation_id="createAdminTenantSmsDocumentSendEmail")
 def send_tenant_sms_documents_email(
     tenant_id: str,
     request_data: SendEmailRequest,

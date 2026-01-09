@@ -91,7 +91,7 @@ def serialize_plan(plan) -> Optional[dict]:
 
 # --- Routes ---
 
-@router.post("/subscribe")
+@router.post("/subscribe", operation_id="createSubscriptionSubscribe")
 def subscribe(
     request_data: SubscribeRequest,
     access: UnifiedAccess = Depends(require_access()),
@@ -192,7 +192,7 @@ def subscribe(
         'plan': plan.to_dict() if hasattr(plan, 'to_dict') else serialize_plan(plan)
     })
 
-@router.post("/complete-signup")
+@router.post("/complete-signup", operation_id="createSubscriptionCompleteSignup")
 def complete_signup(
     request_data: CompleteSignupRequest,
     access: UnifiedAccess = Depends(require_access()),
@@ -285,7 +285,7 @@ def complete_signup(
         'token': request_data.token
     })
 
-@router.get("/current")
+@router.get("/current", operation_id="listSubscriptionCurrent")
 def get_current(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -331,7 +331,7 @@ def get_current(
         'daysRemaining': days_remaining
     })
 
-@router.post("/register-and-subscribe")
+@router.post("/register-and-subscribe", operation_id="createSubscriptionRegisterAndSubscribe")
 def register_and_subscribe(
     request_data: RegisterAndSubscribeRequest,
     db: Session = Depends(get_db)

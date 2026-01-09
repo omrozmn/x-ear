@@ -4,17 +4,17 @@ import { FileText, Plus, Calendar, DollarSign, Settings, Trash2, Edit, X, XCircl
 import { Patient } from '../../types/patient';
 import { useToastHelpers } from '@x-ear/ui-web';
 import {
-  getAllInventory,
-  createDevice,
+  listInventory,
+  createDevices,
   deleteDevice,
-  createSale,
-  useCreatePatientReplacement
+  createSales,
+  useCreatePatientReplacements
 } from '@/api/generated';
 import { apiClient } from '@/api/orval-mutator';
 import type {
   DeviceRead,
   DeviceCreate,
-  GetAllInventoryParams,
+  ListInventoryParams,
   SaleCreate
 } from '@/api/generated/schemas';
 
@@ -40,8 +40,8 @@ interface SaleRead {
 type Device = DeviceRead;
 type InventoryItem = InventoryItemRead;
 type Sale = SaleRead;
-import DeviceEditModal from './modals/DeviceEditModal';
-import { PatientDeviceCard } from './patient/PatientDeviceCard';
+import { DeviceAssignmentForm } from '../forms/device-assignment-form/DeviceAssignmentForm';
+import { PatientDeviceCard } from '../patient/PatientDeviceCard';
 import DeviceReplacementHistory from '../DeviceReplacementHistory';
 import { usePatientDevices } from '../../hooks/patient/usePatientDevices';
 
@@ -55,7 +55,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
 
   // Orval mutation hooks
   // const updateDeviceAssignmentMutation = useUpdateDeviceAssignmentApiSalesAssignmentsAssignmentIdPut(); // Hook missing
-  const createReplacementMutation = useCreatePatientReplacement();
+  const createReplacementMutation = useCreatePatientReplacements();
 
   const [showDeviceForm, setShowDeviceForm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -77,13 +77,13 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
 
   const loadInventoryItems = useCallback(async () => {
     try {
-      const params: GetAllInventoryParams = {
+      const params: ListInventoryParams = {
         page: 1,
         per_page: 20,
         // status: 'IN_STOCK' // Removed, not in new API params. Default shows available inventory.
       };
 
-      const response = await getAllInventory(params);
+      const response = await listInventory(params);
       setInventoryItems((response?.data || []) as InventoryItemRead[]);
     } catch (err) {
       console.error('Error loading inventory:', err);
@@ -113,25 +113,38 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
       setLoading(true);
 
       if (deviceData.mode === 'inventory') {
-        const invItem = inventoryItems.find(i => i.id === deviceData.inventoryId);
-        if (!invItem) throw new Error('Seçilen envanter öğesi bulunamadı');
+        // Try to get details directly from passed data first (populated by DeviceAssignmentForm)
+        // Fallback to local inventoryItems lookup only if needed
+        const passedBrand = (deviceData as any).brand;
+        const passedModel = (deviceData as any).model;
+        const passedType = (deviceData as any).deviceType || (deviceData as any).type;
+
+        let invItem: InventoryItemRead | undefined;
+
+        if (!passedBrand || !passedModel) {
+          invItem = inventoryItems.find(i => i.id === deviceData.inventoryId);
+          if (!invItem) throw new Error('Seçilen envanter öğesi bulunamadı');
+        }
 
         const createData: DeviceCreate = {
           patientId: patient.id!,
           inventoryId: String(deviceData.inventoryId),
-          brand: invItem.brand || 'Unknown',
-          model: invItem.model || 'Unknown',
-          type: invItem.type || invItem.deviceType || 'Unknown',
+          brand: passedBrand || invItem?.brand || 'Unknown',
+          model: passedModel || invItem?.model || 'Unknown',
+          type: passedType || invItem?.type || invItem?.deviceType || 'Unknown',
           ear: String(deviceData.ear),
           status: 'assigned',
-          notes: `Assigned from Inventory: ${invItem.name}`,
-          serialNumber: invItem.serialNumber || undefined
+          notes: `Assigned from Inventory: ${passedBrand || invItem?.brand || ''} ${passedModel || invItem?.model || ''}`,
+          serialNumber: (deviceData as any).serialNumber || invItem?.serialNumber || undefined
         } as any;
 
         if (deviceData.isLoaner) (createData as any).isLoaner = true;
         if (deviceData.deliveryStatus) (createData as any).deliveryStatus = deviceData.deliveryStatus;
 
-        await createDevice(createData);
+        if (deviceData.deliveryStatus) (createData as any).deliveryStatus = deviceData.deliveryStatus;
+
+        console.log('🚀 [handleAssignDevice:Inventory] Payload:', JSON.stringify(createData, null, 2));
+        await createDevices(createData);
         showSuccess('Başarılı', 'Cihaz başarıyla atandı');
 
       } else {
@@ -148,7 +161,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
         if (deviceData.isLoaner) (createData as any).isLoaner = true;
         if (deviceData.deliveryStatus) (createData as any).deliveryStatus = deviceData.deliveryStatus;
 
-        await createDevice(createData);
+        await createDevices(createData);
       }
 
       if (deviceData.reason === 'Sale') {
@@ -161,16 +174,21 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
         } as any;
 
         (saleData as any).price = Number(deviceData.salePrice);
-        await createSale(saleData);
+        await createSales(saleData);
       }
 
       await refetchDevices();
       await loadPatientSales();
       setShowDeviceForm(false);
       setError(null);
-    } catch (err) {
-      console.error('Error assigning device:', err);
-      setError('Cihaz atanırken hata oluştu');
+
+    } catch (err: any) {
+      console.error('❌ [handleAssignDevice] Error assigning device:', err);
+      if (err.response) {
+        console.error('❌ [handleAssignDevice] Response Status:', err.response.status);
+        console.error('❌ [handleAssignDevice] Response Data:', JSON.stringify(err.response.data, null, 2));
+      }
+      setError('Cihaz atanırken hata oluştu: ' + (err.response?.data?.detail || err.message));
     } finally {
       setLoading(false);
     }
@@ -435,33 +453,123 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
         </div>
       )}
 
-      {/* Devices List */}
-      <div className="space-y-4">
-        {devices.length > 0 ? (
-          devices.map((device) => (
-            <PatientDeviceCard
-              key={device.id}
-              device={device as any}
-              inventoryItems={inventoryItems}
-              onUpdate={handleUpdateDevice}
-              onEditClick={() => handleEditDevice(device as DeviceRead)}
-              onDeleteClick={() => device.id && handleRemoveDevice(device.id)}
-              onLoanerReturn={async (id) => {
-                await handleUpdateDevice(id, {
-                  isLoaner: false,
-                  loanerInventoryId: null, // explicit null
-                  loanerSerialNumber: null
-                } as any);
-              }}
-            />
-          ))
-        ) : (
-          <div className="text-center py-8 text-gray-500">
-            <Settings className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p>Henüz atanmış cihaz bulunmamaktadır.</p>
+      {/* Devices List - Grid Layout: Audiological view (patient facing) - Right ear on LEFT, Left ear on RIGHT */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Right Ear Column - LEFT SIDE (Audiological View) */}
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-red-500"></span>
+            Sağ Kulak
+          </h4>
+          {devices.filter((d: any) => {
+            const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
+            return ear === 'right' || ear === 'r' || ear === 'sağ';
+          }).length > 0 ? (
+            devices.filter((d: any) => {
+              const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
+              return ear === 'right' || ear === 'r' || ear === 'sağ';
+            }).map((device) => (
+              <PatientDeviceCard
+                key={device.id}
+                device={device as any}
+                onEdit={() => handleEditDevice(device as DeviceRead)}
+                onCancel={() => device.id && handleRemoveDevice(device.id)}
+                onReturnLoaner={async (dev) => {
+                  const id = dev.id || (dev as any).assignmentId;
+                  if (id) {
+                    await handleUpdateDevice(id, {
+                      isLoaner: false,
+                      loanerInventoryId: null,
+                      loanerSerialNumber: null
+                    } as any);
+                  }
+                }}
+              />
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-400 border-2 border-dashed border-red-200 dark:border-red-800 rounded-lg bg-red-50/50 dark:bg-red-900/10">
+              <p className="text-sm">Sağ kulak için cihaz atanmamış</p>
+            </div>
+          )}
+        </div>
+
+        {/* Left Ear Column - RIGHT SIDE (Audiological View) */}
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium text-blue-600 dark:text-blue-400 flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+            Sol Kulak
+          </h4>
+          {devices.filter((d: any) => {
+            const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
+            return ear === 'left' || ear === 'l' || ear === 'sol';
+          }).length > 0 ? (
+            devices.filter((d: any) => {
+              const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
+              return ear === 'left' || ear === 'l' || ear === 'sol';
+            }).map((device) => (
+              <PatientDeviceCard
+                key={device.id}
+                device={device as any}
+                onEdit={() => handleEditDevice(device as DeviceRead)}
+                onCancel={() => device.id && handleRemoveDevice(device.id)}
+                onReturnLoaner={async (dev) => {
+                  const id = dev.id || (dev as any).assignmentId;
+                  if (id) {
+                    await handleUpdateDevice(id, {
+                      isLoaner: false,
+                      loanerInventoryId: null,
+                      loanerSerialNumber: null
+                    } as any);
+                  }
+                }}
+              />
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-400 border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50/50 dark:bg-blue-900/10">
+              <p className="text-sm">Sol kulak için cihaz atanmamış</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Bilateral/Unknown Devices - Full Width */}
+      {devices.filter((d: any) => {
+        const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
+        return !['left', 'l', 'sol', 'right', 'r', 'sağ'].includes(ear);
+      }).length > 0 && (
+          <div className="space-y-4 mt-4">
+            <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400">Diğer Cihazlar</h4>
+            {devices.filter((d: any) => {
+              const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
+              return !['left', 'l', 'sol', 'right', 'r', 'sağ'].includes(ear);
+            }).map((device) => (
+              <PatientDeviceCard
+                key={device.id}
+                device={device as any}
+                onEdit={() => handleEditDevice(device as DeviceRead)}
+                onCancel={() => device.id && handleRemoveDevice(device.id)}
+                onReturnLoaner={async (dev) => {
+                  const id = dev.id || (dev as any).assignmentId;
+                  if (id) {
+                    await handleUpdateDevice(id, {
+                      isLoaner: false,
+                      loanerInventoryId: null,
+                      loanerSerialNumber: null
+                    } as any);
+                  }
+                }}
+              />
+            ))}
           </div>
         )}
-      </div>
+
+      {/* Empty State */}
+      {devices.length === 0 && (
+        <div className="text-center py-8 text-gray-500">
+          <Settings className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <p>Henüz atanmış cihaz bulunmamaktadır.</p>
+        </div>
+      )}
 
       {/* Device Replacement History */}
       <DeviceReplacementHistory
@@ -469,278 +577,25 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
         className="mt-6"
       />
 
-      {/* Device Assignment Form Modal */}
-      {showDeviceForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-medium">Cihaz Atama</h3>
-              <Button
-                onClick={() => setShowDeviceForm(false)}
-                className="p-1 text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
-
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-
-              // Process right ear data
-              if (formData.get('rightEarEnabled')) {
-                const rightEarData = {
-                  mode: rightEarMode,
-                  ear: 'right',
-                  reason: rightEarReason,
-                  inventoryId: formData.get('rightInventoryId'),
-                  brand: formData.get('rightBrand'),
-                  model: formData.get('rightModel'),
-                  serialNumber: formData.get('rightSerialNumber'),
-                  deviceType: formData.get('rightDeviceType'),
-                  salePrice: formData.get('rightSalePrice'),
-                  paymentMethod: formData.get('rightPaymentMethod'),
-                  deliveryStatus: formData.get('rightDelivered') ? 'delivered' : 'pending',
-                  isLoaner: !!formData.get('rightIsLoaner')
-                };
-                handleAssignDevice(rightEarData);
-              }
-
-              // Process left ear data
-              if (formData.get('leftEarEnabled')) {
-                const leftEarData = {
-                  mode: leftEarMode,
-                  ear: 'left',
-                  reason: leftEarReason,
-                  inventoryId: formData.get('leftInventoryId'),
-                  brand: formData.get('leftBrand'),
-                  model: formData.get('leftModel'),
-                  serialNumber: formData.get('leftSerialNumber'),
-                  deviceType: formData.get('leftDeviceType'),
-                  salePrice: formData.get('leftSalePrice'),
-                  paymentMethod: formData.get('leftPaymentMethod'),
-                  deliveryStatus: formData.get('leftDelivered') ? 'delivered' : 'pending',
-                  isLoaner: !!formData.get('leftIsLoaner')
-                };
-                handleAssignDevice(leftEarData);
-              }
-            }}>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Right Ear */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Input type="checkbox" name="rightEarEnabled" id="rightEarEnabled" defaultChecked />
-                    <label htmlFor="rightEarEnabled" className="font-medium text-gray-900">Sağ Kulak</label>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Mod</label>
-                    <Select
-                      value={rightEarMode}
-                      onChange={(e) => setRightEarMode(e.target.value as 'inventory' | 'manual')}
-                      options={[
-                        { value: 'inventory', label: 'Envanterden Seç' },
-                        { value: 'manual', label: 'Manuel Giriş' }
-                      ]}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {rightEarMode === 'inventory' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Cihaz Seç</label>
-                      <Select
-                        name="rightInventoryId"
-                        options={[
-                          { value: '', label: 'Cihaz seçiniz...' },
-                          ...inventoryItems.filter(item => item.id).map((item) => ({
-                            value: item.id!,
-                            label: `${item.name} - ${item.brand} ${item.model} (Stok: ${item.availableInventory || 0})`
-                          }))
-                        ]}
-                        className="w-full"
-                      />
-                    </div>
-                  )}
-
-                  {rightEarMode === 'manual' && (
-                    <div className="space-y-3">
-                      <Input name="rightBrand" placeholder="Marka" required />
-                      <Input name="rightModel" placeholder="Model" required />
-                      <Input name="rightSerialNumber" placeholder="Seri No" required />
-                      <Input name="rightDeviceType" placeholder="Tip" />
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Sebep</label>
-                    <Select
-                      value={rightEarReason}
-                      onChange={(e) => setRightEarReason(e.target.value as 'Trial' | 'Sale')}
-                      options={[
-                        { value: 'Trial', label: 'Deneme' },
-                        { value: 'Sale', label: 'Satış' }
-                      ]}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {rightEarReason === 'Sale' && (
-                    <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
-                      <h5 className="font-medium text-gray-900">Fiyatlandırma</h5>
-                      <Input name="rightListPrice" type="number" placeholder="Liste Fiyatı" />
-                      <Input name="rightSalePrice" type="number" placeholder="Satış Fiyatı" required />
-                      <Select
-                        name="rightPaymentMethod"
-                        options={[
-                          { value: '', label: 'Ödeme Yöntemi' },
-                          { value: 'cash', label: 'Nakit' },
-                          { value: 'credit', label: 'Kredi Kartı' },
-                          { value: 'installment', label: 'Taksit' }
-                        ]}
-                        className="w-full"
-                      />
-                    </div>
-                  )}
-
-                  <div className="space-y-2 pt-4 bg-gray-50/50 p-4 rounded-lg border border-gray-100">
-                    <div className="flex items-center space-x-2">
-                      <Input type="checkbox" name="rightDelivered" id="rightDelivered" />
-                      <label htmlFor="rightDelivered" className="text-sm font-medium text-gray-700">Teslim Edildi (Stoktan Düş)</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Input type="checkbox" name="rightIsLoaner" id="rightIsLoaner" />
-                      <label htmlFor="rightIsLoaner" className="text-sm font-medium text-gray-700">Emanet Cihaz</label>
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Left Ear */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Input type="checkbox" name="leftEarEnabled" id="leftEarEnabled" />
-                    <label htmlFor="leftEarEnabled" className="font-medium text-gray-900">Sol Kulak</label>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Mod</label>
-                    <Select
-                      value={leftEarMode}
-                      onChange={(e) => setLeftEarMode(e.target.value as 'inventory' | 'manual')}
-                      options={[
-                        { value: 'inventory', label: 'Envanterden Seç' },
-                        { value: 'manual', label: 'Manuel Giriş' }
-                      ]}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {leftEarMode === 'inventory' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Cihaz Seç</label>
-                      <Select
-                        name="leftInventoryId"
-                        options={[
-                          { value: '', label: 'Cihaz seçiniz...' },
-                          ...inventoryItems.filter(item => item.id).map((item) => ({
-                            value: item.id!,
-                            label: `${item.name} - ${item.brand} ${item.model} (Stok: ${item.availableInventory || 0})`
-                          }))
-                        ]}
-                        className="w-full"
-                      />
-                    </div>
-                  )}
-
-                  {leftEarMode === 'manual' && (
-                    <div className="space-y-3">
-                      <Input name="leftBrand" placeholder="Marka" required />
-                      <Input name="leftModel" placeholder="Model" required />
-                      <Input name="leftSerialNumber" placeholder="Seri No" required />
-                      <Input name="leftDeviceType" placeholder="Tip" />
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Sebep</label>
-                    <Select
-                      value={leftEarReason}
-                      onChange={(e) => setLeftEarReason(e.target.value as 'Trial' | 'Sale')}
-                      options={[
-                        { value: 'Trial', label: 'Deneme' },
-                        { value: 'Sale', label: 'Satış' }
-                      ]}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {leftEarReason === 'Sale' && (
-                    <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
-                      <h5 className="font-medium text-gray-900">Fiyatlandırma</h5>
-                      <Input name="leftListPrice" type="number" placeholder="Liste Fiyatı" />
-                      <Input name="leftSalePrice" type="number" placeholder="Satış Fiyatı" required />
-                      <Select
-                        name="leftPaymentMethod"
-                        options={[
-                          { value: '', label: 'Ödeme Yöntemi' },
-                          { value: 'cash', label: 'Nakit' },
-                          { value: 'credit', label: 'Kredi Kartı' },
-                          { value: 'installment', label: 'Taksit' }
-                        ]}
-                        className="w-full"
-                      />
-                    </div>
-                  )}
-
-                  <div className="space-y-2 pt-4 bg-gray-50/50 p-4 rounded-lg border border-gray-100">
-                    <div className="flex items-center space-x-2">
-                      <Input type="checkbox" name="leftDelivered" id="leftDelivered" />
-                      <label htmlFor="leftDelivered" className="text-sm font-medium text-gray-700">Teslim Edildi (Stoktan Düş)</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Input type="checkbox" name="leftIsLoaner" id="leftIsLoaner" />
-                      <label htmlFor="leftIsLoaner" className="text-sm font-medium text-gray-700">Emanet Cihaz</label>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-3 mt-6">
-                <Button
-                  type="button"
-                  onClick={() => setShowDeviceForm(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
-                >
-                  İptal
-                </Button>
-                <Button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-                  disabled={loading || devicesLoading}
-                >
-                  {(loading || devicesLoading) ? 'Atanıyor...' : 'Cihaz Ata'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Device Edit Modal */}
-      <DeviceEditModal
-        isOpen={showEditModal}
+      {/* Device Assignment Form Modal - Used for both new assignment and editing */}
+      <DeviceAssignmentForm
+        isOpen={showDeviceForm || showEditModal}
         onClose={() => {
+          setShowDeviceForm(false);
           setShowEditModal(false);
           setEditingDevice(null);
         }}
-        device={editingDevice}
-        inventoryItems={inventoryItems}
-        onUpdate={handleUpdateDevice}
-        onReplace={handleReplaceDevice}
-        loading={loading || devicesLoading}
+        patientId={patient.id || ''}
+        assignment={editingDevice as any}
+        onSave={async (data) => {
+          await handleAssignDevice(data as any);
+        }}
+        onUpdate={async (data) => {
+          if (editingDevice?.id) {
+            await handleUpdateDevice(editingDevice.id, data as any);
+          }
+        }}
       />
     </div>
   );
-};
+};;

@@ -21,8 +21,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetActivityLogsParams,
   HTTPValidationError,
+  ListActivityLogsParams,
   ResponseEnvelopeActivityLogStats,
   ResponseEnvelopeListActivityLogRead
 } from '.././schemas';
@@ -36,8 +36,8 @@ import { customInstance } from '../../orval-mutator';
  * Get activity logs with unified access
  * @summary Get Activity Logs
  */
-export const getActivityLogs = (
-    params?: GetActivityLogsParams,
+export const listActivityLogs = (
+    params?: ListActivityLogsParams,
  signal?: AbortSignal
 ) => {
       
@@ -52,69 +52,69 @@ export const getActivityLogs = (
 
 
 
-export const getGetActivityLogsQueryKey = (params?: GetActivityLogsParams,) => {
+export const getListActivityLogsQueryKey = (params?: ListActivityLogsParams,) => {
     return [
     `/api/activity-logs`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetActivityLogsQueryOptions = <TData = Awaited<ReturnType<typeof getActivityLogs>>, TError = HTTPValidationError>(params?: GetActivityLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityLogs>>, TError, TData>>, }
+export const getListActivityLogsQueryOptions = <TData = Awaited<ReturnType<typeof listActivityLogs>>, TError = HTTPValidationError>(params?: ListActivityLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogs>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetActivityLogsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListActivityLogsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getActivityLogs>>> = ({ signal }) => getActivityLogs(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listActivityLogs>>> = ({ signal }) => listActivityLogs(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getActivityLogs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listActivityLogs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetActivityLogsQueryResult = NonNullable<Awaited<ReturnType<typeof getActivityLogs>>>
-export type GetActivityLogsQueryError = HTTPValidationError
+export type ListActivityLogsQueryResult = NonNullable<Awaited<ReturnType<typeof listActivityLogs>>>
+export type ListActivityLogsQueryError = HTTPValidationError
 
 
-export function useGetActivityLogs<TData = Awaited<ReturnType<typeof getActivityLogs>>, TError = HTTPValidationError>(
- params: undefined |  GetActivityLogsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityLogs>>, TError, TData>> & Pick<
+export function useListActivityLogs<TData = Awaited<ReturnType<typeof listActivityLogs>>, TError = HTTPValidationError>(
+ params: undefined |  ListActivityLogsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogs>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getActivityLogs>>,
+          Awaited<ReturnType<typeof listActivityLogs>>,
           TError,
-          Awaited<ReturnType<typeof getActivityLogs>>
+          Awaited<ReturnType<typeof listActivityLogs>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetActivityLogs<TData = Awaited<ReturnType<typeof getActivityLogs>>, TError = HTTPValidationError>(
- params?: GetActivityLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityLogs>>, TError, TData>> & Pick<
+export function useListActivityLogs<TData = Awaited<ReturnType<typeof listActivityLogs>>, TError = HTTPValidationError>(
+ params?: ListActivityLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogs>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getActivityLogs>>,
+          Awaited<ReturnType<typeof listActivityLogs>>,
           TError,
-          Awaited<ReturnType<typeof getActivityLogs>>
+          Awaited<ReturnType<typeof listActivityLogs>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetActivityLogs<TData = Awaited<ReturnType<typeof getActivityLogs>>, TError = HTTPValidationError>(
- params?: GetActivityLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityLogs>>, TError, TData>>, }
+export function useListActivityLogs<TData = Awaited<ReturnType<typeof listActivityLogs>>, TError = HTTPValidationError>(
+ params?: ListActivityLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogs>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Activity Logs
  */
 
-export function useGetActivityLogs<TData = Awaited<ReturnType<typeof getActivityLogs>>, TError = HTTPValidationError>(
- params?: GetActivityLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityLogs>>, TError, TData>>, }
+export function useListActivityLogs<TData = Awaited<ReturnType<typeof listActivityLogs>>, TError = HTTPValidationError>(
+ params?: ListActivityLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogs>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetActivityLogsQueryOptions(params,options)
+  const queryOptions = getListActivityLogsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -130,7 +130,7 @@ export function useGetActivityLogs<TData = Awaited<ReturnType<typeof getActivity
  * Get activity statistics
  * @summary Get Activity Stats
  */
-export const getActivityStats = (
+export const listActivityLogStats = (
     
  signal?: AbortSignal
 ) => {
@@ -145,69 +145,69 @@ export const getActivityStats = (
 
 
 
-export const getGetActivityStatsQueryKey = () => {
+export const getListActivityLogStatsQueryKey = () => {
     return [
     `/api/activity-logs/stats`
     ] as const;
     }
 
     
-export const getGetActivityStatsQueryOptions = <TData = Awaited<ReturnType<typeof getActivityStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityStats>>, TError, TData>>, }
+export const getListActivityLogStatsQueryOptions = <TData = Awaited<ReturnType<typeof listActivityLogStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogStats>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetActivityStatsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListActivityLogStatsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getActivityStats>>> = ({ signal }) => getActivityStats(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listActivityLogStats>>> = ({ signal }) => listActivityLogStats(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getActivityStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listActivityLogStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetActivityStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getActivityStats>>>
-export type GetActivityStatsQueryError = unknown
+export type ListActivityLogStatsQueryResult = NonNullable<Awaited<ReturnType<typeof listActivityLogStats>>>
+export type ListActivityLogStatsQueryError = unknown
 
 
-export function useGetActivityStats<TData = Awaited<ReturnType<typeof getActivityStats>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityStats>>, TError, TData>> & Pick<
+export function useListActivityLogStats<TData = Awaited<ReturnType<typeof listActivityLogStats>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogStats>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getActivityStats>>,
+          Awaited<ReturnType<typeof listActivityLogStats>>,
           TError,
-          Awaited<ReturnType<typeof getActivityStats>>
+          Awaited<ReturnType<typeof listActivityLogStats>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetActivityStats<TData = Awaited<ReturnType<typeof getActivityStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityStats>>, TError, TData>> & Pick<
+export function useListActivityLogStats<TData = Awaited<ReturnType<typeof listActivityLogStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogStats>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getActivityStats>>,
+          Awaited<ReturnType<typeof listActivityLogStats>>,
           TError,
-          Awaited<ReturnType<typeof getActivityStats>>
+          Awaited<ReturnType<typeof listActivityLogStats>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetActivityStats<TData = Awaited<ReturnType<typeof getActivityStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityStats>>, TError, TData>>, }
+export function useListActivityLogStats<TData = Awaited<ReturnType<typeof listActivityLogStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogStats>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Activity Stats
  */
 
-export function useGetActivityStats<TData = Awaited<ReturnType<typeof getActivityStats>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityStats>>, TError, TData>>, }
+export function useListActivityLogStats<TData = Awaited<ReturnType<typeof listActivityLogStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogStats>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetActivityStatsQueryOptions(options)
+  const queryOptions = getListActivityLogStatsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -223,7 +223,7 @@ export function useGetActivityStats<TData = Awaited<ReturnType<typeof getActivit
  * Get available filter options for activity logs
  * @summary Get Activity Log Filter Options
  */
-export const getActivityLogFilterOptions = (
+export const listActivityLogFilterOptions = (
     
  signal?: AbortSignal
 ) => {
@@ -238,69 +238,69 @@ export const getActivityLogFilterOptions = (
 
 
 
-export const getGetActivityLogFilterOptionsQueryKey = () => {
+export const getListActivityLogFilterOptionsQueryKey = () => {
     return [
     `/api/activity-logs/filter-options`
     ] as const;
     }
 
     
-export const getGetActivityLogFilterOptionsQueryOptions = <TData = Awaited<ReturnType<typeof getActivityLogFilterOptions>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityLogFilterOptions>>, TError, TData>>, }
+export const getListActivityLogFilterOptionsQueryOptions = <TData = Awaited<ReturnType<typeof listActivityLogFilterOptions>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogFilterOptions>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetActivityLogFilterOptionsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListActivityLogFilterOptionsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getActivityLogFilterOptions>>> = ({ signal }) => getActivityLogFilterOptions(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listActivityLogFilterOptions>>> = ({ signal }) => listActivityLogFilterOptions(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getActivityLogFilterOptions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listActivityLogFilterOptions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetActivityLogFilterOptionsQueryResult = NonNullable<Awaited<ReturnType<typeof getActivityLogFilterOptions>>>
-export type GetActivityLogFilterOptionsQueryError = unknown
+export type ListActivityLogFilterOptionsQueryResult = NonNullable<Awaited<ReturnType<typeof listActivityLogFilterOptions>>>
+export type ListActivityLogFilterOptionsQueryError = unknown
 
 
-export function useGetActivityLogFilterOptions<TData = Awaited<ReturnType<typeof getActivityLogFilterOptions>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityLogFilterOptions>>, TError, TData>> & Pick<
+export function useListActivityLogFilterOptions<TData = Awaited<ReturnType<typeof listActivityLogFilterOptions>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogFilterOptions>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getActivityLogFilterOptions>>,
+          Awaited<ReturnType<typeof listActivityLogFilterOptions>>,
           TError,
-          Awaited<ReturnType<typeof getActivityLogFilterOptions>>
+          Awaited<ReturnType<typeof listActivityLogFilterOptions>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetActivityLogFilterOptions<TData = Awaited<ReturnType<typeof getActivityLogFilterOptions>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityLogFilterOptions>>, TError, TData>> & Pick<
+export function useListActivityLogFilterOptions<TData = Awaited<ReturnType<typeof listActivityLogFilterOptions>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogFilterOptions>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getActivityLogFilterOptions>>,
+          Awaited<ReturnType<typeof listActivityLogFilterOptions>>,
           TError,
-          Awaited<ReturnType<typeof getActivityLogFilterOptions>>
+          Awaited<ReturnType<typeof listActivityLogFilterOptions>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetActivityLogFilterOptions<TData = Awaited<ReturnType<typeof getActivityLogFilterOptions>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityLogFilterOptions>>, TError, TData>>, }
+export function useListActivityLogFilterOptions<TData = Awaited<ReturnType<typeof listActivityLogFilterOptions>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogFilterOptions>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Activity Log Filter Options
  */
 
-export function useGetActivityLogFilterOptions<TData = Awaited<ReturnType<typeof getActivityLogFilterOptions>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getActivityLogFilterOptions>>, TError, TData>>, }
+export function useListActivityLogFilterOptions<TData = Awaited<ReturnType<typeof listActivityLogFilterOptions>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listActivityLogFilterOptions>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetActivityLogFilterOptionsQueryOptions(options)
+  const queryOptions = getListActivityLogFilterOptionsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

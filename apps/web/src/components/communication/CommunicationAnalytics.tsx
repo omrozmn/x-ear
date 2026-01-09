@@ -15,7 +15,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { Card, Button, Badge, Select } from '@x-ear/ui-web';
-import { communicationStats } from '@/api/generated/communications/communications';
+import { listCommunicationStats } from '@/api/generated/communications/communications';
 
 interface CommunicationStats {
   totalMessages: number;
@@ -110,7 +110,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
     setLoading(true);
     try {
       // Real API call using Orval
-      const response = await communicationStats() as any;
+      const response = await listCommunicationStats() as any;
 
       // Response is direct data, no wrapper
       setStats((response?.stats || stats) as CommunicationStats);

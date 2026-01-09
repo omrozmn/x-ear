@@ -263,7 +263,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
           continue;
         }
 
-        await invoiceService.cancelInvoice(invoice.id);
+        await invoiceService.createEfaturaCancel(invoice.id);
         results.push({ invoiceId: invoice.id, invoiceNumber: invoice.invoiceNumber, success: true, message: 'Fatura başarıyla iptal edildi' });
       } catch (error) {
         results.push({ invoiceId: invoice.id, invoiceNumber: invoice.invoiceNumber, success: false, error: error instanceof Error ? error.message : 'İptal hatası' });

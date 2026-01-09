@@ -25,9 +25,9 @@ import {
   Trash2
 } from 'lucide-react';
 import {
-  useGetPatientPaymentRecords,
-  useCreatePaymentRecord,
-  useGetSalePromissoryNotes
+  useListPatientPaymentRecords,
+  useCreatePaymentRecords,
+  useListSalePromissoryNotes
 } from '../../api/generated/payments/payments';
 import { RoutersPaymentsPaymentRecordCreate } from '../../api/generated/schemas';
 import { unwrapArray, unwrapObject } from '../../utils/response-unwrap';
@@ -123,15 +123,15 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   });
 
   // Orval Hooks for real data
-  const { data: paymentRecordsResponse } = useGetPatientPaymentRecords(sale.patientId, undefined, {
+  const { data: paymentRecordsResponse } = useListPatientPaymentRecords(sale.patientId, undefined, {
     query: { enabled: isOpen && !!sale.patientId }
   });
 
-  const { data: promissoryNotesResponse } = useGetSalePromissoryNotes(sale.id || '', {
+  const { data: promissoryNotesResponse } = useListSalePromissoryNotes(sale.id || '', {
     query: { enabled: isOpen && !!sale.id }
   });
 
-  const createPaymentMutation = useCreatePaymentRecord();
+  const createPaymentMutation = useCreatePaymentRecords();
 
   // Unwrap data
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -161,7 +161,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   useEffect(() => {
     const summary = calculatePaymentSummary(paymentRecords, installments);
     setPaymentSummary(summary);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentRecords, installments]);
 
   const calculatePaymentSummary = (payments: PaymentRecord[], installmentList: Installment[]): PaymentSummary => {
@@ -213,7 +213,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
         paymentDate: newPayment.paymentDate,
         paymentMethod: newPayment.paymentMethod,
         notes: newPayment.notes
-      };
+      } as any;
 
       await createPaymentMutation.mutateAsync({ data: paymentData });
 

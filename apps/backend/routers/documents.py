@@ -59,7 +59,7 @@ class DocumentResponse(BaseModel):
 
 # --- Routes ---
 
-@router.get("/patients/{patient_id}/documents")
+@router.get("/patients/{patient_id}/documents", operation_id="listPatientDocuments")
 def get_patient_documents(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -99,7 +99,7 @@ def get_patient_documents(
         logger.error(f"Error getting patient documents: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/patients/{patient_id}/documents", status_code=201)
+@router.post("/patients/{patient_id}/documents", operation_id="createPatientDocuments", status_code=201)
 def add_patient_document(
     patient_id: str,
     request_data: DocumentCreate,
@@ -197,7 +197,7 @@ def add_patient_document(
         logger.error(f"Error adding patient document: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/patients/{patient_id}/documents/{document_id}")
+@router.get("/patients/{patient_id}/documents/{document_id}", operation_id="getPatientDocument")
 def get_patient_document(
     patient_id: str,
     document_id: str,
@@ -244,7 +244,7 @@ def get_patient_document(
         logger.error(f"Error getting patient document: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/patients/{patient_id}/documents/{document_id}")
+@router.delete("/patients/{patient_id}/documents/{document_id}", operation_id="deletePatientDocument")
 def delete_patient_document(
     patient_id: str,
     document_id: str,

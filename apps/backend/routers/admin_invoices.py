@@ -95,7 +95,7 @@ async def create_admin_invoice(
         logger.error(f"Create invoice error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{invoice_id}", response_model=InvoiceDetailResponse)
+@router.get("/{invoice_id}", operation_id="getAdminInvoice", response_model=InvoiceDetailResponse)
 async def get_admin_invoice(
     invoice_id: str,
     db: Session = Depends(get_db),
@@ -117,7 +117,7 @@ async def get_admin_invoice(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/{invoice_id}/payment", response_model=InvoiceDetailResponse)
+@router.post("/{invoice_id}/payment", operation_id="createAdminInvoicePayment", response_model=InvoiceDetailResponse)
 async def record_payment(
     invoice_id: str,
     db: Session = Depends(get_db),
@@ -138,7 +138,7 @@ async def record_payment(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{invoice_id}/pdf", response_model=ResponseEnvelope)
+@router.get("/{invoice_id}/pdf", operation_id="listAdminInvoicePdf", response_model=ResponseEnvelope)
 async def get_invoice_pdf(
     invoice_id: str,
     db: Session = Depends(get_db),

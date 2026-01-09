@@ -25,8 +25,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetAutomationLogsParams,
-  HTTPValidationError
+  HTTPValidationError,
+  ListAutomationLogsParams
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -38,7 +38,7 @@ import { customInstance } from '../../orval-mutator';
  * Get automation system status
  * @summary Get Automation Status
  */
-export const getAutomationStatus = (
+export const listAutomationStatus = (
     
  signal?: AbortSignal
 ) => {
@@ -53,69 +53,69 @@ export const getAutomationStatus = (
 
 
 
-export const getGetAutomationStatusQueryKey = () => {
+export const getListAutomationStatusQueryKey = () => {
     return [
     `/api/automation/status`
     ] as const;
     }
 
     
-export const getGetAutomationStatusQueryOptions = <TData = Awaited<ReturnType<typeof getAutomationStatus>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationStatus>>, TError, TData>>, }
+export const getListAutomationStatusQueryOptions = <TData = Awaited<ReturnType<typeof listAutomationStatus>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAutomationStatus>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAutomationStatusQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAutomationStatusQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAutomationStatus>>> = ({ signal }) => getAutomationStatus(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAutomationStatus>>> = ({ signal }) => listAutomationStatus(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAutomationStatus>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAutomationStatus>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAutomationStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getAutomationStatus>>>
-export type GetAutomationStatusQueryError = unknown
+export type ListAutomationStatusQueryResult = NonNullable<Awaited<ReturnType<typeof listAutomationStatus>>>
+export type ListAutomationStatusQueryError = unknown
 
 
-export function useGetAutomationStatus<TData = Awaited<ReturnType<typeof getAutomationStatus>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationStatus>>, TError, TData>> & Pick<
+export function useListAutomationStatus<TData = Awaited<ReturnType<typeof listAutomationStatus>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAutomationStatus>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAutomationStatus>>,
+          Awaited<ReturnType<typeof listAutomationStatus>>,
           TError,
-          Awaited<ReturnType<typeof getAutomationStatus>>
+          Awaited<ReturnType<typeof listAutomationStatus>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAutomationStatus<TData = Awaited<ReturnType<typeof getAutomationStatus>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationStatus>>, TError, TData>> & Pick<
+export function useListAutomationStatus<TData = Awaited<ReturnType<typeof listAutomationStatus>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAutomationStatus>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAutomationStatus>>,
+          Awaited<ReturnType<typeof listAutomationStatus>>,
           TError,
-          Awaited<ReturnType<typeof getAutomationStatus>>
+          Awaited<ReturnType<typeof listAutomationStatus>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAutomationStatus<TData = Awaited<ReturnType<typeof getAutomationStatus>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationStatus>>, TError, TData>>, }
+export function useListAutomationStatus<TData = Awaited<ReturnType<typeof listAutomationStatus>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAutomationStatus>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Automation Status
  */
 
-export function useGetAutomationStatus<TData = Awaited<ReturnType<typeof getAutomationStatus>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationStatus>>, TError, TData>>, }
+export function useListAutomationStatus<TData = Awaited<ReturnType<typeof listAutomationStatus>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAutomationStatus>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAutomationStatusQueryOptions(options)
+  const queryOptions = getListAutomationStatusQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -131,7 +131,7 @@ export function useGetAutomationStatus<TData = Awaited<ReturnType<typeof getAuto
  * Trigger SGK document processing
  * @summary Trigger Sgk Processing
  */
-export const triggerSgkProcessing = (
+export const createAutomationSgkProcess = (
     
  signal?: AbortSignal
 ) => {
@@ -145,11 +145,11 @@ export const triggerSgkProcessing = (
   
 
 
-export const getTriggerSgkProcessingMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof triggerSgkProcessing>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof triggerSgkProcessing>>, TError,void, TContext> => {
+export const getCreateAutomationSgkProcessMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAutomationSgkProcess>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAutomationSgkProcess>>, TError,void, TContext> => {
 
-const mutationKey = ['triggerSgkProcessing'];
+const mutationKey = ['createAutomationSgkProcess'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -159,10 +159,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof triggerSgkProcessing>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAutomationSgkProcess>>, void> = () => {
           
 
-          return  triggerSgkProcessing()
+          return  createAutomationSgkProcess()
         }
 
         
@@ -170,23 +170,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type TriggerSgkProcessingMutationResult = NonNullable<Awaited<ReturnType<typeof triggerSgkProcessing>>>
+    export type CreateAutomationSgkProcessMutationResult = NonNullable<Awaited<ReturnType<typeof createAutomationSgkProcess>>>
     
-    export type TriggerSgkProcessingMutationError = unknown
+    export type CreateAutomationSgkProcessMutationError = unknown
 
     /**
  * @summary Trigger Sgk Processing
  */
-export const useTriggerSgkProcessing = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof triggerSgkProcessing>>, TError,void, TContext>, }
+export const useCreateAutomationSgkProcess = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAutomationSgkProcess>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof triggerSgkProcessing>>,
+        Awaited<ReturnType<typeof createAutomationSgkProcess>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getTriggerSgkProcessingMutationOptions(options);
+      const mutationOptions = getCreateAutomationSgkProcessMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -194,7 +194,7 @@ export const useTriggerSgkProcessing = <TError = unknown,
  * Trigger system backup
  * @summary Trigger Backup
  */
-export const triggerBackup = (
+export const createAutomationBackup = (
     
  signal?: AbortSignal
 ) => {
@@ -208,11 +208,11 @@ export const triggerBackup = (
   
 
 
-export const getTriggerBackupMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof triggerBackup>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof triggerBackup>>, TError,void, TContext> => {
+export const getCreateAutomationBackupMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAutomationBackup>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAutomationBackup>>, TError,void, TContext> => {
 
-const mutationKey = ['triggerBackup'];
+const mutationKey = ['createAutomationBackup'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -222,10 +222,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof triggerBackup>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAutomationBackup>>, void> = () => {
           
 
-          return  triggerBackup()
+          return  createAutomationBackup()
         }
 
         
@@ -233,23 +233,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type TriggerBackupMutationResult = NonNullable<Awaited<ReturnType<typeof triggerBackup>>>
+    export type CreateAutomationBackupMutationResult = NonNullable<Awaited<ReturnType<typeof createAutomationBackup>>>
     
-    export type TriggerBackupMutationError = unknown
+    export type CreateAutomationBackupMutationError = unknown
 
     /**
  * @summary Trigger Backup
  */
-export const useTriggerBackup = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof triggerBackup>>, TError,void, TContext>, }
+export const useCreateAutomationBackup = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAutomationBackup>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof triggerBackup>>,
+        Awaited<ReturnType<typeof createAutomationBackup>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getTriggerBackupMutationOptions(options);
+      const mutationOptions = getCreateAutomationBackupMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -257,8 +257,8 @@ export const useTriggerBackup = <TError = unknown,
  * Get automation logs
  * @summary Get Automation Logs
  */
-export const getAutomationLogs = (
-    params?: GetAutomationLogsParams,
+export const listAutomationLogs = (
+    params?: ListAutomationLogsParams,
  signal?: AbortSignal
 ) => {
       
@@ -273,69 +273,69 @@ export const getAutomationLogs = (
 
 
 
-export const getGetAutomationLogsQueryKey = (params?: GetAutomationLogsParams,) => {
+export const getListAutomationLogsQueryKey = (params?: ListAutomationLogsParams,) => {
     return [
     `/api/automation/logs`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAutomationLogsQueryOptions = <TData = Awaited<ReturnType<typeof getAutomationLogs>>, TError = HTTPValidationError>(params?: GetAutomationLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationLogs>>, TError, TData>>, }
+export const getListAutomationLogsQueryOptions = <TData = Awaited<ReturnType<typeof listAutomationLogs>>, TError = HTTPValidationError>(params?: ListAutomationLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAutomationLogs>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAutomationLogsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAutomationLogsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAutomationLogs>>> = ({ signal }) => getAutomationLogs(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAutomationLogs>>> = ({ signal }) => listAutomationLogs(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAutomationLogs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAutomationLogs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAutomationLogsQueryResult = NonNullable<Awaited<ReturnType<typeof getAutomationLogs>>>
-export type GetAutomationLogsQueryError = HTTPValidationError
+export type ListAutomationLogsQueryResult = NonNullable<Awaited<ReturnType<typeof listAutomationLogs>>>
+export type ListAutomationLogsQueryError = HTTPValidationError
 
 
-export function useGetAutomationLogs<TData = Awaited<ReturnType<typeof getAutomationLogs>>, TError = HTTPValidationError>(
- params: undefined |  GetAutomationLogsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationLogs>>, TError, TData>> & Pick<
+export function useListAutomationLogs<TData = Awaited<ReturnType<typeof listAutomationLogs>>, TError = HTTPValidationError>(
+ params: undefined |  ListAutomationLogsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAutomationLogs>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAutomationLogs>>,
+          Awaited<ReturnType<typeof listAutomationLogs>>,
           TError,
-          Awaited<ReturnType<typeof getAutomationLogs>>
+          Awaited<ReturnType<typeof listAutomationLogs>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAutomationLogs<TData = Awaited<ReturnType<typeof getAutomationLogs>>, TError = HTTPValidationError>(
- params?: GetAutomationLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationLogs>>, TError, TData>> & Pick<
+export function useListAutomationLogs<TData = Awaited<ReturnType<typeof listAutomationLogs>>, TError = HTTPValidationError>(
+ params?: ListAutomationLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAutomationLogs>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAutomationLogs>>,
+          Awaited<ReturnType<typeof listAutomationLogs>>,
           TError,
-          Awaited<ReturnType<typeof getAutomationLogs>>
+          Awaited<ReturnType<typeof listAutomationLogs>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAutomationLogs<TData = Awaited<ReturnType<typeof getAutomationLogs>>, TError = HTTPValidationError>(
- params?: GetAutomationLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationLogs>>, TError, TData>>, }
+export function useListAutomationLogs<TData = Awaited<ReturnType<typeof listAutomationLogs>>, TError = HTTPValidationError>(
+ params?: ListAutomationLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAutomationLogs>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Automation Logs
  */
 
-export function useGetAutomationLogs<TData = Awaited<ReturnType<typeof getAutomationLogs>>, TError = HTTPValidationError>(
- params?: GetAutomationLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationLogs>>, TError, TData>>, }
+export function useListAutomationLogs<TData = Awaited<ReturnType<typeof listAutomationLogs>>, TError = HTTPValidationError>(
+ params?: ListAutomationLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAutomationLogs>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAutomationLogsQueryOptions(params,options)
+  const queryOptions = getListAutomationLogsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

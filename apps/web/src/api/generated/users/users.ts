@@ -137,7 +137,7 @@ export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TErr
  * Create user
  * @summary Create User
  */
-export const createUser = (
+export const createUsers = (
     userCreate: UserCreate,
  signal?: AbortSignal
 ) => {
@@ -153,11 +153,11 @@ export const createUser = (
   
 
 
-export const getCreateUserMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUser>>, TError,{data: UserCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createUser>>, TError,{data: UserCreate}, TContext> => {
+export const getCreateUsersMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: UserCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: UserCreate}, TContext> => {
 
-const mutationKey = ['createUser'];
+const mutationKey = ['createUsers'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -167,10 +167,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createUser>>, {data: UserCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createUsers>>, {data: UserCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createUser(data,)
+          return  createUsers(data,)
         }
 
         
@@ -178,23 +178,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateUserMutationResult = NonNullable<Awaited<ReturnType<typeof createUser>>>
-    export type CreateUserMutationBody = UserCreate
-    export type CreateUserMutationError = HTTPValidationError
+    export type CreateUsersMutationResult = NonNullable<Awaited<ReturnType<typeof createUsers>>>
+    export type CreateUsersMutationBody = UserCreate
+    export type CreateUsersMutationError = HTTPValidationError
 
     /**
  * @summary Create User
  */
-export const useCreateUser = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUser>>, TError,{data: UserCreate}, TContext>, }
+export const useCreateUsers = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: UserCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createUser>>,
+        Awaited<ReturnType<typeof createUsers>>,
         TError,
         {data: UserCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateUserMutationOptions(options);
+      const mutationOptions = getCreateUsersMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -202,7 +202,7 @@ export const useCreateUser = <TError = HTTPValidationError,
  * Get current user profile
  * @summary Get Me
  */
-export const getUsersMeMe = (
+export const listUserMe = (
     
  signal?: AbortSignal
 ) => {
@@ -217,69 +217,69 @@ export const getUsersMeMe = (
 
 
 
-export const getGetUsersMeMeQueryKey = () => {
+export const getListUserMeQueryKey = () => {
     return [
     `/api/users/me`
     ] as const;
     }
 
     
-export const getGetUsersMeMeQueryOptions = <TData = Awaited<ReturnType<typeof getUsersMeMe>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMeMe>>, TError, TData>>, }
+export const getListUserMeQueryOptions = <TData = Awaited<ReturnType<typeof listUserMe>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUserMe>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMeMeQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListUserMeQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMeMe>>> = ({ signal }) => getUsersMeMe(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listUserMe>>> = ({ signal }) => listUserMe(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersMeMe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listUserMe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetUsersMeMeQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMeMe>>>
-export type GetUsersMeMeQueryError = unknown
+export type ListUserMeQueryResult = NonNullable<Awaited<ReturnType<typeof listUserMe>>>
+export type ListUserMeQueryError = unknown
 
 
-export function useGetUsersMeMe<TData = Awaited<ReturnType<typeof getUsersMeMe>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMeMe>>, TError, TData>> & Pick<
+export function useListUserMe<TData = Awaited<ReturnType<typeof listUserMe>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUserMe>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMeMe>>,
+          Awaited<ReturnType<typeof listUserMe>>,
           TError,
-          Awaited<ReturnType<typeof getUsersMeMe>>
+          Awaited<ReturnType<typeof listUserMe>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetUsersMeMe<TData = Awaited<ReturnType<typeof getUsersMeMe>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMeMe>>, TError, TData>> & Pick<
+export function useListUserMe<TData = Awaited<ReturnType<typeof listUserMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUserMe>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMeMe>>,
+          Awaited<ReturnType<typeof listUserMe>>,
           TError,
-          Awaited<ReturnType<typeof getUsersMeMe>>
+          Awaited<ReturnType<typeof listUserMe>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetUsersMeMe<TData = Awaited<ReturnType<typeof getUsersMeMe>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMeMe>>, TError, TData>>, }
+export function useListUserMe<TData = Awaited<ReturnType<typeof listUserMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUserMe>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Me
  */
 
-export function useGetUsersMeMe<TData = Awaited<ReturnType<typeof getUsersMeMe>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMeMe>>, TError, TData>>, }
+export function useListUserMe<TData = Awaited<ReturnType<typeof listUserMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUserMe>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetUsersMeMeQueryOptions(options)
+  const queryOptions = getListUserMeQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -295,7 +295,7 @@ export function useGetUsersMeMe<TData = Awaited<ReturnType<typeof getUsersMeMe>>
  * Update current user profile
  * @summary Update Me
  */
-export const updateMe = (
+export const updateUserMe = (
     userUpdate: UserUpdate,
  ) => {
       
@@ -310,11 +310,11 @@ export const updateMe = (
   
 
 
-export const getUpdateMeMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMe>>, TError,{data: UserUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateMe>>, TError,{data: UserUpdate}, TContext> => {
+export const getUpdateUserMeMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserMe>>, TError,{data: UserUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateUserMe>>, TError,{data: UserUpdate}, TContext> => {
 
-const mutationKey = ['updateMe'];
+const mutationKey = ['updateUserMe'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -324,10 +324,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMe>>, {data: UserUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateUserMe>>, {data: UserUpdate}> = (props) => {
           const {data} = props ?? {};
 
-          return  updateMe(data,)
+          return  updateUserMe(data,)
         }
 
         
@@ -335,23 +335,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateMeMutationResult = NonNullable<Awaited<ReturnType<typeof updateMe>>>
-    export type UpdateMeMutationBody = UserUpdate
-    export type UpdateMeMutationError = HTTPValidationError
+    export type UpdateUserMeMutationResult = NonNullable<Awaited<ReturnType<typeof updateUserMe>>>
+    export type UpdateUserMeMutationBody = UserUpdate
+    export type UpdateUserMeMutationError = HTTPValidationError
 
     /**
  * @summary Update Me
  */
-export const useUpdateMe = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMe>>, TError,{data: UserUpdate}, TContext>, }
+export const useUpdateUserMe = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserMe>>, TError,{data: UserUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateMe>>,
+        Awaited<ReturnType<typeof updateUserMe>>,
         TError,
         {data: UserUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateMeMutationOptions(options);
+      const mutationOptions = getUpdateUserMeMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -359,7 +359,7 @@ export const useUpdateMe = <TError = HTTPValidationError,
  * Change password
  * @summary Change Password
  */
-export const changePassword = (
+export const createUserMePassword = (
     passwordChange: PasswordChange,
  signal?: AbortSignal
 ) => {
@@ -375,11 +375,11 @@ export const changePassword = (
   
 
 
-export const getChangePasswordMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changePassword>>, TError,{data: PasswordChange}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof changePassword>>, TError,{data: PasswordChange}, TContext> => {
+export const getCreateUserMePasswordMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUserMePassword>>, TError,{data: PasswordChange}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createUserMePassword>>, TError,{data: PasswordChange}, TContext> => {
 
-const mutationKey = ['changePassword'];
+const mutationKey = ['createUserMePassword'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -389,10 +389,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof changePassword>>, {data: PasswordChange}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createUserMePassword>>, {data: PasswordChange}> = (props) => {
           const {data} = props ?? {};
 
-          return  changePassword(data,)
+          return  createUserMePassword(data,)
         }
 
         
@@ -400,23 +400,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type ChangePasswordMutationResult = NonNullable<Awaited<ReturnType<typeof changePassword>>>
-    export type ChangePasswordMutationBody = PasswordChange
-    export type ChangePasswordMutationError = HTTPValidationError
+    export type CreateUserMePasswordMutationResult = NonNullable<Awaited<ReturnType<typeof createUserMePassword>>>
+    export type CreateUserMePasswordMutationBody = PasswordChange
+    export type CreateUserMePasswordMutationError = HTTPValidationError
 
     /**
  * @summary Change Password
  */
-export const useChangePassword = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changePassword>>, TError,{data: PasswordChange}, TContext>, }
+export const useCreateUserMePassword = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUserMePassword>>, TError,{data: PasswordChange}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof changePassword>>,
+        Awaited<ReturnType<typeof createUserMePassword>>,
         TError,
         {data: PasswordChange},
         TContext
       > => {
 
-      const mutationOptions = getChangePasswordMutationOptions(options);
+      const mutationOptions = getCreateUserMePasswordMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

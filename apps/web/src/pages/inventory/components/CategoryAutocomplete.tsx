@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import { Input } from '@x-ear/ui-web';
 import { getCategoryDisplay, getCategoryValue } from '../../../utils/category-mapping';
-import { useGetDeviceCategories } from '@/api/generated/devices/devices';
+import { useListDeviceCategories } from '@/api/generated/devices/devices';
 
 interface CategoryAutocompleteProps {
   value: string;
@@ -34,7 +34,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
   // Fetch categories from API
-  const { data: categoriesData, isLoading, isError } = useGetDeviceCategories();
+  const { data: categoriesData, isLoading, isError } = useListDeviceCategories();
 
   // Common product categories (fallback)
   const defaultCategories = [

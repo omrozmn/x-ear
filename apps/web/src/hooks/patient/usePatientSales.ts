@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { PatientApiService } from '../../services/patient/patient-api.service';
+import { SaleRead } from '@/api/generated/schemas';
 
 export interface PatientSale {
   id: string;
@@ -95,12 +96,12 @@ export function usePatientSales(patientId?: string) {
     try {
       const result = await apiService.getSales(id);
       // Map Sale[] to PatientSale[] with required fields
-      const mappedSales: PatientSale[] = (result?.data || []).map((sale: any) => ({
+      const mappedSales: PatientSale[] = (result?.data || []).map((sale: SaleRead) => ({
         ...sale,
-        finalAmount: sale.finalAmount ?? sale.final_amount ?? sale.totalAmount ?? 0,
-        paidAmount: sale.paidAmount ?? sale.paid_amount ?? 0,
-        paymentStatus: sale.paymentStatus ?? sale.payment_status ?? 'pending',
-      }));
+        finalAmount: (sale.finalAmount as unknown as number) ?? (sale.totalAmount as unknown as number) ?? 0,
+        paidAmount: (sale.paidAmount as unknown as number) ?? 0,
+        paymentStatus: (sale.status as any) ?? 'pending',
+      })) as unknown as PatientSale[];
       setSales(mappedSales);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));

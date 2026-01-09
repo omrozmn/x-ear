@@ -14,9 +14,9 @@ import {
     X
 } from 'lucide-react';
 import {
-    useListSmsHeadersApiSmsHeadersGet,
-    getListSmsHeadersQueryKey,
-    useSendSmsApiCommunicationsMessagesSendSmsPost,
+    useListSmHeaders,
+    getListSmHeadersQueryKey,
+    useCreateCommunicationMessageSendSms,
 } from '@/api/generated';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -47,12 +47,12 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
     const { token } = useAuthStore();
 
     // Get SMS headers for sender selection - only fetch if authenticated
-    const { data: headersData, isLoading: headersLoading, isError: headersError } = useListSmsHeadersApiSmsHeadersGet(
-        { query: { queryKey: getListSmsHeadersQueryKey(), enabled: !!token } }
+    const { data: headersData, isLoading: headersLoading, isError: headersError } = useListSmHeaders(
+        { query: { queryKey: getListSmHeadersQueryKey(), enabled: !!token } }
     );
 
     // Mutation for sending SMS
-    const { mutateAsync: sendSms } = useSendSmsApiCommunicationsMessagesSendSmsPost();
+    const { mutateAsync: createCommunicationMessageSendSms } = useCreateCommunicationMessageSendSms();
 
     // Parse SMS headers and filter only approved ones
     let headersRaw: Array<{ id?: string; headerText?: string; status?: string; isDefault?: boolean }> = [];
@@ -153,7 +153,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance, credi
 
         setIsSending(true);
         try {
-            await sendSms({
+            await createCommunicationMessageSendSms({
                 data: {
                     phoneNumber: phoneNumber,
                     message: message,

@@ -13,6 +13,7 @@ import type { DeviceReadBarcode } from './deviceReadBarcode';
 import type { DeviceReadEar } from './deviceReadEar';
 import type { DeviceReadPatientId } from './deviceReadPatientId';
 import type { DeviceReadSaleId } from './deviceReadSaleId';
+import type { DeviceReadTenantId } from './deviceReadTenantId';
 import type { DeviceReadBranchId } from './deviceReadBranchId';
 import type { DeviceReadInventoryId } from './deviceReadInventoryId';
 import type { DeviceReadPatientName } from './deviceReadPatientName';
@@ -55,7 +56,7 @@ export interface DeviceRead {
   warrantyMonths?: number;
   patientId?: DeviceReadPatientId;
   saleId?: DeviceReadSaleId;
-  tenantId: string;
+  tenantId?: DeviceReadTenantId;
   branchId?: DeviceReadBranchId;
   inventoryId?: DeviceReadInventoryId;
   isAssigned?: boolean;

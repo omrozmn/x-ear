@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllInventory } from '@/api/generated';
+import { listInventory } from '@/api/generated';
 import type { InventoryItemCreate } from '@/api/generated/schemas';
 import { unwrapArray } from '../utils/response-unwrap';
 
@@ -24,7 +24,7 @@ export const useInventory = (): UseInventoryResult => {
       setLoading(true);
       setError(null);
 
-      const response = await getAllInventory({
+      const response = await listInventory({
         category: 'hearing_aid', // Focus on hearing aids for sales
         search: undefined,
         low_stock: false

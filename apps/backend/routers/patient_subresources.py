@@ -68,7 +68,7 @@ class EReceiptUpdate(BaseModel):
 
 # --- Patient Devices ---
 
-@router.get("/patients/{patient_id}/devices", response_model=ResponseEnvelope[List[DeviceAssignmentRead]])
+@router.get("/patients/{patient_id}/devices", operation_id="listPatientDevices", response_model=ResponseEnvelope[List[DeviceAssignmentRead]])
 def get_patient_devices(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -152,7 +152,7 @@ def get_patient_devices(
 
 # --- Hearing Tests ---
 
-@router.get("/patients/{patient_id}/hearing-tests")
+@router.get("/patients/{patient_id}/hearing-tests", operation_id="listPatientHearingTests")
 def get_patient_hearing_tests(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -183,7 +183,7 @@ def get_patient_hearing_tests(
         logger.error(f"Error getting hearing tests: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/patients/{patient_id}/hearing-tests", status_code=201)
+@router.post("/patients/{patient_id}/hearing-tests", operation_id="createPatientHearingTests", status_code=201)
 def add_patient_hearing_test(
     patient_id: str,
     request_data: HearingTestCreate,
@@ -222,7 +222,7 @@ def add_patient_hearing_test(
         logger.error(f"Error adding hearing test: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/patients/{patient_id}/hearing-tests/{test_id}")
+@router.put("/patients/{patient_id}/hearing-tests/{test_id}", operation_id="updatePatientHearingTest")
 def update_patient_hearing_test(
     patient_id: str,
     test_id: str,
@@ -266,7 +266,7 @@ def update_patient_hearing_test(
         logger.error(f"Error updating hearing test: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/patients/{patient_id}/hearing-tests/{test_id}")
+@router.delete("/patients/{patient_id}/hearing-tests/{test_id}", operation_id="deletePatientHearingTest")
 def delete_patient_hearing_test(
     patient_id: str,
     test_id: str,
@@ -304,7 +304,7 @@ def delete_patient_hearing_test(
 
 # --- Patient Notes ---
 
-@router.get("/patients/{patient_id}/notes")
+@router.get("/patients/{patient_id}/notes", operation_id="listPatientNotes")
 def get_patient_notes(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -335,7 +335,7 @@ def get_patient_notes(
         logger.error(f"Error getting patient notes: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/patients/{patient_id}/notes", status_code=201)
+@router.post("/patients/{patient_id}/notes", operation_id="createPatientNotes", status_code=201)
 def create_patient_note(
     patient_id: str,
     request_data: PatientNoteCreate,
@@ -397,7 +397,7 @@ def create_patient_note(
         logger.error(f"Error creating patient note: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/patients/{patient_id}/notes/{note_id}")
+@router.put("/patients/{patient_id}/notes/{note_id}", operation_id="updatePatientNote")
 def update_patient_note(
     patient_id: str,
     note_id: str,
@@ -447,7 +447,7 @@ def update_patient_note(
         logger.error(f"Error updating patient note: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/patients/{patient_id}/notes/{note_id}")
+@router.delete("/patients/{patient_id}/notes/{note_id}", operation_id="deletePatientNote")
 def delete_patient_note(
     patient_id: str,
     note_id: str,
@@ -485,7 +485,7 @@ def delete_patient_note(
 
 # --- E-Receipts ---
 
-@router.get("/patients/{patient_id}/ereceipts")
+@router.get("/patients/{patient_id}/ereceipts", operation_id="listPatientEreceipts")
 def get_patient_ereceipts(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -516,7 +516,7 @@ def get_patient_ereceipts(
         logger.error(f"Error getting e-receipts: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/patients/{patient_id}/ereceipts", status_code=201)
+@router.post("/patients/{patient_id}/ereceipts", operation_id="createPatientEreceipts", status_code=201)
 def create_patient_ereceipt(
     patient_id: str,
     request_data: EReceiptCreate,
@@ -558,7 +558,7 @@ def create_patient_ereceipt(
         logger.error(f"Error creating e-receipt: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/patients/{patient_id}/ereceipts/{ereceipt_id}")
+@router.put("/patients/{patient_id}/ereceipts/{ereceipt_id}", operation_id="updatePatientEreceipt")
 def update_patient_ereceipt(
     patient_id: str,
     ereceipt_id: str,
@@ -602,7 +602,7 @@ def update_patient_ereceipt(
         logger.error(f"Error updating e-receipt: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/patients/{patient_id}/ereceipts/{ereceipt_id}")
+@router.delete("/patients/{patient_id}/ereceipts/{ereceipt_id}", operation_id="deletePatientEreceipt")
 def delete_patient_ereceipt(
     patient_id: str,
     ereceipt_id: str,
@@ -640,7 +640,7 @@ def delete_patient_ereceipt(
 
 # --- Patient Appointments ---
 
-@router.get("/patients/{patient_id}/appointments")
+@router.get("/patients/{patient_id}/appointments", operation_id="listPatientAppointments")
 def get_patient_appointments(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access()),

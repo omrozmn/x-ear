@@ -3,8 +3,19 @@ import type { Patient } from '../../types/patient';
 import { PatientApiService } from '../../services/patient/patient-api.service';
 import { PatientStorageService } from '../../services/patient/patient-storage.service';
 
+// Type for API/legacy response that may have different field names
+type PatientLike = Partial<Patient> & {
+  first_name?: string;
+  last_name?: string;
+  tc_number?: string;
+  birth_date?: string;
+  created_at?: string;
+  updated_at?: string;
+  name?: string;
+};
+
 // Helper to convert LegacyPatient or API response to Patient type
-function toPatient(data: any): Patient | null {
+function toPatient(data: PatientLike | null | undefined): Patient | null {
   if (!data) return null;
   return {
     id: data.id || '',
@@ -40,7 +51,7 @@ export function usePatient(patientId?: string) {
   const loadPatient = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       // Try API first
       const result = await apiService.fetchPatient(id);
@@ -53,8 +64,8 @@ export function usePatient(patientId?: string) {
         setPatient(toPatient(localPatient));
       }
     } catch (err) {
-  setError(err instanceof Error ? err : new Error(String(err)));
-      
+      setError(err instanceof Error ? err : new Error(String(err)));
+
       // Try local storage as fallback
       try {
         const localPatient = await storageService.getPatientById(id);
@@ -70,10 +81,10 @@ export function usePatient(patientId?: string) {
   // Update patient
   const updatePatient = useCallback(async (updates: Partial<Patient>) => {
     if (!patient?.id) return null;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const result = await apiService.updatePatient(patient.id, updates);
       if (result) {
@@ -83,7 +94,7 @@ export function usePatient(patientId?: string) {
       }
       return null;
     } catch (err) {
-  setError(err instanceof Error ? err : new Error(String(err)));
+      setError(err instanceof Error ? err : new Error(String(err)));
       return null;
     } finally {
       setLoading(false);
@@ -93,10 +104,10 @@ export function usePatient(patientId?: string) {
   // Delete patient
   const deletePatient = useCallback(async () => {
     if (!patient?.id) return false;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const success = await apiService.deletePatient(patient.id);
       if (success) {
@@ -105,7 +116,7 @@ export function usePatient(patientId?: string) {
       }
       return false;
     } catch (err) {
-  setError(err instanceof Error ? err : new Error(String(err)));
+      setError(err instanceof Error ? err : new Error(String(err)));
       return false;
     } finally {
       setLoading(false);
@@ -131,12 +142,12 @@ export function usePatient(patientId?: string) {
     patient,
     // Backwards-compatible alias
     data: patient,
-    
+
     // State
     loading,
     isLoading: loading,
     error,
-    
+
     // Actions
     loadPatient,
     updatePatient,

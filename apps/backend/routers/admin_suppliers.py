@@ -92,7 +92,7 @@ async def create_supplier(
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{supplier_id}", response_model=SupplierDetailResponse)
+@router.get("/{supplier_id}", operation_id="getAdminSupplier", response_model=SupplierDetailResponse)
 async def get_supplier(
     supplier_id: int,
     db: Session = Depends(get_db),
@@ -109,7 +109,7 @@ async def get_supplier(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/{supplier_id}", response_model=SupplierDetailResponse)
+@router.put("/{supplier_id}", operation_id="updateAdminSupplier", response_model=SupplierDetailResponse)
 async def update_supplier(
     supplier_id: int,
     data: SupplierUpdate,
@@ -148,7 +148,7 @@ async def update_supplier(
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{supplier_id}", response_model=ResponseEnvelope)
+@router.delete("/{supplier_id}", operation_id="deleteAdminSupplier", response_model=ResponseEnvelope)
 async def delete_supplier(
     supplier_id: int,
     db: Session = Depends(get_db),

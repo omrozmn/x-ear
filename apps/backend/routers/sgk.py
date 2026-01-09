@@ -59,7 +59,7 @@ def get_nlp_service():
 
 # --- Routes ---
 
-@router.get("/sgk/documents")
+@router.get("/sgk/documents", operation_id="listSgkDocuments")
 def list_sgk_documents(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -86,7 +86,7 @@ def list_sgk_documents(
         logger.error(f"List SGK docs error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/sgk/documents")
+@router.post("/sgk/documents", operation_id="createSgkDocuments")
 def upload_sgk_document(
     request_data: UploadSGKDocumentRequest,
     db_session: Session = Depends(get_db),
@@ -110,7 +110,7 @@ def upload_sgk_document(
         logger.error(f"Upload SGK doc error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/sgk/documents/{document_id}")
+@router.get("/sgk/documents/{document_id}", operation_id="getSgkDocument")
 def get_sgk_document(
     document_id: str,
     db_session: Session = Depends(get_db),
@@ -129,7 +129,7 @@ def get_sgk_document(
         logger.error(f"Get SGK doc error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/sgk/documents/{document_id}")
+@router.delete("/sgk/documents/{document_id}", operation_id="deleteSgkDocument")
 def delete_sgk_document(
     document_id: str,
     db_session: Session = Depends(get_db),
@@ -153,7 +153,7 @@ def delete_sgk_document(
 
 # Note: /ocr/process endpoint moved to ocr.py to avoid duplication
 
-@router.post("/sgk/upload")
+@router.post("/sgk/upload", operation_id="createSgkUpload")
 async def upload_and_process_files(
     files: List[UploadFile] = File(...),
     db_session: Session = Depends(get_db),
@@ -271,7 +271,7 @@ async def upload_and_process_files(
 
 # --- Additional SGK Endpoints (Migrated from Flask) ---
 
-@router.get("/patients/{patient_id}/sgk-documents")
+@router.get("/patients/{patient_id}/sgk-documents", operation_id="listPatientSgkDocuments")
 def get_patient_sgk_documents(
     patient_id: str,
     db_session: Session = Depends(get_db),
@@ -300,7 +300,7 @@ class EReceiptQueryRequest(BaseModel):
     tcNumber: Optional[str] = None
     patientId: Optional[str] = None
 
-@router.post("/sgk/e-receipt/query")
+@router.post("/sgk/e-receipt/query", operation_id="createSgkEReceiptQuery")
 def query_e_receipt(
     request_data: EReceiptQueryRequest,
     db_session: Session = Depends(get_db),
@@ -341,7 +341,7 @@ def query_e_receipt(
         logger.error(f"E-receipt query error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/sgk/e-receipts/delivered")
+@router.get("/sgk/e-receipts/delivered", operation_id="listSgkEReceiptDelivered")
 def list_delivered_ereceipts(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
@@ -421,7 +421,7 @@ class PatientRightsQueryRequest(BaseModel):
     tcNumber: str
     patientId: Optional[str] = None
 
-@router.post("/sgk/patient-rights/query")
+@router.post("/sgk/patient-rights/query", operation_id="createSgkPatientRightQuery")
 def query_patient_rights(
     request_data: PatientRightsQueryRequest,
     db_session: Session = Depends(get_db),
@@ -485,7 +485,7 @@ class WorkflowCreateRequest(BaseModel):
     documentId: Optional[str] = None
     workflowType: Optional[str] = "approval"
 
-@router.post("/sgk/workflow/create")
+@router.post("/sgk/workflow/create", operation_id="createSgkWorkflowCreate")
 def create_sgk_workflow(
     request_data: WorkflowCreateRequest,
     db_session: Session = Depends(get_db),
@@ -529,7 +529,7 @@ class WorkflowUpdateRequest(BaseModel):
     status: str
     notes: Optional[str] = ""
 
-@router.put("/sgk/workflow/{workflow_id}/update")
+@router.put("/sgk/workflow/{workflow_id}/update", operation_id="updateSgkWorkflowUpdate")
 def update_sgk_workflow(
     workflow_id: str,
     request_data: WorkflowUpdateRequest,
@@ -555,7 +555,7 @@ def update_sgk_workflow(
         logger.error(f"SGK workflow update error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/sgk/workflow/{workflow_id}")
+@router.get("/sgk/workflow/{workflow_id}", operation_id="getSgkWorkflow")
 def get_sgk_workflow(
     workflow_id: str,
     db_session: Session = Depends(get_db),
@@ -587,7 +587,7 @@ def get_sgk_workflow(
 class WorkflowStatusUpdate(BaseModel):
     status: str
 
-@router.put("/sgk/workflows/{workflow_id}/status")
+@router.put("/sgk/workflows/{workflow_id}/status", operation_id="updateSgkWorkflowStatus")
 def update_workflow_status(
     workflow_id: str,
     request_data: WorkflowStatusUpdate,
@@ -609,7 +609,7 @@ def update_workflow_status(
 
 from fastapi.responses import Response
 
-@router.get("/sgk/e-receipts/{receipt_id}/download-patient-form")
+@router.get("/sgk/e-receipts/{receipt_id}/download-patient-form", operation_id="listSgkEReceiptDownloadPatientForm")
 def download_patient_form(
     receipt_id: str,
     db_session: Session = Depends(get_db),
@@ -619,7 +619,7 @@ def download_patient_form(
     # Return dummy PDF content
     return Response(content=b"Dummy PDF Content", media_type="application/pdf")
 
-@router.post("/sgk/seed-test-patients")
+@router.post("/sgk/seed-test-patients", operation_id="createSgkSeedTestPatients")
 def seed_test_patients(
     db_session: Session = Depends(get_db)
 ):

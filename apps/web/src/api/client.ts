@@ -15,7 +15,7 @@ export interface LoginCredentials {
 export interface LoginResponse {
   access_token: string;
   token?: string;
-  refreshToken?: string;
+  createAuthRefresh?: string;
   data: {
     id: string;
     username: string;
@@ -131,12 +131,12 @@ class ApiClient {
     });
   }
 
-  async refreshToken(): Promise<ApiResponse<LoginResponse>> {
+  async createAuthRefresh(): Promise<ApiResponse<LoginResponse>> {
     // Use TokenManager for refresh token access (single source of truth)
-    const refreshToken = tokenManager.refreshToken;
+    const createAuthRefresh = tokenManager.createAuthRefresh;
     return this.request<LoginResponse>('/api/auth/refresh', {
       method: 'POST',
-      body: JSON.stringify({ refreshToken }),
+      body: JSON.stringify({ createAuthRefresh }),
     });
   }
 

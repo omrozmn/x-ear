@@ -38,7 +38,7 @@ import { customInstance } from '../../orval-mutator';
  * Get pricing settings specifically
  * @summary Get Pricing Settings
  */
-export const getPricingSettings = (
+export const listSettingPricing = (
     
  signal?: AbortSignal
 ) => {
@@ -53,69 +53,69 @@ export const getPricingSettings = (
 
 
 
-export const getGetPricingSettingsQueryKey = () => {
+export const getListSettingPricingQueryKey = () => {
     return [
     `/api/settings/pricing`
     ] as const;
     }
 
     
-export const getGetPricingSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getPricingSettings>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPricingSettings>>, TError, TData>>, }
+export const getListSettingPricingQueryOptions = <TData = Awaited<ReturnType<typeof listSettingPricing>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSettingPricing>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPricingSettingsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListSettingPricingQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPricingSettings>>> = ({ signal }) => getPricingSettings(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSettingPricing>>> = ({ signal }) => listSettingPricing(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPricingSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSettingPricing>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetPricingSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getPricingSettings>>>
-export type GetPricingSettingsQueryError = unknown
+export type ListSettingPricingQueryResult = NonNullable<Awaited<ReturnType<typeof listSettingPricing>>>
+export type ListSettingPricingQueryError = unknown
 
 
-export function useGetPricingSettings<TData = Awaited<ReturnType<typeof getPricingSettings>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPricingSettings>>, TError, TData>> & Pick<
+export function useListSettingPricing<TData = Awaited<ReturnType<typeof listSettingPricing>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSettingPricing>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPricingSettings>>,
+          Awaited<ReturnType<typeof listSettingPricing>>,
           TError,
-          Awaited<ReturnType<typeof getPricingSettings>>
+          Awaited<ReturnType<typeof listSettingPricing>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPricingSettings<TData = Awaited<ReturnType<typeof getPricingSettings>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPricingSettings>>, TError, TData>> & Pick<
+export function useListSettingPricing<TData = Awaited<ReturnType<typeof listSettingPricing>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSettingPricing>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPricingSettings>>,
+          Awaited<ReturnType<typeof listSettingPricing>>,
           TError,
-          Awaited<ReturnType<typeof getPricingSettings>>
+          Awaited<ReturnType<typeof listSettingPricing>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPricingSettings<TData = Awaited<ReturnType<typeof getPricingSettings>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPricingSettings>>, TError, TData>>, }
+export function useListSettingPricing<TData = Awaited<ReturnType<typeof listSettingPricing>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSettingPricing>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Pricing Settings
  */
 
-export function useGetPricingSettings<TData = Awaited<ReturnType<typeof getPricingSettings>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPricingSettings>>, TError, TData>>, }
+export function useListSettingPricing<TData = Awaited<ReturnType<typeof listSettingPricing>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSettingPricing>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetPricingSettingsQueryOptions(options)
+  const queryOptions = getListSettingPricingQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -131,7 +131,7 @@ export function useGetPricingSettings<TData = Awaited<ReturnType<typeof getPrici
  * Get system settings
  * @summary Get Settings
  */
-export const getSettings = (
+export const listSettings = (
     
  signal?: AbortSignal
 ) => {
@@ -146,69 +146,69 @@ export const getSettings = (
 
 
 
-export const getGetSettingsQueryKey = () => {
+export const getListSettingsQueryKey = () => {
     return [
     `/api/settings`
     ] as const;
     }
 
     
-export const getGetSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getSettings>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>, }
+export const getListSettingsQueryOptions = <TData = Awaited<ReturnType<typeof listSettings>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSettings>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSettingsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListSettingsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettings>>> = ({ signal }) => getSettings(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSettings>>> = ({ signal }) => listSettings(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getSettings>>>
-export type GetSettingsQueryError = unknown
+export type ListSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof listSettings>>>
+export type ListSettingsQueryError = unknown
 
 
-export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>> & Pick<
+export function useListSettings<TData = Awaited<ReturnType<typeof listSettings>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSettings>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettings>>,
+          Awaited<ReturnType<typeof listSettings>>,
           TError,
-          Awaited<ReturnType<typeof getSettings>>
+          Awaited<ReturnType<typeof listSettings>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>> & Pick<
+export function useListSettings<TData = Awaited<ReturnType<typeof listSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSettings>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettings>>,
+          Awaited<ReturnType<typeof listSettings>>,
           TError,
-          Awaited<ReturnType<typeof getSettings>>
+          Awaited<ReturnType<typeof listSettings>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>, }
+export function useListSettings<TData = Awaited<ReturnType<typeof listSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSettings>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Settings
  */
 
-export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>, }
+export function useListSettings<TData = Awaited<ReturnType<typeof listSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSettings>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetSettingsQueryOptions(options)
+  const queryOptions = getListSettingsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

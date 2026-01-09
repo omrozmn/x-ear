@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/automation", tags=["Automation"])
 
-@router.get("/status")
+@router.get("/status", operation_id="listAutomationStatus")
 async def get_automation_status(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -45,7 +45,7 @@ async def get_automation_status(
         logger.error(f"Get automation status error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/sgk/process")
+@router.post("/sgk/process", operation_id="createAutomationSgkProcess")
 async def trigger_sgk_processing(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -62,7 +62,7 @@ async def trigger_sgk_processing(
         logger.error(f"Trigger SGK processing error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/backup")
+@router.post("/backup", operation_id="createAutomationBackup")
 async def trigger_backup(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -79,7 +79,7 @@ async def trigger_backup(
         logger.error(f"Trigger backup error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/logs")
+@router.get("/logs", operation_id="listAutomationLogs")
 async def get_automation_logs(
     service: Optional[str] = None,
     date_from: Optional[str] = None,

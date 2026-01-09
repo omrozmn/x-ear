@@ -1,26 +1,26 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  getSuppliers,
-  createSupplier,
+  listSuppliers,
+  createSuppliers,
   deleteSupplier,
   getSupplier,
   updateSupplier,
-  getGetSuppliersQueryKey,
+  getListSuppliersQueryKey,
 } from '@/api/generated/suppliers/suppliers';
 import {
-  useGetAllInventory
+  useListInventory
 } from '@/api/generated/inventory/inventory';
 import type {
   SupplierRead,
   SupplierCreate,
-  GetSuppliersParams,
+  ListSuppliersParams,
   SupplierUpdate,
 } from '@/api/generated/schemas';
 
-export const useSuppliers = (params: GetSuppliersParams) => {
+export const useSuppliers = (params: ListSuppliersParams) => {
   return useQuery({
-    queryKey: getGetSuppliersQueryKey(params),
-    queryFn: () => getSuppliers(params),
+    queryKey: getListSuppliersQueryKey(params),
+    queryFn: () => listSuppliers(params),
     placeholderData: (previousData) => previousData,
   });
 };
@@ -75,7 +75,7 @@ export const useCreateSupplier = () => {
   return useMutation({
     mutationFn: async (newSupplier: SupplierFormData) => {
       const apiData = mapFormDataToApiSchema(newSupplier);
-      return createSupplier(apiData);
+      return createSuppliers(apiData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/suppliers'] });
@@ -119,7 +119,7 @@ export const useDeleteSupplier = () => {
 };
 
 export const useSupplierProducts = (supplierName?: string): any => {
-  return useGetAllInventory(
+  return useListInventory(
     { supplier: supplierName, per_page: 100 },
     {
       query: {
@@ -140,4 +140,4 @@ export const useSupplierProducts = (supplierName?: string): any => {
 };
 
 // Re-export types for consumers
-export type { SupplierRead, GetSuppliersParams };
+export type { SupplierRead, ListSuppliersParams };

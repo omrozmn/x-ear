@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from typing import List, Optional, Any, Dict
 from datetime import datetime
 from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 import json
 import base64
 from enum import Enum
@@ -43,7 +43,7 @@ def get_patient_or_404(db_session: Session, patient_id: str, access: UnifiedAcce
 
 # --- ROUTES ---
 
-@router.get("/patients", response_model=ResponseEnvelope[List[PatientRead]])
+@router.get("/patients", operation_id="listPatients", response_model=ResponseEnvelope[List[PatientRead]])
 def list_patients(
     page: int = 1,
     per_page: int = 20,
@@ -57,7 +57,7 @@ def list_patients(
 ):
     """List patients with filtering and pagination"""
     try:
-        query = db.query(Patient)
+        query = db.query(Patient).options(joinedload(Patient.branch))
         
         # Tenant Scope
         if access.tenant_id:
@@ -92,7 +92,7 @@ def list_patients(
                 status_enum = PatientStatus.from_legacy(status_filter)
                 # Use .value for safe comparison with SQLAlchemy
                 query = query.filter(Patient.status == status_enum.value)
-            except:
+            except (ValueError, AttributeError):
                 query = query.filter(Patient.status == status_filter)
         if city:
             query = query.filter(Patient.address_city == city)
@@ -145,7 +145,7 @@ def list_patients(
         raise HTTPException(status_code=500, detail=str(e))
 # ... imports ...
 
-@router.post("/patients", response_model=ResponseEnvelope[PatientRead], status_code=201)
+@router.post("/patients", operation_id="createPatients", response_model=ResponseEnvelope[PatientRead], status_code=201)
 def create_patient(
     patient_in: PatientCreate,
     access: UnifiedAccess = Depends(require_access("patients.create")),
@@ -231,7 +231,7 @@ def create_patient(
         logger.error(f"Create patient error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/patients/{patient_id}", response_model=ResponseEnvelope[PatientRead])
+@router.get("/patients/{patient_id}", operation_id="getPatient", response_model=ResponseEnvelope[PatientRead])
 def get_patient(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access("patients.view")),
@@ -241,7 +241,7 @@ def get_patient(
     patient = get_patient_or_404(db, patient_id, access)
     return ResponseEnvelope(data=patient.to_dict())
 
-@router.put("/patients/{patient_id}", response_model=ResponseEnvelope[PatientRead])
+@router.put("/patients/{patient_id}", operation_id="updatePatient", response_model=ResponseEnvelope[PatientRead])
 def update_patient(
     patient_id: str,
     patient_in: PatientUpdate,
@@ -278,7 +278,7 @@ def update_patient(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/patients/{patient_id}")
+@router.delete("/patients/{patient_id}", operation_id="deletePatient")
 def delete_patient(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access("patients.delete")),
@@ -296,7 +296,7 @@ def delete_patient(
 
 # Endpoints moved to routers/patient_subresources.py and routers/sales.py
 
-@router.get("/patients/count")
+@router.get("/patients/count", operation_id="listPatientCount")
 def count_patients(
     access: UnifiedAccess = Depends(require_access("patients.view")),
     db: Session = Depends(get_db),

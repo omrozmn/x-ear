@@ -40,7 +40,7 @@ import { customInstance } from '../../orval-mutator';
  * Get replacement history for a patient
  * @summary Get Patient Replacements
  */
-export const getPatientReplacements = (
+export const listPatientReplacements = (
     patientId: string,
  signal?: AbortSignal
 ) => {
@@ -55,69 +55,69 @@ export const getPatientReplacements = (
 
 
 
-export const getGetPatientReplacementsQueryKey = (patientId?: string,) => {
+export const getListPatientReplacementsQueryKey = (patientId?: string,) => {
     return [
     `/api/patients/${patientId}/replacements`
     ] as const;
     }
 
     
-export const getGetPatientReplacementsQueryOptions = <TData = Awaited<ReturnType<typeof getPatientReplacements>>, TError = HTTPValidationError>(patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientReplacements>>, TError, TData>>, }
+export const getListPatientReplacementsQueryOptions = <TData = Awaited<ReturnType<typeof listPatientReplacements>>, TError = HTTPValidationError>(patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPatientReplacementsQueryKey(patientId);
+  const queryKey =  queryOptions?.queryKey ?? getListPatientReplacementsQueryKey(patientId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPatientReplacements>>> = ({ signal }) => getPatientReplacements(patientId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPatientReplacements>>> = ({ signal }) => listPatientReplacements(patientId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(patientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPatientReplacements>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(patientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetPatientReplacementsQueryResult = NonNullable<Awaited<ReturnType<typeof getPatientReplacements>>>
-export type GetPatientReplacementsQueryError = HTTPValidationError
+export type ListPatientReplacementsQueryResult = NonNullable<Awaited<ReturnType<typeof listPatientReplacements>>>
+export type ListPatientReplacementsQueryError = HTTPValidationError
 
 
-export function useGetPatientReplacements<TData = Awaited<ReturnType<typeof getPatientReplacements>>, TError = HTTPValidationError>(
- patientId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientReplacements>>, TError, TData>> & Pick<
+export function useListPatientReplacements<TData = Awaited<ReturnType<typeof listPatientReplacements>>, TError = HTTPValidationError>(
+ patientId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPatientReplacements>>,
+          Awaited<ReturnType<typeof listPatientReplacements>>,
           TError,
-          Awaited<ReturnType<typeof getPatientReplacements>>
+          Awaited<ReturnType<typeof listPatientReplacements>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPatientReplacements<TData = Awaited<ReturnType<typeof getPatientReplacements>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientReplacements>>, TError, TData>> & Pick<
+export function useListPatientReplacements<TData = Awaited<ReturnType<typeof listPatientReplacements>>, TError = HTTPValidationError>(
+ patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPatientReplacements>>,
+          Awaited<ReturnType<typeof listPatientReplacements>>,
           TError,
-          Awaited<ReturnType<typeof getPatientReplacements>>
+          Awaited<ReturnType<typeof listPatientReplacements>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPatientReplacements<TData = Awaited<ReturnType<typeof getPatientReplacements>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientReplacements>>, TError, TData>>, }
+export function useListPatientReplacements<TData = Awaited<ReturnType<typeof listPatientReplacements>>, TError = HTTPValidationError>(
+ patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Patient Replacements
  */
 
-export function useGetPatientReplacements<TData = Awaited<ReturnType<typeof getPatientReplacements>>, TError = HTTPValidationError>(
- patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPatientReplacements>>, TError, TData>>, }
+export function useListPatientReplacements<TData = Awaited<ReturnType<typeof listPatientReplacements>>, TError = HTTPValidationError>(
+ patientId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientReplacements>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetPatientReplacementsQueryOptions(patientId,options)
+  const queryOptions = getListPatientReplacementsQueryOptions(patientId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -133,7 +133,7 @@ export function useGetPatientReplacements<TData = Awaited<ReturnType<typeof getP
  * Create a replacement for a patient
  * @summary Create Patient Replacement
  */
-export const createPatientReplacement = (
+export const createPatientReplacements = (
     patientId: string,
     replacementCreate: ReplacementCreate,
  signal?: AbortSignal
@@ -150,11 +150,11 @@ export const createPatientReplacement = (
   
 
 
-export const getCreatePatientReplacementMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientReplacement>>, TError,{patientId: string;data: ReplacementCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createPatientReplacement>>, TError,{patientId: string;data: ReplacementCreate}, TContext> => {
+export const getCreatePatientReplacementsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientReplacements>>, TError,{patientId: string;data: ReplacementCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPatientReplacements>>, TError,{patientId: string;data: ReplacementCreate}, TContext> => {
 
-const mutationKey = ['createPatientReplacement'];
+const mutationKey = ['createPatientReplacements'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -164,10 +164,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPatientReplacement>>, {patientId: string;data: ReplacementCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPatientReplacements>>, {patientId: string;data: ReplacementCreate}> = (props) => {
           const {patientId,data} = props ?? {};
 
-          return  createPatientReplacement(patientId,data,)
+          return  createPatientReplacements(patientId,data,)
         }
 
         
@@ -175,23 +175,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreatePatientReplacementMutationResult = NonNullable<Awaited<ReturnType<typeof createPatientReplacement>>>
-    export type CreatePatientReplacementMutationBody = ReplacementCreate
-    export type CreatePatientReplacementMutationError = HTTPValidationError
+    export type CreatePatientReplacementsMutationResult = NonNullable<Awaited<ReturnType<typeof createPatientReplacements>>>
+    export type CreatePatientReplacementsMutationBody = ReplacementCreate
+    export type CreatePatientReplacementsMutationError = HTTPValidationError
 
     /**
  * @summary Create Patient Replacement
  */
-export const useCreatePatientReplacement = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientReplacement>>, TError,{patientId: string;data: ReplacementCreate}, TContext>, }
+export const useCreatePatientReplacements = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientReplacements>>, TError,{patientId: string;data: ReplacementCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createPatientReplacement>>,
+        Awaited<ReturnType<typeof createPatientReplacements>>,
         TError,
         {patientId: string;data: ReplacementCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreatePatientReplacementMutationOptions(options);
+      const mutationOptions = getCreatePatientReplacementsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -292,7 +292,7 @@ export function useGetReplacement<TData = Awaited<ReturnType<typeof getReplaceme
  * Update replacement status
  * @summary Patch Replacement Status
  */
-export const patchReplacementStatus = (
+export const updateReplacementStatus = (
     replacementId: string,
     replacementStatusUpdate: ReplacementStatusUpdate,
  ) => {
@@ -308,11 +308,11 @@ export const patchReplacementStatus = (
   
 
 
-export const getPatchReplacementStatusMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchReplacementStatus>>, TError,{replacementId: string;data: ReplacementStatusUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof patchReplacementStatus>>, TError,{replacementId: string;data: ReplacementStatusUpdate}, TContext> => {
+export const getUpdateReplacementStatusMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateReplacementStatus>>, TError,{replacementId: string;data: ReplacementStatusUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateReplacementStatus>>, TError,{replacementId: string;data: ReplacementStatusUpdate}, TContext> => {
 
-const mutationKey = ['patchReplacementStatus'];
+const mutationKey = ['updateReplacementStatus'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -322,10 +322,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchReplacementStatus>>, {replacementId: string;data: ReplacementStatusUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateReplacementStatus>>, {replacementId: string;data: ReplacementStatusUpdate}> = (props) => {
           const {replacementId,data} = props ?? {};
 
-          return  patchReplacementStatus(replacementId,data,)
+          return  updateReplacementStatus(replacementId,data,)
         }
 
         
@@ -333,23 +333,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PatchReplacementStatusMutationResult = NonNullable<Awaited<ReturnType<typeof patchReplacementStatus>>>
-    export type PatchReplacementStatusMutationBody = ReplacementStatusUpdate
-    export type PatchReplacementStatusMutationError = HTTPValidationError
+    export type UpdateReplacementStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateReplacementStatus>>>
+    export type UpdateReplacementStatusMutationBody = ReplacementStatusUpdate
+    export type UpdateReplacementStatusMutationError = HTTPValidationError
 
     /**
  * @summary Patch Replacement Status
  */
-export const usePatchReplacementStatus = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchReplacementStatus>>, TError,{replacementId: string;data: ReplacementStatusUpdate}, TContext>, }
+export const useUpdateReplacementStatus = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateReplacementStatus>>, TError,{replacementId: string;data: ReplacementStatusUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof patchReplacementStatus>>,
+        Awaited<ReturnType<typeof updateReplacementStatus>>,
         TError,
         {replacementId: string;data: ReplacementStatusUpdate},
         TContext
       > => {
 
-      const mutationOptions = getPatchReplacementStatusMutationOptions(options);
+      const mutationOptions = getUpdateReplacementStatusMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -423,7 +423,7 @@ export const useCreateReplacementInvoice = <TError = HTTPValidationError,
  * Send return invoice to GIB (e-fatura)
  * @summary Send Return Invoice To Gib
  */
-export const sendReturnInvoiceToGib = (
+export const createReturnInvoiceSendToGib = (
     invoiceId: string,
  signal?: AbortSignal
 ) => {
@@ -437,11 +437,11 @@ export const sendReturnInvoiceToGib = (
   
 
 
-export const getSendReturnInvoiceToGibMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendReturnInvoiceToGib>>, TError,{invoiceId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof sendReturnInvoiceToGib>>, TError,{invoiceId: string}, TContext> => {
+export const getCreateReturnInvoiceSendToGibMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReturnInvoiceSendToGib>>, TError,{invoiceId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createReturnInvoiceSendToGib>>, TError,{invoiceId: string}, TContext> => {
 
-const mutationKey = ['sendReturnInvoiceToGib'];
+const mutationKey = ['createReturnInvoiceSendToGib'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -451,10 +451,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendReturnInvoiceToGib>>, {invoiceId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createReturnInvoiceSendToGib>>, {invoiceId: string}> = (props) => {
           const {invoiceId} = props ?? {};
 
-          return  sendReturnInvoiceToGib(invoiceId,)
+          return  createReturnInvoiceSendToGib(invoiceId,)
         }
 
         
@@ -462,23 +462,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SendReturnInvoiceToGibMutationResult = NonNullable<Awaited<ReturnType<typeof sendReturnInvoiceToGib>>>
+    export type CreateReturnInvoiceSendToGibMutationResult = NonNullable<Awaited<ReturnType<typeof createReturnInvoiceSendToGib>>>
     
-    export type SendReturnInvoiceToGibMutationError = HTTPValidationError
+    export type CreateReturnInvoiceSendToGibMutationError = HTTPValidationError
 
     /**
  * @summary Send Return Invoice To Gib
  */
-export const useSendReturnInvoiceToGib = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendReturnInvoiceToGib>>, TError,{invoiceId: string}, TContext>, }
+export const useCreateReturnInvoiceSendToGib = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReturnInvoiceSendToGib>>, TError,{invoiceId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof sendReturnInvoiceToGib>>,
+        Awaited<ReturnType<typeof createReturnInvoiceSendToGib>>,
         TError,
         {invoiceId: string},
         TContext
       > => {
 
-      const mutationOptions = getSendReturnInvoiceToGibMutationOptions(options);
+      const mutationOptions = getCreateReturnInvoiceSendToGibMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -26,8 +26,8 @@ import type {
 
 import type {
   CashRecordCreate,
-  GetCashRecordsParams,
-  HTTPValidationError
+  HTTPValidationError,
+  ListCashRecordsParams
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -39,8 +39,8 @@ import { customInstance } from '../../orval-mutator';
  * Return cash register records
  * @summary Get Cash Records
  */
-export const getCashRecords = (
-    params?: GetCashRecordsParams,
+export const listCashRecords = (
+    params?: ListCashRecordsParams,
  signal?: AbortSignal
 ) => {
       
@@ -55,69 +55,69 @@ export const getCashRecords = (
 
 
 
-export const getGetCashRecordsQueryKey = (params?: GetCashRecordsParams,) => {
+export const getListCashRecordsQueryKey = (params?: ListCashRecordsParams,) => {
     return [
     `/api/cash-records`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetCashRecordsQueryOptions = <TData = Awaited<ReturnType<typeof getCashRecords>>, TError = HTTPValidationError>(params?: GetCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashRecords>>, TError, TData>>, }
+export const getListCashRecordsQueryOptions = <TData = Awaited<ReturnType<typeof listCashRecords>>, TError = HTTPValidationError>(params?: ListCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCashRecords>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCashRecordsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListCashRecordsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCashRecords>>> = ({ signal }) => getCashRecords(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCashRecords>>> = ({ signal }) => listCashRecords(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCashRecords>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCashRecords>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetCashRecordsQueryResult = NonNullable<Awaited<ReturnType<typeof getCashRecords>>>
-export type GetCashRecordsQueryError = HTTPValidationError
+export type ListCashRecordsQueryResult = NonNullable<Awaited<ReturnType<typeof listCashRecords>>>
+export type ListCashRecordsQueryError = HTTPValidationError
 
 
-export function useGetCashRecords<TData = Awaited<ReturnType<typeof getCashRecords>>, TError = HTTPValidationError>(
- params: undefined |  GetCashRecordsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashRecords>>, TError, TData>> & Pick<
+export function useListCashRecords<TData = Awaited<ReturnType<typeof listCashRecords>>, TError = HTTPValidationError>(
+ params: undefined |  ListCashRecordsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCashRecords>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCashRecords>>,
+          Awaited<ReturnType<typeof listCashRecords>>,
           TError,
-          Awaited<ReturnType<typeof getCashRecords>>
+          Awaited<ReturnType<typeof listCashRecords>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCashRecords<TData = Awaited<ReturnType<typeof getCashRecords>>, TError = HTTPValidationError>(
- params?: GetCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashRecords>>, TError, TData>> & Pick<
+export function useListCashRecords<TData = Awaited<ReturnType<typeof listCashRecords>>, TError = HTTPValidationError>(
+ params?: ListCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCashRecords>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCashRecords>>,
+          Awaited<ReturnType<typeof listCashRecords>>,
           TError,
-          Awaited<ReturnType<typeof getCashRecords>>
+          Awaited<ReturnType<typeof listCashRecords>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCashRecords<TData = Awaited<ReturnType<typeof getCashRecords>>, TError = HTTPValidationError>(
- params?: GetCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashRecords>>, TError, TData>>, }
+export function useListCashRecords<TData = Awaited<ReturnType<typeof listCashRecords>>, TError = HTTPValidationError>(
+ params?: ListCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCashRecords>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Cash Records
  */
 
-export function useGetCashRecords<TData = Awaited<ReturnType<typeof getCashRecords>>, TError = HTTPValidationError>(
- params?: GetCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashRecords>>, TError, TData>>, }
+export function useListCashRecords<TData = Awaited<ReturnType<typeof listCashRecords>>, TError = HTTPValidationError>(
+ params?: ListCashRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCashRecords>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetCashRecordsQueryOptions(params,options)
+  const queryOptions = getListCashRecordsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -133,7 +133,7 @@ export function useGetCashRecords<TData = Awaited<ReturnType<typeof getCashRecor
  * Create a new cash record
  * @summary Create Cash Record
  */
-export const createCashRecord = (
+export const createCashRecords = (
     cashRecordCreate: CashRecordCreate,
  signal?: AbortSignal
 ) => {
@@ -149,11 +149,11 @@ export const createCashRecord = (
   
 
 
-export const getCreateCashRecordMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCashRecord>>, TError,{data: CashRecordCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createCashRecord>>, TError,{data: CashRecordCreate}, TContext> => {
+export const getCreateCashRecordsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCashRecords>>, TError,{data: CashRecordCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createCashRecords>>, TError,{data: CashRecordCreate}, TContext> => {
 
-const mutationKey = ['createCashRecord'];
+const mutationKey = ['createCashRecords'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -163,10 +163,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCashRecord>>, {data: CashRecordCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCashRecords>>, {data: CashRecordCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createCashRecord(data,)
+          return  createCashRecords(data,)
         }
 
         
@@ -174,23 +174,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateCashRecordMutationResult = NonNullable<Awaited<ReturnType<typeof createCashRecord>>>
-    export type CreateCashRecordMutationBody = CashRecordCreate
-    export type CreateCashRecordMutationError = HTTPValidationError
+    export type CreateCashRecordsMutationResult = NonNullable<Awaited<ReturnType<typeof createCashRecords>>>
+    export type CreateCashRecordsMutationBody = CashRecordCreate
+    export type CreateCashRecordsMutationError = HTTPValidationError
 
     /**
  * @summary Create Cash Record
  */
-export const useCreateCashRecord = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCashRecord>>, TError,{data: CashRecordCreate}, TContext>, }
+export const useCreateCashRecords = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCashRecords>>, TError,{data: CashRecordCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createCashRecord>>,
+        Awaited<ReturnType<typeof createCashRecords>>,
         TError,
         {data: CashRecordCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateCashRecordMutationOptions(options);
+      const mutationOptions = getCreateCashRecordsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

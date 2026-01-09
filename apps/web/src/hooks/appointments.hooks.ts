@@ -9,7 +9,7 @@ import { generateIdempotencyKey } from '../utils/idempotency';
 export const appointmentKeys = {
   all: ['appointments'] as const,
   lists: () => [...appointmentKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...appointmentKeys.lists(), filters] as const,
+  list: (filters: Record<string, unknown>) => [...appointmentKeys.lists(), filters] as const,
   details: () => [...appointmentKeys.all, 'detail'] as const,
   detail: (id: string) => [...appointmentKeys.details(), id] as const,
   calendar: (date: string) => [...appointmentKeys.all, 'calendar', date] as const,
@@ -59,7 +59,7 @@ export const useCreateAppointment = () => {
     mutationFn: async (data: AppointmentFormData) => {
       const idempotencyKey = generateIdempotencyKey();
       const tempId = uuidv4();
-      
+
       // Optimistic update
       const optimisticAppointment: Appointment = {
         id: tempId,
@@ -109,7 +109,7 @@ export const useCreateAppointment = () => {
         updatedAt: new Date().toISOString(),
       };
 
-      queryClient.setQueryData(appointmentKeys.lists(), (old: any) => {
+      queryClient.setQueryData(appointmentKeys.lists(), (old: Appointment[] | undefined) => {
         if (!old) return [optimisticAppointment];
         return [...old, optimisticAppointment];
       });
@@ -170,7 +170,7 @@ export const useUpdateAppointment = () => {
       const previousAppointment = queryClient.getQueryData(appointmentKeys.detail(id));
 
       // Optimistically update
-      queryClient.setQueryData(appointmentKeys.detail(id), (old: any) => {
+      queryClient.setQueryData(appointmentKeys.detail(id), (old: Appointment | undefined) => {
         if (!old) return old;
         return { ...old, ...data, updatedAt: new Date().toISOString() };
       });
@@ -232,7 +232,7 @@ export const useDeleteAppointment = () => {
       const previousAppointments = queryClient.getQueryData(appointmentKeys.lists());
 
       // Optimistically remove
-      queryClient.setQueryData(appointmentKeys.lists(), (old: any) => {
+      queryClient.setQueryData(appointmentKeys.lists(), (old: Appointment[] | undefined) => {
         if (!old) return old;
         return old.filter((appointment: Appointment) => appointment.id !== id);
       });
@@ -262,14 +262,14 @@ export const useRescheduleAppointment = () => {
   const updateMutation = useUpdateAppointment();
 
   return useMutation({
-    mutationFn: async ({ 
-      id, 
-      newDate, 
-      newTime 
-    }: { 
-      id: string; 
-      newDate: string; 
-      newTime: string; 
+    mutationFn: async ({
+      id,
+      newDate,
+      newTime
+    }: {
+      id: string;
+      newDate: string;
+      newTime: string;
     }) => {
       return updateMutation.mutateAsync({
         id,
@@ -288,12 +288,12 @@ export const useBulkUpdateAppointments = () => {
   const { addToOutbox } = useOutbox();
 
   return useMutation({
-    mutationFn: async ({ 
-      ids, 
-      data 
-    }: { 
-      ids: string[]; 
-      data: Partial<AppointmentFormData>; 
+    mutationFn: async ({
+      ids,
+      data
+    }: {
+      ids: string[];
+      data: Partial<AppointmentFormData>;
     }) => {
       const idempotencyKey = generateIdempotencyKey();
 
@@ -330,8 +330,8 @@ export const useBulkUpdateAppointments = () => {
 // Sync status hook for offline indicator
 export const useAppointmentSyncStatus = () => {
   const { outboxItems, isOnline } = useOutbox();
-  
-  const pendingAppointmentOperations = outboxItems.filter(item => 
+
+  const pendingAppointmentOperations = outboxItems.filter(item =>
     item.type.includes('APPOINTMENT')
   );
 

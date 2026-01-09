@@ -6,7 +6,7 @@ from uuid import uuid4
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import desc, or_, text
 
 from database import gen_sale_id
@@ -19,7 +19,8 @@ from schemas.sales import (
     SaleRead, SaleCreate, SaleUpdate, 
     PaymentRecordRead, PaymentRecordCreate, 
     PaymentPlanRead, PaymentPlanCreate,
-    DeviceAssignmentRead, DeviceAssignmentUpdate
+    DeviceAssignmentRead, DeviceAssignmentUpdate,
+    DeviceAssignmentCreate, DeviceAssignmentCreateResponse
 )
 from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
@@ -118,7 +119,7 @@ def _build_sale_data(sale, devices, plan, payments, invoice, sgk_val):
 
 # ============= READ ENDPOINTS =============
 
-@router.get("/sales", response_model=ResponseEnvelope[List[SaleRead]])
+@router.get("/sales", operation_id="listSales", response_model=ResponseEnvelope[List[SaleRead]])
 def get_sales(
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
@@ -183,7 +184,7 @@ def get_sales(
 
 # ============= PAYMENT ENDPOINTS =============
 
-@router.get("/sales/{sale_id}/payments", response_model=ResponseEnvelope[Any])
+@router.get("/sales/{sale_id}/payments", operation_id="listSalePayments", response_model=ResponseEnvelope[Any])
 def get_sale_payments(
     sale_id: str,
     db: Session = Depends(get_db),
@@ -227,7 +228,7 @@ def get_sale_payments(
         }
     )
 
-@router.post("/sales/{sale_id}/payments")
+@router.post("/sales/{sale_id}/payments", operation_id="createSalePayments")
 def record_sale_payment(
     sale_id: str,
     payment_in: PaymentRecordCreate,
@@ -289,7 +290,7 @@ def record_sale_payment(
         message="Payment recorded",
     )
 
-@router.get("/sales/{sale_id}/payment-plan")
+@router.get("/sales/{sale_id}/payment-plan", operation_id="listSalePaymentPlan")
 def get_sale_payment_plan(
     sale_id: str,
     db: Session = Depends(get_db),
@@ -363,7 +364,7 @@ def _update_inventory_stock(db: Session, product: InventoryItem, qty: int, trans
 
 # ============= WRITE ENDPOINTS =============
 
-@router.post("/sales")
+@router.post("/sales", operation_id="createSales")
 def create_sale(
     sale_in: SaleCreate,
     db: Session = Depends(get_db),
@@ -486,7 +487,7 @@ def create_sale(
         message="Sale created successfully",
     )
 
-@router.put("/sales/{sale_id}")
+@router.put("/sales/{sale_id}", operation_id="updateSale")
 def update_sale(
     sale_id: str,
     sale_in: SaleUpdate,
@@ -512,3 +513,544 @@ def update_sale(
     db.commit()
 
     return ResponseEnvelope(data=sale.to_dict(), message="Sale updated")
+
+
+# ============= DEVICE ASSIGNMENT ENDPOINTS =============
+
+def _get_settings(db: Session, tenant_id: str = None) -> Dict[str, Any]:
+    """Load pricing settings from database or return defaults."""
+    # Try to load from settings table if exists
+    try:
+        from models.settings import Settings
+        settings_record = db.query(Settings).filter_by(tenant_id=tenant_id).first()
+        if settings_record and settings_record.data:
+            return settings_record.data
+    except Exception:
+        pass
+    
+    # Return default settings
+    return {
+        'sgk': {
+            'default_scheme': 'standard',
+            'schemes': {
+                'standard': {'coverage_amount': 0, 'max_amount': 0},
+                'raporlu': {'coverage_amount': 5000, 'max_amount': 10000},
+                'raporsuz': {'coverage_amount': 0, 'max_amount': 0}
+            }
+        },
+        'pricing': {
+            'tolerance': 0.01,
+            'accessories': {},
+            'services': {}
+        },
+        'payment': {
+            'plans': {
+                'installment_3': {'installments': 3, 'interest_rate': 0},
+                'installment_6': {'installments': 6, 'interest_rate': 0},
+                'installment_12': {'installments': 12, 'interest_rate': 0}
+            }
+        }
+    }
+
+
+def _create_single_device_assignment(
+    db: Session,
+    assignment_data: Dict[str, Any],
+    patient_id: str,
+    sale_id: str,
+    sgk_scheme: str,
+    pricing_calculation: Dict[str, Any],
+    index: int,
+    tenant_id: str,
+    branch_id: str = None,
+    created_by: str = None
+) -> tuple:
+    """Create a single device assignment. Returns (assignment, error, warning)."""
+    from models.device import Device
+    from services.stock_service import create_stock_movement
+    
+    inventory_id = assignment_data.get('inventory_id') or assignment_data.get('inventoryId')
+    inventory_item = None
+    virtual_device = None
+    warning = None
+    
+    if inventory_id:
+        inventory_item = db.get(InventoryItem, inventory_id)
+        if not inventory_item:
+            return None, f"Inventory item not found: {inventory_id}", None
+    else:
+        # Manual assignment
+        manual_brand = assignment_data.get('manual_brand') or assignment_data.get('manualBrand')
+        manual_model = assignment_data.get('manual_model') or assignment_data.get('manualModel')
+        
+        if manual_brand and manual_model:
+            virtual_device = Device(
+                tenant_id=tenant_id,
+                patient_id=patient_id,
+                brand=manual_brand,
+                model=manual_model,
+                device_type='HEARING_AID',
+                status='ASSIGNED',
+                ear=assignment_data.get('ear') or 'LEFT',
+                serial_number=assignment_data.get('serial_number') or assignment_data.get('serialNumber'),
+                notes="Manually assigned device"
+            )
+            db.add(virtual_device)
+            db.flush()
+        else:
+            return None, "Inventory ID or Manual Brand/Model required for assignment", None
+    
+    # Get pricing from calculation
+    base_price = float(assignment_data.get('base_price') or assignment_data.get('basePrice') or 
+                       (inventory_item.price if inventory_item else 0) or 0)
+    
+    per_item_list = pricing_calculation.get('per_item', [])
+    sgk_support = 0.0
+    final_sale_price = base_price
+    
+    if per_item_list and index < len(per_item_list):
+        per = per_item_list[index]
+        sgk_support = float(per.get('sgk_support', 0) or 0)
+        final_sale_price = float(per.get('sale_price', base_price) or base_price)
+    
+    # Allow explicit overrides
+    if assignment_data.get('sale_price') is not None or assignment_data.get('salePrice') is not None:
+        final_sale_price = float(assignment_data.get('sale_price') or assignment_data.get('salePrice'))
+    if assignment_data.get('sgk_support') is not None or assignment_data.get('sgkSupport') is not None:
+        sgk_support = float(assignment_data.get('sgk_support') or assignment_data.get('sgkSupport'))
+    
+    net_payable = final_sale_price
+    if assignment_data.get('patient_payment') is not None or assignment_data.get('patientPayment') is not None:
+        net_payable = float(assignment_data.get('patient_payment') or assignment_data.get('patientPayment'))
+    
+    # Create assignment
+    assignment = DeviceAssignment(
+        tenant_id=tenant_id,
+        branch_id=branch_id,
+        patient_id=patient_id,
+        device_id=virtual_device.id if virtual_device else inventory_id,
+        sale_id=sale_id,
+        ear=assignment_data.get('ear') or 'both',
+        reason=assignment_data.get('reason', 'Sale'),
+        from_inventory=(inventory_item is not None),
+        inventory_id=inventory_id,
+        list_price=base_price,
+        sale_price=final_sale_price,
+        sgk_scheme=sgk_scheme,
+        sgk_support=sgk_support,
+        discount_type=assignment_data.get('discount_type') or assignment_data.get('discountType'),
+        discount_value=assignment_data.get('discount_value') or assignment_data.get('discountValue'),
+        net_payable=net_payable,
+        payment_method=assignment_data.get('payment_method') or assignment_data.get('paymentMethod') or 'cash',
+        notes=assignment_data.get('notes', ''),
+        serial_number=assignment_data.get('serial_number') or assignment_data.get('serialNumber'),
+        serial_number_left=assignment_data.get('serial_number_left') or assignment_data.get('serialNumberLeft'),
+        serial_number_right=assignment_data.get('serial_number_right') or assignment_data.get('serialNumberRight'),
+        report_status=assignment_data.get('report_status') or assignment_data.get('reportStatus'),
+        delivery_status=assignment_data.get('delivery_status') or assignment_data.get('deliveryStatus') or 'pending',
+        is_loaner=assignment_data.get('is_loaner') or assignment_data.get('isLoaner') or False,
+        loaner_inventory_id=assignment_data.get('loaner_inventory_id') or assignment_data.get('loanerInventoryId'),
+        loaner_serial_number=assignment_data.get('loaner_serial_number') or assignment_data.get('loanerSerialNumber'),
+        loaner_serial_number_left=assignment_data.get('loaner_serial_number_left') or assignment_data.get('loanerSerialNumberLeft'),
+        loaner_serial_number_right=assignment_data.get('loaner_serial_number_right') or assignment_data.get('loanerSerialNumberRight'),
+        loaner_brand=assignment_data.get('loaner_brand') or assignment_data.get('loanerBrand'),
+        loaner_model=assignment_data.get('loaner_model') or assignment_data.get('loanerModel'),
+        assignment_uid=f"ATM-{uuid4().hex[:6].upper()}"
+    )
+    
+    db.add(assignment)
+    db.flush()
+    
+    # Stock movement only if delivered
+    if str(assignment.delivery_status) == 'delivered' and inventory_item:
+        assigned_serial = assignment.serial_number or assignment.serial_number_left or assignment.serial_number_right
+        ear_val = str(assignment.ear or '').lower()
+        qty = 2 if (ear_val.startswith('b') or ear_val in ['both', 'bilateral']) else 1
+        
+        if assigned_serial:
+            # Serialized item
+            if hasattr(inventory_item, 'remove_serial_number'):
+                inventory_item.remove_serial_number(assigned_serial)
+            create_stock_movement(
+                inventory_id=inventory_item.id,
+                movement_type="sale",
+                quantity=-1,
+                tenant_id=inventory_item.tenant_id,
+                serial_number=assigned_serial,
+                transaction_id=sale_id,
+                created_by=created_by,
+                session=db
+            )
+        else:
+            # Non-serialized
+            if hasattr(inventory_item, 'update_inventory'):
+                inventory_item.update_inventory(-qty, allow_negative=True)
+            create_stock_movement(
+                inventory_id=inventory_item.id,
+                movement_type="sale",
+                quantity=-qty,
+                tenant_id=inventory_item.tenant_id,
+                serial_number=None,
+                transaction_id=sale_id,
+                created_by=created_by,
+                session=db
+            )
+            
+            if inventory_item.available_inventory < 0:
+                warning = f"Stok yetersiz ({inventory_item.available_inventory}). Satış yine de gerçekleştirildi."
+    
+    # Loaner tracking
+    if assignment.is_loaner and assignment.loaner_inventory_id:
+        try:
+            loaner_item = db.get(InventoryItem, assignment.loaner_inventory_id)
+            if loaner_item:
+                ear_val = str(assignment.ear or '').lower()
+                qty = 2 if (ear_val.startswith('b') or ear_val in ['both', 'bilateral']) else 1
+                
+                if hasattr(loaner_item, 'update_inventory'):
+                    loaner_item.update_inventory(-qty, allow_negative=True)
+                
+                create_stock_movement(
+                    inventory_id=loaner_item.id,
+                    movement_type="loaner_out",
+                    quantity=-qty,
+                    tenant_id=loaner_item.tenant_id,
+                    serial_number=assignment.loaner_serial_number,
+                    transaction_id=assignment.id,
+                    created_by=created_by,
+                    session=db
+                )
+        except Exception as e:
+            logger.error(f"Error tracking loaner stock: {e}")
+    
+    return assignment, None, warning
+
+
+@router.post("/patients/{patient_id}/device-assignments", operation_id="createPatientDeviceAssignments", response_model=ResponseEnvelope[DeviceAssignmentCreateResponse])
+def create_device_assignments(
+    patient_id: str,
+    data: DeviceAssignmentCreate,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """
+    Assign devices to a patient with sale record creation.
+    
+    This is the main endpoint for device assignment workflow:
+    1. Creates a Sale record
+    2. Creates DeviceAssignment records for each device
+    3. Handles pricing calculation (SGK, discounts)
+    4. Manages stock movements (if delivery_status is 'delivered')
+    5. Creates payment plan if needed
+    """
+    from services.pricing import calculate_device_pricing, create_payment_plan
+    
+    access.require_resource_permission("sales", "create")
+    
+    # Validate patient
+    patient = db.get(Patient, patient_id)
+    if not patient:
+        raise HTTPException(
+            status_code=404,
+            detail=ApiError(message="Patient not found", code="PATIENT_NOT_FOUND").model_dump(mode="json"),
+        )
+    if access.tenant_id and patient.tenant_id != access.tenant_id:
+        raise HTTPException(
+            status_code=403,
+            detail=ApiError(message="Access denied", code="FORBIDDEN").model_dump(mode="json"),
+        )
+    
+    device_assignments = data.device_assignments
+    if not device_assignments:
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(message="At least one device assignment required", code="NO_DEVICES").model_dump(mode="json"),
+        )
+    
+    tenant_id = access.tenant_id or patient.tenant_id
+    branch_id = data.branch_id or access.branch_id
+    settings = _get_settings(db, tenant_id)
+    sgk_scheme = data.sgk_scheme or settings.get('sgk', {}).get('default_scheme', 'standard')
+    payment_plan_type = data.payment_plan or 'cash'
+    
+    # Build sanitized assignments for pricing calculation
+    sanitized_assignments = []
+    for a in device_assignments:
+        sanitized_assignments.append({
+            'inventoryId': a.inventory_id,
+            'base_price': a.base_price,
+            'discount_type': a.discount_type,
+            'discount_value': a.discount_value,
+            'sgk_scheme': a.sgk_scheme,
+            'ear': a.ear
+        })
+    
+    # Calculate pricing
+    pricing_calculation = calculate_device_pricing(
+        device_assignments=sanitized_assignments,
+        accessories=data.accessories or [],
+        services=data.services or [],
+        sgk_scheme=sgk_scheme,
+        settings=settings
+    )
+    
+    # Create sale record
+    sale_id = gen_sale_id(db)
+    sale = Sale(
+        id=sale_id,
+        tenant_id=tenant_id,
+        branch_id=branch_id,
+        patient_id=patient_id,
+        list_price_total=pricing_calculation['total_amount'],
+        total_amount=pricing_calculation['total_amount'],
+        discount_amount=pricing_calculation['total_discount'],
+        final_amount=pricing_calculation['sale_price_total'],
+        sgk_coverage=pricing_calculation['sgk_coverage_amount'],
+        patient_payment=pricing_calculation['patient_responsible_amount'],
+        paid_amount=0,
+        payment_method=payment_plan_type if payment_plan_type != 'cash' else 'cash',
+        status='pending',
+        sale_date=datetime.utcnow()
+    )
+    db.add(sale)
+    db.flush()
+    
+    # Create device assignments
+    created_assignment_ids = []
+    warnings = []
+    
+    for i, assignment_data in enumerate(device_assignments):
+        # Convert Pydantic model to dict
+        a_dict = assignment_data.model_dump(by_alias=False)
+        
+        assignment, error, warning = _create_single_device_assignment(
+            db=db,
+            assignment_data=a_dict,
+            patient_id=patient_id,
+            sale_id=sale.id,
+            sgk_scheme=sgk_scheme,
+            pricing_calculation=pricing_calculation,
+            index=i,
+            tenant_id=tenant_id,
+            branch_id=branch_id,
+            created_by=access.principal_id
+        )
+        
+        if error:
+            db.rollback()
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message=error, code="ASSIGNMENT_ERROR").model_dump(mode="json"),
+            )
+        
+        if warning:
+            warnings.append(warning)
+        
+        created_assignment_ids.append(assignment.id)
+        
+        # Update sale ear assignments
+        ear_val = (assignment.ear or '').lower()
+        if ear_val.startswith('r') or ear_val == 'right':
+            sale.right_ear_assignment_id = assignment.id
+        elif ear_val.startswith('l') or ear_val == 'left':
+            sale.left_ear_assignment_id = assignment.id
+        else:
+            if not sale.right_ear_assignment_id:
+                sale.right_ear_assignment_id = assignment.id
+            elif not sale.left_ear_assignment_id:
+                sale.left_ear_assignment_id = assignment.id
+    
+    # Create payment plan if needed
+    if payment_plan_type != 'cash':
+        payment_plan = create_payment_plan(
+            sale_id=sale.id,
+            plan_type=payment_plan_type,
+            amount=pricing_calculation['patient_responsible_amount'],
+            settings=settings,
+            tenant_id=tenant_id,
+            branch_id=branch_id
+        )
+        db.add(payment_plan)
+    
+    db.commit()
+    
+    logger.info(f"Device assignments created for patient {patient_id}: sale={sale.id}, assignments={created_assignment_ids}")
+    
+    return ResponseEnvelope(
+        data={
+            "saleId": sale.id,
+            "assignmentIds": created_assignment_ids,
+            "pricing": pricing_calculation,
+            "warnings": warnings
+        },
+        message="Device assignments created successfully"
+    )
+
+
+@router.patch("/device-assignments/{assignment_id}", operation_id="updateDeviceAssignment")
+def update_device_assignment(
+    assignment_id: str,
+    updates: DeviceAssignmentUpdate,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Update a device assignment."""
+    access.require_resource_permission("sales", "write")
+    
+    assignment = db.get(DeviceAssignment, assignment_id)
+    if not assignment:
+        raise HTTPException(
+            status_code=404,
+            detail=ApiError(message="Assignment not found", code="ASSIGNMENT_NOT_FOUND").model_dump(mode="json"),
+        )
+    
+    # Tenant check via sale
+    if assignment.sale_id:
+        sale = db.get(Sale, assignment.sale_id)
+        if sale and access.tenant_id and sale.tenant_id != access.tenant_id:
+            raise HTTPException(
+                status_code=403,
+                detail=ApiError(message="Access denied", code="FORBIDDEN").model_dump(mode="json"),
+            )
+    
+    # Update fields
+    update_data = updates.model_dump(exclude_unset=True, by_alias=False)
+    for field, value in update_data.items():
+        if hasattr(assignment, field) and value is not None:
+            setattr(assignment, field, value)
+    
+    assignment.updated_at = datetime.utcnow()
+    db.commit()
+    
+    return ResponseEnvelope(
+        data=assignment.to_dict(),
+        message="Assignment updated"
+    )
+
+
+@router.post("/device-assignments/{assignment_id}/return-loaner", operation_id="createDeviceAssignmentReturnLoaner")
+def return_loaner_to_stock(
+    assignment_id: str,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Return a loaner device to stock."""
+    from services.stock_service import create_stock_movement
+    
+    access.require_resource_permission("sales", "write")
+    
+    assignment = db.get(DeviceAssignment, assignment_id)
+    if not assignment:
+        raise HTTPException(
+            status_code=404,
+            detail=ApiError(message="Assignment not found", code="ASSIGNMENT_NOT_FOUND").model_dump(mode="json"),
+        )
+    
+    if not assignment.is_loaner:
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(message="Assignment is not a loaner", code="NOT_LOANER").model_dump(mode="json"),
+        )
+    
+    if not assignment.loaner_inventory_id:
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(message="No loaner inventory ID", code="NO_LOANER_INVENTORY").model_dump(mode="json"),
+        )
+    
+    loaner_item = db.get(InventoryItem, assignment.loaner_inventory_id)
+    if not loaner_item:
+        raise HTTPException(
+            status_code=404,
+            detail=ApiError(message="Loaner inventory item not found", code="LOANER_NOT_FOUND").model_dump(mode="json"),
+        )
+    
+    # Calculate quantity
+    ear_val = str(assignment.ear or '').lower()
+    qty = 2 if (ear_val.startswith('b') or ear_val in ['both', 'bilateral']) else 1
+    
+    # Return to stock
+    if hasattr(loaner_item, 'update_inventory'):
+        loaner_item.update_inventory(qty)
+    else:
+        loaner_item.available_inventory = (loaner_item.available_inventory or 0) + qty
+    
+    # Add serial back if applicable
+    loaner_serials = []
+    if assignment.loaner_serial_number:
+        loaner_serials.append(assignment.loaner_serial_number)
+    if assignment.loaner_serial_number_left:
+        loaner_serials.append(assignment.loaner_serial_number_left)
+    if assignment.loaner_serial_number_right:
+        loaner_serials.append(assignment.loaner_serial_number_right)
+    
+    if loaner_serials and hasattr(loaner_item, 'add_serial_numbers'):
+        loaner_item.add_serial_numbers(loaner_serials)
+    
+    # Stock movement
+    create_stock_movement(
+        inventory_id=loaner_item.id,
+        movement_type="loaner_return",
+        quantity=qty,
+        tenant_id=loaner_item.tenant_id,
+        serial_number=','.join(loaner_serials) if loaner_serials else None,
+        transaction_id=assignment.id,
+        created_by=access.principal_id,
+        session=db
+    )
+    
+    # Clear loaner fields
+    assignment.is_loaner = False
+    assignment.loaner_inventory_id = None
+    assignment.loaner_serial_number = None
+    assignment.loaner_serial_number_left = None
+    assignment.loaner_serial_number_right = None
+    assignment.loaner_brand = None
+    assignment.loaner_model = None
+    assignment.updated_at = datetime.utcnow()
+    
+    db.commit()
+    
+    return ResponseEnvelope(
+        data=assignment.to_dict(),
+        message="Loaner returned to stock"
+    )
+
+
+@router.post("/pricing-preview", operation_id="createPricingPreview")
+def pricing_preview(
+    data: DeviceAssignmentCreate,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Preview pricing calculation without creating records."""
+    from services.pricing import calculate_device_pricing
+    
+    tenant_id = access.tenant_id
+    settings = _get_settings(db, tenant_id)
+    sgk_scheme = data.sgk_scheme or settings.get('sgk', {}).get('default_scheme', 'standard')
+    
+    # Build sanitized assignments
+    sanitized_assignments = []
+    for a in data.device_assignments:
+        sanitized_assignments.append({
+            'inventoryId': a.inventory_id,
+            'base_price': a.base_price,
+            'discount_type': a.discount_type,
+            'discount_value': a.discount_value,
+            'sgk_scheme': a.sgk_scheme,
+            'ear': a.ear
+        })
+    
+    pricing = calculate_device_pricing(
+        device_assignments=sanitized_assignments,
+        accessories=data.accessories or [],
+        services=data.services or [],
+        sgk_scheme=sgk_scheme,
+        settings=settings
+    )
+    
+    return ResponseEnvelope(
+        data=pricing,
+        message="Pricing preview calculated"
+    )

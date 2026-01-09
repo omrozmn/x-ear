@@ -108,12 +108,6 @@ export class InventoryService {
 
   async createItem(data: CreateInventoryData): Promise<InventoryItem> {
     try {
-      console.log('📤 CREATING ITEM:', {
-        features: data.features,
-        availableSerials: data.availableSerials,
-        serialsCount: data.availableSerials?.length
-      });
-
       // Use Orval axios for auth handling
       const { customInstance } = await import('../api/orval-mutator');
       const response = await customInstance<{ data: InventoryItem }>({
@@ -126,7 +120,6 @@ export class InventoryService {
 
       // Clear localStorage cache to force refresh from API
       localStorage.removeItem(this.storageKey);
-      console.log('🗑️ Cache cleared - will reload from API');
 
       return newItem;
     } catch (error) {
@@ -137,13 +130,6 @@ export class InventoryService {
 
   async updateItem(id: string, data: UpdateInventoryData): Promise<InventoryItem> {
     try {
-      console.log('📤 SENDING TO API:', {
-        id,
-        features: data.features,
-        availableSerials: data.availableSerials,
-        serialsCount: data.availableSerials?.length
-      });
-
       // Use Orval axios for auth handling
       const { customInstance } = await import('../api/orval-mutator');
       const response = await customInstance<{ data: InventoryItem }>({
@@ -156,7 +142,6 @@ export class InventoryService {
 
       // Clear localStorage cache to force refresh from API
       localStorage.removeItem(this.storageKey);
-      console.log('🗑️ Cache cleared - will reload from API');
 
       return updatedItem;
     } catch (error) {

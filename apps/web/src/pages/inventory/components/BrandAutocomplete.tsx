@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
 import { Input } from '@x-ear/ui-web';
-import { useGetDeviceBrands, useCreateDeviceBrand, getGetDeviceBrandsQueryKey } from '@/api/generated/devices/devices';
+import { useListDeviceBrands, useCreateDeviceBrands, getListDeviceBrandsQueryKey } from '@/api/generated/devices/devices';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface BrandAutocompleteProps {
@@ -35,13 +35,13 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
   const queryClient = useQueryClient();
 
   // Fetch brands from API
-  const { data: brandsData, isLoading, isError } = useGetDeviceBrands();
+  const { data: brandsData, isLoading, isError } = useListDeviceBrands();
 
   // Create brand mutation
-  const createBrandMutation = useCreateDeviceBrand({
+  const createBrandMutation = useCreateDeviceBrands({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetDeviceBrandsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getListDeviceBrandsQueryKey() });
       }
     }
   });

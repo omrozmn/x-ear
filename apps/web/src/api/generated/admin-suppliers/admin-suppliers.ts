@@ -25,7 +25,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetAdminSuppliersParams,
+  GetSuppliersApiAdminSuppliersGetParams,
   HTTPValidationError,
   ResponseEnvelope,
   SupplierCreate,
@@ -43,8 +43,8 @@ import { customInstance } from '../../orval-mutator';
  * Get list of suppliers
  * @summary Get Suppliers
  */
-export const getAdminSuppliers = (
-    params?: GetAdminSuppliersParams,
+export const getSuppliersApiAdminSuppliersGet = (
+    params?: GetSuppliersApiAdminSuppliersGetParams,
  signal?: AbortSignal
 ) => {
       
@@ -59,69 +59,69 @@ export const getAdminSuppliers = (
 
 
 
-export const getGetAdminSuppliersQueryKey = (params?: GetAdminSuppliersParams,) => {
+export const getGetSuppliersApiAdminSuppliersGetQueryKey = (params?: GetSuppliersApiAdminSuppliersGetParams,) => {
     return [
     `/api/admin/suppliers`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminSuppliersQueryOptions = <TData = Awaited<ReturnType<typeof getAdminSuppliers>>, TError = HTTPValidationError>(params?: GetAdminSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSuppliers>>, TError, TData>>, }
+export const getGetSuppliersApiAdminSuppliersGetQueryOptions = <TData = Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>, TError = HTTPValidationError>(params?: GetSuppliersApiAdminSuppliersGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminSuppliersQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetSuppliersApiAdminSuppliersGetQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminSuppliers>>> = ({ signal }) => getAdminSuppliers(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>> = ({ signal }) => getSuppliersApiAdminSuppliersGet(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminSuppliers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminSuppliersQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminSuppliers>>>
-export type GetAdminSuppliersQueryError = HTTPValidationError
+export type GetSuppliersApiAdminSuppliersGetQueryResult = NonNullable<Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>>
+export type GetSuppliersApiAdminSuppliersGetQueryError = HTTPValidationError
 
 
-export function useGetAdminSuppliers<TData = Awaited<ReturnType<typeof getAdminSuppliers>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminSuppliersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSuppliers>>, TError, TData>> & Pick<
+export function useGetSuppliersApiAdminSuppliersGet<TData = Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>, TError = HTTPValidationError>(
+ params: undefined |  GetSuppliersApiAdminSuppliersGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminSuppliers>>,
+          Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>,
           TError,
-          Awaited<ReturnType<typeof getAdminSuppliers>>
+          Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminSuppliers<TData = Awaited<ReturnType<typeof getAdminSuppliers>>, TError = HTTPValidationError>(
- params?: GetAdminSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSuppliers>>, TError, TData>> & Pick<
+export function useGetSuppliersApiAdminSuppliersGet<TData = Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>, TError = HTTPValidationError>(
+ params?: GetSuppliersApiAdminSuppliersGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminSuppliers>>,
+          Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>,
           TError,
-          Awaited<ReturnType<typeof getAdminSuppliers>>
+          Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminSuppliers<TData = Awaited<ReturnType<typeof getAdminSuppliers>>, TError = HTTPValidationError>(
- params?: GetAdminSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSuppliers>>, TError, TData>>, }
+export function useGetSuppliersApiAdminSuppliersGet<TData = Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>, TError = HTTPValidationError>(
+ params?: GetSuppliersApiAdminSuppliersGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Suppliers
  */
 
-export function useGetAdminSuppliers<TData = Awaited<ReturnType<typeof getAdminSuppliers>>, TError = HTTPValidationError>(
- params?: GetAdminSuppliersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSuppliers>>, TError, TData>>, }
+export function useGetSuppliersApiAdminSuppliersGet<TData = Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>, TError = HTTPValidationError>(
+ params?: GetSuppliersApiAdminSuppliersGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSuppliersApiAdminSuppliersGet>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminSuppliersQueryOptions(params,options)
+  const queryOptions = getGetSuppliersApiAdminSuppliersGetQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -137,7 +137,7 @@ export function useGetAdminSuppliers<TData = Awaited<ReturnType<typeof getAdminS
  * Create a new supplier
  * @summary Create Supplier
  */
-export const createAdminSupplier = (
+export const createSupplierApiAdminSuppliersPost = (
     supplierCreate: SupplierCreate,
  signal?: AbortSignal
 ) => {
@@ -153,11 +153,11 @@ export const createAdminSupplier = (
   
 
 
-export const getCreateAdminSupplierMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminSupplier>>, TError,{data: SupplierCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAdminSupplier>>, TError,{data: SupplierCreate}, TContext> => {
+export const getCreateSupplierApiAdminSuppliersPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSupplierApiAdminSuppliersPost>>, TError,{data: SupplierCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSupplierApiAdminSuppliersPost>>, TError,{data: SupplierCreate}, TContext> => {
 
-const mutationKey = ['createAdminSupplier'];
+const mutationKey = ['createSupplierApiAdminSuppliersPost'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -167,10 +167,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminSupplier>>, {data: SupplierCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSupplierApiAdminSuppliersPost>>, {data: SupplierCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createAdminSupplier(data,)
+          return  createSupplierApiAdminSuppliersPost(data,)
         }
 
         
@@ -178,23 +178,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateAdminSupplierMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminSupplier>>>
-    export type CreateAdminSupplierMutationBody = SupplierCreate
-    export type CreateAdminSupplierMutationError = HTTPValidationError
+    export type CreateSupplierApiAdminSuppliersPostMutationResult = NonNullable<Awaited<ReturnType<typeof createSupplierApiAdminSuppliersPost>>>
+    export type CreateSupplierApiAdminSuppliersPostMutationBody = SupplierCreate
+    export type CreateSupplierApiAdminSuppliersPostMutationError = HTTPValidationError
 
     /**
  * @summary Create Supplier
  */
-export const useCreateAdminSupplier = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminSupplier>>, TError,{data: SupplierCreate}, TContext>, }
+export const useCreateSupplierApiAdminSuppliersPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSupplierApiAdminSuppliersPost>>, TError,{data: SupplierCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createAdminSupplier>>,
+        Awaited<ReturnType<typeof createSupplierApiAdminSuppliersPost>>,
         TError,
         {data: SupplierCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateAdminSupplierMutationOptions(options);
+      const mutationOptions = getCreateSupplierApiAdminSuppliersPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

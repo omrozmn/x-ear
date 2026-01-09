@@ -53,7 +53,7 @@ class UserRolesUpdate(BaseModel):
 
 # --- Routes ---
 
-@router.get("/roles")
+@router.get("/roles", operation_id="listAdminRoles")
 def get_admin_roles(
     include_permissions: bool = False,
     access: UnifiedAccess = Depends(require_access()),
@@ -82,7 +82,7 @@ def get_admin_roles(
         logger.error(f"Get admin roles error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/roles/{role_id}")
+@router.get("/roles/{role_id}", operation_id="getAdminRole")
 def get_admin_role(
     role_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -109,7 +109,7 @@ def get_admin_role(
         logger.error(f"Get admin role error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/roles", status_code=201)
+@router.post("/roles", operation_id="createAdminRoles", status_code=201)
 def create_admin_role(
     request_data: RoleCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -161,7 +161,7 @@ def create_admin_role(
         logger.error(f"Create admin role error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/roles/{role_id}")
+@router.put("/roles/{role_id}", operation_id="updateAdminRole")
 def update_admin_role(
     role_id: str,
     request_data: RoleUpdate,
@@ -209,7 +209,7 @@ def update_admin_role(
         logger.error(f"Update admin role error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/roles/{role_id}")
+@router.delete("/roles/{role_id}", operation_id="deleteAdminRole")
 def delete_admin_role(
     role_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -252,7 +252,7 @@ def delete_admin_role(
         logger.error(f"Delete admin role error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/roles/{role_id}/permissions")
+@router.get("/roles/{role_id}/permissions", operation_id="listAdminRolePermissions")
 def get_admin_role_permissions(
     role_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -282,7 +282,7 @@ def get_admin_role_permissions(
         logger.error(f"Get role permissions error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/roles/{role_id}/permissions")
+@router.put("/roles/{role_id}/permissions", operation_id="updateAdminRolePermissions")
 def update_admin_role_permissions(
     role_id: str,
     request_data: RolePermissionsUpdate,
@@ -330,7 +330,7 @@ def update_admin_role_permissions(
         logger.error(f"Update role permissions error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/permissions")
+@router.get("/permissions", operation_id="listAdminPermissions")
 def get_admin_permissions(
     category: Optional[str] = None,
     access: UnifiedAccess = Depends(require_access()),
@@ -394,7 +394,7 @@ def get_admin_permissions(
         logger.error(f"Get admin permissions error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/admin-users")
+@router.get("/admin-users", operation_id="listAdminAdminUsers")
 def get_admin_users_with_roles(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -422,7 +422,7 @@ def get_admin_users_with_roles(
         logger.error(f"Get admin users error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/admin-users/{user_id}")
+@router.get("/admin-users/{user_id}", operation_id="getAdminAdminUser")
 def get_admin_user_detail(
     user_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -449,7 +449,7 @@ def get_admin_user_detail(
         logger.error(f"Get admin user detail error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/admin-users/{user_id}/roles")
+@router.put("/admin-users/{user_id}/roles", operation_id="updateAdminAdminUserRoles")
 def update_admin_user_roles(
     user_id: str,
     request_data: UserRolesUpdate,
@@ -503,7 +503,7 @@ def update_admin_user_roles(
         logger.error(f"Update admin user roles error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/my-permissions")
+@router.get("/my-permissions", operation_id="listAdminMyPermissions")
 def get_my_admin_permissions(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)

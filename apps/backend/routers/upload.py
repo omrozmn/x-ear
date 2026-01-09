@@ -27,7 +27,7 @@ class PresignedUploadRequest(BaseModel):
 
 # --- Routes ---
 
-@router.post("/presigned")
+@router.post("/presigned", operation_id="createUploadPresigned")
 def get_presigned_upload_url(
     request_data: PresignedUploadRequest,
     request: Request,
@@ -102,7 +102,7 @@ def get_presigned_upload_url(
         logger.error(f"Error generating presigned URL: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/files")
+@router.get("/files", operation_id="listUploadFiles")
 def list_files(
     folder: str = Query("uploads"),
     tenant_id: Optional[str] = None,
@@ -135,7 +135,7 @@ def list_files(
         logger.error(f"Error listing files: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/files")
+@router.delete("/files", operation_id="deleteUploadFiles")
 def delete_file(
     key: str = Query(...),
     request: Request = None,

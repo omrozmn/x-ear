@@ -4,10 +4,10 @@ import { Calendar, Plus, Edit, X, Check, CheckCircle, XCircle, AlertCircle } fro
 import { Button, Badge, Input, Textarea, Select } from '@x-ear/ui-web';
 import { Patient } from '../../types/patient';
 import {
-  getPatientAppointments,
-  createAppointment,
-  cancelAppointment,
-  completeAppointment
+  listPatientAppointments,
+  createAppointments,
+  createAppointmentCancel,
+  createAppointmentComplete
 } from '@/api/generated';
 import type {
   AppointmentRead,
@@ -45,7 +45,7 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
       //   per_page: 20
       // };
 
-      const response = await getPatientAppointments(patient.id) as any;
+      const response = await listPatientAppointments(patient.id) as any;
 
       // Handle response envelope or direct array
       const appointmentsData = response?.data || response || [];
@@ -81,7 +81,7 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
         ...appointmentData,
         // Ensure fields match schema
       };
-      await createAppointment(createBody);
+      await createAppointments(createBody);
       await loadAppointments();
       setShowBookingForm(false);
     } catch (err) {
@@ -93,11 +93,11 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
   const handleCancelAppointment = async (appointmentId: string, reason?: string) => {
     try {
       // Cancel endpoint might not body or might expect different structure. 
-      // Checking generated code: cancelAppointment(appointmentId) takes no body?? 
+      // Checking generated code: createAppointmentCancel(appointmentId) takes no body?? 
       // Wait, generated code line 493 takes only appointmentId and signal. 
       // It does NOT take a body. So reason is lost or passed differently?
       // Assuming no body for now based on generated code.
-      await cancelAppointment(appointmentId);
+      await createAppointmentCancel(appointmentId);
       await loadAppointments();
     } catch (err) {
       console.error('Error canceling appointment:', err);
@@ -108,7 +108,7 @@ export const PatientAppointmentsTab: React.FC<PatientAppointmentsTabProps> = ({ 
   const handleConfirmAppointment = async (appointmentId: string, notes?: string) => {
     try {
       // Complete endpoint takes only appointmentId
-      await completeAppointment(appointmentId);
+      await createAppointmentComplete(appointmentId);
       await loadAppointments();
     } catch (err) {
       console.error('Error completing appointment:', err);

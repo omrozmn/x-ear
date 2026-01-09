@@ -25,8 +25,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  CountPatientsParams,
   HTTPValidationError,
+  ListPatientCountParams,
   ListPatientsParams,
   PatientCreate,
   PatientUpdate,
@@ -137,7 +137,7 @@ export function useListPatients<TData = Awaited<ReturnType<typeof listPatients>>
  * Create a new patient
  * @summary Create Patient
  */
-export const createPatient = (
+export const createPatients = (
     patientCreate: PatientCreate,
  signal?: AbortSignal
 ) => {
@@ -153,11 +153,11 @@ export const createPatient = (
   
 
 
-export const getCreatePatientMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatient>>, TError,{data: PatientCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createPatient>>, TError,{data: PatientCreate}, TContext> => {
+export const getCreatePatientsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatients>>, TError,{data: PatientCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPatients>>, TError,{data: PatientCreate}, TContext> => {
 
-const mutationKey = ['createPatient'];
+const mutationKey = ['createPatients'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -167,10 +167,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPatient>>, {data: PatientCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPatients>>, {data: PatientCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createPatient(data,)
+          return  createPatients(data,)
         }
 
         
@@ -178,23 +178,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreatePatientMutationResult = NonNullable<Awaited<ReturnType<typeof createPatient>>>
-    export type CreatePatientMutationBody = PatientCreate
-    export type CreatePatientMutationError = HTTPValidationError
+    export type CreatePatientsMutationResult = NonNullable<Awaited<ReturnType<typeof createPatients>>>
+    export type CreatePatientsMutationBody = PatientCreate
+    export type CreatePatientsMutationError = HTTPValidationError
 
     /**
  * @summary Create Patient
  */
-export const useCreatePatient = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatient>>, TError,{data: PatientCreate}, TContext>, }
+export const useCreatePatients = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatients>>, TError,{data: PatientCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createPatient>>,
+        Awaited<ReturnType<typeof createPatients>>,
         TError,
         {data: PatientCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreatePatientMutationOptions(options);
+      const mutationOptions = getCreatePatientsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -422,8 +422,8 @@ export const useDeletePatient = <TError = HTTPValidationError,
  * Count patients
  * @summary Count Patients
  */
-export const countPatients = (
-    params?: CountPatientsParams,
+export const listPatientCount = (
+    params?: ListPatientCountParams,
  signal?: AbortSignal
 ) => {
       
@@ -438,69 +438,69 @@ export const countPatients = (
 
 
 
-export const getCountPatientsQueryKey = (params?: CountPatientsParams,) => {
+export const getListPatientCountQueryKey = (params?: ListPatientCountParams,) => {
     return [
     `/api/patients/count`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getCountPatientsQueryOptions = <TData = Awaited<ReturnType<typeof countPatients>>, TError = HTTPValidationError>(params?: CountPatientsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countPatients>>, TError, TData>>, }
+export const getListPatientCountQueryOptions = <TData = Awaited<ReturnType<typeof listPatientCount>>, TError = HTTPValidationError>(params?: ListPatientCountParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientCount>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getCountPatientsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListPatientCountQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof countPatients>>> = ({ signal }) => countPatients(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPatientCount>>> = ({ signal }) => listPatientCount(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof countPatients>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPatientCount>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type CountPatientsQueryResult = NonNullable<Awaited<ReturnType<typeof countPatients>>>
-export type CountPatientsQueryError = HTTPValidationError
+export type ListPatientCountQueryResult = NonNullable<Awaited<ReturnType<typeof listPatientCount>>>
+export type ListPatientCountQueryError = HTTPValidationError
 
 
-export function useCountPatients<TData = Awaited<ReturnType<typeof countPatients>>, TError = HTTPValidationError>(
- params: undefined |  CountPatientsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof countPatients>>, TError, TData>> & Pick<
+export function useListPatientCount<TData = Awaited<ReturnType<typeof listPatientCount>>, TError = HTTPValidationError>(
+ params: undefined |  ListPatientCountParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientCount>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countPatients>>,
+          Awaited<ReturnType<typeof listPatientCount>>,
           TError,
-          Awaited<ReturnType<typeof countPatients>>
+          Awaited<ReturnType<typeof listPatientCount>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useCountPatients<TData = Awaited<ReturnType<typeof countPatients>>, TError = HTTPValidationError>(
- params?: CountPatientsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countPatients>>, TError, TData>> & Pick<
+export function useListPatientCount<TData = Awaited<ReturnType<typeof listPatientCount>>, TError = HTTPValidationError>(
+ params?: ListPatientCountParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientCount>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof countPatients>>,
+          Awaited<ReturnType<typeof listPatientCount>>,
           TError,
-          Awaited<ReturnType<typeof countPatients>>
+          Awaited<ReturnType<typeof listPatientCount>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useCountPatients<TData = Awaited<ReturnType<typeof countPatients>>, TError = HTTPValidationError>(
- params?: CountPatientsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countPatients>>, TError, TData>>, }
+export function useListPatientCount<TData = Awaited<ReturnType<typeof listPatientCount>>, TError = HTTPValidationError>(
+ params?: ListPatientCountParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientCount>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Count Patients
  */
 
-export function useCountPatients<TData = Awaited<ReturnType<typeof countPatients>>, TError = HTTPValidationError>(
- params?: CountPatientsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof countPatients>>, TError, TData>>, }
+export function useListPatientCount<TData = Awaited<ReturnType<typeof listPatientCount>>, TError = HTTPValidationError>(
+ params?: ListPatientCountParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPatientCount>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getCountPatientsQueryOptions(params,options)
+  const queryOptions = getListPatientCountQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

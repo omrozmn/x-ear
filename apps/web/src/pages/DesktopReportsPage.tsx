@@ -24,27 +24,25 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { customInstance } from '../api/orval-mutator';
-import { Button } from '@x-ear/ui-web';
+
+import { Button, Input, Select } from '@x-ear/ui-web';
 import { usePermissions } from '../hooks/usePermissions';
 import { unwrapObject, unwrapArray, unwrapPaginated } from '../utils/response-unwrap';
 import {
-  useReportOverview,
-  useReportPatients,
-  useReportFinancial,
-  useGetActivityLogs,
-  useReportPromissoryNotes,
-  useReportPromissoryNotesByPatient,
-  useReportPromissoryNotesList,
-  useReportRemainingPayments,
-  useReportCashflowSummary,
-  useReportPosMovements,
-  getReportOverviewQueryKey,
-  getReportFinancialQueryKey,
-  getReportPatientsQueryKey,
-  getGetActivityLogsQueryKey,
-  useGetActivityLogFilterOptions,
+  useListReportOverview,
+  useListReportPatients,
+  useListReportFinancial,
+  useListActivityLogs,
+  useListReportPromissoryNotes,
+  useListReportPromissoryNoteByPatient,
+  useListReportPromissoryNoteList,
+  useListReportRemainingPayments,
+  useListReportCashflowSummary,
+  useListReportPosMovements,
+  getListReportOverviewQueryKey,
+  getListReportFinancialQueryKey,
+  getListReportPatientsQueryKey,
+  useListActivityLogFilterOptions,
 } from '@/api/generated';
 
 type TabId = 'overview' | 'sales' | 'patients' | 'promissory' | 'remaining' | 'activity' | 'pos_movements';
@@ -197,14 +195,14 @@ function KPICard({ title, value, icon: Icon, color, trend, subtitle }: {
 
 // Overview Tab Content
 function OverviewTab({ filters }: { filters: FilterState }) {
-  const { data: overviewData, isLoading, error, refetch } = useReportOverview(
+  const { data: overviewData, isLoading, error, refetch } = useListReportOverview(
     { days: filters.days },
-    { query: { queryKey: [...getReportOverviewQueryKey({ days: filters.days })] } }
+    { query: { queryKey: [...getListReportOverviewQueryKey({ days: filters.days })] } }
   );
 
-  const { data: financialData } = useReportFinancial(
+  const { data: financialData } = useListReportFinancial(
     { days: filters.days },
-    { query: { queryKey: [...getReportFinancialQueryKey({ days: filters.days })] } }
+    { query: { queryKey: [...getListReportFinancialQueryKey({ days: filters.days })] } }
   );
 
   const formatCurrency = (amount: number) => {
@@ -310,9 +308,9 @@ function OverviewTab({ filters }: { filters: FilterState }) {
 
 // Sales Tab Content
 function SalesTab({ filters }: { filters: FilterState }) {
-  const { data: financialData, isLoading, error, refetch } = useReportFinancial(
+  const { data: financialData, isLoading, error, refetch } = useListReportFinancial(
     { days: filters.days },
-    { query: { queryKey: [...getReportFinancialQueryKey({ days: filters.days })] } }
+    { query: { queryKey: [...getListReportFinancialQueryKey({ days: filters.days })] } }
   );
 
   const formatCurrency = (amount: number) => {
@@ -408,9 +406,9 @@ function SalesTab({ filters }: { filters: FilterState }) {
 
 // Patients Tab Content
 function PatientsTab({ filters }: { filters: FilterState }) {
-  const { data: patientsData, isLoading, error, refetch } = useReportPatients(
+  const { data: patientsData, isLoading, error, refetch } = useListReportPatients(
     { days: filters.days },
-    { query: { queryKey: [...getReportPatientsQueryKey({ days: filters.days })] } }
+    { query: { queryKey: [...getListReportPatientsQueryKey({ days: filters.days })] } }
   );
 
   if (isLoading) {
@@ -521,17 +519,17 @@ function PromissoryNotesTab({ filters }: { filters: FilterState }) {
   const [listPage, setListPage] = useState(1);
 
   // Using Orval-generated hooks for promissory notes reports
-  const { data: notesData, isLoading, error, refetch } = useReportPromissoryNotes({
+  const { data: notesData, isLoading, error, refetch } = useListReportPromissoryNotes({
     days: 365
   });
 
-  const { data: byPatientData, isLoading: patientLoading } = useReportPromissoryNotesByPatient({
+  const { data: byPatientData, isLoading: patientLoading } = useListReportPromissoryNoteByPatient({
     status: 'active',
     page: 1,
     per_page: 10
   });
 
-  const { data: listData, isLoading: listLoading } = useReportPromissoryNotesList(
+  const { data: listData, isLoading: listLoading } = useListReportPromissoryNoteList(
     { status: listFilter, page: listPage, per_page: 20 },
     { query: { enabled: showListModal } }
   );
@@ -901,11 +899,11 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
   const [minAmount, setMinAmount] = useState(0);
 
   // Using Orval-generated hooks for reports API
-  const { data: paymentsData, isLoading, error, refetch } = useReportRemainingPayments(
+  const { data: paymentsData, isLoading, error, refetch } = useListReportRemainingPayments(
     { page, per_page: 20, min_amount: minAmount }
   );
 
-  const { data: cashflowData } = useReportCashflowSummary(
+  const { data: cashflowData } = useListReportCashflowSummary(
     { days: filters.days }
   );
 
@@ -1020,17 +1018,18 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
           <Filter className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           <div>
             <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Minimum Tutar</label>
-            <select
-              className="border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              value={minAmount}
+            <Select
+              className="px-3 py-1.5 text-sm"
+              value={String(minAmount)}
               onChange={(e) => { setMinAmount(Number(e.target.value)); setPage(1); }}
-            >
-              <option value={0}>Tümü</option>
-              <option value={1000}>1.000 ₺ ve üzeri</option>
-              <option value={5000}>5.000 ₺ ve üzeri</option>
-              <option value={10000}>10.000 ₺ ve üzeri</option>
-              <option value={25000}>25.000 ₺ ve üzeri</option>
-            </select>
+              options={[
+                { value: "0", label: "Tümü" },
+                { value: "1000", label: "1.000 ₺ ve üzeri" },
+                { value: "5000", label: "5.000 ₺ ve üzeri" },
+                { value: "10000", label: "10.000 ₺ ve üzeri" },
+                { value: "25000", label: "25.000 ₺ ve üzeri" }
+              ]}
+            />
           </div>
         </div>
       </div>
@@ -1091,21 +1090,23 @@ function RemainingPaymentsTab({ filters }: { filters: FilterState }) {
                   Toplam {meta.total} hasta
                 </span>
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="px-3 py-1.5 border rounded-lg text-sm disabled:opacity-50 hover:bg-gray-100"
+                    variant="outline"
+                    className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
                   >
                     Önceki
-                  </button>
+                  </Button>
                   <span className="text-sm">{page} / {meta.totalPages}</span>
-                  <button
+                  <Button
                     onClick={() => setPage(p => Math.min(meta.totalPages, p + 1))}
                     disabled={page >= meta.totalPages}
-                    className="px-3 py-1.5 border rounded-lg text-sm disabled:opacity-50 hover:bg-gray-100"
+                    variant="outline"
+                    className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
                   >
                     Sonraki
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -1132,7 +1133,7 @@ function ActivityTab() {
     search: ''
   });
 
-  const { data: logsResponse, isLoading } = useGetActivityLogs({
+  const { data: logsResponse, isLoading } = useListActivityLogs({
     action: activityFilters.action || undefined,
     user_id: activityFilters.user_id || undefined,
     search: activityFilters.search || undefined,
@@ -1141,7 +1142,7 @@ function ActivityTab() {
   });
 
   // Replace stub with generated hook
-  const { data: filterOptions } = useGetActivityLogFilterOptions();
+  const { data: filterOptions } = useListActivityLogFilterOptions();
 
   const { data: logs, pagination } = unwrapPaginated<any>(logsResponse);
   const options = unwrapObject<any>(filterOptions);
@@ -1153,35 +1154,33 @@ function ActivityTab() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Kullanıcı</label>
-            <select
-              className="w-full border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            <Select
+              className="w-full text-sm"
               value={activityFilters.user_id}
-              onChange={(e) => setActivityFilters({ ...activityFilters, user_id: e.target.value })}
-            >
-              <option value="">Tüm Kullanıcılar</option>
-              {options?.users?.map((u: any) => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </select>
+              onChange={(e: any) => setActivityFilters({ ...activityFilters, user_id: e.target.value })}
+              options={[
+                { value: "", label: "Tüm Kullanıcılar" },
+                ...(options?.users?.map((u: any) => ({ value: u.id, label: u.name })) || [])
+              ]}
+            />
           </div>
           <div>
             <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Aksiyon</label>
-            <select
-              className="w-full border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            <Select
+              className="w-full text-sm"
               value={activityFilters.action}
-              onChange={(e) => setActivityFilters({ ...activityFilters, action: e.target.value })}
-            >
-              <option value="">Tüm Aksiyonlar</option>
-              {options?.actions?.map((action: string) => (
-                <option key={action} value={action}>{action}</option>
-              ))}
-            </select>
+              onChange={(e: any) => setActivityFilters({ ...activityFilters, action: e.target.value })}
+              options={[
+                { value: "", label: "Tüm Aksiyonlar" },
+                ...(options?.actions?.map((action: string) => ({ value: action, label: action })) || [])
+              ]}
+            />
           </div>
           <div className="md:col-span-2">
             <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Arama</label>
-            <input
+            <Input
               type="text"
-              className="w-full border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full text-sm"
               placeholder="Mesaj veya aksiyon ara..."
               value={activityFilters.search}
               onChange={(e) => setActivityFilters({ ...activityFilters, search: e.target.value })}
@@ -1247,13 +1246,14 @@ function ActivityTab() {
                         {log.ipAddress}
                       </td>
                       <td className="px-4 py-3">
-                        <button
+                        <Button
                           onClick={() => setSelectedLog(log)}
-                          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                          variant="ghost"
+                          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors !w-auto !h-auto"
                           title="Detay"
                         >
                           <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -1276,32 +1276,35 @@ function ActivityTab() {
                   Toplam {pagination.total} kayit, Sayfa {page}/{pagination.totalPages}
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="px-3 py-1.5 border dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    variant="outline"
+                    className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
                   >
                     Onceki
-                  </button>
-                  <select
-                    value={perPage}
-                    onChange={(e) => {
+                  </Button>
+                  <Select
+                    value={String(perPage)}
+                    onChange={(e: any) => {
                       setPerPage(Number(e.target.value));
                       setPage(1);
                     }}
-                    className="border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  >
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                  </select>
-                  <button
+                    className="px-2 py-1.5 text-sm"
+                    options={[
+                      { value: "10", label: "10" },
+                      { value: "20", label: "20" },
+                      { value: "50", label: "50" }
+                    ]}
+                  />
+                  <Button
                     onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
                     disabled={page >= pagination.totalPages}
-                    className="px-3 py-1.5 border dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    variant="outline"
+                    className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
                   >
                     Sonraki
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -1325,7 +1328,7 @@ function ActivityTab() {
 function PosMovementsTab({ filters }: { filters: FilterState }) {
   const [page, setPage] = useState(1);
   // Using Orval-generated hook for POS movements
-  const { data: reportData, isLoading, error, refetch } = useReportPosMovements(
+  const { data: reportData, isLoading, error, refetch } = useListReportPosMovements(
     { page, per_page: 20, days: filters.days }
   );
 
@@ -1458,21 +1461,23 @@ function PosMovementsTab({ filters }: { filters: FilterState }) {
                   Toplam {meta.total} işlem
                 </span>
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="px-3 py-1.5 border dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    variant="outline"
+                    className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
                   >
                     Önceki
-                  </button>
+                  </Button>
                   <span className="text-sm text-gray-600 dark:text-gray-300">{page} / {meta.total_pages}</span>
-                  <button
+                  <Button
                     onClick={() => setPage(p => Math.min(meta.total_pages, p + 1))}
                     disabled={page >= meta.total_pages}
-                    className="px-3 py-1.5 border dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    variant="outline"
+                    className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
                   >
                     Sonraki
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -1621,16 +1626,17 @@ export function DesktopReportsPage() {
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filtreler:</span>
               </div>
               <div>
-                <select
-                  className="border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  value={filters.days}
-                  onChange={(e) => setFilters(prev => ({ ...prev, days: Number(e.target.value) }))}
-                >
-                  <option value={7}>Son 7 Gun</option>
-                  <option value={30}>Son 30 Gun</option>
-                  <option value={90}>Son 90 Gun</option>
-                  <option value={365}>Son 1 Yil</option>
-                </select>
+                <Select
+                  className="px-3 py-2 text-sm"
+                  value={String(filters.days)}
+                  onChange={(e: any) => setFilters(prev => ({ ...prev, days: Number(e.target.value) }))}
+                  options={[
+                    { value: "7", label: "Son 7 Gun" },
+                    { value: "30", label: "Son 30 Gun" },
+                    { value: "90", label: "Son 90 Gun" },
+                    { value: "365", label: "Son 1 Yil" }
+                  ]}
+                />
               </div>
             </div>
           </div>
@@ -1644,17 +1650,18 @@ export function DesktopReportsPage() {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     onClick={() => handleTabChange(tab.id)}
+                    variant="ghost"
                     className={`${isActive
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400'
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400 rounded-none'
                       : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center transition-colors`}
+                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center transition-colors !w-auto !h-auto rounded-none`}
                   >
                     <Icon className="w-4 h-4 mr-2" />
                     {tab.label}
-                  </button>
+                  </Button>
                 );
               })}
             </nav>

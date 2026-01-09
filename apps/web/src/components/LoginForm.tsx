@@ -56,7 +56,7 @@ export function LoginForm() {
       if (!useAuthStore.getState().requiresOtp) {
         window.location.replace('/');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Error is already set by the store, but ensure it's displayed
       console.error('Login failed:', error);
 

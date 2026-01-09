@@ -63,7 +63,7 @@ class BirfaturaConfigUpdate(BaseModel):
     appSecretKey: Optional[str] = ""
     emailTemplate: Optional[dict] = None
 
-@router.post("/init-db", response_model=ResponseEnvelope)
+@router.post("/init-db", operation_id="createAdminIntegrationInitDb", response_model=ResponseEnvelope)
 async def init_db(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("system.manage", admin_only=True))
@@ -76,7 +76,7 @@ async def init_db(
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/vatan-sms/config", response_model=IntegrationDetailResponse)
+@router.get("/vatan-sms/config", operation_id="listAdminIntegrationVatanSmConfig", response_model=IntegrationDetailResponse)
 async def get_vatan_sms_config(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("integrations.read", admin_only=True))
@@ -113,7 +113,7 @@ async def get_vatan_sms_config(
         logger.error(f"Get VatanSMS config error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/vatan-sms/config", response_model=ResponseEnvelope)
+@router.put("/vatan-sms/config", operation_id="updateAdminIntegrationVatanSmConfig", response_model=ResponseEnvelope)
 async def update_vatan_sms_config(
     data: VatanSmsConfigUpdate,
     db: Session = Depends(get_db),
@@ -149,7 +149,7 @@ async def update_vatan_sms_config(
         logger.error(f"Update VatanSMS config error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/birfatura/config", response_model=IntegrationDetailResponse)
+@router.get("/birfatura/config", operation_id="listAdminIntegrationBirfaturaConfig", response_model=IntegrationDetailResponse)
 async def get_birfatura_config(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("integrations.read", admin_only=True))
@@ -184,7 +184,7 @@ async def get_birfatura_config(
         logger.error(f"Get BirFatura config error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/birfatura/config", response_model=ResponseEnvelope)
+@router.put("/birfatura/config", operation_id="updateAdminIntegrationBirfaturaConfig", response_model=ResponseEnvelope)
 async def update_birfatura_config(
     data: BirfaturaConfigUpdate,
     db: Session = Depends(get_db),

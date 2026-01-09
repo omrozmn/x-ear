@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Input, Select, Button, Checkbox, Badge } from '@x-ear/ui-web';
 import BrandAutocomplete from '../../pages/inventory/components/BrandAutocomplete';
-import { 
-  Search, 
-  Filter, 
-  X, 
-  ChevronDown, 
+import {
+  Search,
+  Filter,
+  X,
+  ChevronDown,
   ChevronUp,
   Calendar,
   DollarSign,
@@ -165,7 +165,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
     const newFeatures = selectedFeatures.includes(feature)
       ? selectedFeatures.filter(f => f !== feature)
       : [...selectedFeatures, feature];
-    
+
     setSelectedFeatures(newFeatures);
     handleFilterChange('features', newFeatures);
   };
@@ -207,11 +207,11 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   const supplierOptions = suppliers.map(supplier => ({ value: supplier, label: supplier }));
 
   return (
-    <Card className="p-4">
+    <Card className="p-4 bg-white dark:bg-slate-800 dark:border-slate-700">
       {/* Filter Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <Filter className="w-5 h-5 text-gray-500" />
+          <Filter className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Filtreler</h3>
           {getActiveFilterCount() > 0 && (
             <Badge variant="secondary" className="ml-2">
@@ -225,7 +225,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               variant="ghost"
               size="sm"
               onClick={clearAllFilters}
-              className="text-red-600 hover:text-red-700"
+              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
             >
               <X className="w-4 h-4 mr-1" />
               Temizle
@@ -236,6 +236,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               variant="ghost"
               size="sm"
               onClick={onToggleExpanded}
+              className="dark:text-gray-300 dark:hover:bg-slate-700"
             >
               {isExpanded ? (
                 <ChevronUp className="w-4 h-4" />
@@ -258,6 +259,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             value={localFilters.search || ''}
             onChange={(e) => handleFilterChange('search', e.target.value)}
             leftIcon={<Search className="w-4 h-4" />}
+            className="dark:bg-slate-800 dark:text-white dark:border-slate-700"
           />
         </div>
 

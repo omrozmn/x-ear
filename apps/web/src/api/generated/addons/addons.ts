@@ -41,7 +41,7 @@ import { customInstance } from '../../orval-mutator';
  * Get all active addons (Public)
  * @summary Get Addons
  */
-export const getAddons = (
+export const getAddonsApiAddonsGet = (
     
  signal?: AbortSignal
 ) => {
@@ -56,69 +56,69 @@ export const getAddons = (
 
 
 
-export const getGetAddonsQueryKey = () => {
+export const getGetAddonsApiAddonsGetQueryKey = () => {
     return [
     `/api/addons`
     ] as const;
     }
 
     
-export const getGetAddonsQueryOptions = <TData = Awaited<ReturnType<typeof getAddons>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAddons>>, TError, TData>>, }
+export const getGetAddonsApiAddonsGetQueryOptions = <TData = Awaited<ReturnType<typeof getAddonsApiAddonsGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAddonsApiAddonsGet>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAddonsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAddonsApiAddonsGetQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAddons>>> = ({ signal }) => getAddons(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAddonsApiAddonsGet>>> = ({ signal }) => getAddonsApiAddonsGet(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAddons>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAddonsApiAddonsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAddonsQueryResult = NonNullable<Awaited<ReturnType<typeof getAddons>>>
-export type GetAddonsQueryError = unknown
+export type GetAddonsApiAddonsGetQueryResult = NonNullable<Awaited<ReturnType<typeof getAddonsApiAddonsGet>>>
+export type GetAddonsApiAddonsGetQueryError = unknown
 
 
-export function useGetAddons<TData = Awaited<ReturnType<typeof getAddons>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAddons>>, TError, TData>> & Pick<
+export function useGetAddonsApiAddonsGet<TData = Awaited<ReturnType<typeof getAddonsApiAddonsGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAddonsApiAddonsGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAddons>>,
+          Awaited<ReturnType<typeof getAddonsApiAddonsGet>>,
           TError,
-          Awaited<ReturnType<typeof getAddons>>
+          Awaited<ReturnType<typeof getAddonsApiAddonsGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAddons<TData = Awaited<ReturnType<typeof getAddons>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAddons>>, TError, TData>> & Pick<
+export function useGetAddonsApiAddonsGet<TData = Awaited<ReturnType<typeof getAddonsApiAddonsGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAddonsApiAddonsGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAddons>>,
+          Awaited<ReturnType<typeof getAddonsApiAddonsGet>>,
           TError,
-          Awaited<ReturnType<typeof getAddons>>
+          Awaited<ReturnType<typeof getAddonsApiAddonsGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAddons<TData = Awaited<ReturnType<typeof getAddons>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAddons>>, TError, TData>>, }
+export function useGetAddonsApiAddonsGet<TData = Awaited<ReturnType<typeof getAddonsApiAddonsGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAddonsApiAddonsGet>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Addons
  */
 
-export function useGetAddons<TData = Awaited<ReturnType<typeof getAddons>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAddons>>, TError, TData>>, }
+export function useGetAddonsApiAddonsGet<TData = Awaited<ReturnType<typeof getAddonsApiAddonsGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAddonsApiAddonsGet>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAddonsQueryOptions(options)
+  const queryOptions = getGetAddonsApiAddonsGetQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -134,7 +134,7 @@ export function useGetAddons<TData = Awaited<ReturnType<typeof getAddons>>, TErr
  * Create a new addon (Super Admin only)
  * @summary Create Addon
  */
-export const createAddon = (
+export const createAddonApiAddonsPost = (
     addonCreate: AddonCreate,
  signal?: AbortSignal
 ) => {
@@ -150,11 +150,11 @@ export const createAddon = (
   
 
 
-export const getCreateAddonMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAddon>>, TError,{data: AddonCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAddon>>, TError,{data: AddonCreate}, TContext> => {
+export const getCreateAddonApiAddonsPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAddonApiAddonsPost>>, TError,{data: AddonCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAddonApiAddonsPost>>, TError,{data: AddonCreate}, TContext> => {
 
-const mutationKey = ['createAddon'];
+const mutationKey = ['createAddonApiAddonsPost'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -164,10 +164,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAddon>>, {data: AddonCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAddonApiAddonsPost>>, {data: AddonCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createAddon(data,)
+          return  createAddonApiAddonsPost(data,)
         }
 
         
@@ -175,23 +175,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateAddonMutationResult = NonNullable<Awaited<ReturnType<typeof createAddon>>>
-    export type CreateAddonMutationBody = AddonCreate
-    export type CreateAddonMutationError = HTTPValidationError
+    export type CreateAddonApiAddonsPostMutationResult = NonNullable<Awaited<ReturnType<typeof createAddonApiAddonsPost>>>
+    export type CreateAddonApiAddonsPostMutationBody = AddonCreate
+    export type CreateAddonApiAddonsPostMutationError = HTTPValidationError
 
     /**
  * @summary Create Addon
  */
-export const useCreateAddon = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAddon>>, TError,{data: AddonCreate}, TContext>, }
+export const useCreateAddonApiAddonsPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAddonApiAddonsPost>>, TError,{data: AddonCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createAddon>>,
+        Awaited<ReturnType<typeof createAddonApiAddonsPost>>,
         TError,
         {data: AddonCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateAddonMutationOptions(options);
+      const mutationOptions = getCreateAddonApiAddonsPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -199,7 +199,7 @@ export const useCreateAddon = <TError = HTTPValidationError,
  * Get all addons for admin (including inactive)
  * @summary Get Admin Addons
  */
-export const getAdminAddons = (
+export const listAddonAdmin = (
     
  signal?: AbortSignal
 ) => {
@@ -214,69 +214,69 @@ export const getAdminAddons = (
 
 
 
-export const getGetAdminAddonsQueryKey = () => {
+export const getListAddonAdminQueryKey = () => {
     return [
     `/api/addons/admin`
     ] as const;
     }
 
     
-export const getGetAdminAddonsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminAddons>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAddons>>, TError, TData>>, }
+export const getListAddonAdminQueryOptions = <TData = Awaited<ReturnType<typeof listAddonAdmin>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddonAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminAddonsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAddonAdminQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminAddons>>> = ({ signal }) => getAdminAddons(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAddonAdmin>>> = ({ signal }) => listAddonAdmin(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminAddons>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAddonAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminAddonsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminAddons>>>
-export type GetAdminAddonsQueryError = unknown
+export type ListAddonAdminQueryResult = NonNullable<Awaited<ReturnType<typeof listAddonAdmin>>>
+export type ListAddonAdminQueryError = unknown
 
 
-export function useGetAdminAddons<TData = Awaited<ReturnType<typeof getAdminAddons>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAddons>>, TError, TData>> & Pick<
+export function useListAddonAdmin<TData = Awaited<ReturnType<typeof listAddonAdmin>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddonAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminAddons>>,
+          Awaited<ReturnType<typeof listAddonAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAdminAddons>>
+          Awaited<ReturnType<typeof listAddonAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminAddons<TData = Awaited<ReturnType<typeof getAdminAddons>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAddons>>, TError, TData>> & Pick<
+export function useListAddonAdmin<TData = Awaited<ReturnType<typeof listAddonAdmin>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddonAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminAddons>>,
+          Awaited<ReturnType<typeof listAddonAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAdminAddons>>
+          Awaited<ReturnType<typeof listAddonAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminAddons<TData = Awaited<ReturnType<typeof getAdminAddons>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAddons>>, TError, TData>>, }
+export function useListAddonAdmin<TData = Awaited<ReturnType<typeof listAddonAdmin>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddonAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Admin Addons
  */
 
-export function useGetAdminAddons<TData = Awaited<ReturnType<typeof getAdminAddons>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAddons>>, TError, TData>>, }
+export function useListAddonAdmin<TData = Awaited<ReturnType<typeof listAddonAdmin>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddonAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminAddonsQueryOptions(options)
+  const queryOptions = getListAddonAdminQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

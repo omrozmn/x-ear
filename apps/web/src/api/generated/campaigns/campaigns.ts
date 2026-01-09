@@ -25,11 +25,11 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  AdminGetCampaignsParams,
   CampaignCreate,
   CampaignUpdate,
-  GetCampaignsParams,
   HTTPValidationError,
+  ListAdminCampaignsParams,
+  ListCampaignsParams,
   ResponseEnvelopeCampaignRead,
   ResponseEnvelopeListCampaignRead
 } from '.././schemas';
@@ -43,8 +43,8 @@ import { customInstance } from '../../orval-mutator';
  * List campaigns for the current tenant
  * @summary Get Campaigns
  */
-export const getCampaigns = (
-    params?: GetCampaignsParams,
+export const listCampaigns = (
+    params?: ListCampaignsParams,
  signal?: AbortSignal
 ) => {
       
@@ -59,69 +59,69 @@ export const getCampaigns = (
 
 
 
-export const getGetCampaignsQueryKey = (params?: GetCampaignsParams,) => {
+export const getListCampaignsQueryKey = (params?: ListCampaignsParams,) => {
     return [
     `/api/campaigns`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetCampaignsQueryOptions = <TData = Awaited<ReturnType<typeof getCampaigns>>, TError = HTTPValidationError>(params?: GetCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCampaigns>>, TError, TData>>, }
+export const getListCampaignsQueryOptions = <TData = Awaited<ReturnType<typeof listCampaigns>>, TError = HTTPValidationError>(params?: ListCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCampaigns>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCampaignsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListCampaignsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCampaigns>>> = ({ signal }) => getCampaigns(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCampaigns>>> = ({ signal }) => listCampaigns(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCampaigns>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCampaigns>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetCampaignsQueryResult = NonNullable<Awaited<ReturnType<typeof getCampaigns>>>
-export type GetCampaignsQueryError = HTTPValidationError
+export type ListCampaignsQueryResult = NonNullable<Awaited<ReturnType<typeof listCampaigns>>>
+export type ListCampaignsQueryError = HTTPValidationError
 
 
-export function useGetCampaigns<TData = Awaited<ReturnType<typeof getCampaigns>>, TError = HTTPValidationError>(
- params: undefined |  GetCampaignsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCampaigns>>, TError, TData>> & Pick<
+export function useListCampaigns<TData = Awaited<ReturnType<typeof listCampaigns>>, TError = HTTPValidationError>(
+ params: undefined |  ListCampaignsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCampaigns>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCampaigns>>,
+          Awaited<ReturnType<typeof listCampaigns>>,
           TError,
-          Awaited<ReturnType<typeof getCampaigns>>
+          Awaited<ReturnType<typeof listCampaigns>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCampaigns<TData = Awaited<ReturnType<typeof getCampaigns>>, TError = HTTPValidationError>(
- params?: GetCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCampaigns>>, TError, TData>> & Pick<
+export function useListCampaigns<TData = Awaited<ReturnType<typeof listCampaigns>>, TError = HTTPValidationError>(
+ params?: ListCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCampaigns>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCampaigns>>,
+          Awaited<ReturnType<typeof listCampaigns>>,
           TError,
-          Awaited<ReturnType<typeof getCampaigns>>
+          Awaited<ReturnType<typeof listCampaigns>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCampaigns<TData = Awaited<ReturnType<typeof getCampaigns>>, TError = HTTPValidationError>(
- params?: GetCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCampaigns>>, TError, TData>>, }
+export function useListCampaigns<TData = Awaited<ReturnType<typeof listCampaigns>>, TError = HTTPValidationError>(
+ params?: ListCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCampaigns>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Campaigns
  */
 
-export function useGetCampaigns<TData = Awaited<ReturnType<typeof getCampaigns>>, TError = HTTPValidationError>(
- params?: GetCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCampaigns>>, TError, TData>>, }
+export function useListCampaigns<TData = Awaited<ReturnType<typeof listCampaigns>>, TError = HTTPValidationError>(
+ params?: ListCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCampaigns>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetCampaignsQueryOptions(params,options)
+  const queryOptions = getListCampaignsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -137,7 +137,7 @@ export function useGetCampaigns<TData = Awaited<ReturnType<typeof getCampaigns>>
  * Create a new campaign
  * @summary Create Campaign
  */
-export const createCampaign = (
+export const createCampaigns = (
     campaignCreate: CampaignCreate,
  signal?: AbortSignal
 ) => {
@@ -153,11 +153,11 @@ export const createCampaign = (
   
 
 
-export const getCreateCampaignMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCampaign>>, TError,{data: CampaignCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createCampaign>>, TError,{data: CampaignCreate}, TContext> => {
+export const getCreateCampaignsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCampaigns>>, TError,{data: CampaignCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createCampaigns>>, TError,{data: CampaignCreate}, TContext> => {
 
-const mutationKey = ['createCampaign'];
+const mutationKey = ['createCampaigns'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -167,10 +167,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCampaign>>, {data: CampaignCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCampaigns>>, {data: CampaignCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createCampaign(data,)
+          return  createCampaigns(data,)
         }
 
         
@@ -178,23 +178,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateCampaignMutationResult = NonNullable<Awaited<ReturnType<typeof createCampaign>>>
-    export type CreateCampaignMutationBody = CampaignCreate
-    export type CreateCampaignMutationError = HTTPValidationError
+    export type CreateCampaignsMutationResult = NonNullable<Awaited<ReturnType<typeof createCampaigns>>>
+    export type CreateCampaignsMutationBody = CampaignCreate
+    export type CreateCampaignsMutationError = HTTPValidationError
 
     /**
  * @summary Create Campaign
  */
-export const useCreateCampaign = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCampaign>>, TError,{data: CampaignCreate}, TContext>, }
+export const useCreateCampaigns = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCampaigns>>, TError,{data: CampaignCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createCampaign>>,
+        Awaited<ReturnType<typeof createCampaigns>>,
         TError,
         {data: CampaignCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateCampaignMutationOptions(options);
+      const mutationOptions = getCreateCampaignsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -422,8 +422,8 @@ export const useDeleteCampaign = <TError = HTTPValidationError,
  * List all campaigns (Admin)
  * @summary Admin Get Campaigns
  */
-export const adminGetCampaigns = (
-    params?: AdminGetCampaignsParams,
+export const listAdminCampaigns = (
+    params?: ListAdminCampaignsParams,
  signal?: AbortSignal
 ) => {
       
@@ -438,69 +438,69 @@ export const adminGetCampaigns = (
 
 
 
-export const getAdminGetCampaignsQueryKey = (params?: AdminGetCampaignsParams,) => {
+export const getListAdminCampaignsQueryKey = (params?: ListAdminCampaignsParams,) => {
     return [
     `/api/admin/campaigns`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getAdminGetCampaignsQueryOptions = <TData = Awaited<ReturnType<typeof adminGetCampaigns>>, TError = HTTPValidationError>(params?: AdminGetCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminGetCampaigns>>, TError, TData>>, }
+export const getListAdminCampaignsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminCampaigns>>, TError = HTTPValidationError>(params?: ListAdminCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminCampaigns>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getAdminGetCampaignsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminCampaignsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminGetCampaigns>>> = ({ signal }) => adminGetCampaigns(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminCampaigns>>> = ({ signal }) => listAdminCampaigns(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminGetCampaigns>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminCampaigns>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type AdminGetCampaignsQueryResult = NonNullable<Awaited<ReturnType<typeof adminGetCampaigns>>>
-export type AdminGetCampaignsQueryError = HTTPValidationError
+export type ListAdminCampaignsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminCampaigns>>>
+export type ListAdminCampaignsQueryError = HTTPValidationError
 
 
-export function useAdminGetCampaigns<TData = Awaited<ReturnType<typeof adminGetCampaigns>>, TError = HTTPValidationError>(
- params: undefined |  AdminGetCampaignsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminGetCampaigns>>, TError, TData>> & Pick<
+export function useListAdminCampaigns<TData = Awaited<ReturnType<typeof listAdminCampaigns>>, TError = HTTPValidationError>(
+ params: undefined |  ListAdminCampaignsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminCampaigns>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminGetCampaigns>>,
+          Awaited<ReturnType<typeof listAdminCampaigns>>,
           TError,
-          Awaited<ReturnType<typeof adminGetCampaigns>>
+          Awaited<ReturnType<typeof listAdminCampaigns>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useAdminGetCampaigns<TData = Awaited<ReturnType<typeof adminGetCampaigns>>, TError = HTTPValidationError>(
- params?: AdminGetCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminGetCampaigns>>, TError, TData>> & Pick<
+export function useListAdminCampaigns<TData = Awaited<ReturnType<typeof listAdminCampaigns>>, TError = HTTPValidationError>(
+ params?: ListAdminCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminCampaigns>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminGetCampaigns>>,
+          Awaited<ReturnType<typeof listAdminCampaigns>>,
           TError,
-          Awaited<ReturnType<typeof adminGetCampaigns>>
+          Awaited<ReturnType<typeof listAdminCampaigns>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useAdminGetCampaigns<TData = Awaited<ReturnType<typeof adminGetCampaigns>>, TError = HTTPValidationError>(
- params?: AdminGetCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminGetCampaigns>>, TError, TData>>, }
+export function useListAdminCampaigns<TData = Awaited<ReturnType<typeof listAdminCampaigns>>, TError = HTTPValidationError>(
+ params?: ListAdminCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminCampaigns>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Admin Get Campaigns
  */
 
-export function useAdminGetCampaigns<TData = Awaited<ReturnType<typeof adminGetCampaigns>>, TError = HTTPValidationError>(
- params?: AdminGetCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminGetCampaigns>>, TError, TData>>, }
+export function useListAdminCampaigns<TData = Awaited<ReturnType<typeof listAdminCampaigns>>, TError = HTTPValidationError>(
+ params?: ListAdminCampaignsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminCampaigns>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getAdminGetCampaignsQueryOptions(params,options)
+  const queryOptions = getListAdminCampaignsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

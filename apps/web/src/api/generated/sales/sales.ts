@@ -25,9 +25,12 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetSalesParams,
+  DeviceAssignmentCreate,
+  DeviceAssignmentUpdate,
   HTTPValidationError,
+  ListSalesParams,
   ResponseEnvelopeAny,
+  ResponseEnvelopeDeviceAssignmentCreateResponse,
   ResponseEnvelopeListSaleRead,
   SaleCreate,
   SaleUpdate,
@@ -43,8 +46,8 @@ import { customInstance } from '../../orval-mutator';
  * Get all sales with tenant scoping.
  * @summary Get Sales
  */
-export const getSales = (
-    params?: GetSalesParams,
+export const listSales = (
+    params?: ListSalesParams,
  signal?: AbortSignal
 ) => {
       
@@ -59,69 +62,69 @@ export const getSales = (
 
 
 
-export const getGetSalesQueryKey = (params?: GetSalesParams,) => {
+export const getListSalesQueryKey = (params?: ListSalesParams,) => {
     return [
     `/api/sales`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetSalesQueryOptions = <TData = Awaited<ReturnType<typeof getSales>>, TError = HTTPValidationError>(params?: GetSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSales>>, TError, TData>>, }
+export const getListSalesQueryOptions = <TData = Awaited<ReturnType<typeof listSales>>, TError = HTTPValidationError>(params?: ListSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSales>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSalesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListSalesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSales>>> = ({ signal }) => getSales(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSales>>> = ({ signal }) => listSales(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSales>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSales>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetSalesQueryResult = NonNullable<Awaited<ReturnType<typeof getSales>>>
-export type GetSalesQueryError = HTTPValidationError
+export type ListSalesQueryResult = NonNullable<Awaited<ReturnType<typeof listSales>>>
+export type ListSalesQueryError = HTTPValidationError
 
 
-export function useGetSales<TData = Awaited<ReturnType<typeof getSales>>, TError = HTTPValidationError>(
- params: undefined |  GetSalesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSales>>, TError, TData>> & Pick<
+export function useListSales<TData = Awaited<ReturnType<typeof listSales>>, TError = HTTPValidationError>(
+ params: undefined |  ListSalesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSales>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSales>>,
+          Awaited<ReturnType<typeof listSales>>,
           TError,
-          Awaited<ReturnType<typeof getSales>>
+          Awaited<ReturnType<typeof listSales>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSales<TData = Awaited<ReturnType<typeof getSales>>, TError = HTTPValidationError>(
- params?: GetSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSales>>, TError, TData>> & Pick<
+export function useListSales<TData = Awaited<ReturnType<typeof listSales>>, TError = HTTPValidationError>(
+ params?: ListSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSales>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSales>>,
+          Awaited<ReturnType<typeof listSales>>,
           TError,
-          Awaited<ReturnType<typeof getSales>>
+          Awaited<ReturnType<typeof listSales>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSales<TData = Awaited<ReturnType<typeof getSales>>, TError = HTTPValidationError>(
- params?: GetSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSales>>, TError, TData>>, }
+export function useListSales<TData = Awaited<ReturnType<typeof listSales>>, TError = HTTPValidationError>(
+ params?: ListSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSales>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Sales
  */
 
-export function useGetSales<TData = Awaited<ReturnType<typeof getSales>>, TError = HTTPValidationError>(
- params?: GetSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSales>>, TError, TData>>, }
+export function useListSales<TData = Awaited<ReturnType<typeof listSales>>, TError = HTTPValidationError>(
+ params?: ListSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSales>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetSalesQueryOptions(params,options)
+  const queryOptions = getListSalesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -137,7 +140,7 @@ export function useGetSales<TData = Awaited<ReturnType<typeof getSales>>, TError
  * Create a new sale.
  * @summary Create Sale
  */
-export const createSale = (
+export const createSales = (
     saleCreate: SaleCreate,
  signal?: AbortSignal
 ) => {
@@ -153,11 +156,11 @@ export const createSale = (
   
 
 
-export const getCreateSaleMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSale>>, TError,{data: SaleCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createSale>>, TError,{data: SaleCreate}, TContext> => {
+export const getCreateSalesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSales>>, TError,{data: SaleCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSales>>, TError,{data: SaleCreate}, TContext> => {
 
-const mutationKey = ['createSale'];
+const mutationKey = ['createSales'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -167,10 +170,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSale>>, {data: SaleCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSales>>, {data: SaleCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createSale(data,)
+          return  createSales(data,)
         }
 
         
@@ -178,30 +181,30 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateSaleMutationResult = NonNullable<Awaited<ReturnType<typeof createSale>>>
-    export type CreateSaleMutationBody = SaleCreate
-    export type CreateSaleMutationError = HTTPValidationError
+    export type CreateSalesMutationResult = NonNullable<Awaited<ReturnType<typeof createSales>>>
+    export type CreateSalesMutationBody = SaleCreate
+    export type CreateSalesMutationError = HTTPValidationError
 
     /**
  * @summary Create Sale
  */
-export const useCreateSale = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSale>>, TError,{data: SaleCreate}, TContext>, }
+export const useCreateSales = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSales>>, TError,{data: SaleCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createSale>>,
+        Awaited<ReturnType<typeof createSales>>,
         TError,
         {data: SaleCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateSaleMutationOptions(options);
+      const mutationOptions = getCreateSalesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Get Sale Payments
  */
-export const getSalePayments = (
+export const listSalePayments = (
     saleId: string,
  signal?: AbortSignal
 ) => {
@@ -216,69 +219,69 @@ export const getSalePayments = (
 
 
 
-export const getGetSalePaymentsQueryKey = (saleId?: string,) => {
+export const getListSalePaymentsQueryKey = (saleId?: string,) => {
     return [
     `/api/sales/${saleId}/payments`
     ] as const;
     }
 
     
-export const getGetSalePaymentsQueryOptions = <TData = Awaited<ReturnType<typeof getSalePayments>>, TError = HTTPValidationError>(saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalePayments>>, TError, TData>>, }
+export const getListSalePaymentsQueryOptions = <TData = Awaited<ReturnType<typeof listSalePayments>>, TError = HTTPValidationError>(saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSalePayments>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSalePaymentsQueryKey(saleId);
+  const queryKey =  queryOptions?.queryKey ?? getListSalePaymentsQueryKey(saleId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSalePayments>>> = ({ signal }) => getSalePayments(saleId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSalePayments>>> = ({ signal }) => listSalePayments(saleId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(saleId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSalePayments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(saleId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSalePayments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetSalePaymentsQueryResult = NonNullable<Awaited<ReturnType<typeof getSalePayments>>>
-export type GetSalePaymentsQueryError = HTTPValidationError
+export type ListSalePaymentsQueryResult = NonNullable<Awaited<ReturnType<typeof listSalePayments>>>
+export type ListSalePaymentsQueryError = HTTPValidationError
 
 
-export function useGetSalePayments<TData = Awaited<ReturnType<typeof getSalePayments>>, TError = HTTPValidationError>(
- saleId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalePayments>>, TError, TData>> & Pick<
+export function useListSalePayments<TData = Awaited<ReturnType<typeof listSalePayments>>, TError = HTTPValidationError>(
+ saleId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSalePayments>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSalePayments>>,
+          Awaited<ReturnType<typeof listSalePayments>>,
           TError,
-          Awaited<ReturnType<typeof getSalePayments>>
+          Awaited<ReturnType<typeof listSalePayments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSalePayments<TData = Awaited<ReturnType<typeof getSalePayments>>, TError = HTTPValidationError>(
- saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalePayments>>, TError, TData>> & Pick<
+export function useListSalePayments<TData = Awaited<ReturnType<typeof listSalePayments>>, TError = HTTPValidationError>(
+ saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSalePayments>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSalePayments>>,
+          Awaited<ReturnType<typeof listSalePayments>>,
           TError,
-          Awaited<ReturnType<typeof getSalePayments>>
+          Awaited<ReturnType<typeof listSalePayments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSalePayments<TData = Awaited<ReturnType<typeof getSalePayments>>, TError = HTTPValidationError>(
- saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalePayments>>, TError, TData>>, }
+export function useListSalePayments<TData = Awaited<ReturnType<typeof listSalePayments>>, TError = HTTPValidationError>(
+ saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSalePayments>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Sale Payments
  */
 
-export function useGetSalePayments<TData = Awaited<ReturnType<typeof getSalePayments>>, TError = HTTPValidationError>(
- saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalePayments>>, TError, TData>>, }
+export function useListSalePayments<TData = Awaited<ReturnType<typeof listSalePayments>>, TError = HTTPValidationError>(
+ saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSalePayments>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetSalePaymentsQueryOptions(saleId,options)
+  const queryOptions = getListSalePaymentsQueryOptions(saleId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -293,7 +296,7 @@ export function useGetSalePayments<TData = Awaited<ReturnType<typeof getSalePaym
 /**
  * @summary Record Sale Payment
  */
-export const recordSalePayment = (
+export const createSalePayments = (
     saleId: string,
     schemasSalesPaymentRecordCreate: SchemasSalesPaymentRecordCreate,
  signal?: AbortSignal
@@ -310,11 +313,11 @@ export const recordSalePayment = (
   
 
 
-export const getRecordSalePaymentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordSalePayment>>, TError,{saleId: string;data: SchemasSalesPaymentRecordCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof recordSalePayment>>, TError,{saleId: string;data: SchemasSalesPaymentRecordCreate}, TContext> => {
+export const getCreateSalePaymentsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSalePayments>>, TError,{saleId: string;data: SchemasSalesPaymentRecordCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSalePayments>>, TError,{saleId: string;data: SchemasSalesPaymentRecordCreate}, TContext> => {
 
-const mutationKey = ['recordSalePayment'];
+const mutationKey = ['createSalePayments'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -324,10 +327,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordSalePayment>>, {saleId: string;data: SchemasSalesPaymentRecordCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSalePayments>>, {saleId: string;data: SchemasSalesPaymentRecordCreate}> = (props) => {
           const {saleId,data} = props ?? {};
 
-          return  recordSalePayment(saleId,data,)
+          return  createSalePayments(saleId,data,)
         }
 
         
@@ -335,30 +338,30 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type RecordSalePaymentMutationResult = NonNullable<Awaited<ReturnType<typeof recordSalePayment>>>
-    export type RecordSalePaymentMutationBody = SchemasSalesPaymentRecordCreate
-    export type RecordSalePaymentMutationError = HTTPValidationError
+    export type CreateSalePaymentsMutationResult = NonNullable<Awaited<ReturnType<typeof createSalePayments>>>
+    export type CreateSalePaymentsMutationBody = SchemasSalesPaymentRecordCreate
+    export type CreateSalePaymentsMutationError = HTTPValidationError
 
     /**
  * @summary Record Sale Payment
  */
-export const useRecordSalePayment = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordSalePayment>>, TError,{saleId: string;data: SchemasSalesPaymentRecordCreate}, TContext>, }
+export const useCreateSalePayments = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSalePayments>>, TError,{saleId: string;data: SchemasSalesPaymentRecordCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof recordSalePayment>>,
+        Awaited<ReturnType<typeof createSalePayments>>,
         TError,
         {saleId: string;data: SchemasSalesPaymentRecordCreate},
         TContext
       > => {
 
-      const mutationOptions = getRecordSalePaymentMutationOptions(options);
+      const mutationOptions = getCreateSalePaymentsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Get Sale Payment Plan
  */
-export const getSalePaymentPlan = (
+export const listSalePaymentPlan = (
     saleId: string,
  signal?: AbortSignal
 ) => {
@@ -373,69 +376,69 @@ export const getSalePaymentPlan = (
 
 
 
-export const getGetSalePaymentPlanQueryKey = (saleId?: string,) => {
+export const getListSalePaymentPlanQueryKey = (saleId?: string,) => {
     return [
     `/api/sales/${saleId}/payment-plan`
     ] as const;
     }
 
     
-export const getGetSalePaymentPlanQueryOptions = <TData = Awaited<ReturnType<typeof getSalePaymentPlan>>, TError = HTTPValidationError>(saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalePaymentPlan>>, TError, TData>>, }
+export const getListSalePaymentPlanQueryOptions = <TData = Awaited<ReturnType<typeof listSalePaymentPlan>>, TError = HTTPValidationError>(saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSalePaymentPlan>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSalePaymentPlanQueryKey(saleId);
+  const queryKey =  queryOptions?.queryKey ?? getListSalePaymentPlanQueryKey(saleId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSalePaymentPlan>>> = ({ signal }) => getSalePaymentPlan(saleId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSalePaymentPlan>>> = ({ signal }) => listSalePaymentPlan(saleId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(saleId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSalePaymentPlan>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(saleId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSalePaymentPlan>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetSalePaymentPlanQueryResult = NonNullable<Awaited<ReturnType<typeof getSalePaymentPlan>>>
-export type GetSalePaymentPlanQueryError = HTTPValidationError
+export type ListSalePaymentPlanQueryResult = NonNullable<Awaited<ReturnType<typeof listSalePaymentPlan>>>
+export type ListSalePaymentPlanQueryError = HTTPValidationError
 
 
-export function useGetSalePaymentPlan<TData = Awaited<ReturnType<typeof getSalePaymentPlan>>, TError = HTTPValidationError>(
- saleId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalePaymentPlan>>, TError, TData>> & Pick<
+export function useListSalePaymentPlan<TData = Awaited<ReturnType<typeof listSalePaymentPlan>>, TError = HTTPValidationError>(
+ saleId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSalePaymentPlan>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSalePaymentPlan>>,
+          Awaited<ReturnType<typeof listSalePaymentPlan>>,
           TError,
-          Awaited<ReturnType<typeof getSalePaymentPlan>>
+          Awaited<ReturnType<typeof listSalePaymentPlan>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSalePaymentPlan<TData = Awaited<ReturnType<typeof getSalePaymentPlan>>, TError = HTTPValidationError>(
- saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalePaymentPlan>>, TError, TData>> & Pick<
+export function useListSalePaymentPlan<TData = Awaited<ReturnType<typeof listSalePaymentPlan>>, TError = HTTPValidationError>(
+ saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSalePaymentPlan>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSalePaymentPlan>>,
+          Awaited<ReturnType<typeof listSalePaymentPlan>>,
           TError,
-          Awaited<ReturnType<typeof getSalePaymentPlan>>
+          Awaited<ReturnType<typeof listSalePaymentPlan>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSalePaymentPlan<TData = Awaited<ReturnType<typeof getSalePaymentPlan>>, TError = HTTPValidationError>(
- saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalePaymentPlan>>, TError, TData>>, }
+export function useListSalePaymentPlan<TData = Awaited<ReturnType<typeof listSalePaymentPlan>>, TError = HTTPValidationError>(
+ saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSalePaymentPlan>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Sale Payment Plan
  */
 
-export function useGetSalePaymentPlan<TData = Awaited<ReturnType<typeof getSalePaymentPlan>>, TError = HTTPValidationError>(
- saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSalePaymentPlan>>, TError, TData>>, }
+export function useListSalePaymentPlan<TData = Awaited<ReturnType<typeof listSalePaymentPlan>>, TError = HTTPValidationError>(
+ saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSalePaymentPlan>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetSalePaymentPlanQueryOptions(saleId,options)
+  const queryOptions = getListSalePaymentPlanQueryOptions(saleId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -508,6 +511,272 @@ export const useUpdateSale = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getUpdateSaleMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Assign devices to a patient with sale record creation.
+
+This is the main endpoint for device assignment workflow:
+1. Creates a Sale record
+2. Creates DeviceAssignment records for each device
+3. Handles pricing calculation (SGK, discounts)
+4. Manages stock movements (if delivery_status is 'delivered')
+5. Creates payment plan if needed
+ * @summary Create Device Assignments
+ */
+export const createPatientDeviceAssignments = (
+    patientId: string,
+    deviceAssignmentCreate: DeviceAssignmentCreate,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeDeviceAssignmentCreateResponse>(
+      {url: `/api/patients/${patientId}/device-assignments`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: deviceAssignmentCreate, signal
+    },
+      );
+    }
+  
+
+
+export const getCreatePatientDeviceAssignmentsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientDeviceAssignments>>, TError,{patientId: string;data: DeviceAssignmentCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPatientDeviceAssignments>>, TError,{patientId: string;data: DeviceAssignmentCreate}, TContext> => {
+
+const mutationKey = ['createPatientDeviceAssignments'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPatientDeviceAssignments>>, {patientId: string;data: DeviceAssignmentCreate}> = (props) => {
+          const {patientId,data} = props ?? {};
+
+          return  createPatientDeviceAssignments(patientId,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePatientDeviceAssignmentsMutationResult = NonNullable<Awaited<ReturnType<typeof createPatientDeviceAssignments>>>
+    export type CreatePatientDeviceAssignmentsMutationBody = DeviceAssignmentCreate
+    export type CreatePatientDeviceAssignmentsMutationError = HTTPValidationError
+
+    /**
+ * @summary Create Device Assignments
+ */
+export const useCreatePatientDeviceAssignments = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPatientDeviceAssignments>>, TError,{patientId: string;data: DeviceAssignmentCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createPatientDeviceAssignments>>,
+        TError,
+        {patientId: string;data: DeviceAssignmentCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getCreatePatientDeviceAssignmentsMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Update a device assignment.
+ * @summary Update Device Assignment
+ */
+export const updateDeviceAssignment = (
+    assignmentId: string,
+    deviceAssignmentUpdate: DeviceAssignmentUpdate,
+ ) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/device-assignments/${assignmentId}`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: deviceAssignmentUpdate
+    },
+      );
+    }
+  
+
+
+export const getUpdateDeviceAssignmentMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDeviceAssignment>>, TError,{assignmentId: string;data: DeviceAssignmentUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateDeviceAssignment>>, TError,{assignmentId: string;data: DeviceAssignmentUpdate}, TContext> => {
+
+const mutationKey = ['updateDeviceAssignment'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDeviceAssignment>>, {assignmentId: string;data: DeviceAssignmentUpdate}> = (props) => {
+          const {assignmentId,data} = props ?? {};
+
+          return  updateDeviceAssignment(assignmentId,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDeviceAssignmentMutationResult = NonNullable<Awaited<ReturnType<typeof updateDeviceAssignment>>>
+    export type UpdateDeviceAssignmentMutationBody = DeviceAssignmentUpdate
+    export type UpdateDeviceAssignmentMutationError = HTTPValidationError
+
+    /**
+ * @summary Update Device Assignment
+ */
+export const useUpdateDeviceAssignment = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDeviceAssignment>>, TError,{assignmentId: string;data: DeviceAssignmentUpdate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateDeviceAssignment>>,
+        TError,
+        {assignmentId: string;data: DeviceAssignmentUpdate},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateDeviceAssignmentMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Return a loaner device to stock.
+ * @summary Return Loaner To Stock
+ */
+export const createDeviceAssignmentReturnLoaner = (
+    assignmentId: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/device-assignments/${assignmentId}/return-loaner`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getCreateDeviceAssignmentReturnLoanerMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDeviceAssignmentReturnLoaner>>, TError,{assignmentId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createDeviceAssignmentReturnLoaner>>, TError,{assignmentId: string}, TContext> => {
+
+const mutationKey = ['createDeviceAssignmentReturnLoaner'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDeviceAssignmentReturnLoaner>>, {assignmentId: string}> = (props) => {
+          const {assignmentId} = props ?? {};
+
+          return  createDeviceAssignmentReturnLoaner(assignmentId,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateDeviceAssignmentReturnLoanerMutationResult = NonNullable<Awaited<ReturnType<typeof createDeviceAssignmentReturnLoaner>>>
+    
+    export type CreateDeviceAssignmentReturnLoanerMutationError = HTTPValidationError
+
+    /**
+ * @summary Return Loaner To Stock
+ */
+export const useCreateDeviceAssignmentReturnLoaner = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDeviceAssignmentReturnLoaner>>, TError,{assignmentId: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createDeviceAssignmentReturnLoaner>>,
+        TError,
+        {assignmentId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateDeviceAssignmentReturnLoanerMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Preview pricing calculation without creating records.
+ * @summary Pricing Preview
+ */
+export const createPricingPreview = (
+    deviceAssignmentCreate: DeviceAssignmentCreate,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/pricing-preview`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: deviceAssignmentCreate, signal
+    },
+      );
+    }
+  
+
+
+export const getCreatePricingPreviewMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPricingPreview>>, TError,{data: DeviceAssignmentCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPricingPreview>>, TError,{data: DeviceAssignmentCreate}, TContext> => {
+
+const mutationKey = ['createPricingPreview'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPricingPreview>>, {data: DeviceAssignmentCreate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createPricingPreview(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePricingPreviewMutationResult = NonNullable<Awaited<ReturnType<typeof createPricingPreview>>>
+    export type CreatePricingPreviewMutationBody = DeviceAssignmentCreate
+    export type CreatePricingPreviewMutationError = HTTPValidationError
+
+    /**
+ * @summary Pricing Preview
+ */
+export const useCreatePricingPreview = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPricingPreview>>, TError,{data: DeviceAssignmentCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createPricingPreview>>,
+        TError,
+        {data: DeviceAssignmentCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getCreatePricingPreviewMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

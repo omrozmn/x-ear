@@ -160,8 +160,9 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patient, onPatient
       setSelectedFile(null);
       setUploadNotes('');
       await loadSgkDocuments();
-    } catch (error: any) {
-      const errorMessage = error?.message || 'Belge yükleme sırasında hata oluştu';
+    } catch (error: unknown) {
+      const err = error as Error | null;
+      const errorMessage = err?.message || 'Belge yükleme sırasında hata oluştu';
       showError('Hata', errorMessage);
       setError(errorMessage);
     } finally {
@@ -222,7 +223,7 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patient, onPatient
 
       setEReceiptResult(mockResponse);
       showSuccess('Başarılı', 'E-reçete bulundu');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('E-receipt query error:', error);
       showError('Hata', 'E-reçete sorgulanırken bir hata oluştu');
     } finally {
@@ -249,7 +250,7 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patient, onPatient
 
       setPatientReports(mockReports);
       showSuccess('Başarılı', 'Hasta raporları yüklendi');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Patient report query error:', error);
       showError('Hata', 'Hasta raporları sorgulanırken bir hata oluştu');
     } finally {
@@ -268,7 +269,7 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patient, onPatient
         validUntil: (sgkStatus as string) === 'approved' ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() : null
       };
       setDeviceRights(mockDeviceRights);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Device rights load error:', error);
     } finally {
       setDeviceRightsLoading(false);
@@ -322,7 +323,7 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patient, onPatient
         }
       ];
       setSavedEReceipts(mockEReceipts);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Saved e-receipts load error:', error);
     } finally {
       setSavedEReceiptsLoading(false);
@@ -345,7 +346,7 @@ export const PatientSGKTab: React.FC<PatientSGKTabProps> = ({ patient, onPatient
         }
       ];
       setDeviceAssignments(mockAssignments);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Device assignments load error:', error);
     } finally {
       setDeviceAssignmentsLoading(false);

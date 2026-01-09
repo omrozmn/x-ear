@@ -15,7 +15,7 @@ export const UTSPage: React.FC = () => {
 
   const handleStart = () => {
     // Simple scaffold: parse CSV externally; here we send raw CSV as payload for server to parse
-    startBulk.mutate({ csv });
+    startBulk.mutate({ csv } as any);
   };
 
   return (

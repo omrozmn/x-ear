@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllInventory, getInventoryItem, updateSale } from '@/api/generated';
+import { listInventory, getInventory, updateSale } from '@/api/generated';
 import type { SaleUpdate } from '@/api/generated/schemas';
 import type {
   Sale,
@@ -80,7 +80,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
   // Load available devices for assignment
   const loadAvailableDevices = async () => {
     try {
-      const response = await getAllInventory({
+      const response = await listInventory({
         page: 1,
         per_page: 50
       }) as any;
@@ -119,7 +119,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     if (!sale.productId) return;
 
     try {
-      const response = await getInventoryItem(sale.productId);
+      const response = await getInventory(sale.productId);
       setProductDetails((response?.data as any) || null);
     } catch (err) {
       console.error('Error loading product details:', err);

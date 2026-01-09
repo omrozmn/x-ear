@@ -263,7 +263,7 @@ class CommunicationOfflineSync {
     }
   }
 
-  async updateTemplate(id: string, updates: Partial<CommunicationTemplate>): Promise<void> {
+  async updateCommunicationTemplate(id: string, updates: Partial<CommunicationTemplate>): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
 
     const existing = await this.db.get('templates', id);
@@ -287,7 +287,7 @@ class CommunicationOfflineSync {
     }
   }
 
-  async deleteTemplate(id: string): Promise<void> {
+  async deleteCommunicationTemplate(id: string): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
 
     await this.db.delete('templates', id);
@@ -481,8 +481,8 @@ class CommunicationOfflineSync {
     const metadata = await this.db.get('syncMetadata', 'messages');
     const since = metadata?.lastSyncTimestamp || new Date(0).toISOString();
 
-    const { listMessages } = await import('@/api/generated');
-    const response = await listMessages({ since, limit: 1000 } as any);
+    const { listCommunicationMessages } = await import('@/api/generated');
+    const response = await listCommunicationMessages({ since, limit: 1000 } as any);
 
     // Orval response structure handling
     const result = (response as any).data || response;
@@ -516,8 +516,8 @@ class CommunicationOfflineSync {
     const metadata = await this.db.get('syncMetadata', 'templates');
     const since = metadata?.lastSyncTimestamp || new Date(0).toISOString();
 
-    const { listTemplates } = await import('@/api/generated');
-    const response = await listTemplates({ since, limit: 1000 } as any);
+    const { listCommunicationTemplates } = await import('@/api/generated');
+    const response = await listCommunicationTemplates({ since, limit: 1000 } as any);
 
     // Orval response structure handling
     const result = (response as any).data || response;

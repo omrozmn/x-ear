@@ -5,7 +5,7 @@ import {
     Alert,
     Loading
 } from '@x-ear/ui-web';
-import { useInitiatePaytrPaymentApiPaymentsPosPaytrInitiatePost } from '@/api/generated';
+import { useCreatePaymentPoPaytrInitiate } from '@/api/generated';
 
 interface PosPaymentFormProps {
     saleId: string;
@@ -22,7 +22,7 @@ export const PosPaymentForm: React.FC<PosPaymentFormProps> = ({
     const [iframeUrl, setIframeUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const { mutate: initiatePayment, isPending } = useInitiatePaytrPaymentApiPaymentsPosPaytrInitiatePost();
+    const { mutate: initiatePayment, isPending } = useCreatePaymentPoPaytrInitiate();
 
     // Listen for messages from the iframe (success/fail)
     useEffect(() => {

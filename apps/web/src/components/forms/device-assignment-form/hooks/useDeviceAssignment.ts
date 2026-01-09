@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { DeviceInventoryItem } from '../components/DeviceSearchForm';
 import { DeviceAssignment } from '../components/AssignmentDetailsForm';
 import { getCurrentUserId } from '@/utils/auth-utils';
-import { getAllInventory } from '@/api/generated';
+import { listInventory } from '@/api/generated';
 
 
 interface UseDeviceAssignmentProps {
@@ -184,7 +184,7 @@ export const useDeviceAssignment = ({
   useEffect(() => {
     const loadInventory = async () => {
       try {
-        const response = await getAllInventory({
+        const response = await listInventory({
           category: 'hearing_aid',
           per_page: 100
         });

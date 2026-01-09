@@ -39,7 +39,7 @@ import { customInstance } from '../../orval-mutator';
  * Calculate commission for given amount and installments
  * @summary Calculate Commission Endpoint
  */
-export const calculateCommissionEndpoint = (
+export const createPoCommissionCalculate = (
     commissionCalculate: CommissionCalculate,
  signal?: AbortSignal
 ) => {
@@ -55,11 +55,11 @@ export const calculateCommissionEndpoint = (
   
 
 
-export const getCalculateCommissionEndpointMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateCommissionEndpoint>>, TError,{data: CommissionCalculate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof calculateCommissionEndpoint>>, TError,{data: CommissionCalculate}, TContext> => {
+export const getCreatePoCommissionCalculateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPoCommissionCalculate>>, TError,{data: CommissionCalculate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPoCommissionCalculate>>, TError,{data: CommissionCalculate}, TContext> => {
 
-const mutationKey = ['calculateCommissionEndpoint'];
+const mutationKey = ['createPoCommissionCalculate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -69,10 +69,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof calculateCommissionEndpoint>>, {data: CommissionCalculate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPoCommissionCalculate>>, {data: CommissionCalculate}> = (props) => {
           const {data} = props ?? {};
 
-          return  calculateCommissionEndpoint(data,)
+          return  createPoCommissionCalculate(data,)
         }
 
         
@@ -80,23 +80,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CalculateCommissionEndpointMutationResult = NonNullable<Awaited<ReturnType<typeof calculateCommissionEndpoint>>>
-    export type CalculateCommissionEndpointMutationBody = CommissionCalculate
-    export type CalculateCommissionEndpointMutationError = HTTPValidationError
+    export type CreatePoCommissionCalculateMutationResult = NonNullable<Awaited<ReturnType<typeof createPoCommissionCalculate>>>
+    export type CreatePoCommissionCalculateMutationBody = CommissionCalculate
+    export type CreatePoCommissionCalculateMutationError = HTTPValidationError
 
     /**
  * @summary Calculate Commission Endpoint
  */
-export const useCalculateCommissionEndpoint = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateCommissionEndpoint>>, TError,{data: CommissionCalculate}, TContext>, }
+export const useCreatePoCommissionCalculate = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPoCommissionCalculate>>, TError,{data: CommissionCalculate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof calculateCommissionEndpoint>>,
+        Awaited<ReturnType<typeof createPoCommissionCalculate>>,
         TError,
         {data: CommissionCalculate},
         TContext
       > => {
 
-      const mutationOptions = getCalculateCommissionEndpointMutationOptions(options);
+      const mutationOptions = getCreatePoCommissionCalculateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -104,7 +104,7 @@ export const useCalculateCommissionEndpoint = <TError = HTTPValidationError,
  * Get commission rates for current tenant
  * @summary Get Commission Rates
  */
-export const getCommissionRates = (
+export const listPoCommissionRates = (
     
  signal?: AbortSignal
 ) => {
@@ -119,69 +119,69 @@ export const getCommissionRates = (
 
 
 
-export const getGetCommissionRatesQueryKey = () => {
+export const getListPoCommissionRatesQueryKey = () => {
     return [
     `/api/pos/commission/rates`
     ] as const;
     }
 
     
-export const getGetCommissionRatesQueryOptions = <TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>>, }
+export const getListPoCommissionRatesQueryOptions = <TData = Awaited<ReturnType<typeof listPoCommissionRates>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPoCommissionRates>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCommissionRatesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListPoCommissionRatesQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionRates>>> = ({ signal }) => getCommissionRates(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPoCommissionRates>>> = ({ signal }) => listPoCommissionRates(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPoCommissionRates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetCommissionRatesQueryResult = NonNullable<Awaited<ReturnType<typeof getCommissionRates>>>
-export type GetCommissionRatesQueryError = unknown
+export type ListPoCommissionRatesQueryResult = NonNullable<Awaited<ReturnType<typeof listPoCommissionRates>>>
+export type ListPoCommissionRatesQueryError = unknown
 
 
-export function useGetCommissionRates<TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>> & Pick<
+export function useListPoCommissionRates<TData = Awaited<ReturnType<typeof listPoCommissionRates>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPoCommissionRates>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCommissionRates>>,
+          Awaited<ReturnType<typeof listPoCommissionRates>>,
           TError,
-          Awaited<ReturnType<typeof getCommissionRates>>
+          Awaited<ReturnType<typeof listPoCommissionRates>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCommissionRates<TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>> & Pick<
+export function useListPoCommissionRates<TData = Awaited<ReturnType<typeof listPoCommissionRates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPoCommissionRates>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCommissionRates>>,
+          Awaited<ReturnType<typeof listPoCommissionRates>>,
           TError,
-          Awaited<ReturnType<typeof getCommissionRates>>
+          Awaited<ReturnType<typeof listPoCommissionRates>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetCommissionRates<TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>>, }
+export function useListPoCommissionRates<TData = Awaited<ReturnType<typeof listPoCommissionRates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPoCommissionRates>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Commission Rates
  */
 
-export function useGetCommissionRates<TData = Awaited<ReturnType<typeof getCommissionRates>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRates>>, TError, TData>>, }
+export function useListPoCommissionRates<TData = Awaited<ReturnType<typeof listPoCommissionRates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPoCommissionRates>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetCommissionRatesQueryOptions(options)
+  const queryOptions = getListPoCommissionRatesQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -197,7 +197,7 @@ export function useGetCommissionRates<TData = Awaited<ReturnType<typeof getCommi
  * Get installment options with calculated amounts
  * @summary Get Installment Options
  */
-export const getInstallmentOptions = (
+export const createPoCommissionInstallmentOptions = (
     commissionCalculate: CommissionCalculate,
  signal?: AbortSignal
 ) => {
@@ -213,11 +213,11 @@ export const getInstallmentOptions = (
   
 
 
-export const getGetInstallmentOptionsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getInstallmentOptions>>, TError,{data: CommissionCalculate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof getInstallmentOptions>>, TError,{data: CommissionCalculate}, TContext> => {
+export const getCreatePoCommissionInstallmentOptionsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPoCommissionInstallmentOptions>>, TError,{data: CommissionCalculate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPoCommissionInstallmentOptions>>, TError,{data: CommissionCalculate}, TContext> => {
 
-const mutationKey = ['getInstallmentOptions'];
+const mutationKey = ['createPoCommissionInstallmentOptions'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -227,10 +227,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof getInstallmentOptions>>, {data: CommissionCalculate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPoCommissionInstallmentOptions>>, {data: CommissionCalculate}> = (props) => {
           const {data} = props ?? {};
 
-          return  getInstallmentOptions(data,)
+          return  createPoCommissionInstallmentOptions(data,)
         }
 
         
@@ -238,23 +238,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type GetInstallmentOptionsMutationResult = NonNullable<Awaited<ReturnType<typeof getInstallmentOptions>>>
-    export type GetInstallmentOptionsMutationBody = CommissionCalculate
-    export type GetInstallmentOptionsMutationError = HTTPValidationError
+    export type CreatePoCommissionInstallmentOptionsMutationResult = NonNullable<Awaited<ReturnType<typeof createPoCommissionInstallmentOptions>>>
+    export type CreatePoCommissionInstallmentOptionsMutationBody = CommissionCalculate
+    export type CreatePoCommissionInstallmentOptionsMutationError = HTTPValidationError
 
     /**
  * @summary Get Installment Options
  */
-export const useGetInstallmentOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getInstallmentOptions>>, TError,{data: CommissionCalculate}, TContext>, }
+export const useCreatePoCommissionInstallmentOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPoCommissionInstallmentOptions>>, TError,{data: CommissionCalculate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof getInstallmentOptions>>,
+        Awaited<ReturnType<typeof createPoCommissionInstallmentOptions>>,
         TError,
         {data: CommissionCalculate},
         TContext
       > => {
 
-      const mutationOptions = getGetInstallmentOptionsMutationOptions(options);
+      const mutationOptions = getCreatePoCommissionInstallmentOptionsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -262,7 +262,7 @@ export const useGetInstallmentOptions = <TError = HTTPValidationError,
  * Get tenant-specific rates (admin only)
  * @summary Get Tenant Rates Admin
  */
-export const getTenantRatesAdmin = (
+export const getPoCommissionRateTenant = (
     tenantId: string,
  signal?: AbortSignal
 ) => {
@@ -277,69 +277,69 @@ export const getTenantRatesAdmin = (
 
 
 
-export const getGetTenantRatesAdminQueryKey = (tenantId?: string,) => {
+export const getGetPoCommissionRateTenantQueryKey = (tenantId?: string,) => {
     return [
     `/api/pos/commission/rates/tenant/${tenantId}`
     ] as const;
     }
 
     
-export const getGetTenantRatesAdminQueryOptions = <TData = Awaited<ReturnType<typeof getTenantRatesAdmin>>, TError = HTTPValidationError>(tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantRatesAdmin>>, TError, TData>>, }
+export const getGetPoCommissionRateTenantQueryOptions = <TData = Awaited<ReturnType<typeof getPoCommissionRateTenant>>, TError = HTTPValidationError>(tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPoCommissionRateTenant>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTenantRatesAdminQueryKey(tenantId);
+  const queryKey =  queryOptions?.queryKey ?? getGetPoCommissionRateTenantQueryKey(tenantId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTenantRatesAdmin>>> = ({ signal }) => getTenantRatesAdmin(tenantId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPoCommissionRateTenant>>> = ({ signal }) => getPoCommissionRateTenant(tenantId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(tenantId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTenantRatesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(tenantId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPoCommissionRateTenant>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetTenantRatesAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getTenantRatesAdmin>>>
-export type GetTenantRatesAdminQueryError = HTTPValidationError
+export type GetPoCommissionRateTenantQueryResult = NonNullable<Awaited<ReturnType<typeof getPoCommissionRateTenant>>>
+export type GetPoCommissionRateTenantQueryError = HTTPValidationError
 
 
-export function useGetTenantRatesAdmin<TData = Awaited<ReturnType<typeof getTenantRatesAdmin>>, TError = HTTPValidationError>(
- tenantId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantRatesAdmin>>, TError, TData>> & Pick<
+export function useGetPoCommissionRateTenant<TData = Awaited<ReturnType<typeof getPoCommissionRateTenant>>, TError = HTTPValidationError>(
+ tenantId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPoCommissionRateTenant>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTenantRatesAdmin>>,
+          Awaited<ReturnType<typeof getPoCommissionRateTenant>>,
           TError,
-          Awaited<ReturnType<typeof getTenantRatesAdmin>>
+          Awaited<ReturnType<typeof getPoCommissionRateTenant>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetTenantRatesAdmin<TData = Awaited<ReturnType<typeof getTenantRatesAdmin>>, TError = HTTPValidationError>(
- tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantRatesAdmin>>, TError, TData>> & Pick<
+export function useGetPoCommissionRateTenant<TData = Awaited<ReturnType<typeof getPoCommissionRateTenant>>, TError = HTTPValidationError>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPoCommissionRateTenant>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTenantRatesAdmin>>,
+          Awaited<ReturnType<typeof getPoCommissionRateTenant>>,
           TError,
-          Awaited<ReturnType<typeof getTenantRatesAdmin>>
+          Awaited<ReturnType<typeof getPoCommissionRateTenant>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetTenantRatesAdmin<TData = Awaited<ReturnType<typeof getTenantRatesAdmin>>, TError = HTTPValidationError>(
- tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantRatesAdmin>>, TError, TData>>, }
+export function useGetPoCommissionRateTenant<TData = Awaited<ReturnType<typeof getPoCommissionRateTenant>>, TError = HTTPValidationError>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPoCommissionRateTenant>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Tenant Rates Admin
  */
 
-export function useGetTenantRatesAdmin<TData = Awaited<ReturnType<typeof getTenantRatesAdmin>>, TError = HTTPValidationError>(
- tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTenantRatesAdmin>>, TError, TData>>, }
+export function useGetPoCommissionRateTenant<TData = Awaited<ReturnType<typeof getPoCommissionRateTenant>>, TError = HTTPValidationError>(
+ tenantId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPoCommissionRateTenant>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetTenantRatesAdminQueryOptions(tenantId,options)
+  const queryOptions = getGetPoCommissionRateTenantQueryOptions(tenantId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -355,7 +355,7 @@ export function useGetTenantRatesAdmin<TData = Awaited<ReturnType<typeof getTena
  * Update tenant-specific rates (admin only)
  * @summary Update Tenant Rates Admin
  */
-export const updateTenantRatesAdmin = (
+export const updatePoCommissionRateTenant = (
     tenantId: string,
     tenantRatesUpdate: TenantRatesUpdate,
  ) => {
@@ -371,11 +371,11 @@ export const updateTenantRatesAdmin = (
   
 
 
-export const getUpdateTenantRatesAdminMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTenantRatesAdmin>>, TError,{tenantId: string;data: TenantRatesUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateTenantRatesAdmin>>, TError,{tenantId: string;data: TenantRatesUpdate}, TContext> => {
+export const getUpdatePoCommissionRateTenantMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePoCommissionRateTenant>>, TError,{tenantId: string;data: TenantRatesUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updatePoCommissionRateTenant>>, TError,{tenantId: string;data: TenantRatesUpdate}, TContext> => {
 
-const mutationKey = ['updateTenantRatesAdmin'];
+const mutationKey = ['updatePoCommissionRateTenant'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -385,10 +385,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTenantRatesAdmin>>, {tenantId: string;data: TenantRatesUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePoCommissionRateTenant>>, {tenantId: string;data: TenantRatesUpdate}> = (props) => {
           const {tenantId,data} = props ?? {};
 
-          return  updateTenantRatesAdmin(tenantId,data,)
+          return  updatePoCommissionRateTenant(tenantId,data,)
         }
 
         
@@ -396,23 +396,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateTenantRatesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof updateTenantRatesAdmin>>>
-    export type UpdateTenantRatesAdminMutationBody = TenantRatesUpdate
-    export type UpdateTenantRatesAdminMutationError = HTTPValidationError
+    export type UpdatePoCommissionRateTenantMutationResult = NonNullable<Awaited<ReturnType<typeof updatePoCommissionRateTenant>>>
+    export type UpdatePoCommissionRateTenantMutationBody = TenantRatesUpdate
+    export type UpdatePoCommissionRateTenantMutationError = HTTPValidationError
 
     /**
  * @summary Update Tenant Rates Admin
  */
-export const useUpdateTenantRatesAdmin = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTenantRatesAdmin>>, TError,{tenantId: string;data: TenantRatesUpdate}, TContext>, }
+export const useUpdatePoCommissionRateTenant = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePoCommissionRateTenant>>, TError,{tenantId: string;data: TenantRatesUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateTenantRatesAdmin>>,
+        Awaited<ReturnType<typeof updatePoCommissionRateTenant>>,
         TError,
         {tenantId: string;data: TenantRatesUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateTenantRatesAdminMutationOptions(options);
+      const mutationOptions = getUpdatePoCommissionRateTenantMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -420,7 +420,7 @@ export const useUpdateTenantRatesAdmin = <TError = HTTPValidationError,
  * Get system-wide default rates (admin only)
  * @summary Get System Rates Endpoint
  */
-export const getSystemRatesEndpoint = (
+export const listPoCommissionRateSystem = (
     
  signal?: AbortSignal
 ) => {
@@ -435,69 +435,69 @@ export const getSystemRatesEndpoint = (
 
 
 
-export const getGetSystemRatesEndpointQueryKey = () => {
+export const getListPoCommissionRateSystemQueryKey = () => {
     return [
     `/api/pos/commission/rates/system`
     ] as const;
     }
 
     
-export const getGetSystemRatesEndpointQueryOptions = <TData = Awaited<ReturnType<typeof getSystemRatesEndpoint>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemRatesEndpoint>>, TError, TData>>, }
+export const getListPoCommissionRateSystemQueryOptions = <TData = Awaited<ReturnType<typeof listPoCommissionRateSystem>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPoCommissionRateSystem>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSystemRatesEndpointQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListPoCommissionRateSystemQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSystemRatesEndpoint>>> = ({ signal }) => getSystemRatesEndpoint(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPoCommissionRateSystem>>> = ({ signal }) => listPoCommissionRateSystem(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSystemRatesEndpoint>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPoCommissionRateSystem>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetSystemRatesEndpointQueryResult = NonNullable<Awaited<ReturnType<typeof getSystemRatesEndpoint>>>
-export type GetSystemRatesEndpointQueryError = unknown
+export type ListPoCommissionRateSystemQueryResult = NonNullable<Awaited<ReturnType<typeof listPoCommissionRateSystem>>>
+export type ListPoCommissionRateSystemQueryError = unknown
 
 
-export function useGetSystemRatesEndpoint<TData = Awaited<ReturnType<typeof getSystemRatesEndpoint>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemRatesEndpoint>>, TError, TData>> & Pick<
+export function useListPoCommissionRateSystem<TData = Awaited<ReturnType<typeof listPoCommissionRateSystem>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPoCommissionRateSystem>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSystemRatesEndpoint>>,
+          Awaited<ReturnType<typeof listPoCommissionRateSystem>>,
           TError,
-          Awaited<ReturnType<typeof getSystemRatesEndpoint>>
+          Awaited<ReturnType<typeof listPoCommissionRateSystem>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSystemRatesEndpoint<TData = Awaited<ReturnType<typeof getSystemRatesEndpoint>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemRatesEndpoint>>, TError, TData>> & Pick<
+export function useListPoCommissionRateSystem<TData = Awaited<ReturnType<typeof listPoCommissionRateSystem>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPoCommissionRateSystem>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSystemRatesEndpoint>>,
+          Awaited<ReturnType<typeof listPoCommissionRateSystem>>,
           TError,
-          Awaited<ReturnType<typeof getSystemRatesEndpoint>>
+          Awaited<ReturnType<typeof listPoCommissionRateSystem>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSystemRatesEndpoint<TData = Awaited<ReturnType<typeof getSystemRatesEndpoint>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemRatesEndpoint>>, TError, TData>>, }
+export function useListPoCommissionRateSystem<TData = Awaited<ReturnType<typeof listPoCommissionRateSystem>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPoCommissionRateSystem>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get System Rates Endpoint
  */
 
-export function useGetSystemRatesEndpoint<TData = Awaited<ReturnType<typeof getSystemRatesEndpoint>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemRatesEndpoint>>, TError, TData>>, }
+export function useListPoCommissionRateSystem<TData = Awaited<ReturnType<typeof listPoCommissionRateSystem>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPoCommissionRateSystem>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetSystemRatesEndpointQueryOptions(options)
+  const queryOptions = getListPoCommissionRateSystemQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -513,7 +513,7 @@ export function useGetSystemRatesEndpoint<TData = Awaited<ReturnType<typeof getS
  * Update system-wide default rates (super admin only)
  * @summary Update System Rates
  */
-export const updateSystemRates = (
+export const updatePoCommissionRateSystem = (
     tenantRatesUpdate: TenantRatesUpdate,
  ) => {
       
@@ -528,11 +528,11 @@ export const updateSystemRates = (
   
 
 
-export const getUpdateSystemRatesMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSystemRates>>, TError,{data: TenantRatesUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateSystemRates>>, TError,{data: TenantRatesUpdate}, TContext> => {
+export const getUpdatePoCommissionRateSystemMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePoCommissionRateSystem>>, TError,{data: TenantRatesUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updatePoCommissionRateSystem>>, TError,{data: TenantRatesUpdate}, TContext> => {
 
-const mutationKey = ['updateSystemRates'];
+const mutationKey = ['updatePoCommissionRateSystem'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -542,10 +542,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSystemRates>>, {data: TenantRatesUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePoCommissionRateSystem>>, {data: TenantRatesUpdate}> = (props) => {
           const {data} = props ?? {};
 
-          return  updateSystemRates(data,)
+          return  updatePoCommissionRateSystem(data,)
         }
 
         
@@ -553,23 +553,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateSystemRatesMutationResult = NonNullable<Awaited<ReturnType<typeof updateSystemRates>>>
-    export type UpdateSystemRatesMutationBody = TenantRatesUpdate
-    export type UpdateSystemRatesMutationError = HTTPValidationError
+    export type UpdatePoCommissionRateSystemMutationResult = NonNullable<Awaited<ReturnType<typeof updatePoCommissionRateSystem>>>
+    export type UpdatePoCommissionRateSystemMutationBody = TenantRatesUpdate
+    export type UpdatePoCommissionRateSystemMutationError = HTTPValidationError
 
     /**
  * @summary Update System Rates
  */
-export const useUpdateSystemRates = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSystemRates>>, TError,{data: TenantRatesUpdate}, TContext>, }
+export const useUpdatePoCommissionRateSystem = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePoCommissionRateSystem>>, TError,{data: TenantRatesUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateSystemRates>>,
+        Awaited<ReturnType<typeof updatePoCommissionRateSystem>>,
         TError,
         {data: TenantRatesUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateSystemRatesMutationOptions(options);
+      const mutationOptions = getUpdatePoCommissionRateSystemMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -35,7 +35,7 @@ export function PatientFilters({
 }: PatientFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(true); // Default true for always expanded
 
-  const handleFilterChange = useCallback((key: keyof PatientFiltersType, value: any) => {
+  const handleFilterChange = useCallback((key: keyof PatientFiltersType, value: PatientFiltersType[keyof PatientFiltersType]) => {
     onChange({
       ...filters,
       [key]: value
@@ -90,13 +90,13 @@ export function PatientFilters({
           <span>Filtreler</span>
           {hasActiveFilters && (
             <span className="bg-blue-600 text-white text-xs rounded-full px-2 py-0.5">
-              {Object.entries(filters).filter(([key, value]) => 
+              {Object.entries(filters).filter(([key, value]) =>
                 key !== 'query' && value && (Array.isArray(value) ? value.length > 0 : true)
               ).length}
             </span>
           )}
         </Button>
-        
+
         {hasActiveFilters && (
           <Button
             variant="ghost"
@@ -113,22 +113,22 @@ export function PatientFilters({
   }
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg ${className}`}>
+    <div className={`bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-slate-700">
         <div className="flex items-center space-x-2">
-          <Filter className="w-4 h-4 text-gray-500" />
-          <h3 className="text-sm font-medium text-gray-900">Filtreler</h3>
+          <Filter className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+          <h3 className="text-sm font-medium text-gray-900 dark:text-white">Filtreler</h3>
           {hasActiveFilters && (
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
               Aktif
             </span>
           )}
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
             ({patientCount} hasta)
           </span>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {hasActiveFilters && (
             <Button
@@ -142,7 +142,7 @@ export function PatientFilters({
               <span>Temizle</span>
             </Button>
           )}
-          
+
           {showCompact && (
             <Button
               variant="ghost"
@@ -160,8 +160,8 @@ export function PatientFilters({
         {/* Status Filter */}
         <div>
           <div className="flex items-center space-x-2 mb-2">
-            <Users className="h-3 w-3 text-gray-500" />
-            <label className="text-xs font-medium text-gray-700">Durum</label>
+            <Users className="h-3 w-3 text-gray-500 dark:text-gray-400" />
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Durum</label>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {statusOptions.map((option) => (
@@ -170,13 +170,12 @@ export function PatientFilters({
                 onClick={() => handleFilterChange('status',
                   (filters.status || []).includes(option.value)
                     ? (filters.status || []).filter((s) => s !== option.value)
-                    : [ ...(filters.status || []), option.value ]
+                    : [...(filters.status || []), option.value]
                 )}
-                className={`px-2 py-1 text-xs rounded-full border transition-colors ${
-                  (filters.status || []).includes(option.value)
-                    ? 'bg-blue-100 border-blue-300 text-blue-800'
-                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`px-2 py-1 text-xs rounded-full border transition-colors ${(filters.status || []).includes(option.value)
+                  ? 'bg-blue-100 border-blue-300 text-blue-800 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-300'
+                  : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-600'
+                  }`}
               >
                 {option.label}
                 {option.count !== undefined && option.count > 0 && (
@@ -190,8 +189,8 @@ export function PatientFilters({
         {/* Segment Filter */}
         <div>
           <div className="flex items-center space-x-2 mb-2">
-            <Users className="h-3 w-3 text-gray-500" />
-            <label className="text-xs font-medium text-gray-700">Segment</label>
+            <Users className="h-3 w-3 text-gray-500 dark:text-gray-400" />
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Segment</label>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {segmentOptions.map((option) => (
@@ -200,13 +199,12 @@ export function PatientFilters({
                 onClick={() => handleFilterChange('segment',
                   (filters.segment || []).includes(option.value)
                     ? (filters.segment || []).filter((s) => s !== option.value)
-                    : [ ...(filters.segment || []), option.value ]
+                    : [...(filters.segment || []), option.value]
                 )}
-                className={`px-2 py-1 text-xs rounded-full border transition-colors ${
-                  (filters.segment || []).includes(option.value)
-                    ? 'bg-green-100 border-green-300 text-green-800'
-                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`px-2 py-1 text-xs rounded-full border transition-colors ${(filters.segment || []).includes(option.value)
+                  ? 'bg-green-100 border-green-300 text-green-800 dark:bg-green-900/30 dark:border-green-800 dark:text-green-300'
+                  : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-600'
+                  }`}
               >
                 {option.label}
                 {option.count !== undefined && option.count > 0 && (
@@ -220,23 +218,22 @@ export function PatientFilters({
         {/* Acquisition Type Filter (Kazanım Türü) */}
         <div>
           <div className="flex items-center space-x-2 mb-2">
-            <TrendingUp className="h-3 w-3 text-gray-500" />
-            <label className="text-xs font-medium text-gray-700">Kazanım Türü</label>
+            <TrendingUp className="h-3 w-3 text-gray-500 dark:text-gray-400" />
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Kazanım Türü</label>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {acquisitionOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => handleFilterChange('acquisitionType', 
+                onClick={() => handleFilterChange('acquisitionType',
                   filters.acquisitionType?.includes(option.value as any)
                     ? filters.acquisitionType.filter(s => s !== option.value)
                     : [...(filters.acquisitionType || []), option.value as any]
                 )}
-                className={`px-2 py-1 text-xs rounded-full border transition-colors ${
-                  filters.acquisitionType?.includes(option.value as any)
-                    ? 'bg-purple-100 border-purple-300 text-purple-800'
-                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`px-2 py-1 text-xs rounded-full border transition-colors ${filters.acquisitionType?.includes(option.value as any)
+                  ? 'bg-purple-100 border-purple-300 text-purple-800 dark:bg-purple-900/30 dark:border-purple-800 dark:text-purple-300'
+                  : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-600'
+                  }`}
               >
                 {option.label}
                 {option.count !== undefined && option.count > 0 && (
@@ -249,8 +246,8 @@ export function PatientFilters({
         {/* Date Range Filter */}
         <div>
           <div className="flex items-center space-x-2 mb-2">
-            <Calendar className="h-3 w-3 text-gray-500" />
-            <label className="text-xs font-medium text-gray-700">Tarih Aralığı</label>
+            <Calendar className="h-3 w-3 text-gray-500 dark:text-gray-400" />
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Tarih Aralığı</label>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <DatePicker
@@ -275,21 +272,20 @@ export function PatientFilters({
         {/* Branch Filter */}
         <div>
           <div className="flex items-center space-x-2 mb-2">
-            <Building className="h-3 w-3 text-gray-500" />
-            <label className="text-xs font-medium text-gray-700">Şube</label>
+            <Building className="h-3 w-3 text-gray-500 dark:text-gray-400" />
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Şube</label>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {branchOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => handleFilterChange('branchId', 
+                onClick={() => handleFilterChange('branchId',
                   filters.branchId === option.value ? undefined : option.value
                 )}
-                className={`px-2 py-1 text-xs rounded-full border transition-colors ${
-                  filters.branchId === option.value
-                    ? 'bg-orange-100 border-orange-300 text-orange-800'
-                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`px-2 py-1 text-xs rounded-full border transition-colors ${filters.branchId === option.value
+                  ? 'bg-orange-100 border-orange-300 text-orange-800 dark:bg-orange-900/30 dark:border-orange-800 dark:text-orange-300'
+                  : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-600'
+                  }`}
               >
                 {option.label}
                 {option.count !== undefined && option.count > 0 && (

@@ -25,12 +25,14 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BodyUploadAudienceFile,
-  BodyUploadSmsDocument,
+  BodyCreateSmAudienceUpload,
+  BodyCreateSmDocumentUpload,
+  CreateSmAudienceUploadParams,
+  CreateSmDocumentUploadParams,
   DocumentSubmitRequest,
   HTTPValidationError,
   HeaderStatusUpdate,
-  ListAdminSmsHeadersParams,
+  ListSmAdminHeadersParams,
   ResponseEnvelopeListSMSHeaderRequestRead,
   ResponseEnvelopeListSMSPackageRead,
   ResponseEnvelopeListTargetAudienceRead,
@@ -40,9 +42,7 @@ import type {
   ResponseEnvelopeUnionTenantSMSCreditReadNoneType,
   SMSHeaderRequestCreate,
   SMSProviderConfigUpdate,
-  TargetAudienceCreate,
-  UploadAudienceFileParams,
-  UploadSmsDocumentParams
+  TargetAudienceCreate
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -54,7 +54,7 @@ import { customInstance } from '../../orval-mutator';
  * Get SMS configuration for tenant
  * @summary Get Sms Config
  */
-export const getSmsConfig = (
+export const listSmConfig = (
     
  signal?: AbortSignal
 ) => {
@@ -69,69 +69,69 @@ export const getSmsConfig = (
 
 
 
-export const getGetSmsConfigQueryKey = () => {
+export const getListSmConfigQueryKey = () => {
     return [
     `/api/sms/config`
     ] as const;
     }
 
     
-export const getGetSmsConfigQueryOptions = <TData = Awaited<ReturnType<typeof getSmsConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsConfig>>, TError, TData>>, }
+export const getListSmConfigQueryOptions = <TData = Awaited<ReturnType<typeof listSmConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmConfig>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSmsConfigQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListSmConfigQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSmsConfig>>> = ({ signal }) => getSmsConfig(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmConfig>>> = ({ signal }) => listSmConfig(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSmsConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSmConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetSmsConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getSmsConfig>>>
-export type GetSmsConfigQueryError = unknown
+export type ListSmConfigQueryResult = NonNullable<Awaited<ReturnType<typeof listSmConfig>>>
+export type ListSmConfigQueryError = unknown
 
 
-export function useGetSmsConfig<TData = Awaited<ReturnType<typeof getSmsConfig>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsConfig>>, TError, TData>> & Pick<
+export function useListSmConfig<TData = Awaited<ReturnType<typeof listSmConfig>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmConfig>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSmsConfig>>,
+          Awaited<ReturnType<typeof listSmConfig>>,
           TError,
-          Awaited<ReturnType<typeof getSmsConfig>>
+          Awaited<ReturnType<typeof listSmConfig>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSmsConfig<TData = Awaited<ReturnType<typeof getSmsConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsConfig>>, TError, TData>> & Pick<
+export function useListSmConfig<TData = Awaited<ReturnType<typeof listSmConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmConfig>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSmsConfig>>,
+          Awaited<ReturnType<typeof listSmConfig>>,
           TError,
-          Awaited<ReturnType<typeof getSmsConfig>>
+          Awaited<ReturnType<typeof listSmConfig>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSmsConfig<TData = Awaited<ReturnType<typeof getSmsConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsConfig>>, TError, TData>>, }
+export function useListSmConfig<TData = Awaited<ReturnType<typeof listSmConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmConfig>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Sms Config
  */
 
-export function useGetSmsConfig<TData = Awaited<ReturnType<typeof getSmsConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsConfig>>, TError, TData>>, }
+export function useListSmConfig<TData = Awaited<ReturnType<typeof listSmConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmConfig>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetSmsConfigQueryOptions(options)
+  const queryOptions = getListSmConfigQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -147,7 +147,7 @@ export function useGetSmsConfig<TData = Awaited<ReturnType<typeof getSmsConfig>>
  * Update SMS configuration for tenant
  * @summary Update Sms Config
  */
-export const updateSmsConfig = (
+export const updateSmConfig = (
     sMSProviderConfigUpdate: SMSProviderConfigUpdate,
  ) => {
       
@@ -162,11 +162,11 @@ export const updateSmsConfig = (
   
 
 
-export const getUpdateSmsConfigMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmsConfig>>, TError,{data: SMSProviderConfigUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateSmsConfig>>, TError,{data: SMSProviderConfigUpdate}, TContext> => {
+export const getUpdateSmConfigMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmConfig>>, TError,{data: SMSProviderConfigUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateSmConfig>>, TError,{data: SMSProviderConfigUpdate}, TContext> => {
 
-const mutationKey = ['updateSmsConfig'];
+const mutationKey = ['updateSmConfig'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -176,10 +176,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSmsConfig>>, {data: SMSProviderConfigUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSmConfig>>, {data: SMSProviderConfigUpdate}> = (props) => {
           const {data} = props ?? {};
 
-          return  updateSmsConfig(data,)
+          return  updateSmConfig(data,)
         }
 
         
@@ -187,23 +187,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateSmsConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updateSmsConfig>>>
-    export type UpdateSmsConfigMutationBody = SMSProviderConfigUpdate
-    export type UpdateSmsConfigMutationError = HTTPValidationError
+    export type UpdateSmConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updateSmConfig>>>
+    export type UpdateSmConfigMutationBody = SMSProviderConfigUpdate
+    export type UpdateSmConfigMutationError = HTTPValidationError
 
     /**
  * @summary Update Sms Config
  */
-export const useUpdateSmsConfig = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmsConfig>>, TError,{data: SMSProviderConfigUpdate}, TContext>, }
+export const useUpdateSmConfig = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmConfig>>, TError,{data: SMSProviderConfigUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateSmsConfig>>,
+        Awaited<ReturnType<typeof updateSmConfig>>,
         TError,
         {data: SMSProviderConfigUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateSmsConfigMutationOptions(options);
+      const mutationOptions = getUpdateSmConfigMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -211,7 +211,7 @@ export const useUpdateSmsConfig = <TError = HTTPValidationError,
  * List SMS headers for tenant
  * @summary List Sms Headers
  */
-export const listSmsHeaders = (
+export const listSmHeaders = (
     
  signal?: AbortSignal
 ) => {
@@ -226,69 +226,69 @@ export const listSmsHeaders = (
 
 
 
-export const getListSmsHeadersQueryKey = () => {
+export const getListSmHeadersQueryKey = () => {
     return [
     `/api/sms/headers`
     ] as const;
     }
 
     
-export const getListSmsHeadersQueryOptions = <TData = Awaited<ReturnType<typeof listSmsHeaders>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsHeaders>>, TError, TData>>, }
+export const getListSmHeadersQueryOptions = <TData = Awaited<ReturnType<typeof listSmHeaders>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmHeaders>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListSmsHeadersQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListSmHeadersQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmsHeaders>>> = ({ signal }) => listSmsHeaders(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmHeaders>>> = ({ signal }) => listSmHeaders(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSmsHeaders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSmHeaders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListSmsHeadersQueryResult = NonNullable<Awaited<ReturnType<typeof listSmsHeaders>>>
-export type ListSmsHeadersQueryError = unknown
+export type ListSmHeadersQueryResult = NonNullable<Awaited<ReturnType<typeof listSmHeaders>>>
+export type ListSmHeadersQueryError = unknown
 
 
-export function useListSmsHeaders<TData = Awaited<ReturnType<typeof listSmsHeaders>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsHeaders>>, TError, TData>> & Pick<
+export function useListSmHeaders<TData = Awaited<ReturnType<typeof listSmHeaders>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmHeaders>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listSmsHeaders>>,
+          Awaited<ReturnType<typeof listSmHeaders>>,
           TError,
-          Awaited<ReturnType<typeof listSmsHeaders>>
+          Awaited<ReturnType<typeof listSmHeaders>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListSmsHeaders<TData = Awaited<ReturnType<typeof listSmsHeaders>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsHeaders>>, TError, TData>> & Pick<
+export function useListSmHeaders<TData = Awaited<ReturnType<typeof listSmHeaders>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmHeaders>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listSmsHeaders>>,
+          Awaited<ReturnType<typeof listSmHeaders>>,
           TError,
-          Awaited<ReturnType<typeof listSmsHeaders>>
+          Awaited<ReturnType<typeof listSmHeaders>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListSmsHeaders<TData = Awaited<ReturnType<typeof listSmsHeaders>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsHeaders>>, TError, TData>>, }
+export function useListSmHeaders<TData = Awaited<ReturnType<typeof listSmHeaders>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmHeaders>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Sms Headers
  */
 
-export function useListSmsHeaders<TData = Awaited<ReturnType<typeof listSmsHeaders>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsHeaders>>, TError, TData>>, }
+export function useListSmHeaders<TData = Awaited<ReturnType<typeof listSmHeaders>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmHeaders>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListSmsHeadersQueryOptions(options)
+  const queryOptions = getListSmHeadersQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -304,7 +304,7 @@ export function useListSmsHeaders<TData = Awaited<ReturnType<typeof listSmsHeade
  * Request a new SMS header for tenant
  * @summary Request Sms Header
  */
-export const requestSmsHeader = (
+export const createSmHeaders = (
     sMSHeaderRequestCreate: SMSHeaderRequestCreate,
  signal?: AbortSignal
 ) => {
@@ -320,11 +320,11 @@ export const requestSmsHeader = (
   
 
 
-export const getRequestSmsHeaderMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestSmsHeader>>, TError,{data: SMSHeaderRequestCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof requestSmsHeader>>, TError,{data: SMSHeaderRequestCreate}, TContext> => {
+export const getCreateSmHeadersMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmHeaders>>, TError,{data: SMSHeaderRequestCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSmHeaders>>, TError,{data: SMSHeaderRequestCreate}, TContext> => {
 
-const mutationKey = ['requestSmsHeader'];
+const mutationKey = ['createSmHeaders'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -334,10 +334,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestSmsHeader>>, {data: SMSHeaderRequestCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSmHeaders>>, {data: SMSHeaderRequestCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  requestSmsHeader(data,)
+          return  createSmHeaders(data,)
         }
 
         
@@ -345,23 +345,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type RequestSmsHeaderMutationResult = NonNullable<Awaited<ReturnType<typeof requestSmsHeader>>>
-    export type RequestSmsHeaderMutationBody = SMSHeaderRequestCreate
-    export type RequestSmsHeaderMutationError = HTTPValidationError
+    export type CreateSmHeadersMutationResult = NonNullable<Awaited<ReturnType<typeof createSmHeaders>>>
+    export type CreateSmHeadersMutationBody = SMSHeaderRequestCreate
+    export type CreateSmHeadersMutationError = HTTPValidationError
 
     /**
  * @summary Request Sms Header
  */
-export const useRequestSmsHeader = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestSmsHeader>>, TError,{data: SMSHeaderRequestCreate}, TContext>, }
+export const useCreateSmHeaders = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmHeaders>>, TError,{data: SMSHeaderRequestCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof requestSmsHeader>>,
+        Awaited<ReturnType<typeof createSmHeaders>>,
         TError,
         {data: SMSHeaderRequestCreate},
         TContext
       > => {
 
-      const mutationOptions = getRequestSmsHeaderMutationOptions(options);
+      const mutationOptions = getCreateSmHeadersMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -369,7 +369,7 @@ export const useRequestSmsHeader = <TError = HTTPValidationError,
  * Set a header as the default for the tenant
  * @summary Set Default Header
  */
-export const setDefaultHeader = (
+export const updateSmHeaderSetDefault = (
     headerId: string,
  ) => {
       
@@ -382,11 +382,11 @@ export const setDefaultHeader = (
   
 
 
-export const getSetDefaultHeaderMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setDefaultHeader>>, TError,{headerId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof setDefaultHeader>>, TError,{headerId: string}, TContext> => {
+export const getUpdateSmHeaderSetDefaultMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmHeaderSetDefault>>, TError,{headerId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateSmHeaderSetDefault>>, TError,{headerId: string}, TContext> => {
 
-const mutationKey = ['setDefaultHeader'];
+const mutationKey = ['updateSmHeaderSetDefault'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -396,10 +396,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setDefaultHeader>>, {headerId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSmHeaderSetDefault>>, {headerId: string}> = (props) => {
           const {headerId} = props ?? {};
 
-          return  setDefaultHeader(headerId,)
+          return  updateSmHeaderSetDefault(headerId,)
         }
 
         
@@ -407,23 +407,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SetDefaultHeaderMutationResult = NonNullable<Awaited<ReturnType<typeof setDefaultHeader>>>
+    export type UpdateSmHeaderSetDefaultMutationResult = NonNullable<Awaited<ReturnType<typeof updateSmHeaderSetDefault>>>
     
-    export type SetDefaultHeaderMutationError = HTTPValidationError
+    export type UpdateSmHeaderSetDefaultMutationError = HTTPValidationError
 
     /**
  * @summary Set Default Header
  */
-export const useSetDefaultHeader = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setDefaultHeader>>, TError,{headerId: string}, TContext>, }
+export const useUpdateSmHeaderSetDefault = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmHeaderSetDefault>>, TError,{headerId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof setDefaultHeader>>,
+        Awaited<ReturnType<typeof updateSmHeaderSetDefault>>,
         TError,
         {headerId: string},
         TContext
       > => {
 
-      const mutationOptions = getSetDefaultHeaderMutationOptions(options);
+      const mutationOptions = getUpdateSmHeaderSetDefaultMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -431,7 +431,7 @@ export const useSetDefaultHeader = <TError = HTTPValidationError,
  * List available SMS packages (public endpoint)
  * @summary List Sms Packages
  */
-export const listSmsPackages = (
+export const listSmPackages = (
     
  signal?: AbortSignal
 ) => {
@@ -446,69 +446,69 @@ export const listSmsPackages = (
 
 
 
-export const getListSmsPackagesQueryKey = () => {
+export const getListSmPackagesQueryKey = () => {
     return [
     `/api/sms/packages`
     ] as const;
     }
 
     
-export const getListSmsPackagesQueryOptions = <TData = Awaited<ReturnType<typeof listSmsPackages>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>>, }
+export const getListSmPackagesQueryOptions = <TData = Awaited<ReturnType<typeof listSmPackages>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmPackages>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListSmsPackagesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListSmPackagesQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmsPackages>>> = ({ signal }) => listSmsPackages(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmPackages>>> = ({ signal }) => listSmPackages(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSmPackages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListSmsPackagesQueryResult = NonNullable<Awaited<ReturnType<typeof listSmsPackages>>>
-export type ListSmsPackagesQueryError = unknown
+export type ListSmPackagesQueryResult = NonNullable<Awaited<ReturnType<typeof listSmPackages>>>
+export type ListSmPackagesQueryError = unknown
 
 
-export function useListSmsPackages<TData = Awaited<ReturnType<typeof listSmsPackages>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>> & Pick<
+export function useListSmPackages<TData = Awaited<ReturnType<typeof listSmPackages>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmPackages>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listSmsPackages>>,
+          Awaited<ReturnType<typeof listSmPackages>>,
           TError,
-          Awaited<ReturnType<typeof listSmsPackages>>
+          Awaited<ReturnType<typeof listSmPackages>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListSmsPackages<TData = Awaited<ReturnType<typeof listSmsPackages>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>> & Pick<
+export function useListSmPackages<TData = Awaited<ReturnType<typeof listSmPackages>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmPackages>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listSmsPackages>>,
+          Awaited<ReturnType<typeof listSmPackages>>,
           TError,
-          Awaited<ReturnType<typeof listSmsPackages>>
+          Awaited<ReturnType<typeof listSmPackages>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListSmsPackages<TData = Awaited<ReturnType<typeof listSmsPackages>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>>, }
+export function useListSmPackages<TData = Awaited<ReturnType<typeof listSmPackages>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmPackages>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Sms Packages
  */
 
-export function useListSmsPackages<TData = Awaited<ReturnType<typeof listSmsPackages>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>>, }
+export function useListSmPackages<TData = Awaited<ReturnType<typeof listSmPackages>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmPackages>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListSmsPackagesQueryOptions(options)
+  const queryOptions = getListSmPackagesQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -524,7 +524,7 @@ export function useListSmsPackages<TData = Awaited<ReturnType<typeof listSmsPack
  * Get SMS credit balance for tenant
  * @summary Get Sms Credit
  */
-export const getSmsCredit = (
+export const listSmCredit = (
     
  signal?: AbortSignal
 ) => {
@@ -539,69 +539,69 @@ export const getSmsCredit = (
 
 
 
-export const getGetSmsCreditQueryKey = () => {
+export const getListSmCreditQueryKey = () => {
     return [
     `/api/sms/credit`
     ] as const;
     }
 
     
-export const getGetSmsCreditQueryOptions = <TData = Awaited<ReturnType<typeof getSmsCredit>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsCredit>>, TError, TData>>, }
+export const getListSmCreditQueryOptions = <TData = Awaited<ReturnType<typeof listSmCredit>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmCredit>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSmsCreditQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListSmCreditQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSmsCredit>>> = ({ signal }) => getSmsCredit(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmCredit>>> = ({ signal }) => listSmCredit(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSmsCredit>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSmCredit>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetSmsCreditQueryResult = NonNullable<Awaited<ReturnType<typeof getSmsCredit>>>
-export type GetSmsCreditQueryError = unknown
+export type ListSmCreditQueryResult = NonNullable<Awaited<ReturnType<typeof listSmCredit>>>
+export type ListSmCreditQueryError = unknown
 
 
-export function useGetSmsCredit<TData = Awaited<ReturnType<typeof getSmsCredit>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsCredit>>, TError, TData>> & Pick<
+export function useListSmCredit<TData = Awaited<ReturnType<typeof listSmCredit>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmCredit>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSmsCredit>>,
+          Awaited<ReturnType<typeof listSmCredit>>,
           TError,
-          Awaited<ReturnType<typeof getSmsCredit>>
+          Awaited<ReturnType<typeof listSmCredit>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSmsCredit<TData = Awaited<ReturnType<typeof getSmsCredit>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsCredit>>, TError, TData>> & Pick<
+export function useListSmCredit<TData = Awaited<ReturnType<typeof listSmCredit>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmCredit>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSmsCredit>>,
+          Awaited<ReturnType<typeof listSmCredit>>,
           TError,
-          Awaited<ReturnType<typeof getSmsCredit>>
+          Awaited<ReturnType<typeof listSmCredit>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSmsCredit<TData = Awaited<ReturnType<typeof getSmsCredit>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsCredit>>, TError, TData>>, }
+export function useListSmCredit<TData = Awaited<ReturnType<typeof listSmCredit>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmCredit>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Sms Credit
  */
 
-export function useGetSmsCredit<TData = Awaited<ReturnType<typeof getSmsCredit>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsCredit>>, TError, TData>>, }
+export function useListSmCredit<TData = Awaited<ReturnType<typeof listSmCredit>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmCredit>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetSmsCreditQueryOptions(options)
+  const queryOptions = getListSmCreditQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -617,7 +617,7 @@ export function useGetSmsCredit<TData = Awaited<ReturnType<typeof getSmsCredit>>
  * List target audiences for tenant
  * @summary List Target Audiences
  */
-export const listTargetAudiences = (
+export const listSmAudiences = (
     
  signal?: AbortSignal
 ) => {
@@ -632,69 +632,69 @@ export const listTargetAudiences = (
 
 
 
-export const getListTargetAudiencesQueryKey = () => {
+export const getListSmAudiencesQueryKey = () => {
     return [
     `/api/sms/audiences`
     ] as const;
     }
 
     
-export const getListTargetAudiencesQueryOptions = <TData = Awaited<ReturnType<typeof listTargetAudiences>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTargetAudiences>>, TError, TData>>, }
+export const getListSmAudiencesQueryOptions = <TData = Awaited<ReturnType<typeof listSmAudiences>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmAudiences>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListTargetAudiencesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListSmAudiencesQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTargetAudiences>>> = ({ signal }) => listTargetAudiences(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmAudiences>>> = ({ signal }) => listSmAudiences(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTargetAudiences>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSmAudiences>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListTargetAudiencesQueryResult = NonNullable<Awaited<ReturnType<typeof listTargetAudiences>>>
-export type ListTargetAudiencesQueryError = unknown
+export type ListSmAudiencesQueryResult = NonNullable<Awaited<ReturnType<typeof listSmAudiences>>>
+export type ListSmAudiencesQueryError = unknown
 
 
-export function useListTargetAudiences<TData = Awaited<ReturnType<typeof listTargetAudiences>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTargetAudiences>>, TError, TData>> & Pick<
+export function useListSmAudiences<TData = Awaited<ReturnType<typeof listSmAudiences>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmAudiences>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listTargetAudiences>>,
+          Awaited<ReturnType<typeof listSmAudiences>>,
           TError,
-          Awaited<ReturnType<typeof listTargetAudiences>>
+          Awaited<ReturnType<typeof listSmAudiences>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListTargetAudiences<TData = Awaited<ReturnType<typeof listTargetAudiences>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTargetAudiences>>, TError, TData>> & Pick<
+export function useListSmAudiences<TData = Awaited<ReturnType<typeof listSmAudiences>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmAudiences>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listTargetAudiences>>,
+          Awaited<ReturnType<typeof listSmAudiences>>,
           TError,
-          Awaited<ReturnType<typeof listTargetAudiences>>
+          Awaited<ReturnType<typeof listSmAudiences>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListTargetAudiences<TData = Awaited<ReturnType<typeof listTargetAudiences>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTargetAudiences>>, TError, TData>>, }
+export function useListSmAudiences<TData = Awaited<ReturnType<typeof listSmAudiences>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmAudiences>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Target Audiences
  */
 
-export function useListTargetAudiences<TData = Awaited<ReturnType<typeof listTargetAudiences>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTargetAudiences>>, TError, TData>>, }
+export function useListSmAudiences<TData = Awaited<ReturnType<typeof listSmAudiences>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmAudiences>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListTargetAudiencesQueryOptions(options)
+  const queryOptions = getListSmAudiencesQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -710,7 +710,7 @@ export function useListTargetAudiences<TData = Awaited<ReturnType<typeof listTar
  * Create a new target audience
  * @summary Create Target Audience
  */
-export const createTargetAudience = (
+export const createSmAudiences = (
     targetAudienceCreate: TargetAudienceCreate,
  signal?: AbortSignal
 ) => {
@@ -726,11 +726,11 @@ export const createTargetAudience = (
   
 
 
-export const getCreateTargetAudienceMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTargetAudience>>, TError,{data: TargetAudienceCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createTargetAudience>>, TError,{data: TargetAudienceCreate}, TContext> => {
+export const getCreateSmAudiencesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmAudiences>>, TError,{data: TargetAudienceCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSmAudiences>>, TError,{data: TargetAudienceCreate}, TContext> => {
 
-const mutationKey = ['createTargetAudience'];
+const mutationKey = ['createSmAudiences'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -740,10 +740,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTargetAudience>>, {data: TargetAudienceCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSmAudiences>>, {data: TargetAudienceCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createTargetAudience(data,)
+          return  createSmAudiences(data,)
         }
 
         
@@ -751,23 +751,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateTargetAudienceMutationResult = NonNullable<Awaited<ReturnType<typeof createTargetAudience>>>
-    export type CreateTargetAudienceMutationBody = TargetAudienceCreate
-    export type CreateTargetAudienceMutationError = HTTPValidationError
+    export type CreateSmAudiencesMutationResult = NonNullable<Awaited<ReturnType<typeof createSmAudiences>>>
+    export type CreateSmAudiencesMutationBody = TargetAudienceCreate
+    export type CreateSmAudiencesMutationError = HTTPValidationError
 
     /**
  * @summary Create Target Audience
  */
-export const useCreateTargetAudience = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTargetAudience>>, TError,{data: TargetAudienceCreate}, TContext>, }
+export const useCreateSmAudiences = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmAudiences>>, TError,{data: TargetAudienceCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createTargetAudience>>,
+        Awaited<ReturnType<typeof createSmAudiences>>,
         TError,
         {data: TargetAudienceCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateTargetAudienceMutationOptions(options);
+      const mutationOptions = getCreateSmAudiencesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -775,14 +775,14 @@ export const useCreateTargetAudience = <TError = HTTPValidationError,
  * Upload SMS-related document
  * @summary Upload Sms Document
  */
-export const uploadSmsDocument = (
-    bodyUploadSmsDocument: BodyUploadSmsDocument,
-    params?: UploadSmsDocumentParams,
+export const createSmDocumentUpload = (
+    bodyCreateSmDocumentUpload: BodyCreateSmDocumentUpload,
+    params?: CreateSmDocumentUploadParams,
  signal?: AbortSignal
 ) => {
       
       const formData = new FormData();
-formData.append(`file`, bodyUploadSmsDocument.file)
+formData.append(`file`, bodyCreateSmDocumentUpload.file)
 
       return customInstance<unknown>(
       {url: `/api/sms/documents/upload`, method: 'POST',
@@ -795,11 +795,11 @@ formData.append(`file`, bodyUploadSmsDocument.file)
   
 
 
-export const getUploadSmsDocumentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadSmsDocument>>, TError,{data: BodyUploadSmsDocument;params?: UploadSmsDocumentParams}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof uploadSmsDocument>>, TError,{data: BodyUploadSmsDocument;params?: UploadSmsDocumentParams}, TContext> => {
+export const getCreateSmDocumentUploadMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmDocumentUpload>>, TError,{data: BodyCreateSmDocumentUpload;params?: CreateSmDocumentUploadParams}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSmDocumentUpload>>, TError,{data: BodyCreateSmDocumentUpload;params?: CreateSmDocumentUploadParams}, TContext> => {
 
-const mutationKey = ['uploadSmsDocument'];
+const mutationKey = ['createSmDocumentUpload'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -809,10 +809,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadSmsDocument>>, {data: BodyUploadSmsDocument;params?: UploadSmsDocumentParams}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSmDocumentUpload>>, {data: BodyCreateSmDocumentUpload;params?: CreateSmDocumentUploadParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  uploadSmsDocument(data,params,)
+          return  createSmDocumentUpload(data,params,)
         }
 
         
@@ -820,23 +820,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UploadSmsDocumentMutationResult = NonNullable<Awaited<ReturnType<typeof uploadSmsDocument>>>
-    export type UploadSmsDocumentMutationBody = BodyUploadSmsDocument
-    export type UploadSmsDocumentMutationError = HTTPValidationError
+    export type CreateSmDocumentUploadMutationResult = NonNullable<Awaited<ReturnType<typeof createSmDocumentUpload>>>
+    export type CreateSmDocumentUploadMutationBody = BodyCreateSmDocumentUpload
+    export type CreateSmDocumentUploadMutationError = HTTPValidationError
 
     /**
  * @summary Upload Sms Document
  */
-export const useUploadSmsDocument = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadSmsDocument>>, TError,{data: BodyUploadSmsDocument;params?: UploadSmsDocumentParams}, TContext>, }
+export const useCreateSmDocumentUpload = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmDocumentUpload>>, TError,{data: BodyCreateSmDocumentUpload;params?: CreateSmDocumentUploadParams}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof uploadSmsDocument>>,
+        Awaited<ReturnType<typeof createSmDocumentUpload>>,
         TError,
-        {data: BodyUploadSmsDocument;params?: UploadSmsDocumentParams},
+        {data: BodyCreateSmDocumentUpload;params?: CreateSmDocumentUploadParams},
         TContext
       > => {
 
-      const mutationOptions = getUploadSmsDocumentMutationOptions(options);
+      const mutationOptions = getCreateSmDocumentUploadMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -844,7 +844,7 @@ export const useUploadSmsDocument = <TError = HTTPValidationError,
  * Download SMS document by type
  * @summary Download Sms Document
  */
-export const downloadSmsDocument = (
+export const listSmDocumentDownload = (
     documentType: string,
  signal?: AbortSignal
 ) => {
@@ -859,69 +859,69 @@ export const downloadSmsDocument = (
 
 
 
-export const getDownloadSmsDocumentQueryKey = (documentType?: string,) => {
+export const getListSmDocumentDownloadQueryKey = (documentType?: string,) => {
     return [
     `/api/sms/documents/${documentType}/download`
     ] as const;
     }
 
     
-export const getDownloadSmsDocumentQueryOptions = <TData = Awaited<ReturnType<typeof downloadSmsDocument>>, TError = HTTPValidationError>(documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSmsDocument>>, TError, TData>>, }
+export const getListSmDocumentDownloadQueryOptions = <TData = Awaited<ReturnType<typeof listSmDocumentDownload>>, TError = HTTPValidationError>(documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getDownloadSmsDocumentQueryKey(documentType);
+  const queryKey =  queryOptions?.queryKey ?? getListSmDocumentDownloadQueryKey(documentType);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadSmsDocument>>> = ({ signal }) => downloadSmsDocument(documentType, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmDocumentDownload>>> = ({ signal }) => listSmDocumentDownload(documentType, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(documentType), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadSmsDocument>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(documentType), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type DownloadSmsDocumentQueryResult = NonNullable<Awaited<ReturnType<typeof downloadSmsDocument>>>
-export type DownloadSmsDocumentQueryError = HTTPValidationError
+export type ListSmDocumentDownloadQueryResult = NonNullable<Awaited<ReturnType<typeof listSmDocumentDownload>>>
+export type ListSmDocumentDownloadQueryError = HTTPValidationError
 
 
-export function useDownloadSmsDocument<TData = Awaited<ReturnType<typeof downloadSmsDocument>>, TError = HTTPValidationError>(
- documentType: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSmsDocument>>, TError, TData>> & Pick<
+export function useListSmDocumentDownload<TData = Awaited<ReturnType<typeof listSmDocumentDownload>>, TError = HTTPValidationError>(
+ documentType: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof downloadSmsDocument>>,
+          Awaited<ReturnType<typeof listSmDocumentDownload>>,
           TError,
-          Awaited<ReturnType<typeof downloadSmsDocument>>
+          Awaited<ReturnType<typeof listSmDocumentDownload>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useDownloadSmsDocument<TData = Awaited<ReturnType<typeof downloadSmsDocument>>, TError = HTTPValidationError>(
- documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSmsDocument>>, TError, TData>> & Pick<
+export function useListSmDocumentDownload<TData = Awaited<ReturnType<typeof listSmDocumentDownload>>, TError = HTTPValidationError>(
+ documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof downloadSmsDocument>>,
+          Awaited<ReturnType<typeof listSmDocumentDownload>>,
           TError,
-          Awaited<ReturnType<typeof downloadSmsDocument>>
+          Awaited<ReturnType<typeof listSmDocumentDownload>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useDownloadSmsDocument<TData = Awaited<ReturnType<typeof downloadSmsDocument>>, TError = HTTPValidationError>(
- documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSmsDocument>>, TError, TData>>, }
+export function useListSmDocumentDownload<TData = Awaited<ReturnType<typeof listSmDocumentDownload>>, TError = HTTPValidationError>(
+ documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Download Sms Document
  */
 
-export function useDownloadSmsDocument<TData = Awaited<ReturnType<typeof downloadSmsDocument>>, TError = HTTPValidationError>(
- documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSmsDocument>>, TError, TData>>, }
+export function useListSmDocumentDownload<TData = Awaited<ReturnType<typeof listSmDocumentDownload>>, TError = HTTPValidationError>(
+ documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getDownloadSmsDocumentQueryOptions(documentType,options)
+  const queryOptions = getListSmDocumentDownloadQueryOptions(documentType,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -937,7 +937,7 @@ export function useDownloadSmsDocument<TData = Awaited<ReturnType<typeof downloa
  * Delete SMS document
  * @summary Delete Sms Document
  */
-export const deleteSmsDocument = (
+export const deleteSmDocument = (
     documentType: string,
  ) => {
       
@@ -950,11 +950,11 @@ export const deleteSmsDocument = (
   
 
 
-export const getDeleteSmsDocumentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSmsDocument>>, TError,{documentType: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteSmsDocument>>, TError,{documentType: string}, TContext> => {
+export const getDeleteSmDocumentMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSmDocument>>, TError,{documentType: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSmDocument>>, TError,{documentType: string}, TContext> => {
 
-const mutationKey = ['deleteSmsDocument'];
+const mutationKey = ['deleteSmDocument'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -964,10 +964,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSmsDocument>>, {documentType: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSmDocument>>, {documentType: string}> = (props) => {
           const {documentType} = props ?? {};
 
-          return  deleteSmsDocument(documentType,)
+          return  deleteSmDocument(documentType,)
         }
 
         
@@ -975,23 +975,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteSmsDocumentMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSmsDocument>>>
+    export type DeleteSmDocumentMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSmDocument>>>
     
-    export type DeleteSmsDocumentMutationError = HTTPValidationError
+    export type DeleteSmDocumentMutationError = HTTPValidationError
 
     /**
  * @summary Delete Sms Document
  */
-export const useDeleteSmsDocument = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSmsDocument>>, TError,{documentType: string}, TContext>, }
+export const useDeleteSmDocument = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSmDocument>>, TError,{documentType: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteSmsDocument>>,
+        Awaited<ReturnType<typeof deleteSmDocument>>,
         TError,
         {documentType: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteSmsDocumentMutationOptions(options);
+      const mutationOptions = getDeleteSmDocumentMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -999,7 +999,7 @@ export const useDeleteSmsDocument = <TError = HTTPValidationError,
  * Submit SMS documents for review
  * @summary Submit Sms Documents
  */
-export const submitSmsDocuments = (
+export const createSmDocumentSubmit = (
     documentSubmitRequest: DocumentSubmitRequest,
  signal?: AbortSignal
 ) => {
@@ -1015,11 +1015,11 @@ export const submitSmsDocuments = (
   
 
 
-export const getSubmitSmsDocumentsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitSmsDocuments>>, TError,{data: DocumentSubmitRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof submitSmsDocuments>>, TError,{data: DocumentSubmitRequest}, TContext> => {
+export const getCreateSmDocumentSubmitMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmDocumentSubmit>>, TError,{data: DocumentSubmitRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSmDocumentSubmit>>, TError,{data: DocumentSubmitRequest}, TContext> => {
 
-const mutationKey = ['submitSmsDocuments'];
+const mutationKey = ['createSmDocumentSubmit'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1029,10 +1029,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitSmsDocuments>>, {data: DocumentSubmitRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSmDocumentSubmit>>, {data: DocumentSubmitRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  submitSmsDocuments(data,)
+          return  createSmDocumentSubmit(data,)
         }
 
         
@@ -1040,23 +1040,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SubmitSmsDocumentsMutationResult = NonNullable<Awaited<ReturnType<typeof submitSmsDocuments>>>
-    export type SubmitSmsDocumentsMutationBody = DocumentSubmitRequest
-    export type SubmitSmsDocumentsMutationError = HTTPValidationError
+    export type CreateSmDocumentSubmitMutationResult = NonNullable<Awaited<ReturnType<typeof createSmDocumentSubmit>>>
+    export type CreateSmDocumentSubmitMutationBody = DocumentSubmitRequest
+    export type CreateSmDocumentSubmitMutationError = HTTPValidationError
 
     /**
  * @summary Submit Sms Documents
  */
-export const useSubmitSmsDocuments = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitSmsDocuments>>, TError,{data: DocumentSubmitRequest}, TContext>, }
+export const useCreateSmDocumentSubmit = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmDocumentSubmit>>, TError,{data: DocumentSubmitRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof submitSmsDocuments>>,
+        Awaited<ReturnType<typeof createSmDocumentSubmit>>,
         TError,
         {data: DocumentSubmitRequest},
         TContext
       > => {
 
-      const mutationOptions = getSubmitSmsDocumentsMutationOptions(options);
+      const mutationOptions = getCreateSmDocumentSubmitMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -1064,14 +1064,14 @@ export const useSubmitSmsDocuments = <TError = HTTPValidationError,
  * Upload audience file (CSV/Excel)
  * @summary Upload Audience File
  */
-export const uploadAudienceFile = (
-    bodyUploadAudienceFile: BodyUploadAudienceFile,
-    params?: UploadAudienceFileParams,
+export const createSmAudienceUpload = (
+    bodyCreateSmAudienceUpload: BodyCreateSmAudienceUpload,
+    params?: CreateSmAudienceUploadParams,
  signal?: AbortSignal
 ) => {
       
       const formData = new FormData();
-formData.append(`file`, bodyUploadAudienceFile.file)
+formData.append(`file`, bodyCreateSmAudienceUpload.file)
 
       return customInstance<unknown>(
       {url: `/api/sms/audiences/upload`, method: 'POST',
@@ -1084,11 +1084,11 @@ formData.append(`file`, bodyUploadAudienceFile.file)
   
 
 
-export const getUploadAudienceFileMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadAudienceFile>>, TError,{data: BodyUploadAudienceFile;params?: UploadAudienceFileParams}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof uploadAudienceFile>>, TError,{data: BodyUploadAudienceFile;params?: UploadAudienceFileParams}, TContext> => {
+export const getCreateSmAudienceUploadMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmAudienceUpload>>, TError,{data: BodyCreateSmAudienceUpload;params?: CreateSmAudienceUploadParams}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSmAudienceUpload>>, TError,{data: BodyCreateSmAudienceUpload;params?: CreateSmAudienceUploadParams}, TContext> => {
 
-const mutationKey = ['uploadAudienceFile'];
+const mutationKey = ['createSmAudienceUpload'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1098,10 +1098,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadAudienceFile>>, {data: BodyUploadAudienceFile;params?: UploadAudienceFileParams}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSmAudienceUpload>>, {data: BodyCreateSmAudienceUpload;params?: CreateSmAudienceUploadParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  uploadAudienceFile(data,params,)
+          return  createSmAudienceUpload(data,params,)
         }
 
         
@@ -1109,23 +1109,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UploadAudienceFileMutationResult = NonNullable<Awaited<ReturnType<typeof uploadAudienceFile>>>
-    export type UploadAudienceFileMutationBody = BodyUploadAudienceFile
-    export type UploadAudienceFileMutationError = HTTPValidationError
+    export type CreateSmAudienceUploadMutationResult = NonNullable<Awaited<ReturnType<typeof createSmAudienceUpload>>>
+    export type CreateSmAudienceUploadMutationBody = BodyCreateSmAudienceUpload
+    export type CreateSmAudienceUploadMutationError = HTTPValidationError
 
     /**
  * @summary Upload Audience File
  */
-export const useUploadAudienceFile = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadAudienceFile>>, TError,{data: BodyUploadAudienceFile;params?: UploadAudienceFileParams}, TContext>, }
+export const useCreateSmAudienceUpload = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmAudienceUpload>>, TError,{data: BodyCreateSmAudienceUpload;params?: CreateSmAudienceUploadParams}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof uploadAudienceFile>>,
+        Awaited<ReturnType<typeof createSmAudienceUpload>>,
         TError,
-        {data: BodyUploadAudienceFile;params?: UploadAudienceFileParams},
+        {data: BodyCreateSmAudienceUpload;params?: CreateSmAudienceUploadParams},
         TContext
       > => {
 
-      const mutationOptions = getUploadAudienceFileMutationOptions(options);
+      const mutationOptions = getCreateSmAudienceUploadMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -1133,8 +1133,8 @@ export const useUploadAudienceFile = <TError = HTTPValidationError,
  * List all SMS header requests (admin)
  * @summary List Admin Sms Headers
  */
-export const listAdminSmsHeaders = (
-    params?: ListAdminSmsHeadersParams,
+export const listSmAdminHeaders = (
+    params?: ListSmAdminHeadersParams,
  signal?: AbortSignal
 ) => {
       
@@ -1149,69 +1149,69 @@ export const listAdminSmsHeaders = (
 
 
 
-export const getListAdminSmsHeadersQueryKey = (params?: ListAdminSmsHeadersParams,) => {
+export const getListSmAdminHeadersQueryKey = (params?: ListSmAdminHeadersParams,) => {
     return [
     `/api/sms/admin/headers`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListAdminSmsHeadersQueryOptions = <TData = Awaited<ReturnType<typeof listAdminSmsHeaders>>, TError = HTTPValidationError>(params?: ListAdminSmsHeadersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSmsHeaders>>, TError, TData>>, }
+export const getListSmAdminHeadersQueryOptions = <TData = Awaited<ReturnType<typeof listSmAdminHeaders>>, TError = HTTPValidationError>(params?: ListSmAdminHeadersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmAdminHeaders>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListAdminSmsHeadersQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListSmAdminHeadersQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminSmsHeaders>>> = ({ signal }) => listAdminSmsHeaders(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmAdminHeaders>>> = ({ signal }) => listSmAdminHeaders(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminSmsHeaders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSmAdminHeaders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListAdminSmsHeadersQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminSmsHeaders>>>
-export type ListAdminSmsHeadersQueryError = HTTPValidationError
+export type ListSmAdminHeadersQueryResult = NonNullable<Awaited<ReturnType<typeof listSmAdminHeaders>>>
+export type ListSmAdminHeadersQueryError = HTTPValidationError
 
 
-export function useListAdminSmsHeaders<TData = Awaited<ReturnType<typeof listAdminSmsHeaders>>, TError = HTTPValidationError>(
- params: undefined |  ListAdminSmsHeadersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSmsHeaders>>, TError, TData>> & Pick<
+export function useListSmAdminHeaders<TData = Awaited<ReturnType<typeof listSmAdminHeaders>>, TError = HTTPValidationError>(
+ params: undefined |  ListSmAdminHeadersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmAdminHeaders>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAdminSmsHeaders>>,
+          Awaited<ReturnType<typeof listSmAdminHeaders>>,
           TError,
-          Awaited<ReturnType<typeof listAdminSmsHeaders>>
+          Awaited<ReturnType<typeof listSmAdminHeaders>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAdminSmsHeaders<TData = Awaited<ReturnType<typeof listAdminSmsHeaders>>, TError = HTTPValidationError>(
- params?: ListAdminSmsHeadersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSmsHeaders>>, TError, TData>> & Pick<
+export function useListSmAdminHeaders<TData = Awaited<ReturnType<typeof listSmAdminHeaders>>, TError = HTTPValidationError>(
+ params?: ListSmAdminHeadersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmAdminHeaders>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAdminSmsHeaders>>,
+          Awaited<ReturnType<typeof listSmAdminHeaders>>,
           TError,
-          Awaited<ReturnType<typeof listAdminSmsHeaders>>
+          Awaited<ReturnType<typeof listSmAdminHeaders>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAdminSmsHeaders<TData = Awaited<ReturnType<typeof listAdminSmsHeaders>>, TError = HTTPValidationError>(
- params?: ListAdminSmsHeadersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSmsHeaders>>, TError, TData>>, }
+export function useListSmAdminHeaders<TData = Awaited<ReturnType<typeof listSmAdminHeaders>>, TError = HTTPValidationError>(
+ params?: ListSmAdminHeadersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmAdminHeaders>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Admin Sms Headers
  */
 
-export function useListAdminSmsHeaders<TData = Awaited<ReturnType<typeof listAdminSmsHeaders>>, TError = HTTPValidationError>(
- params?: ListAdminSmsHeadersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSmsHeaders>>, TError, TData>>, }
+export function useListSmAdminHeaders<TData = Awaited<ReturnType<typeof listSmAdminHeaders>>, TError = HTTPValidationError>(
+ params?: ListSmAdminHeadersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmAdminHeaders>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListAdminSmsHeadersQueryOptions(params,options)
+  const queryOptions = getListSmAdminHeadersQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -1227,7 +1227,7 @@ export function useListAdminSmsHeaders<TData = Awaited<ReturnType<typeof listAdm
  * Update SMS header request status (admin)
  * @summary Update Header Status
  */
-export const updateAdminHeaderStatus = (
+export const updateSmAdminHeaderStatus = (
     headerId: string,
     headerStatusUpdate: HeaderStatusUpdate,
  ) => {
@@ -1243,11 +1243,11 @@ export const updateAdminHeaderStatus = (
   
 
 
-export const getUpdateAdminHeaderStatusMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminHeaderStatus>>, TError,{headerId: string;data: HeaderStatusUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateAdminHeaderStatus>>, TError,{headerId: string;data: HeaderStatusUpdate}, TContext> => {
+export const getUpdateSmAdminHeaderStatusMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmAdminHeaderStatus>>, TError,{headerId: string;data: HeaderStatusUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateSmAdminHeaderStatus>>, TError,{headerId: string;data: HeaderStatusUpdate}, TContext> => {
 
-const mutationKey = ['updateAdminHeaderStatus'];
+const mutationKey = ['updateSmAdminHeaderStatus'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1257,10 +1257,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminHeaderStatus>>, {headerId: string;data: HeaderStatusUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSmAdminHeaderStatus>>, {headerId: string;data: HeaderStatusUpdate}> = (props) => {
           const {headerId,data} = props ?? {};
 
-          return  updateAdminHeaderStatus(headerId,data,)
+          return  updateSmAdminHeaderStatus(headerId,data,)
         }
 
         
@@ -1268,23 +1268,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateAdminHeaderStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminHeaderStatus>>>
-    export type UpdateAdminHeaderStatusMutationBody = HeaderStatusUpdate
-    export type UpdateAdminHeaderStatusMutationError = HTTPValidationError
+    export type UpdateSmAdminHeaderStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateSmAdminHeaderStatus>>>
+    export type UpdateSmAdminHeaderStatusMutationBody = HeaderStatusUpdate
+    export type UpdateSmAdminHeaderStatusMutationError = HTTPValidationError
 
     /**
  * @summary Update Header Status
  */
-export const useUpdateAdminHeaderStatus = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminHeaderStatus>>, TError,{headerId: string;data: HeaderStatusUpdate}, TContext>, }
+export const useUpdateSmAdminHeaderStatus = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmAdminHeaderStatus>>, TError,{headerId: string;data: HeaderStatusUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateAdminHeaderStatus>>,
+        Awaited<ReturnType<typeof updateSmAdminHeaderStatus>>,
         TError,
         {headerId: string;data: HeaderStatusUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateAdminHeaderStatusMutationOptions(options);
+      const mutationOptions = getUpdateSmAdminHeaderStatusMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -1292,7 +1292,7 @@ export const useUpdateAdminHeaderStatus = <TError = HTTPValidationError,
  * Serve SMS document file
  * @summary Get Sms Document File
  */
-export const getSmsDocumentFile = (
+export const getSmDocumentFile = (
     filepath: string,
  signal?: AbortSignal
 ) => {
@@ -1307,69 +1307,69 @@ export const getSmsDocumentFile = (
 
 
 
-export const getGetSmsDocumentFileQueryKey = (filepath?: string,) => {
+export const getGetSmDocumentFileQueryKey = (filepath?: string,) => {
     return [
     `/api/sms/documents/file/${filepath}`
     ] as const;
     }
 
     
-export const getGetSmsDocumentFileQueryOptions = <TData = Awaited<ReturnType<typeof getSmsDocumentFile>>, TError = HTTPValidationError>(filepath: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsDocumentFile>>, TError, TData>>, }
+export const getGetSmDocumentFileQueryOptions = <TData = Awaited<ReturnType<typeof getSmDocumentFile>>, TError = HTTPValidationError>(filepath: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmDocumentFile>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSmsDocumentFileQueryKey(filepath);
+  const queryKey =  queryOptions?.queryKey ?? getGetSmDocumentFileQueryKey(filepath);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSmsDocumentFile>>> = ({ signal }) => getSmsDocumentFile(filepath, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSmDocumentFile>>> = ({ signal }) => getSmDocumentFile(filepath, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(filepath), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSmsDocumentFile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(filepath), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSmDocumentFile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetSmsDocumentFileQueryResult = NonNullable<Awaited<ReturnType<typeof getSmsDocumentFile>>>
-export type GetSmsDocumentFileQueryError = HTTPValidationError
+export type GetSmDocumentFileQueryResult = NonNullable<Awaited<ReturnType<typeof getSmDocumentFile>>>
+export type GetSmDocumentFileQueryError = HTTPValidationError
 
 
-export function useGetSmsDocumentFile<TData = Awaited<ReturnType<typeof getSmsDocumentFile>>, TError = HTTPValidationError>(
- filepath: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsDocumentFile>>, TError, TData>> & Pick<
+export function useGetSmDocumentFile<TData = Awaited<ReturnType<typeof getSmDocumentFile>>, TError = HTTPValidationError>(
+ filepath: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmDocumentFile>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSmsDocumentFile>>,
+          Awaited<ReturnType<typeof getSmDocumentFile>>,
           TError,
-          Awaited<ReturnType<typeof getSmsDocumentFile>>
+          Awaited<ReturnType<typeof getSmDocumentFile>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSmsDocumentFile<TData = Awaited<ReturnType<typeof getSmsDocumentFile>>, TError = HTTPValidationError>(
- filepath: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsDocumentFile>>, TError, TData>> & Pick<
+export function useGetSmDocumentFile<TData = Awaited<ReturnType<typeof getSmDocumentFile>>, TError = HTTPValidationError>(
+ filepath: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmDocumentFile>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSmsDocumentFile>>,
+          Awaited<ReturnType<typeof getSmDocumentFile>>,
           TError,
-          Awaited<ReturnType<typeof getSmsDocumentFile>>
+          Awaited<ReturnType<typeof getSmDocumentFile>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetSmsDocumentFile<TData = Awaited<ReturnType<typeof getSmsDocumentFile>>, TError = HTTPValidationError>(
- filepath: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsDocumentFile>>, TError, TData>>, }
+export function useGetSmDocumentFile<TData = Awaited<ReturnType<typeof getSmDocumentFile>>, TError = HTTPValidationError>(
+ filepath: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmDocumentFile>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Sms Document File
  */
 
-export function useGetSmsDocumentFile<TData = Awaited<ReturnType<typeof getSmsDocumentFile>>, TError = HTTPValidationError>(
- filepath: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmsDocumentFile>>, TError, TData>>, }
+export function useGetSmDocumentFile<TData = Awaited<ReturnType<typeof getSmDocumentFile>>, TError = HTTPValidationError>(
+ filepath: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSmDocumentFile>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetSmsDocumentFileQueryOptions(filepath,options)
+  const queryOptions = getGetSmDocumentFileQueryOptions(filepath,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

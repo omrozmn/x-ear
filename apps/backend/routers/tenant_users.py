@@ -77,7 +77,7 @@ class AssetUpload(BaseModel):
 
 # --- Routes ---
 
-@router.get("/tenant/users")
+@router.get("/tenant/users", operation_id="listTenantUsers")
 def list_tenant_users(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -105,7 +105,7 @@ def list_tenant_users(
     users = query.all()
     return ResponseEnvelope(data=[u.to_dict() for u in users])
 
-@router.post("/tenant/users", status_code=201)
+@router.post("/tenant/users", operation_id="createTenantUsers", status_code=201)
 def invite_tenant_user(
     user_in: TenantUserCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -164,7 +164,7 @@ def invite_tenant_user(
     
     return ResponseEnvelope(data=new_user.to_dict())
 
-@router.delete("/tenant/users/{user_id}")
+@router.delete("/tenant/users/{user_id}", operation_id="deleteTenantUser")
 def delete_tenant_user(
     user_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -207,7 +207,7 @@ def delete_tenant_user(
     
     return ResponseEnvelope(message="User removed")
 
-@router.put("/tenant/users/{user_id}")
+@router.put("/tenant/users/{user_id}", operation_id="updateTenantUser")
 def update_tenant_user(
     user_id: str,
     user_in: TenantUserUpdate,
@@ -292,7 +292,7 @@ def update_tenant_user(
     
     return ResponseEnvelope(data=user_to_update.to_dict())
 
-@router.get("/tenant/company")
+@router.get("/tenant/company", operation_id="listTenantCompany")
 def get_tenant_company(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -322,7 +322,7 @@ def get_tenant_company(
         }
     )
 
-@router.put("/tenant/company")
+@router.put("/tenant/company", operation_id="updateTenantCompany")
 def update_tenant_company(
     company_in: CompanyInfoUpdate,
     access: UnifiedAccess = Depends(require_access()),
@@ -374,7 +374,7 @@ def update_tenant_company(
         }
     )
 
-@router.post("/tenant/company/upload/{asset_type}", status_code=201)
+@router.post("/tenant/company/upload/{asset_type}", operation_id="createTenantCompanyUpload", status_code=201)
 def upload_tenant_asset(
     asset_type: str,
     asset_in: AssetUpload,
@@ -457,7 +457,7 @@ def upload_tenant_asset(
         data={'url': asset_url, 'type': asset_type, 'storageMode': _get_storage_mode()}
     )
 
-@router.delete("/tenant/company/upload/{asset_type}")
+@router.delete("/tenant/company/upload/{asset_type}", operation_id="deleteTenantCompanyUpload")
 def delete_tenant_asset(
     asset_type: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -505,7 +505,7 @@ def delete_tenant_asset(
 from fastapi.responses import FileResponse
 import os
 
-@router.get("/tenant/assets/{access.tenant_id}/{filename}")
+@router.get("/tenant/assets/{access.tenant_id}/{filename}", operation_id="getTenantAsset")
 def get_tenant_asset(
     tenant_id: str,
     filename: str,
@@ -527,7 +527,7 @@ def get_tenant_asset(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/tenant/company/assets/{asset_type}/url")
+@router.get("/tenant/company/assets/{asset_type}/url", operation_id="listTenantCompanyAssetUrl")
 def get_tenant_asset_url(
     asset_type: str,
     access: UnifiedAccess = Depends(require_access()),

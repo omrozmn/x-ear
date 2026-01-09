@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/scan-queue", tags=["Admin Scan Queue"])
 
-@router.post("/init-db", response_model=ResponseEnvelope)
+@router.post("/init-db", operation_id="createAdminScanQueueInitDb", response_model=ResponseEnvelope)
 async def init_db(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("system.manage", admin_only=True))
@@ -42,7 +42,7 @@ async def get_scan_queue(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/{scan_id}/retry", response_model=ResponseEnvelope)
+@router.post("/{scan_id}/retry", operation_id="createAdminScanQueueRetry", response_model=ResponseEnvelope)
 async def retry_scan(
     scan_id: str,
     db: Session = Depends(get_db),

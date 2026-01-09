@@ -25,12 +25,12 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetUserNotificationSettingsParams,
   HTTPValidationError,
+  ListNotificationSettingsParams,
+  ListNotificationStatsParams,
   ListNotificationsParams,
   NotificationCreate,
   NotificationSettingsUpdate,
-  NotificationStatsParams,
   NotificationUpdate,
   ResponseEnvelopeListNotificationRead,
   ResponseEnvelopeNoneType,
@@ -48,7 +48,7 @@ import { customInstance } from '../../orval-mutator';
  * Create a new notification
  * @summary Create Notification
  */
-export const createNotification = (
+export const createNotifications = (
     notificationCreate: NotificationCreate,
  signal?: AbortSignal
 ) => {
@@ -64,11 +64,11 @@ export const createNotification = (
   
 
 
-export const getCreateNotificationMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createNotification>>, TError,{data: NotificationCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createNotification>>, TError,{data: NotificationCreate}, TContext> => {
+export const getCreateNotificationsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createNotifications>>, TError,{data: NotificationCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createNotifications>>, TError,{data: NotificationCreate}, TContext> => {
 
-const mutationKey = ['createNotification'];
+const mutationKey = ['createNotifications'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -78,10 +78,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createNotification>>, {data: NotificationCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createNotifications>>, {data: NotificationCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createNotification(data,)
+          return  createNotifications(data,)
         }
 
         
@@ -89,23 +89,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateNotificationMutationResult = NonNullable<Awaited<ReturnType<typeof createNotification>>>
-    export type CreateNotificationMutationBody = NotificationCreate
-    export type CreateNotificationMutationError = HTTPValidationError
+    export type CreateNotificationsMutationResult = NonNullable<Awaited<ReturnType<typeof createNotifications>>>
+    export type CreateNotificationsMutationBody = NotificationCreate
+    export type CreateNotificationsMutationError = HTTPValidationError
 
     /**
  * @summary Create Notification
  */
-export const useCreateNotification = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createNotification>>, TError,{data: NotificationCreate}, TContext>, }
+export const useCreateNotifications = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createNotifications>>, TError,{data: NotificationCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createNotification>>,
+        Awaited<ReturnType<typeof createNotifications>>,
         TError,
         {data: NotificationCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateNotificationMutationOptions(options);
+      const mutationOptions = getCreateNotificationsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -207,7 +207,7 @@ export function useListNotifications<TData = Awaited<ReturnType<typeof listNotif
  * Mark notification as read
  * @summary Mark Notification Read
  */
-export const markNotificationRead = (
+export const updateNotificationRead = (
     notificationId: string,
  ) => {
       
@@ -220,11 +220,11 @@ export const markNotificationRead = (
   
 
 
-export const getMarkNotificationReadMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markNotificationRead>>, TError,{notificationId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof markNotificationRead>>, TError,{notificationId: string}, TContext> => {
+export const getUpdateNotificationReadMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateNotificationRead>>, TError,{notificationId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateNotificationRead>>, TError,{notificationId: string}, TContext> => {
 
-const mutationKey = ['markNotificationRead'];
+const mutationKey = ['updateNotificationRead'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -234,10 +234,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof markNotificationRead>>, {notificationId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateNotificationRead>>, {notificationId: string}> = (props) => {
           const {notificationId} = props ?? {};
 
-          return  markNotificationRead(notificationId,)
+          return  updateNotificationRead(notificationId,)
         }
 
         
@@ -245,23 +245,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type MarkNotificationReadMutationResult = NonNullable<Awaited<ReturnType<typeof markNotificationRead>>>
+    export type UpdateNotificationReadMutationResult = NonNullable<Awaited<ReturnType<typeof updateNotificationRead>>>
     
-    export type MarkNotificationReadMutationError = HTTPValidationError
+    export type UpdateNotificationReadMutationError = HTTPValidationError
 
     /**
  * @summary Mark Notification Read
  */
-export const useMarkNotificationRead = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markNotificationRead>>, TError,{notificationId: string}, TContext>, }
+export const useUpdateNotificationRead = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateNotificationRead>>, TError,{notificationId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof markNotificationRead>>,
+        Awaited<ReturnType<typeof updateNotificationRead>>,
         TError,
         {notificationId: string},
         TContext
       > => {
 
-      const mutationOptions = getMarkNotificationReadMutationOptions(options);
+      const mutationOptions = getUpdateNotificationReadMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -396,8 +396,8 @@ export const useDeleteNotification = <TError = HTTPValidationError,
  * Get notification stats for a user
  * @summary Notification Stats
  */
-export const notificationStats = (
-    params: NotificationStatsParams,
+export const listNotificationStats = (
+    params: ListNotificationStatsParams,
  signal?: AbortSignal
 ) => {
       
@@ -412,69 +412,69 @@ export const notificationStats = (
 
 
 
-export const getNotificationStatsQueryKey = (params?: NotificationStatsParams,) => {
+export const getListNotificationStatsQueryKey = (params?: ListNotificationStatsParams,) => {
     return [
     `/api/notifications/stats`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getNotificationStatsQueryOptions = <TData = Awaited<ReturnType<typeof notificationStats>>, TError = HTTPValidationError>(params: NotificationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationStats>>, TError, TData>>, }
+export const getListNotificationStatsQueryOptions = <TData = Awaited<ReturnType<typeof listNotificationStats>>, TError = HTTPValidationError>(params: ListNotificationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotificationStats>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getNotificationStatsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListNotificationStatsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof notificationStats>>> = ({ signal }) => notificationStats(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listNotificationStats>>> = ({ signal }) => listNotificationStats(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof notificationStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listNotificationStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type NotificationStatsQueryResult = NonNullable<Awaited<ReturnType<typeof notificationStats>>>
-export type NotificationStatsQueryError = HTTPValidationError
+export type ListNotificationStatsQueryResult = NonNullable<Awaited<ReturnType<typeof listNotificationStats>>>
+export type ListNotificationStatsQueryError = HTTPValidationError
 
 
-export function useNotificationStats<TData = Awaited<ReturnType<typeof notificationStats>>, TError = HTTPValidationError>(
- params: NotificationStatsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationStats>>, TError, TData>> & Pick<
+export function useListNotificationStats<TData = Awaited<ReturnType<typeof listNotificationStats>>, TError = HTTPValidationError>(
+ params: ListNotificationStatsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotificationStats>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof notificationStats>>,
+          Awaited<ReturnType<typeof listNotificationStats>>,
           TError,
-          Awaited<ReturnType<typeof notificationStats>>
+          Awaited<ReturnType<typeof listNotificationStats>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useNotificationStats<TData = Awaited<ReturnType<typeof notificationStats>>, TError = HTTPValidationError>(
- params: NotificationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationStats>>, TError, TData>> & Pick<
+export function useListNotificationStats<TData = Awaited<ReturnType<typeof listNotificationStats>>, TError = HTTPValidationError>(
+ params: ListNotificationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotificationStats>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof notificationStats>>,
+          Awaited<ReturnType<typeof listNotificationStats>>,
           TError,
-          Awaited<ReturnType<typeof notificationStats>>
+          Awaited<ReturnType<typeof listNotificationStats>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useNotificationStats<TData = Awaited<ReturnType<typeof notificationStats>>, TError = HTTPValidationError>(
- params: NotificationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationStats>>, TError, TData>>, }
+export function useListNotificationStats<TData = Awaited<ReturnType<typeof listNotificationStats>>, TError = HTTPValidationError>(
+ params: ListNotificationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotificationStats>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Notification Stats
  */
 
-export function useNotificationStats<TData = Awaited<ReturnType<typeof notificationStats>>, TError = HTTPValidationError>(
- params: NotificationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationStats>>, TError, TData>>, }
+export function useListNotificationStats<TData = Awaited<ReturnType<typeof listNotificationStats>>, TError = HTTPValidationError>(
+ params: ListNotificationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotificationStats>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getNotificationStatsQueryOptions(params,options)
+  const queryOptions = getListNotificationStatsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -490,8 +490,8 @@ export function useNotificationStats<TData = Awaited<ReturnType<typeof notificat
  * Get user notification settings
  * @summary Get User Notification Settings
  */
-export const getUserNotificationSettings = (
-    params: GetUserNotificationSettingsParams,
+export const listNotificationSettings = (
+    params: ListNotificationSettingsParams,
  signal?: AbortSignal
 ) => {
       
@@ -506,69 +506,69 @@ export const getUserNotificationSettings = (
 
 
 
-export const getGetUserNotificationSettingsQueryKey = (params?: GetUserNotificationSettingsParams,) => {
+export const getListNotificationSettingsQueryKey = (params?: ListNotificationSettingsParams,) => {
     return [
     `/api/notifications/settings`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetUserNotificationSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getUserNotificationSettings>>, TError = HTTPValidationError>(params: GetUserNotificationSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserNotificationSettings>>, TError, TData>>, }
+export const getListNotificationSettingsQueryOptions = <TData = Awaited<ReturnType<typeof listNotificationSettings>>, TError = HTTPValidationError>(params: ListNotificationSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotificationSettings>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetUserNotificationSettingsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListNotificationSettingsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserNotificationSettings>>> = ({ signal }) => getUserNotificationSettings(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listNotificationSettings>>> = ({ signal }) => listNotificationSettings(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUserNotificationSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listNotificationSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetUserNotificationSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getUserNotificationSettings>>>
-export type GetUserNotificationSettingsQueryError = HTTPValidationError
+export type ListNotificationSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof listNotificationSettings>>>
+export type ListNotificationSettingsQueryError = HTTPValidationError
 
 
-export function useGetUserNotificationSettings<TData = Awaited<ReturnType<typeof getUserNotificationSettings>>, TError = HTTPValidationError>(
- params: GetUserNotificationSettingsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserNotificationSettings>>, TError, TData>> & Pick<
+export function useListNotificationSettings<TData = Awaited<ReturnType<typeof listNotificationSettings>>, TError = HTTPValidationError>(
+ params: ListNotificationSettingsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotificationSettings>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUserNotificationSettings>>,
+          Awaited<ReturnType<typeof listNotificationSettings>>,
           TError,
-          Awaited<ReturnType<typeof getUserNotificationSettings>>
+          Awaited<ReturnType<typeof listNotificationSettings>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetUserNotificationSettings<TData = Awaited<ReturnType<typeof getUserNotificationSettings>>, TError = HTTPValidationError>(
- params: GetUserNotificationSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserNotificationSettings>>, TError, TData>> & Pick<
+export function useListNotificationSettings<TData = Awaited<ReturnType<typeof listNotificationSettings>>, TError = HTTPValidationError>(
+ params: ListNotificationSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotificationSettings>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUserNotificationSettings>>,
+          Awaited<ReturnType<typeof listNotificationSettings>>,
           TError,
-          Awaited<ReturnType<typeof getUserNotificationSettings>>
+          Awaited<ReturnType<typeof listNotificationSettings>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetUserNotificationSettings<TData = Awaited<ReturnType<typeof getUserNotificationSettings>>, TError = HTTPValidationError>(
- params: GetUserNotificationSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserNotificationSettings>>, TError, TData>>, }
+export function useListNotificationSettings<TData = Awaited<ReturnType<typeof listNotificationSettings>>, TError = HTTPValidationError>(
+ params: ListNotificationSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotificationSettings>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get User Notification Settings
  */
 
-export function useGetUserNotificationSettings<TData = Awaited<ReturnType<typeof getUserNotificationSettings>>, TError = HTTPValidationError>(
- params: GetUserNotificationSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserNotificationSettings>>, TError, TData>>, }
+export function useListNotificationSettings<TData = Awaited<ReturnType<typeof listNotificationSettings>>, TError = HTTPValidationError>(
+ params: ListNotificationSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listNotificationSettings>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetUserNotificationSettingsQueryOptions(params,options)
+  const queryOptions = getListNotificationSettingsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -584,7 +584,7 @@ export function useGetUserNotificationSettings<TData = Awaited<ReturnType<typeof
  * Set user notification settings
  * @summary Set User Notification Settings
  */
-export const setUserNotificationSettings = (
+export const updateNotificationSettings = (
     notificationSettingsUpdate: NotificationSettingsUpdate,
  ) => {
       
@@ -599,11 +599,11 @@ export const setUserNotificationSettings = (
   
 
 
-export const getSetUserNotificationSettingsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setUserNotificationSettings>>, TError,{data: NotificationSettingsUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof setUserNotificationSettings>>, TError,{data: NotificationSettingsUpdate}, TContext> => {
+export const getUpdateNotificationSettingsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateNotificationSettings>>, TError,{data: NotificationSettingsUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateNotificationSettings>>, TError,{data: NotificationSettingsUpdate}, TContext> => {
 
-const mutationKey = ['setUserNotificationSettings'];
+const mutationKey = ['updateNotificationSettings'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -613,10 +613,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setUserNotificationSettings>>, {data: NotificationSettingsUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateNotificationSettings>>, {data: NotificationSettingsUpdate}> = (props) => {
           const {data} = props ?? {};
 
-          return  setUserNotificationSettings(data,)
+          return  updateNotificationSettings(data,)
         }
 
         
@@ -624,23 +624,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SetUserNotificationSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof setUserNotificationSettings>>>
-    export type SetUserNotificationSettingsMutationBody = NotificationSettingsUpdate
-    export type SetUserNotificationSettingsMutationError = HTTPValidationError
+    export type UpdateNotificationSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateNotificationSettings>>>
+    export type UpdateNotificationSettingsMutationBody = NotificationSettingsUpdate
+    export type UpdateNotificationSettingsMutationError = HTTPValidationError
 
     /**
  * @summary Set User Notification Settings
  */
-export const useSetUserNotificationSettings = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setUserNotificationSettings>>, TError,{data: NotificationSettingsUpdate}, TContext>, }
+export const useUpdateNotificationSettings = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateNotificationSettings>>, TError,{data: NotificationSettingsUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof setUserNotificationSettings>>,
+        Awaited<ReturnType<typeof updateNotificationSettings>>,
         TError,
         {data: NotificationSettingsUpdate},
         TContext
       > => {
 
-      const mutationOptions = getSetUserNotificationSettingsMutationOptions(options);
+      const mutationOptions = getUpdateNotificationSettingsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

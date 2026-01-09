@@ -93,7 +93,7 @@ def download_image_from_url(url: str) -> Optional[str]:
 
 # --- Routes ---
 
-@router.get("/health")
+@router.get("/health", operation_id="listOcrHealth")
 def health_check():
     """Health check endpoint (Public)"""
     try:
@@ -114,7 +114,7 @@ def health_check():
         logger.error(f"Health check error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/init-db")
+@router.post("/init-db", operation_id="createOcrInitDb")
 def init_database(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -137,7 +137,7 @@ def init_database(
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/initialize")
+@router.post("/initialize", operation_id="createOcrInitialize")
 def initialize_nlp_endpoint(
     background_tasks: BackgroundTasks,
     access: UnifiedAccess = Depends(require_access())
@@ -167,7 +167,7 @@ def initialize_nlp_endpoint(
         logger.error(f"Initialize NLP error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/process")
+@router.post("/process", operation_id="createOcrProcess")
 def process_document(
     request_data: OCRProcessRequest,
     access: UnifiedAccess = Depends(require_access())
@@ -237,7 +237,7 @@ def process_document(
         logger.error(f"OCR processing error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/similarity")
+@router.post("/similarity", operation_id="createOcrSimilarity")
 def calculate_similarity(
     request_data: SimilarityRequest,
     access: UnifiedAccess = Depends(require_access())
@@ -281,7 +281,7 @@ def calculate_similarity(
         logger.error(f"Similarity calculation error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/entities")
+@router.post("/entities", operation_id="createOcrEntities")
 def extract_entities(
     request_data: EntityExtractionRequest,
     access: UnifiedAccess = Depends(require_access())
@@ -322,7 +322,7 @@ def extract_entities(
         logger.error(f"Entity extraction error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/extract_patient")
+@router.post("/extract_patient", operation_id="createOcrExtractPatient")
 def extract_patient_name(
     request_data: PatientExtractionRequest,
     access: UnifiedAccess = Depends(require_access())
@@ -373,7 +373,7 @@ def extract_patient_name(
         logger.error(f"Patient extraction error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/debug_ner")
+@router.post("/debug_ner", operation_id="createOcrDebugNer")
 def debug_ner(
     request_data: DebugNERRequest,
     access: UnifiedAccess = Depends(require_access())
@@ -446,7 +446,7 @@ def debug_ner(
 
 # --- OCR Job Management ---
 
-@router.get("/jobs")
+@router.get("/jobs", operation_id="listOcrJobs")
 def list_jobs(
     status: Optional[str] = None,
     access: UnifiedAccess = Depends(require_access()),
@@ -480,7 +480,7 @@ def list_jobs(
         logger.error(f"List jobs error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/jobs", status_code=201)
+@router.post("/jobs", operation_id="createOcrJobs", status_code=201)
 def create_job(
     request_data: CreateJobRequest,
     background_tasks: BackgroundTasks,
@@ -552,7 +552,7 @@ def create_job(
         logger.error(f"Create job error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/jobs/{job_id}")
+@router.get("/jobs/{job_id}", operation_id="getOcrJob")
 def get_job(
     job_id: str,
     access: UnifiedAccess = Depends(require_access()),

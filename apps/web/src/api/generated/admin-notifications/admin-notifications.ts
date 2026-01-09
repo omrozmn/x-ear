@@ -25,9 +25,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetAdminNotificationsParams,
-  GetAdminTemplatesParams,
+  GetNotificationsApiAdminNotificationsGetParams,
   HTTPValidationError,
+  ListAdminNotificationTemplatesParams,
   NotificationDetailResponse,
   NotificationListResponse,
   NotificationSend,
@@ -44,7 +44,7 @@ import { customInstance } from '../../orval-mutator';
  * Initialize notification tables
  * @summary Init Db
  */
-export const initAdminNotificationsDb = (
+export const createAdminNotificationInitDb = (
     
  signal?: AbortSignal
 ) => {
@@ -58,11 +58,11 @@ export const initAdminNotificationsDb = (
   
 
 
-export const getInitAdminNotificationsDbMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminNotificationsDb>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof initAdminNotificationsDb>>, TError,void, TContext> => {
+export const getCreateAdminNotificationInitDbMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminNotificationInitDb>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminNotificationInitDb>>, TError,void, TContext> => {
 
-const mutationKey = ['initAdminNotificationsDb'];
+const mutationKey = ['createAdminNotificationInitDb'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -72,10 +72,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof initAdminNotificationsDb>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminNotificationInitDb>>, void> = () => {
           
 
-          return  initAdminNotificationsDb()
+          return  createAdminNotificationInitDb()
         }
 
         
@@ -83,23 +83,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type InitAdminNotificationsDbMutationResult = NonNullable<Awaited<ReturnType<typeof initAdminNotificationsDb>>>
+    export type CreateAdminNotificationInitDbMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminNotificationInitDb>>>
     
-    export type InitAdminNotificationsDbMutationError = unknown
+    export type CreateAdminNotificationInitDbMutationError = unknown
 
     /**
  * @summary Init Db
  */
-export const useInitAdminNotificationsDb = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminNotificationsDb>>, TError,void, TContext>, }
+export const useCreateAdminNotificationInitDb = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminNotificationInitDb>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof initAdminNotificationsDb>>,
+        Awaited<ReturnType<typeof createAdminNotificationInitDb>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getInitAdminNotificationsDbMutationOptions(options);
+      const mutationOptions = getCreateAdminNotificationInitDbMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -107,8 +107,8 @@ export const useInitAdminNotificationsDb = <TError = unknown,
  * Get list of notifications
  * @summary Get Notifications
  */
-export const getAdminNotifications = (
-    params?: GetAdminNotificationsParams,
+export const getNotificationsApiAdminNotificationsGet = (
+    params?: GetNotificationsApiAdminNotificationsGetParams,
  signal?: AbortSignal
 ) => {
       
@@ -123,69 +123,69 @@ export const getAdminNotifications = (
 
 
 
-export const getGetAdminNotificationsQueryKey = (params?: GetAdminNotificationsParams,) => {
+export const getGetNotificationsApiAdminNotificationsGetQueryKey = (params?: GetNotificationsApiAdminNotificationsGetParams,) => {
     return [
     `/api/admin/notifications`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminNotificationsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminNotifications>>, TError = HTTPValidationError>(params?: GetAdminNotificationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminNotifications>>, TError, TData>>, }
+export const getGetNotificationsApiAdminNotificationsGetQueryOptions = <TData = Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>, TError = HTTPValidationError>(params?: GetNotificationsApiAdminNotificationsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminNotificationsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetNotificationsApiAdminNotificationsGetQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminNotifications>>> = ({ signal }) => getAdminNotifications(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>> = ({ signal }) => getNotificationsApiAdminNotificationsGet(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminNotifications>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminNotificationsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminNotifications>>>
-export type GetAdminNotificationsQueryError = HTTPValidationError
+export type GetNotificationsApiAdminNotificationsGetQueryResult = NonNullable<Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>>
+export type GetNotificationsApiAdminNotificationsGetQueryError = HTTPValidationError
 
 
-export function useGetAdminNotifications<TData = Awaited<ReturnType<typeof getAdminNotifications>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminNotificationsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminNotifications>>, TError, TData>> & Pick<
+export function useGetNotificationsApiAdminNotificationsGet<TData = Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>, TError = HTTPValidationError>(
+ params: undefined |  GetNotificationsApiAdminNotificationsGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminNotifications>>,
+          Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>,
           TError,
-          Awaited<ReturnType<typeof getAdminNotifications>>
+          Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminNotifications<TData = Awaited<ReturnType<typeof getAdminNotifications>>, TError = HTTPValidationError>(
- params?: GetAdminNotificationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminNotifications>>, TError, TData>> & Pick<
+export function useGetNotificationsApiAdminNotificationsGet<TData = Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>, TError = HTTPValidationError>(
+ params?: GetNotificationsApiAdminNotificationsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminNotifications>>,
+          Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>,
           TError,
-          Awaited<ReturnType<typeof getAdminNotifications>>
+          Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminNotifications<TData = Awaited<ReturnType<typeof getAdminNotifications>>, TError = HTTPValidationError>(
- params?: GetAdminNotificationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminNotifications>>, TError, TData>>, }
+export function useGetNotificationsApiAdminNotificationsGet<TData = Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>, TError = HTTPValidationError>(
+ params?: GetNotificationsApiAdminNotificationsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Notifications
  */
 
-export function useGetAdminNotifications<TData = Awaited<ReturnType<typeof getAdminNotifications>>, TError = HTTPValidationError>(
- params?: GetAdminNotificationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminNotifications>>, TError, TData>>, }
+export function useGetNotificationsApiAdminNotificationsGet<TData = Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>, TError = HTTPValidationError>(
+ params?: GetNotificationsApiAdminNotificationsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationsApiAdminNotificationsGet>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminNotificationsQueryOptions(params,options)
+  const queryOptions = getGetNotificationsApiAdminNotificationsGetQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -201,7 +201,7 @@ export function useGetAdminNotifications<TData = Awaited<ReturnType<typeof getAd
  * Send a notification to tenants
  * @summary Send Notification
  */
-export const sendAdminNotification = (
+export const createAdminNotificationSend = (
     notificationSend: NotificationSend,
  signal?: AbortSignal
 ) => {
@@ -217,11 +217,11 @@ export const sendAdminNotification = (
   
 
 
-export const getSendAdminNotificationMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendAdminNotification>>, TError,{data: NotificationSend}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof sendAdminNotification>>, TError,{data: NotificationSend}, TContext> => {
+export const getCreateAdminNotificationSendMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminNotificationSend>>, TError,{data: NotificationSend}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminNotificationSend>>, TError,{data: NotificationSend}, TContext> => {
 
-const mutationKey = ['sendAdminNotification'];
+const mutationKey = ['createAdminNotificationSend'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -231,10 +231,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendAdminNotification>>, {data: NotificationSend}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminNotificationSend>>, {data: NotificationSend}> = (props) => {
           const {data} = props ?? {};
 
-          return  sendAdminNotification(data,)
+          return  createAdminNotificationSend(data,)
         }
 
         
@@ -242,23 +242,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SendAdminNotificationMutationResult = NonNullable<Awaited<ReturnType<typeof sendAdminNotification>>>
-    export type SendAdminNotificationMutationBody = NotificationSend
-    export type SendAdminNotificationMutationError = HTTPValidationError
+    export type CreateAdminNotificationSendMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminNotificationSend>>>
+    export type CreateAdminNotificationSendMutationBody = NotificationSend
+    export type CreateAdminNotificationSendMutationError = HTTPValidationError
 
     /**
  * @summary Send Notification
  */
-export const useSendAdminNotification = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendAdminNotification>>, TError,{data: NotificationSend}, TContext>, }
+export const useCreateAdminNotificationSend = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminNotificationSend>>, TError,{data: NotificationSend}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof sendAdminNotification>>,
+        Awaited<ReturnType<typeof createAdminNotificationSend>>,
         TError,
         {data: NotificationSend},
         TContext
       > => {
 
-      const mutationOptions = getSendAdminNotificationMutationOptions(options);
+      const mutationOptions = getCreateAdminNotificationSendMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -266,8 +266,8 @@ export const useSendAdminNotification = <TError = HTTPValidationError,
  * Get notification templates
  * @summary Get Templates
  */
-export const getAdminTemplates = (
-    params?: GetAdminTemplatesParams,
+export const listAdminNotificationTemplates = (
+    params?: ListAdminNotificationTemplatesParams,
  signal?: AbortSignal
 ) => {
       
@@ -282,69 +282,69 @@ export const getAdminTemplates = (
 
 
 
-export const getGetAdminTemplatesQueryKey = (params?: GetAdminTemplatesParams,) => {
+export const getListAdminNotificationTemplatesQueryKey = (params?: ListAdminNotificationTemplatesParams,) => {
     return [
     `/api/admin/notifications/templates`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminTemplates>>, TError = HTTPValidationError>(params?: GetAdminTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTemplates>>, TError, TData>>, }
+export const getListAdminNotificationTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof listAdminNotificationTemplates>>, TError = HTTPValidationError>(params?: ListAdminNotificationTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminNotificationTemplates>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminTemplatesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminNotificationTemplatesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminTemplates>>> = ({ signal }) => getAdminTemplates(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminNotificationTemplates>>> = ({ signal }) => listAdminNotificationTemplates(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminNotificationTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminTemplates>>>
-export type GetAdminTemplatesQueryError = HTTPValidationError
+export type ListAdminNotificationTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminNotificationTemplates>>>
+export type ListAdminNotificationTemplatesQueryError = HTTPValidationError
 
 
-export function useGetAdminTemplates<TData = Awaited<ReturnType<typeof getAdminTemplates>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminTemplatesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTemplates>>, TError, TData>> & Pick<
+export function useListAdminNotificationTemplates<TData = Awaited<ReturnType<typeof listAdminNotificationTemplates>>, TError = HTTPValidationError>(
+ params: undefined |  ListAdminNotificationTemplatesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminNotificationTemplates>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminTemplates>>,
+          Awaited<ReturnType<typeof listAdminNotificationTemplates>>,
           TError,
-          Awaited<ReturnType<typeof getAdminTemplates>>
+          Awaited<ReturnType<typeof listAdminNotificationTemplates>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminTemplates<TData = Awaited<ReturnType<typeof getAdminTemplates>>, TError = HTTPValidationError>(
- params?: GetAdminTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTemplates>>, TError, TData>> & Pick<
+export function useListAdminNotificationTemplates<TData = Awaited<ReturnType<typeof listAdminNotificationTemplates>>, TError = HTTPValidationError>(
+ params?: ListAdminNotificationTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminNotificationTemplates>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminTemplates>>,
+          Awaited<ReturnType<typeof listAdminNotificationTemplates>>,
           TError,
-          Awaited<ReturnType<typeof getAdminTemplates>>
+          Awaited<ReturnType<typeof listAdminNotificationTemplates>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminTemplates<TData = Awaited<ReturnType<typeof getAdminTemplates>>, TError = HTTPValidationError>(
- params?: GetAdminTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTemplates>>, TError, TData>>, }
+export function useListAdminNotificationTemplates<TData = Awaited<ReturnType<typeof listAdminNotificationTemplates>>, TError = HTTPValidationError>(
+ params?: ListAdminNotificationTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminNotificationTemplates>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Templates
  */
 
-export function useGetAdminTemplates<TData = Awaited<ReturnType<typeof getAdminTemplates>>, TError = HTTPValidationError>(
- params?: GetAdminTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminTemplates>>, TError, TData>>, }
+export function useListAdminNotificationTemplates<TData = Awaited<ReturnType<typeof listAdminNotificationTemplates>>, TError = HTTPValidationError>(
+ params?: ListAdminNotificationTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminNotificationTemplates>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminTemplatesQueryOptions(params,options)
+  const queryOptions = getListAdminNotificationTemplatesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -360,7 +360,7 @@ export function useGetAdminTemplates<TData = Awaited<ReturnType<typeof getAdminT
  * Create a notification template
  * @summary Create Template
  */
-export const createAdminTemplate = (
+export const createAdminNotificationTemplates = (
     routersAdminNotificationsTemplateCreate: RoutersAdminNotificationsTemplateCreate,
  signal?: AbortSignal
 ) => {
@@ -376,11 +376,11 @@ export const createAdminTemplate = (
   
 
 
-export const getCreateAdminTemplateMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTemplate>>, TError,{data: RoutersAdminNotificationsTemplateCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAdminTemplate>>, TError,{data: RoutersAdminNotificationsTemplateCreate}, TContext> => {
+export const getCreateAdminNotificationTemplatesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminNotificationTemplates>>, TError,{data: RoutersAdminNotificationsTemplateCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminNotificationTemplates>>, TError,{data: RoutersAdminNotificationsTemplateCreate}, TContext> => {
 
-const mutationKey = ['createAdminTemplate'];
+const mutationKey = ['createAdminNotificationTemplates'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -390,10 +390,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminTemplate>>, {data: RoutersAdminNotificationsTemplateCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminNotificationTemplates>>, {data: RoutersAdminNotificationsTemplateCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createAdminTemplate(data,)
+          return  createAdminNotificationTemplates(data,)
         }
 
         
@@ -401,23 +401,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateAdminTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminTemplate>>>
-    export type CreateAdminTemplateMutationBody = RoutersAdminNotificationsTemplateCreate
-    export type CreateAdminTemplateMutationError = HTTPValidationError
+    export type CreateAdminNotificationTemplatesMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminNotificationTemplates>>>
+    export type CreateAdminNotificationTemplatesMutationBody = RoutersAdminNotificationsTemplateCreate
+    export type CreateAdminNotificationTemplatesMutationError = HTTPValidationError
 
     /**
  * @summary Create Template
  */
-export const useCreateAdminTemplate = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTemplate>>, TError,{data: RoutersAdminNotificationsTemplateCreate}, TContext>, }
+export const useCreateAdminNotificationTemplates = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminNotificationTemplates>>, TError,{data: RoutersAdminNotificationsTemplateCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createAdminTemplate>>,
+        Awaited<ReturnType<typeof createAdminNotificationTemplates>>,
         TError,
         {data: RoutersAdminNotificationsTemplateCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateAdminTemplateMutationOptions(options);
+      const mutationOptions = getCreateAdminNotificationTemplatesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -425,7 +425,7 @@ export const useCreateAdminTemplate = <TError = HTTPValidationError,
  * Update a notification template
  * @summary Update Template
  */
-export const updateAdminTemplate = (
+export const updateAdminNotificationTemplate = (
     templateId: string,
     routersAdminNotificationsTemplateCreate: RoutersAdminNotificationsTemplateCreate,
  ) => {
@@ -441,11 +441,11 @@ export const updateAdminTemplate = (
   
 
 
-export const getUpdateAdminTemplateMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminTemplate>>, TError,{templateId: string;data: RoutersAdminNotificationsTemplateCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateAdminTemplate>>, TError,{templateId: string;data: RoutersAdminNotificationsTemplateCreate}, TContext> => {
+export const getUpdateAdminNotificationTemplateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminNotificationTemplate>>, TError,{templateId: string;data: RoutersAdminNotificationsTemplateCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminNotificationTemplate>>, TError,{templateId: string;data: RoutersAdminNotificationsTemplateCreate}, TContext> => {
 
-const mutationKey = ['updateAdminTemplate'];
+const mutationKey = ['updateAdminNotificationTemplate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -455,10 +455,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminTemplate>>, {templateId: string;data: RoutersAdminNotificationsTemplateCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminNotificationTemplate>>, {templateId: string;data: RoutersAdminNotificationsTemplateCreate}> = (props) => {
           const {templateId,data} = props ?? {};
 
-          return  updateAdminTemplate(templateId,data,)
+          return  updateAdminNotificationTemplate(templateId,data,)
         }
 
         
@@ -466,23 +466,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateAdminTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminTemplate>>>
-    export type UpdateAdminTemplateMutationBody = RoutersAdminNotificationsTemplateCreate
-    export type UpdateAdminTemplateMutationError = HTTPValidationError
+    export type UpdateAdminNotificationTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminNotificationTemplate>>>
+    export type UpdateAdminNotificationTemplateMutationBody = RoutersAdminNotificationsTemplateCreate
+    export type UpdateAdminNotificationTemplateMutationError = HTTPValidationError
 
     /**
  * @summary Update Template
  */
-export const useUpdateAdminTemplate = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminTemplate>>, TError,{templateId: string;data: RoutersAdminNotificationsTemplateCreate}, TContext>, }
+export const useUpdateAdminNotificationTemplate = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminNotificationTemplate>>, TError,{templateId: string;data: RoutersAdminNotificationsTemplateCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateAdminTemplate>>,
+        Awaited<ReturnType<typeof updateAdminNotificationTemplate>>,
         TError,
         {templateId: string;data: RoutersAdminNotificationsTemplateCreate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateAdminTemplateMutationOptions(options);
+      const mutationOptions = getUpdateAdminNotificationTemplateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -490,7 +490,7 @@ export const useUpdateAdminTemplate = <TError = HTTPValidationError,
  * Delete a notification template
  * @summary Delete Template
  */
-export const deleteAdminTemplate = (
+export const deleteAdminNotificationTemplate = (
     templateId: string,
  ) => {
       
@@ -503,11 +503,11 @@ export const deleteAdminTemplate = (
   
 
 
-export const getDeleteAdminTemplateMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminTemplate>>, TError,{templateId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminTemplate>>, TError,{templateId: string}, TContext> => {
+export const getDeleteAdminNotificationTemplateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminNotificationTemplate>>, TError,{templateId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminNotificationTemplate>>, TError,{templateId: string}, TContext> => {
 
-const mutationKey = ['deleteAdminTemplate'];
+const mutationKey = ['deleteAdminNotificationTemplate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -517,10 +517,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminTemplate>>, {templateId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminNotificationTemplate>>, {templateId: string}> = (props) => {
           const {templateId} = props ?? {};
 
-          return  deleteAdminTemplate(templateId,)
+          return  deleteAdminNotificationTemplate(templateId,)
         }
 
         
@@ -528,23 +528,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteAdminTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminTemplate>>>
+    export type DeleteAdminNotificationTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminNotificationTemplate>>>
     
-    export type DeleteAdminTemplateMutationError = HTTPValidationError
+    export type DeleteAdminNotificationTemplateMutationError = HTTPValidationError
 
     /**
  * @summary Delete Template
  */
-export const useDeleteAdminTemplate = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminTemplate>>, TError,{templateId: string}, TContext>, }
+export const useDeleteAdminNotificationTemplate = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminNotificationTemplate>>, TError,{templateId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAdminTemplate>>,
+        Awaited<ReturnType<typeof deleteAdminNotificationTemplate>>,
         TError,
         {templateId: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteAdminTemplateMutationOptions(options);
+      const mutationOptions = getDeleteAdminNotificationTemplateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

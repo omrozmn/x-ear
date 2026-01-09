@@ -27,9 +27,9 @@ import type {
 import type {
   AppointmentCreate,
   AppointmentUpdate,
-  GetAppointmentsParams,
-  GetAvailabilityParams,
   HTTPValidationError,
+  ListAppointmentAvailabilityParams,
+  ListAppointmentListParams,
   ListAppointmentsParams,
   RescheduleRequest,
   ResponseEnvelopeAppointmentRead,
@@ -45,8 +45,8 @@ import { customInstance } from '../../orval-mutator';
  * Get appointments with filtering and pagination
  * @summary Get Appointments
  */
-export const getAppointments = (
-    params?: GetAppointmentsParams,
+export const listAppointments = (
+    params?: ListAppointmentsParams,
  signal?: AbortSignal
 ) => {
       
@@ -61,69 +61,69 @@ export const getAppointments = (
 
 
 
-export const getGetAppointmentsQueryKey = (params?: GetAppointmentsParams,) => {
+export const getListAppointmentsQueryKey = (params?: ListAppointmentsParams,) => {
     return [
     `/api/appointments`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAppointmentsQueryOptions = <TData = Awaited<ReturnType<typeof getAppointments>>, TError = HTTPValidationError>(params?: GetAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>>, }
+export const getListAppointmentsQueryOptions = <TData = Awaited<ReturnType<typeof listAppointments>>, TError = HTTPValidationError>(params?: ListAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointments>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAppointmentsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAppointmentsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppointments>>> = ({ signal }) => getAppointments(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAppointments>>> = ({ signal }) => listAppointments(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAppointments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAppointmentsQueryResult = NonNullable<Awaited<ReturnType<typeof getAppointments>>>
-export type GetAppointmentsQueryError = HTTPValidationError
+export type ListAppointmentsQueryResult = NonNullable<Awaited<ReturnType<typeof listAppointments>>>
+export type ListAppointmentsQueryError = HTTPValidationError
 
 
-export function useGetAppointments<TData = Awaited<ReturnType<typeof getAppointments>>, TError = HTTPValidationError>(
- params: undefined |  GetAppointmentsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>> & Pick<
+export function useListAppointments<TData = Awaited<ReturnType<typeof listAppointments>>, TError = HTTPValidationError>(
+ params: undefined |  ListAppointmentsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointments>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAppointments>>,
+          Awaited<ReturnType<typeof listAppointments>>,
           TError,
-          Awaited<ReturnType<typeof getAppointments>>
+          Awaited<ReturnType<typeof listAppointments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAppointments<TData = Awaited<ReturnType<typeof getAppointments>>, TError = HTTPValidationError>(
- params?: GetAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>> & Pick<
+export function useListAppointments<TData = Awaited<ReturnType<typeof listAppointments>>, TError = HTTPValidationError>(
+ params?: ListAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointments>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAppointments>>,
+          Awaited<ReturnType<typeof listAppointments>>,
           TError,
-          Awaited<ReturnType<typeof getAppointments>>
+          Awaited<ReturnType<typeof listAppointments>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAppointments<TData = Awaited<ReturnType<typeof getAppointments>>, TError = HTTPValidationError>(
- params?: GetAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>>, }
+export function useListAppointments<TData = Awaited<ReturnType<typeof listAppointments>>, TError = HTTPValidationError>(
+ params?: ListAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointments>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Appointments
  */
 
-export function useGetAppointments<TData = Awaited<ReturnType<typeof getAppointments>>, TError = HTTPValidationError>(
- params?: GetAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>>, }
+export function useListAppointments<TData = Awaited<ReturnType<typeof listAppointments>>, TError = HTTPValidationError>(
+ params?: ListAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointments>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAppointmentsQueryOptions(params,options)
+  const queryOptions = getListAppointmentsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -139,7 +139,7 @@ export function useGetAppointments<TData = Awaited<ReturnType<typeof getAppointm
  * Create a new appointment
  * @summary Create Appointment
  */
-export const createAppointment = (
+export const createAppointments = (
     appointmentCreate: AppointmentCreate,
  signal?: AbortSignal
 ) => {
@@ -155,11 +155,11 @@ export const createAppointment = (
   
 
 
-export const getCreateAppointmentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppointment>>, TError,{data: AppointmentCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAppointment>>, TError,{data: AppointmentCreate}, TContext> => {
+export const getCreateAppointmentsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppointments>>, TError,{data: AppointmentCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAppointments>>, TError,{data: AppointmentCreate}, TContext> => {
 
-const mutationKey = ['createAppointment'];
+const mutationKey = ['createAppointments'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -169,10 +169,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAppointment>>, {data: AppointmentCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAppointments>>, {data: AppointmentCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createAppointment(data,)
+          return  createAppointments(data,)
         }
 
         
@@ -180,23 +180,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeof createAppointment>>>
-    export type CreateAppointmentMutationBody = AppointmentCreate
-    export type CreateAppointmentMutationError = HTTPValidationError
+    export type CreateAppointmentsMutationResult = NonNullable<Awaited<ReturnType<typeof createAppointments>>>
+    export type CreateAppointmentsMutationBody = AppointmentCreate
+    export type CreateAppointmentsMutationError = HTTPValidationError
 
     /**
  * @summary Create Appointment
  */
-export const useCreateAppointment = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppointment>>, TError,{data: AppointmentCreate}, TContext>, }
+export const useCreateAppointments = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppointments>>, TError,{data: AppointmentCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createAppointment>>,
+        Awaited<ReturnType<typeof createAppointments>>,
         TError,
         {data: AppointmentCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateAppointmentMutationOptions(options);
+      const mutationOptions = getCreateAppointmentsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -424,7 +424,7 @@ export const useDeleteAppointment = <TError = HTTPValidationError,
  * Reschedule an appointment
  * @summary Reschedule Appointment
  */
-export const rescheduleAppointment = (
+export const createAppointmentReschedule = (
     appointmentId: string,
     rescheduleRequest: RescheduleRequest,
  signal?: AbortSignal
@@ -441,11 +441,11 @@ export const rescheduleAppointment = (
   
 
 
-export const getRescheduleAppointmentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rescheduleAppointment>>, TError,{appointmentId: string;data: RescheduleRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof rescheduleAppointment>>, TError,{appointmentId: string;data: RescheduleRequest}, TContext> => {
+export const getCreateAppointmentRescheduleMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppointmentReschedule>>, TError,{appointmentId: string;data: RescheduleRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAppointmentReschedule>>, TError,{appointmentId: string;data: RescheduleRequest}, TContext> => {
 
-const mutationKey = ['rescheduleAppointment'];
+const mutationKey = ['createAppointmentReschedule'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -455,10 +455,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof rescheduleAppointment>>, {appointmentId: string;data: RescheduleRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAppointmentReschedule>>, {appointmentId: string;data: RescheduleRequest}> = (props) => {
           const {appointmentId,data} = props ?? {};
 
-          return  rescheduleAppointment(appointmentId,data,)
+          return  createAppointmentReschedule(appointmentId,data,)
         }
 
         
@@ -466,23 +466,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type RescheduleAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeof rescheduleAppointment>>>
-    export type RescheduleAppointmentMutationBody = RescheduleRequest
-    export type RescheduleAppointmentMutationError = HTTPValidationError
+    export type CreateAppointmentRescheduleMutationResult = NonNullable<Awaited<ReturnType<typeof createAppointmentReschedule>>>
+    export type CreateAppointmentRescheduleMutationBody = RescheduleRequest
+    export type CreateAppointmentRescheduleMutationError = HTTPValidationError
 
     /**
  * @summary Reschedule Appointment
  */
-export const useRescheduleAppointment = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rescheduleAppointment>>, TError,{appointmentId: string;data: RescheduleRequest}, TContext>, }
+export const useCreateAppointmentReschedule = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppointmentReschedule>>, TError,{appointmentId: string;data: RescheduleRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof rescheduleAppointment>>,
+        Awaited<ReturnType<typeof createAppointmentReschedule>>,
         TError,
         {appointmentId: string;data: RescheduleRequest},
         TContext
       > => {
 
-      const mutationOptions = getRescheduleAppointmentMutationOptions(options);
+      const mutationOptions = getCreateAppointmentRescheduleMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -490,7 +490,7 @@ export const useRescheduleAppointment = <TError = HTTPValidationError,
  * Cancel an appointment
  * @summary Cancel Appointment
  */
-export const cancelAppointment = (
+export const createAppointmentCancel = (
     appointmentId: string,
  signal?: AbortSignal
 ) => {
@@ -504,11 +504,11 @@ export const cancelAppointment = (
   
 
 
-export const getCancelAppointmentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelAppointment>>, TError,{appointmentId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof cancelAppointment>>, TError,{appointmentId: string}, TContext> => {
+export const getCreateAppointmentCancelMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppointmentCancel>>, TError,{appointmentId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAppointmentCancel>>, TError,{appointmentId: string}, TContext> => {
 
-const mutationKey = ['cancelAppointment'];
+const mutationKey = ['createAppointmentCancel'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -518,10 +518,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof cancelAppointment>>, {appointmentId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAppointmentCancel>>, {appointmentId: string}> = (props) => {
           const {appointmentId} = props ?? {};
 
-          return  cancelAppointment(appointmentId,)
+          return  createAppointmentCancel(appointmentId,)
         }
 
         
@@ -529,23 +529,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CancelAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeof cancelAppointment>>>
+    export type CreateAppointmentCancelMutationResult = NonNullable<Awaited<ReturnType<typeof createAppointmentCancel>>>
     
-    export type CancelAppointmentMutationError = HTTPValidationError
+    export type CreateAppointmentCancelMutationError = HTTPValidationError
 
     /**
  * @summary Cancel Appointment
  */
-export const useCancelAppointment = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelAppointment>>, TError,{appointmentId: string}, TContext>, }
+export const useCreateAppointmentCancel = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppointmentCancel>>, TError,{appointmentId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof cancelAppointment>>,
+        Awaited<ReturnType<typeof createAppointmentCancel>>,
         TError,
         {appointmentId: string},
         TContext
       > => {
 
-      const mutationOptions = getCancelAppointmentMutationOptions(options);
+      const mutationOptions = getCreateAppointmentCancelMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -553,7 +553,7 @@ export const useCancelAppointment = <TError = HTTPValidationError,
  * Mark appointment as completed
  * @summary Complete Appointment
  */
-export const completeAppointment = (
+export const createAppointmentComplete = (
     appointmentId: string,
  signal?: AbortSignal
 ) => {
@@ -567,11 +567,11 @@ export const completeAppointment = (
   
 
 
-export const getCompleteAppointmentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeAppointment>>, TError,{appointmentId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof completeAppointment>>, TError,{appointmentId: string}, TContext> => {
+export const getCreateAppointmentCompleteMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppointmentComplete>>, TError,{appointmentId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAppointmentComplete>>, TError,{appointmentId: string}, TContext> => {
 
-const mutationKey = ['completeAppointment'];
+const mutationKey = ['createAppointmentComplete'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -581,10 +581,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeAppointment>>, {appointmentId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAppointmentComplete>>, {appointmentId: string}> = (props) => {
           const {appointmentId} = props ?? {};
 
-          return  completeAppointment(appointmentId,)
+          return  createAppointmentComplete(appointmentId,)
         }
 
         
@@ -592,23 +592,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CompleteAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeof completeAppointment>>>
+    export type CreateAppointmentCompleteMutationResult = NonNullable<Awaited<ReturnType<typeof createAppointmentComplete>>>
     
-    export type CompleteAppointmentMutationError = HTTPValidationError
+    export type CreateAppointmentCompleteMutationError = HTTPValidationError
 
     /**
  * @summary Complete Appointment
  */
-export const useCompleteAppointment = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeAppointment>>, TError,{appointmentId: string}, TContext>, }
+export const useCreateAppointmentComplete = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppointmentComplete>>, TError,{appointmentId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof completeAppointment>>,
+        Awaited<ReturnType<typeof createAppointmentComplete>>,
         TError,
         {appointmentId: string},
         TContext
       > => {
 
-      const mutationOptions = getCompleteAppointmentMutationOptions(options);
+      const mutationOptions = getCreateAppointmentCompleteMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -616,8 +616,8 @@ export const useCompleteAppointment = <TError = HTTPValidationError,
  * Get available time slots for a date
  * @summary Get Availability
  */
-export const getAvailability = (
-    params: GetAvailabilityParams,
+export const listAppointmentAvailability = (
+    params: ListAppointmentAvailabilityParams,
  signal?: AbortSignal
 ) => {
       
@@ -632,69 +632,69 @@ export const getAvailability = (
 
 
 
-export const getGetAvailabilityQueryKey = (params?: GetAvailabilityParams,) => {
+export const getListAppointmentAvailabilityQueryKey = (params?: ListAppointmentAvailabilityParams,) => {
     return [
     `/api/appointments/availability`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAvailabilityQueryOptions = <TData = Awaited<ReturnType<typeof getAvailability>>, TError = HTTPValidationError>(params: GetAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAvailability>>, TError, TData>>, }
+export const getListAppointmentAvailabilityQueryOptions = <TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAvailabilityQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAppointmentAvailabilityQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAvailability>>> = ({ signal }) => getAvailability(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAppointmentAvailability>>> = ({ signal }) => listAppointmentAvailability(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAvailability>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAvailabilityQueryResult = NonNullable<Awaited<ReturnType<typeof getAvailability>>>
-export type GetAvailabilityQueryError = HTTPValidationError
+export type ListAppointmentAvailabilityQueryResult = NonNullable<Awaited<ReturnType<typeof listAppointmentAvailability>>>
+export type ListAppointmentAvailabilityQueryError = HTTPValidationError
 
 
-export function useGetAvailability<TData = Awaited<ReturnType<typeof getAvailability>>, TError = HTTPValidationError>(
- params: GetAvailabilityParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAvailability>>, TError, TData>> & Pick<
+export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
+ params: ListAppointmentAvailabilityParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAvailability>>,
+          Awaited<ReturnType<typeof listAppointmentAvailability>>,
           TError,
-          Awaited<ReturnType<typeof getAvailability>>
+          Awaited<ReturnType<typeof listAppointmentAvailability>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAvailability<TData = Awaited<ReturnType<typeof getAvailability>>, TError = HTTPValidationError>(
- params: GetAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAvailability>>, TError, TData>> & Pick<
+export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
+ params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAvailability>>,
+          Awaited<ReturnType<typeof listAppointmentAvailability>>,
           TError,
-          Awaited<ReturnType<typeof getAvailability>>
+          Awaited<ReturnType<typeof listAppointmentAvailability>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAvailability<TData = Awaited<ReturnType<typeof getAvailability>>, TError = HTTPValidationError>(
- params: GetAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAvailability>>, TError, TData>>, }
+export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
+ params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Availability
  */
 
-export function useGetAvailability<TData = Awaited<ReturnType<typeof getAvailability>>, TError = HTTPValidationError>(
- params: GetAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAvailability>>, TError, TData>>, }
+export function useListAppointmentAvailability<TData = Awaited<ReturnType<typeof listAppointmentAvailability>>, TError = HTTPValidationError>(
+ params: ListAppointmentAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentAvailability>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAvailabilityQueryOptions(params,options)
+  const queryOptions = getListAppointmentAvailabilityQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -710,8 +710,8 @@ export function useGetAvailability<TData = Awaited<ReturnType<typeof getAvailabi
  * List appointments with filters
  * @summary List Appointments
  */
-export const listAppointments = (
-    params?: ListAppointmentsParams,
+export const listAppointmentList = (
+    params?: ListAppointmentListParams,
  signal?: AbortSignal
 ) => {
       
@@ -726,69 +726,69 @@ export const listAppointments = (
 
 
 
-export const getListAppointmentsQueryKey = (params?: ListAppointmentsParams,) => {
+export const getListAppointmentListQueryKey = (params?: ListAppointmentListParams,) => {
     return [
     `/api/appointments/list`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListAppointmentsQueryOptions = <TData = Awaited<ReturnType<typeof listAppointments>>, TError = HTTPValidationError>(params?: ListAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointments>>, TError, TData>>, }
+export const getListAppointmentListQueryOptions = <TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(params?: ListAppointmentListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListAppointmentsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAppointmentListQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAppointments>>> = ({ signal }) => listAppointments(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAppointmentList>>> = ({ signal }) => listAppointmentList(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAppointments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListAppointmentsQueryResult = NonNullable<Awaited<ReturnType<typeof listAppointments>>>
-export type ListAppointmentsQueryError = HTTPValidationError
+export type ListAppointmentListQueryResult = NonNullable<Awaited<ReturnType<typeof listAppointmentList>>>
+export type ListAppointmentListQueryError = HTTPValidationError
 
 
-export function useListAppointments<TData = Awaited<ReturnType<typeof listAppointments>>, TError = HTTPValidationError>(
- params: undefined |  ListAppointmentsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointments>>, TError, TData>> & Pick<
+export function useListAppointmentList<TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(
+ params: undefined |  ListAppointmentListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAppointments>>,
+          Awaited<ReturnType<typeof listAppointmentList>>,
           TError,
-          Awaited<ReturnType<typeof listAppointments>>
+          Awaited<ReturnType<typeof listAppointmentList>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAppointments<TData = Awaited<ReturnType<typeof listAppointments>>, TError = HTTPValidationError>(
- params?: ListAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointments>>, TError, TData>> & Pick<
+export function useListAppointmentList<TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(
+ params?: ListAppointmentListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAppointments>>,
+          Awaited<ReturnType<typeof listAppointmentList>>,
           TError,
-          Awaited<ReturnType<typeof listAppointments>>
+          Awaited<ReturnType<typeof listAppointmentList>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAppointments<TData = Awaited<ReturnType<typeof listAppointments>>, TError = HTTPValidationError>(
- params?: ListAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointments>>, TError, TData>>, }
+export function useListAppointmentList<TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(
+ params?: ListAppointmentListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Appointments
  */
 
-export function useListAppointments<TData = Awaited<ReturnType<typeof listAppointments>>, TError = HTTPValidationError>(
- params?: ListAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointments>>, TError, TData>>, }
+export function useListAppointmentList<TData = Awaited<ReturnType<typeof listAppointmentList>>, TError = HTTPValidationError>(
+ params?: ListAppointmentListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppointmentList>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListAppointmentsQueryOptions(params,options)
+  const queryOptions = getListAppointmentListQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

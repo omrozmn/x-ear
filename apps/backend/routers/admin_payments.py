@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api/admin/payments", tags=["Admin Payments"])
 class PaymentListResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("/pos/transactions", response_model=PaymentListResponse)
+@router.get("/pos/transactions", operation_id="listAdminPaymentPoTransactions", response_model=PaymentListResponse)
 async def get_pos_transactions(
     provider: Optional[str] = None,
     start_date: Optional[str] = None,
@@ -38,14 +38,14 @@ async def get_pos_transactions(
             try:
                 s_dt = datetime.fromisoformat(start_date)
                 query = query.filter(PaymentRecord.payment_date >= s_dt)
-            except:
+            except (ValueError, TypeError):
                 pass
         
         if end_date:
             try:
                 e_dt = datetime.fromisoformat(end_date)
                 query = query.filter(PaymentRecord.payment_date <= e_dt)
-            except:
+            except (ValueError, TypeError):
                 pass
         
         records = query.order_by(PaymentRecord.payment_date.desc()).limit(limit).all()

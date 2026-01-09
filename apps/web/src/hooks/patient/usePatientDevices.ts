@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PatientDevice } from '../../types/patient';
 import {
-  useGetPatientDevices,
-  getPatientDevices
+  useListPatientDevices,
+  listPatientDevices
 } from '@/api/generated/patient-subresources/patient-subresources';
 
 interface ApiResponse {
@@ -30,7 +30,7 @@ export function usePatientDevices(patientId: string) {
       setLoading(true);
       setError(null);
 
-      const response = await getPatientDevices(patientId);
+      const response = await listPatientDevices(patientId);
 
       // Handle different response structures
       let devicesData: unknown[] = [];

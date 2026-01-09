@@ -21,7 +21,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetAdminAllInventoryParams,
+  GetAllInventoryApiAdminInventoryGetParams,
   HTTPValidationError,
   InventoryListResponse
 } from '.././schemas';
@@ -35,8 +35,8 @@ import { customInstance } from '../../orval-mutator';
  * Get list of ALL devices/inventory from ALL tenants
  * @summary Get All Inventory
  */
-export const getAdminAllInventory = (
-    params?: GetAdminAllInventoryParams,
+export const getAllInventoryApiAdminInventoryGet = (
+    params?: GetAllInventoryApiAdminInventoryGetParams,
  signal?: AbortSignal
 ) => {
       
@@ -51,69 +51,69 @@ export const getAdminAllInventory = (
 
 
 
-export const getGetAdminAllInventoryQueryKey = (params?: GetAdminAllInventoryParams,) => {
+export const getGetAllInventoryApiAdminInventoryGetQueryKey = (params?: GetAllInventoryApiAdminInventoryGetParams,) => {
     return [
     `/api/admin/inventory`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminAllInventoryQueryOptions = <TData = Awaited<ReturnType<typeof getAdminAllInventory>>, TError = HTTPValidationError>(params?: GetAdminAllInventoryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAllInventory>>, TError, TData>>, }
+export const getGetAllInventoryApiAdminInventoryGetQueryOptions = <TData = Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>, TError = HTTPValidationError>(params?: GetAllInventoryApiAdminInventoryGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminAllInventoryQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetAllInventoryApiAdminInventoryGetQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminAllInventory>>> = ({ signal }) => getAdminAllInventory(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>> = ({ signal }) => getAllInventoryApiAdminInventoryGet(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminAllInventory>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminAllInventoryQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminAllInventory>>>
-export type GetAdminAllInventoryQueryError = HTTPValidationError
+export type GetAllInventoryApiAdminInventoryGetQueryResult = NonNullable<Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>>
+export type GetAllInventoryApiAdminInventoryGetQueryError = HTTPValidationError
 
 
-export function useGetAdminAllInventory<TData = Awaited<ReturnType<typeof getAdminAllInventory>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminAllInventoryParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAllInventory>>, TError, TData>> & Pick<
+export function useGetAllInventoryApiAdminInventoryGet<TData = Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>, TError = HTTPValidationError>(
+ params: undefined |  GetAllInventoryApiAdminInventoryGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminAllInventory>>,
+          Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>,
           TError,
-          Awaited<ReturnType<typeof getAdminAllInventory>>
+          Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminAllInventory<TData = Awaited<ReturnType<typeof getAdminAllInventory>>, TError = HTTPValidationError>(
- params?: GetAdminAllInventoryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAllInventory>>, TError, TData>> & Pick<
+export function useGetAllInventoryApiAdminInventoryGet<TData = Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>, TError = HTTPValidationError>(
+ params?: GetAllInventoryApiAdminInventoryGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminAllInventory>>,
+          Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>,
           TError,
-          Awaited<ReturnType<typeof getAdminAllInventory>>
+          Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminAllInventory<TData = Awaited<ReturnType<typeof getAdminAllInventory>>, TError = HTTPValidationError>(
- params?: GetAdminAllInventoryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAllInventory>>, TError, TData>>, }
+export function useGetAllInventoryApiAdminInventoryGet<TData = Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>, TError = HTTPValidationError>(
+ params?: GetAllInventoryApiAdminInventoryGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get All Inventory
  */
 
-export function useGetAdminAllInventory<TData = Awaited<ReturnType<typeof getAdminAllInventory>>, TError = HTTPValidationError>(
- params?: GetAdminAllInventoryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAllInventory>>, TError, TData>>, }
+export function useGetAllInventoryApiAdminInventoryGet<TData = Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>, TError = HTTPValidationError>(
+ params?: GetAllInventoryApiAdminInventoryGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllInventoryApiAdminInventoryGet>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminAllInventoryQueryOptions(params,options)
+  const queryOptions = getGetAllInventoryApiAdminInventoryGetQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

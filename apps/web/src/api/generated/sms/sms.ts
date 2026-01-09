@@ -26,7 +26,7 @@ import type {
 
 import type {
   HTTPValidationError,
-  ListAdminPackagesParams,
+  ListAdminSmPackagesParams,
   ResponseEnvelopeListSMSPackageRead,
   ResponseEnvelopeSMSPackageRead,
   SMSPackageCreate,
@@ -42,8 +42,8 @@ import { customInstance } from '../../orval-mutator';
  * List all SMS packages (Admin)
  * @summary List Admin Packages
  */
-export const listAdminPackages = (
-    params?: ListAdminPackagesParams,
+export const listAdminSmPackages = (
+    params?: ListAdminSmPackagesParams,
  signal?: AbortSignal
 ) => {
       
@@ -58,69 +58,69 @@ export const listAdminPackages = (
 
 
 
-export const getListAdminPackagesQueryKey = (params?: ListAdminPackagesParams,) => {
+export const getListAdminSmPackagesQueryKey = (params?: ListAdminSmPackagesParams,) => {
     return [
     `/api/admin/sms/packages`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListAdminPackagesQueryOptions = <TData = Awaited<ReturnType<typeof listAdminPackages>>, TError = HTTPValidationError>(params?: ListAdminPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPackages>>, TError, TData>>, }
+export const getListAdminSmPackagesQueryOptions = <TData = Awaited<ReturnType<typeof listAdminSmPackages>>, TError = HTTPValidationError>(params?: ListAdminSmPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSmPackages>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListAdminPackagesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminSmPackagesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminPackages>>> = ({ signal }) => listAdminPackages(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminSmPackages>>> = ({ signal }) => listAdminSmPackages(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminPackages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminSmPackages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListAdminPackagesQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminPackages>>>
-export type ListAdminPackagesQueryError = HTTPValidationError
+export type ListAdminSmPackagesQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminSmPackages>>>
+export type ListAdminSmPackagesQueryError = HTTPValidationError
 
 
-export function useListAdminPackages<TData = Awaited<ReturnType<typeof listAdminPackages>>, TError = HTTPValidationError>(
- params: undefined |  ListAdminPackagesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPackages>>, TError, TData>> & Pick<
+export function useListAdminSmPackages<TData = Awaited<ReturnType<typeof listAdminSmPackages>>, TError = HTTPValidationError>(
+ params: undefined |  ListAdminSmPackagesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSmPackages>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAdminPackages>>,
+          Awaited<ReturnType<typeof listAdminSmPackages>>,
           TError,
-          Awaited<ReturnType<typeof listAdminPackages>>
+          Awaited<ReturnType<typeof listAdminSmPackages>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAdminPackages<TData = Awaited<ReturnType<typeof listAdminPackages>>, TError = HTTPValidationError>(
- params?: ListAdminPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPackages>>, TError, TData>> & Pick<
+export function useListAdminSmPackages<TData = Awaited<ReturnType<typeof listAdminSmPackages>>, TError = HTTPValidationError>(
+ params?: ListAdminSmPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSmPackages>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAdminPackages>>,
+          Awaited<ReturnType<typeof listAdminSmPackages>>,
           TError,
-          Awaited<ReturnType<typeof listAdminPackages>>
+          Awaited<ReturnType<typeof listAdminSmPackages>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAdminPackages<TData = Awaited<ReturnType<typeof listAdminPackages>>, TError = HTTPValidationError>(
- params?: ListAdminPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPackages>>, TError, TData>>, }
+export function useListAdminSmPackages<TData = Awaited<ReturnType<typeof listAdminSmPackages>>, TError = HTTPValidationError>(
+ params?: ListAdminSmPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSmPackages>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Admin Packages
  */
 
-export function useListAdminPackages<TData = Awaited<ReturnType<typeof listAdminPackages>>, TError = HTTPValidationError>(
- params?: ListAdminPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPackages>>, TError, TData>>, }
+export function useListAdminSmPackages<TData = Awaited<ReturnType<typeof listAdminSmPackages>>, TError = HTTPValidationError>(
+ params?: ListAdminSmPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminSmPackages>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListAdminPackagesQueryOptions(params,options)
+  const queryOptions = getListAdminSmPackagesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -136,7 +136,7 @@ export function useListAdminPackages<TData = Awaited<ReturnType<typeof listAdmin
  * Create a new SMS package
  * @summary Create Package
  */
-export const createAdminPackage = (
+export const createAdminSmPackages = (
     sMSPackageCreate: SMSPackageCreate,
  signal?: AbortSignal
 ) => {
@@ -152,11 +152,11 @@ export const createAdminPackage = (
   
 
 
-export const getCreateAdminPackageMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminPackage>>, TError,{data: SMSPackageCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAdminPackage>>, TError,{data: SMSPackageCreate}, TContext> => {
+export const getCreateAdminSmPackagesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminSmPackages>>, TError,{data: SMSPackageCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminSmPackages>>, TError,{data: SMSPackageCreate}, TContext> => {
 
-const mutationKey = ['createAdminPackage'];
+const mutationKey = ['createAdminSmPackages'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -166,10 +166,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminPackage>>, {data: SMSPackageCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminSmPackages>>, {data: SMSPackageCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createAdminPackage(data,)
+          return  createAdminSmPackages(data,)
         }
 
         
@@ -177,23 +177,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateAdminPackageMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminPackage>>>
-    export type CreateAdminPackageMutationBody = SMSPackageCreate
-    export type CreateAdminPackageMutationError = HTTPValidationError
+    export type CreateAdminSmPackagesMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminSmPackages>>>
+    export type CreateAdminSmPackagesMutationBody = SMSPackageCreate
+    export type CreateAdminSmPackagesMutationError = HTTPValidationError
 
     /**
  * @summary Create Package
  */
-export const useCreateAdminPackage = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminPackage>>, TError,{data: SMSPackageCreate}, TContext>, }
+export const useCreateAdminSmPackages = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminSmPackages>>, TError,{data: SMSPackageCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createAdminPackage>>,
+        Awaited<ReturnType<typeof createAdminSmPackages>>,
         TError,
         {data: SMSPackageCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateAdminPackageMutationOptions(options);
+      const mutationOptions = getCreateAdminSmPackagesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -201,7 +201,7 @@ export const useCreateAdminPackage = <TError = HTTPValidationError,
  * Update an SMS package
  * @summary Update Package
  */
-export const updateAdminPackage = (
+export const updateAdminSmPackage = (
     pkgId: string,
     sMSPackageUpdate: SMSPackageUpdate,
  ) => {
@@ -217,11 +217,11 @@ export const updateAdminPackage = (
   
 
 
-export const getUpdateAdminPackageMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminPackage>>, TError,{pkgId: string;data: SMSPackageUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateAdminPackage>>, TError,{pkgId: string;data: SMSPackageUpdate}, TContext> => {
+export const getUpdateAdminSmPackageMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminSmPackage>>, TError,{pkgId: string;data: SMSPackageUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminSmPackage>>, TError,{pkgId: string;data: SMSPackageUpdate}, TContext> => {
 
-const mutationKey = ['updateAdminPackage'];
+const mutationKey = ['updateAdminSmPackage'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -231,10 +231,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminPackage>>, {pkgId: string;data: SMSPackageUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminSmPackage>>, {pkgId: string;data: SMSPackageUpdate}> = (props) => {
           const {pkgId,data} = props ?? {};
 
-          return  updateAdminPackage(pkgId,data,)
+          return  updateAdminSmPackage(pkgId,data,)
         }
 
         
@@ -242,23 +242,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateAdminPackageMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminPackage>>>
-    export type UpdateAdminPackageMutationBody = SMSPackageUpdate
-    export type UpdateAdminPackageMutationError = HTTPValidationError
+    export type UpdateAdminSmPackageMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminSmPackage>>>
+    export type UpdateAdminSmPackageMutationBody = SMSPackageUpdate
+    export type UpdateAdminSmPackageMutationError = HTTPValidationError
 
     /**
  * @summary Update Package
  */
-export const useUpdateAdminPackage = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminPackage>>, TError,{pkgId: string;data: SMSPackageUpdate}, TContext>, }
+export const useUpdateAdminSmPackage = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminSmPackage>>, TError,{pkgId: string;data: SMSPackageUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateAdminPackage>>,
+        Awaited<ReturnType<typeof updateAdminSmPackage>>,
         TError,
         {pkgId: string;data: SMSPackageUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateAdminPackageMutationOptions(options);
+      const mutationOptions = getUpdateAdminSmPackageMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

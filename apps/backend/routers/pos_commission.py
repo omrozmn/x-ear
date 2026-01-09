@@ -54,7 +54,7 @@ def calculate_commission(amount, installment_count, provider, tenant_id, db):
         "installment_count": installment_count
     }
 
-@router.post("/calculate")
+@router.post("/calculate", operation_id="createPoCommissionCalculate")
 async def calculate_commission_endpoint(
     data: CommissionCalculate,
     db: Session = Depends(get_db),
@@ -70,7 +70,7 @@ async def calculate_commission_endpoint(
     result = calculate_commission(data.amount, data.installment_count, data.provider, access.tenant_id, db)
     return {"success": True, "data": result}
 
-@router.get("/rates")
+@router.get("/rates", operation_id="listPoCommissionRates")
 async def get_commission_rates(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -91,7 +91,7 @@ async def get_commission_rates(
         }
     }
 
-@router.post("/installment-options")
+@router.post("/installment-options", operation_id="createPoCommissionInstallmentOptions")
 async def get_installment_options(
     data: CommissionCalculate,
     db: Session = Depends(get_db),
@@ -123,7 +123,7 @@ async def get_installment_options(
 
 # --- Admin Endpoints (Migrated from Flask) ---
 
-@router.get("/rates/tenant/{tenant_id}")
+@router.get("/rates/tenant/{tenant_id}", operation_id="getPoCommissionRateTenant")
 async def get_tenant_rates_admin(
     tenant_id: str,
     db: Session = Depends(get_db),
@@ -141,7 +141,7 @@ async def get_tenant_rates_admin(
         }
     }
 
-@router.put("/rates/tenant/{tenant_id}")
+@router.put("/rates/tenant/{tenant_id}", operation_id="updatePoCommissionRateTenant")
 async def update_tenant_rates_admin(
     tenant_id: str,
     data: TenantRatesUpdate,
@@ -175,7 +175,7 @@ async def update_tenant_rates_admin(
     
     return {"success": True, "message": "Tenant rates updated"}
 
-@router.get("/rates/system")
+@router.get("/rates/system", operation_id="listPoCommissionRateSystem")
 async def get_system_rates_endpoint(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
@@ -189,7 +189,7 @@ async def get_system_rates_endpoint(
         }
     }
 
-@router.put("/rates/system")
+@router.put("/rates/system", operation_id="updatePoCommissionRateSystem")
 async def update_system_rates(
     data: TenantRatesUpdate,
     db: Session = Depends(get_db),

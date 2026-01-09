@@ -65,8 +65,8 @@ const SerialAutocomplete: React.FC<{
   };
 
   const colorClasses = {
-    blue: 'text-blue-700',
-    red: 'text-red-700'
+    blue: 'text-blue-700 dark:text-blue-300',
+    red: 'text-red-700 dark:text-red-300'
   };
 
   return (
@@ -84,21 +84,21 @@ const SerialAutocomplete: React.FC<{
         }}
         onFocus={() => setIsOpen(true)}
         placeholder={placeholder}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
       />
 
       {isOpen && filteredSerials.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-auto"
+          className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-md shadow-lg max-h-48 overflow-auto"
         >
           {filteredSerials.map((serial, index) => (
             <div
               key={index}
               onClick={() => handleSelect(serial)}
-              className="px-4 py-2 cursor-pointer hover:bg-blue-50 transition-colors"
+              className="px-4 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
             >
-              <span className="text-sm text-gray-900 font-mono">{serial}</span>
+              <span className="text-sm text-gray-900 dark:text-gray-100 font-mono">{serial}</span>
             </div>
           ))}
         </div>
@@ -123,9 +123,9 @@ export const SerialNumberForm: React.FC<SerialNumberFormProps> = ({
   // In manual mode, we don't need a selected device to show the form
   if (!selectedDevice && !isManualMode) {
     return (
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
-        <Hash className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-        <p className="text-gray-600">
+      <div className="bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-6 text-center">
+        <Hash className="w-8 h-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
+        <p className="text-gray-600 dark:text-gray-400">
           Seri numarası atamak için önce bir cihaz seçin.
         </p>
       </div>
@@ -146,18 +146,18 @@ export const SerialNumberForm: React.FC<SerialNumberFormProps> = ({
   ].filter(Boolean);
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
+    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-4">
       <div>
-        <h4 className="text-sm font-medium text-blue-900 mb-1 flex items-center">
+        <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1 flex items-center">
           <Hash className="w-4 h-4 mr-2" />
           Seri Numarası Yönetimi
         </h4>
         {selectedDevice ? (
-          <p className="text-xs text-blue-700">
+          <p className="text-xs text-blue-700 dark:text-blue-300">
             <strong>{selectedDevice.brand} {selectedDevice.model}</strong> - Mevcut: {availableSerials.length} adet
           </p>
         ) : (
-          <p className="text-xs text-blue-700">
+          <p className="text-xs text-blue-700 dark:text-blue-300">
             Manuel giriş modu aktif
           </p>
         )}
@@ -195,27 +195,28 @@ export const SerialNumberForm: React.FC<SerialNumberFormProps> = ({
       )}
 
       {/* Assigned Serials Summary - Audiological view: Right Left (as facing a person) */}
+      {/* Assigned Serials Summary - Audiological view: Right Left (as facing a person) */}
       {assignedSerials.length > 0 && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-          <h5 className="text-xs font-medium text-green-900 mb-2 flex items-center">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+          <h5 className="text-xs font-medium text-green-900 dark:text-green-100 mb-2 flex items-center">
             <CheckCircle className="w-3 h-3 mr-1" />
             Atanan Seri Numaraları
           </h5>
           <div className="grid grid-cols-2 gap-2 text-xs">
             {/* Right Ear - Red (First column - audiological view) */}
             {(formData.serialNumberRight || (formData.serialNumber && formData.ear === 'right')) && (
-              <div className="bg-red-50 border border-red-200 rounded px-2 py-1">
-                <strong className="text-red-700">Sağ:</strong>
-                <span className="ml-1 text-red-900 font-mono">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded px-2 py-1">
+                <strong className="text-red-700 dark:text-red-300">Sağ:</strong>
+                <span className="ml-1 text-red-900 dark:text-red-100 font-mono">
                   {formData.serialNumberRight || formData.serialNumber}
                 </span>
               </div>
             )}
             {/* Left Ear - Blue (Second column - audiological view) */}
             {(formData.serialNumberLeft || (formData.serialNumber && formData.ear === 'left')) && (
-              <div className="bg-blue-50 border border-blue-200 rounded px-2 py-1">
-                <strong className="text-blue-700">Sol:</strong>
-                <span className="ml-1 text-blue-900 font-mono">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded px-2 py-1">
+                <strong className="text-blue-700 dark:text-blue-300">Sol:</strong>
+                <span className="ml-1 text-blue-900 dark:text-blue-100 font-mono">
                   {formData.serialNumberLeft || formData.serialNumber}
                 </span>
               </div>

@@ -41,7 +41,7 @@ def derive_record_type(notes: str) -> str:
 
 # --- Routes ---
 
-@router.get("/unified-cash-records")
+@router.get("/unified-cash-records", operation_id="listUnifiedCashRecords")
 def get_unified_cash_records(
     limit: int = Query(200, ge=1, le=1000),
     record_type: Optional[str] = None,
@@ -237,7 +237,7 @@ def get_unified_cash_records(
         logger.error(f"Unified cash records error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/unified-cash-records/summary")
+@router.get("/unified-cash-records/summary", operation_id="listUnifiedCashRecordSummary")
 def get_cash_summary(
     period: str = Query("month"),
     start_date: Optional[str] = None,

@@ -63,7 +63,7 @@ class HistoryCreate(BaseModel):
     metadata: Optional[Dict[str, Any]] = {}
     initiatedBy: Optional[str] = None
 
-@router.get("/messages")
+@router.get("/messages", operation_id="listCommunicationMessages")
 async def list_messages(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
@@ -142,7 +142,7 @@ async def list_messages(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/messages/send-sms")
+@router.post("/messages/send-sms", operation_id="createCommunicationMessageSendSms")
 async def send_sms(
     data: SendSMS,
     db: Session = Depends(get_db),
@@ -179,7 +179,7 @@ async def send_sms(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/messages/send-email")
+@router.post("/messages/send-email", operation_id="createCommunicationMessageSendEmail")
 async def send_email(
     data: SendEmail,
     db: Session = Depends(get_db),
@@ -224,7 +224,7 @@ async def send_email(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/templates")
+@router.get("/templates", operation_id="listCommunicationTemplates")
 async def list_templates(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
@@ -264,7 +264,7 @@ async def list_templates(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/templates")
+@router.post("/templates", operation_id="createCommunicationTemplates")
 async def create_template(
     data: TemplateCreate,
     db: Session = Depends(get_db),
@@ -298,7 +298,7 @@ async def create_template(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/templates/{template_id}")
+@router.get("/templates/{template_id}", operation_id="getCommunicationTemplate")
 async def get_template(template_id: str, db: Session = Depends(get_db), access: UnifiedAccess = Depends(require_access())):
     """Get a specific template"""
     template = db.get(CommunicationTemplate, template_id)
@@ -306,7 +306,7 @@ async def get_template(template_id: str, db: Session = Depends(get_db), access: 
         raise HTTPException(status_code=404, detail="Template not found")
     return {"success": True, "data": template.to_dict(), "timestamp": now_utc().isoformat()}
 
-@router.put("/templates/{template_id}")
+@router.put("/templates/{template_id}", operation_id="updateCommunicationTemplate")
 async def update_template(
     template_id: str,
     data: TemplateCreate,
@@ -356,7 +356,7 @@ async def update_template(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/templates/{template_id}")
+@router.delete("/templates/{template_id}", operation_id="deleteCommunicationTemplate")
 async def delete_template(template_id: str, db: Session = Depends(get_db), access: UnifiedAccess = Depends(require_access())):
     """Delete a communication template"""
     template = db.get(CommunicationTemplate, template_id)
@@ -369,7 +369,7 @@ async def delete_template(template_id: str, db: Session = Depends(get_db), acces
     db.commit()
     return {"success": True, "message": "Template deleted successfully", "timestamp": now_utc().isoformat()}
 
-@router.get("/history")
+@router.get("/history", operation_id="listCommunicationHistory")
 async def list_communication_history(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
@@ -418,7 +418,7 @@ async def list_communication_history(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/history")
+@router.post("/history", operation_id="createCommunicationHistory")
 async def create_communication_history(
     data: HistoryCreate,
     db: Session = Depends(get_db),
@@ -453,7 +453,7 @@ async def create_communication_history(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/stats")
+@router.get("/stats", operation_id="listCommunicationStats")
 async def communication_stats(
     days: int = Query(30, ge=1, le=365),
     db: Session = Depends(get_db),

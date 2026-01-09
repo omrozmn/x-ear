@@ -23,7 +23,7 @@ class ApiKeyListResponse(ResponseEnvelope):
 class ApiKeyDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.post("/init-db", response_model=ResponseEnvelope)
+@router.post("/init-db", operation_id="createAdminApiKeyInitDb", response_model=ResponseEnvelope)
 async def init_db(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("system.manage", admin_only=True))
@@ -101,7 +101,7 @@ async def create_api_key(
         logger.error(f"Create API key error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{key_id}", response_model=ResponseEnvelope)
+@router.delete("/{key_id}", operation_id="deleteAdminApiKey", response_model=ResponseEnvelope)
 async def revoke_api_key(
     key_id: str,
     db: Session = Depends(get_db),

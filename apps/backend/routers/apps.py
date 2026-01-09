@@ -62,7 +62,7 @@ async def create_app(
     db.refresh(app)
     return {"success": True, "data": app.to_dict()}
 
-@router.get("/{app_id}")
+@router.get("/{app_id}", operation_id="getApp")
 async def get_app(
     app_id: str,
     db: Session = Depends(get_db),
@@ -74,7 +74,7 @@ async def get_app(
         raise HTTPException(status_code=404, detail="Not found")
     return {"success": True, "data": app.to_dict()}
 
-@router.put("/{app_id}")
+@router.put("/{app_id}", operation_id="updateApp")
 async def update_app(
     app_id: str,
     data: AppUpdate,
@@ -94,7 +94,7 @@ async def update_app(
     db.commit()
     return {"success": True, "data": app.to_dict()}
 
-@router.delete("/{app_id}")
+@router.delete("/{app_id}", operation_id="deleteApp")
 async def delete_app(
     app_id: str,
     db: Session = Depends(get_db),
@@ -111,7 +111,7 @@ async def delete_app(
 
 # --- Additional Endpoints (Migrated from Flask) ---
 
-@router.post("/{app_id}/assign")
+@router.post("/{app_id}/assign", operation_id="createAppAssign")
 async def assign_user_to_app(
     app_id: str,
     data: RoleAssign,
@@ -142,7 +142,7 @@ async def assign_user_to_app(
     db.commit()
     return {"success": True, "message": f"User assigned to app with role: {data.role}"}
 
-@router.post("/{app_id}/transfer_ownership")
+@router.post("/{app_id}/transfer_ownership", operation_id="createAppTransferOwnership")
 async def transfer_app_ownership(
     app_id: str,
     data: OwnerTransfer,

@@ -338,7 +338,7 @@ export function InvoiceList({
                           </Button>
 
                           {invoice.status === 'draft' && (
-                            <Button onClick={async (e) => { e.stopPropagation(); try { const res = await invoiceService.issueInvoice(invoice.id); if (!res.success) { setError(res.error || 'Fatura kesme başarısız'); } else { await loadInvoices(); } } catch (err) { setError(err instanceof Error ? err.message : 'Fatura keserken hata'); } }} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 p-1" variant='default' title="Fatura Kes" aria-label="Fatura Kes">
+                            <Button onClick={async (e) => { e.stopPropagation(); try { const res = await invoiceService.createInvoiceIssue(invoice.id); if (!res.success) { setError(res.error || 'Fatura kesme başarısız'); } else { await loadInvoices(); } } catch (err) { setError(err instanceof Error ? err.message : 'Fatura keserken hata'); } }} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 p-1" variant='default' title="Fatura Kes" aria-label="Fatura Kes">
                               <FilePlus size={16} />
                             </Button>
                           )}

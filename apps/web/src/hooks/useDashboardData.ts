@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useGetDashboardApiDashboardGet } from '@/api/generated';
+import { useListDashboard } from '@/api/generated';
 
 interface DashboardStats {
   totalPatients: number;
@@ -22,13 +22,35 @@ interface LastCalculation {
   date: string;
 }
 
+// Activity item structure from API
+interface ActivityItem {
+  id?: string;
+  type?: string;
+  message?: string;
+  timestamp?: string;
+  [key: string]: unknown;
+}
+
 interface DashboardData {
   stats: DashboardStats;
   lastTransaction?: LastTransaction;
   lastCalculation?: LastCalculation;
-  recentActivity?: any[];
+  recentActivity?: ActivityItem[];
   loading: boolean;
   error: string | null;
+}
+
+// Type for API response payload
+interface DashboardPayload {
+  data?: {
+    kpis?: Record<string, number>;
+    recentActivity?: ActivityItem[];
+    activity?: ActivityItem[];
+  } & Record<string, unknown>;
+  kpis?: Record<string, number>;
+  recentActivity?: ActivityItem[];
+  activity?: ActivityItem[];
+  [key: string]: unknown;
 }
 
 export const useDashboardData = (): DashboardData => {
@@ -47,26 +69,27 @@ export const useDashboardData = (): DashboardData => {
     error: null,
   });
 
-  const query = useGetDashboardApiDashboardGet();
+  const query = useListDashboard();
 
   useEffect(() => {
     // Map query result into local shape and handle missing fields gracefully
     if (query.isLoading) return;
     if (query.isError) {
-      setData(prev => ({ ...prev, loading: false, error: (query.error as any)?.message || 'Veri yüklenirken hata oluştu' }));
+      const errorMessage = query.error instanceof Error ? query.error.message : 'Veri yüklenirken hata oluştu';
+      setData(prev => ({ ...prev, loading: false, error: errorMessage }));
       return;
     }
 
     // Response structure: { totalPatients, totalDevices, ... }
-    const responseBody = query.data || {};
+    const responseBody = (query.data || {}) as DashboardPayload;
     // Check if the body has a 'data' property (our API envelope), otherwise use body directly
-    const payload = (responseBody as any)?.data || responseBody || {};
-    const kpis = (payload as any)?.kpis || payload || {};
+    const payload = responseBody?.data || responseBody || {};
+    const kpis = payload?.kpis || payload || {};
 
     const mappedStats: DashboardStats = {
       totalPatients: Number(kpis.totalPatients || kpis.totalPatientsCount || 0),
       todayAppointments: Number(kpis.todayAppointments || kpis.todaysAppointments || 0),
-      monthlyRevenue: Number(kpis.estimatedRevenue || kpis.monthlyRevenue || kpis.estimatedRevenue || 0),
+      monthlyRevenue: Number(kpis.estimatedRevenue || kpis.monthlyRevenue || 0),
       activeTrials: Number(kpis.activeTrials || 0),
       activePatients: Number(kpis.activePatients || kpis.totalPatients || 0),
       dailyRevenue: Number(kpis.dailyRevenue || 0),
@@ -74,7 +97,7 @@ export const useDashboardData = (): DashboardData => {
       endingTrials: Number(kpis.endingTrials || 0),
     };
 
-    const recentActivity = (payload as any)?.recentActivity || (payload as any)?.activity || [];
+    const recentActivity = payload?.recentActivity || payload?.activity || [];
 
     setData({ stats: mappedStats, recentActivity, loading: false, error: null });
     // eslint-disable-next-line react-hooks/exhaustive-deps

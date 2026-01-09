@@ -29,7 +29,7 @@ import type {
   DebugNERRequest,
   EntityExtractionRequest,
   HTTPValidationError,
-  ListJobsParams,
+  ListOcrJobsParams,
   OCRProcessRequest,
   PatientExtractionRequest,
   SimilarityRequest
@@ -44,7 +44,7 @@ import { customInstance } from '../../orval-mutator';
  * Health check endpoint (Public)
  * @summary Health Check
  */
-export const healthOcrHealthCheck = (
+export const listOcrHealth = (
     
  signal?: AbortSignal
 ) => {
@@ -59,69 +59,69 @@ export const healthOcrHealthCheck = (
 
 
 
-export const getHealthOcrHealthCheckQueryKey = () => {
+export const getListOcrHealthQueryKey = () => {
     return [
     `/api/ocr/health`
     ] as const;
     }
 
     
-export const getHealthOcrHealthCheckQueryOptions = <TData = Awaited<ReturnType<typeof healthOcrHealthCheck>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthOcrHealthCheck>>, TError, TData>>, }
+export const getListOcrHealthQueryOptions = <TData = Awaited<ReturnType<typeof listOcrHealth>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOcrHealth>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getHealthOcrHealthCheckQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListOcrHealthQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof healthOcrHealthCheck>>> = ({ signal }) => healthOcrHealthCheck(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listOcrHealth>>> = ({ signal }) => listOcrHealth(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof healthOcrHealthCheck>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listOcrHealth>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type HealthOcrHealthCheckQueryResult = NonNullable<Awaited<ReturnType<typeof healthOcrHealthCheck>>>
-export type HealthOcrHealthCheckQueryError = unknown
+export type ListOcrHealthQueryResult = NonNullable<Awaited<ReturnType<typeof listOcrHealth>>>
+export type ListOcrHealthQueryError = unknown
 
 
-export function useHealthOcrHealthCheck<TData = Awaited<ReturnType<typeof healthOcrHealthCheck>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthOcrHealthCheck>>, TError, TData>> & Pick<
+export function useListOcrHealth<TData = Awaited<ReturnType<typeof listOcrHealth>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOcrHealth>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof healthOcrHealthCheck>>,
+          Awaited<ReturnType<typeof listOcrHealth>>,
           TError,
-          Awaited<ReturnType<typeof healthOcrHealthCheck>>
+          Awaited<ReturnType<typeof listOcrHealth>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useHealthOcrHealthCheck<TData = Awaited<ReturnType<typeof healthOcrHealthCheck>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthOcrHealthCheck>>, TError, TData>> & Pick<
+export function useListOcrHealth<TData = Awaited<ReturnType<typeof listOcrHealth>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOcrHealth>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof healthOcrHealthCheck>>,
+          Awaited<ReturnType<typeof listOcrHealth>>,
           TError,
-          Awaited<ReturnType<typeof healthOcrHealthCheck>>
+          Awaited<ReturnType<typeof listOcrHealth>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useHealthOcrHealthCheck<TData = Awaited<ReturnType<typeof healthOcrHealthCheck>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthOcrHealthCheck>>, TError, TData>>, }
+export function useListOcrHealth<TData = Awaited<ReturnType<typeof listOcrHealth>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOcrHealth>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Health Check
  */
 
-export function useHealthOcrHealthCheck<TData = Awaited<ReturnType<typeof healthOcrHealthCheck>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthOcrHealthCheck>>, TError, TData>>, }
+export function useListOcrHealth<TData = Awaited<ReturnType<typeof listOcrHealth>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOcrHealth>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getHealthOcrHealthCheckQueryOptions(options)
+  const queryOptions = getListOcrHealthQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -137,7 +137,7 @@ export function useHealthOcrHealthCheck<TData = Awaited<ReturnType<typeof health
  * Initialize database and create tables (System Admin)
  * @summary Init Database
  */
-export const initDatabase = (
+export const createOcrInitDb = (
     
  signal?: AbortSignal
 ) => {
@@ -151,11 +151,11 @@ export const initDatabase = (
   
 
 
-export const getInitDatabaseMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initDatabase>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof initDatabase>>, TError,void, TContext> => {
+export const getCreateOcrInitDbMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrInitDb>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOcrInitDb>>, TError,void, TContext> => {
 
-const mutationKey = ['initDatabase'];
+const mutationKey = ['createOcrInitDb'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -165,10 +165,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof initDatabase>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOcrInitDb>>, void> = () => {
           
 
-          return  initDatabase()
+          return  createOcrInitDb()
         }
 
         
@@ -176,23 +176,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type InitDatabaseMutationResult = NonNullable<Awaited<ReturnType<typeof initDatabase>>>
+    export type CreateOcrInitDbMutationResult = NonNullable<Awaited<ReturnType<typeof createOcrInitDb>>>
     
-    export type InitDatabaseMutationError = unknown
+    export type CreateOcrInitDbMutationError = unknown
 
     /**
  * @summary Init Database
  */
-export const useInitDatabase = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initDatabase>>, TError,void, TContext>, }
+export const useCreateOcrInitDb = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrInitDb>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof initDatabase>>,
+        Awaited<ReturnType<typeof createOcrInitDb>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getInitDatabaseMutationOptions(options);
+      const mutationOptions = getCreateOcrInitDbMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -200,7 +200,7 @@ export const useInitDatabase = <TError = unknown,
  * Initialize NLP/OCR service (System Admin)
  * @summary Initialize Nlp Endpoint
  */
-export const initializeNlpEndpoint = (
+export const createOcrInitialize = (
     
  signal?: AbortSignal
 ) => {
@@ -214,11 +214,11 @@ export const initializeNlpEndpoint = (
   
 
 
-export const getInitializeNlpEndpointMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initializeNlpEndpoint>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof initializeNlpEndpoint>>, TError,void, TContext> => {
+export const getCreateOcrInitializeMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrInitialize>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOcrInitialize>>, TError,void, TContext> => {
 
-const mutationKey = ['initializeNlpEndpoint'];
+const mutationKey = ['createOcrInitialize'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -228,10 +228,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof initializeNlpEndpoint>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOcrInitialize>>, void> = () => {
           
 
-          return  initializeNlpEndpoint()
+          return  createOcrInitialize()
         }
 
         
@@ -239,23 +239,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type InitializeNlpEndpointMutationResult = NonNullable<Awaited<ReturnType<typeof initializeNlpEndpoint>>>
+    export type CreateOcrInitializeMutationResult = NonNullable<Awaited<ReturnType<typeof createOcrInitialize>>>
     
-    export type InitializeNlpEndpointMutationError = unknown
+    export type CreateOcrInitializeMutationError = unknown
 
     /**
  * @summary Initialize Nlp Endpoint
  */
-export const useInitializeNlpEndpoint = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initializeNlpEndpoint>>, TError,void, TContext>, }
+export const useCreateOcrInitialize = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrInitialize>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof initializeNlpEndpoint>>,
+        Awaited<ReturnType<typeof createOcrInitialize>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getInitializeNlpEndpointMutationOptions(options);
+      const mutationOptions = getCreateOcrInitializeMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -263,7 +263,7 @@ export const useInitializeNlpEndpoint = <TError = unknown,
  * Process document with OCR
  * @summary Process Document
  */
-export const processDocument = (
+export const createOcrProcess = (
     oCRProcessRequest: OCRProcessRequest,
  signal?: AbortSignal
 ) => {
@@ -279,11 +279,11 @@ export const processDocument = (
   
 
 
-export const getProcessDocumentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof processDocument>>, TError,{data: OCRProcessRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof processDocument>>, TError,{data: OCRProcessRequest}, TContext> => {
+export const getCreateOcrProcessMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OCRProcessRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OCRProcessRequest}, TContext> => {
 
-const mutationKey = ['processDocument'];
+const mutationKey = ['createOcrProcess'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -293,10 +293,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof processDocument>>, {data: OCRProcessRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOcrProcess>>, {data: OCRProcessRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  processDocument(data,)
+          return  createOcrProcess(data,)
         }
 
         
@@ -304,23 +304,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type ProcessDocumentMutationResult = NonNullable<Awaited<ReturnType<typeof processDocument>>>
-    export type ProcessDocumentMutationBody = OCRProcessRequest
-    export type ProcessDocumentMutationError = HTTPValidationError
+    export type CreateOcrProcessMutationResult = NonNullable<Awaited<ReturnType<typeof createOcrProcess>>>
+    export type CreateOcrProcessMutationBody = OCRProcessRequest
+    export type CreateOcrProcessMutationError = HTTPValidationError
 
     /**
  * @summary Process Document
  */
-export const useProcessDocument = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof processDocument>>, TError,{data: OCRProcessRequest}, TContext>, }
+export const useCreateOcrProcess = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OCRProcessRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof processDocument>>,
+        Awaited<ReturnType<typeof createOcrProcess>>,
         TError,
         {data: OCRProcessRequest},
         TContext
       > => {
 
-      const mutationOptions = getProcessDocumentMutationOptions(options);
+      const mutationOptions = getCreateOcrProcessMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -328,7 +328,7 @@ export const useProcessDocument = <TError = HTTPValidationError,
  * Calculate similarity between documents
  * @summary Calculate Similarity
  */
-export const calculateSimilarity = (
+export const createOcrSimilarity = (
     similarityRequest: SimilarityRequest,
  signal?: AbortSignal
 ) => {
@@ -344,11 +344,11 @@ export const calculateSimilarity = (
   
 
 
-export const getCalculateSimilarityMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateSimilarity>>, TError,{data: SimilarityRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof calculateSimilarity>>, TError,{data: SimilarityRequest}, TContext> => {
+export const getCreateOcrSimilarityMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrSimilarity>>, TError,{data: SimilarityRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOcrSimilarity>>, TError,{data: SimilarityRequest}, TContext> => {
 
-const mutationKey = ['calculateSimilarity'];
+const mutationKey = ['createOcrSimilarity'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -358,10 +358,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof calculateSimilarity>>, {data: SimilarityRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOcrSimilarity>>, {data: SimilarityRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  calculateSimilarity(data,)
+          return  createOcrSimilarity(data,)
         }
 
         
@@ -369,23 +369,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CalculateSimilarityMutationResult = NonNullable<Awaited<ReturnType<typeof calculateSimilarity>>>
-    export type CalculateSimilarityMutationBody = SimilarityRequest
-    export type CalculateSimilarityMutationError = HTTPValidationError
+    export type CreateOcrSimilarityMutationResult = NonNullable<Awaited<ReturnType<typeof createOcrSimilarity>>>
+    export type CreateOcrSimilarityMutationBody = SimilarityRequest
+    export type CreateOcrSimilarityMutationError = HTTPValidationError
 
     /**
  * @summary Calculate Similarity
  */
-export const useCalculateSimilarity = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof calculateSimilarity>>, TError,{data: SimilarityRequest}, TContext>, }
+export const useCreateOcrSimilarity = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrSimilarity>>, TError,{data: SimilarityRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof calculateSimilarity>>,
+        Awaited<ReturnType<typeof createOcrSimilarity>>,
         TError,
         {data: SimilarityRequest},
         TContext
       > => {
 
-      const mutationOptions = getCalculateSimilarityMutationOptions(options);
+      const mutationOptions = getCreateOcrSimilarityMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -393,7 +393,7 @@ export const useCalculateSimilarity = <TError = HTTPValidationError,
  * Extract entities from image using OCR
  * @summary Extract Entities
  */
-export const extractEntities = (
+export const createOcrEntities = (
     entityExtractionRequest: EntityExtractionRequest,
  signal?: AbortSignal
 ) => {
@@ -409,11 +409,11 @@ export const extractEntities = (
   
 
 
-export const getExtractEntitiesMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractEntities>>, TError,{data: EntityExtractionRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof extractEntities>>, TError,{data: EntityExtractionRequest}, TContext> => {
+export const getCreateOcrEntitiesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrEntities>>, TError,{data: EntityExtractionRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOcrEntities>>, TError,{data: EntityExtractionRequest}, TContext> => {
 
-const mutationKey = ['extractEntities'];
+const mutationKey = ['createOcrEntities'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -423,10 +423,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof extractEntities>>, {data: EntityExtractionRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOcrEntities>>, {data: EntityExtractionRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  extractEntities(data,)
+          return  createOcrEntities(data,)
         }
 
         
@@ -434,23 +434,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type ExtractEntitiesMutationResult = NonNullable<Awaited<ReturnType<typeof extractEntities>>>
-    export type ExtractEntitiesMutationBody = EntityExtractionRequest
-    export type ExtractEntitiesMutationError = HTTPValidationError
+    export type CreateOcrEntitiesMutationResult = NonNullable<Awaited<ReturnType<typeof createOcrEntities>>>
+    export type CreateOcrEntitiesMutationBody = EntityExtractionRequest
+    export type CreateOcrEntitiesMutationError = HTTPValidationError
 
     /**
  * @summary Extract Entities
  */
-export const useExtractEntities = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractEntities>>, TError,{data: EntityExtractionRequest}, TContext>, }
+export const useCreateOcrEntities = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrEntities>>, TError,{data: EntityExtractionRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof extractEntities>>,
+        Awaited<ReturnType<typeof createOcrEntities>>,
         TError,
         {data: EntityExtractionRequest},
         TContext
       > => {
 
-      const mutationOptions = getExtractEntitiesMutationOptions(options);
+      const mutationOptions = getCreateOcrEntitiesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -458,7 +458,7 @@ export const useExtractEntities = <TError = HTTPValidationError,
  * Extract patient name from image using OCR
  * @summary Extract Patient Name
  */
-export const extractPatientName = (
+export const createOcrExtractPatient = (
     patientExtractionRequest: PatientExtractionRequest,
  signal?: AbortSignal
 ) => {
@@ -474,11 +474,11 @@ export const extractPatientName = (
   
 
 
-export const getExtractPatientNameMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractPatientName>>, TError,{data: PatientExtractionRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof extractPatientName>>, TError,{data: PatientExtractionRequest}, TContext> => {
+export const getCreateOcrExtractPatientMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrExtractPatient>>, TError,{data: PatientExtractionRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOcrExtractPatient>>, TError,{data: PatientExtractionRequest}, TContext> => {
 
-const mutationKey = ['extractPatientName'];
+const mutationKey = ['createOcrExtractPatient'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -488,10 +488,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof extractPatientName>>, {data: PatientExtractionRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOcrExtractPatient>>, {data: PatientExtractionRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  extractPatientName(data,)
+          return  createOcrExtractPatient(data,)
         }
 
         
@@ -499,23 +499,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type ExtractPatientNameMutationResult = NonNullable<Awaited<ReturnType<typeof extractPatientName>>>
-    export type ExtractPatientNameMutationBody = PatientExtractionRequest
-    export type ExtractPatientNameMutationError = HTTPValidationError
+    export type CreateOcrExtractPatientMutationResult = NonNullable<Awaited<ReturnType<typeof createOcrExtractPatient>>>
+    export type CreateOcrExtractPatientMutationBody = PatientExtractionRequest
+    export type CreateOcrExtractPatientMutationError = HTTPValidationError
 
     /**
  * @summary Extract Patient Name
  */
-export const useExtractPatientName = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractPatientName>>, TError,{data: PatientExtractionRequest}, TContext>, }
+export const useCreateOcrExtractPatient = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrExtractPatient>>, TError,{data: PatientExtractionRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof extractPatientName>>,
+        Awaited<ReturnType<typeof createOcrExtractPatient>>,
         TError,
         {data: PatientExtractionRequest},
         TContext
       > => {
 
-      const mutationOptions = getExtractPatientNameMutationOptions(options);
+      const mutationOptions = getCreateOcrExtractPatientMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -523,7 +523,7 @@ export const useExtractPatientName = <TError = HTTPValidationError,
  * Debug endpoint for NER (System Admin)
  * @summary Debug Ner
  */
-export const debugNer = (
+export const createOcrDebugNer = (
     debugNERRequest: DebugNERRequest,
  signal?: AbortSignal
 ) => {
@@ -539,11 +539,11 @@ export const debugNer = (
   
 
 
-export const getDebugNerMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof debugNer>>, TError,{data: DebugNERRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof debugNer>>, TError,{data: DebugNERRequest}, TContext> => {
+export const getCreateOcrDebugNerMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrDebugNer>>, TError,{data: DebugNERRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOcrDebugNer>>, TError,{data: DebugNERRequest}, TContext> => {
 
-const mutationKey = ['debugNer'];
+const mutationKey = ['createOcrDebugNer'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -553,10 +553,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof debugNer>>, {data: DebugNERRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOcrDebugNer>>, {data: DebugNERRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  debugNer(data,)
+          return  createOcrDebugNer(data,)
         }
 
         
@@ -564,23 +564,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DebugNerMutationResult = NonNullable<Awaited<ReturnType<typeof debugNer>>>
-    export type DebugNerMutationBody = DebugNERRequest
-    export type DebugNerMutationError = HTTPValidationError
+    export type CreateOcrDebugNerMutationResult = NonNullable<Awaited<ReturnType<typeof createOcrDebugNer>>>
+    export type CreateOcrDebugNerMutationBody = DebugNERRequest
+    export type CreateOcrDebugNerMutationError = HTTPValidationError
 
     /**
  * @summary Debug Ner
  */
-export const useDebugNer = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof debugNer>>, TError,{data: DebugNERRequest}, TContext>, }
+export const useCreateOcrDebugNer = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrDebugNer>>, TError,{data: DebugNERRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof debugNer>>,
+        Awaited<ReturnType<typeof createOcrDebugNer>>,
         TError,
         {data: DebugNERRequest},
         TContext
       > => {
 
-      const mutationOptions = getDebugNerMutationOptions(options);
+      const mutationOptions = getCreateOcrDebugNerMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -588,8 +588,8 @@ export const useDebugNer = <TError = HTTPValidationError,
  * List OCR jobs
  * @summary List Jobs
  */
-export const listJobs = (
-    params?: ListJobsParams,
+export const listOcrJobs = (
+    params?: ListOcrJobsParams,
  signal?: AbortSignal
 ) => {
       
@@ -604,69 +604,69 @@ export const listJobs = (
 
 
 
-export const getListJobsQueryKey = (params?: ListJobsParams,) => {
+export const getListOcrJobsQueryKey = (params?: ListOcrJobsParams,) => {
     return [
     `/api/ocr/jobs`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListJobsQueryOptions = <TData = Awaited<ReturnType<typeof listJobs>>, TError = HTTPValidationError>(params?: ListJobsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listJobs>>, TError, TData>>, }
+export const getListOcrJobsQueryOptions = <TData = Awaited<ReturnType<typeof listOcrJobs>>, TError = HTTPValidationError>(params?: ListOcrJobsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOcrJobs>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListJobsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListOcrJobsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listJobs>>> = ({ signal }) => listJobs(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listOcrJobs>>> = ({ signal }) => listOcrJobs(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listJobs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listOcrJobs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListJobsQueryResult = NonNullable<Awaited<ReturnType<typeof listJobs>>>
-export type ListJobsQueryError = HTTPValidationError
+export type ListOcrJobsQueryResult = NonNullable<Awaited<ReturnType<typeof listOcrJobs>>>
+export type ListOcrJobsQueryError = HTTPValidationError
 
 
-export function useListJobs<TData = Awaited<ReturnType<typeof listJobs>>, TError = HTTPValidationError>(
- params: undefined |  ListJobsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listJobs>>, TError, TData>> & Pick<
+export function useListOcrJobs<TData = Awaited<ReturnType<typeof listOcrJobs>>, TError = HTTPValidationError>(
+ params: undefined |  ListOcrJobsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOcrJobs>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listJobs>>,
+          Awaited<ReturnType<typeof listOcrJobs>>,
           TError,
-          Awaited<ReturnType<typeof listJobs>>
+          Awaited<ReturnType<typeof listOcrJobs>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListJobs<TData = Awaited<ReturnType<typeof listJobs>>, TError = HTTPValidationError>(
- params?: ListJobsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listJobs>>, TError, TData>> & Pick<
+export function useListOcrJobs<TData = Awaited<ReturnType<typeof listOcrJobs>>, TError = HTTPValidationError>(
+ params?: ListOcrJobsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOcrJobs>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listJobs>>,
+          Awaited<ReturnType<typeof listOcrJobs>>,
           TError,
-          Awaited<ReturnType<typeof listJobs>>
+          Awaited<ReturnType<typeof listOcrJobs>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListJobs<TData = Awaited<ReturnType<typeof listJobs>>, TError = HTTPValidationError>(
- params?: ListJobsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listJobs>>, TError, TData>>, }
+export function useListOcrJobs<TData = Awaited<ReturnType<typeof listOcrJobs>>, TError = HTTPValidationError>(
+ params?: ListOcrJobsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOcrJobs>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Jobs
  */
 
-export function useListJobs<TData = Awaited<ReturnType<typeof listJobs>>, TError = HTTPValidationError>(
- params?: ListJobsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listJobs>>, TError, TData>>, }
+export function useListOcrJobs<TData = Awaited<ReturnType<typeof listOcrJobs>>, TError = HTTPValidationError>(
+ params?: ListOcrJobsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listOcrJobs>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListJobsQueryOptions(params,options)
+  const queryOptions = getListOcrJobsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -682,7 +682,7 @@ export function useListJobs<TData = Awaited<ReturnType<typeof listJobs>>, TError
  * Create a new OCR job
  * @summary Create Job
  */
-export const createJob = (
+export const createOcrJobs = (
     createJobRequest: CreateJobRequest,
  signal?: AbortSignal
 ) => {
@@ -698,11 +698,11 @@ export const createJob = (
   
 
 
-export const getCreateJobMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createJob>>, TError,{data: CreateJobRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createJob>>, TError,{data: CreateJobRequest}, TContext> => {
+export const getCreateOcrJobsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrJobs>>, TError,{data: CreateJobRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOcrJobs>>, TError,{data: CreateJobRequest}, TContext> => {
 
-const mutationKey = ['createJob'];
+const mutationKey = ['createOcrJobs'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -712,10 +712,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createJob>>, {data: CreateJobRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOcrJobs>>, {data: CreateJobRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  createJob(data,)
+          return  createOcrJobs(data,)
         }
 
         
@@ -723,23 +723,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateJobMutationResult = NonNullable<Awaited<ReturnType<typeof createJob>>>
-    export type CreateJobMutationBody = CreateJobRequest
-    export type CreateJobMutationError = HTTPValidationError
+    export type CreateOcrJobsMutationResult = NonNullable<Awaited<ReturnType<typeof createOcrJobs>>>
+    export type CreateOcrJobsMutationBody = CreateJobRequest
+    export type CreateOcrJobsMutationError = HTTPValidationError
 
     /**
  * @summary Create Job
  */
-export const useCreateJob = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createJob>>, TError,{data: CreateJobRequest}, TContext>, }
+export const useCreateOcrJobs = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrJobs>>, TError,{data: CreateJobRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createJob>>,
+        Awaited<ReturnType<typeof createOcrJobs>>,
         TError,
         {data: CreateJobRequest},
         TContext
       > => {
 
-      const mutationOptions = getCreateJobMutationOptions(options);
+      const mutationOptions = getCreateOcrJobsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -747,7 +747,7 @@ export const useCreateJob = <TError = HTTPValidationError,
  * Get OCR job status
  * @summary Get Job
  */
-export const getJob = (
+export const getOcrJob = (
     jobId: string,
  signal?: AbortSignal
 ) => {
@@ -762,69 +762,69 @@ export const getJob = (
 
 
 
-export const getGetJobQueryKey = (jobId?: string,) => {
+export const getGetOcrJobQueryKey = (jobId?: string,) => {
     return [
     `/api/ocr/jobs/${jobId}`
     ] as const;
     }
 
     
-export const getGetJobQueryOptions = <TData = Awaited<ReturnType<typeof getJob>>, TError = HTTPValidationError>(jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJob>>, TError, TData>>, }
+export const getGetOcrJobQueryOptions = <TData = Awaited<ReturnType<typeof getOcrJob>>, TError = HTTPValidationError>(jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOcrJob>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetJobQueryKey(jobId);
+  const queryKey =  queryOptions?.queryKey ?? getGetOcrJobQueryKey(jobId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJob>>> = ({ signal }) => getJob(jobId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOcrJob>>> = ({ signal }) => getOcrJob(jobId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(jobId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getJob>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(jobId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOcrJob>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetJobQueryResult = NonNullable<Awaited<ReturnType<typeof getJob>>>
-export type GetJobQueryError = HTTPValidationError
+export type GetOcrJobQueryResult = NonNullable<Awaited<ReturnType<typeof getOcrJob>>>
+export type GetOcrJobQueryError = HTTPValidationError
 
 
-export function useGetJob<TData = Awaited<ReturnType<typeof getJob>>, TError = HTTPValidationError>(
- jobId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJob>>, TError, TData>> & Pick<
+export function useGetOcrJob<TData = Awaited<ReturnType<typeof getOcrJob>>, TError = HTTPValidationError>(
+ jobId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOcrJob>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getJob>>,
+          Awaited<ReturnType<typeof getOcrJob>>,
           TError,
-          Awaited<ReturnType<typeof getJob>>
+          Awaited<ReturnType<typeof getOcrJob>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetJob<TData = Awaited<ReturnType<typeof getJob>>, TError = HTTPValidationError>(
- jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJob>>, TError, TData>> & Pick<
+export function useGetOcrJob<TData = Awaited<ReturnType<typeof getOcrJob>>, TError = HTTPValidationError>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOcrJob>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getJob>>,
+          Awaited<ReturnType<typeof getOcrJob>>,
           TError,
-          Awaited<ReturnType<typeof getJob>>
+          Awaited<ReturnType<typeof getOcrJob>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetJob<TData = Awaited<ReturnType<typeof getJob>>, TError = HTTPValidationError>(
- jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJob>>, TError, TData>>, }
+export function useGetOcrJob<TData = Awaited<ReturnType<typeof getOcrJob>>, TError = HTTPValidationError>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOcrJob>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Job
  */
 
-export function useGetJob<TData = Awaited<ReturnType<typeof getJob>>, TError = HTTPValidationError>(
- jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJob>>, TError, TData>>, }
+export function useGetOcrJob<TData = Awaited<ReturnType<typeof getOcrJob>>, TError = HTTPValidationError>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getOcrJob>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetJobQueryOptions(jobId,options)
+  const queryOptions = getGetOcrJobQueryOptions(jobId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

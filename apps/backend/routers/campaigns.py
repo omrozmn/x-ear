@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Campaigns"])
 
 
-@router.get("/campaigns", response_model=ResponseEnvelope[List[CampaignRead]])
+@router.get("/campaigns", operation_id="listCampaigns", response_model=ResponseEnvelope[List[CampaignRead]])
 def get_campaigns(
     page: int = 1,
     per_page: int = 20,
@@ -59,7 +59,7 @@ def get_campaigns(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/campaigns", response_model=ResponseEnvelope[CampaignRead], status_code=201)
+@router.post("/campaigns", operation_id="createCampaigns", response_model=ResponseEnvelope[CampaignRead], status_code=201)
 def create_campaign(
     campaign_in: CampaignCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -101,7 +101,7 @@ def create_campaign(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/campaigns/{campaign_id}", response_model=ResponseEnvelope[CampaignRead])
+@router.get("/campaigns/{campaign_id}", operation_id="getCampaign", response_model=ResponseEnvelope[CampaignRead])
 def get_campaign(
     campaign_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -130,7 +130,7 @@ def get_campaign(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/campaigns/{campaign_id}", response_model=ResponseEnvelope[CampaignRead])
+@router.put("/campaigns/{campaign_id}", operation_id="updateCampaign", response_model=ResponseEnvelope[CampaignRead])
 def update_campaign(
     campaign_id: str,
     campaign_in: CampaignUpdate,
@@ -171,7 +171,7 @@ def update_campaign(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/campaigns/{campaign_id}")
+@router.delete("/campaigns/{campaign_id}", operation_id="deleteCampaign")
 def delete_campaign(
     campaign_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -205,7 +205,7 @@ def delete_campaign(
 
 # --- ADMIN ROUTES ---
 
-@router.get("/admin/campaigns", response_model=ResponseEnvelope[List[CampaignRead]])
+@router.get("/admin/campaigns", operation_id="listAdminCampaigns", response_model=ResponseEnvelope[List[CampaignRead]])
 def admin_get_campaigns(
     page: int = 1,
     limit: int = 10,

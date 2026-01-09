@@ -25,7 +25,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetAdminInvoicesParams,
+  GetAdminInvoicesApiAdminInvoicesGetParams,
   HTTPValidationError,
   InvoiceCreate,
   InvoiceDetailResponse,
@@ -42,8 +42,8 @@ import { customInstance } from '../../orval-mutator';
  * Get paginated list of admin invoices
  * @summary Get Admin Invoices
  */
-export const getAdminInvoices = (
-    params?: GetAdminInvoicesParams,
+export const getAdminInvoicesApiAdminInvoicesGet = (
+    params?: GetAdminInvoicesApiAdminInvoicesGetParams,
  signal?: AbortSignal
 ) => {
       
@@ -58,69 +58,69 @@ export const getAdminInvoices = (
 
 
 
-export const getGetAdminInvoicesQueryKey = (params?: GetAdminInvoicesParams,) => {
+export const getGetAdminInvoicesApiAdminInvoicesGetQueryKey = (params?: GetAdminInvoicesApiAdminInvoicesGetParams,) => {
     return [
     `/api/admin/invoices`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminInvoicesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminInvoices>>, TError = HTTPValidationError>(params?: GetAdminInvoicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoices>>, TError, TData>>, }
+export const getGetAdminInvoicesApiAdminInvoicesGetQueryOptions = <TData = Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>, TError = HTTPValidationError>(params?: GetAdminInvoicesApiAdminInvoicesGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminInvoicesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminInvoicesApiAdminInvoicesGetQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminInvoices>>> = ({ signal }) => getAdminInvoices(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>> = ({ signal }) => getAdminInvoicesApiAdminInvoicesGet(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminInvoicesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminInvoices>>>
-export type GetAdminInvoicesQueryError = HTTPValidationError
+export type GetAdminInvoicesApiAdminInvoicesGetQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>>
+export type GetAdminInvoicesApiAdminInvoicesGetQueryError = HTTPValidationError
 
 
-export function useGetAdminInvoices<TData = Awaited<ReturnType<typeof getAdminInvoices>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminInvoicesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoices>>, TError, TData>> & Pick<
+export function useGetAdminInvoicesApiAdminInvoicesGet<TData = Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>, TError = HTTPValidationError>(
+ params: undefined |  GetAdminInvoicesApiAdminInvoicesGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminInvoices>>,
+          Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>,
           TError,
-          Awaited<ReturnType<typeof getAdminInvoices>>
+          Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminInvoices<TData = Awaited<ReturnType<typeof getAdminInvoices>>, TError = HTTPValidationError>(
- params?: GetAdminInvoicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoices>>, TError, TData>> & Pick<
+export function useGetAdminInvoicesApiAdminInvoicesGet<TData = Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>, TError = HTTPValidationError>(
+ params?: GetAdminInvoicesApiAdminInvoicesGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminInvoices>>,
+          Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>,
           TError,
-          Awaited<ReturnType<typeof getAdminInvoices>>
+          Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminInvoices<TData = Awaited<ReturnType<typeof getAdminInvoices>>, TError = HTTPValidationError>(
- params?: GetAdminInvoicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoices>>, TError, TData>>, }
+export function useGetAdminInvoicesApiAdminInvoicesGet<TData = Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>, TError = HTTPValidationError>(
+ params?: GetAdminInvoicesApiAdminInvoicesGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Admin Invoices
  */
 
-export function useGetAdminInvoices<TData = Awaited<ReturnType<typeof getAdminInvoices>>, TError = HTTPValidationError>(
- params?: GetAdminInvoicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoices>>, TError, TData>>, }
+export function useGetAdminInvoicesApiAdminInvoicesGet<TData = Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>, TError = HTTPValidationError>(
+ params?: GetAdminInvoicesApiAdminInvoicesGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoicesApiAdminInvoicesGet>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminInvoicesQueryOptions(params,options)
+  const queryOptions = getGetAdminInvoicesApiAdminInvoicesGetQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -136,7 +136,7 @@ export function useGetAdminInvoices<TData = Awaited<ReturnType<typeof getAdminIn
  * Create a new invoice
  * @summary Create Admin Invoice
  */
-export const createAdminInvoice = (
+export const createAdminInvoiceApiAdminInvoicesPost = (
     invoiceCreate: InvoiceCreate,
  signal?: AbortSignal
 ) => {
@@ -152,11 +152,11 @@ export const createAdminInvoice = (
   
 
 
-export const getCreateAdminInvoiceMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminInvoice>>, TError,{data: InvoiceCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAdminInvoice>>, TError,{data: InvoiceCreate}, TContext> => {
+export const getCreateAdminInvoiceApiAdminInvoicesPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminInvoiceApiAdminInvoicesPost>>, TError,{data: InvoiceCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminInvoiceApiAdminInvoicesPost>>, TError,{data: InvoiceCreate}, TContext> => {
 
-const mutationKey = ['createAdminInvoice'];
+const mutationKey = ['createAdminInvoiceApiAdminInvoicesPost'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -166,10 +166,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminInvoice>>, {data: InvoiceCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminInvoiceApiAdminInvoicesPost>>, {data: InvoiceCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createAdminInvoice(data,)
+          return  createAdminInvoiceApiAdminInvoicesPost(data,)
         }
 
         
@@ -177,23 +177,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateAdminInvoiceMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminInvoice>>>
-    export type CreateAdminInvoiceMutationBody = InvoiceCreate
-    export type CreateAdminInvoiceMutationError = HTTPValidationError
+    export type CreateAdminInvoiceApiAdminInvoicesPostMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminInvoiceApiAdminInvoicesPost>>>
+    export type CreateAdminInvoiceApiAdminInvoicesPostMutationBody = InvoiceCreate
+    export type CreateAdminInvoiceApiAdminInvoicesPostMutationError = HTTPValidationError
 
     /**
  * @summary Create Admin Invoice
  */
-export const useCreateAdminInvoice = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminInvoice>>, TError,{data: InvoiceCreate}, TContext>, }
+export const useCreateAdminInvoiceApiAdminInvoicesPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminInvoiceApiAdminInvoicesPost>>, TError,{data: InvoiceCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createAdminInvoice>>,
+        Awaited<ReturnType<typeof createAdminInvoiceApiAdminInvoicesPost>>,
         TError,
         {data: InvoiceCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateAdminInvoiceMutationOptions(options);
+      const mutationOptions = getCreateAdminInvoiceApiAdminInvoicesPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -294,7 +294,7 @@ export function useGetAdminInvoice<TData = Awaited<ReturnType<typeof getAdminInv
  * Record payment for invoice
  * @summary Record Payment
  */
-export const recordPayment = (
+export const createAdminInvoicePayment = (
     invoiceId: string,
  signal?: AbortSignal
 ) => {
@@ -308,11 +308,11 @@ export const recordPayment = (
   
 
 
-export const getRecordPaymentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordPayment>>, TError,{invoiceId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof recordPayment>>, TError,{invoiceId: string}, TContext> => {
+export const getCreateAdminInvoicePaymentMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminInvoicePayment>>, TError,{invoiceId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminInvoicePayment>>, TError,{invoiceId: string}, TContext> => {
 
-const mutationKey = ['recordPayment'];
+const mutationKey = ['createAdminInvoicePayment'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -322,10 +322,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordPayment>>, {invoiceId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminInvoicePayment>>, {invoiceId: string}> = (props) => {
           const {invoiceId} = props ?? {};
 
-          return  recordPayment(invoiceId,)
+          return  createAdminInvoicePayment(invoiceId,)
         }
 
         
@@ -333,23 +333,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type RecordPaymentMutationResult = NonNullable<Awaited<ReturnType<typeof recordPayment>>>
+    export type CreateAdminInvoicePaymentMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminInvoicePayment>>>
     
-    export type RecordPaymentMutationError = HTTPValidationError
+    export type CreateAdminInvoicePaymentMutationError = HTTPValidationError
 
     /**
  * @summary Record Payment
  */
-export const useRecordPayment = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordPayment>>, TError,{invoiceId: string}, TContext>, }
+export const useCreateAdminInvoicePayment = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminInvoicePayment>>, TError,{invoiceId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof recordPayment>>,
+        Awaited<ReturnType<typeof createAdminInvoicePayment>>,
         TError,
         {invoiceId: string},
         TContext
       > => {
 
-      const mutationOptions = getRecordPaymentMutationOptions(options);
+      const mutationOptions = getCreateAdminInvoicePaymentMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -357,7 +357,7 @@ export const useRecordPayment = <TError = HTTPValidationError,
  * Get invoice PDF link
  * @summary Get Invoice Pdf
  */
-export const getAdminInvoicePdf = (
+export const listAdminInvoicePdf = (
     invoiceId: string,
  signal?: AbortSignal
 ) => {
@@ -372,69 +372,69 @@ export const getAdminInvoicePdf = (
 
 
 
-export const getGetAdminInvoicePdfQueryKey = (invoiceId?: string,) => {
+export const getListAdminInvoicePdfQueryKey = (invoiceId?: string,) => {
     return [
     `/api/admin/invoices/${invoiceId}/pdf`
     ] as const;
     }
 
     
-export const getGetAdminInvoicePdfQueryOptions = <TData = Awaited<ReturnType<typeof getAdminInvoicePdf>>, TError = HTTPValidationError>(invoiceId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoicePdf>>, TError, TData>>, }
+export const getListAdminInvoicePdfQueryOptions = <TData = Awaited<ReturnType<typeof listAdminInvoicePdf>>, TError = HTTPValidationError>(invoiceId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminInvoicePdf>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminInvoicePdfQueryKey(invoiceId);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminInvoicePdfQueryKey(invoiceId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminInvoicePdf>>> = ({ signal }) => getAdminInvoicePdf(invoiceId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminInvoicePdf>>> = ({ signal }) => listAdminInvoicePdf(invoiceId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(invoiceId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoicePdf>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(invoiceId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminInvoicePdf>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminInvoicePdfQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminInvoicePdf>>>
-export type GetAdminInvoicePdfQueryError = HTTPValidationError
+export type ListAdminInvoicePdfQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminInvoicePdf>>>
+export type ListAdminInvoicePdfQueryError = HTTPValidationError
 
 
-export function useGetAdminInvoicePdf<TData = Awaited<ReturnType<typeof getAdminInvoicePdf>>, TError = HTTPValidationError>(
- invoiceId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoicePdf>>, TError, TData>> & Pick<
+export function useListAdminInvoicePdf<TData = Awaited<ReturnType<typeof listAdminInvoicePdf>>, TError = HTTPValidationError>(
+ invoiceId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminInvoicePdf>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminInvoicePdf>>,
+          Awaited<ReturnType<typeof listAdminInvoicePdf>>,
           TError,
-          Awaited<ReturnType<typeof getAdminInvoicePdf>>
+          Awaited<ReturnType<typeof listAdminInvoicePdf>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminInvoicePdf<TData = Awaited<ReturnType<typeof getAdminInvoicePdf>>, TError = HTTPValidationError>(
- invoiceId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoicePdf>>, TError, TData>> & Pick<
+export function useListAdminInvoicePdf<TData = Awaited<ReturnType<typeof listAdminInvoicePdf>>, TError = HTTPValidationError>(
+ invoiceId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminInvoicePdf>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminInvoicePdf>>,
+          Awaited<ReturnType<typeof listAdminInvoicePdf>>,
           TError,
-          Awaited<ReturnType<typeof getAdminInvoicePdf>>
+          Awaited<ReturnType<typeof listAdminInvoicePdf>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminInvoicePdf<TData = Awaited<ReturnType<typeof getAdminInvoicePdf>>, TError = HTTPValidationError>(
- invoiceId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoicePdf>>, TError, TData>>, }
+export function useListAdminInvoicePdf<TData = Awaited<ReturnType<typeof listAdminInvoicePdf>>, TError = HTTPValidationError>(
+ invoiceId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminInvoicePdf>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Invoice Pdf
  */
 
-export function useGetAdminInvoicePdf<TData = Awaited<ReturnType<typeof getAdminInvoicePdf>>, TError = HTTPValidationError>(
- invoiceId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminInvoicePdf>>, TError, TData>>, }
+export function useListAdminInvoicePdf<TData = Awaited<ReturnType<typeof listAdminInvoicePdf>>, TError = HTTPValidationError>(
+ invoiceId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminInvoicePdf>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminInvoicePdfQueryOptions(invoiceId,options)
+  const queryOptions = getListAdminInvoicePdfQueryOptions(invoiceId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

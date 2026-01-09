@@ -24,7 +24,7 @@ class CampaignListResponse(ResponseEnvelope):
 class CampaignDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("", response_model=CampaignListResponse)
+@router.get("", response_model=CampaignListResponse, operation_id="adminGetCampaigns")
 async def get_campaigns(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
@@ -70,7 +70,7 @@ async def get_campaigns(
         logger.error(f"Get campaigns error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", response_model=CampaignDetailResponse)
+@router.post("", response_model=CampaignDetailResponse, operation_id="adminCreateCampaign")
 async def create_campaign(
     data: CampaignCreate,
     db: Session = Depends(get_db),
@@ -112,7 +112,7 @@ async def create_campaign(
         logger.error(f"Create campaign error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{campaign_id}", response_model=CampaignDetailResponse)
+@router.get("/{campaign_id}", response_model=CampaignDetailResponse, operation_id="getAdminCampaign")
 async def get_campaign(
     campaign_id: str,
     db: Session = Depends(get_db),
@@ -131,7 +131,7 @@ async def get_campaign(
         logger.error(f"Get campaign error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/{campaign_id}", response_model=CampaignDetailResponse)
+@router.put("/{campaign_id}", response_model=CampaignDetailResponse, operation_id="updateAdminCampaign")
 async def update_campaign(
     campaign_id: str,
     data: CampaignUpdate,
@@ -173,7 +173,7 @@ async def update_campaign(
         logger.error(f"Update campaign error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{campaign_id}", response_model=ResponseEnvelope)
+@router.delete("/{campaign_id}", response_model=ResponseEnvelope, operation_id="deleteAdminCampaign")
 async def delete_campaign(
     campaign_id: str,
     db: Session = Depends(get_db),

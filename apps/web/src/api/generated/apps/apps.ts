@@ -41,7 +41,7 @@ import { customInstance } from '../../orval-mutator';
  * List all apps
  * @summary List Apps
  */
-export const listApps = (
+export const listAppsApiAppsGet = (
     
  signal?: AbortSignal
 ) => {
@@ -56,69 +56,69 @@ export const listApps = (
 
 
 
-export const getListAppsQueryKey = () => {
+export const getListAppsApiAppsGetQueryKey = () => {
     return [
     `/api/apps`
     ] as const;
     }
 
     
-export const getListAppsQueryOptions = <TData = Awaited<ReturnType<typeof listApps>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listApps>>, TError, TData>>, }
+export const getListAppsApiAppsGetQueryOptions = <TData = Awaited<ReturnType<typeof listAppsApiAppsGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppsApiAppsGet>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListAppsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAppsApiAppsGetQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listApps>>> = ({ signal }) => listApps(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAppsApiAppsGet>>> = ({ signal }) => listAppsApiAppsGet(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listApps>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAppsApiAppsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListAppsQueryResult = NonNullable<Awaited<ReturnType<typeof listApps>>>
-export type ListAppsQueryError = unknown
+export type ListAppsApiAppsGetQueryResult = NonNullable<Awaited<ReturnType<typeof listAppsApiAppsGet>>>
+export type ListAppsApiAppsGetQueryError = unknown
 
 
-export function useListApps<TData = Awaited<ReturnType<typeof listApps>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listApps>>, TError, TData>> & Pick<
+export function useListAppsApiAppsGet<TData = Awaited<ReturnType<typeof listAppsApiAppsGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppsApiAppsGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listApps>>,
+          Awaited<ReturnType<typeof listAppsApiAppsGet>>,
           TError,
-          Awaited<ReturnType<typeof listApps>>
+          Awaited<ReturnType<typeof listAppsApiAppsGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListApps<TData = Awaited<ReturnType<typeof listApps>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listApps>>, TError, TData>> & Pick<
+export function useListAppsApiAppsGet<TData = Awaited<ReturnType<typeof listAppsApiAppsGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppsApiAppsGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listApps>>,
+          Awaited<ReturnType<typeof listAppsApiAppsGet>>,
           TError,
-          Awaited<ReturnType<typeof listApps>>
+          Awaited<ReturnType<typeof listAppsApiAppsGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListApps<TData = Awaited<ReturnType<typeof listApps>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listApps>>, TError, TData>>, }
+export function useListAppsApiAppsGet<TData = Awaited<ReturnType<typeof listAppsApiAppsGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppsApiAppsGet>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Apps
  */
 
-export function useListApps<TData = Awaited<ReturnType<typeof listApps>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listApps>>, TError, TData>>, }
+export function useListAppsApiAppsGet<TData = Awaited<ReturnType<typeof listAppsApiAppsGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAppsApiAppsGet>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListAppsQueryOptions(options)
+  const queryOptions = getListAppsApiAppsGetQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -134,7 +134,7 @@ export function useListApps<TData = Awaited<ReturnType<typeof listApps>>, TError
  * Create a new app
  * @summary Create App
  */
-export const createApp = (
+export const createAppApiAppsPost = (
     appCreate: AppCreate,
  signal?: AbortSignal
 ) => {
@@ -150,11 +150,11 @@ export const createApp = (
   
 
 
-export const getCreateAppMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createApp>>, TError,{data: AppCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createApp>>, TError,{data: AppCreate}, TContext> => {
+export const getCreateAppApiAppsPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppApiAppsPost>>, TError,{data: AppCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAppApiAppsPost>>, TError,{data: AppCreate}, TContext> => {
 
-const mutationKey = ['createApp'];
+const mutationKey = ['createAppApiAppsPost'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -164,10 +164,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createApp>>, {data: AppCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAppApiAppsPost>>, {data: AppCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createApp(data,)
+          return  createAppApiAppsPost(data,)
         }
 
         
@@ -175,23 +175,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateAppMutationResult = NonNullable<Awaited<ReturnType<typeof createApp>>>
-    export type CreateAppMutationBody = AppCreate
-    export type CreateAppMutationError = HTTPValidationError
+    export type CreateAppApiAppsPostMutationResult = NonNullable<Awaited<ReturnType<typeof createAppApiAppsPost>>>
+    export type CreateAppApiAppsPostMutationBody = AppCreate
+    export type CreateAppApiAppsPostMutationError = HTTPValidationError
 
     /**
  * @summary Create App
  */
-export const useCreateApp = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createApp>>, TError,{data: AppCreate}, TContext>, }
+export const useCreateAppApiAppsPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppApiAppsPost>>, TError,{data: AppCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createApp>>,
+        Awaited<ReturnType<typeof createAppApiAppsPost>>,
         TError,
         {data: AppCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateAppMutationOptions(options);
+      const mutationOptions = getCreateAppApiAppsPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -419,7 +419,7 @@ export const useDeleteApp = <TError = HTTPValidationError,
  * Assign a user to an app with a specific role
  * @summary Assign User To App
  */
-export const assignUserToApp = (
+export const createAppAssign = (
     appId: string,
     roleAssign: RoleAssign,
  signal?: AbortSignal
@@ -436,11 +436,11 @@ export const assignUserToApp = (
   
 
 
-export const getAssignUserToAppMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignUserToApp>>, TError,{appId: string;data: RoleAssign}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof assignUserToApp>>, TError,{appId: string;data: RoleAssign}, TContext> => {
+export const getCreateAppAssignMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppAssign>>, TError,{appId: string;data: RoleAssign}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAppAssign>>, TError,{appId: string;data: RoleAssign}, TContext> => {
 
-const mutationKey = ['assignUserToApp'];
+const mutationKey = ['createAppAssign'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -450,10 +450,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof assignUserToApp>>, {appId: string;data: RoleAssign}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAppAssign>>, {appId: string;data: RoleAssign}> = (props) => {
           const {appId,data} = props ?? {};
 
-          return  assignUserToApp(appId,data,)
+          return  createAppAssign(appId,data,)
         }
 
         
@@ -461,23 +461,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type AssignUserToAppMutationResult = NonNullable<Awaited<ReturnType<typeof assignUserToApp>>>
-    export type AssignUserToAppMutationBody = RoleAssign
-    export type AssignUserToAppMutationError = HTTPValidationError
+    export type CreateAppAssignMutationResult = NonNullable<Awaited<ReturnType<typeof createAppAssign>>>
+    export type CreateAppAssignMutationBody = RoleAssign
+    export type CreateAppAssignMutationError = HTTPValidationError
 
     /**
  * @summary Assign User To App
  */
-export const useAssignUserToApp = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignUserToApp>>, TError,{appId: string;data: RoleAssign}, TContext>, }
+export const useCreateAppAssign = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppAssign>>, TError,{appId: string;data: RoleAssign}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof assignUserToApp>>,
+        Awaited<ReturnType<typeof createAppAssign>>,
         TError,
         {appId: string;data: RoleAssign},
         TContext
       > => {
 
-      const mutationOptions = getAssignUserToAppMutationOptions(options);
+      const mutationOptions = getCreateAppAssignMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -485,7 +485,7 @@ export const useAssignUserToApp = <TError = HTTPValidationError,
  * Transfer app ownership to another user
  * @summary Transfer App Ownership
  */
-export const transferAppOwnership = (
+export const createAppTransferOwnership = (
     appId: string,
     ownerTransfer: OwnerTransfer,
  signal?: AbortSignal
@@ -502,11 +502,11 @@ export const transferAppOwnership = (
   
 
 
-export const getTransferAppOwnershipMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof transferAppOwnership>>, TError,{appId: string;data: OwnerTransfer}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof transferAppOwnership>>, TError,{appId: string;data: OwnerTransfer}, TContext> => {
+export const getCreateAppTransferOwnershipMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppTransferOwnership>>, TError,{appId: string;data: OwnerTransfer}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAppTransferOwnership>>, TError,{appId: string;data: OwnerTransfer}, TContext> => {
 
-const mutationKey = ['transferAppOwnership'];
+const mutationKey = ['createAppTransferOwnership'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -516,10 +516,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof transferAppOwnership>>, {appId: string;data: OwnerTransfer}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAppTransferOwnership>>, {appId: string;data: OwnerTransfer}> = (props) => {
           const {appId,data} = props ?? {};
 
-          return  transferAppOwnership(appId,data,)
+          return  createAppTransferOwnership(appId,data,)
         }
 
         
@@ -527,23 +527,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type TransferAppOwnershipMutationResult = NonNullable<Awaited<ReturnType<typeof transferAppOwnership>>>
-    export type TransferAppOwnershipMutationBody = OwnerTransfer
-    export type TransferAppOwnershipMutationError = HTTPValidationError
+    export type CreateAppTransferOwnershipMutationResult = NonNullable<Awaited<ReturnType<typeof createAppTransferOwnership>>>
+    export type CreateAppTransferOwnershipMutationBody = OwnerTransfer
+    export type CreateAppTransferOwnershipMutationError = HTTPValidationError
 
     /**
  * @summary Transfer App Ownership
  */
-export const useTransferAppOwnership = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof transferAppOwnership>>, TError,{appId: string;data: OwnerTransfer}, TContext>, }
+export const useCreateAppTransferOwnership = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAppTransferOwnership>>, TError,{appId: string;data: OwnerTransfer}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof transferAppOwnership>>,
+        Awaited<ReturnType<typeof createAppTransferOwnership>>,
         TError,
         {appId: string;data: OwnerTransfer},
         TContext
       > => {
 
-      const mutationOptions = getTransferAppOwnershipMutationOptions(options);
+      const mutationOptions = getCreateAppTransferOwnershipMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

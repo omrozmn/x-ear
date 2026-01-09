@@ -69,22 +69,23 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
 
   // Audiological view: Right=Red, Left=Blue
   const getEarStyle = (ear: string) => {
-    switch (ear?.toLowerCase()) {
+    const earLower = ear?.toLowerCase();
+    switch (earLower) {
       case 'left':
       case 'l':
       case 'sol':
         return {
           border: 'border-l-4 border-l-blue-500',
-          bg: 'bg-blue-50',
-          badge: 'bg-blue-100 text-blue-700 border-blue-300'
+          bg: 'bg-blue-50 dark:bg-blue-900/20',
+          badge: 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-700'
         };
       case 'right':
       case 'r':
       case 'sağ':
         return {
           border: 'border-l-4 border-l-red-500',
-          bg: 'bg-red-50',
-          badge: 'bg-red-100 text-red-700 border-red-300'
+          bg: 'bg-red-50 dark:bg-red-900/20',
+          badge: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/50 dark:text-red-300 dark:border-red-700'
         };
       case 'both':
       case 'b':
@@ -93,14 +94,14 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
         // This case should not be reached as bilateral is split into left/right cards
         return {
           border: 'border-l-4 border-l-gray-400',
-          bg: 'bg-gray-50',
-          badge: 'bg-gray-100 text-gray-700 border-gray-300'
+          bg: 'bg-gray-50 dark:bg-gray-800',
+          badge: 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
         };
       default:
         return {
           border: 'border-l-4 border-l-gray-400',
-          bg: 'bg-gray-50',
-          badge: 'bg-gray-100 text-gray-700 border-gray-300'
+          bg: 'bg-gray-50 dark:bg-gray-800',
+          badge: 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
         };
     }
   };
@@ -135,7 +136,7 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
   }
 
   return (
-    <div className={`relative bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow ${earStyle.border} ${isCancelled ? 'opacity-50' : ''}`}>
+    <div className={`relative bg-white dark:bg-slate-800 rounded-lg border dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow ${earStyle.border} ${isCancelled ? 'opacity-50' : ''}`}>
       {/* Cancelled Overlay */}
       {isCancelled && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
@@ -147,39 +148,39 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
       )}
 
       {/* Header */}
-      <div className={`px-4 py-3 ${earStyle.bg} border-b`}>
+      <div className={`px-4 py-3 ${earStyle.bg} border-b dark:border-slate-700`}>
         <div className="flex items-center justify-between">
           <div>
-            <h4 className="font-semibold text-gray-900">
+            <h4 className="font-semibold text-gray-900 dark:text-gray-100">
               {(device as any).deviceName || `${device.brand || ''} ${device.model || ''}`.trim() || 'Bilinmeyen Cihaz'}
             </h4>
             {/* Delivery & Loaner Badges */}
             <div className="flex flex-wrap gap-2 mt-1">
               {/* Delivery Status */}
               {deliveryStatus === 'pending' && !isCancelled && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-800">
                   Teslim Bekliyor
                 </span>
               )}
               {deliveryStatus === 'delivered' && !isCancelled && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-800">
                   Teslim Edildi
                 </span>
               )}
 
               {/* Loaner Status */}
               {isLoaner && !isCancelled && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200 dark:bg-purple-900/50 dark:text-purple-300 dark:border-purple-800">
                   Emanet Cihaz
                 </span>
               )}
 
               {/* Report Status Badge */}
-              {device.reason === 'sale' && !isCancelled && (reportStatus !== 'none') && (
+              {device.reason?.toLowerCase() === 'sale' && !isCancelled && (reportStatus !== 'none') && (
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border
-                  ${['raporlu', 'received', 'has_report', 'true'].includes(reportStatus) ? 'bg-green-100 text-green-800 border-green-200' :
-                    ['bekleniyor', 'pending'].includes(reportStatus) ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                      'bg-gray-100 text-gray-800 border-gray-200'}`}>
+                  ${['raporlu', 'received', 'has_report', 'true'].includes(reportStatus) ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-800' :
+                    ['bekleniyor', 'pending'].includes(reportStatus) ? 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-800' :
+                      'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`}>
                   {['raporlu', 'received', 'has_report', 'true'].includes(reportStatus) ? 'Rapor Teslim Alındı' :
                     ['bekleniyor', 'pending'].includes(reportStatus) ? 'Rapor Bekleniyor' : 'Raporsuz'}
                 </span>
@@ -197,16 +198,16 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
       <div className="px-4 py-3 space-y-2 text-sm">
         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
           <div>
-            <span className="text-gray-500">Atama ID:</span>
-            <p className="font-medium text-gray-900 font-mono text-xs">{(device as any).assignmentUid || (device as any).saleId || '-'}</p>
+            <span className="text-gray-500 dark:text-gray-400">Atama ID:</span>
+            <p className="font-medium text-gray-900 dark:text-gray-200 font-mono text-xs">{(device as any).assignmentUid || (device as any).saleId || '-'}</p>
           </div>
           <div>
-            <span className="text-gray-500">Barkod No:</span>
-            <p className="font-medium text-gray-900 font-mono">{(device as any).barcode || '-'}</p>
+            <span className="text-gray-500 dark:text-gray-400">Barkod No:</span>
+            <p className="font-medium text-gray-900 dark:text-gray-200 font-mono">{(device as any).barcode || '-'}</p>
           </div>
           <div>
-            <span className="text-gray-500">Seri No:</span>
-            <p className="font-medium text-gray-900 font-mono">
+            <span className="text-gray-500 dark:text-gray-400">Seri No:</span>
+            <p className="font-medium text-gray-900 dark:text-gray-200 font-mono">
               {/* For bilateral cards, show the correct serial based on ear side */}
               {(() => {
                 const dp: any = device as any;
@@ -236,28 +237,28 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
 
 
           <div>
-            <span className="text-gray-500">Atama Nedeni:</span>
-            <p className="font-medium text-gray-900">{getReasonText(device.reason)}</p>
+            <span className="text-gray-500 dark:text-gray-400">Atama Nedeni:</span>
+            <p className="font-medium text-gray-900 dark:text-gray-200">{getReasonText(device.reason)}</p>
           </div>
           <div>
-            <span className="text-gray-500">Atama Tarihi:</span>
-            <p className="font-medium text-gray-900">{formatDate(device.assignedDate)}</p>
+            <span className="text-gray-500 dark:text-gray-400">Atama Tarihi:</span>
+            <p className="font-medium text-gray-900 dark:text-gray-200">{formatDate(device.assignedDate)}</p>
           </div>
 
           {/* Conditional Fields - Only show for 'sale' */}
-          {device.reason === 'sale' && (
+          {device.reason?.toLowerCase() === 'sale' && (
             <>
               <div>
-                <span className="text-gray-500">SGK Destek Türü:</span>
-                <p className="font-medium text-gray-900">{getSgkSupportText((device as any).sgkScheme || (device as any).sgkSupportType)}</p>
+                <span className="text-gray-500 dark:text-gray-400">SGK Destek Türü:</span>
+                <p className="font-medium text-gray-900 dark:text-gray-200">{getSgkSupportText((device as any).sgkScheme || (device as any).sgkSupportType)}</p>
               </div>
               <div>
-                <span className="text-gray-500">Liste Fiyatı:</span>
-                <p className="font-medium text-gray-900">{formatCurrency(device.listPrice)}</p>
+                <span className="text-gray-500 dark:text-gray-400">Liste Fiyatı:</span>
+                <p className="font-medium text-gray-900 dark:text-gray-200">{formatCurrency(device.listPrice)}</p>
               </div>
               <div>
-                <span className="text-gray-500">Satış Fiyatı:</span>
-                <p className="font-medium text-gray-900">
+                <span className="text-gray-500 dark:text-gray-400">Satış Fiyatı:</span>
+                <p className="font-medium text-gray-900 dark:text-gray-200">
                   {(() => {
                     const dp: any = device as any;
 
@@ -307,8 +308,8 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
                 if (explicitPerItemSgk !== null && explicitPerItemSgk !== undefined) {
                   return (
                     <div>
-                      <span className="text-gray-500">SGK Desteği:</span>
-                      <p className="font-medium text-green-600">{formatCurrency(explicitPerItemSgk)}</p>
+                      <span className="text-gray-500 dark:text-gray-400">SGK Desteği:</span>
+                      <p className="font-medium text-green-600 dark:text-green-400">{formatCurrency(explicitPerItemSgk)}</p>
                     </div>
                   );
                 }
@@ -344,8 +345,8 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
 
                   return (
                     <div>
-                      <span className="text-gray-500">SGK Desteği:</span>
-                      <p className="font-medium text-green-600">{formatCurrency(perUnit)}</p>
+                      <span className="text-gray-500 dark:text-gray-400">SGK Desteği:</span>
+                      <p className="font-medium text-green-600 dark:text-green-400">{formatCurrency(perUnit)}</p>
                     </div>
                   );
                 }
@@ -354,16 +355,16 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
               })()}
 
               <div>
-                <span className="text-gray-500">Ödeme Yöntemi:</span>
-                <p className="font-medium text-gray-900">{getPaymentMethodText(device.paymentMethod)}</p>
+                <span className="text-gray-500 dark:text-gray-400">Ödeme Yöntemi:</span>
+                <p className="font-medium text-gray-900 dark:text-gray-200">{getPaymentMethodText(device.paymentMethod)}</p>
               </div>
             </>
           )}
 
           {device.assignedBy && (
             <div>
-              <span className="text-gray-500">Atayan:</span>
-              <p className="font-medium text-gray-900">{device.assignedBy}</p>
+              <span className="text-gray-500 dark:text-gray-400">Atayan:</span>
+              <p className="font-medium text-gray-900 dark:text-gray-200">{device.assignedBy}</p>
             </div>
           )}
         </div>
@@ -372,17 +373,17 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
           <div className="pt-2 border-t text-xs">
             {device.notes && (
               <>
-                <span className="text-gray-500 block">Notlar:</span>
-                <p className="text-gray-700 mt-1">{device.notes}</p>
+                <span className="text-gray-500 dark:text-gray-400 block">Notlar:</span>
+                <p className="text-gray-700 dark:text-gray-300 mt-1">{device.notes}</p>
               </>
             )}
 
             {(device as any).isLoaner && (
-              <div className={`mt-2 p-2 bg-purple-50 rounded border border-purple-100 ${!device.notes ? 'mt-0' : ''}`}>
+              <div className={`mt-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded border border-purple-100 dark:border-purple-800 ${!device.notes ? 'mt-0' : ''}`}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-purple-800 font-semibold block mb-1">Emanet Cihaz Verildi:</span>
-                    <p className="text-purple-700">
+                    <span className="text-purple-800 dark:text-purple-300 font-semibold block mb-1">Emanet Cihaz Verildi:</span>
+                    <p className="text-purple-700 dark:text-purple-400">
                       {(device as any).loanerBrand} {(device as any).loanerModel}
                       {(() => {
                         const dp: any = device as any;
@@ -409,7 +410,7 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
                         e.stopPropagation();
                         onReturnLoaner?.(device);
                       }}
-                      className="ml-2 px-2 py-1 text-xs font-medium text-purple-700 bg-white border border-purple-200 rounded hover:bg-purple-100 transition-colors flex items-center gap-1 shadow-sm"
+                      className="ml-2 px-2 py-1 text-xs font-medium text-purple-700 dark:text-purple-300 bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-800 rounded hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors flex items-center gap-1 shadow-sm"
                       title="Emaneti Stoğa Geri Al"
                     >
                       <RefreshCw className="w-3 h-3" />
@@ -424,11 +425,11 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
       </div>
 
       {/* Actions */}
-      <div className="px-4 py-3 bg-gray-50 border-t flex items-center justify-end gap-2">
+      <div className="px-4 py-3 bg-gray-50 dark:bg-slate-900/50 border-t dark:border-slate-700 flex items-center justify-end gap-2">
 
         <button
           onClick={() => onEdit?.(device)}
-          className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-1"
+          className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center gap-1"
           title="Düzenle"
         >
           <Edit className="w-4 h-4" />
@@ -436,7 +437,7 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
         </button>
         <button
           onClick={() => onReplace?.(device)}
-          className="px-3 py-1.5 text-sm font-medium text-purple-600 hover:bg-purple-50 rounded-lg transition-colors flex items-center gap-1"
+          className="px-3 py-1.5 text-sm font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors flex items-center gap-1"
           title="Değiştir"
         >
           <RefreshCw className="w-4 h-4" />
@@ -444,7 +445,7 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
         </button>
         <button
           onClick={() => onCancel?.(device)}
-          className="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1"
+          className="px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-1"
           title="İptal Et"
           disabled={isCancelled}
         >

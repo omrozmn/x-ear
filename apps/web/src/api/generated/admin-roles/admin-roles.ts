@@ -25,9 +25,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetAdminPermissionsParams,
-  GetAdminRolesParams,
   HTTPValidationError,
+  ListAdminPermissionsParams,
+  ListAdminRolesParams,
   RolePermissionsUpdate,
   RoleUpdate,
   RoutersAdminRolesRoleCreate,
@@ -43,8 +43,8 @@ import { customInstance } from '../../orval-mutator';
  * Get all admin roles
  * @summary Get Admin Roles
  */
-export const getAdminRoles = (
-    params?: GetAdminRolesParams,
+export const listAdminRoles = (
+    params?: ListAdminRolesParams,
  signal?: AbortSignal
 ) => {
       
@@ -59,69 +59,69 @@ export const getAdminRoles = (
 
 
 
-export const getGetAdminRolesQueryKey = (params?: GetAdminRolesParams,) => {
+export const getListAdminRolesQueryKey = (params?: ListAdminRolesParams,) => {
     return [
     `/api/admin/roles`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminRolesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRoles>>, TError = HTTPValidationError>(params?: GetAdminRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRoles>>, TError, TData>>, }
+export const getListAdminRolesQueryOptions = <TData = Awaited<ReturnType<typeof listAdminRoles>>, TError = HTTPValidationError>(params?: ListAdminRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminRoles>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRolesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminRolesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRoles>>> = ({ signal }) => getAdminRoles(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminRoles>>> = ({ signal }) => listAdminRoles(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminRolesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRoles>>>
-export type GetAdminRolesQueryError = HTTPValidationError
+export type ListAdminRolesQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminRoles>>>
+export type ListAdminRolesQueryError = HTTPValidationError
 
 
-export function useGetAdminRoles<TData = Awaited<ReturnType<typeof getAdminRoles>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminRolesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRoles>>, TError, TData>> & Pick<
+export function useListAdminRoles<TData = Awaited<ReturnType<typeof listAdminRoles>>, TError = HTTPValidationError>(
+ params: undefined |  ListAdminRolesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminRoles>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRoles>>,
+          Awaited<ReturnType<typeof listAdminRoles>>,
           TError,
-          Awaited<ReturnType<typeof getAdminRoles>>
+          Awaited<ReturnType<typeof listAdminRoles>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminRoles<TData = Awaited<ReturnType<typeof getAdminRoles>>, TError = HTTPValidationError>(
- params?: GetAdminRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRoles>>, TError, TData>> & Pick<
+export function useListAdminRoles<TData = Awaited<ReturnType<typeof listAdminRoles>>, TError = HTTPValidationError>(
+ params?: ListAdminRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminRoles>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRoles>>,
+          Awaited<ReturnType<typeof listAdminRoles>>,
           TError,
-          Awaited<ReturnType<typeof getAdminRoles>>
+          Awaited<ReturnType<typeof listAdminRoles>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminRoles<TData = Awaited<ReturnType<typeof getAdminRoles>>, TError = HTTPValidationError>(
- params?: GetAdminRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRoles>>, TError, TData>>, }
+export function useListAdminRoles<TData = Awaited<ReturnType<typeof listAdminRoles>>, TError = HTTPValidationError>(
+ params?: ListAdminRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminRoles>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Admin Roles
  */
 
-export function useGetAdminRoles<TData = Awaited<ReturnType<typeof getAdminRoles>>, TError = HTTPValidationError>(
- params?: GetAdminRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRoles>>, TError, TData>>, }
+export function useListAdminRoles<TData = Awaited<ReturnType<typeof listAdminRoles>>, TError = HTTPValidationError>(
+ params?: ListAdminRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminRoles>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminRolesQueryOptions(params,options)
+  const queryOptions = getListAdminRolesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -137,7 +137,7 @@ export function useGetAdminRoles<TData = Awaited<ReturnType<typeof getAdminRoles
  * Create new role
  * @summary Create Admin Role
  */
-export const createAdminRole = (
+export const createAdminRoles = (
     routersAdminRolesRoleCreate: RoutersAdminRolesRoleCreate,
  signal?: AbortSignal
 ) => {
@@ -153,11 +153,11 @@ export const createAdminRole = (
   
 
 
-export const getCreateAdminRoleMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminRole>>, TError,{data: RoutersAdminRolesRoleCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAdminRole>>, TError,{data: RoutersAdminRolesRoleCreate}, TContext> => {
+export const getCreateAdminRolesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminRoles>>, TError,{data: RoutersAdminRolesRoleCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminRoles>>, TError,{data: RoutersAdminRolesRoleCreate}, TContext> => {
 
-const mutationKey = ['createAdminRole'];
+const mutationKey = ['createAdminRoles'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -167,10 +167,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminRole>>, {data: RoutersAdminRolesRoleCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminRoles>>, {data: RoutersAdminRolesRoleCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createAdminRole(data,)
+          return  createAdminRoles(data,)
         }
 
         
@@ -178,23 +178,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateAdminRoleMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminRole>>>
-    export type CreateAdminRoleMutationBody = RoutersAdminRolesRoleCreate
-    export type CreateAdminRoleMutationError = HTTPValidationError
+    export type CreateAdminRolesMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminRoles>>>
+    export type CreateAdminRolesMutationBody = RoutersAdminRolesRoleCreate
+    export type CreateAdminRolesMutationError = HTTPValidationError
 
     /**
  * @summary Create Admin Role
  */
-export const useCreateAdminRole = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminRole>>, TError,{data: RoutersAdminRolesRoleCreate}, TContext>, }
+export const useCreateAdminRoles = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminRoles>>, TError,{data: RoutersAdminRolesRoleCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createAdminRole>>,
+        Awaited<ReturnType<typeof createAdminRoles>>,
         TError,
         {data: RoutersAdminRolesRoleCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateAdminRoleMutationOptions(options);
+      const mutationOptions = getCreateAdminRolesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -422,7 +422,7 @@ export const useDeleteAdminRole = <TError = HTTPValidationError,
  * Get role permissions
  * @summary Get Admin Role Permissions
  */
-export const getAdminRolePermissions = (
+export const listAdminRolePermissions = (
     roleId: string,
  signal?: AbortSignal
 ) => {
@@ -437,69 +437,69 @@ export const getAdminRolePermissions = (
 
 
 
-export const getGetAdminRolePermissionsQueryKey = (roleId?: string,) => {
+export const getListAdminRolePermissionsQueryKey = (roleId?: string,) => {
     return [
     `/api/admin/roles/${roleId}/permissions`
     ] as const;
     }
 
     
-export const getGetAdminRolePermissionsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminRolePermissions>>, TError = HTTPValidationError>(roleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRolePermissions>>, TError, TData>>, }
+export const getListAdminRolePermissionsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminRolePermissions>>, TError = HTTPValidationError>(roleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminRolePermissions>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminRolePermissionsQueryKey(roleId);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminRolePermissionsQueryKey(roleId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminRolePermissions>>> = ({ signal }) => getAdminRolePermissions(roleId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminRolePermissions>>> = ({ signal }) => listAdminRolePermissions(roleId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(roleId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminRolePermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(roleId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminRolePermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminRolePermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminRolePermissions>>>
-export type GetAdminRolePermissionsQueryError = HTTPValidationError
+export type ListAdminRolePermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminRolePermissions>>>
+export type ListAdminRolePermissionsQueryError = HTTPValidationError
 
 
-export function useGetAdminRolePermissions<TData = Awaited<ReturnType<typeof getAdminRolePermissions>>, TError = HTTPValidationError>(
- roleId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRolePermissions>>, TError, TData>> & Pick<
+export function useListAdminRolePermissions<TData = Awaited<ReturnType<typeof listAdminRolePermissions>>, TError = HTTPValidationError>(
+ roleId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminRolePermissions>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRolePermissions>>,
+          Awaited<ReturnType<typeof listAdminRolePermissions>>,
           TError,
-          Awaited<ReturnType<typeof getAdminRolePermissions>>
+          Awaited<ReturnType<typeof listAdminRolePermissions>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminRolePermissions<TData = Awaited<ReturnType<typeof getAdminRolePermissions>>, TError = HTTPValidationError>(
- roleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRolePermissions>>, TError, TData>> & Pick<
+export function useListAdminRolePermissions<TData = Awaited<ReturnType<typeof listAdminRolePermissions>>, TError = HTTPValidationError>(
+ roleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminRolePermissions>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminRolePermissions>>,
+          Awaited<ReturnType<typeof listAdminRolePermissions>>,
           TError,
-          Awaited<ReturnType<typeof getAdminRolePermissions>>
+          Awaited<ReturnType<typeof listAdminRolePermissions>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminRolePermissions<TData = Awaited<ReturnType<typeof getAdminRolePermissions>>, TError = HTTPValidationError>(
- roleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRolePermissions>>, TError, TData>>, }
+export function useListAdminRolePermissions<TData = Awaited<ReturnType<typeof listAdminRolePermissions>>, TError = HTTPValidationError>(
+ roleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminRolePermissions>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Admin Role Permissions
  */
 
-export function useGetAdminRolePermissions<TData = Awaited<ReturnType<typeof getAdminRolePermissions>>, TError = HTTPValidationError>(
- roleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminRolePermissions>>, TError, TData>>, }
+export function useListAdminRolePermissions<TData = Awaited<ReturnType<typeof listAdminRolePermissions>>, TError = HTTPValidationError>(
+ roleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminRolePermissions>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminRolePermissionsQueryOptions(roleId,options)
+  const queryOptions = getListAdminRolePermissionsQueryOptions(roleId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -580,8 +580,8 @@ export const useUpdateAdminRolePermissions = <TError = HTTPValidationError,
  * Get all permissions
  * @summary Get Admin Permissions
  */
-export const getAdminPermissions = (
-    params?: GetAdminPermissionsParams,
+export const listAdminPermissions = (
+    params?: ListAdminPermissionsParams,
  signal?: AbortSignal
 ) => {
       
@@ -596,69 +596,69 @@ export const getAdminPermissions = (
 
 
 
-export const getGetAdminPermissionsQueryKey = (params?: GetAdminPermissionsParams,) => {
+export const getListAdminPermissionsQueryKey = (params?: ListAdminPermissionsParams,) => {
     return [
     `/api/admin/permissions`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminPermissionsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminPermissions>>, TError = HTTPValidationError>(params?: GetAdminPermissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPermissions>>, TError, TData>>, }
+export const getListAdminPermissionsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminPermissions>>, TError = HTTPValidationError>(params?: ListAdminPermissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPermissions>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminPermissionsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAdminPermissionsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminPermissions>>> = ({ signal }) => getAdminPermissions(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminPermissions>>> = ({ signal }) => listAdminPermissions(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminPermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminPermissions>>>
-export type GetAdminPermissionsQueryError = HTTPValidationError
+export type ListAdminPermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminPermissions>>>
+export type ListAdminPermissionsQueryError = HTTPValidationError
 
 
-export function useGetAdminPermissions<TData = Awaited<ReturnType<typeof getAdminPermissions>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminPermissionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPermissions>>, TError, TData>> & Pick<
+export function useListAdminPermissions<TData = Awaited<ReturnType<typeof listAdminPermissions>>, TError = HTTPValidationError>(
+ params: undefined |  ListAdminPermissionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPermissions>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminPermissions>>,
+          Awaited<ReturnType<typeof listAdminPermissions>>,
           TError,
-          Awaited<ReturnType<typeof getAdminPermissions>>
+          Awaited<ReturnType<typeof listAdminPermissions>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminPermissions<TData = Awaited<ReturnType<typeof getAdminPermissions>>, TError = HTTPValidationError>(
- params?: GetAdminPermissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPermissions>>, TError, TData>> & Pick<
+export function useListAdminPermissions<TData = Awaited<ReturnType<typeof listAdminPermissions>>, TError = HTTPValidationError>(
+ params?: ListAdminPermissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPermissions>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminPermissions>>,
+          Awaited<ReturnType<typeof listAdminPermissions>>,
           TError,
-          Awaited<ReturnType<typeof getAdminPermissions>>
+          Awaited<ReturnType<typeof listAdminPermissions>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminPermissions<TData = Awaited<ReturnType<typeof getAdminPermissions>>, TError = HTTPValidationError>(
- params?: GetAdminPermissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPermissions>>, TError, TData>>, }
+export function useListAdminPermissions<TData = Awaited<ReturnType<typeof listAdminPermissions>>, TError = HTTPValidationError>(
+ params?: ListAdminPermissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPermissions>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Admin Permissions
  */
 
-export function useGetAdminPermissions<TData = Awaited<ReturnType<typeof getAdminPermissions>>, TError = HTTPValidationError>(
- params?: GetAdminPermissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPermissions>>, TError, TData>>, }
+export function useListAdminPermissions<TData = Awaited<ReturnType<typeof listAdminPermissions>>, TError = HTTPValidationError>(
+ params?: ListAdminPermissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminPermissions>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminPermissionsQueryOptions(params,options)
+  const queryOptions = getListAdminPermissionsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -674,7 +674,7 @@ export function useGetAdminPermissions<TData = Awaited<ReturnType<typeof getAdmi
  * Get admin users with roles
  * @summary Get Admin Users With Roles
  */
-export const getAdminUsersWithRoles = (
+export const listAdminAdminUsers = (
     
  signal?: AbortSignal
 ) => {
@@ -689,69 +689,69 @@ export const getAdminUsersWithRoles = (
 
 
 
-export const getGetAdminUsersWithRolesQueryKey = () => {
+export const getListAdminAdminUsersQueryKey = () => {
     return [
     `/api/admin/admin-users`
     ] as const;
     }
 
     
-export const getGetAdminUsersWithRolesQueryOptions = <TData = Awaited<ReturnType<typeof getAdminUsersWithRoles>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUsersWithRoles>>, TError, TData>>, }
+export const getListAdminAdminUsersQueryOptions = <TData = Awaited<ReturnType<typeof listAdminAdminUsers>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAdminUsers>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminUsersWithRolesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAdminAdminUsersQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminUsersWithRoles>>> = ({ signal }) => getAdminUsersWithRoles(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminAdminUsers>>> = ({ signal }) => listAdminAdminUsers(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminUsersWithRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminAdminUsers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminUsersWithRolesQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminUsersWithRoles>>>
-export type GetAdminUsersWithRolesQueryError = unknown
+export type ListAdminAdminUsersQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminAdminUsers>>>
+export type ListAdminAdminUsersQueryError = unknown
 
 
-export function useGetAdminUsersWithRoles<TData = Awaited<ReturnType<typeof getAdminUsersWithRoles>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUsersWithRoles>>, TError, TData>> & Pick<
+export function useListAdminAdminUsers<TData = Awaited<ReturnType<typeof listAdminAdminUsers>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAdminUsers>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminUsersWithRoles>>,
+          Awaited<ReturnType<typeof listAdminAdminUsers>>,
           TError,
-          Awaited<ReturnType<typeof getAdminUsersWithRoles>>
+          Awaited<ReturnType<typeof listAdminAdminUsers>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminUsersWithRoles<TData = Awaited<ReturnType<typeof getAdminUsersWithRoles>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUsersWithRoles>>, TError, TData>> & Pick<
+export function useListAdminAdminUsers<TData = Awaited<ReturnType<typeof listAdminAdminUsers>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAdminUsers>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminUsersWithRoles>>,
+          Awaited<ReturnType<typeof listAdminAdminUsers>>,
           TError,
-          Awaited<ReturnType<typeof getAdminUsersWithRoles>>
+          Awaited<ReturnType<typeof listAdminAdminUsers>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminUsersWithRoles<TData = Awaited<ReturnType<typeof getAdminUsersWithRoles>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUsersWithRoles>>, TError, TData>>, }
+export function useListAdminAdminUsers<TData = Awaited<ReturnType<typeof listAdminAdminUsers>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAdminUsers>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Admin Users With Roles
  */
 
-export function useGetAdminUsersWithRoles<TData = Awaited<ReturnType<typeof getAdminUsersWithRoles>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUsersWithRoles>>, TError, TData>>, }
+export function useListAdminAdminUsers<TData = Awaited<ReturnType<typeof listAdminAdminUsers>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminAdminUsers>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminUsersWithRolesQueryOptions(options)
+  const queryOptions = getListAdminAdminUsersQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -767,7 +767,7 @@ export function useGetAdminUsersWithRoles<TData = Awaited<ReturnType<typeof getA
  * Get admin user detail
  * @summary Get Admin User Detail
  */
-export const getAdminUserDetail = (
+export const getAdminAdminUser = (
     userId: string,
  signal?: AbortSignal
 ) => {
@@ -782,69 +782,69 @@ export const getAdminUserDetail = (
 
 
 
-export const getGetAdminUserDetailQueryKey = (userId?: string,) => {
+export const getGetAdminAdminUserQueryKey = (userId?: string,) => {
     return [
     `/api/admin/admin-users/${userId}`
     ] as const;
     }
 
     
-export const getGetAdminUserDetailQueryOptions = <TData = Awaited<ReturnType<typeof getAdminUserDetail>>, TError = HTTPValidationError>(userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUserDetail>>, TError, TData>>, }
+export const getGetAdminAdminUserQueryOptions = <TData = Awaited<ReturnType<typeof getAdminAdminUser>>, TError = HTTPValidationError>(userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAdminUser>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminUserDetailQueryKey(userId);
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminAdminUserQueryKey(userId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminUserDetail>>> = ({ signal }) => getAdminUserDetail(userId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminAdminUser>>> = ({ signal }) => getAdminAdminUser(userId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(userId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminUserDetail>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(userId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminAdminUser>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminUserDetailQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminUserDetail>>>
-export type GetAdminUserDetailQueryError = HTTPValidationError
+export type GetAdminAdminUserQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminAdminUser>>>
+export type GetAdminAdminUserQueryError = HTTPValidationError
 
 
-export function useGetAdminUserDetail<TData = Awaited<ReturnType<typeof getAdminUserDetail>>, TError = HTTPValidationError>(
- userId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUserDetail>>, TError, TData>> & Pick<
+export function useGetAdminAdminUser<TData = Awaited<ReturnType<typeof getAdminAdminUser>>, TError = HTTPValidationError>(
+ userId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAdminUser>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminUserDetail>>,
+          Awaited<ReturnType<typeof getAdminAdminUser>>,
           TError,
-          Awaited<ReturnType<typeof getAdminUserDetail>>
+          Awaited<ReturnType<typeof getAdminAdminUser>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminUserDetail<TData = Awaited<ReturnType<typeof getAdminUserDetail>>, TError = HTTPValidationError>(
- userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUserDetail>>, TError, TData>> & Pick<
+export function useGetAdminAdminUser<TData = Awaited<ReturnType<typeof getAdminAdminUser>>, TError = HTTPValidationError>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAdminUser>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminUserDetail>>,
+          Awaited<ReturnType<typeof getAdminAdminUser>>,
           TError,
-          Awaited<ReturnType<typeof getAdminUserDetail>>
+          Awaited<ReturnType<typeof getAdminAdminUser>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminUserDetail<TData = Awaited<ReturnType<typeof getAdminUserDetail>>, TError = HTTPValidationError>(
- userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUserDetail>>, TError, TData>>, }
+export function useGetAdminAdminUser<TData = Awaited<ReturnType<typeof getAdminAdminUser>>, TError = HTTPValidationError>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAdminUser>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Admin User Detail
  */
 
-export function useGetAdminUserDetail<TData = Awaited<ReturnType<typeof getAdminUserDetail>>, TError = HTTPValidationError>(
- userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUserDetail>>, TError, TData>>, }
+export function useGetAdminAdminUser<TData = Awaited<ReturnType<typeof getAdminAdminUser>>, TError = HTTPValidationError>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAdminUser>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminUserDetailQueryOptions(userId,options)
+  const queryOptions = getGetAdminAdminUserQueryOptions(userId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -860,7 +860,7 @@ export function useGetAdminUserDetail<TData = Awaited<ReturnType<typeof getAdmin
  * Update user roles
  * @summary Update Admin User Roles
  */
-export const updateAdminUserRoles = (
+export const updateAdminAdminUserRoles = (
     userId: string,
     userRolesUpdate: UserRolesUpdate,
  ) => {
@@ -876,11 +876,11 @@ export const updateAdminUserRoles = (
   
 
 
-export const getUpdateAdminUserRolesMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserRoles>>, TError,{userId: string;data: UserRolesUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserRoles>>, TError,{userId: string;data: UserRolesUpdate}, TContext> => {
+export const getUpdateAdminAdminUserRolesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminAdminUserRoles>>, TError,{userId: string;data: UserRolesUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminAdminUserRoles>>, TError,{userId: string;data: UserRolesUpdate}, TContext> => {
 
-const mutationKey = ['updateAdminUserRoles'];
+const mutationKey = ['updateAdminAdminUserRoles'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -890,10 +890,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminUserRoles>>, {userId: string;data: UserRolesUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminAdminUserRoles>>, {userId: string;data: UserRolesUpdate}> = (props) => {
           const {userId,data} = props ?? {};
 
-          return  updateAdminUserRoles(userId,data,)
+          return  updateAdminAdminUserRoles(userId,data,)
         }
 
         
@@ -901,23 +901,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateAdminUserRolesMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminUserRoles>>>
-    export type UpdateAdminUserRolesMutationBody = UserRolesUpdate
-    export type UpdateAdminUserRolesMutationError = HTTPValidationError
+    export type UpdateAdminAdminUserRolesMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminAdminUserRoles>>>
+    export type UpdateAdminAdminUserRolesMutationBody = UserRolesUpdate
+    export type UpdateAdminAdminUserRolesMutationError = HTTPValidationError
 
     /**
  * @summary Update Admin User Roles
  */
-export const useUpdateAdminUserRoles = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserRoles>>, TError,{userId: string;data: UserRolesUpdate}, TContext>, }
+export const useUpdateAdminAdminUserRoles = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminAdminUserRoles>>, TError,{userId: string;data: UserRolesUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateAdminUserRoles>>,
+        Awaited<ReturnType<typeof updateAdminAdminUserRoles>>,
         TError,
         {userId: string;data: UserRolesUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateAdminUserRolesMutationOptions(options);
+      const mutationOptions = getUpdateAdminAdminUserRolesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -925,7 +925,7 @@ export const useUpdateAdminUserRoles = <TError = HTTPValidationError,
  * Get current admin user's permissions
  * @summary Get My Admin Permissions
  */
-export const getMyAdminPermissions = (
+export const listAdminMyPermissions = (
     
  signal?: AbortSignal
 ) => {
@@ -940,69 +940,69 @@ export const getMyAdminPermissions = (
 
 
 
-export const getGetMyAdminPermissionsQueryKey = () => {
+export const getListAdminMyPermissionsQueryKey = () => {
     return [
     `/api/admin/my-permissions`
     ] as const;
     }
 
     
-export const getGetMyAdminPermissionsQueryOptions = <TData = Awaited<ReturnType<typeof getMyAdminPermissions>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyAdminPermissions>>, TError, TData>>, }
+export const getListAdminMyPermissionsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminMyPermissions>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminMyPermissions>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetMyAdminPermissionsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAdminMyPermissionsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyAdminPermissions>>> = ({ signal }) => getMyAdminPermissions(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminMyPermissions>>> = ({ signal }) => listAdminMyPermissions(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMyAdminPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminMyPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetMyAdminPermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof getMyAdminPermissions>>>
-export type GetMyAdminPermissionsQueryError = unknown
+export type ListAdminMyPermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminMyPermissions>>>
+export type ListAdminMyPermissionsQueryError = unknown
 
 
-export function useGetMyAdminPermissions<TData = Awaited<ReturnType<typeof getMyAdminPermissions>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyAdminPermissions>>, TError, TData>> & Pick<
+export function useListAdminMyPermissions<TData = Awaited<ReturnType<typeof listAdminMyPermissions>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminMyPermissions>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMyAdminPermissions>>,
+          Awaited<ReturnType<typeof listAdminMyPermissions>>,
           TError,
-          Awaited<ReturnType<typeof getMyAdminPermissions>>
+          Awaited<ReturnType<typeof listAdminMyPermissions>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetMyAdminPermissions<TData = Awaited<ReturnType<typeof getMyAdminPermissions>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyAdminPermissions>>, TError, TData>> & Pick<
+export function useListAdminMyPermissions<TData = Awaited<ReturnType<typeof listAdminMyPermissions>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminMyPermissions>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMyAdminPermissions>>,
+          Awaited<ReturnType<typeof listAdminMyPermissions>>,
           TError,
-          Awaited<ReturnType<typeof getMyAdminPermissions>>
+          Awaited<ReturnType<typeof listAdminMyPermissions>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetMyAdminPermissions<TData = Awaited<ReturnType<typeof getMyAdminPermissions>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyAdminPermissions>>, TError, TData>>, }
+export function useListAdminMyPermissions<TData = Awaited<ReturnType<typeof listAdminMyPermissions>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminMyPermissions>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get My Admin Permissions
  */
 
-export function useGetMyAdminPermissions<TData = Awaited<ReturnType<typeof getMyAdminPermissions>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMyAdminPermissions>>, TError, TData>>, }
+export function useListAdminMyPermissions<TData = Awaited<ReturnType<typeof listAdminMyPermissions>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminMyPermissions>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetMyAdminPermissionsQueryOptions(options)
+  const queryOptions = getListAdminMyPermissionsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

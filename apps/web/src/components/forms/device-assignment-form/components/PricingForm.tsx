@@ -1,4 +1,4 @@
-import { useGetPricingSettings } from '@/api/generated';
+import { useListSettings } from '@/api/generated';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Input, Select } from '@x-ear/ui-web';
 import { CreditCard, Calculator, Percent, DollarSign } from 'lucide-react';
@@ -82,7 +82,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
   const [settingsSchemes, setSettingsSchemes] = useState<Record<string, any>>({});
   const [schemeAmount, setSchemeAmount] = useState<number>(0);
 
-  const { data: settingsData } = useGetPricingSettings();
+  const { data: settingsData } = useListSettings();
 
   useEffect(() => {
     if (settingsData) {
@@ -97,7 +97,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
       // Based on previous fetch: r.json() -> j
       // j.schemes ...
-      // If useGetPricingSettings returns the full response object:
+      // If useListSettings returns the full response object:
       setSettingsSchemes(schemes);
     }
   }, [settingsData]);
@@ -156,30 +156,30 @@ export const PricingForm: React.FC<PricingFormProps> = ({
     <div className="space-y-6">
       {/* Trial Pricing Section */}
       {showTrialPricing && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-blue-900 mb-3 flex items-center">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-3 flex items-center">
             <Calculator className="w-4 h-4 mr-2" />
             Deneme Fiyatlandırması
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-blue-700 mb-1">Deneme Liste Fiyatı</label>
+              <label className="block text-xs text-blue-700 dark:text-blue-300 mb-1">Deneme Liste Fiyatı</label>
               <input
                 type="number"
                 value={formData.trialListPrice || ''}
                 onChange={(e) => updateFormData('trialListPrice', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
-                className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full px-3 py-2 border border-blue-300 dark:border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm dark:bg-slate-800 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-xs text-blue-700 mb-1">Deneme Fiyatı</label>
+              <label className="block text-xs text-blue-700 dark:text-blue-300 mb-1">Deneme Fiyatı</label>
               <input
                 type="number"
                 value={formData.trialPrice || ''}
                 onChange={(e) => updateFormData('trialPrice', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
-                className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full px-3 py-2 border border-blue-300 dark:border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm dark:bg-slate-800 dark:text-white"
               />
             </div>
           </div>
@@ -188,7 +188,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
       {/* Main Pricing Section */}
       <div className="space-y-4">
-        <h4 className="text-sm font-medium text-gray-900 flex items-center">
+        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center">
           <DollarSign className="w-4 h-4 mr-2" />
           Fiyatlandırma Bilgileri
         </h4>
@@ -197,7 +197,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* List Price */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Liste Fiyatı
             </label>
             <input
@@ -205,7 +205,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
               value={formData.listPrice || ''}
               onChange={(e) => updateFormData('listPrice', parseFloat(e.target.value) || 0)}
               placeholder="0.00"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.listPrice ? 'border-red-300' : 'border-gray-300'}`}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${errors.listPrice ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-slate-700'}`}
             />
             {errors.listPrice && (
               <p className="mt-1 text-sm text-red-600">{errors.listPrice}</p>
@@ -214,13 +214,13 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
           {/* SGK Support */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               SGK Destek Türü
             </label>
             <select
               value={formData.sgkSupportType || ''}
               onChange={(e) => updateFormData('sgkSupportType', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.sgkSupportType ? 'border-red-300' : 'border-gray-300'}`}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${errors.sgkSupportType ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-slate-700'}`}
             >
               {sgkSupportOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -234,10 +234,10 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
         {/* SGK Reduction Display */}
         {formData.sgkReduction && formData.sgkReduction > 0 && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-green-700">SGK Desteği:</span>
-              <span className="font-medium text-green-900">
+              <span className="text-green-700 dark:text-green-300">SGK Desteği:</span>
+              <span className="font-medium text-green-900 dark:text-green-100">
                 -{formatCurrency(formData.sgkReduction)}
               </span>
             </div>
@@ -247,13 +247,13 @@ export const PricingForm: React.FC<PricingFormProps> = ({
         {/* Discount Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               İndirim Türü
             </label>
             <select
               value={formData.discountType || 'none'}
               onChange={(e) => updateFormData('discountType', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
             >
               <option value="none">İndirim Yok</option>
               <option value="percentage">Yüzde (%)</option>
@@ -263,7 +263,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
           {formData.discountType !== 'none' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 İndirim Değeri
               </label>
               <input
@@ -271,7 +271,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
                 value={formData.discountValue || ''}
                 onChange={(e) => updateFormData('discountValue', parseFloat(e.target.value) || 0)}
                 placeholder="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
               />
             </div>
           )}
@@ -279,48 +279,48 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
         {/* Price Summary */}
         {formData.listPrice && formData.listPrice > 0 && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <h5 className="text-sm font-medium text-gray-900 mb-3">Fiyat Özeti</h5>
+          <div className="bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+            <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Fiyat Özeti</h5>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Liste Fiyatı:</span>
-                <span className="font-medium">{formatCurrency(formData.listPrice)}</span>
+                <span className="text-gray-600 dark:text-gray-400">Liste Fiyatı:</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(formData.listPrice)}</span>
               </div>
               {/* NOTE: we intentionally do not duplicate a separate 'Seçilen SGK Desteği' row here.
                   The canonical SGK reduction is shown via `SGK Desteği` (from formData.sgkReduction)
                   and the scheme amount is only used for display elsewhere. */}
               {formData.sgkReduction && formData.sgkReduction > 0 && (
-                <div className="flex justify-between text-green-600">
+                <div className="flex justify-between text-green-600 dark:text-green-400">
                   <span>SGK Desteği:</span>
                   <span>-{formatCurrency(formData.sgkReduction)}</span>
                 </div>
               )}
               {typeof formData.kdvRate !== 'undefined' && formData.kdvRate !== null && (
-                <div className="flex justify-between text-gray-700">
+                <div className="flex justify-between text-gray-700 dark:text-gray-300">
                   <span>KDV Oranı:</span>
                   <span className="font-medium">{`${formData.kdvRate}%`}</span>
                 </div>
               )}
               {formData.discountValue && formData.discountValue > 0 && (
-                <div className="flex justify-between text-blue-600">
+                <div className="flex justify-between text-blue-600 dark:text-blue-400">
                   <span>İndirim ({formData.discountType === 'percentage' ? '%' : '₺'}):</span>
                   <span>-{formData.discountType === 'percentage' ?
                     `${formData.discountValue}%` :
                     formatCurrency(formData.discountValue)}</span>
                 </div>
               )}
-              <div className="flex justify-between font-medium text-lg border-t pt-2">
+              <div className="flex justify-between font-medium text-lg border-t dark:border-slate-700 pt-2 text-gray-900 dark:text-gray-100">
                 <span>Satış Fiyatı:</span>
                 <span>
                   {formatCurrency((formData.salePrice ?? formData.listPrice) * (formData.ear === 'both' ? 2 : 1))}
                   {formData.ear === 'both' && (
-                    <span className="text-sm text-purple-600">{' '}(Bilateral)</span>
+                    <span className="text-sm text-purple-600 dark:text-purple-400">{' '}(Bilateral)</span>
                   )}
                 </span>
               </div>
               {/* Show per-device (per-item) sale price when bilateral so user sees per-ear cost */}
               {formData.ear === 'both' && (
-                <div className="flex justify-between text-sm text-gray-700 mt-1">
+                <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300 mt-1">
                   <span>Bilateral x 2</span>
                   <span className="font-medium">{formatCurrency(formData.salePrice ?? formData.listPrice)}</span>
                 </div>
@@ -332,7 +332,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
       {/* Payment Section */}
       <div className="space-y-4">
-        <h4 className="text-sm font-medium text-gray-900 flex items-center">
+        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center">
           <CreditCard className="w-4 h-4 mr-2" />
           Ödeme Bilgileri
         </h4>
@@ -341,7 +341,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Down Payment */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Peşinat
             </label>
             <input
@@ -349,19 +349,19 @@ export const PricingForm: React.FC<PricingFormProps> = ({
               value={formData.downPayment || ''}
               onChange={(e) => updateFormData('downPayment', parseFloat(e.target.value) || 0)}
               placeholder="0.00"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
             />
           </div>
 
           {/* Payment Method */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Ödeme Yöntemi
             </label>
             <select
               value={formData.paymentMethod || ''}
               onChange={(e) => updateFormData('paymentMethod', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.paymentMethod ? 'border-red-300' : 'border-gray-300'}`}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${errors.paymentMethod ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-slate-700'}`}
             >
               <option value="">Ödeme yöntemini seçiniz</option>
               <option value="cash">Nakit</option>
@@ -377,10 +377,10 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
         {/* Remaining Amount Display */}
         {formData.remainingAmount !== undefined && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-blue-700">Kalan Tutar:</span>
-              <span className="font-medium text-blue-900">
+              <span className="text-blue-700 dark:text-blue-300">Kalan Tutar:</span>
+              <span className="font-medium text-blue-900 dark:text-blue-100">
                 {formatCurrency(formData.remainingAmount)}
               </span>
             </div>
@@ -389,11 +389,11 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
         {/* Installment Options */}
         {formData.paymentMethod === 'installment' && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h5 className="text-sm font-medium text-yellow-900 mb-3">Taksit Bilgileri</h5>
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <h5 className="text-sm font-medium text-yellow-900 dark:text-yellow-100 mb-3">Taksit Bilgileri</h5>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-yellow-700 mb-1">Taksit Sayısı</label>
+                <label className="block text-xs text-yellow-700 dark:text-yellow-300 mb-1">Taksit Sayısı</label>
                 <select
                   value={formData.installmentCount?.toString() || ''}
                   onChange={(e) => {
@@ -402,7 +402,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
                     updateFormData('installmentCount', count);
                     updateFormData('monthlyInstallment', monthly);
                   }}
-                  className="w-full px-3 py-2 border border-yellow-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white text-sm"
+                  className="w-full px-3 py-2 border border-yellow-300 dark:border-yellow-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white dark:bg-slate-800 text-sm dark:text-white"
                 >
                   <option value="">Taksit seçin</option>
                   <option value="3">3 Taksit</option>
@@ -414,12 +414,12 @@ export const PricingForm: React.FC<PricingFormProps> = ({
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-yellow-700 mb-1">Aylık Taksit</label>
+                <label className="block text-xs text-yellow-700 dark:text-yellow-300 mb-1">Aylık Taksit</label>
                 <input
                   type="text"
                   value={formData.monthlyInstallment ? formatCurrency(formData.monthlyInstallment) : '₺0.00'}
                   readOnly
-                  className="w-full px-3 py-2 border border-yellow-300 rounded-lg bg-yellow-100 text-sm"
+                  className="w-full px-3 py-2 border border-yellow-300 dark:border-yellow-700 rounded-lg bg-yellow-100 dark:bg-yellow-900/40 text-sm dark:text-yellow-100"
                 />
               </div>
             </div>

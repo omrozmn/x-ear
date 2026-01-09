@@ -18,11 +18,11 @@ import type { DeviceAssignmentUpdateBasePrice } from './deviceAssignmentUpdateBa
 import type { DeviceAssignmentUpdateDiscountType } from './deviceAssignmentUpdateDiscountType';
 import type { DeviceAssignmentUpdateDiscountValue } from './deviceAssignmentUpdateDiscountValue';
 import type { DeviceAssignmentUpdateSgkScheme } from './deviceAssignmentUpdateSgkScheme';
-import type { DeviceAssignmentUpdateSgksupporttype } from './deviceAssignmentUpdateSgksupporttype';
+import type { DeviceAssignmentUpdateSgkSupportType } from './deviceAssignmentUpdateSgkSupportType';
 import type { DeviceAssignmentUpdateSalePrice } from './deviceAssignmentUpdateSalePrice';
 import type { DeviceAssignmentUpdatePatientPayment } from './deviceAssignmentUpdatePatientPayment';
 import type { DeviceAssignmentUpdateSgkReduction } from './deviceAssignmentUpdateSgkReduction';
-import type { DeviceAssignmentUpdateSgksupport } from './deviceAssignmentUpdateSgksupport';
+import type { DeviceAssignmentUpdateSgkSupport } from './deviceAssignmentUpdateSgkSupport';
 import type { DeviceAssignmentUpdatePaymentMethod } from './deviceAssignmentUpdatePaymentMethod';
 import type { DeviceAssignmentUpdateNotes } from './deviceAssignmentUpdateNotes';
 import type { DeviceAssignmentUpdateUserId } from './deviceAssignmentUpdateUserId';
@@ -41,11 +41,11 @@ export interface DeviceAssignmentUpdate {
   discountType?: DeviceAssignmentUpdateDiscountType;
   discountValue?: DeviceAssignmentUpdateDiscountValue;
   sgkScheme?: DeviceAssignmentUpdateSgkScheme;
-  sgksupporttype?: DeviceAssignmentUpdateSgksupporttype;
+  sgkSupportType?: DeviceAssignmentUpdateSgkSupportType;
   salePrice?: DeviceAssignmentUpdateSalePrice;
   patientPayment?: DeviceAssignmentUpdatePatientPayment;
   sgkReduction?: DeviceAssignmentUpdateSgkReduction;
-  sgksupport?: DeviceAssignmentUpdateSgksupport;
+  sgkSupport?: DeviceAssignmentUpdateSgkSupport;
   paymentMethod?: DeviceAssignmentUpdatePaymentMethod;
   notes?: DeviceAssignmentUpdateNotes;
   userId?: DeviceAssignmentUpdateUserId;

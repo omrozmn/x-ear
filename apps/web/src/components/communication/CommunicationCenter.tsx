@@ -96,8 +96,8 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({
     updateMessage,
     getMessages,
     saveTemplate,
-    updateTemplate,
-    deleteTemplate,
+    updateCommunicationTemplate,
+    deleteCommunicationTemplate,
     getTemplates,
     forcSync
   } = useCommunicationOfflineSync();

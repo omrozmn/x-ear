@@ -41,7 +41,7 @@ import { customInstance } from '../../orval-mutator';
  * Get all active plans (Public)
  * @summary Get Plans
  */
-export const getPlans = (
+export const getPlansApiPlansGet = (
     
  signal?: AbortSignal
 ) => {
@@ -56,69 +56,69 @@ export const getPlans = (
 
 
 
-export const getGetPlansQueryKey = () => {
+export const getGetPlansApiPlansGetQueryKey = () => {
     return [
     `/api/plans`
     ] as const;
     }
 
     
-export const getGetPlansQueryOptions = <TData = Awaited<ReturnType<typeof getPlans>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlans>>, TError, TData>>, }
+export const getGetPlansApiPlansGetQueryOptions = <TData = Awaited<ReturnType<typeof getPlansApiPlansGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlansApiPlansGet>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPlansQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetPlansApiPlansGetQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPlans>>> = ({ signal }) => getPlans(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPlansApiPlansGet>>> = ({ signal }) => getPlansApiPlansGet(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPlans>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPlansApiPlansGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetPlansQueryResult = NonNullable<Awaited<ReturnType<typeof getPlans>>>
-export type GetPlansQueryError = unknown
+export type GetPlansApiPlansGetQueryResult = NonNullable<Awaited<ReturnType<typeof getPlansApiPlansGet>>>
+export type GetPlansApiPlansGetQueryError = unknown
 
 
-export function useGetPlans<TData = Awaited<ReturnType<typeof getPlans>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlans>>, TError, TData>> & Pick<
+export function useGetPlansApiPlansGet<TData = Awaited<ReturnType<typeof getPlansApiPlansGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlansApiPlansGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPlans>>,
+          Awaited<ReturnType<typeof getPlansApiPlansGet>>,
           TError,
-          Awaited<ReturnType<typeof getPlans>>
+          Awaited<ReturnType<typeof getPlansApiPlansGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPlans<TData = Awaited<ReturnType<typeof getPlans>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlans>>, TError, TData>> & Pick<
+export function useGetPlansApiPlansGet<TData = Awaited<ReturnType<typeof getPlansApiPlansGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlansApiPlansGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPlans>>,
+          Awaited<ReturnType<typeof getPlansApiPlansGet>>,
           TError,
-          Awaited<ReturnType<typeof getPlans>>
+          Awaited<ReturnType<typeof getPlansApiPlansGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPlans<TData = Awaited<ReturnType<typeof getPlans>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlans>>, TError, TData>>, }
+export function useGetPlansApiPlansGet<TData = Awaited<ReturnType<typeof getPlansApiPlansGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlansApiPlansGet>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Plans
  */
 
-export function useGetPlans<TData = Awaited<ReturnType<typeof getPlans>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlans>>, TError, TData>>, }
+export function useGetPlansApiPlansGet<TData = Awaited<ReturnType<typeof getPlansApiPlansGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlansApiPlansGet>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetPlansQueryOptions(options)
+  const queryOptions = getGetPlansApiPlansGetQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -134,7 +134,7 @@ export function useGetPlans<TData = Awaited<ReturnType<typeof getPlans>>, TError
  * Create a new plan (Super Admin only)
  * @summary Create Plan
  */
-export const createPlan = (
+export const createPlanApiPlansPost = (
     planCreate: PlanCreate,
  signal?: AbortSignal
 ) => {
@@ -150,11 +150,11 @@ export const createPlan = (
   
 
 
-export const getCreatePlanMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPlan>>, TError,{data: PlanCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createPlan>>, TError,{data: PlanCreate}, TContext> => {
+export const getCreatePlanApiPlansPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPlanApiPlansPost>>, TError,{data: PlanCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createPlanApiPlansPost>>, TError,{data: PlanCreate}, TContext> => {
 
-const mutationKey = ['createPlan'];
+const mutationKey = ['createPlanApiPlansPost'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -164,10 +164,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPlan>>, {data: PlanCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPlanApiPlansPost>>, {data: PlanCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createPlan(data,)
+          return  createPlanApiPlansPost(data,)
         }
 
         
@@ -175,23 +175,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreatePlanMutationResult = NonNullable<Awaited<ReturnType<typeof createPlan>>>
-    export type CreatePlanMutationBody = PlanCreate
-    export type CreatePlanMutationError = HTTPValidationError
+    export type CreatePlanApiPlansPostMutationResult = NonNullable<Awaited<ReturnType<typeof createPlanApiPlansPost>>>
+    export type CreatePlanApiPlansPostMutationBody = PlanCreate
+    export type CreatePlanApiPlansPostMutationError = HTTPValidationError
 
     /**
  * @summary Create Plan
  */
-export const useCreatePlan = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPlan>>, TError,{data: PlanCreate}, TContext>, }
+export const useCreatePlanApiPlansPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPlanApiPlansPost>>, TError,{data: PlanCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createPlan>>,
+        Awaited<ReturnType<typeof createPlanApiPlansPost>>,
         TError,
         {data: PlanCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreatePlanMutationOptions(options);
+      const mutationOptions = getCreatePlanApiPlansPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -199,7 +199,7 @@ export const useCreatePlan = <TError = HTTPValidationError,
  * Get all plans for admin (including inactive/private)
  * @summary Get Admin Plans
  */
-export const getAdminPlans = (
+export const listPlanAdmin = (
     
  signal?: AbortSignal
 ) => {
@@ -214,69 +214,69 @@ export const getAdminPlans = (
 
 
 
-export const getGetAdminPlansQueryKey = () => {
+export const getListPlanAdminQueryKey = () => {
     return [
     `/api/plans/admin`
     ] as const;
     }
 
     
-export const getGetAdminPlansQueryOptions = <TData = Awaited<ReturnType<typeof getAdminPlans>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPlans>>, TError, TData>>, }
+export const getListPlanAdminQueryOptions = <TData = Awaited<ReturnType<typeof listPlanAdmin>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlanAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminPlansQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListPlanAdminQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminPlans>>> = ({ signal }) => getAdminPlans(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPlanAdmin>>> = ({ signal }) => listPlanAdmin(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminPlans>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPlanAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminPlansQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminPlans>>>
-export type GetAdminPlansQueryError = unknown
+export type ListPlanAdminQueryResult = NonNullable<Awaited<ReturnType<typeof listPlanAdmin>>>
+export type ListPlanAdminQueryError = unknown
 
 
-export function useGetAdminPlans<TData = Awaited<ReturnType<typeof getAdminPlans>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPlans>>, TError, TData>> & Pick<
+export function useListPlanAdmin<TData = Awaited<ReturnType<typeof listPlanAdmin>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlanAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminPlans>>,
+          Awaited<ReturnType<typeof listPlanAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAdminPlans>>
+          Awaited<ReturnType<typeof listPlanAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminPlans<TData = Awaited<ReturnType<typeof getAdminPlans>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPlans>>, TError, TData>> & Pick<
+export function useListPlanAdmin<TData = Awaited<ReturnType<typeof listPlanAdmin>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlanAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminPlans>>,
+          Awaited<ReturnType<typeof listPlanAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAdminPlans>>
+          Awaited<ReturnType<typeof listPlanAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminPlans<TData = Awaited<ReturnType<typeof getAdminPlans>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPlans>>, TError, TData>>, }
+export function useListPlanAdmin<TData = Awaited<ReturnType<typeof listPlanAdmin>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlanAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Admin Plans
  */
 
-export function useGetAdminPlans<TData = Awaited<ReturnType<typeof getAdminPlans>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPlans>>, TError, TData>>, }
+export function useListPlanAdmin<TData = Awaited<ReturnType<typeof listPlanAdmin>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlanAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminPlansQueryOptions(options)
+  const queryOptions = getListPlanAdminQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

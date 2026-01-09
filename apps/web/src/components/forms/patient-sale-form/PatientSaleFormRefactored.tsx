@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useToastHelpers } from '@x-ear/ui-web';
+import { useToastHelpers, Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import { PatientApiService } from '../../../services/patient/patient-api.service';
-import { getAllInventory } from '@/api/generated';
+import { listInventory } from '@/api/generated';
 import { unwrapArray } from '../../../utils/response-unwrap';
 
 // InventoryItem type definition (since schema may not export it directly)
@@ -43,7 +43,7 @@ interface ProductDropdownProps {
 }
 
 const ProductDropdown: React.FC<ProductDropdownProps> = ({
-  selectedProduct,
+  // selectedProduct,
   onProductSelect,
   placeholder = "Ürün seçin veya arayın..."
 }) => {
@@ -51,16 +51,16 @@ const ProductDropdown: React.FC<ProductDropdownProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Load products from API
   useEffect(() => {
     const loadProducts = async () => {
-      setLoading(true);
+      // setLoading(true);
       try {
-        const response = await getAllInventory();
+        const response = await listInventory();
         const inventoryItems = unwrapArray<InventoryItem>(response);
         const productList = inventoryItems.map(mapInventoryItemToProduct);
         setProducts(productList);
@@ -70,7 +70,7 @@ const ProductDropdown: React.FC<ProductDropdownProps> = ({
         setProducts([]);
         setFilteredProducts([]);
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
 
@@ -133,9 +133,11 @@ const ProductDropdown: React.FC<ProductDropdownProps> = ({
   return (
     <div className="relative" ref={dropdownRef}>
       <div className="relative">
+        {/* eslint-disable-next-line no-restricted-syntax */}
         <input
           ref={inputRef}
           type="text"
+          data-allow-raw="true"
           value={searchTerm}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
@@ -152,51 +154,57 @@ const ProductDropdown: React.FC<ProductDropdownProps> = ({
 
         {/* Clear Button */}
         {searchTerm && (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="absolute inset-y-0 right-8 flex items-center pr-1 text-gray-400 hover:text-gray-600"
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </button>
+          <>
+            {/* eslint-disable-next-line no-restricted-syntax */}
+            <button
+              type="button"
+              data-allow-raw="true"
+              onClick={handleClear}
+              className="absolute inset-y-0 right-8 flex items-center pr-1 text-gray-400 hover:text-gray-600"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </>
         )}
       </div>
 
       {/* Dropdown */}
-      {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                onClick={() => handleProductSelect(product)}
-                className="px-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900">{product.name}</div>
-                    <div className="text-sm text-gray-500">
-                      {product.category} • {product.brand}
+      {
+        isOpen && (
+          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
+                <div
+                  key={product.id}
+                  onClick={() => handleProductSelect(product)}
+                  className="px-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">{product.name}</div>
+                      <div className="text-sm text-gray-500">
+                        {product.category} • {product.brand}
+                      </div>
+                    </div>
+                    <div className="text-right ml-4">
+                      <div className="font-medium text-gray-900">₺{product.price.toLocaleString()}</div>
+                      <div className="text-sm text-gray-500">Stok: {product.stock}</div>
                     </div>
                   </div>
-                  <div className="text-right ml-4">
-                    <div className="font-medium text-gray-900">₺{product.price.toLocaleString()}</div>
-                    <div className="text-sm text-gray-500">Stok: {product.stock}</div>
-                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="px-4 py-3 text-gray-500 text-center">
+                <div className="text-sm">Ürün bulunamadı</div>
+                <div className="text-xs mt-1">Farklı anahtar kelimeler deneyin</div>
               </div>
-            ))
-          ) : (
-            <div className="px-4 py-3 text-gray-500 text-center">
-              <div className="text-sm">Ürün bulunamadı</div>
-              <div className="text-xs mt-1">Farklı anahtar kelimeler deneyin</div>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+            )}
+          </div>
+        )
+      }
+    </div >
   );
 };
 
@@ -319,13 +327,13 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
       discountAmount: calculatedDiscount,
       finalAmount
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quantity, unitPrice, discountType, discountInput, selectedProduct, sgkSupportType, isHearingAid]);
 
   // Calculate total amount
-  const totalAmount = useMemo(() => {
-    return pricingCalculation.finalAmount;
-  }, [pricingCalculation]);
+  // const totalAmount = useMemo(() => {
+  //   return pricingCalculation.finalAmount;
+  // }, [pricingCalculation]);
 
   // Sync collected amount with final amount strictly if not manually modified
   useEffect(() => {
@@ -429,12 +437,11 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Miktar *
             </label>
-            <input
+            <Input
               type="number"
               min="1"
               value={quantity}
               onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
           </div>
@@ -443,13 +450,12 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Birim Fiyat (₺) *
             </label>
-            <input
+            <Input
               type="number"
               min="0"
               step="0.01"
               value={unitPrice}
               onChange={(e) => setUnitPrice(parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
           </div>
@@ -461,27 +467,26 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               İndirim Tipi
             </label>
-            <select
+            <Select
               value={discountType}
               onChange={(e) => setDiscountType(e.target.value as 'amount' | 'percentage')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="amount">Tutar (₺)</option>
-              <option value="percentage">Yüzde (%)</option>
-            </select>
+              options={[
+                { value: 'amount', label: 'Tutar (₺)' },
+                { value: 'percentage', label: 'Yüzde (%)' }
+              ]}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               İndirim Değeri
             </label>
-            <input
+            <Input
               type="number"
               min="0"
               step={discountType === 'percentage' ? '1' : '0.01'}
               max={discountType === 'percentage' ? '100' : undefined}
               value={discountInput}
               onChange={(e) => setDiscountInput(parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder={discountType === 'percentage' ? '%10' : '100.00'}
             />
           </div>
@@ -493,15 +498,12 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               SGK Destek Türü
             </label>
-            <select
+            <Select
               value={sgkSupportType}
               onChange={(e) => setSgkSupportType(e.target.value)}
-              className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            >
-              {sgkSupportOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+              className="mb-1"
+              options={sgkSupportOptions}
+            />
             {sgkSupportType && sgkFallbackValues[sgkSupportType] > 0 && (
               <div className="text-xs text-green-600 mt-1">
                 Tahmini SGK Desteği: ₺{sgkFallbackValues[sgkSupportType].toLocaleString('tr-TR')}
@@ -592,28 +594,27 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Ödeme Yöntemi *
             </label>
-            <select
+            <Select
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
-            >
-              <option value="cash">Nakit</option>
-              <option value="credit_card">Kredi Kartı</option>
-              <option value="bank_transfer">Banka Transferi</option>
-              <option value="installment">Taksit</option>
-            </select>
+              options={[
+                { value: 'cash', label: 'Nakit' },
+                { value: 'credit_card', label: 'Kredi Kartı' },
+                { value: 'bank_transfer', label: 'Banka Transferi' },
+                { value: 'installment', label: 'Taksit' }
+              ]}
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Satış Tarihi *
             </label>
-            <input
+            <Input
               type="date"
               value={saleDate}
               onChange={(e) => setSaleDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
           </div>
@@ -625,7 +626,7 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Tahsil Edilen Tutar (₺)
             </label>
-            <input
+            <Input
               type="number"
               min="0"
               step="0.01"
@@ -634,7 +635,7 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
                 setCollectedAmount(parseFloat(e.target.value) || 0);
                 setIsCollectedAmountManuallySet(true);
               }}
-              className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-blue-800"
+              className="font-medium text-blue-800"
             />
           </div>
 
@@ -642,16 +643,16 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Rapor Durumu
             </label>
-            <select
+            <Select
               value={reportStatus}
               onChange={(e) => setReportStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="no_report">Raporsuz Özel Satış</option>
-              <option value="report_pending">Rapor Beklemede</option>
-              <option value="report_delivered">Rapor Teslim Alındı</option>
-              <option value="report_missing">Rapor Eksik</option>
-            </select>
+              options={[
+                { value: 'no_report', label: 'Raporsuz Özel Satış' },
+                { value: 'report_pending', label: 'Rapor Beklemede' },
+                { value: 'report_delivered', label: 'Rapor Teslim Alındı' },
+                { value: 'report_missing', label: 'Rapor Eksik' }
+              ]}
+            />
           </div>
         </div>
 
@@ -660,31 +661,30 @@ export const PatientSaleFormRefactored: React.FC<PatientSaleFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Notlar
           </label>
-          <textarea
+          <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Satışla ilgili notlar..."
           />
         </div>
 
         {/* Action Buttons */}
         <div className="flex space-x-3 pt-2">
-          <button
+          <Button
             type="submit"
-            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            className="flex-1"
           >
             Satışı Kaydet
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             onClick={resetForm}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+            variant="outline"
           >
             Temizle
-          </button>
+          </Button>
         </div>
       </form>
     </div>

@@ -18,7 +18,7 @@ class BulkRegistration(BaseModel):
     device_ids: List[str]
     priority: Optional[str] = "normal"
 
-@router.get("/registrations")
+@router.get("/registrations", operation_id="listUtRegistrations")
 async def list_registrations(
     status: Optional[str] = None,
     page: int = Query(1, ge=1),
@@ -39,7 +39,7 @@ async def list_registrations(
         "meta": {"total": len(registrations), "page": page, "per_page": per_page}
     }
 
-@router.post("/registrations/bulk")
+@router.post("/registrations/bulk", operation_id="createUtRegistrationBulk")
 async def start_bulk_registration(
     data: BulkRegistration,
     db: Session = Depends(get_db),
@@ -60,7 +60,7 @@ async def start_bulk_registration(
         "message": f"Bulk registration job started for {len(data.device_ids)} devices"
     }
 
-@router.get("/jobs/{job_id}")
+@router.get("/jobs/{job_id}", operation_id="getUtJob")
 async def get_job_status(
     job_id: str,
     db: Session = Depends(get_db),
@@ -83,7 +83,7 @@ async def get_job_status(
     
     return {"success": True, "data": job_status}
 
-@router.post("/jobs/{job_id}/cancel")
+@router.post("/jobs/{job_id}/cancel", operation_id="createUtJobCancel")
 async def cancel_job(
     job_id: str,
     db: Session = Depends(get_db),

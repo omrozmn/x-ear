@@ -22,7 +22,7 @@ import type {
 
 import type {
   AppointmentListResponse,
-  GetAdminAllAppointmentsParams,
+  GetAllAppointmentsApiAdminAppointmentsGetParams,
   HTTPValidationError
 } from '.././schemas';
 
@@ -35,8 +35,8 @@ import { customInstance } from '../../orval-mutator';
  * Get list of ALL appointments from ALL tenants
  * @summary Get All Appointments
  */
-export const getAdminAllAppointments = (
-    params?: GetAdminAllAppointmentsParams,
+export const getAllAppointmentsApiAdminAppointmentsGet = (
+    params?: GetAllAppointmentsApiAdminAppointmentsGetParams,
  signal?: AbortSignal
 ) => {
       
@@ -51,69 +51,69 @@ export const getAdminAllAppointments = (
 
 
 
-export const getGetAdminAllAppointmentsQueryKey = (params?: GetAdminAllAppointmentsParams,) => {
+export const getGetAllAppointmentsApiAdminAppointmentsGetQueryKey = (params?: GetAllAppointmentsApiAdminAppointmentsGetParams,) => {
     return [
     `/api/admin/appointments`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAdminAllAppointmentsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminAllAppointments>>, TError = HTTPValidationError>(params?: GetAdminAllAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAllAppointments>>, TError, TData>>, }
+export const getGetAllAppointmentsApiAdminAppointmentsGetQueryOptions = <TData = Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>, TError = HTTPValidationError>(params?: GetAllAppointmentsApiAdminAppointmentsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminAllAppointmentsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetAllAppointmentsApiAdminAppointmentsGetQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminAllAppointments>>> = ({ signal }) => getAdminAllAppointments(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>> = ({ signal }) => getAllAppointmentsApiAdminAppointmentsGet(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminAllAppointments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminAllAppointmentsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminAllAppointments>>>
-export type GetAdminAllAppointmentsQueryError = HTTPValidationError
+export type GetAllAppointmentsApiAdminAppointmentsGetQueryResult = NonNullable<Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>>
+export type GetAllAppointmentsApiAdminAppointmentsGetQueryError = HTTPValidationError
 
 
-export function useGetAdminAllAppointments<TData = Awaited<ReturnType<typeof getAdminAllAppointments>>, TError = HTTPValidationError>(
- params: undefined |  GetAdminAllAppointmentsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAllAppointments>>, TError, TData>> & Pick<
+export function useGetAllAppointmentsApiAdminAppointmentsGet<TData = Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>, TError = HTTPValidationError>(
+ params: undefined |  GetAllAppointmentsApiAdminAppointmentsGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminAllAppointments>>,
+          Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>,
           TError,
-          Awaited<ReturnType<typeof getAdminAllAppointments>>
+          Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminAllAppointments<TData = Awaited<ReturnType<typeof getAdminAllAppointments>>, TError = HTTPValidationError>(
- params?: GetAdminAllAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAllAppointments>>, TError, TData>> & Pick<
+export function useGetAllAppointmentsApiAdminAppointmentsGet<TData = Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>, TError = HTTPValidationError>(
+ params?: GetAllAppointmentsApiAdminAppointmentsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminAllAppointments>>,
+          Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>,
           TError,
-          Awaited<ReturnType<typeof getAdminAllAppointments>>
+          Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminAllAppointments<TData = Awaited<ReturnType<typeof getAdminAllAppointments>>, TError = HTTPValidationError>(
- params?: GetAdminAllAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAllAppointments>>, TError, TData>>, }
+export function useGetAllAppointmentsApiAdminAppointmentsGet<TData = Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>, TError = HTTPValidationError>(
+ params?: GetAllAppointmentsApiAdminAppointmentsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get All Appointments
  */
 
-export function useGetAdminAllAppointments<TData = Awaited<ReturnType<typeof getAdminAllAppointments>>, TError = HTTPValidationError>(
- params?: GetAdminAllAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminAllAppointments>>, TError, TData>>, }
+export function useGetAllAppointmentsApiAdminAppointmentsGet<TData = Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>, TError = HTTPValidationError>(
+ params?: GetAllAppointmentsApiAdminAppointmentsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllAppointmentsApiAdminAppointmentsGet>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminAllAppointmentsQueryOptions(params,options)
+  const queryOptions = getGetAllAppointmentsApiAdminAppointmentsGetQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

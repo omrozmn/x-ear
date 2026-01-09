@@ -3,11 +3,11 @@ import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { Plus, Trash2, Mail, User, Shield, AlertCircle, CheckCircle2, Lock, Eye, EyeOff, Building2, Pencil, AlertTriangle } from 'lucide-react';
 import { Button, Input, Select } from '@x-ear/ui-web';
 import {
-    useListUsersApiUsersGet,
-    useCreateUserApiUsersPost,
-    useDeleteUserApiUsersUserIdDelete,
-    useUpdateUserApiUsersUserIdPut
-} from '@/api/generated';
+    useListTenantUsers,
+    useCreateTenantUsers,
+    useDeleteTenantUser,
+    useUpdateTenantUser
+} from '@/api/generated/tenant-users/tenant-users';
 import { branchService, Branch } from '../../services/branch.service';
 import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
@@ -80,9 +80,10 @@ export function TeamMembersTab() {
     const [inviteError, setInviteError] = useState('');
 
     // Queries and Mutations
-    const { data: usersResponse, isLoading: loading, error, refetch } = useListUsersApiUsersGet();
+    const { data: usersResponse, isLoading: loading, error: queryError, refetch } = useListTenantUsers();
+    const error = queryError as Error | null;
 
-    const inviteMutation = useCreateUserApiUsersPost({
+    const inviteMutation = useCreateTenantUsers({
         mutation: {
             onSuccess: () => {
                 setInviteSuccess('Kullanici basariyla olusturuldu!');
@@ -95,7 +96,7 @@ export function TeamMembersTab() {
         }
     });
 
-    const deleteMutation = useDeleteUserApiUsersUserIdDelete({
+    const deleteMutation = useDeleteTenantUser({
         mutation: {
             onSuccess: () => {
                 refetch();
@@ -106,7 +107,7 @@ export function TeamMembersTab() {
         }
     });
 
-    const updateUserMutation = useUpdateUserApiUsersUserIdPut();
+    const updateUserMutation = useUpdateTenantUser();
 
     const handleInvite = (e: React.FormEvent) => {
         e.preventDefault();
@@ -268,8 +269,8 @@ export function TeamMembersTab() {
                     <AlertCircle className="w-5 h-5 mr-2" />
                     <div>
                         <div className="font-medium">Kullanicilar yuklenirken bir hata olustu.</div>
-                        {(error as any)?.message && (
-                            <div className="text-sm mt-1">{String((error as any).message)}</div>
+                        {(error as Error)?.message && (
+                            <div className="text-sm mt-1">{String((error as Error).message)}</div>
                         )}
                     </div>
                 </div>

@@ -59,8 +59,8 @@ export interface UseAppointmentsReturn {
   rescheduleAppointment: (request: RescheduleRequest) => Promise<Appointment>;
   
   // Status operations
-  cancelAppointment: (id: string, reason?: string) => Promise<Appointment>;
-  completeAppointment: (id: string, notes?: string) => Promise<Appointment>;
+  createAppointmentCancel: (id: string, reason?: string) => Promise<Appointment>;
+  createAppointmentComplete: (id: string, notes?: string) => Promise<Appointment>;
   markNoShow: (id: string) => Promise<Appointment>;
   
   // Bulk operations
@@ -235,11 +235,11 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
   }, []);
 
   // Status operations
-  const cancelAppointment = useCallback(async (id: string, reason?: string): Promise<Appointment> => {
+  const createAppointmentCancel = useCallback(async (id: string, reason?: string): Promise<Appointment> => {
     try {
       setUpdating(true);
       setError(null);
-      const cancelledAppointment = await appointmentService.cancelAppointment(id, reason);
+      const cancelledAppointment = await appointmentService.createAppointmentCancel(id, reason);
       return cancelledAppointment;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to cancel appointment';
@@ -250,11 +250,11 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
     }
   }, []);
 
-  const completeAppointment = useCallback(async (id: string, notes?: string): Promise<Appointment> => {
+  const createAppointmentComplete = useCallback(async (id: string, notes?: string): Promise<Appointment> => {
     try {
       setUpdating(true);
       setError(null);
-      const completedAppointment = await appointmentService.completeAppointment(id, notes);
+      const completedAppointment = await appointmentService.createAppointmentComplete(id, notes);
       return completedAppointment;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to complete appointment';
@@ -345,8 +345,8 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
     rescheduleAppointment,
     
     // Status operations
-    cancelAppointment,
-    completeAppointment,
+    createAppointmentCancel,
+    createAppointmentComplete,
     markNoShow,
     
     // Bulk operations

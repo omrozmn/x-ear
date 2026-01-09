@@ -17,14 +17,14 @@ import {
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import {
-    useGetBranchesApiBranchesGet,
-    useCountPatientsApiPatientsCountGet,
-    useListPatientsApiPatientsGet,
-    getGetBranchesQueryKey,
+    useListBranches,
+    useListPatientCount,
+    useListPatients,
+    getListBranchesQueryKey,
     getListPatientsQueryKey,
-    getCountPatientsQueryKey,
-    useListSmsHeadersApiSmsHeadersGet,
-    getListSmsHeadersQueryKey
+    getListPatientCountQueryKey,
+    useListSmHeaders,
+    getListSmHeadersQueryKey
 } from '@/api/generated';
 import type { ListPatientsParams } from '@/api/generated/schemas';
 
@@ -99,13 +99,13 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
     const { success: showSuccessToast, error: showErrorToast, warning: showWarningToast } = useToastHelpers();
     const { token } = useAuthStore();
 
-    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useGetBranchesApiBranchesGet({
-        query: { queryKey: getGetBranchesQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
+    const { data: branchesData, isLoading: branchesLoading, isError: branchesError } = useListBranches({
+        query: { queryKey: getListBranchesQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
     });
 
     // Get SMS headers for sender selection
-    const { data: headersData, isLoading: headersLoading, isError: headersError } = useListSmsHeadersApiSmsHeadersGet({
-        query: { queryKey: getListSmsHeadersQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
+    const { data: headersData, isLoading: headersLoading, isError: headersError } = useListSmHeaders({
+        query: { queryKey: getListSmHeadersQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
     });
 
     const branchOptions = useMemo(() => {
@@ -169,7 +169,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
     }, [headerOptions, selectedHeader]);
 
     // Fetch first patient for preview
-    const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = useListPatientsApiPatientsGet(
+    const { data: patientsData, isLoading: patientsLoading, isError: patientsError } = useListPatients(
         { page: 1, per_page: 1 },
         { query: { queryKey: getListPatientsQueryKey({ page: 1, per_page: 1 }), enabled: mode === 'filters' && !!token, refetchOnWindowFocus: false } }
     );
@@ -198,11 +198,11 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance, creditLoa
         return params;
     }, [audienceFilters]);
 
-    const patientsCountQuery = useCountPatientsApiPatientsCountGet(
+    const patientsCountQuery = useListPatientCount(
         mode === 'filters' ? normalizedParams : undefined,
         {
             query: {
-                queryKey: getCountPatientsQueryKey(mode === 'filters' ? normalizedParams : undefined),
+                queryKey: getListPatientCountQueryKey(mode === 'filters' ? normalizedParams : undefined),
                 enabled: mode === 'filters',
                 refetchOnWindowFocus: false
             }

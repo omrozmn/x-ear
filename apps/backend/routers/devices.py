@@ -84,9 +84,10 @@ class DeviceCreate(BaseModel):
     serial_number: Optional[str] = Field(None, alias="serialNumber")
     serial_number_left: Optional[str] = Field(None, alias="serialNumberLeft")
     serial_number_right: Optional[str] = Field(None, alias="serialNumberRight")
-    brand: str
-    model: str
-    type: str
+    # Made optional - will be auto-filled from inventory if inventoryId provided
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    type: Optional[str] = None
     category: Optional[str] = None
     ear: Optional[str] = None
     status: str = "in_stock"
@@ -138,7 +139,7 @@ def get_device_or_404(db_session: Session, device_id: str, access: UnifiedAccess
 
 # --- Routes ---
 
-@router.get("/devices", response_model=ResponseEnvelope[List[DeviceRead]])
+@router.get("/devices", operation_id="listDevices", response_model=ResponseEnvelope[List[DeviceRead]])
 def get_devices(
     category: Optional[str] = None,
     status: Optional[str] = None,
@@ -206,7 +207,7 @@ def get_devices(
         logger.error(f"Get devices error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/devices", response_model=ResponseEnvelope[DeviceRead], status_code=201)
+@router.post("/devices", operation_id="createDevices", response_model=ResponseEnvelope[DeviceRead], status_code=201)
 def create_device(
     device_in: DeviceCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -215,6 +216,42 @@ def create_device(
     """Create a new device"""
     try:
         data = device_in.model_dump(by_alias=False)
+        logger.info(f"CREATE_DEVICE REQUEST: {data}")
+        
+        # If inventory_id is provided but brand/model/type are missing, fetch from inventory
+        inventory_id = data.get('inventory_id')
+        if inventory_id:
+            logger.info(f"Looking up inventory: {inventory_id}")
+            from models.inventory import InventoryItem
+            inv_item = db_session.query(InventoryItem).filter_by(id=inventory_id).first()
+            if inv_item:
+                if not data.get('brand'):
+                    data['brand'] = inv_item.brand or 'Unknown'
+                if not data.get('model'):
+                    data['model'] = inv_item.model or 'Unknown'
+                if not data.get('type'):
+                    data['type'] = inv_item.category or 'hearing_aid'
+                if not data.get('price') and inv_item.price:
+                    data['price'] = float(inv_item.price)
+            else:
+                logger.warning(f"Inventory item not found: {inventory_id}")
+                # Inventory not found - require explicit brand/model/type
+                if not data.get('brand') or not data.get('model') or not data.get('type'):
+                    raise HTTPException(
+                        status_code=422,
+                        detail=f"Inventory item '{inventory_id}' not found. Please provide brand, model, and type explicitly."
+                    )
+        
+        # Validate required fields
+        brand = data.get('brand')
+        model = data.get('model')
+        device_type = data.get('type')
+        
+        if not brand or not model or not device_type:
+            raise HTTPException(
+                status_code=422, 
+                detail="brand, model, and type are required (or provide a valid inventoryId)"
+            )
         
         # Generate ID
         device_id = f"dev_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}_{random.randint(100000, 999999)}"
@@ -223,24 +260,24 @@ def create_device(
         device.id = device_id
         device.tenant_id = access.tenant_id
         device.patient_id = data['patient_id']
-        device.inventory_id = data.get('inventory_id')
+        device.inventory_id = inventory_id
         
         serial_num = data.get('serial_number')
         device.serial_number = serial_num if serial_num and serial_num.strip() else None
         
-        device.brand = data['brand']
-        device.model = data['model']
-        device.device_type = data['type']
+        device.brand = brand
+        device.model = model
+        device.device_type = device_type
         
         if data.get('category'):
-            device.category = DeviceCategory.from_legacy(data['category'])
+            device.category = DeviceCategory.from_legacy(data['category']).value
         elif data['type'] in ['hearing_aid']:
-            device.category = DeviceCategory.HEARING_AID
+            device.category = DeviceCategory.HEARING_AID.value
         
         if data.get('ear'):
-            device.ear = DeviceSide.from_legacy(data['ear'])
+            device.ear = DeviceSide.from_legacy(data['ear']).value
         
-        device.status = DeviceStatus.from_legacy(data.get('status', 'in_stock'))
+        device.status = DeviceStatus.from_legacy(data.get('status', 'in_stock')).value
         device.price = data.get('price')
         
         if data.get('serial_number_left'):
@@ -277,6 +314,47 @@ def create_device(
         
         logger.info(f"Device created: {device.id}")
         
+        # Create DeviceAssignment if assigned to a patient
+        if device.patient_id and device.patient_id != 'inventory':
+            try:
+                from models.sales import DeviceAssignment
+                
+                # Map Ear Enum to Single Char
+                ear_val = 'L'
+                if device.ear == 'RIGHT': ear_val = 'R'
+                elif device.ear == 'BILATERAL': ear_val = 'B'
+                elif device.ear == 'LEFT': ear_val = 'L'
+                
+                assignment = DeviceAssignment(
+                    tenant_id=device.tenant_id,
+                    patient_id=device.patient_id,
+                    device_id=device.id,
+                    inventory_id=device.inventory_id,
+                    ear=ear_val,
+                    reason="Assignment", # Default reason
+                    notes=device.notes,
+                    assignment_uid=f"ATM-{datetime.now().strftime('%y%m%d')}-{random.randint(1000, 9999)}"
+                )
+                
+                # Helper to map serials if bilateral
+                if device.inventory_id and inventory_id: # Originating from inventory
+                    if device.serial_number: assignment.serial_number = device.serial_number
+                    if device.serial_number_left: assignment.serial_number_left = device.serial_number_left
+                    if device.serial_number_right: assignment.serial_number_right = device.serial_number_right
+                else:
+                    # Manual device
+                    if device.serial_number: assignment.serial_number = device.serial_number
+                    if device.serial_number_left: assignment.serial_number_left = device.serial_number_left
+                    if device.serial_number_right: assignment.serial_number_right = device.serial_number_right
+
+                db_session.add(assignment)
+                db_session.commit()
+                logger.info(f"DeviceAssignment created: {assignment.id}")
+            except Exception as e:
+                logger.error(f"Failed to auto-create assignment: {e}")
+                # Don't fail the request, just log it. 
+                # Or should we fail? Better to stick to robustness.
+        
         return ResponseEnvelope(data=device.to_dict())
     except HTTPException:
         raise
@@ -285,7 +363,7 @@ def create_device(
         logger.error(f"Create device error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/devices/categories")
+@router.get("/devices/categories", operation_id="listDeviceCategories")
 def get_device_categories(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -323,7 +401,7 @@ def get_device_categories(
         logger.error(f"Get device categories error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/devices/brands")
+@router.get("/devices/brands", operation_id="listDeviceBrands")
 def get_device_brands(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -372,7 +450,7 @@ def get_device_brands(
         logger.error(f"Get device brands error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/devices/brands", status_code=201)
+@router.post("/devices/brands", operation_id="createDeviceBrands", status_code=201)
 def create_device_brand(
     brand_in: BrandCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -430,7 +508,7 @@ def create_device_brand(
         logger.error(f"Create device brand error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/devices/low-stock")
+@router.get("/devices/low-stock", operation_id="listDeviceLowStock")
 def get_low_stock_devices(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -453,7 +531,7 @@ def get_low_stock_devices(
         logger.error(f"Get low stock devices error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/devices/{device_id}")
+@router.get("/devices/{device_id}", operation_id="getDevice")
 def get_device(
     device_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -463,7 +541,7 @@ def get_device(
     device = get_device_or_404(db_session, device_id, access)
     return ResponseEnvelope(data=device.to_dict())
 
-@router.put("/devices/{device_id}")
+@router.put("/devices/{device_id}", operation_id="updateDevice")
 def update_device(
     device_id: str,
     device_in: DeviceUpdate,
@@ -482,11 +560,11 @@ def update_device(
         if 'type' in data:
             device.device_type = data['type']
         if 'category' in data:
-            device.category = DeviceCategory.from_legacy(data['category'])
+            device.category = DeviceCategory.from_legacy(data['category']).value
         if 'ear' in data:
-            device.ear = DeviceSide.from_legacy(data['ear'])
+            device.ear = DeviceSide.from_legacy(data['ear']).value
         if 'status' in data:
-            device.status = DeviceStatus.from_legacy(data['status'])
+            device.status = DeviceStatus.from_legacy(data['status']).value
         if 'price' in data:
             device.price = data['price']
         if 'notes' in data:
@@ -528,7 +606,7 @@ def update_device(
         logger.error(f"Update device error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/devices/{device_id}")
+@router.delete("/devices/{device_id}", operation_id="deleteDevice")
 def delete_device(
     device_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -584,7 +662,7 @@ def delete_device(
         logger.error(f"Delete device error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/devices/{device_id}/stock-update")
+@router.post("/devices/{device_id}/stock-update", operation_id="createDeviceStockUpdate")
 def update_device_stock(
     device_id: str,
     stock_update: StockUpdateRequest,

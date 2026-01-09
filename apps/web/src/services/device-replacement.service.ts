@@ -1,4 +1,4 @@
-import { getInventoryItem } from '@/api/generated';
+import { getInventory } from '@/api/generated';
 import { getCurrentUserId } from '@/utils/auth-utils';
 import type {
   DeviceReplacementRequest,
@@ -224,9 +224,9 @@ export class DeviceReplacementService {
   private async getInventoryDeviceInfo(inventoryId: string): Promise<DeviceInfo> {
     try {
       // Try to get from API
-      const response = await getInventoryItem(inventoryId);
+      const response = await getInventory(inventoryId);
       if (response) {
-        const item = response as any;
+        const item = response as { brand?: string; model?: string; availableSerials?: string[]; category?: string; price?: number };
         return {
           brand: item.brand || '',
           model: item.model || '',
@@ -281,6 +281,7 @@ export class DeviceReplacementService {
   /**
    * Normalize replacement data from API
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Intentional: handles unstructured API data
   private normalizeReplacementData(data: any): DeviceReplacementHistory {
     return {
       id: data.id,

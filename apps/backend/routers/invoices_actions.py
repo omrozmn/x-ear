@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/invoices", tags=["Invoice Actions"])
 
-@router.post("/{invoice_id}/issue")
+@router.post("/{invoice_id}/issue", operation_id="createInvoiceIssue")
 async def issue_invoice(
     invoice_id: int,
     db: Session = Depends(get_db),
@@ -84,7 +84,7 @@ async def issue_invoice(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/{invoice_id}/copy")
+@router.post("/{invoice_id}/copy", operation_id="createInvoiceCopy")
 async def copy_invoice(
     invoice_id: int,
     db: Session = Depends(get_db),
@@ -117,7 +117,7 @@ async def copy_invoice(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/{invoice_id}/copy-cancel")
+@router.post("/{invoice_id}/copy-cancel", operation_id="createInvoiceCopyCancel")
 async def copy_invoice_cancel(
     invoice_id: int,
     db: Session = Depends(get_db),
@@ -156,7 +156,7 @@ async def copy_invoice_cancel(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{invoice_id}/pdf")
+@router.get("/{invoice_id}/pdf", operation_id="listInvoicePdf")
 async def serve_invoice_pdf(invoice_id: int, db: Session = Depends(get_db)):
     """Serve invoice PDF"""
     try:
@@ -170,7 +170,7 @@ async def serve_invoice_pdf(invoice_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{invoice_id}/shipping-pdf")
+@router.get("/{invoice_id}/shipping-pdf", operation_id="listInvoiceShippingPdf")
 async def serve_shipping_pdf(invoice_id: int, db: Session = Depends(get_db)):
     """Serve shipping PDF"""
     try:

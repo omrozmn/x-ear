@@ -103,7 +103,7 @@ class CollectPaymentRequest(BaseModel):
 
 # --- Routes ---
 
-@router.post("/payment-records", status_code=201)
+@router.post("/payment-records", operation_id="createPaymentRecords", status_code=201)
 def create_payment_record(
     payment_in: PaymentRecordCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -171,7 +171,7 @@ def create_payment_record(
         logger.error(f"Create payment record error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/patients/{patient_id}/payment-records")
+@router.get("/patients/{patient_id}/payment-records", operation_id="listPatientPaymentRecords")
 def get_patient_payment_records(
     patient_id: str,
     page: int = Query(1, ge=1),
@@ -199,7 +199,7 @@ def get_patient_payment_records(
         logger.error(f"Get patient payment records error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.patch("/payment-records/{record_id}")
+@router.patch("/payment-records/{record_id}", operation_id="updatePaymentRecord")
 def update_payment_record(
     record_id: str,
     payment_in: PaymentRecordUpdate,
@@ -234,7 +234,7 @@ def update_payment_record(
         logger.error(f"Update payment record error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/patients/{patient_id}/promissory-notes")
+@router.get("/patients/{patient_id}/promissory-notes", operation_id="listPatientPromissoryNotes")
 def get_patient_promissory_notes(
     patient_id: str,
     sale_id: Optional[str] = Query(None, alias="sale_id"),
@@ -258,7 +258,7 @@ def get_patient_promissory_notes(
         logger.error(f"Get patient promissory notes error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/promissory-notes", status_code=201)
+@router.post("/promissory-notes", operation_id="createPromissoryNotes", status_code=201)
 def create_promissory_notes(
     notes_in: PromissoryNotesCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -331,7 +331,7 @@ def create_promissory_notes(
         logger.error(f"Create promissory notes error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.patch("/promissory-notes/{note_id}")
+@router.patch("/promissory-notes/{note_id}", operation_id="updatePromissoryNote")
 def update_promissory_note(
     note_id: str,
     note_in: PromissoryNoteUpdate,
@@ -366,7 +366,7 @@ def update_promissory_note(
         logger.error(f"Update promissory note error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/promissory-notes/{note_id}/collect", status_code=201)
+@router.post("/promissory-notes/{note_id}/collect", operation_id="createPromissoryNoteCollect", status_code=201)
 def collect_promissory_note(
     note_id: str,
     collect_in: CollectPaymentRequest,
@@ -468,7 +468,7 @@ def collect_promissory_note(
         logger.error(f"Collect promissory note error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/sales/{sale_id}/promissory-notes")
+@router.get("/sales/{sale_id}/promissory-notes", operation_id="listSalePromissoryNotes")
 def get_sale_promissory_notes(
     sale_id: str,
     access: UnifiedAccess = Depends(require_access()),

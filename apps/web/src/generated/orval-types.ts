@@ -1559,7 +1559,7 @@ export type UpdateSettingsBody = { [key: string]: unknown };
 
 export type SgkUploadSgkDocumentBody = { [key: string]: unknown };
 
-export type SuppliersGetSuppliersParams = {
+export type SuppliersListSuppliersParams = {
 /**
  * Page number for pagination
  */
@@ -2793,7 +2793,7 @@ const smsMonitoring = <TData = AxiosResponse<void>>(
  * @summary Get list of suppliers
  */
 const suppliersGetSuppliers = <TData = AxiosResponse<SuppliersGetSuppliers200>>(
-    params?: SuppliersGetSuppliersParams, options?: AxiosRequestConfig
+    params?: SuppliersListSuppliersParams, options?: AxiosRequestConfig
  ): Promise<TData> => {
     return axios.get(
       `/api/suppliers`,{

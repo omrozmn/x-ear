@@ -39,7 +39,7 @@ import { customInstance } from '../../orval-mutator';
  * Get Turnstile configuration
  * @summary Get Turnstile Config
  */
-export const getTurnstileConfig = (
+export const listConfigTurnstile = (
     
  signal?: AbortSignal
 ) => {
@@ -54,69 +54,69 @@ export const getTurnstileConfig = (
 
 
 
-export const getGetTurnstileConfigQueryKey = () => {
+export const getListConfigTurnstileQueryKey = () => {
     return [
     `/api/config/turnstile`
     ] as const;
     }
 
     
-export const getGetTurnstileConfigQueryOptions = <TData = Awaited<ReturnType<typeof getTurnstileConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTurnstileConfig>>, TError, TData>>, }
+export const getListConfigTurnstileQueryOptions = <TData = Awaited<ReturnType<typeof listConfigTurnstile>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConfigTurnstile>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTurnstileConfigQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListConfigTurnstileQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTurnstileConfig>>> = ({ signal }) => getTurnstileConfig(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listConfigTurnstile>>> = ({ signal }) => listConfigTurnstile(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTurnstileConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listConfigTurnstile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetTurnstileConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getTurnstileConfig>>>
-export type GetTurnstileConfigQueryError = unknown
+export type ListConfigTurnstileQueryResult = NonNullable<Awaited<ReturnType<typeof listConfigTurnstile>>>
+export type ListConfigTurnstileQueryError = unknown
 
 
-export function useGetTurnstileConfig<TData = Awaited<ReturnType<typeof getTurnstileConfig>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTurnstileConfig>>, TError, TData>> & Pick<
+export function useListConfigTurnstile<TData = Awaited<ReturnType<typeof listConfigTurnstile>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConfigTurnstile>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTurnstileConfig>>,
+          Awaited<ReturnType<typeof listConfigTurnstile>>,
           TError,
-          Awaited<ReturnType<typeof getTurnstileConfig>>
+          Awaited<ReturnType<typeof listConfigTurnstile>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetTurnstileConfig<TData = Awaited<ReturnType<typeof getTurnstileConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTurnstileConfig>>, TError, TData>> & Pick<
+export function useListConfigTurnstile<TData = Awaited<ReturnType<typeof listConfigTurnstile>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConfigTurnstile>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTurnstileConfig>>,
+          Awaited<ReturnType<typeof listConfigTurnstile>>,
           TError,
-          Awaited<ReturnType<typeof getTurnstileConfig>>
+          Awaited<ReturnType<typeof listConfigTurnstile>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetTurnstileConfig<TData = Awaited<ReturnType<typeof getTurnstileConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTurnstileConfig>>, TError, TData>>, }
+export function useListConfigTurnstile<TData = Awaited<ReturnType<typeof listConfigTurnstile>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConfigTurnstile>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Turnstile Config
  */
 
-export function useGetTurnstileConfig<TData = Awaited<ReturnType<typeof getTurnstileConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTurnstileConfig>>, TError, TData>>, }
+export function useListConfigTurnstile<TData = Awaited<ReturnType<typeof listConfigTurnstile>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConfigTurnstile>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetTurnstileConfigQueryOptions(options)
+  const queryOptions = getListConfigTurnstileQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -132,7 +132,7 @@ export function useGetTurnstileConfig<TData = Awaited<ReturnType<typeof getTurns
  * Register phone and send OTP
  * @summary Register Phone
  */
-export const registerPhone = (
+export const createRegisterPhone = (
     registerPhoneRequest: RegisterPhoneRequest,
  signal?: AbortSignal
 ) => {
@@ -148,11 +148,11 @@ export const registerPhone = (
   
 
 
-export const getRegisterPhoneMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof registerPhone>>, TError,{data: RegisterPhoneRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof registerPhone>>, TError,{data: RegisterPhoneRequest}, TContext> => {
+export const getCreateRegisterPhoneMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRegisterPhone>>, TError,{data: RegisterPhoneRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createRegisterPhone>>, TError,{data: RegisterPhoneRequest}, TContext> => {
 
-const mutationKey = ['registerPhone'];
+const mutationKey = ['createRegisterPhone'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -162,10 +162,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof registerPhone>>, {data: RegisterPhoneRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createRegisterPhone>>, {data: RegisterPhoneRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  registerPhone(data,)
+          return  createRegisterPhone(data,)
         }
 
         
@@ -173,23 +173,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type RegisterPhoneMutationResult = NonNullable<Awaited<ReturnType<typeof registerPhone>>>
-    export type RegisterPhoneMutationBody = RegisterPhoneRequest
-    export type RegisterPhoneMutationError = HTTPValidationError
+    export type CreateRegisterPhoneMutationResult = NonNullable<Awaited<ReturnType<typeof createRegisterPhone>>>
+    export type CreateRegisterPhoneMutationBody = RegisterPhoneRequest
+    export type CreateRegisterPhoneMutationError = HTTPValidationError
 
     /**
  * @summary Register Phone
  */
-export const useRegisterPhone = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof registerPhone>>, TError,{data: RegisterPhoneRequest}, TContext>, }
+export const useCreateRegisterPhone = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRegisterPhone>>, TError,{data: RegisterPhoneRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof registerPhone>>,
+        Awaited<ReturnType<typeof createRegisterPhone>>,
         TError,
         {data: RegisterPhoneRequest},
         TContext
       > => {
 
-      const mutationOptions = getRegisterPhoneMutationOptions(options);
+      const mutationOptions = getCreateRegisterPhoneMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -197,7 +197,7 @@ export const useRegisterPhone = <TError = HTTPValidationError,
  * Verify OTP and create/get user
  * @summary Verify Registration Otp
  */
-export const verifyRegistrationOtp = (
+export const createVerifyRegistrationOtp = (
     verifyRegistrationOTPRequest: VerifyRegistrationOTPRequest,
  signal?: AbortSignal
 ) => {
@@ -213,11 +213,11 @@ export const verifyRegistrationOtp = (
   
 
 
-export const getVerifyRegistrationOtpMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyRegistrationOtp>>, TError,{data: VerifyRegistrationOTPRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof verifyRegistrationOtp>>, TError,{data: VerifyRegistrationOTPRequest}, TContext> => {
+export const getCreateVerifyRegistrationOtpMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createVerifyRegistrationOtp>>, TError,{data: VerifyRegistrationOTPRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createVerifyRegistrationOtp>>, TError,{data: VerifyRegistrationOTPRequest}, TContext> => {
 
-const mutationKey = ['verifyRegistrationOtp'];
+const mutationKey = ['createVerifyRegistrationOtp'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -227,10 +227,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyRegistrationOtp>>, {data: VerifyRegistrationOTPRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createVerifyRegistrationOtp>>, {data: VerifyRegistrationOTPRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  verifyRegistrationOtp(data,)
+          return  createVerifyRegistrationOtp(data,)
         }
 
         
@@ -238,23 +238,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type VerifyRegistrationOtpMutationResult = NonNullable<Awaited<ReturnType<typeof verifyRegistrationOtp>>>
-    export type VerifyRegistrationOtpMutationBody = VerifyRegistrationOTPRequest
-    export type VerifyRegistrationOtpMutationError = HTTPValidationError
+    export type CreateVerifyRegistrationOtpMutationResult = NonNullable<Awaited<ReturnType<typeof createVerifyRegistrationOtp>>>
+    export type CreateVerifyRegistrationOtpMutationBody = VerifyRegistrationOTPRequest
+    export type CreateVerifyRegistrationOtpMutationError = HTTPValidationError
 
     /**
  * @summary Verify Registration Otp
  */
-export const useVerifyRegistrationOtp = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyRegistrationOtp>>, TError,{data: VerifyRegistrationOTPRequest}, TContext>, }
+export const useCreateVerifyRegistrationOtp = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createVerifyRegistrationOtp>>, TError,{data: VerifyRegistrationOTPRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof verifyRegistrationOtp>>,
+        Awaited<ReturnType<typeof createVerifyRegistrationOtp>>,
         TError,
         {data: VerifyRegistrationOTPRequest},
         TContext
       > => {
 
-      const mutationOptions = getVerifyRegistrationOtpMutationOptions(options);
+      const mutationOptions = getCreateVerifyRegistrationOtpMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

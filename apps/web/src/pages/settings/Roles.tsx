@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Trash2, Edit2, Shield, Lock, Save, X, AlertCircle, CheckCircle2, Search } from 'lucide-react';
 import {
     useListRoles,
-    useCreateRole,
+    useCreateRoles,
     useUpdateRole,
     useDeleteRole
 } from '../../api/generated/roles/roles';
@@ -36,7 +36,7 @@ export default function RolesSettings() {
 
     // React Query hooks (Orval)
     const { data: rolesResponse, isLoading: loading, error: fetchError, refetch } = useListRoles();
-    const createRoleMutation = useCreateRole();
+    const createRoleMutation = useCreateRoles();
     const updateRoleMutation = useUpdateRole();
     const deleteRoleMutation = useDeleteRole();
 

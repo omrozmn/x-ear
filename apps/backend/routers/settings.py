@@ -65,7 +65,7 @@ def get_file_settings():
 
 # --- Routes ---
 
-@router.get("/settings/pricing")
+@router.get("/settings/pricing", operation_id="listSettingPricing")
 def get_pricing_settings(
     db_session: Session = Depends(get_db),
     # access: UnifiedAccess = Depends(require_access()) # Allow public access if needed, or auth required? 
@@ -108,7 +108,7 @@ def get_pricing_settings(
         logger.error(f"Get pricing settings error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/settings")
+@router.get("/settings", operation_id="listSettings")
 def get_settings(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -162,7 +162,7 @@ def get_settings(
         logger.error(f"Get settings error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/settings")
+@router.put("/settings", operation_id="updateSettings")
 def update_settings(
     settings_data: Dict[str, Any] = Body(...),
     db_session: Session = Depends(get_db),

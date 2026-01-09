@@ -38,8 +38,8 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
     appointments,
     loading,
     error: _error,
-    cancelAppointment,
-    completeAppointment,
+    createAppointmentCancel,
+    createAppointmentComplete,
     markNoShow,
     rescheduleAppointment: _rescheduleAppointment
   } = useAppointments({ filters });
@@ -50,14 +50,14 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
 
   const getStatusColor = (status: AppointmentStatus): string => {
     const colors = {
-      scheduled: 'bg-blue-100 text-blue-800',
-      confirmed: 'bg-green-100 text-green-800',
-      completed: 'bg-gray-100 text-gray-800',
-      cancelled: 'bg-red-100 text-red-800',
-      no_show: 'bg-orange-100 text-orange-800',
-      rescheduled: 'bg-purple-100 text-purple-800'
+      scheduled: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      confirmed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      completed: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+      no_show: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+      rescheduled: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
   };
 
   const getStatusLabel = (status: AppointmentStatus): string => {
@@ -103,10 +103,10 @@ export const AppointmentList: React.FC<AppointmentListProps> = ({
     try {
       switch (newStatus) {
         case 'cancelled':
-          await cancelAppointment(appointment.id, 'Kullanıcı tarafından iptal edildi');
+          await createAppointmentCancel(appointment.id, 'Kullanıcı tarafından iptal edildi');
           break;
         case 'completed':
-          await completeAppointment(appointment.id, 'Randevu tamamlandı');
+          await createAppointmentComplete(appointment.id, 'Randevu tamamlandı');
           break;
         case 'no_show':
           await markNoShow(appointment.id);

@@ -92,7 +92,7 @@ async def create_admin_ticket(
     MOCK_TICKETS.append(new_ticket)
     return {"success": True, "data": {"ticket": new_ticket}}
 
-@router.put("/{ticket_id}", response_model=TicketDetailResponse)
+@router.put("/{ticket_id}", operation_id="updateAdminTicket", response_model=TicketDetailResponse)
 async def update_admin_ticket(
     ticket_id: str,
     data: TicketUpdate,

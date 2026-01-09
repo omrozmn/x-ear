@@ -8,9 +8,9 @@
 import { InvoiceFormData } from '../types/invoice';
 import { apiClient } from '../api/orval-mutator';
 import {
-  createEfaturaCreateInvoice,
-  cancelInvoice,
-  retryInvoice
+  createEfaturaCreate,
+  createEfaturaCancel,
+  createEfaturaRetry
 } from '@/api/generated';
 import { getOutEBelgeV2API } from '../generated/birfatura/outEBelgeV2API';
 import { unwrapObject } from '../utils/response-unwrap';
@@ -293,7 +293,7 @@ class BirFaturaService {
   async create(invoiceData: InvoiceFormData): Promise<BirFaturaResponse> {
     try {
       // const api = getOutEBelgeV2API();
-      const response = await createEfaturaCreateInvoice(invoiceData as any);
+      const response = await createEfaturaCreate(invoiceData as any);
       // unwrapObject handles the response structure which might be { data: ... } or direct
       const data = unwrapObject<any>(response);
 
@@ -383,7 +383,7 @@ class BirFaturaService {
   async retry(invoiceId: string): Promise<BirFaturaResponse> {
     try {
       // const api = getOutEBelgeV2API();
-      const response = await retryInvoice(invoiceId);
+      const response = await createEfaturaRetry(invoiceId);
       const data = unwrapObject<any>(response);
 
       if (!data.Success) {
@@ -411,11 +411,11 @@ class BirFaturaService {
   async cancel(invoiceId: string, reason?: string): Promise<BirFaturaResponse> {
     try {
       // const api = getOutEBelgeV2API();
-      // cancelInvoice expects just the ID as a path param, 
+      // createEfaturaCancel expects just the ID as a path param, 
       // check if it accepts a body for reason? The simplified function signature only shows invoiceId.
       // If reason is required by backend but not in signature, we might need custom request or query param.
       // For now, assuming ID is enough or reason is passed differently.
-      const response = await cancelInvoice(invoiceId);
+      const response = await createEfaturaCancel(invoiceId);
       const data = unwrapObject<any>(response);
 
       if (!data.Success) {

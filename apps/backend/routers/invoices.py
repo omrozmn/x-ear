@@ -29,7 +29,7 @@ router = APIRouter(tags=["Invoices"])
 
 # --- Routes ---
 
-@router.get("/invoices", response_model=ResponseEnvelope[List[InvoiceRead]])
+@router.get("/invoices", operation_id="listInvoices", response_model=ResponseEnvelope[List[InvoiceRead]])
 def get_invoices(
     page: int = 1,
     per_page: int = 20,
@@ -67,7 +67,7 @@ def get_invoices(
         logger.error(f"Get invoices error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/invoices/{invoice_id}", response_model=ResponseEnvelope[InvoiceRead])
+@router.get("/invoices/{invoice_id}", operation_id="getInvoice", response_model=ResponseEnvelope[InvoiceRead])
 def get_invoice(
     invoice_id: int,
     db_session: Session = Depends(get_db),
@@ -84,7 +84,7 @@ def get_invoice(
     
     return ResponseEnvelope(data=invoice.to_dict())
 
-@router.post("/invoices", response_model=ResponseEnvelope[InvoiceRead], status_code=201)
+@router.post("/invoices", operation_id="createInvoices", response_model=ResponseEnvelope[InvoiceRead], status_code=201)
 def create_invoice(
     request_data: InvoiceCreate,
     db_session: Session = Depends(get_db),
@@ -135,7 +135,7 @@ def create_invoice(
         logger.error(f"Create invoice error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.put("/invoices/{invoice_id}", response_model=ResponseEnvelope[InvoiceRead])
+@router.put("/invoices/{invoice_id}", operation_id="updateInvoice", response_model=ResponseEnvelope[InvoiceRead])
 def update_invoice(
     invoice_id: int,
     request_data: InvoiceUpdate,
@@ -170,7 +170,7 @@ def update_invoice(
         logger.error(f"Update invoice error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/invoices/{invoice_id}", response_model=ResponseEnvelope[None])
+@router.delete("/invoices/{invoice_id}", operation_id="deleteInvoice", response_model=ResponseEnvelope[None])
 def delete_invoice(
     invoice_id: int,
     db_session: Session = Depends(get_db),
@@ -198,7 +198,7 @@ def delete_invoice(
         logger.error(f"Delete invoice error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/patients/{patient_id}/invoices", response_model=ResponseEnvelope[List[InvoiceRead]])
+@router.get("/patients/{patient_id}/invoices", operation_id="listPatientInvoices", response_model=ResponseEnvelope[List[InvoiceRead]])
 def get_patient_invoices(
     patient_id: str,
     db_session: Session = Depends(get_db),
@@ -227,7 +227,7 @@ def get_patient_invoices(
         logger.error(f"Get patient invoices error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/invoices/{invoice_id}/send-to-gib", response_model=ResponseEnvelope[dict])
+@router.post("/invoices/{invoice_id}/send-to-gib", operation_id="createInvoiceSendToGib", response_model=ResponseEnvelope[dict])
 def send_to_gib(
     invoice_id: int,
     db_session: Session = Depends(get_db),

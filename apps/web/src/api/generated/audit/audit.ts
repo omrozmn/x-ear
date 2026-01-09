@@ -22,7 +22,7 @@ import type {
 
 import type {
   HTTPValidationError,
-  ListAuditParams
+  ListAuditApiAuditGetParams
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -34,8 +34,8 @@ import { customInstance } from '../../orval-mutator';
  * List audit logs with optional filters
  * @summary List Audit
  */
-export const listAudit = (
-    params?: ListAuditParams,
+export const listAuditApiAuditGet = (
+    params?: ListAuditApiAuditGetParams,
  signal?: AbortSignal
 ) => {
       
@@ -50,69 +50,69 @@ export const listAudit = (
 
 
 
-export const getListAuditQueryKey = (params?: ListAuditParams,) => {
+export const getListAuditApiAuditGetQueryKey = (params?: ListAuditApiAuditGetParams,) => {
     return [
     `/api/audit`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListAuditQueryOptions = <TData = Awaited<ReturnType<typeof listAudit>>, TError = HTTPValidationError>(params?: ListAuditParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAudit>>, TError, TData>>, }
+export const getListAuditApiAuditGetQueryOptions = <TData = Awaited<ReturnType<typeof listAuditApiAuditGet>>, TError = HTTPValidationError>(params?: ListAuditApiAuditGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuditApiAuditGet>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListAuditQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAuditApiAuditGetQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAudit>>> = ({ signal }) => listAudit(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAuditApiAuditGet>>> = ({ signal }) => listAuditApiAuditGet(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAudit>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAuditApiAuditGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListAuditQueryResult = NonNullable<Awaited<ReturnType<typeof listAudit>>>
-export type ListAuditQueryError = HTTPValidationError
+export type ListAuditApiAuditGetQueryResult = NonNullable<Awaited<ReturnType<typeof listAuditApiAuditGet>>>
+export type ListAuditApiAuditGetQueryError = HTTPValidationError
 
 
-export function useListAudit<TData = Awaited<ReturnType<typeof listAudit>>, TError = HTTPValidationError>(
- params: undefined |  ListAuditParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAudit>>, TError, TData>> & Pick<
+export function useListAuditApiAuditGet<TData = Awaited<ReturnType<typeof listAuditApiAuditGet>>, TError = HTTPValidationError>(
+ params: undefined |  ListAuditApiAuditGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuditApiAuditGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAudit>>,
+          Awaited<ReturnType<typeof listAuditApiAuditGet>>,
           TError,
-          Awaited<ReturnType<typeof listAudit>>
+          Awaited<ReturnType<typeof listAuditApiAuditGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAudit<TData = Awaited<ReturnType<typeof listAudit>>, TError = HTTPValidationError>(
- params?: ListAuditParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAudit>>, TError, TData>> & Pick<
+export function useListAuditApiAuditGet<TData = Awaited<ReturnType<typeof listAuditApiAuditGet>>, TError = HTTPValidationError>(
+ params?: ListAuditApiAuditGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuditApiAuditGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAudit>>,
+          Awaited<ReturnType<typeof listAuditApiAuditGet>>,
           TError,
-          Awaited<ReturnType<typeof listAudit>>
+          Awaited<ReturnType<typeof listAuditApiAuditGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAudit<TData = Awaited<ReturnType<typeof listAudit>>, TError = HTTPValidationError>(
- params?: ListAuditParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAudit>>, TError, TData>>, }
+export function useListAuditApiAuditGet<TData = Awaited<ReturnType<typeof listAuditApiAuditGet>>, TError = HTTPValidationError>(
+ params?: ListAuditApiAuditGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuditApiAuditGet>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Audit
  */
 
-export function useListAudit<TData = Awaited<ReturnType<typeof listAudit>>, TError = HTTPValidationError>(
- params?: ListAuditParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAudit>>, TError, TData>>, }
+export function useListAuditApiAuditGet<TData = Awaited<ReturnType<typeof listAuditApiAuditGet>>, TError = HTTPValidationError>(
+ params?: ListAuditApiAuditGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuditApiAuditGet>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListAuditQueryOptions(params,options)
+  const queryOptions = getListAuditApiAuditGetQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

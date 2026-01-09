@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from './orval-mutator';
 
-import { patientDistribution } from '@/api/generated';
+import { listDashboardChartPatientDistribution } from '@/api/generated';
 
 export async function fetchPatientDistribution() {
-  const res = await patientDistribution() as any; // API returns data despite void type
+  const res = await listDashboardChartPatientDistribution() as any; // API returns data despite void type
   return res || [];
 }
 

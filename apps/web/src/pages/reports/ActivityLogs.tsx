@@ -9,8 +9,8 @@ import {
     FileText
 } from 'lucide-react';
 import {
-    useGetActivityLogsApiActivityLogsGet,
-    useGetActivityStatsApiActivityLogsStatsGet
+    useListActivityLogs,
+    useListActivityLogStats
 } from '@/api/generated';
 
 interface ActivityLogDetailModalProps {
@@ -127,7 +127,7 @@ export default function ActivityLogsPage() {
     const [perPage, setPerPage] = useState(20);
     const [selectedLog, setSelectedLog] = useState<any>(null);
 
-    const { data: logsResponse, isLoading } = useGetActivityLogsApiActivityLogsGet({
+    const { data: logsResponse, isLoading } = useListActivityLogs({
         branch_id: filters.branch_id || undefined,
         user_id: filters.user_id || undefined,
         action: filters.action || undefined,

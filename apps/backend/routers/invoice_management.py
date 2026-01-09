@@ -44,7 +44,7 @@ class InvoiceSettingsUpdate(BaseModel):
     invoice_logo: Optional[str] = None
     invoice_signature: Optional[str] = None
 
-@router.get("/invoice-schema")
+@router.get("/invoice-schema", operation_id="listInvoiceSchema")
 async def get_invoice_schema(db: Session = Depends(get_db)):
     """Get the invoice fields schema for dynamic form generation"""
     schema = {
@@ -85,7 +85,7 @@ async def get_invoice_schema(db: Session = Depends(get_db)):
     }
     return {"success": True, "data": schema, "requestId": str(uuid.uuid4()), "timestamp": now_utc().isoformat()}
 
-@router.post("/invoices/create-dynamic")
+@router.post("/invoices/create-dynamic", operation_id="createInvoiceCreateDynamic")
 async def create_dynamic_invoice(
     data: DynamicInvoiceCreate,
     db: Session = Depends(get_db),
@@ -131,7 +131,7 @@ async def create_dynamic_invoice(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/invoices/{invoice_id}/xml")
+@router.get("/invoices/{invoice_id}/xml", operation_id="listInvoiceXml")
 async def generate_invoice_xml(
     invoice_id: int,
     db: Session = Depends(get_db),
@@ -172,7 +172,7 @@ async def generate_invoice_xml(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/invoices/{invoice_id}/send-gib")
+@router.post("/invoices/{invoice_id}/send-gib", operation_id="createInvoiceSendGib")
 async def send_invoice_to_gib(
     invoice_id: int,
     db: Session = Depends(get_db),
@@ -208,7 +208,7 @@ async def send_invoice_to_gib(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/invoice-settings")
+@router.get("/invoice-settings", operation_id="listInvoiceSettings")
 async def get_invoice_settings(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
@@ -223,7 +223,7 @@ async def get_invoice_settings(
             if setting:
                 try:
                     settings[key] = json.loads(setting.value)
-                except:
+                except (json.JSONDecodeError, TypeError):
                     settings[key] = setting.value
             else:
                 settings[key] = None
@@ -232,7 +232,7 @@ async def get_invoice_settings(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/invoice-settings")
+@router.post("/invoice-settings", operation_id="createInvoiceSettings")
 async def update_invoice_settings(
     data: InvoiceSettingsUpdate,
     db: Session = Depends(get_db),

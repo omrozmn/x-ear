@@ -64,7 +64,7 @@ class PasswordChange(BaseModel):
 
 # --- Routes ---
 
-@router.get("/users", response_model=ResponseEnvelope[List[UserRead]])
+@router.get("/users", operation_id="listUsers", response_model=ResponseEnvelope[List[UserRead]])
 def list_users(
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
@@ -89,7 +89,7 @@ def list_users(
         }
     )
 
-@router.post("/users", status_code=201, response_model=ResponseEnvelope[UserRead])
+@router.post("/users", operation_id="createUsers", status_code=201, response_model=ResponseEnvelope[UserRead])
 def create_user(
     user_in: UserCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -152,7 +152,7 @@ def create_user(
     logger.info(f"User created: {user.id}")
     return ResponseEnvelope(data=user.to_dict())
 
-@router.get("/users/me", response_model=ResponseEnvelope[UserRead])
+@router.get("/users/me", operation_id="listUserMe", response_model=ResponseEnvelope[UserRead])
 def get_me(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -231,7 +231,7 @@ def get_me(
         detail=ApiError(message="Not found", code="USER_NOT_FOUND").model_dump(mode="json")
     )
 
-@router.put("/users/me", response_model=ResponseEnvelope[UserRead])
+@router.put("/users/me", operation_id="updateUserMe", response_model=ResponseEnvelope[UserRead])
 def update_me(
     user_in: UserUpdate,
     access: UnifiedAccess = Depends(require_access()),
@@ -257,7 +257,7 @@ def update_me(
         detail=ApiError(message="Not found", code="USER_NOT_FOUND").model_dump(mode="json")
     )
 
-@router.post("/users/me/password")
+@router.post("/users/me/password", operation_id="createUserMePassword")
 def change_password(
     password_in: PasswordChange,
     access: UnifiedAccess = Depends(require_access()),
@@ -282,7 +282,7 @@ def change_password(
     
     return ResponseEnvelope(message="Password updated")
 
-@router.put("/users/{user_id}", response_model=ResponseEnvelope[UserRead])
+@router.put("/users/{user_id}", operation_id="updateUser", response_model=ResponseEnvelope[UserRead])
 def update_user(
     user_id: str,
     user_in: UserUpdate,
@@ -321,7 +321,7 @@ def update_user(
     
     return ResponseEnvelope(data=user.to_dict())
 
-@router.delete("/users/{user_id}")
+@router.delete("/users/{user_id}", operation_id="deleteUser")
 def delete_user(
     user_id: str,
     access: UnifiedAccess = Depends(require_access()),

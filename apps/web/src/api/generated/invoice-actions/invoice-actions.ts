@@ -37,7 +37,7 @@ import { customInstance } from '../../orval-mutator';
  * Issue invoice and send to e-fatura outbox
  * @summary Issue Invoice
  */
-export const issueInvoice = (
+export const createInvoiceIssue = (
     invoiceId: number,
  signal?: AbortSignal
 ) => {
@@ -51,11 +51,11 @@ export const issueInvoice = (
   
 
 
-export const getIssueInvoiceMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof issueInvoice>>, TError,{invoiceId: number}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof issueInvoice>>, TError,{invoiceId: number}, TContext> => {
+export const getCreateInvoiceIssueMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceIssue>>, TError,{invoiceId: number}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createInvoiceIssue>>, TError,{invoiceId: number}, TContext> => {
 
-const mutationKey = ['issueInvoice'];
+const mutationKey = ['createInvoiceIssue'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -65,10 +65,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof issueInvoice>>, {invoiceId: number}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createInvoiceIssue>>, {invoiceId: number}> = (props) => {
           const {invoiceId} = props ?? {};
 
-          return  issueInvoice(invoiceId,)
+          return  createInvoiceIssue(invoiceId,)
         }
 
         
@@ -76,23 +76,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type IssueInvoiceMutationResult = NonNullable<Awaited<ReturnType<typeof issueInvoice>>>
+    export type CreateInvoiceIssueMutationResult = NonNullable<Awaited<ReturnType<typeof createInvoiceIssue>>>
     
-    export type IssueInvoiceMutationError = HTTPValidationError
+    export type CreateInvoiceIssueMutationError = HTTPValidationError
 
     /**
  * @summary Issue Invoice
  */
-export const useIssueInvoice = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof issueInvoice>>, TError,{invoiceId: number}, TContext>, }
+export const useCreateInvoiceIssue = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceIssue>>, TError,{invoiceId: number}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof issueInvoice>>,
+        Awaited<ReturnType<typeof createInvoiceIssue>>,
         TError,
         {invoiceId: number},
         TContext
       > => {
 
-      const mutationOptions = getIssueInvoiceMutationOptions(options);
+      const mutationOptions = getCreateInvoiceIssueMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -100,7 +100,7 @@ export const useIssueInvoice = <TError = HTTPValidationError,
  * Create a copy of an invoice
  * @summary Copy Invoice
  */
-export const copyInvoice = (
+export const createInvoiceCopy = (
     invoiceId: number,
  signal?: AbortSignal
 ) => {
@@ -114,11 +114,11 @@ export const copyInvoice = (
   
 
 
-export const getCopyInvoiceMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof copyInvoice>>, TError,{invoiceId: number}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof copyInvoice>>, TError,{invoiceId: number}, TContext> => {
+export const getCreateInvoiceCopyMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceCopy>>, TError,{invoiceId: number}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createInvoiceCopy>>, TError,{invoiceId: number}, TContext> => {
 
-const mutationKey = ['copyInvoice'];
+const mutationKey = ['createInvoiceCopy'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -128,10 +128,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof copyInvoice>>, {invoiceId: number}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createInvoiceCopy>>, {invoiceId: number}> = (props) => {
           const {invoiceId} = props ?? {};
 
-          return  copyInvoice(invoiceId,)
+          return  createInvoiceCopy(invoiceId,)
         }
 
         
@@ -139,23 +139,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CopyInvoiceMutationResult = NonNullable<Awaited<ReturnType<typeof copyInvoice>>>
+    export type CreateInvoiceCopyMutationResult = NonNullable<Awaited<ReturnType<typeof createInvoiceCopy>>>
     
-    export type CopyInvoiceMutationError = HTTPValidationError
+    export type CreateInvoiceCopyMutationError = HTTPValidationError
 
     /**
  * @summary Copy Invoice
  */
-export const useCopyInvoice = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof copyInvoice>>, TError,{invoiceId: number}, TContext>, }
+export const useCreateInvoiceCopy = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceCopy>>, TError,{invoiceId: number}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof copyInvoice>>,
+        Awaited<ReturnType<typeof createInvoiceCopy>>,
         TError,
         {invoiceId: number},
         TContext
       > => {
 
-      const mutationOptions = getCopyInvoiceMutationOptions(options);
+      const mutationOptions = getCreateInvoiceCopyMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -163,7 +163,7 @@ export const useCopyInvoice = <TError = HTTPValidationError,
  * Create copy and cancellation draft
  * @summary Copy Invoice Cancel
  */
-export const copyInvoiceCancel = (
+export const createInvoiceCopyCancel = (
     invoiceId: number,
  signal?: AbortSignal
 ) => {
@@ -177,11 +177,11 @@ export const copyInvoiceCancel = (
   
 
 
-export const getCopyInvoiceCancelMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof copyInvoiceCancel>>, TError,{invoiceId: number}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof copyInvoiceCancel>>, TError,{invoiceId: number}, TContext> => {
+export const getCreateInvoiceCopyCancelMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceCopyCancel>>, TError,{invoiceId: number}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createInvoiceCopyCancel>>, TError,{invoiceId: number}, TContext> => {
 
-const mutationKey = ['copyInvoiceCancel'];
+const mutationKey = ['createInvoiceCopyCancel'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -191,10 +191,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof copyInvoiceCancel>>, {invoiceId: number}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createInvoiceCopyCancel>>, {invoiceId: number}> = (props) => {
           const {invoiceId} = props ?? {};
 
-          return  copyInvoiceCancel(invoiceId,)
+          return  createInvoiceCopyCancel(invoiceId,)
         }
 
         
@@ -202,23 +202,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CopyInvoiceCancelMutationResult = NonNullable<Awaited<ReturnType<typeof copyInvoiceCancel>>>
+    export type CreateInvoiceCopyCancelMutationResult = NonNullable<Awaited<ReturnType<typeof createInvoiceCopyCancel>>>
     
-    export type CopyInvoiceCancelMutationError = HTTPValidationError
+    export type CreateInvoiceCopyCancelMutationError = HTTPValidationError
 
     /**
  * @summary Copy Invoice Cancel
  */
-export const useCopyInvoiceCancel = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof copyInvoiceCancel>>, TError,{invoiceId: number}, TContext>, }
+export const useCreateInvoiceCopyCancel = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceCopyCancel>>, TError,{invoiceId: number}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof copyInvoiceCancel>>,
+        Awaited<ReturnType<typeof createInvoiceCopyCancel>>,
         TError,
         {invoiceId: number},
         TContext
       > => {
 
-      const mutationOptions = getCopyInvoiceCancelMutationOptions(options);
+      const mutationOptions = getCreateInvoiceCopyCancelMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -226,7 +226,7 @@ export const useCopyInvoiceCancel = <TError = HTTPValidationError,
  * Serve invoice PDF
  * @summary Serve Invoice Pdf
  */
-export const serveInvoicePdf = (
+export const listInvoicePdf = (
     invoiceId: number,
  signal?: AbortSignal
 ) => {
@@ -241,69 +241,69 @@ export const serveInvoicePdf = (
 
 
 
-export const getServeInvoicePdfQueryKey = (invoiceId?: number,) => {
+export const getListInvoicePdfQueryKey = (invoiceId?: number,) => {
     return [
     `/api/invoices/${invoiceId}/pdf`
     ] as const;
     }
 
     
-export const getServeInvoicePdfQueryOptions = <TData = Awaited<ReturnType<typeof serveInvoicePdf>>, TError = HTTPValidationError>(invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof serveInvoicePdf>>, TError, TData>>, }
+export const getListInvoicePdfQueryOptions = <TData = Awaited<ReturnType<typeof listInvoicePdf>>, TError = HTTPValidationError>(invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoicePdf>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getServeInvoicePdfQueryKey(invoiceId);
+  const queryKey =  queryOptions?.queryKey ?? getListInvoicePdfQueryKey(invoiceId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof serveInvoicePdf>>> = ({ signal }) => serveInvoicePdf(invoiceId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listInvoicePdf>>> = ({ signal }) => listInvoicePdf(invoiceId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(invoiceId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof serveInvoicePdf>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(invoiceId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listInvoicePdf>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ServeInvoicePdfQueryResult = NonNullable<Awaited<ReturnType<typeof serveInvoicePdf>>>
-export type ServeInvoicePdfQueryError = HTTPValidationError
+export type ListInvoicePdfQueryResult = NonNullable<Awaited<ReturnType<typeof listInvoicePdf>>>
+export type ListInvoicePdfQueryError = HTTPValidationError
 
 
-export function useServeInvoicePdf<TData = Awaited<ReturnType<typeof serveInvoicePdf>>, TError = HTTPValidationError>(
- invoiceId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof serveInvoicePdf>>, TError, TData>> & Pick<
+export function useListInvoicePdf<TData = Awaited<ReturnType<typeof listInvoicePdf>>, TError = HTTPValidationError>(
+ invoiceId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoicePdf>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof serveInvoicePdf>>,
+          Awaited<ReturnType<typeof listInvoicePdf>>,
           TError,
-          Awaited<ReturnType<typeof serveInvoicePdf>>
+          Awaited<ReturnType<typeof listInvoicePdf>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useServeInvoicePdf<TData = Awaited<ReturnType<typeof serveInvoicePdf>>, TError = HTTPValidationError>(
- invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof serveInvoicePdf>>, TError, TData>> & Pick<
+export function useListInvoicePdf<TData = Awaited<ReturnType<typeof listInvoicePdf>>, TError = HTTPValidationError>(
+ invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoicePdf>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof serveInvoicePdf>>,
+          Awaited<ReturnType<typeof listInvoicePdf>>,
           TError,
-          Awaited<ReturnType<typeof serveInvoicePdf>>
+          Awaited<ReturnType<typeof listInvoicePdf>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useServeInvoicePdf<TData = Awaited<ReturnType<typeof serveInvoicePdf>>, TError = HTTPValidationError>(
- invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof serveInvoicePdf>>, TError, TData>>, }
+export function useListInvoicePdf<TData = Awaited<ReturnType<typeof listInvoicePdf>>, TError = HTTPValidationError>(
+ invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoicePdf>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Serve Invoice Pdf
  */
 
-export function useServeInvoicePdf<TData = Awaited<ReturnType<typeof serveInvoicePdf>>, TError = HTTPValidationError>(
- invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof serveInvoicePdf>>, TError, TData>>, }
+export function useListInvoicePdf<TData = Awaited<ReturnType<typeof listInvoicePdf>>, TError = HTTPValidationError>(
+ invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoicePdf>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getServeInvoicePdfQueryOptions(invoiceId,options)
+  const queryOptions = getListInvoicePdfQueryOptions(invoiceId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -319,7 +319,7 @@ export function useServeInvoicePdf<TData = Awaited<ReturnType<typeof serveInvoic
  * Serve shipping PDF
  * @summary Serve Shipping Pdf
  */
-export const serveShippingPdf = (
+export const listInvoiceShippingPdf = (
     invoiceId: number,
  signal?: AbortSignal
 ) => {
@@ -334,69 +334,69 @@ export const serveShippingPdf = (
 
 
 
-export const getServeShippingPdfQueryKey = (invoiceId?: number,) => {
+export const getListInvoiceShippingPdfQueryKey = (invoiceId?: number,) => {
     return [
     `/api/invoices/${invoiceId}/shipping-pdf`
     ] as const;
     }
 
     
-export const getServeShippingPdfQueryOptions = <TData = Awaited<ReturnType<typeof serveShippingPdf>>, TError = HTTPValidationError>(invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof serveShippingPdf>>, TError, TData>>, }
+export const getListInvoiceShippingPdfQueryOptions = <TData = Awaited<ReturnType<typeof listInvoiceShippingPdf>>, TError = HTTPValidationError>(invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceShippingPdf>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getServeShippingPdfQueryKey(invoiceId);
+  const queryKey =  queryOptions?.queryKey ?? getListInvoiceShippingPdfQueryKey(invoiceId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof serveShippingPdf>>> = ({ signal }) => serveShippingPdf(invoiceId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listInvoiceShippingPdf>>> = ({ signal }) => listInvoiceShippingPdf(invoiceId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(invoiceId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof serveShippingPdf>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(invoiceId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listInvoiceShippingPdf>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ServeShippingPdfQueryResult = NonNullable<Awaited<ReturnType<typeof serveShippingPdf>>>
-export type ServeShippingPdfQueryError = HTTPValidationError
+export type ListInvoiceShippingPdfQueryResult = NonNullable<Awaited<ReturnType<typeof listInvoiceShippingPdf>>>
+export type ListInvoiceShippingPdfQueryError = HTTPValidationError
 
 
-export function useServeShippingPdf<TData = Awaited<ReturnType<typeof serveShippingPdf>>, TError = HTTPValidationError>(
- invoiceId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof serveShippingPdf>>, TError, TData>> & Pick<
+export function useListInvoiceShippingPdf<TData = Awaited<ReturnType<typeof listInvoiceShippingPdf>>, TError = HTTPValidationError>(
+ invoiceId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceShippingPdf>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof serveShippingPdf>>,
+          Awaited<ReturnType<typeof listInvoiceShippingPdf>>,
           TError,
-          Awaited<ReturnType<typeof serveShippingPdf>>
+          Awaited<ReturnType<typeof listInvoiceShippingPdf>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useServeShippingPdf<TData = Awaited<ReturnType<typeof serveShippingPdf>>, TError = HTTPValidationError>(
- invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof serveShippingPdf>>, TError, TData>> & Pick<
+export function useListInvoiceShippingPdf<TData = Awaited<ReturnType<typeof listInvoiceShippingPdf>>, TError = HTTPValidationError>(
+ invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceShippingPdf>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof serveShippingPdf>>,
+          Awaited<ReturnType<typeof listInvoiceShippingPdf>>,
           TError,
-          Awaited<ReturnType<typeof serveShippingPdf>>
+          Awaited<ReturnType<typeof listInvoiceShippingPdf>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useServeShippingPdf<TData = Awaited<ReturnType<typeof serveShippingPdf>>, TError = HTTPValidationError>(
- invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof serveShippingPdf>>, TError, TData>>, }
+export function useListInvoiceShippingPdf<TData = Awaited<ReturnType<typeof listInvoiceShippingPdf>>, TError = HTTPValidationError>(
+ invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceShippingPdf>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Serve Shipping Pdf
  */
 
-export function useServeShippingPdf<TData = Awaited<ReturnType<typeof serveShippingPdf>>, TError = HTTPValidationError>(
- invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof serveShippingPdf>>, TError, TData>>, }
+export function useListInvoiceShippingPdf<TData = Awaited<ReturnType<typeof listInvoiceShippingPdf>>, TError = HTTPValidationError>(
+ invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceShippingPdf>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getServeShippingPdfQueryOptions(invoiceId,options)
+  const queryOptions = getListInvoiceShippingPdfQueryOptions(invoiceId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

@@ -16,7 +16,7 @@ import {
   useDeleteCashRecord,
 } from '../hooks/useCashflow';
 import { CashRecordDetailModal } from '../components/cashflow/CashRecordDetailModal';
-import type { CashflowFilters as CashflowFiltersType, CashRecord } from '../types/cashflow';
+import type { CashflowFilters as CashflowFiltersType, CashRecord, CashRecordFormData } from '../types/cashflow';
 
 export function CashflowPage() {
   const [filters, setFilters] = useState<CashflowFiltersType>({});
@@ -39,7 +39,7 @@ export function CashflowPage() {
     if (!recordData) return [];
 
     // Parse inventory info from description if not present (backend compatibility)
-    let filtered = recordData.map((record: any) => {
+    let filtered = recordData.map((record: CashRecord & { description?: string }) => {
       if (!record.inventoryItemId && record.description) {
         const inventoryMatch = record.description.match(/\[INVENTORY:([^:]+):([^\]]+)\]/);
         if (inventoryMatch) {
@@ -115,7 +115,7 @@ export function CashflowPage() {
     setCurrentPage(1);
   };
 
-  const handleSaveRecord = async (formData: any) => {
+  const handleSaveRecord = async (formData: CashRecordFormData) => {
     await createMutation.mutateAsync(formData);
   };
 

@@ -1,4 +1,4 @@
-import { addTimelineEvent as addTimelineEventApi } from '@/api/generated/timeline/timeline';
+import { createPatientTimeline as createPatientTimelineApi } from '@/api/generated/timeline/timeline';
 import type { TimelineEventCreate } from '@/api/generated/schemas';
 import { outbox } from '../utils/outbox';
 
@@ -6,7 +6,7 @@ export interface TimelineEventData {
   type: string;
   title: string;
   description?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   timestamp?: string;
   date?: string;
   time?: string;
@@ -18,14 +18,14 @@ export interface TimelineEventData {
 
 export interface TimelineServiceResponse {
   success: boolean;
-  data?: any;
+  data?: unknown;
   error?: string;
   timestamp: string;
 }
 
 /**
  * Timeline Service - Handles adding timeline events for patients
- * Replaces the global window.addTimelineEvent function with proper API integration
+ * Replaces the global window.createPatientTimeline function with proper API integration
  */
 class TimelineService {
   /**
@@ -34,7 +34,7 @@ class TimelineService {
    * @param eventData - The event data to add
    * @returns Promise with the result
    */
-  async addTimelineEvent(patientId: string, eventData: TimelineEventData): Promise<TimelineServiceResponse> {
+  async createPatientTimeline(patientId: string, eventData: TimelineEventData): Promise<TimelineServiceResponse> {
     try {
       // Prepare the request body according to the API schema
       const requestBody: TimelineEventCreate = {
@@ -53,7 +53,7 @@ class TimelineService {
 
       // Try to make the API call
       try {
-        const response = await addTimelineEventApi(patientId, requestBody);
+        const response = await createPatientTimelineApi(patientId, requestBody);
 
         return {
           success: true,
@@ -96,7 +96,7 @@ class TimelineService {
    * @param eventType - The type of device event
    * @param details - Device-specific details
    */
-  async addDeviceEvent(patientId: string, eventType: string, details: Record<string, any>): Promise<TimelineServiceResponse> {
+  async addDeviceEvent(patientId: string, eventType: string, details: Record<string, unknown>): Promise<TimelineServiceResponse> {
     const eventTitles: Record<string, string> = {
       'device_assigned': 'Cihaz Atandı',
       'device_removed': 'Cihaz Kaldırıldı',
@@ -118,7 +118,7 @@ class TimelineService {
       category: 'device'
     };
 
-    return this.addTimelineEvent(patientId, eventData);
+    return this.createPatientTimeline(patientId, eventData);
   }
 
   /**
@@ -127,7 +127,7 @@ class TimelineService {
    * @param eventType - The type of appointment event
    * @param details - Appointment-specific details
    */
-  async addAppointmentEvent(patientId: string, eventType: string, details: Record<string, any>): Promise<TimelineServiceResponse> {
+  async addAppointmentEvent(patientId: string, eventType: string, details: Record<string, unknown>): Promise<TimelineServiceResponse> {
     const eventTitles: Record<string, string> = {
       'appointment_scheduled': 'Randevu Planlandı',
       'appointment_completed': 'Randevu Tamamlandı',
@@ -145,7 +145,7 @@ class TimelineService {
       category: 'appointment'
     };
 
-    return this.addTimelineEvent(patientId, eventData);
+    return this.createPatientTimeline(patientId, eventData);
   }
 
   /**
@@ -154,7 +154,7 @@ class TimelineService {
    * @param eventType - The type of payment event
    * @param details - Payment-specific details
    */
-  async addPaymentEvent(patientId: string, eventType: string, details: Record<string, any>): Promise<TimelineServiceResponse> {
+  async addPaymentEvent(patientId: string, eventType: string, details: Record<string, unknown>): Promise<TimelineServiceResponse> {
     const eventTitles: Record<string, string> = {
       'payment_received': 'Ödeme Alındı',
       'payment_refunded': 'Ödeme İade Edildi',
@@ -171,13 +171,13 @@ class TimelineService {
       category: 'payment'
     };
 
-    return this.addTimelineEvent(patientId, eventData);
+    return this.createPatientTimeline(patientId, eventData);
   }
 
   /**
    * Generate description for device events
    */
-  private generateDeviceDescription(eventType: string, details: Record<string, any>): string {
+  private generateDeviceDescription(eventType: string, details: Record<string, unknown>): string {
     const deviceName = details.deviceName || details.brand || 'Cihaz';
     const ear = details.ear || details.side;
     const earText = ear === 'left' ? 'Sol kulak' : ear === 'right' ? 'Sağ kulak' : ear === 'both' ? 'İki kulak' : '';
@@ -207,9 +207,10 @@ class TimelineService {
   /**
    * Generate description for appointment events
    */
-  private generateAppointmentDescription(eventType: string, details: Record<string, any>): string {
-    const date = details.date ? new Date(details.date).toLocaleDateString('tr-TR') : '';
-    const time = details.time || '';
+  private generateAppointmentDescription(eventType: string, details: Record<string, unknown>): string {
+    const dateVal = details.date;
+    const date = typeof dateVal === 'string' || typeof dateVal === 'number' ? new Date(dateVal).toLocaleDateString('tr-TR') : '';
+    const time = (details.time as string) || '';
     const type = details.type || details.appointmentType || '';
 
     switch (eventType) {
@@ -229,7 +230,7 @@ class TimelineService {
   /**
    * Generate description for payment events
    */
-  private generatePaymentDescription(eventType: string, details: Record<string, any>): string {
+  private generatePaymentDescription(eventType: string, details: Record<string, unknown>): string {
     const amount = details.amount ? `₺${details.amount}` : '';
     const method = details.paymentMethod || details.method || '';
 
@@ -249,7 +250,7 @@ class TimelineService {
 // Export singleton instance
 export const timelineService = new TimelineService();
 
-// Export for backward compatibility with window.addTimelineEvent
-export const addTimelineEvent = (patientId: string, eventType: string, details: Record<string, any>) => {
+// Export for backward compatibility with window.createPatientTimeline
+export const createPatientTimeline = (patientId: string, eventType: string, details: Record<string, unknown>) => {
   return timelineService.addDeviceEvent(patientId, eventType, details);
 };

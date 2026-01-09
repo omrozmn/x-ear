@@ -39,7 +39,7 @@ class TimelineEventCreate(BaseModel):
 
 # --- Routes ---
 
-@router.get("/timeline")
+@router.get("/timeline", operation_id="listTimeline")
 def get_timeline(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
@@ -65,7 +65,7 @@ def get_timeline(
             elif log.details:
                 try:
                     details = json.loads(log.details) if isinstance(log.details, str) else log.details
-                except:
+                except (json.JSONDecodeError, TypeError):
                     details = {}
             
             timeline.append({
@@ -94,7 +94,7 @@ def get_timeline(
         logger.error(f"Error getting timeline: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/patients/{patient_id}/timeline")
+@router.get("/patients/{patient_id}/timeline", operation_id="listPatientTimeline")
 def get_patient_timeline(
     patient_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -135,7 +135,7 @@ def get_patient_timeline(
                 elif log.details:
                     try:
                         details = json.loads(log.details) if isinstance(log.details, str) else log.details
-                    except:
+                    except (json.JSONDecodeError, TypeError):
                         details = {}
                 
                 timeline.append({
@@ -168,7 +168,7 @@ def get_patient_timeline(
         logger.error(f"Error getting patient timeline: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/patients/{patient_id}/timeline", status_code=201)
+@router.post("/patients/{patient_id}/timeline", operation_id="createPatientTimeline", status_code=201)
 def add_timeline_event(
     patient_id: str,
     request_data: TimelineEventCreate,
@@ -247,7 +247,7 @@ def add_timeline_event(
         logger.error(f"Error adding timeline event: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/patients/{patient_id}/activities", status_code=201)
+@router.post("/patients/{patient_id}/activities", operation_id="createPatientActivities", status_code=201)
 def log_patient_activity(
     patient_id: str,
     request_data: TimelineEventCreate,
@@ -257,7 +257,7 @@ def log_patient_activity(
     """Log an activity for a patient (alias for timeline event)"""
     return add_timeline_event(patient_id, request_data, access, db)
 
-@router.delete("/patients/{patient_id}/timeline/{event_id}")
+@router.delete("/patients/{patient_id}/timeline/{event_id}", operation_id="deletePatientTimeline")
 def delete_timeline_event(
     patient_id: str,
     event_id: str,

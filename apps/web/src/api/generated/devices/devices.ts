@@ -28,8 +28,8 @@ import type {
   BrandCreate,
   DeviceCreate,
   DeviceUpdate,
-  GetDevicesParams,
   HTTPValidationError,
+  ListDevicesParams,
   ResponseEnvelopeDeviceRead,
   ResponseEnvelopeListDeviceRead,
   StockUpdateRequest
@@ -44,8 +44,8 @@ import { customInstance } from '../../orval-mutator';
  * Get devices with filtering
  * @summary Get Devices
  */
-export const getDevices = (
-    params?: GetDevicesParams,
+export const listDevices = (
+    params?: ListDevicesParams,
  signal?: AbortSignal
 ) => {
       
@@ -60,69 +60,69 @@ export const getDevices = (
 
 
 
-export const getGetDevicesQueryKey = (params?: GetDevicesParams,) => {
+export const getListDevicesQueryKey = (params?: ListDevicesParams,) => {
     return [
     `/api/devices`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetDevicesQueryOptions = <TData = Awaited<ReturnType<typeof getDevices>>, TError = HTTPValidationError>(params?: GetDevicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData>>, }
+export const getListDevicesQueryOptions = <TData = Awaited<ReturnType<typeof listDevices>>, TError = HTTPValidationError>(params?: ListDevicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDevices>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetDevicesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListDevicesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDevices>>> = ({ signal }) => getDevices(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDevices>>> = ({ signal }) => listDevices(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDevices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetDevicesQueryResult = NonNullable<Awaited<ReturnType<typeof getDevices>>>
-export type GetDevicesQueryError = HTTPValidationError
+export type ListDevicesQueryResult = NonNullable<Awaited<ReturnType<typeof listDevices>>>
+export type ListDevicesQueryError = HTTPValidationError
 
 
-export function useGetDevices<TData = Awaited<ReturnType<typeof getDevices>>, TError = HTTPValidationError>(
- params: undefined |  GetDevicesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData>> & Pick<
+export function useListDevices<TData = Awaited<ReturnType<typeof listDevices>>, TError = HTTPValidationError>(
+ params: undefined |  ListDevicesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDevices>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDevices>>,
+          Awaited<ReturnType<typeof listDevices>>,
           TError,
-          Awaited<ReturnType<typeof getDevices>>
+          Awaited<ReturnType<typeof listDevices>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetDevices<TData = Awaited<ReturnType<typeof getDevices>>, TError = HTTPValidationError>(
- params?: GetDevicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData>> & Pick<
+export function useListDevices<TData = Awaited<ReturnType<typeof listDevices>>, TError = HTTPValidationError>(
+ params?: ListDevicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDevices>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDevices>>,
+          Awaited<ReturnType<typeof listDevices>>,
           TError,
-          Awaited<ReturnType<typeof getDevices>>
+          Awaited<ReturnType<typeof listDevices>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetDevices<TData = Awaited<ReturnType<typeof getDevices>>, TError = HTTPValidationError>(
- params?: GetDevicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData>>, }
+export function useListDevices<TData = Awaited<ReturnType<typeof listDevices>>, TError = HTTPValidationError>(
+ params?: ListDevicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDevices>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Devices
  */
 
-export function useGetDevices<TData = Awaited<ReturnType<typeof getDevices>>, TError = HTTPValidationError>(
- params?: GetDevicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData>>, }
+export function useListDevices<TData = Awaited<ReturnType<typeof listDevices>>, TError = HTTPValidationError>(
+ params?: ListDevicesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDevices>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetDevicesQueryOptions(params,options)
+  const queryOptions = getListDevicesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -138,7 +138,7 @@ export function useGetDevices<TData = Awaited<ReturnType<typeof getDevices>>, TE
  * Create a new device
  * @summary Create Device
  */
-export const createDevice = (
+export const createDevices = (
     deviceCreate: DeviceCreate,
  signal?: AbortSignal
 ) => {
@@ -154,11 +154,11 @@ export const createDevice = (
   
 
 
-export const getCreateDeviceMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDevice>>, TError,{data: DeviceCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createDevice>>, TError,{data: DeviceCreate}, TContext> => {
+export const getCreateDevicesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDevices>>, TError,{data: DeviceCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createDevices>>, TError,{data: DeviceCreate}, TContext> => {
 
-const mutationKey = ['createDevice'];
+const mutationKey = ['createDevices'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -168,10 +168,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDevice>>, {data: DeviceCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDevices>>, {data: DeviceCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createDevice(data,)
+          return  createDevices(data,)
         }
 
         
@@ -179,23 +179,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateDeviceMutationResult = NonNullable<Awaited<ReturnType<typeof createDevice>>>
-    export type CreateDeviceMutationBody = DeviceCreate
-    export type CreateDeviceMutationError = HTTPValidationError
+    export type CreateDevicesMutationResult = NonNullable<Awaited<ReturnType<typeof createDevices>>>
+    export type CreateDevicesMutationBody = DeviceCreate
+    export type CreateDevicesMutationError = HTTPValidationError
 
     /**
  * @summary Create Device
  */
-export const useCreateDevice = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDevice>>, TError,{data: DeviceCreate}, TContext>, }
+export const useCreateDevices = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDevices>>, TError,{data: DeviceCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createDevice>>,
+        Awaited<ReturnType<typeof createDevices>>,
         TError,
         {data: DeviceCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateDeviceMutationOptions(options);
+      const mutationOptions = getCreateDevicesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -203,7 +203,7 @@ export const useCreateDevice = <TError = HTTPValidationError,
  * Get available device categories
  * @summary Get Device Categories
  */
-export const getDeviceCategories = (
+export const listDeviceCategories = (
     
  signal?: AbortSignal
 ) => {
@@ -218,69 +218,69 @@ export const getDeviceCategories = (
 
 
 
-export const getGetDeviceCategoriesQueryKey = () => {
+export const getListDeviceCategoriesQueryKey = () => {
     return [
     `/api/devices/categories`
     ] as const;
     }
 
     
-export const getGetDeviceCategoriesQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceCategories>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceCategories>>, TError, TData>>, }
+export const getListDeviceCategoriesQueryOptions = <TData = Awaited<ReturnType<typeof listDeviceCategories>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceCategories>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetDeviceCategoriesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListDeviceCategoriesQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceCategories>>> = ({ signal }) => getDeviceCategories(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDeviceCategories>>> = ({ signal }) => listDeviceCategories(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDeviceCategories>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDeviceCategories>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetDeviceCategoriesQueryResult = NonNullable<Awaited<ReturnType<typeof getDeviceCategories>>>
-export type GetDeviceCategoriesQueryError = unknown
+export type ListDeviceCategoriesQueryResult = NonNullable<Awaited<ReturnType<typeof listDeviceCategories>>>
+export type ListDeviceCategoriesQueryError = unknown
 
 
-export function useGetDeviceCategories<TData = Awaited<ReturnType<typeof getDeviceCategories>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceCategories>>, TError, TData>> & Pick<
+export function useListDeviceCategories<TData = Awaited<ReturnType<typeof listDeviceCategories>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceCategories>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDeviceCategories>>,
+          Awaited<ReturnType<typeof listDeviceCategories>>,
           TError,
-          Awaited<ReturnType<typeof getDeviceCategories>>
+          Awaited<ReturnType<typeof listDeviceCategories>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetDeviceCategories<TData = Awaited<ReturnType<typeof getDeviceCategories>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceCategories>>, TError, TData>> & Pick<
+export function useListDeviceCategories<TData = Awaited<ReturnType<typeof listDeviceCategories>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceCategories>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDeviceCategories>>,
+          Awaited<ReturnType<typeof listDeviceCategories>>,
           TError,
-          Awaited<ReturnType<typeof getDeviceCategories>>
+          Awaited<ReturnType<typeof listDeviceCategories>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetDeviceCategories<TData = Awaited<ReturnType<typeof getDeviceCategories>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceCategories>>, TError, TData>>, }
+export function useListDeviceCategories<TData = Awaited<ReturnType<typeof listDeviceCategories>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceCategories>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Device Categories
  */
 
-export function useGetDeviceCategories<TData = Awaited<ReturnType<typeof getDeviceCategories>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceCategories>>, TError, TData>>, }
+export function useListDeviceCategories<TData = Awaited<ReturnType<typeof listDeviceCategories>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceCategories>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetDeviceCategoriesQueryOptions(options)
+  const queryOptions = getListDeviceCategoriesQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -296,7 +296,7 @@ export function useGetDeviceCategories<TData = Awaited<ReturnType<typeof getDevi
  * Get available device brands
  * @summary Get Device Brands
  */
-export const getDeviceBrands = (
+export const listDeviceBrands = (
     
  signal?: AbortSignal
 ) => {
@@ -311,69 +311,69 @@ export const getDeviceBrands = (
 
 
 
-export const getGetDeviceBrandsQueryKey = () => {
+export const getListDeviceBrandsQueryKey = () => {
     return [
     `/api/devices/brands`
     ] as const;
     }
 
     
-export const getGetDeviceBrandsQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceBrands>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceBrands>>, TError, TData>>, }
+export const getListDeviceBrandsQueryOptions = <TData = Awaited<ReturnType<typeof listDeviceBrands>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceBrands>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetDeviceBrandsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListDeviceBrandsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceBrands>>> = ({ signal }) => getDeviceBrands(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDeviceBrands>>> = ({ signal }) => listDeviceBrands(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDeviceBrands>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDeviceBrands>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetDeviceBrandsQueryResult = NonNullable<Awaited<ReturnType<typeof getDeviceBrands>>>
-export type GetDeviceBrandsQueryError = unknown
+export type ListDeviceBrandsQueryResult = NonNullable<Awaited<ReturnType<typeof listDeviceBrands>>>
+export type ListDeviceBrandsQueryError = unknown
 
 
-export function useGetDeviceBrands<TData = Awaited<ReturnType<typeof getDeviceBrands>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceBrands>>, TError, TData>> & Pick<
+export function useListDeviceBrands<TData = Awaited<ReturnType<typeof listDeviceBrands>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceBrands>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDeviceBrands>>,
+          Awaited<ReturnType<typeof listDeviceBrands>>,
           TError,
-          Awaited<ReturnType<typeof getDeviceBrands>>
+          Awaited<ReturnType<typeof listDeviceBrands>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetDeviceBrands<TData = Awaited<ReturnType<typeof getDeviceBrands>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceBrands>>, TError, TData>> & Pick<
+export function useListDeviceBrands<TData = Awaited<ReturnType<typeof listDeviceBrands>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceBrands>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDeviceBrands>>,
+          Awaited<ReturnType<typeof listDeviceBrands>>,
           TError,
-          Awaited<ReturnType<typeof getDeviceBrands>>
+          Awaited<ReturnType<typeof listDeviceBrands>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetDeviceBrands<TData = Awaited<ReturnType<typeof getDeviceBrands>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceBrands>>, TError, TData>>, }
+export function useListDeviceBrands<TData = Awaited<ReturnType<typeof listDeviceBrands>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceBrands>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Device Brands
  */
 
-export function useGetDeviceBrands<TData = Awaited<ReturnType<typeof getDeviceBrands>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceBrands>>, TError, TData>>, }
+export function useListDeviceBrands<TData = Awaited<ReturnType<typeof listDeviceBrands>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceBrands>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetDeviceBrandsQueryOptions(options)
+  const queryOptions = getListDeviceBrandsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -389,7 +389,7 @@ export function useGetDeviceBrands<TData = Awaited<ReturnType<typeof getDeviceBr
  * Create a new device brand
  * @summary Create Device Brand
  */
-export const createDeviceBrand = (
+export const createDeviceBrands = (
     brandCreate: BrandCreate,
  signal?: AbortSignal
 ) => {
@@ -405,11 +405,11 @@ export const createDeviceBrand = (
   
 
 
-export const getCreateDeviceBrandMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDeviceBrand>>, TError,{data: BrandCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createDeviceBrand>>, TError,{data: BrandCreate}, TContext> => {
+export const getCreateDeviceBrandsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDeviceBrands>>, TError,{data: BrandCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createDeviceBrands>>, TError,{data: BrandCreate}, TContext> => {
 
-const mutationKey = ['createDeviceBrand'];
+const mutationKey = ['createDeviceBrands'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -419,10 +419,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDeviceBrand>>, {data: BrandCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDeviceBrands>>, {data: BrandCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createDeviceBrand(data,)
+          return  createDeviceBrands(data,)
         }
 
         
@@ -430,23 +430,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateDeviceBrandMutationResult = NonNullable<Awaited<ReturnType<typeof createDeviceBrand>>>
-    export type CreateDeviceBrandMutationBody = BrandCreate
-    export type CreateDeviceBrandMutationError = HTTPValidationError
+    export type CreateDeviceBrandsMutationResult = NonNullable<Awaited<ReturnType<typeof createDeviceBrands>>>
+    export type CreateDeviceBrandsMutationBody = BrandCreate
+    export type CreateDeviceBrandsMutationError = HTTPValidationError
 
     /**
  * @summary Create Device Brand
  */
-export const useCreateDeviceBrand = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDeviceBrand>>, TError,{data: BrandCreate}, TContext>, }
+export const useCreateDeviceBrands = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDeviceBrands>>, TError,{data: BrandCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createDeviceBrand>>,
+        Awaited<ReturnType<typeof createDeviceBrands>>,
         TError,
         {data: BrandCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateDeviceBrandMutationOptions(options);
+      const mutationOptions = getCreateDeviceBrandsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -454,7 +454,7 @@ export const useCreateDeviceBrand = <TError = HTTPValidationError,
  * Get devices with low stock levels
  * @summary Get Low Stock Devices
  */
-export const getLowStockDevices = (
+export const listDeviceLowStock = (
     
  signal?: AbortSignal
 ) => {
@@ -469,69 +469,69 @@ export const getLowStockDevices = (
 
 
 
-export const getGetLowStockDevicesQueryKey = () => {
+export const getListDeviceLowStockQueryKey = () => {
     return [
     `/api/devices/low-stock`
     ] as const;
     }
 
     
-export const getGetLowStockDevicesQueryOptions = <TData = Awaited<ReturnType<typeof getLowStockDevices>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLowStockDevices>>, TError, TData>>, }
+export const getListDeviceLowStockQueryOptions = <TData = Awaited<ReturnType<typeof listDeviceLowStock>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceLowStock>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetLowStockDevicesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListDeviceLowStockQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLowStockDevices>>> = ({ signal }) => getLowStockDevices(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDeviceLowStock>>> = ({ signal }) => listDeviceLowStock(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLowStockDevices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDeviceLowStock>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetLowStockDevicesQueryResult = NonNullable<Awaited<ReturnType<typeof getLowStockDevices>>>
-export type GetLowStockDevicesQueryError = unknown
+export type ListDeviceLowStockQueryResult = NonNullable<Awaited<ReturnType<typeof listDeviceLowStock>>>
+export type ListDeviceLowStockQueryError = unknown
 
 
-export function useGetLowStockDevices<TData = Awaited<ReturnType<typeof getLowStockDevices>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLowStockDevices>>, TError, TData>> & Pick<
+export function useListDeviceLowStock<TData = Awaited<ReturnType<typeof listDeviceLowStock>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceLowStock>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLowStockDevices>>,
+          Awaited<ReturnType<typeof listDeviceLowStock>>,
           TError,
-          Awaited<ReturnType<typeof getLowStockDevices>>
+          Awaited<ReturnType<typeof listDeviceLowStock>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetLowStockDevices<TData = Awaited<ReturnType<typeof getLowStockDevices>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLowStockDevices>>, TError, TData>> & Pick<
+export function useListDeviceLowStock<TData = Awaited<ReturnType<typeof listDeviceLowStock>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceLowStock>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLowStockDevices>>,
+          Awaited<ReturnType<typeof listDeviceLowStock>>,
           TError,
-          Awaited<ReturnType<typeof getLowStockDevices>>
+          Awaited<ReturnType<typeof listDeviceLowStock>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetLowStockDevices<TData = Awaited<ReturnType<typeof getLowStockDevices>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLowStockDevices>>, TError, TData>>, }
+export function useListDeviceLowStock<TData = Awaited<ReturnType<typeof listDeviceLowStock>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceLowStock>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Low Stock Devices
  */
 
-export function useGetLowStockDevices<TData = Awaited<ReturnType<typeof getLowStockDevices>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLowStockDevices>>, TError, TData>>, }
+export function useListDeviceLowStock<TData = Awaited<ReturnType<typeof listDeviceLowStock>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeviceLowStock>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetLowStockDevicesQueryOptions(options)
+  const queryOptions = getListDeviceLowStockQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -767,7 +767,7 @@ export const useDeleteDevice = <TError = HTTPValidationError,
  * Update device stock levels
  * @summary Update Device Stock
  */
-export const updateDeviceStock = (
+export const createDeviceStockUpdate = (
     deviceId: string,
     stockUpdateRequest: StockUpdateRequest,
  signal?: AbortSignal
@@ -784,11 +784,11 @@ export const updateDeviceStock = (
   
 
 
-export const getUpdateDeviceStockMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDeviceStock>>, TError,{deviceId: string;data: StockUpdateRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateDeviceStock>>, TError,{deviceId: string;data: StockUpdateRequest}, TContext> => {
+export const getCreateDeviceStockUpdateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDeviceStockUpdate>>, TError,{deviceId: string;data: StockUpdateRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createDeviceStockUpdate>>, TError,{deviceId: string;data: StockUpdateRequest}, TContext> => {
 
-const mutationKey = ['updateDeviceStock'];
+const mutationKey = ['createDeviceStockUpdate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -798,10 +798,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDeviceStock>>, {deviceId: string;data: StockUpdateRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDeviceStockUpdate>>, {deviceId: string;data: StockUpdateRequest}> = (props) => {
           const {deviceId,data} = props ?? {};
 
-          return  updateDeviceStock(deviceId,data,)
+          return  createDeviceStockUpdate(deviceId,data,)
         }
 
         
@@ -809,23 +809,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateDeviceStockMutationResult = NonNullable<Awaited<ReturnType<typeof updateDeviceStock>>>
-    export type UpdateDeviceStockMutationBody = StockUpdateRequest
-    export type UpdateDeviceStockMutationError = HTTPValidationError
+    export type CreateDeviceStockUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof createDeviceStockUpdate>>>
+    export type CreateDeviceStockUpdateMutationBody = StockUpdateRequest
+    export type CreateDeviceStockUpdateMutationError = HTTPValidationError
 
     /**
  * @summary Update Device Stock
  */
-export const useUpdateDeviceStock = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDeviceStock>>, TError,{deviceId: string;data: StockUpdateRequest}, TContext>, }
+export const useCreateDeviceStockUpdate = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDeviceStockUpdate>>, TError,{deviceId: string;data: StockUpdateRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateDeviceStock>>,
+        Awaited<ReturnType<typeof createDeviceStockUpdate>>,
         TError,
         {deviceId: string;data: StockUpdateRequest},
         TContext
       > => {
 
-      const mutationOptions = getUpdateDeviceStockMutationOptions(options);
+      const mutationOptions = getCreateDeviceStockUpdateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -33,7 +33,7 @@ class NotificationSettingsUpdate(BaseModel):
 
 # --- Routes ---
 
-@router.post("/notifications", status_code=201, response_model=ResponseEnvelope[NotificationRead])
+@router.post("/notifications", operation_id="createNotifications", status_code=201, response_model=ResponseEnvelope[NotificationRead])
 def create_notification(
     notif_in: NotificationCreateSchema,
     access: UnifiedAccess = Depends(require_access()),
@@ -57,7 +57,7 @@ def create_notification(
         logger.error(f"Create notification error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/notifications", response_model=ResponseEnvelope[List[NotificationRead]])
+@router.get("/notifications", operation_id="listNotifications", response_model=ResponseEnvelope[List[NotificationRead]])
 def list_notifications(
     user_id: Optional[str] = Query(None, alias="user_id"),
     page: int = Query(1, ge=1),
@@ -96,7 +96,7 @@ def list_notifications(
         logger.error(f"List notifications error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/notifications/{notification_id}/read", response_model=ResponseEnvelope[NotificationRead])
+@router.put("/notifications/{notification_id}/read", operation_id="updateNotificationRead", response_model=ResponseEnvelope[NotificationRead])
 def mark_notification_read(
     notification_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -123,7 +123,7 @@ def mark_notification_read(
         logger.error(f"Mark notification read error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/notifications/{notification_id}", response_model=ResponseEnvelope[NotificationRead])
+@router.put("/notifications/{notification_id}", operation_id="updateNotification", response_model=ResponseEnvelope[NotificationRead])
 def update_notification(
     notification_id: str,
     notif_in: NotificationUpdate,
@@ -152,7 +152,7 @@ def update_notification(
         logger.error(f"Update notification error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/notifications/stats", response_model=ResponseEnvelope[NotificationStats])
+@router.get("/notifications/stats", operation_id="listNotificationStats", response_model=ResponseEnvelope[NotificationStats])
 def notification_stats(
     user_id: str = Query(..., alias="user_id"),
     access: UnifiedAccess = Depends(require_access()),
@@ -174,7 +174,7 @@ def notification_stats(
         logger.error(f"Notification stats error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/notifications/{notification_id}", response_model=ResponseEnvelope[None])
+@router.delete("/notifications/{notification_id}", operation_id="deleteNotification", response_model=ResponseEnvelope[None])
 def delete_notification(
     notification_id: str,
     access: UnifiedAccess = Depends(require_access()),
@@ -200,7 +200,7 @@ def delete_notification(
         logger.error(f"Delete notification error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/notifications/settings", response_model=ResponseEnvelope[NotificationSettings])
+@router.get("/notifications/settings", operation_id="listNotificationSettings", response_model=ResponseEnvelope[NotificationSettings])
 def get_user_notification_settings(
     user_id: str = Query(..., alias="user_id"),
     db_session: Session = Depends(get_db)
@@ -219,7 +219,7 @@ def get_user_notification_settings(
         logger.error(f"Get user notification settings error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/notifications/settings", response_model=ResponseEnvelope[NotificationSettings])
+@router.put("/notifications/settings", operation_id="updateNotificationSettings", response_model=ResponseEnvelope[NotificationSettings])
 def set_user_notification_settings(
     settings_in: NotificationSettingsUpdate,
     db_session: Session = Depends(get_db)

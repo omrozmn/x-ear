@@ -20,7 +20,7 @@ export const UTSRegisterModal: React.FC<{
 
   const onSubmit = async (data: FormValues) => {
     try {
-      await startBulk.mutateAsync({ csv: data.csv });
+      await startBulk.mutateAsync({ csv: data.csv } as any);
       onClose();
     } catch (e) {
       // on error, outbox fallback handled in UTSBulkUpload or service layer

@@ -80,6 +80,3 @@ export * from './uts/uts';
 // Re-export schemas
 export * from './schemas';
 
-// Re-export aliases for backward compatibility
-export * from './aliases';
-

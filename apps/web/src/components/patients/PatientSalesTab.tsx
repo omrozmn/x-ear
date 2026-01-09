@@ -31,7 +31,7 @@ import { SalesSummaryCards } from './SalesSummaryCards';
 import { SalesFilters } from './SalesFilters';
 import { PatientSaleCard } from './patient/PatientSaleCard';
 import { SalesTableView } from './patient/SalesTableView';
-import { getSales } from '@/api/generated';
+import { listSales } from '@/api/generated';
 import { PATIENT_SALES_DATA } from '../../constants/storage-keys';
 
 interface DeviceReplacement {
@@ -117,7 +117,7 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
     try {
       console.log('🔄 Loading patient sales for:', patient.id);
 
-      const response = await getSales({ search: patient.id }) as any;
+      const response = await listSales({ search: patient.id }) as any;
 
       console.log('📊 API Response:', response);
 
@@ -270,7 +270,7 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
       loadPatientSales();
       loadDeviceReplacements();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patient?.id]);
 
   // Listen for data change events from other tabs (like Device updates)
@@ -284,7 +284,7 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
     return () => {
       window.removeEventListener('xEar:dataChanged', handleDataChange);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
@@ -443,7 +443,7 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
 
       {/* Action Buttons */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Satış İşlemleri</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Satış İşlemleri</h3>
         <div className="flex space-x-2">
           <Button onClick={handleCreateSale} className="bg-blue-600 hover:bg-blue-700">
             <Plus className="w-4 h-4 mr-2" />
@@ -636,8 +636,8 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
       {deviceReplacements.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <RefreshCw className="w-5 h-5 mr-2 text-gray-600" />
+            <CardTitle className="flex items-center text-gray-900 dark:text-gray-100">
+              <RefreshCw className="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" />
               Cihaz Değişimleri
             </CardTitle>
           </CardHeader>
@@ -645,7 +645,7 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
             {replacementsLoading ? (
               <div className="text-center py-4">
                 <Loading className="w-6 h-6 mx-auto mb-2" />
-                <p className="text-gray-500 text-sm">Cihaz değişimleri yükleniyor...</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Cihaz değişimleri yükleniyor...</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -788,10 +788,10 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
       {/* Modals */}
       {showNewSaleModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-4">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Yeni Satış</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Yeni Satış</h2>
                 <Button
                   variant="ghost"
                   size="sm"

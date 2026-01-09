@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  listTemplates,
-  updateTemplate,
-  createTemplate,
-  deleteTemplate
+  listCommunicationTemplates,
+  updateCommunicationTemplate,
+  createCommunicationTemplates,
+  deleteCommunicationTemplate
 } from '@/api/generated';
 // CommunicationTemplate type defined locally since schema may not export it
 import { Button, Input, Select, Textarea, Checkbox } from '@x-ear/ui-web';
@@ -130,7 +130,7 @@ const CommunicationTemplates: React.FC = () => {
   const loadTemplates = async () => {
     try {
       setLoading(true);
-      const response = await listTemplates() as any;
+      const response = await listCommunicationTemplates() as any;
 
       if (response?.success && response?.data) {
         // Filter out templates with undefined id
@@ -209,7 +209,7 @@ const CommunicationTemplates: React.FC = () => {
 
       if (selectedTemplate?.id) {
         // Update existing template
-        const response = await updateTemplate(
+        const response = await updateCommunicationTemplate(
           selectedTemplate.id,
           formData
         ) as any;
@@ -223,7 +223,7 @@ const CommunicationTemplates: React.FC = () => {
         }
       } else {
         // Create new template
-        const response = await createTemplate(formData) as any;
+        const response = await createCommunicationTemplates(formData) as any;
 
         if (response?.success) {
           await loadTemplates();
@@ -247,7 +247,7 @@ const CommunicationTemplates: React.FC = () => {
     if (!confirm(`Are you sure you want to delete "${template.name}"?`)) return;
 
     try {
-      const response = await deleteTemplate(template.id!) as any;
+      const response = await deleteCommunicationTemplate(template.id!) as any;
 
       if (response?.success) {
         await loadTemplates();

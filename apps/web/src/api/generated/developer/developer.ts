@@ -35,7 +35,7 @@ for models that are required by the frontend/SDK but not yet used
 in active API endpoints.
  * @summary Schema Registry
  */
-export const schemaRegistry = (
+export const listDeveloperSchemaRegistry = (
     
  signal?: AbortSignal
 ) => {
@@ -50,69 +50,69 @@ export const schemaRegistry = (
 
 
 
-export const getSchemaRegistryQueryKey = () => {
+export const getListDeveloperSchemaRegistryQueryKey = () => {
     return [
     `/api/developer/schema-registry`
     ] as const;
     }
 
     
-export const getSchemaRegistryQueryOptions = <TData = Awaited<ReturnType<typeof schemaRegistry>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof schemaRegistry>>, TError, TData>>, }
+export const getListDeveloperSchemaRegistryQueryOptions = <TData = Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getSchemaRegistryQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListDeveloperSchemaRegistryQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof schemaRegistry>>> = ({ signal }) => schemaRegistry(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>> = ({ signal }) => listDeveloperSchemaRegistry(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof schemaRegistry>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type SchemaRegistryQueryResult = NonNullable<Awaited<ReturnType<typeof schemaRegistry>>>
-export type SchemaRegistryQueryError = unknown
+export type ListDeveloperSchemaRegistryQueryResult = NonNullable<Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>>
+export type ListDeveloperSchemaRegistryQueryError = unknown
 
 
-export function useSchemaRegistry<TData = Awaited<ReturnType<typeof schemaRegistry>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof schemaRegistry>>, TError, TData>> & Pick<
+export function useListDeveloperSchemaRegistry<TData = Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof schemaRegistry>>,
+          Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>,
           TError,
-          Awaited<ReturnType<typeof schemaRegistry>>
+          Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useSchemaRegistry<TData = Awaited<ReturnType<typeof schemaRegistry>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof schemaRegistry>>, TError, TData>> & Pick<
+export function useListDeveloperSchemaRegistry<TData = Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof schemaRegistry>>,
+          Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>,
           TError,
-          Awaited<ReturnType<typeof schemaRegistry>>
+          Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useSchemaRegistry<TData = Awaited<ReturnType<typeof schemaRegistry>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof schemaRegistry>>, TError, TData>>, }
+export function useListDeveloperSchemaRegistry<TData = Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Schema Registry
  */
 
-export function useSchemaRegistry<TData = Awaited<ReturnType<typeof schemaRegistry>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof schemaRegistry>>, TError, TData>>, }
+export function useListDeveloperSchemaRegistry<TData = Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDeveloperSchemaRegistry>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getSchemaRegistryQueryOptions(options)
+  const queryOptions = getListDeveloperSchemaRegistryQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

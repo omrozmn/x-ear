@@ -9,12 +9,15 @@ import type { DeviceAssignmentReadDeviceId } from './deviceAssignmentReadDeviceI
 import type { DeviceAssignmentReadInventoryId } from './deviceAssignmentReadInventoryId';
 import type { DeviceAssignmentReadEar } from './deviceAssignmentReadEar';
 import type { DeviceAssignmentReadReason } from './deviceAssignmentReadReason';
+import type { DeviceAssignmentReadListPrice } from './deviceAssignmentReadListPrice';
+import type { DeviceAssignmentReadSalePrice } from './deviceAssignmentReadSalePrice';
 import type { DeviceAssignmentReadSgkSupport } from './deviceAssignmentReadSgkSupport';
 import type { DeviceAssignmentReadNetPayable } from './deviceAssignmentReadNetPayable';
 import type { DeviceAssignmentReadSerialNumber } from './deviceAssignmentReadSerialNumber';
 import type { DeviceAssignmentReadSerialNumberLeft } from './deviceAssignmentReadSerialNumberLeft';
 import type { DeviceAssignmentReadSerialNumberRight } from './deviceAssignmentReadSerialNumberRight';
 import type { DeviceAssignmentReadLoanerSerialNumber } from './deviceAssignmentReadLoanerSerialNumber';
+import type { DeviceAssignmentReadSaleId } from './deviceAssignmentReadSaleId';
 import type { DeviceAssignmentReadReportStatus } from './deviceAssignmentReadReportStatus';
 import type { DeviceAssignmentReadName } from './deviceAssignmentReadName';
 import type { DeviceAssignmentReadBrand } from './deviceAssignmentReadBrand';
@@ -27,8 +30,8 @@ export interface DeviceAssignmentRead {
   inventoryId?: DeviceAssignmentReadInventoryId;
   ear?: DeviceAssignmentReadEar;
   reason?: DeviceAssignmentReadReason;
-  listPrice: number;
-  salePrice: number;
+  listPrice?: DeviceAssignmentReadListPrice;
+  salePrice?: DeviceAssignmentReadSalePrice;
   sgkSupport?: DeviceAssignmentReadSgkSupport;
   netPayable?: DeviceAssignmentReadNetPayable;
   serialNumber?: DeviceAssignmentReadSerialNumber;
@@ -38,7 +41,7 @@ export interface DeviceAssignmentRead {
   loanerSerialNumber?: DeviceAssignmentReadLoanerSerialNumber;
   /** Unique identifier for the resource */
   id: string;
-  saleId: string;
+  saleId?: DeviceAssignmentReadSaleId;
   deliveryStatus?: string;
   reportStatus?: DeviceAssignmentReadReportStatus;
   name?: DeviceAssignmentReadName;

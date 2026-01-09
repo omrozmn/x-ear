@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/birfatura", tags=["Admin BirFatura"])
 
-@router.get("/stats", response_model=ResponseEnvelope[BirFaturaStats])
+@router.get("/stats", operation_id="listAdminBirfaturaStats", response_model=ResponseEnvelope[BirFaturaStats])
 async def get_stats(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("birfatura.read", admin_only=True))
@@ -50,12 +50,12 @@ async def get_stats(
         logger.error(f"Get BirFatura stats error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/invoices", response_model=ResponseEnvelope[BirFaturaInvoicesResponse])
+@router.get("/invoices", operation_id="listAdminBirfaturaInvoices", response_model=ResponseEnvelope[BirFaturaInvoicesResponse])
 async def get_invoices(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     status: Optional[str] = None,
-    direction: str = Query("outgoing", regex="^(outgoing|incoming)$"),
+    direction: str = Query("outgoing", pattern="^(outgoing|incoming)$"),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("birfatura.read", admin_only=True))
 ):
@@ -91,7 +91,7 @@ async def get_invoices(
         logger.error(f"Get BirFatura invoices error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/logs", response_model=ResponseEnvelope[BirFaturaLogsResponse])
+@router.get("/logs", operation_id="listAdminBirfaturaLogs", response_model=ResponseEnvelope[BirFaturaLogsResponse])
 async def get_logs(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),

@@ -7,6 +7,10 @@
  */
 
 export type ListAppointmentsParams = {
+start_date?: string | null;
+end_date?: string | null;
+patient_id?: string | null;
+status?: string | null;
 /**
  * @minimum 1
  */
@@ -16,8 +20,4 @@ page?: number;
  * @maximum 100
  */
 per_page?: number;
-patient_id?: string | null;
-status?: string | null;
-start_date?: string | null;
-end_date?: string | null;
 };

@@ -62,7 +62,7 @@ def get_branch_or_404(db_session: Session, branch_id: str, access: UnifiedAccess
 
 # --- Routes ---
 
-@router.get("/branches", response_model=ResponseEnvelope[List[BranchRead]])
+@router.get("/branches", operation_id="listBranches", response_model=ResponseEnvelope[List[BranchRead]])
 def get_branches(
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
@@ -83,7 +83,7 @@ def get_branches(
         logger.error(f"Get branches error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/branches", status_code=201, response_model=ResponseEnvelope[BranchRead])
+@router.post("/branches", operation_id="createBranches", status_code=201, response_model=ResponseEnvelope[BranchRead])
 def create_branch(
     branch_in: BranchCreate,
     access: UnifiedAccess = Depends(require_access()),
@@ -158,7 +158,7 @@ def create_branch(
         logger.error(f"Create branch error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/branches/{branch_id}", response_model=ResponseEnvelope[BranchRead])
+@router.put("/branches/{branch_id}", operation_id="updateBranch", response_model=ResponseEnvelope[BranchRead])
 def update_branch(
     branch_id: str,
     branch_in: BranchUpdate,
@@ -196,7 +196,7 @@ def update_branch(
         logger.error(f"Update branch error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/branches/{branch_id}")
+@router.delete("/branches/{branch_id}", operation_id="deleteBranch")
 def delete_branch(
     branch_id: str,
     access: UnifiedAccess = Depends(require_access()),

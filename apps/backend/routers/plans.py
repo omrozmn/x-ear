@@ -45,7 +45,7 @@ def get_plans(db: Session = Depends(get_db)):
         logger.error(f"Error getting plans: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/admin", response_model=ResponseEnvelope[List[PlanRead]])
+@router.get("/admin", operation_id="listPlanAdmin", response_model=ResponseEnvelope[List[PlanRead]])
 def get_admin_plans(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -108,7 +108,7 @@ def create_plan(
         logger.error(f"Error creating plan: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.put("/{plan_id}", response_model=ResponseEnvelope[PlanRead])
+@router.put("/{plan_id}", operation_id="updatePlan", response_model=ResponseEnvelope[PlanRead])
 def update_plan(
     plan_id: str,
     request_data: PlanUpdate,
@@ -153,7 +153,7 @@ def update_plan(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/{plan_id}")
+@router.delete("/{plan_id}", operation_id="deletePlan")
 def delete_plan(
     plan_id: str,
     access: UnifiedAccess = Depends(require_access()),

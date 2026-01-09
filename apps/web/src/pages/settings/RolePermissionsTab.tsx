@@ -4,12 +4,12 @@ import { customInstance } from '@/api/orval-mutator';
 import { Shield, Check, Save, Loader2, AlertCircle, Users, ShoppingCart, DollarSign, FileText, Headphones, Package, Megaphone, Settings, BarChart, LayoutDashboard, Calendar, ClipboardList, Pencil, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
-  useGetRolePermissionsApiPermissionsRoleRoleNameGet,
-  useUpdateRolePermissionsApiPermissionsRoleRoleNamePut,
-  getGetRolePermissionsQueryKey,
-  getGetMyPermissionsQueryKey,
+  useGetPermissionRole,
+  useUpdatePermissionRole,
+  getGetPermissionRoleQueryKey,
+  getListPermissionsQueryKey,
   useListRoles,
-  useCreateRole,
+  useCreateRoles,
   useUpdateRole,
   getListRolesQueryKey,
 } from '@/api/generated';
@@ -126,7 +126,7 @@ export function RolePermissionsTab() {
   }, [rolesList, selectedRole]);
 
   // Create role mutation
-  const createRoleMutation = useCreateRole({
+  const createRoleMutation = useCreateRoles({
     mutation: {
       onSuccess: () => {
         toast.success('Rol başarıyla oluşturuldu');
@@ -183,24 +183,24 @@ export function RolePermissionsTab() {
   const { data: allPermissionsResponse, isLoading: loadingPermissions } = usePermissionsGetAllPermissions();
 
   // Get role permissions using orval hook
-  const { data: rolePermissionsResponse, isLoading: loadingRole } = useGetRolePermissionsApiPermissionsRoleRoleNameGet(
+  const { data: rolePermissionsResponse, isLoading: loadingRole } = useGetPermissionRole(
     selectedRole || '',
     {
       query: {
-        queryKey: getGetRolePermissionsQueryKey(selectedRole || ''),
+        queryKey: getGetPermissionRoleQueryKey(selectedRole || ''),
         enabled: !!selectedRole,
       },
     }
   );
 
   // Update role permissions mutation using orval hook
-  const updateMutation = useUpdateRolePermissionsApiPermissionsRoleRoleNamePut({
+  const updateMutation = useUpdatePermissionRole({
     mutation: {
       onSuccess: () => {
         toast.success('İzinler başarıyla güncellendi');
         // Invalidate role permissions query
-        queryClient.invalidateQueries({ queryKey: getGetRolePermissionsQueryKey(selectedRole || '') });
-        queryClient.invalidateQueries({ queryKey: getGetMyPermissionsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetPermissionRoleQueryKey(selectedRole || '') });
+        queryClient.invalidateQueries({ queryKey: getListPermissionsQueryKey() });
         setHasChanges(false);
       },
       onError: (error: AxiosError<{ error?: string; message?: string }>) => {

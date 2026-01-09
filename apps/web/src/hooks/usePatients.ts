@@ -11,7 +11,29 @@ import { patientSearchService, PatientSearchResult } from '../services/patient/p
 import { patientCacheService, SimpleCacheFilters, PatientSearchResult as CacheSearchResult } from '../services/patient/patient-cache.service';
 import { patientValidationService } from '../services/patient/patient-validation.service';
 import { patientSyncService } from '../services/patient/patient-sync.service';
-import { getPatientDevices } from '@/api/generated';
+import { listPatientDevices } from '@/api/generated';
+import { DeviceAssignmentRead, ResponseEnvelopeListDeviceAssignmentRead } from '@/api/generated/schemas';
+
+interface ExtendedDeviceAssignmentRead extends DeviceAssignmentRead {
+  purchaseDate?: string;
+  purchase_date?: string;
+  warrantyExpiry?: string;
+  warranty_expiry?: string;
+  lastServiceDate?: string;
+  last_service_date?: string;
+  batteryType?: string;
+  battery_type?: string;
+  type?: string;
+  deviceType?: string;
+  settings?: any;
+  status?: string; // Override or add status if missing
+  side?: string;
+  ear?: any; // Override ear type from schema if needed
+  sgkScheme?: string;
+  sgk_scheme?: string;
+  // Fallback for fields that might be missing in DeviceAssignmentRead definition but present in API
+  deviceId?: any;
+}
 
 // Unified search result type for internal use
 interface UnifiedSearchResult {
@@ -469,17 +491,20 @@ export function usePatients(options: UsePatientsOptions = {}) {
 
 // Specialized hooks for common use cases
 export function usePatient(id: string | null) {
+  // ... (previous implementation remains same)
   const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // ...
     if (!id) {
       setPatient(null);
       return;
     }
 
     const loadPatient = async () => {
+      // ...
       try {
         setLoading(true);
         setError(null);
@@ -497,6 +522,7 @@ export function usePatient(id: string | null) {
 
   // Listen for updates to this specific patient
   useEffect(() => {
+    // ...
     if (!id) return;
 
     const handlePatientUpdated = (event: CustomEvent) => {
@@ -525,27 +551,37 @@ export function usePatientDevices(patientId: string) {
       setLoading(true);
       setError(null);
 
-      const response = await getPatientDevices(patientId);
+      const response = await listPatientDevices(patientId);
 
-      const data = (response as any)?.data || response;
+      // Handle Orval response structure
+      let data: ExtendedDeviceAssignmentRead[] = [];
+      const envelope = response as unknown as ResponseEnvelopeListDeviceAssignmentRead;
+
+      if (envelope?.data && Array.isArray(envelope.data)) {
+        data = envelope.data as unknown as ExtendedDeviceAssignmentRead[];
+      } else if ((response as any)?.data && Array.isArray((response as any).data)) {
+        data = (response as any).data;
+      } else if (Array.isArray(response)) {
+        data = response as unknown as ExtendedDeviceAssignmentRead[];
+      }
 
       // Orval returns data directly
       if (Array.isArray(data)) {
         // Map Device[] to PatientDevice[] with required fields
-        const mappedDevices: PatientDevice[] = data.map((device: any) => ({
+        const mappedDevices: PatientDevice[] = data.map((device) => ({
           id: device.id || device.deviceId || '',
-          brand: device.brand || '',
-          model: device.model || '',
-          serialNumber: device.serialNumber || device.serial_number,
-          side: device.side || device.ear || 'left',
-          type: device.type || device.deviceType || 'hearing_aid',
-          status: device.status || 'active',
+          brand: (device.brand as unknown as string) || '', // brand is complex object in schema
+          model: (device.model as unknown as string) || '', // model is complex object in schema
+          serialNumber: (device.serialNumber as unknown as string) || (device as any).serial_number,
+          side: (device.side || (device.ear as unknown as string) || 'left') as 'left' | 'right',
+          type: (device.type || device.deviceType || 'hearing_aid') as 'hearing_aid' | 'accessory',
+          status: (device.status || 'active') as 'active' | 'inactive' | 'servicing',
           purchaseDate: device.purchaseDate || device.purchase_date,
           warrantyExpiry: device.warrantyExpiry || device.warranty_expiry,
           lastServiceDate: device.lastServiceDate || device.last_service_date,
           batteryType: device.batteryType || device.battery_type,
-          price: device.price,
-          sgkScheme: device.sgkScheme || device.sgk_scheme,
+          price: (device.salePrice as unknown as number) || (device as any).price,
+          sgkScheme: !!(device.sgkScheme || device.sgk_scheme),
           settings: device.settings,
         }));
         setDevices(mappedDevices);

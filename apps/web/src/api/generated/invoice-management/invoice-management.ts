@@ -39,7 +39,7 @@ import { customInstance } from '../../orval-mutator';
  * Get the invoice fields schema for dynamic form generation
  * @summary Get Invoice Schema
  */
-export const getInvoiceSchema = (
+export const listInvoiceSchema = (
     
  signal?: AbortSignal
 ) => {
@@ -54,69 +54,69 @@ export const getInvoiceSchema = (
 
 
 
-export const getGetInvoiceSchemaQueryKey = () => {
+export const getListInvoiceSchemaQueryKey = () => {
     return [
     `/api/invoice-schema`
     ] as const;
     }
 
     
-export const getGetInvoiceSchemaQueryOptions = <TData = Awaited<ReturnType<typeof getInvoiceSchema>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceSchema>>, TError, TData>>, }
+export const getListInvoiceSchemaQueryOptions = <TData = Awaited<ReturnType<typeof listInvoiceSchema>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceSchema>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetInvoiceSchemaQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListInvoiceSchemaQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getInvoiceSchema>>> = ({ signal }) => getInvoiceSchema(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listInvoiceSchema>>> = ({ signal }) => listInvoiceSchema(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getInvoiceSchema>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listInvoiceSchema>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetInvoiceSchemaQueryResult = NonNullable<Awaited<ReturnType<typeof getInvoiceSchema>>>
-export type GetInvoiceSchemaQueryError = unknown
+export type ListInvoiceSchemaQueryResult = NonNullable<Awaited<ReturnType<typeof listInvoiceSchema>>>
+export type ListInvoiceSchemaQueryError = unknown
 
 
-export function useGetInvoiceSchema<TData = Awaited<ReturnType<typeof getInvoiceSchema>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceSchema>>, TError, TData>> & Pick<
+export function useListInvoiceSchema<TData = Awaited<ReturnType<typeof listInvoiceSchema>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceSchema>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getInvoiceSchema>>,
+          Awaited<ReturnType<typeof listInvoiceSchema>>,
           TError,
-          Awaited<ReturnType<typeof getInvoiceSchema>>
+          Awaited<ReturnType<typeof listInvoiceSchema>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetInvoiceSchema<TData = Awaited<ReturnType<typeof getInvoiceSchema>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceSchema>>, TError, TData>> & Pick<
+export function useListInvoiceSchema<TData = Awaited<ReturnType<typeof listInvoiceSchema>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceSchema>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getInvoiceSchema>>,
+          Awaited<ReturnType<typeof listInvoiceSchema>>,
           TError,
-          Awaited<ReturnType<typeof getInvoiceSchema>>
+          Awaited<ReturnType<typeof listInvoiceSchema>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetInvoiceSchema<TData = Awaited<ReturnType<typeof getInvoiceSchema>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceSchema>>, TError, TData>>, }
+export function useListInvoiceSchema<TData = Awaited<ReturnType<typeof listInvoiceSchema>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceSchema>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Invoice Schema
  */
 
-export function useGetInvoiceSchema<TData = Awaited<ReturnType<typeof getInvoiceSchema>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceSchema>>, TError, TData>>, }
+export function useListInvoiceSchema<TData = Awaited<ReturnType<typeof listInvoiceSchema>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceSchema>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetInvoiceSchemaQueryOptions(options)
+  const queryOptions = getListInvoiceSchemaQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -132,7 +132,7 @@ export function useGetInvoiceSchema<TData = Awaited<ReturnType<typeof getInvoice
  * Create invoice from dynamic form data
  * @summary Create Dynamic Invoice
  */
-export const createDynamicInvoice = (
+export const createInvoiceCreateDynamic = (
     dynamicInvoiceCreate: DynamicInvoiceCreate,
  signal?: AbortSignal
 ) => {
@@ -148,11 +148,11 @@ export const createDynamicInvoice = (
   
 
 
-export const getCreateDynamicInvoiceMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDynamicInvoice>>, TError,{data: DynamicInvoiceCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createDynamicInvoice>>, TError,{data: DynamicInvoiceCreate}, TContext> => {
+export const getCreateInvoiceCreateDynamicMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceCreateDynamic>>, TError,{data: DynamicInvoiceCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createInvoiceCreateDynamic>>, TError,{data: DynamicInvoiceCreate}, TContext> => {
 
-const mutationKey = ['createDynamicInvoice'];
+const mutationKey = ['createInvoiceCreateDynamic'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -162,10 +162,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDynamicInvoice>>, {data: DynamicInvoiceCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createInvoiceCreateDynamic>>, {data: DynamicInvoiceCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createDynamicInvoice(data,)
+          return  createInvoiceCreateDynamic(data,)
         }
 
         
@@ -173,23 +173,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateDynamicInvoiceMutationResult = NonNullable<Awaited<ReturnType<typeof createDynamicInvoice>>>
-    export type CreateDynamicInvoiceMutationBody = DynamicInvoiceCreate
-    export type CreateDynamicInvoiceMutationError = HTTPValidationError
+    export type CreateInvoiceCreateDynamicMutationResult = NonNullable<Awaited<ReturnType<typeof createInvoiceCreateDynamic>>>
+    export type CreateInvoiceCreateDynamicMutationBody = DynamicInvoiceCreate
+    export type CreateInvoiceCreateDynamicMutationError = HTTPValidationError
 
     /**
  * @summary Create Dynamic Invoice
  */
-export const useCreateDynamicInvoice = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDynamicInvoice>>, TError,{data: DynamicInvoiceCreate}, TContext>, }
+export const useCreateInvoiceCreateDynamic = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceCreateDynamic>>, TError,{data: DynamicInvoiceCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createDynamicInvoice>>,
+        Awaited<ReturnType<typeof createInvoiceCreateDynamic>>,
         TError,
         {data: DynamicInvoiceCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateDynamicInvoiceMutationOptions(options);
+      const mutationOptions = getCreateInvoiceCreateDynamicMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -197,7 +197,7 @@ export const useCreateDynamicInvoice = <TError = HTTPValidationError,
  * Generate XML for e-invoice integration
  * @summary Generate Invoice Xml
  */
-export const generateInvoiceXml = (
+export const listInvoiceXml = (
     invoiceId: number,
  signal?: AbortSignal
 ) => {
@@ -212,69 +212,69 @@ export const generateInvoiceXml = (
 
 
 
-export const getGenerateInvoiceXmlQueryKey = (invoiceId?: number,) => {
+export const getListInvoiceXmlQueryKey = (invoiceId?: number,) => {
     return [
     `/api/invoices/${invoiceId}/xml`
     ] as const;
     }
 
     
-export const getGenerateInvoiceXmlQueryOptions = <TData = Awaited<ReturnType<typeof generateInvoiceXml>>, TError = HTTPValidationError>(invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof generateInvoiceXml>>, TError, TData>>, }
+export const getListInvoiceXmlQueryOptions = <TData = Awaited<ReturnType<typeof listInvoiceXml>>, TError = HTTPValidationError>(invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceXml>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGenerateInvoiceXmlQueryKey(invoiceId);
+  const queryKey =  queryOptions?.queryKey ?? getListInvoiceXmlQueryKey(invoiceId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof generateInvoiceXml>>> = ({ signal }) => generateInvoiceXml(invoiceId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listInvoiceXml>>> = ({ signal }) => listInvoiceXml(invoiceId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(invoiceId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof generateInvoiceXml>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(invoiceId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listInvoiceXml>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GenerateInvoiceXmlQueryResult = NonNullable<Awaited<ReturnType<typeof generateInvoiceXml>>>
-export type GenerateInvoiceXmlQueryError = HTTPValidationError
+export type ListInvoiceXmlQueryResult = NonNullable<Awaited<ReturnType<typeof listInvoiceXml>>>
+export type ListInvoiceXmlQueryError = HTTPValidationError
 
 
-export function useGenerateInvoiceXml<TData = Awaited<ReturnType<typeof generateInvoiceXml>>, TError = HTTPValidationError>(
- invoiceId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof generateInvoiceXml>>, TError, TData>> & Pick<
+export function useListInvoiceXml<TData = Awaited<ReturnType<typeof listInvoiceXml>>, TError = HTTPValidationError>(
+ invoiceId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceXml>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof generateInvoiceXml>>,
+          Awaited<ReturnType<typeof listInvoiceXml>>,
           TError,
-          Awaited<ReturnType<typeof generateInvoiceXml>>
+          Awaited<ReturnType<typeof listInvoiceXml>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGenerateInvoiceXml<TData = Awaited<ReturnType<typeof generateInvoiceXml>>, TError = HTTPValidationError>(
- invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof generateInvoiceXml>>, TError, TData>> & Pick<
+export function useListInvoiceXml<TData = Awaited<ReturnType<typeof listInvoiceXml>>, TError = HTTPValidationError>(
+ invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceXml>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof generateInvoiceXml>>,
+          Awaited<ReturnType<typeof listInvoiceXml>>,
           TError,
-          Awaited<ReturnType<typeof generateInvoiceXml>>
+          Awaited<ReturnType<typeof listInvoiceXml>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGenerateInvoiceXml<TData = Awaited<ReturnType<typeof generateInvoiceXml>>, TError = HTTPValidationError>(
- invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof generateInvoiceXml>>, TError, TData>>, }
+export function useListInvoiceXml<TData = Awaited<ReturnType<typeof listInvoiceXml>>, TError = HTTPValidationError>(
+ invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceXml>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Generate Invoice Xml
  */
 
-export function useGenerateInvoiceXml<TData = Awaited<ReturnType<typeof generateInvoiceXml>>, TError = HTTPValidationError>(
- invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof generateInvoiceXml>>, TError, TData>>, }
+export function useListInvoiceXml<TData = Awaited<ReturnType<typeof listInvoiceXml>>, TError = HTTPValidationError>(
+ invoiceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceXml>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGenerateInvoiceXmlQueryOptions(invoiceId,options)
+  const queryOptions = getListInvoiceXmlQueryOptions(invoiceId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -290,7 +290,7 @@ export function useGenerateInvoiceXml<TData = Awaited<ReturnType<typeof generate
  * Send invoice to GIB for e-invoice
  * @summary Send Invoice To Gib
  */
-export const sendInvoiceToGib = (
+export const createInvoiceSendGib = (
     invoiceId: number,
  signal?: AbortSignal
 ) => {
@@ -304,11 +304,11 @@ export const sendInvoiceToGib = (
   
 
 
-export const getSendInvoiceToGibMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendInvoiceToGib>>, TError,{invoiceId: number}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof sendInvoiceToGib>>, TError,{invoiceId: number}, TContext> => {
+export const getCreateInvoiceSendGibMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceSendGib>>, TError,{invoiceId: number}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createInvoiceSendGib>>, TError,{invoiceId: number}, TContext> => {
 
-const mutationKey = ['sendInvoiceToGib'];
+const mutationKey = ['createInvoiceSendGib'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -318,10 +318,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendInvoiceToGib>>, {invoiceId: number}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createInvoiceSendGib>>, {invoiceId: number}> = (props) => {
           const {invoiceId} = props ?? {};
 
-          return  sendInvoiceToGib(invoiceId,)
+          return  createInvoiceSendGib(invoiceId,)
         }
 
         
@@ -329,23 +329,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SendInvoiceToGibMutationResult = NonNullable<Awaited<ReturnType<typeof sendInvoiceToGib>>>
+    export type CreateInvoiceSendGibMutationResult = NonNullable<Awaited<ReturnType<typeof createInvoiceSendGib>>>
     
-    export type SendInvoiceToGibMutationError = HTTPValidationError
+    export type CreateInvoiceSendGibMutationError = HTTPValidationError
 
     /**
  * @summary Send Invoice To Gib
  */
-export const useSendInvoiceToGib = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendInvoiceToGib>>, TError,{invoiceId: number}, TContext>, }
+export const useCreateInvoiceSendGib = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceSendGib>>, TError,{invoiceId: number}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof sendInvoiceToGib>>,
+        Awaited<ReturnType<typeof createInvoiceSendGib>>,
         TError,
         {invoiceId: number},
         TContext
       > => {
 
-      const mutationOptions = getSendInvoiceToGibMutationOptions(options);
+      const mutationOptions = getCreateInvoiceSendGibMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -353,7 +353,7 @@ export const useSendInvoiceToGib = <TError = HTTPValidationError,
  * Get invoice-related settings
  * @summary Get Invoice Settings
  */
-export const getInvoiceSettings = (
+export const listInvoiceSettings = (
     
  signal?: AbortSignal
 ) => {
@@ -368,69 +368,69 @@ export const getInvoiceSettings = (
 
 
 
-export const getGetInvoiceSettingsQueryKey = () => {
+export const getListInvoiceSettingsQueryKey = () => {
     return [
     `/api/invoice-settings`
     ] as const;
     }
 
     
-export const getGetInvoiceSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getInvoiceSettings>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceSettings>>, TError, TData>>, }
+export const getListInvoiceSettingsQueryOptions = <TData = Awaited<ReturnType<typeof listInvoiceSettings>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceSettings>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetInvoiceSettingsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListInvoiceSettingsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getInvoiceSettings>>> = ({ signal }) => getInvoiceSettings(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listInvoiceSettings>>> = ({ signal }) => listInvoiceSettings(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getInvoiceSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listInvoiceSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetInvoiceSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getInvoiceSettings>>>
-export type GetInvoiceSettingsQueryError = unknown
+export type ListInvoiceSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof listInvoiceSettings>>>
+export type ListInvoiceSettingsQueryError = unknown
 
 
-export function useGetInvoiceSettings<TData = Awaited<ReturnType<typeof getInvoiceSettings>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceSettings>>, TError, TData>> & Pick<
+export function useListInvoiceSettings<TData = Awaited<ReturnType<typeof listInvoiceSettings>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceSettings>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getInvoiceSettings>>,
+          Awaited<ReturnType<typeof listInvoiceSettings>>,
           TError,
-          Awaited<ReturnType<typeof getInvoiceSettings>>
+          Awaited<ReturnType<typeof listInvoiceSettings>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetInvoiceSettings<TData = Awaited<ReturnType<typeof getInvoiceSettings>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceSettings>>, TError, TData>> & Pick<
+export function useListInvoiceSettings<TData = Awaited<ReturnType<typeof listInvoiceSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceSettings>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getInvoiceSettings>>,
+          Awaited<ReturnType<typeof listInvoiceSettings>>,
           TError,
-          Awaited<ReturnType<typeof getInvoiceSettings>>
+          Awaited<ReturnType<typeof listInvoiceSettings>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetInvoiceSettings<TData = Awaited<ReturnType<typeof getInvoiceSettings>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceSettings>>, TError, TData>>, }
+export function useListInvoiceSettings<TData = Awaited<ReturnType<typeof listInvoiceSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceSettings>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Invoice Settings
  */
 
-export function useGetInvoiceSettings<TData = Awaited<ReturnType<typeof getInvoiceSettings>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceSettings>>, TError, TData>>, }
+export function useListInvoiceSettings<TData = Awaited<ReturnType<typeof listInvoiceSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listInvoiceSettings>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetInvoiceSettingsQueryOptions(options)
+  const queryOptions = getListInvoiceSettingsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -446,7 +446,7 @@ export function useGetInvoiceSettings<TData = Awaited<ReturnType<typeof getInvoi
  * Update invoice-related settings
  * @summary Update Invoice Settings
  */
-export const updateInvoiceSettings = (
+export const createInvoiceSettings = (
     invoiceSettingsUpdate: InvoiceSettingsUpdate,
  signal?: AbortSignal
 ) => {
@@ -462,11 +462,11 @@ export const updateInvoiceSettings = (
   
 
 
-export const getUpdateInvoiceSettingsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateInvoiceSettings>>, TError,{data: InvoiceSettingsUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateInvoiceSettings>>, TError,{data: InvoiceSettingsUpdate}, TContext> => {
+export const getCreateInvoiceSettingsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceSettings>>, TError,{data: InvoiceSettingsUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createInvoiceSettings>>, TError,{data: InvoiceSettingsUpdate}, TContext> => {
 
-const mutationKey = ['updateInvoiceSettings'];
+const mutationKey = ['createInvoiceSettings'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -476,10 +476,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateInvoiceSettings>>, {data: InvoiceSettingsUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createInvoiceSettings>>, {data: InvoiceSettingsUpdate}> = (props) => {
           const {data} = props ?? {};
 
-          return  updateInvoiceSettings(data,)
+          return  createInvoiceSettings(data,)
         }
 
         
@@ -487,23 +487,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateInvoiceSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateInvoiceSettings>>>
-    export type UpdateInvoiceSettingsMutationBody = InvoiceSettingsUpdate
-    export type UpdateInvoiceSettingsMutationError = HTTPValidationError
+    export type CreateInvoiceSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof createInvoiceSettings>>>
+    export type CreateInvoiceSettingsMutationBody = InvoiceSettingsUpdate
+    export type CreateInvoiceSettingsMutationError = HTTPValidationError
 
     /**
  * @summary Update Invoice Settings
  */
-export const useUpdateInvoiceSettings = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateInvoiceSettings>>, TError,{data: InvoiceSettingsUpdate}, TContext>, }
+export const useCreateInvoiceSettings = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceSettings>>, TError,{data: InvoiceSettingsUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateInvoiceSettings>>,
+        Awaited<ReturnType<typeof createInvoiceSettings>>,
         TError,
         {data: InvoiceSettingsUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateInvoiceSettingsMutationOptions(options);
+      const mutationOptions = getCreateInvoiceSettingsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

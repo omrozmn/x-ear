@@ -26,7 +26,7 @@ import {
     X,
     Zap
 } from 'lucide-react';
-import { useListSmsHeadersApiSmsHeadersGet, getListSmsHeadersQueryKey } from '@/api/generated';
+import { useListSmHeaders, getListSmHeadersQueryKey } from '@/api/generated';
 import { useAuthStore } from '@/stores/authStore';
 
 // SMS Automation Trigger Types
@@ -261,8 +261,8 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ creditBalanc
     const { token } = useAuthStore();
 
     // Get SMS headers for sender selection
-    const { data: headersData, isLoading: headersLoading, isError: headersError } = useListSmsHeadersApiSmsHeadersGet({
-        query: { queryKey: getListSmsHeadersQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
+    const { data: headersData, isLoading: headersLoading, isError: headersError } = useListSmHeaders({
+        query: { queryKey: getListSmHeadersQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
     });
 
     // Parse SMS headers and filter only approved ones

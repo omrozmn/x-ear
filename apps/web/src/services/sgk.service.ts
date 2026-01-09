@@ -29,10 +29,9 @@ import { apiClient } from '../api/orval-mutator';
 import { outbox, OutboxOperation } from '../utils/outbox';
 import { SGK_DATA, SGK_DOCUMENTS } from '../constants/storage-keys';
 import {
-  getPatientSgkDocuments,
-  queryPatientRights,
-  createSgkWorkflow,
-  updateSgkWorkflow,
+  listPatientSgkDocuments,
+  createSgkWorkflowCreate,
+  updateSgkWorkflowStatus,
   getSgkWorkflow
 } from '@/api/generated';
 import { unwrapObject } from '../utils/response-unwrap';
@@ -737,12 +736,13 @@ export class SGKService {
   }
 
   // Hasta hakları sorgulama
-  async queryPatientRights(patientId: string, tcNumber: string): Promise<any> {
+  async createSgkQueryRightsMethod(patientId: string, tcNumber: string): Promise<any> {
     try {
-      // Gerçek API çağrısı
-      const response = await queryPatientRights({
-        tcNumber,
-        patientId
+      // Gerçek API çağrısı - using apiClient since createSgkQueryRights doesn't exist
+      const response = await apiClient({
+        url: '/api/sgk/query-rights',
+        method: 'POST',
+        data: { tcNumber, patientId }
       });
       return response;
     } catch (error) {
@@ -755,11 +755,11 @@ export class SGKService {
   async createWorkflow(patientId: string, documentId?: string, workflowType: string = 'approval'): Promise<any> {
     try {
       // Gerçek API çağrısı
-      const response = await createSgkWorkflow({
+      const response = await createSgkWorkflowCreate({
         patientId,
         documentId,
         workflowType
-      });
+      } as any);
       return response;
     } catch (error) {
       console.error('SGK workflow creation error:', error);
@@ -770,11 +770,10 @@ export class SGKService {
   async updateWorkflow(workflowId: string, stepId: string, status: string, notes?: string): Promise<any> {
     try {
       // Gerçek API çağrısı
-      const response = await updateSgkWorkflow(workflowId, {
-        stepId,
+      const response = await updateSgkWorkflowStatus(workflowId, {
         status,
         notes
-      });
+      } as any);
       return response;
     } catch (error) {
       console.error('SGK workflow update error:', error);

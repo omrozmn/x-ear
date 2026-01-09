@@ -42,7 +42,7 @@ import { customInstance } from '../../orval-mutator';
  * Get all integrations
  * @summary Get Integrations
  */
-export const getAdminIntegrationsIntegrations = (
+export const getIntegrationsApiAdminIntegrationsGet = (
     
  signal?: AbortSignal
 ) => {
@@ -57,69 +57,69 @@ export const getAdminIntegrationsIntegrations = (
 
 
 
-export const getGetAdminIntegrationsIntegrationsQueryKey = () => {
+export const getGetIntegrationsApiAdminIntegrationsGetQueryKey = () => {
     return [
     `/api/admin/integrations`
     ] as const;
     }
 
     
-export const getGetAdminIntegrationsIntegrationsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>, TError, TData>>, }
+export const getGetIntegrationsApiAdminIntegrationsGetQueryOptions = <TData = Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminIntegrationsIntegrationsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetIntegrationsApiAdminIntegrationsGetQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>> = ({ signal }) => getAdminIntegrationsIntegrations(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>> = ({ signal }) => getIntegrationsApiAdminIntegrationsGet(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminIntegrationsIntegrationsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>>
-export type GetAdminIntegrationsIntegrationsQueryError = unknown
+export type GetIntegrationsApiAdminIntegrationsGetQueryResult = NonNullable<Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>>
+export type GetIntegrationsApiAdminIntegrationsGetQueryError = unknown
 
 
-export function useGetAdminIntegrationsIntegrations<TData = Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>, TError, TData>> & Pick<
+export function useGetIntegrationsApiAdminIntegrationsGet<TData = Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>,
+          Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>,
           TError,
-          Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>
+          Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminIntegrationsIntegrations<TData = Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>, TError, TData>> & Pick<
+export function useGetIntegrationsApiAdminIntegrationsGet<TData = Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>,
+          Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>,
           TError,
-          Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>
+          Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminIntegrationsIntegrations<TData = Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>, TError, TData>>, }
+export function useGetIntegrationsApiAdminIntegrationsGet<TData = Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Integrations
  */
 
-export function useGetAdminIntegrationsIntegrations<TData = Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminIntegrationsIntegrations>>, TError, TData>>, }
+export function useGetIntegrationsApiAdminIntegrationsGet<TData = Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getIntegrationsApiAdminIntegrationsGet>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminIntegrationsIntegrationsQueryOptions(options)
+  const queryOptions = getGetIntegrationsApiAdminIntegrationsGetQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -135,7 +135,7 @@ export function useGetAdminIntegrationsIntegrations<TData = Awaited<ReturnType<t
  * Initialize integration config tables
  * @summary Init Db
  */
-export const initAdminIntegrationsDb = (
+export const createAdminIntegrationInitDb = (
     
  signal?: AbortSignal
 ) => {
@@ -149,11 +149,11 @@ export const initAdminIntegrationsDb = (
   
 
 
-export const getInitAdminIntegrationsDbMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminIntegrationsDb>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof initAdminIntegrationsDb>>, TError,void, TContext> => {
+export const getCreateAdminIntegrationInitDbMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminIntegrationInitDb>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminIntegrationInitDb>>, TError,void, TContext> => {
 
-const mutationKey = ['initAdminIntegrationsDb'];
+const mutationKey = ['createAdminIntegrationInitDb'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -163,10 +163,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof initAdminIntegrationsDb>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminIntegrationInitDb>>, void> = () => {
           
 
-          return  initAdminIntegrationsDb()
+          return  createAdminIntegrationInitDb()
         }
 
         
@@ -174,23 +174,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type InitAdminIntegrationsDbMutationResult = NonNullable<Awaited<ReturnType<typeof initAdminIntegrationsDb>>>
+    export type CreateAdminIntegrationInitDbMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminIntegrationInitDb>>>
     
-    export type InitAdminIntegrationsDbMutationError = unknown
+    export type CreateAdminIntegrationInitDbMutationError = unknown
 
     /**
  * @summary Init Db
  */
-export const useInitAdminIntegrationsDb = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initAdminIntegrationsDb>>, TError,void, TContext>, }
+export const useCreateAdminIntegrationInitDb = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminIntegrationInitDb>>, TError,void, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof initAdminIntegrationsDb>>,
+        Awaited<ReturnType<typeof createAdminIntegrationInitDb>>,
         TError,
         void,
         TContext
       > => {
 
-      const mutationOptions = getInitAdminIntegrationsDbMutationOptions(options);
+      const mutationOptions = getCreateAdminIntegrationInitDbMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -198,7 +198,7 @@ export const useInitAdminIntegrationsDb = <TError = unknown,
  * Get VatanSMS integration configuration
  * @summary Get Vatan Sms Config
  */
-export const getAdminVatanSmsConfig = (
+export const listAdminIntegrationVatanSmConfig = (
     
  signal?: AbortSignal
 ) => {
@@ -213,69 +213,69 @@ export const getAdminVatanSmsConfig = (
 
 
 
-export const getGetAdminVatanSmsConfigQueryKey = () => {
+export const getListAdminIntegrationVatanSmConfigQueryKey = () => {
     return [
     `/api/admin/integrations/vatan-sms/config`
     ] as const;
     }
 
     
-export const getGetAdminVatanSmsConfigQueryOptions = <TData = Awaited<ReturnType<typeof getAdminVatanSmsConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminVatanSmsConfig>>, TError, TData>>, }
+export const getListAdminIntegrationVatanSmConfigQueryOptions = <TData = Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminVatanSmsConfigQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAdminIntegrationVatanSmConfigQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminVatanSmsConfig>>> = ({ signal }) => getAdminVatanSmsConfig(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>> = ({ signal }) => listAdminIntegrationVatanSmConfig(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminVatanSmsConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminVatanSmsConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminVatanSmsConfig>>>
-export type GetAdminVatanSmsConfigQueryError = unknown
+export type ListAdminIntegrationVatanSmConfigQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>>
+export type ListAdminIntegrationVatanSmConfigQueryError = unknown
 
 
-export function useGetAdminVatanSmsConfig<TData = Awaited<ReturnType<typeof getAdminVatanSmsConfig>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminVatanSmsConfig>>, TError, TData>> & Pick<
+export function useListAdminIntegrationVatanSmConfig<TData = Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminVatanSmsConfig>>,
+          Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>,
           TError,
-          Awaited<ReturnType<typeof getAdminVatanSmsConfig>>
+          Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminVatanSmsConfig<TData = Awaited<ReturnType<typeof getAdminVatanSmsConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminVatanSmsConfig>>, TError, TData>> & Pick<
+export function useListAdminIntegrationVatanSmConfig<TData = Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminVatanSmsConfig>>,
+          Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>,
           TError,
-          Awaited<ReturnType<typeof getAdminVatanSmsConfig>>
+          Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminVatanSmsConfig<TData = Awaited<ReturnType<typeof getAdminVatanSmsConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminVatanSmsConfig>>, TError, TData>>, }
+export function useListAdminIntegrationVatanSmConfig<TData = Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Vatan Sms Config
  */
 
-export function useGetAdminVatanSmsConfig<TData = Awaited<ReturnType<typeof getAdminVatanSmsConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminVatanSmsConfig>>, TError, TData>>, }
+export function useListAdminIntegrationVatanSmConfig<TData = Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminIntegrationVatanSmConfig>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminVatanSmsConfigQueryOptions(options)
+  const queryOptions = getListAdminIntegrationVatanSmConfigQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -291,7 +291,7 @@ export function useGetAdminVatanSmsConfig<TData = Awaited<ReturnType<typeof getA
  * Update VatanSMS integration configuration
  * @summary Update Vatan Sms Config
  */
-export const updateAdminVatanSmsConfig = (
+export const updateAdminIntegrationVatanSmConfig = (
     vatanSmsConfigUpdate: VatanSmsConfigUpdate,
  ) => {
       
@@ -306,11 +306,11 @@ export const updateAdminVatanSmsConfig = (
   
 
 
-export const getUpdateAdminVatanSmsConfigMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminVatanSmsConfig>>, TError,{data: VatanSmsConfigUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateAdminVatanSmsConfig>>, TError,{data: VatanSmsConfigUpdate}, TContext> => {
+export const getUpdateAdminIntegrationVatanSmConfigMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminIntegrationVatanSmConfig>>, TError,{data: VatanSmsConfigUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminIntegrationVatanSmConfig>>, TError,{data: VatanSmsConfigUpdate}, TContext> => {
 
-const mutationKey = ['updateAdminVatanSmsConfig'];
+const mutationKey = ['updateAdminIntegrationVatanSmConfig'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -320,10 +320,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminVatanSmsConfig>>, {data: VatanSmsConfigUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminIntegrationVatanSmConfig>>, {data: VatanSmsConfigUpdate}> = (props) => {
           const {data} = props ?? {};
 
-          return  updateAdminVatanSmsConfig(data,)
+          return  updateAdminIntegrationVatanSmConfig(data,)
         }
 
         
@@ -331,23 +331,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateAdminVatanSmsConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminVatanSmsConfig>>>
-    export type UpdateAdminVatanSmsConfigMutationBody = VatanSmsConfigUpdate
-    export type UpdateAdminVatanSmsConfigMutationError = HTTPValidationError
+    export type UpdateAdminIntegrationVatanSmConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminIntegrationVatanSmConfig>>>
+    export type UpdateAdminIntegrationVatanSmConfigMutationBody = VatanSmsConfigUpdate
+    export type UpdateAdminIntegrationVatanSmConfigMutationError = HTTPValidationError
 
     /**
  * @summary Update Vatan Sms Config
  */
-export const useUpdateAdminVatanSmsConfig = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminVatanSmsConfig>>, TError,{data: VatanSmsConfigUpdate}, TContext>, }
+export const useUpdateAdminIntegrationVatanSmConfig = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminIntegrationVatanSmConfig>>, TError,{data: VatanSmsConfigUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateAdminVatanSmsConfig>>,
+        Awaited<ReturnType<typeof updateAdminIntegrationVatanSmConfig>>,
         TError,
         {data: VatanSmsConfigUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateAdminVatanSmsConfigMutationOptions(options);
+      const mutationOptions = getUpdateAdminIntegrationVatanSmConfigMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -355,7 +355,7 @@ export const useUpdateAdminVatanSmsConfig = <TError = HTTPValidationError,
  * Get BirFatura integration configuration
  * @summary Get Birfatura Config
  */
-export const getAdminBirfaturaConfig = (
+export const listAdminIntegrationBirfaturaConfig = (
     
  signal?: AbortSignal
 ) => {
@@ -370,69 +370,69 @@ export const getAdminBirfaturaConfig = (
 
 
 
-export const getGetAdminBirfaturaConfigQueryKey = () => {
+export const getListAdminIntegrationBirfaturaConfigQueryKey = () => {
     return [
     `/api/admin/integrations/birfatura/config`
     ] as const;
     }
 
     
-export const getGetAdminBirfaturaConfigQueryOptions = <TData = Awaited<ReturnType<typeof getAdminBirfaturaConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminBirfaturaConfig>>, TError, TData>>, }
+export const getListAdminIntegrationBirfaturaConfigQueryOptions = <TData = Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminBirfaturaConfigQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAdminIntegrationBirfaturaConfigQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminBirfaturaConfig>>> = ({ signal }) => getAdminBirfaturaConfig(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>> = ({ signal }) => listAdminIntegrationBirfaturaConfig(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminBirfaturaConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminBirfaturaConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminBirfaturaConfig>>>
-export type GetAdminBirfaturaConfigQueryError = unknown
+export type ListAdminIntegrationBirfaturaConfigQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>>
+export type ListAdminIntegrationBirfaturaConfigQueryError = unknown
 
 
-export function useGetAdminBirfaturaConfig<TData = Awaited<ReturnType<typeof getAdminBirfaturaConfig>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminBirfaturaConfig>>, TError, TData>> & Pick<
+export function useListAdminIntegrationBirfaturaConfig<TData = Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminBirfaturaConfig>>,
+          Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>,
           TError,
-          Awaited<ReturnType<typeof getAdminBirfaturaConfig>>
+          Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminBirfaturaConfig<TData = Awaited<ReturnType<typeof getAdminBirfaturaConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminBirfaturaConfig>>, TError, TData>> & Pick<
+export function useListAdminIntegrationBirfaturaConfig<TData = Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminBirfaturaConfig>>,
+          Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>,
           TError,
-          Awaited<ReturnType<typeof getAdminBirfaturaConfig>>
+          Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminBirfaturaConfig<TData = Awaited<ReturnType<typeof getAdminBirfaturaConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminBirfaturaConfig>>, TError, TData>>, }
+export function useListAdminIntegrationBirfaturaConfig<TData = Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Birfatura Config
  */
 
-export function useGetAdminBirfaturaConfig<TData = Awaited<ReturnType<typeof getAdminBirfaturaConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminBirfaturaConfig>>, TError, TData>>, }
+export function useListAdminIntegrationBirfaturaConfig<TData = Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminIntegrationBirfaturaConfig>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminBirfaturaConfigQueryOptions(options)
+  const queryOptions = getListAdminIntegrationBirfaturaConfigQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -448,7 +448,7 @@ export function useGetAdminBirfaturaConfig<TData = Awaited<ReturnType<typeof get
  * Update BirFatura integration configuration
  * @summary Update Birfatura Config
  */
-export const updateAdminBirfaturaConfig = (
+export const updateAdminIntegrationBirfaturaConfig = (
     birfaturaConfigUpdate: BirfaturaConfigUpdate,
  ) => {
       
@@ -463,11 +463,11 @@ export const updateAdminBirfaturaConfig = (
   
 
 
-export const getUpdateAdminBirfaturaConfigMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminBirfaturaConfig>>, TError,{data: BirfaturaConfigUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateAdminBirfaturaConfig>>, TError,{data: BirfaturaConfigUpdate}, TContext> => {
+export const getUpdateAdminIntegrationBirfaturaConfigMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminIntegrationBirfaturaConfig>>, TError,{data: BirfaturaConfigUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminIntegrationBirfaturaConfig>>, TError,{data: BirfaturaConfigUpdate}, TContext> => {
 
-const mutationKey = ['updateAdminBirfaturaConfig'];
+const mutationKey = ['updateAdminIntegrationBirfaturaConfig'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -477,10 +477,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminBirfaturaConfig>>, {data: BirfaturaConfigUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminIntegrationBirfaturaConfig>>, {data: BirfaturaConfigUpdate}> = (props) => {
           const {data} = props ?? {};
 
-          return  updateAdminBirfaturaConfig(data,)
+          return  updateAdminIntegrationBirfaturaConfig(data,)
         }
 
         
@@ -488,23 +488,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateAdminBirfaturaConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminBirfaturaConfig>>>
-    export type UpdateAdminBirfaturaConfigMutationBody = BirfaturaConfigUpdate
-    export type UpdateAdminBirfaturaConfigMutationError = HTTPValidationError
+    export type UpdateAdminIntegrationBirfaturaConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminIntegrationBirfaturaConfig>>>
+    export type UpdateAdminIntegrationBirfaturaConfigMutationBody = BirfaturaConfigUpdate
+    export type UpdateAdminIntegrationBirfaturaConfigMutationError = HTTPValidationError
 
     /**
  * @summary Update Birfatura Config
  */
-export const useUpdateAdminBirfaturaConfig = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminBirfaturaConfig>>, TError,{data: BirfaturaConfigUpdate}, TContext>, }
+export const useUpdateAdminIntegrationBirfaturaConfig = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminIntegrationBirfaturaConfig>>, TError,{data: BirfaturaConfigUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateAdminBirfaturaConfig>>,
+        Awaited<ReturnType<typeof updateAdminIntegrationBirfaturaConfig>>,
         TError,
         {data: BirfaturaConfigUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateAdminBirfaturaConfigMutationOptions(options);
+      const mutationOptions = getUpdateAdminIntegrationBirfaturaConfigMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

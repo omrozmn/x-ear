@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from sqlalchemy import create_engine, event, literal, bindparam
 from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import QueuePool
 from contextvars import ContextVar
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -18,7 +18,10 @@ logger = logging.getLogger(__name__)
 # Database URL from environment
 # Default to a persistent sqlite file under backend/instance/ to avoid accidental in-memory DB.
 _default_sqlite_path = Path(__file__).resolve().parent / "instance" / "xear_crm.db"
-DATABASE_URL = os.getenv('DATABASE_URL', f"sqlite:///{_default_sqlite_path.as_posix()}")
+# URL-encode the path to handle spaces and special characters
+from urllib.parse import quote
+_encoded_path = quote(_default_sqlite_path.as_posix(), safe='/:')
+DATABASE_URL = os.getenv('DATABASE_URL', f"sqlite:///{_encoded_path}")
 
 # Ensure instance directory exists for file-based sqlite
 try:
@@ -32,7 +35,6 @@ if DATABASE_URL.startswith('sqlite'):
     engine = create_engine(
         DATABASE_URL,
         connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
         echo=False
     )
 else:

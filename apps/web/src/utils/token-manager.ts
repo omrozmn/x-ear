@@ -55,7 +55,7 @@ export interface TokenPayload {
 export type TokenChangeEvent = {
   type: 'access' | 'refresh' | 'both' | 'clear';
   accessToken: string | null;
-  refreshToken: string | null;
+  createAuthRefresh: string | null;
 };
 
 type TokenChangeListener = (event: TokenChangeEvent) => void;
@@ -65,7 +65,7 @@ class TokenManager {
 
   // In-memory cache for synchronous access
   private _accessToken: string | null = null;
-  private _refreshToken: string | null = null;
+  private _createAuthRefresh: string | null = null;
   private _accessPayload: TokenPayload | null = null;
 
   // Event listeners
@@ -78,7 +78,7 @@ class TokenManager {
 
   // Legacy keys for migration/cleanup only
   private readonly LEGACY_ACCESS_KEYS = ['auth_token', 'token', 'jwt'];
-  private readonly LEGACY_REFRESH_KEYS = ['refresh_token', 'refreshToken'];
+  private readonly LEGACY_REFRESH_KEYS = ['refresh_token', 'createAuthRefresh'];
 
   private constructor() {
     // Initialize from storage on construction
@@ -111,8 +111,8 @@ class TokenManager {
   /**
    * Get refresh token (synchronous, from memory)
    */
-  get refreshToken(): string | null {
-    return this._refreshToken;
+  get createAuthRefresh(): string | null {
+    return this._createAuthRefresh;
   }
 
   /**
@@ -176,10 +176,10 @@ class TokenManager {
   /**
    * Set both tokens (typically after login)
    */
-  setTokens(accessToken: string, refreshToken?: string | null): void {
+  setTokens(accessToken: string, createAuthRefresh?: string | null): void {
     console.log('[TokenManager] Setting tokens:', {
       hasAccessToken: !!accessToken,
-      hasRefreshToken: !!refreshToken,
+      hasRefreshToken: !!createAuthRefresh,
       accessPreview: accessToken?.substring(0, 30) + '...',
     });
 
@@ -187,8 +187,8 @@ class TokenManager {
     this._accessToken = accessToken;
     this._accessPayload = this.decodeToken(accessToken);
 
-    if (refreshToken !== undefined) {
-      this._refreshToken = refreshToken;
+    if (createAuthRefresh !== undefined) {
+      this._createAuthRefresh = createAuthRefresh;
     }
 
     // Persist to storage
@@ -201,9 +201,9 @@ class TokenManager {
 
     // Notify listeners
     this.notifyListeners({
-      type: refreshToken !== undefined ? 'both' : 'access',
+      type: createAuthRefresh !== undefined ? 'both' : 'access',
       accessToken: this._accessToken,
-      refreshToken: this._refreshToken,
+      createAuthRefresh: this._createAuthRefresh,
     });
   }
 
@@ -225,7 +225,7 @@ class TokenManager {
     this.notifyListeners({
       type: 'access',
       accessToken: this._accessToken,
-      refreshToken: this._refreshToken,
+      createAuthRefresh: this._createAuthRefresh,
     });
   }
 
@@ -237,7 +237,7 @@ class TokenManager {
     console.trace('[TokenManager] clearTokens called from:');
 
     this._accessToken = null;
-    this._refreshToken = null;
+    this._createAuthRefresh = null;
     this._accessPayload = null;
 
     // Clear from storage
@@ -251,7 +251,7 @@ class TokenManager {
     this.notifyListeners({
       type: 'clear',
       accessToken: null,
-      refreshToken: null,
+      createAuthRefresh: null,
     });
   }
 
@@ -280,7 +280,7 @@ class TokenManager {
     try {
       // Try canonical keys first
       let accessToken = localStorage.getItem(this.ACCESS_TOKEN_KEY);
-      let refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
+      let createAuthRefresh = localStorage.getItem(this.REFRESH_TOKEN_KEY);
 
       // Fallback to legacy keys if canonical not found
       if (!accessToken) {
@@ -294,11 +294,11 @@ class TokenManager {
         }
       }
 
-      if (!refreshToken) {
+      if (!createAuthRefresh) {
         for (const key of this.LEGACY_REFRESH_KEYS) {
           const value = localStorage.getItem(key);
           if (value) {
-            refreshToken = value;
+            createAuthRefresh = value;
             console.log(`[TokenManager] Found refresh token in legacy key: ${key}`);
             break;
           }
@@ -306,7 +306,7 @@ class TokenManager {
       }
 
       // Also check Zustand persist storage
-      if (!accessToken || !refreshToken) {
+      if (!accessToken || !createAuthRefresh) {
         const zustandKeys = ['auth-storage', 'persist:auth-storage'];
         for (const key of zustandKeys) {
           try {
@@ -314,18 +314,18 @@ class TokenManager {
             if (raw) {
               const parsed = JSON.parse(raw);
               const zustandToken = parsed?.state?.token || parsed?.token;
-              const zustandRefresh = parsed?.state?.refreshToken || parsed?.refreshToken;
+              const zustandRefresh = parsed?.state?.createAuthRefresh || parsed?.createAuthRefresh;
 
               if (!accessToken && zustandToken) {
                 accessToken = zustandToken;
                 console.log(`[TokenManager] Found access token in Zustand storage: ${key}`);
               }
-              if (!refreshToken && zustandRefresh) {
-                refreshToken = zustandRefresh;
+              if (!createAuthRefresh && zustandRefresh) {
+                createAuthRefresh = zustandRefresh;
                 console.log(`[TokenManager] Found refresh token in Zustand storage: ${key}`);
               }
 
-              if (accessToken && refreshToken) break;
+              if (accessToken && createAuthRefresh) break;
             }
           } catch (e) { /* ignore parse errors */ }
         }
@@ -351,12 +351,12 @@ class TokenManager {
         }
       }
 
-      if (refreshToken) {
-        this._refreshToken = refreshToken;
+      if (createAuthRefresh) {
+        this._createAuthRefresh = createAuthRefresh;
 
         // Always write to canonical key to ensure consistency
         try {
-          localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+          localStorage.setItem(this.REFRESH_TOKEN_KEY, createAuthRefresh);
           console.log('[TokenManager] Wrote refresh token to canonical key');
 
           // Verify it was written
@@ -373,7 +373,7 @@ class TokenManager {
 
       console.log('[TokenManager] Hydrated from storage:', {
         hasAccessToken: !!this._accessToken,
-        hasRefreshToken: !!this._refreshToken,
+        hasRefreshToken: !!this._createAuthRefresh,
         isExpired: this.isAccessTokenExpired(),
         userId: this.getUserId(),
       });
@@ -395,8 +395,8 @@ class TokenManager {
         localStorage.setItem(this.TOKEN_TIMESTAMP_KEY, Date.now().toString());
       }
 
-      if (this._refreshToken) {
-        localStorage.setItem(this.REFRESH_TOKEN_KEY, this._refreshToken);
+      if (this._createAuthRefresh) {
+        localStorage.setItem(this.REFRESH_TOKEN_KEY, this._createAuthRefresh);
       }
 
       console.log('[TokenManager] Persisted to storage');
@@ -414,7 +414,7 @@ class TokenManager {
     console.log('[TokenManager] clearStorage called');
     console.log('[TokenManager] Before clear - canonical keys:', {
       accessToken: localStorage.getItem(this.ACCESS_TOKEN_KEY)?.substring(0, 30),
-      refreshToken: localStorage.getItem(this.REFRESH_TOKEN_KEY)?.substring(0, 30),
+      createAuthRefresh: localStorage.getItem(this.REFRESH_TOKEN_KEY)?.substring(0, 30),
     });
 
     try {
@@ -482,17 +482,17 @@ class TokenManager {
       this.notifyListeners({
         type: 'access',
         accessToken: this._accessToken,
-        refreshToken: this._refreshToken,
+        createAuthRefresh: this._createAuthRefresh,
       });
     }
 
     if (event.key === this.REFRESH_TOKEN_KEY) {
-      this._refreshToken = event.newValue;
+      this._createAuthRefresh = event.newValue;
 
       this.notifyListeners({
         type: 'refresh',
         accessToken: this._accessToken,
-        refreshToken: this._refreshToken,
+        createAuthRefresh: this._createAuthRefresh,
       });
     }
   }

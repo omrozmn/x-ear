@@ -135,7 +135,7 @@ export function useListRoles<TData = Awaited<ReturnType<typeof listRoles>>, TErr
  * Create a new role
  * @summary Create Role
  */
-export const createRole = (
+export const createRoles = (
     routersRolesRoleCreate: RoutersRolesRoleCreate,
  signal?: AbortSignal
 ) => {
@@ -151,11 +151,11 @@ export const createRole = (
   
 
 
-export const getCreateRoleMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRole>>, TError,{data: RoutersRolesRoleCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createRole>>, TError,{data: RoutersRolesRoleCreate}, TContext> => {
+export const getCreateRolesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRoles>>, TError,{data: RoutersRolesRoleCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createRoles>>, TError,{data: RoutersRolesRoleCreate}, TContext> => {
 
-const mutationKey = ['createRole'];
+const mutationKey = ['createRoles'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -165,10 +165,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createRole>>, {data: RoutersRolesRoleCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createRoles>>, {data: RoutersRolesRoleCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createRole(data,)
+          return  createRoles(data,)
         }
 
         
@@ -176,23 +176,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateRoleMutationResult = NonNullable<Awaited<ReturnType<typeof createRole>>>
-    export type CreateRoleMutationBody = RoutersRolesRoleCreate
-    export type CreateRoleMutationError = HTTPValidationError
+    export type CreateRolesMutationResult = NonNullable<Awaited<ReturnType<typeof createRoles>>>
+    export type CreateRolesMutationBody = RoutersRolesRoleCreate
+    export type CreateRolesMutationError = HTTPValidationError
 
     /**
  * @summary Create Role
  */
-export const useCreateRole = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRole>>, TError,{data: RoutersRolesRoleCreate}, TContext>, }
+export const useCreateRoles = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRoles>>, TError,{data: RoutersRolesRoleCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createRole>>,
+        Awaited<ReturnType<typeof createRoles>>,
         TError,
         {data: RoutersRolesRoleCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateRoleMutationOptions(options);
+      const mutationOptions = getCreateRolesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -327,7 +327,7 @@ export const useDeleteRole = <TError = HTTPValidationError,
  * Add a permission to a role
  * @summary Add Permission To Role
  */
-export const addPermissionToRole = (
+export const createRolePermissions = (
     roleId: string,
     permissionAssign: PermissionAssign,
  signal?: AbortSignal
@@ -344,11 +344,11 @@ export const addPermissionToRole = (
   
 
 
-export const getAddPermissionToRoleMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addPermissionToRole>>, TError,{roleId: string;data: PermissionAssign}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof addPermissionToRole>>, TError,{roleId: string;data: PermissionAssign}, TContext> => {
+export const getCreateRolePermissionsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRolePermissions>>, TError,{roleId: string;data: PermissionAssign}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createRolePermissions>>, TError,{roleId: string;data: PermissionAssign}, TContext> => {
 
-const mutationKey = ['addPermissionToRole'];
+const mutationKey = ['createRolePermissions'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -358,10 +358,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addPermissionToRole>>, {roleId: string;data: PermissionAssign}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createRolePermissions>>, {roleId: string;data: PermissionAssign}> = (props) => {
           const {roleId,data} = props ?? {};
 
-          return  addPermissionToRole(roleId,data,)
+          return  createRolePermissions(roleId,data,)
         }
 
         
@@ -369,23 +369,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type AddPermissionToRoleMutationResult = NonNullable<Awaited<ReturnType<typeof addPermissionToRole>>>
-    export type AddPermissionToRoleMutationBody = PermissionAssign
-    export type AddPermissionToRoleMutationError = HTTPValidationError
+    export type CreateRolePermissionsMutationResult = NonNullable<Awaited<ReturnType<typeof createRolePermissions>>>
+    export type CreateRolePermissionsMutationBody = PermissionAssign
+    export type CreateRolePermissionsMutationError = HTTPValidationError
 
     /**
  * @summary Add Permission To Role
  */
-export const useAddPermissionToRole = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addPermissionToRole>>, TError,{roleId: string;data: PermissionAssign}, TContext>, }
+export const useCreateRolePermissions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRolePermissions>>, TError,{roleId: string;data: PermissionAssign}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof addPermissionToRole>>,
+        Awaited<ReturnType<typeof createRolePermissions>>,
         TError,
         {roleId: string;data: PermissionAssign},
         TContext
       > => {
 
-      const mutationOptions = getAddPermissionToRoleMutationOptions(options);
+      const mutationOptions = getCreateRolePermissionsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -393,27 +393,27 @@ export const useAddPermissionToRole = <TError = HTTPValidationError,
  * Set all permissions for a role (replaces existing)
  * @summary Set Role Permissions
  */
-export const setRolePermissions = (
+export const updateRolePermissions = (
     roleId: string,
-    setRolePermissionsBody: string[],
+    updateRolePermissionsBody: string[],
  ) => {
       
       
       return customInstance<ResponseEnvelopeRoleRead>(
       {url: `/api/roles/${roleId}/permissions`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: setRolePermissionsBody
+      data: updateRolePermissionsBody
     },
       );
     }
   
 
 
-export const getSetRolePermissionsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setRolePermissions>>, TError,{roleId: string;data: string[]}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof setRolePermissions>>, TError,{roleId: string;data: string[]}, TContext> => {
+export const getUpdateRolePermissionsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateRolePermissions>>, TError,{roleId: string;data: string[]}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateRolePermissions>>, TError,{roleId: string;data: string[]}, TContext> => {
 
-const mutationKey = ['setRolePermissions'];
+const mutationKey = ['updateRolePermissions'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -423,10 +423,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setRolePermissions>>, {roleId: string;data: string[]}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateRolePermissions>>, {roleId: string;data: string[]}> = (props) => {
           const {roleId,data} = props ?? {};
 
-          return  setRolePermissions(roleId,data,)
+          return  updateRolePermissions(roleId,data,)
         }
 
         
@@ -434,23 +434,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SetRolePermissionsMutationResult = NonNullable<Awaited<ReturnType<typeof setRolePermissions>>>
-    export type SetRolePermissionsMutationBody = string[]
-    export type SetRolePermissionsMutationError = HTTPValidationError
+    export type UpdateRolePermissionsMutationResult = NonNullable<Awaited<ReturnType<typeof updateRolePermissions>>>
+    export type UpdateRolePermissionsMutationBody = string[]
+    export type UpdateRolePermissionsMutationError = HTTPValidationError
 
     /**
  * @summary Set Role Permissions
  */
-export const useSetRolePermissions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setRolePermissions>>, TError,{roleId: string;data: string[]}, TContext>, }
+export const useUpdateRolePermissions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateRolePermissions>>, TError,{roleId: string;data: string[]}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof setRolePermissions>>,
+        Awaited<ReturnType<typeof updateRolePermissions>>,
         TError,
         {roleId: string;data: string[]},
         TContext
       > => {
 
-      const mutationOptions = getSetRolePermissionsMutationOptions(options);
+      const mutationOptions = getUpdateRolePermissionsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -458,7 +458,7 @@ export const useSetRolePermissions = <TError = HTTPValidationError,
  * Remove a permission from a role
  * @summary Remove Permission From Role
  */
-export const removePermissionFromRole = (
+export const deleteRolePermission = (
     roleId: string,
     permissionName: string,
  ) => {
@@ -472,11 +472,11 @@ export const removePermissionFromRole = (
   
 
 
-export const getRemovePermissionFromRoleMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removePermissionFromRole>>, TError,{roleId: string;permissionName: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof removePermissionFromRole>>, TError,{roleId: string;permissionName: string}, TContext> => {
+export const getDeleteRolePermissionMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRolePermission>>, TError,{roleId: string;permissionName: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteRolePermission>>, TError,{roleId: string;permissionName: string}, TContext> => {
 
-const mutationKey = ['removePermissionFromRole'];
+const mutationKey = ['deleteRolePermission'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -486,10 +486,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removePermissionFromRole>>, {roleId: string;permissionName: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteRolePermission>>, {roleId: string;permissionName: string}> = (props) => {
           const {roleId,permissionName} = props ?? {};
 
-          return  removePermissionFromRole(roleId,permissionName,)
+          return  deleteRolePermission(roleId,permissionName,)
         }
 
         
@@ -497,23 +497,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type RemovePermissionFromRoleMutationResult = NonNullable<Awaited<ReturnType<typeof removePermissionFromRole>>>
+    export type DeleteRolePermissionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteRolePermission>>>
     
-    export type RemovePermissionFromRoleMutationError = HTTPValidationError
+    export type DeleteRolePermissionMutationError = HTTPValidationError
 
     /**
  * @summary Remove Permission From Role
  */
-export const useRemovePermissionFromRole = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removePermissionFromRole>>, TError,{roleId: string;permissionName: string}, TContext>, }
+export const useDeleteRolePermission = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRolePermission>>, TError,{roleId: string;permissionName: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof removePermissionFromRole>>,
+        Awaited<ReturnType<typeof deleteRolePermission>>,
         TError,
         {roleId: string;permissionName: string},
         TContext
       > => {
 
-      const mutationOptions = getRemovePermissionFromRoleMutationOptions(options);
+      const mutationOptions = getDeleteRolePermissionMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

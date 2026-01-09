@@ -22,13 +22,13 @@ import { INVOICES_DATA } from '../constants/storage-keys';
 import { outbox } from '../utils/outbox';
 import { unwrapObject, unwrapArray } from '../utils/response-unwrap';
 import {
-  createInvoicesInvoice,
+  createInvoices,
   getInvoice,
-  getInvoices
+  listInvoices
 } from '@/api/generated/invoices/invoices';
 import {
-  issueInvoice,
-  serveInvoicePdf
+  createInvoiceIssue,
+  listInvoicePdf
 } from '@/api/generated/invoice-actions/invoice-actions';
 import { apiClient } from '../api/orval-mutator';
 
@@ -148,7 +148,7 @@ export class InvoiceService {
       currency: local.currency || 'TRY'
     };
 
-    const response = await createInvoicesInvoice(payload);
+    const response = await createInvoices(payload);
     const serverInv = unwrapObject<any>(response);
 
     if (serverInv && typeof serverInv === 'object' && serverInv.id) {
@@ -293,7 +293,7 @@ export class InvoiceService {
     };
 
     try {
-      const response = await createInvoicesInvoice(payload);
+      const response = await createInvoices(payload);
       const serverInv = unwrapObject<any>(response);
 
       if (serverInv && typeof serverInv === 'object' && serverInv.id) {
@@ -372,7 +372,7 @@ export class InvoiceService {
     };
 
     try {
-      const response = await createInvoicesInvoice(payload);
+      const response = await createInvoices(payload);
       const created = unwrapObject<any>(response);
 
       if (created && typeof created === 'object' && created.id) {
@@ -412,7 +412,7 @@ export class InvoiceService {
     };
 
     try {
-      const response = await createInvoicesInvoice(cancelPayload);
+      const response = await createInvoices(cancelPayload);
       const cancellation = unwrapObject<any>(response);
       if (cancellation && typeof cancellation === 'object' && cancellation.id) {
         const invoices = await this.loadInvoices();
@@ -691,14 +691,14 @@ export class InvoiceService {
    * This is used for the explicit "Fatura Kes" action — it will NOT directly send
    * to GİB, integrator will add UUID/signature and handle submission.
    */
-  async issueInvoice(id: string): Promise<{ success: boolean; data?: any; error?: string }> {
+  async createInvoiceIssue(id: string): Promise<{ success: boolean; data?: any; error?: string }> {
     // Ensure we have a server id before issuing — issuing requires a server-side
     // invoice record.
     try {
       const serverId = await this.resolveServerId(id);
       if (!serverId) return { success: false, error: 'Fatura henüz sunucuya gönderilmedi; önce senkronize edin.' };
 
-      const response = await issueInvoice(Number(serverId));
+      const response = await createInvoiceIssue(Number(serverId));
 
       if (!(response as any)?.success) {
         return { success: false, error: 'Issue failed' };
@@ -722,7 +722,7 @@ export class InvoiceService {
     }
   }
 
-  async cancelInvoice(id: string, reason?: string): Promise<Invoice> {
+  async createEfaturaCancel(id: string, reason?: string): Promise<Invoice> {
     const invoice = await this.getInvoice(id);
     if (!invoice) {
       throw new Error('Fatura bulunamadı');
@@ -962,7 +962,7 @@ export class InvoiceService {
     }
 
     try {
-      const response = await serveInvoicePdf(Number(serverId)) as unknown as Blob;
+      const response = await listInvoicePdf(Number(serverId)) as unknown as Blob;
       return { success: true, data: response };
     } catch (error) {
       console.error('Error generating invoice PDF:', error);

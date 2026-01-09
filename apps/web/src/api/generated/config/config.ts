@@ -29,7 +29,7 @@ import { customInstance } from '../../orval-mutator';
  * Get public configuration
  * @summary Get Config
  */
-export const getConfig = (
+export const listConfig = (
     
  signal?: AbortSignal
 ) => {
@@ -44,69 +44,69 @@ export const getConfig = (
 
 
 
-export const getGetConfigQueryKey = () => {
+export const getListConfigQueryKey = () => {
     return [
     `/api/config`
     ] as const;
     }
 
     
-export const getGetConfigQueryOptions = <TData = Awaited<ReturnType<typeof getConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConfig>>, TError, TData>>, }
+export const getListConfigQueryOptions = <TData = Awaited<ReturnType<typeof listConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConfig>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetConfigQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListConfigQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getConfig>>> = ({ signal }) => getConfig(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listConfig>>> = ({ signal }) => listConfig(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getConfig>>>
-export type GetConfigQueryError = unknown
+export type ListConfigQueryResult = NonNullable<Awaited<ReturnType<typeof listConfig>>>
+export type ListConfigQueryError = unknown
 
 
-export function useGetConfig<TData = Awaited<ReturnType<typeof getConfig>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConfig>>, TError, TData>> & Pick<
+export function useListConfig<TData = Awaited<ReturnType<typeof listConfig>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConfig>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getConfig>>,
+          Awaited<ReturnType<typeof listConfig>>,
           TError,
-          Awaited<ReturnType<typeof getConfig>>
+          Awaited<ReturnType<typeof listConfig>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetConfig<TData = Awaited<ReturnType<typeof getConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConfig>>, TError, TData>> & Pick<
+export function useListConfig<TData = Awaited<ReturnType<typeof listConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConfig>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getConfig>>,
+          Awaited<ReturnType<typeof listConfig>>,
           TError,
-          Awaited<ReturnType<typeof getConfig>>
+          Awaited<ReturnType<typeof listConfig>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetConfig<TData = Awaited<ReturnType<typeof getConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConfig>>, TError, TData>>, }
+export function useListConfig<TData = Awaited<ReturnType<typeof listConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConfig>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Config
  */
 
-export function useGetConfig<TData = Awaited<ReturnType<typeof getConfig>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConfig>>, TError, TData>>, }
+export function useListConfig<TData = Awaited<ReturnType<typeof listConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConfig>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetConfigQueryOptions(options)
+  const queryOptions = getListConfigQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

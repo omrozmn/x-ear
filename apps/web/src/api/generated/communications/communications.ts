@@ -25,12 +25,12 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  CommunicationStatsParams,
   HTTPValidationError,
   HistoryCreate,
   ListCommunicationHistoryParams,
-  ListMessagesParams,
-  ListTemplatesParams,
+  ListCommunicationMessagesParams,
+  ListCommunicationStatsParams,
+  ListCommunicationTemplatesParams,
   RoutersCommunicationsTemplateCreate,
   SendEmail,
   SendSMS
@@ -45,8 +45,8 @@ import { customInstance } from '../../orval-mutator';
  * List all communication messages (SMS and Email)
  * @summary List Messages
  */
-export const listMessages = (
-    params?: ListMessagesParams,
+export const listCommunicationMessages = (
+    params?: ListCommunicationMessagesParams,
  signal?: AbortSignal
 ) => {
       
@@ -61,69 +61,69 @@ export const listMessages = (
 
 
 
-export const getListMessagesQueryKey = (params?: ListMessagesParams,) => {
+export const getListCommunicationMessagesQueryKey = (params?: ListCommunicationMessagesParams,) => {
     return [
     `/api/communications/messages`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListMessagesQueryOptions = <TData = Awaited<ReturnType<typeof listMessages>>, TError = HTTPValidationError>(params?: ListMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMessages>>, TError, TData>>, }
+export const getListCommunicationMessagesQueryOptions = <TData = Awaited<ReturnType<typeof listCommunicationMessages>>, TError = HTTPValidationError>(params?: ListCommunicationMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationMessages>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListMessagesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListCommunicationMessagesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMessages>>> = ({ signal }) => listMessages(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCommunicationMessages>>> = ({ signal }) => listCommunicationMessages(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMessages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCommunicationMessages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListMessagesQueryResult = NonNullable<Awaited<ReturnType<typeof listMessages>>>
-export type ListMessagesQueryError = HTTPValidationError
+export type ListCommunicationMessagesQueryResult = NonNullable<Awaited<ReturnType<typeof listCommunicationMessages>>>
+export type ListCommunicationMessagesQueryError = HTTPValidationError
 
 
-export function useListMessages<TData = Awaited<ReturnType<typeof listMessages>>, TError = HTTPValidationError>(
- params: undefined |  ListMessagesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMessages>>, TError, TData>> & Pick<
+export function useListCommunicationMessages<TData = Awaited<ReturnType<typeof listCommunicationMessages>>, TError = HTTPValidationError>(
+ params: undefined |  ListCommunicationMessagesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationMessages>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listMessages>>,
+          Awaited<ReturnType<typeof listCommunicationMessages>>,
           TError,
-          Awaited<ReturnType<typeof listMessages>>
+          Awaited<ReturnType<typeof listCommunicationMessages>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListMessages<TData = Awaited<ReturnType<typeof listMessages>>, TError = HTTPValidationError>(
- params?: ListMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMessages>>, TError, TData>> & Pick<
+export function useListCommunicationMessages<TData = Awaited<ReturnType<typeof listCommunicationMessages>>, TError = HTTPValidationError>(
+ params?: ListCommunicationMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationMessages>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listMessages>>,
+          Awaited<ReturnType<typeof listCommunicationMessages>>,
           TError,
-          Awaited<ReturnType<typeof listMessages>>
+          Awaited<ReturnType<typeof listCommunicationMessages>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListMessages<TData = Awaited<ReturnType<typeof listMessages>>, TError = HTTPValidationError>(
- params?: ListMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMessages>>, TError, TData>>, }
+export function useListCommunicationMessages<TData = Awaited<ReturnType<typeof listCommunicationMessages>>, TError = HTTPValidationError>(
+ params?: ListCommunicationMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationMessages>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Messages
  */
 
-export function useListMessages<TData = Awaited<ReturnType<typeof listMessages>>, TError = HTTPValidationError>(
- params?: ListMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMessages>>, TError, TData>>, }
+export function useListCommunicationMessages<TData = Awaited<ReturnType<typeof listCommunicationMessages>>, TError = HTTPValidationError>(
+ params?: ListCommunicationMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationMessages>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListMessagesQueryOptions(params,options)
+  const queryOptions = getListCommunicationMessagesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -139,7 +139,7 @@ export function useListMessages<TData = Awaited<ReturnType<typeof listMessages>>
  * Send SMS message
  * @summary Send Sms
  */
-export const sendSms = (
+export const createCommunicationMessageSendSms = (
     sendSMS: SendSMS,
  signal?: AbortSignal
 ) => {
@@ -155,11 +155,11 @@ export const sendSms = (
   
 
 
-export const getSendSmsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendSms>>, TError,{data: SendSMS}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof sendSms>>, TError,{data: SendSMS}, TContext> => {
+export const getCreateCommunicationMessageSendSmsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>, TError,{data: SendSMS}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>, TError,{data: SendSMS}, TContext> => {
 
-const mutationKey = ['sendSms'];
+const mutationKey = ['createCommunicationMessageSendSms'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -169,10 +169,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendSms>>, {data: SendSMS}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>, {data: SendSMS}> = (props) => {
           const {data} = props ?? {};
 
-          return  sendSms(data,)
+          return  createCommunicationMessageSendSms(data,)
         }
 
         
@@ -180,23 +180,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SendSmsMutationResult = NonNullable<Awaited<ReturnType<typeof sendSms>>>
-    export type SendSmsMutationBody = SendSMS
-    export type SendSmsMutationError = HTTPValidationError
+    export type CreateCommunicationMessageSendSmsMutationResult = NonNullable<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>>
+    export type CreateCommunicationMessageSendSmsMutationBody = SendSMS
+    export type CreateCommunicationMessageSendSmsMutationError = HTTPValidationError
 
     /**
  * @summary Send Sms
  */
-export const useSendSms = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendSms>>, TError,{data: SendSMS}, TContext>, }
+export const useCreateCommunicationMessageSendSms = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationMessageSendSms>>, TError,{data: SendSMS}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof sendSms>>,
+        Awaited<ReturnType<typeof createCommunicationMessageSendSms>>,
         TError,
         {data: SendSMS},
         TContext
       > => {
 
-      const mutationOptions = getSendSmsMutationOptions(options);
+      const mutationOptions = getCreateCommunicationMessageSendSmsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -204,7 +204,7 @@ export const useSendSms = <TError = HTTPValidationError,
  * Send Email message
  * @summary Send Email
  */
-export const sendEmail = (
+export const createCommunicationMessageSendEmail = (
     sendEmail: SendEmail,
  signal?: AbortSignal
 ) => {
@@ -220,11 +220,11 @@ export const sendEmail = (
   
 
 
-export const getSendEmailMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendEmail>>, TError,{data: SendEmail}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof sendEmail>>, TError,{data: SendEmail}, TContext> => {
+export const getCreateCommunicationMessageSendEmailMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationMessageSendEmail>>, TError,{data: SendEmail}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createCommunicationMessageSendEmail>>, TError,{data: SendEmail}, TContext> => {
 
-const mutationKey = ['sendEmail'];
+const mutationKey = ['createCommunicationMessageSendEmail'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -234,10 +234,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendEmail>>, {data: SendEmail}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommunicationMessageSendEmail>>, {data: SendEmail}> = (props) => {
           const {data} = props ?? {};
 
-          return  sendEmail(data,)
+          return  createCommunicationMessageSendEmail(data,)
         }
 
         
@@ -245,23 +245,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SendEmailMutationResult = NonNullable<Awaited<ReturnType<typeof sendEmail>>>
-    export type SendEmailMutationBody = SendEmail
-    export type SendEmailMutationError = HTTPValidationError
+    export type CreateCommunicationMessageSendEmailMutationResult = NonNullable<Awaited<ReturnType<typeof createCommunicationMessageSendEmail>>>
+    export type CreateCommunicationMessageSendEmailMutationBody = SendEmail
+    export type CreateCommunicationMessageSendEmailMutationError = HTTPValidationError
 
     /**
  * @summary Send Email
  */
-export const useSendEmail = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendEmail>>, TError,{data: SendEmail}, TContext>, }
+export const useCreateCommunicationMessageSendEmail = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationMessageSendEmail>>, TError,{data: SendEmail}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof sendEmail>>,
+        Awaited<ReturnType<typeof createCommunicationMessageSendEmail>>,
         TError,
         {data: SendEmail},
         TContext
       > => {
 
-      const mutationOptions = getSendEmailMutationOptions(options);
+      const mutationOptions = getCreateCommunicationMessageSendEmailMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -269,8 +269,8 @@ export const useSendEmail = <TError = HTTPValidationError,
  * List communication templates
  * @summary List Templates
  */
-export const listTemplates = (
-    params?: ListTemplatesParams,
+export const listCommunicationTemplates = (
+    params?: ListCommunicationTemplatesParams,
  signal?: AbortSignal
 ) => {
       
@@ -285,69 +285,69 @@ export const listTemplates = (
 
 
 
-export const getListTemplatesQueryKey = (params?: ListTemplatesParams,) => {
+export const getListCommunicationTemplatesQueryKey = (params?: ListCommunicationTemplatesParams,) => {
     return [
     `/api/communications/templates`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof listTemplates>>, TError = HTTPValidationError>(params?: ListTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>>, }
+export const getListCommunicationTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof listCommunicationTemplates>>, TError = HTTPValidationError>(params?: ListCommunicationTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationTemplates>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListTemplatesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListCommunicationTemplatesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTemplates>>> = ({ signal }) => listTemplates(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCommunicationTemplates>>> = ({ signal }) => listCommunicationTemplates(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCommunicationTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof listTemplates>>>
-export type ListTemplatesQueryError = HTTPValidationError
+export type ListCommunicationTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof listCommunicationTemplates>>>
+export type ListCommunicationTemplatesQueryError = HTTPValidationError
 
 
-export function useListTemplates<TData = Awaited<ReturnType<typeof listTemplates>>, TError = HTTPValidationError>(
- params: undefined |  ListTemplatesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>> & Pick<
+export function useListCommunicationTemplates<TData = Awaited<ReturnType<typeof listCommunicationTemplates>>, TError = HTTPValidationError>(
+ params: undefined |  ListCommunicationTemplatesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationTemplates>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listTemplates>>,
+          Awaited<ReturnType<typeof listCommunicationTemplates>>,
           TError,
-          Awaited<ReturnType<typeof listTemplates>>
+          Awaited<ReturnType<typeof listCommunicationTemplates>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListTemplates<TData = Awaited<ReturnType<typeof listTemplates>>, TError = HTTPValidationError>(
- params?: ListTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>> & Pick<
+export function useListCommunicationTemplates<TData = Awaited<ReturnType<typeof listCommunicationTemplates>>, TError = HTTPValidationError>(
+ params?: ListCommunicationTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationTemplates>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listTemplates>>,
+          Awaited<ReturnType<typeof listCommunicationTemplates>>,
           TError,
-          Awaited<ReturnType<typeof listTemplates>>
+          Awaited<ReturnType<typeof listCommunicationTemplates>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListTemplates<TData = Awaited<ReturnType<typeof listTemplates>>, TError = HTTPValidationError>(
- params?: ListTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>>, }
+export function useListCommunicationTemplates<TData = Awaited<ReturnType<typeof listCommunicationTemplates>>, TError = HTTPValidationError>(
+ params?: ListCommunicationTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationTemplates>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary List Templates
  */
 
-export function useListTemplates<TData = Awaited<ReturnType<typeof listTemplates>>, TError = HTTPValidationError>(
- params?: ListTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>>, }
+export function useListCommunicationTemplates<TData = Awaited<ReturnType<typeof listCommunicationTemplates>>, TError = HTTPValidationError>(
+ params?: ListCommunicationTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationTemplates>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListTemplatesQueryOptions(params,options)
+  const queryOptions = getListCommunicationTemplatesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -363,7 +363,7 @@ export function useListTemplates<TData = Awaited<ReturnType<typeof listTemplates
  * Create a new communication template
  * @summary Create Template
  */
-export const createTemplate = (
+export const createCommunicationTemplates = (
     routersCommunicationsTemplateCreate: RoutersCommunicationsTemplateCreate,
  signal?: AbortSignal
 ) => {
@@ -379,11 +379,11 @@ export const createTemplate = (
   
 
 
-export const getCreateTemplateMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTemplate>>, TError,{data: RoutersCommunicationsTemplateCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createTemplate>>, TError,{data: RoutersCommunicationsTemplateCreate}, TContext> => {
+export const getCreateCommunicationTemplatesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplates>>, TError,{data: RoutersCommunicationsTemplateCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplates>>, TError,{data: RoutersCommunicationsTemplateCreate}, TContext> => {
 
-const mutationKey = ['createTemplate'];
+const mutationKey = ['createCommunicationTemplates'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -393,10 +393,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTemplate>>, {data: RoutersCommunicationsTemplateCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCommunicationTemplates>>, {data: RoutersCommunicationsTemplateCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createTemplate(data,)
+          return  createCommunicationTemplates(data,)
         }
 
         
@@ -404,23 +404,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof createTemplate>>>
-    export type CreateTemplateMutationBody = RoutersCommunicationsTemplateCreate
-    export type CreateTemplateMutationError = HTTPValidationError
+    export type CreateCommunicationTemplatesMutationResult = NonNullable<Awaited<ReturnType<typeof createCommunicationTemplates>>>
+    export type CreateCommunicationTemplatesMutationBody = RoutersCommunicationsTemplateCreate
+    export type CreateCommunicationTemplatesMutationError = HTTPValidationError
 
     /**
  * @summary Create Template
  */
-export const useCreateTemplate = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTemplate>>, TError,{data: RoutersCommunicationsTemplateCreate}, TContext>, }
+export const useCreateCommunicationTemplates = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCommunicationTemplates>>, TError,{data: RoutersCommunicationsTemplateCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createTemplate>>,
+        Awaited<ReturnType<typeof createCommunicationTemplates>>,
         TError,
         {data: RoutersCommunicationsTemplateCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateTemplateMutationOptions(options);
+      const mutationOptions = getCreateCommunicationTemplatesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -428,7 +428,7 @@ export const useCreateTemplate = <TError = HTTPValidationError,
  * Get a specific template
  * @summary Get Template
  */
-export const getTemplate = (
+export const getCommunicationTemplate = (
     templateId: string,
  signal?: AbortSignal
 ) => {
@@ -443,69 +443,69 @@ export const getTemplate = (
 
 
 
-export const getGetTemplateQueryKey = (templateId?: string,) => {
+export const getGetCommunicationTemplateQueryKey = (templateId?: string,) => {
     return [
     `/api/communications/templates/${templateId}`
     ] as const;
     }
 
     
-export const getGetTemplateQueryOptions = <TData = Awaited<ReturnType<typeof getTemplate>>, TError = HTTPValidationError>(templateId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>>, }
+export const getGetCommunicationTemplateQueryOptions = <TData = Awaited<ReturnType<typeof getCommunicationTemplate>>, TError = HTTPValidationError>(templateId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommunicationTemplate>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTemplateQueryKey(templateId);
+  const queryKey =  queryOptions?.queryKey ?? getGetCommunicationTemplateQueryKey(templateId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTemplate>>> = ({ signal }) => getTemplate(templateId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommunicationTemplate>>> = ({ signal }) => getCommunicationTemplate(templateId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(templateId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(templateId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCommunicationTemplate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetTemplateQueryResult = NonNullable<Awaited<ReturnType<typeof getTemplate>>>
-export type GetTemplateQueryError = HTTPValidationError
+export type GetCommunicationTemplateQueryResult = NonNullable<Awaited<ReturnType<typeof getCommunicationTemplate>>>
+export type GetCommunicationTemplateQueryError = HTTPValidationError
 
 
-export function useGetTemplate<TData = Awaited<ReturnType<typeof getTemplate>>, TError = HTTPValidationError>(
- templateId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>> & Pick<
+export function useGetCommunicationTemplate<TData = Awaited<ReturnType<typeof getCommunicationTemplate>>, TError = HTTPValidationError>(
+ templateId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommunicationTemplate>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTemplate>>,
+          Awaited<ReturnType<typeof getCommunicationTemplate>>,
           TError,
-          Awaited<ReturnType<typeof getTemplate>>
+          Awaited<ReturnType<typeof getCommunicationTemplate>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetTemplate<TData = Awaited<ReturnType<typeof getTemplate>>, TError = HTTPValidationError>(
- templateId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>> & Pick<
+export function useGetCommunicationTemplate<TData = Awaited<ReturnType<typeof getCommunicationTemplate>>, TError = HTTPValidationError>(
+ templateId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommunicationTemplate>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTemplate>>,
+          Awaited<ReturnType<typeof getCommunicationTemplate>>,
           TError,
-          Awaited<ReturnType<typeof getTemplate>>
+          Awaited<ReturnType<typeof getCommunicationTemplate>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetTemplate<TData = Awaited<ReturnType<typeof getTemplate>>, TError = HTTPValidationError>(
- templateId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>>, }
+export function useGetCommunicationTemplate<TData = Awaited<ReturnType<typeof getCommunicationTemplate>>, TError = HTTPValidationError>(
+ templateId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommunicationTemplate>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Template
  */
 
-export function useGetTemplate<TData = Awaited<ReturnType<typeof getTemplate>>, TError = HTTPValidationError>(
- templateId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>>, }
+export function useGetCommunicationTemplate<TData = Awaited<ReturnType<typeof getCommunicationTemplate>>, TError = HTTPValidationError>(
+ templateId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommunicationTemplate>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetTemplateQueryOptions(templateId,options)
+  const queryOptions = getGetCommunicationTemplateQueryOptions(templateId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -521,7 +521,7 @@ export function useGetTemplate<TData = Awaited<ReturnType<typeof getTemplate>>, 
  * Update a communication template
  * @summary Update Template
  */
-export const updateTemplate = (
+export const updateCommunicationTemplate = (
     templateId: string,
     routersCommunicationsTemplateCreate: RoutersCommunicationsTemplateCreate,
  ) => {
@@ -537,11 +537,11 @@ export const updateTemplate = (
   
 
 
-export const getUpdateTemplateMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTemplate>>, TError,{templateId: string;data: RoutersCommunicationsTemplateCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateTemplate>>, TError,{templateId: string;data: RoutersCommunicationsTemplateCreate}, TContext> => {
+export const getUpdateCommunicationTemplateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: RoutersCommunicationsTemplateCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: RoutersCommunicationsTemplateCreate}, TContext> => {
 
-const mutationKey = ['updateTemplate'];
+const mutationKey = ['updateCommunicationTemplate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -551,10 +551,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTemplate>>, {templateId: string;data: RoutersCommunicationsTemplateCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCommunicationTemplate>>, {templateId: string;data: RoutersCommunicationsTemplateCreate}> = (props) => {
           const {templateId,data} = props ?? {};
 
-          return  updateTemplate(templateId,data,)
+          return  updateCommunicationTemplate(templateId,data,)
         }
 
         
@@ -562,23 +562,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof updateTemplate>>>
-    export type UpdateTemplateMutationBody = RoutersCommunicationsTemplateCreate
-    export type UpdateTemplateMutationError = HTTPValidationError
+    export type UpdateCommunicationTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof updateCommunicationTemplate>>>
+    export type UpdateCommunicationTemplateMutationBody = RoutersCommunicationsTemplateCreate
+    export type UpdateCommunicationTemplateMutationError = HTTPValidationError
 
     /**
  * @summary Update Template
  */
-export const useUpdateTemplate = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTemplate>>, TError,{templateId: string;data: RoutersCommunicationsTemplateCreate}, TContext>, }
+export const useUpdateCommunicationTemplate = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCommunicationTemplate>>, TError,{templateId: string;data: RoutersCommunicationsTemplateCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateTemplate>>,
+        Awaited<ReturnType<typeof updateCommunicationTemplate>>,
         TError,
         {templateId: string;data: RoutersCommunicationsTemplateCreate},
         TContext
       > => {
 
-      const mutationOptions = getUpdateTemplateMutationOptions(options);
+      const mutationOptions = getUpdateCommunicationTemplateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -586,7 +586,7 @@ export const useUpdateTemplate = <TError = HTTPValidationError,
  * Delete a communication template
  * @summary Delete Template
  */
-export const deleteTemplate = (
+export const deleteCommunicationTemplate = (
     templateId: string,
  ) => {
       
@@ -599,11 +599,11 @@ export const deleteTemplate = (
   
 
 
-export const getDeleteTemplateMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTemplate>>, TError,{templateId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteTemplate>>, TError,{templateId: string}, TContext> => {
+export const getDeleteCommunicationTemplateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCommunicationTemplate>>, TError,{templateId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteCommunicationTemplate>>, TError,{templateId: string}, TContext> => {
 
-const mutationKey = ['deleteTemplate'];
+const mutationKey = ['deleteCommunicationTemplate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -613,10 +613,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTemplate>>, {templateId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCommunicationTemplate>>, {templateId: string}> = (props) => {
           const {templateId} = props ?? {};
 
-          return  deleteTemplate(templateId,)
+          return  deleteCommunicationTemplate(templateId,)
         }
 
         
@@ -624,23 +624,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTemplate>>>
+    export type DeleteCommunicationTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCommunicationTemplate>>>
     
-    export type DeleteTemplateMutationError = HTTPValidationError
+    export type DeleteCommunicationTemplateMutationError = HTTPValidationError
 
     /**
  * @summary Delete Template
  */
-export const useDeleteTemplate = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTemplate>>, TError,{templateId: string}, TContext>, }
+export const useDeleteCommunicationTemplate = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCommunicationTemplate>>, TError,{templateId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteTemplate>>,
+        Awaited<ReturnType<typeof deleteCommunicationTemplate>>,
         TError,
         {templateId: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteTemplateMutationOptions(options);
+      const mutationOptions = getDeleteCommunicationTemplateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -807,8 +807,8 @@ export const useCreateCommunicationHistory = <TError = HTTPValidationError,
  * Get communication statistics
  * @summary Communication Stats
  */
-export const communicationStats = (
-    params?: CommunicationStatsParams,
+export const listCommunicationStats = (
+    params?: ListCommunicationStatsParams,
  signal?: AbortSignal
 ) => {
       
@@ -823,69 +823,69 @@ export const communicationStats = (
 
 
 
-export const getCommunicationStatsQueryKey = (params?: CommunicationStatsParams,) => {
+export const getListCommunicationStatsQueryKey = (params?: ListCommunicationStatsParams,) => {
     return [
     `/api/communications/stats`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getCommunicationStatsQueryOptions = <TData = Awaited<ReturnType<typeof communicationStats>>, TError = HTTPValidationError>(params?: CommunicationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof communicationStats>>, TError, TData>>, }
+export const getListCommunicationStatsQueryOptions = <TData = Awaited<ReturnType<typeof listCommunicationStats>>, TError = HTTPValidationError>(params?: ListCommunicationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationStats>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getCommunicationStatsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListCommunicationStatsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof communicationStats>>> = ({ signal }) => communicationStats(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCommunicationStats>>> = ({ signal }) => listCommunicationStats(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof communicationStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCommunicationStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type CommunicationStatsQueryResult = NonNullable<Awaited<ReturnType<typeof communicationStats>>>
-export type CommunicationStatsQueryError = HTTPValidationError
+export type ListCommunicationStatsQueryResult = NonNullable<Awaited<ReturnType<typeof listCommunicationStats>>>
+export type ListCommunicationStatsQueryError = HTTPValidationError
 
 
-export function useCommunicationStats<TData = Awaited<ReturnType<typeof communicationStats>>, TError = HTTPValidationError>(
- params: undefined |  CommunicationStatsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof communicationStats>>, TError, TData>> & Pick<
+export function useListCommunicationStats<TData = Awaited<ReturnType<typeof listCommunicationStats>>, TError = HTTPValidationError>(
+ params: undefined |  ListCommunicationStatsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationStats>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof communicationStats>>,
+          Awaited<ReturnType<typeof listCommunicationStats>>,
           TError,
-          Awaited<ReturnType<typeof communicationStats>>
+          Awaited<ReturnType<typeof listCommunicationStats>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useCommunicationStats<TData = Awaited<ReturnType<typeof communicationStats>>, TError = HTTPValidationError>(
- params?: CommunicationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof communicationStats>>, TError, TData>> & Pick<
+export function useListCommunicationStats<TData = Awaited<ReturnType<typeof listCommunicationStats>>, TError = HTTPValidationError>(
+ params?: ListCommunicationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationStats>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof communicationStats>>,
+          Awaited<ReturnType<typeof listCommunicationStats>>,
           TError,
-          Awaited<ReturnType<typeof communicationStats>>
+          Awaited<ReturnType<typeof listCommunicationStats>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useCommunicationStats<TData = Awaited<ReturnType<typeof communicationStats>>, TError = HTTPValidationError>(
- params?: CommunicationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof communicationStats>>, TError, TData>>, }
+export function useListCommunicationStats<TData = Awaited<ReturnType<typeof listCommunicationStats>>, TError = HTTPValidationError>(
+ params?: ListCommunicationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationStats>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Communication Stats
  */
 
-export function useCommunicationStats<TData = Awaited<ReturnType<typeof communicationStats>>, TError = HTTPValidationError>(
- params?: CommunicationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof communicationStats>>, TError, TData>>, }
+export function useListCommunicationStats<TData = Awaited<ReturnType<typeof listCommunicationStats>>, TError = HTTPValidationError>(
+ params?: ListCommunicationStatsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listCommunicationStats>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getCommunicationStatsQueryOptions(params,options)
+  const queryOptions = getListCommunicationStatsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
