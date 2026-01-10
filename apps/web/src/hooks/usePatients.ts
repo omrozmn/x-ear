@@ -581,7 +581,7 @@ export function usePatientDevices(patientId: string) {
           lastServiceDate: device.lastServiceDate || device.last_service_date,
           batteryType: device.batteryType || device.battery_type,
           price: (device.salePrice as unknown as number) || (device as any).price,
-          sgkScheme: !!(device.sgkScheme || device.sgk_scheme),
+          sgkScheme: (device.sgkScheme as unknown as string) || (device.sgk_scheme as unknown as string) || '',
           settings: device.settings,
         }));
         setDevices(mappedDevices);

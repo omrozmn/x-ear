@@ -69,7 +69,7 @@ export interface PatientDevice {
   patientPayment?: number;
 
   // Payment and SGK
-  sgkScheme?: boolean;
+  sgkScheme?: string; // SGK support type like 'over18_working', 'under4_parent_retired', etc.
   paymentMethod?: 'cash' | 'card' | 'transfer' | 'installment' | string;
 
   // Trial information

@@ -679,8 +679,8 @@ export class PatientService {
       await this.refreshFromAPI();
 
       return {
-        processed: result?.data?.processed || 0,
-        success: result?.data?.success || 0,
+        success: result?.data?.success || false,
+        processed: (result?.data?.created || 0) + (result?.data?.updated || 0),
         errors: result?.data?.errors || []
       };
     } catch (error) {

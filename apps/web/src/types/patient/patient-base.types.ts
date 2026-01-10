@@ -83,7 +83,7 @@ export interface PatientDevice {
   lastServiceDate?: string;
   batteryType?: string;
   price?: number;
-  sgkScheme?: boolean;
+  sgkScheme?: string; // SGK support type like 'over18_working', 'under4_parent_retired', etc.
   settings?: Record<string, unknown> | boolean;
   saleId?: string;  // Sale ID for linking to sales history
   listPrice?: number;
