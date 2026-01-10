@@ -48,8 +48,8 @@ jobs:
       - name: Install dependencies
         run: |
           pnpm install --frozen-lockfile
-          cd apps/web && pnpm install --frozen-lockfile
-          cd ../.. && cd packages/ui-web && pnpm install --frozen-lockfile
+          cd apps/web && pnpm install
+          cd ../.. && cd packages/ui-web && pnpm install
 
       - name: TypeScript check
         run: cd apps/web && pnpm run type-check
@@ -86,8 +86,8 @@ jobs:
       - name: Install dependencies
         run: |
           pnpm install --frozen-lockfile
-          cd apps/web && pnpm install --frozen-lockfile
-          cd ../.. && cd packages/ui-web && pnpm install --frozen-lockfile
+          cd apps/web && pnpm install
+          cd ../.. && cd packages/ui-web && pnpm install
 
       - name: Lint check (critical errors only)
         run: |
@@ -128,8 +128,8 @@ jobs:
       - name: Install dependencies
         run: |
           pnpm install --frozen-lockfile
-          cd apps/web && pnpm install --frozen-lockfile
-          cd ../.. && cd packages/ui-web && pnpm install --frozen-lockfile
+          cd apps/web && pnpm install
+          cd ../.. && cd packages/ui-web && pnpm install
 
       - name: Run tests
         run: |
@@ -170,8 +170,8 @@ jobs:
       - name: Install dependencies
         run: |
           pnpm install --frozen-lockfile
-          cd apps/web && pnpm install --frozen-lockfile
-          cd ../.. && cd packages/ui-web && pnpm install --frozen-lockfile
+          cd apps/web && pnpm install
+          cd ../.. && cd packages/ui-web && pnpm install
 
       - name: Build web app
         run: cd apps/web && pnpm run build
@@ -314,7 +314,7 @@ jobs:
       - name: Install web dependencies
         run: |
           cd apps/web
-          pnpm install --frozen-lockfile
+          pnpm install
 
       - name: Generate OpenAPI spec
         run: |
