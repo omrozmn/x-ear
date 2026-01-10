@@ -32,7 +32,9 @@ import type {
   ResponseEnvelopeAny,
   ResponseEnvelopeDeviceAssignmentCreateResponse,
   ResponseEnvelopeListSaleRead,
+  ResponseEnvelopeSaleRecalcResponse,
   SaleCreate,
+  SaleRecalcRequest,
   SaleUpdate,
   SchemasSalesPaymentRecordCreate
 } from '.././schemas';
@@ -515,6 +517,71 @@ export const useUpdateSale = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * Recalculate SGK and patient payment amounts for sales.
+ * @summary Recalc Sales
+ */
+export const recalcSales = (
+    saleRecalcRequest: SaleRecalcRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeSaleRecalcResponse>(
+      {url: `/api/sales/recalc`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: saleRecalcRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getRecalcSalesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recalcSales>>, TError,{data: SaleRecalcRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof recalcSales>>, TError,{data: SaleRecalcRequest}, TContext> => {
+
+const mutationKey = ['recalcSales'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recalcSales>>, {data: SaleRecalcRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  recalcSales(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RecalcSalesMutationResult = NonNullable<Awaited<ReturnType<typeof recalcSales>>>
+    export type RecalcSalesMutationBody = SaleRecalcRequest
+    export type RecalcSalesMutationError = HTTPValidationError
+
+    /**
+ * @summary Recalc Sales
+ */
+export const useRecalcSales = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recalcSales>>, TError,{data: SaleRecalcRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof recalcSales>>,
+        TError,
+        {data: SaleRecalcRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getRecalcSalesMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * Assign devices to a patient with sale record creation.
 
 This is the main endpoint for device assignment workflow:
@@ -588,7 +655,15 @@ export const useCreatePatientDeviceAssignments = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Update a device assignment.
+ * Update a device assignment with full legacy logic:
+- Pricing recalculation when base_price, discount, sgk_scheme change
+- Sale totals sync after updates
+- Delivery status change handling (stock deduction when changed to 'delivered')
+- Report status updates
+- Loaner device management (add/remove/swap loaner with stock tracking)
+- Serial number updates
+- Down payment sync to PaymentRecord
+- Status cancellation with stock return
  * @summary Update Device Assignment
  */
 export const updateDeviceAssignment = (

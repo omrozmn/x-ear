@@ -30,6 +30,16 @@ import {
   createInvoiceIssue,
   listInvoicePdf
 } from '@/api/generated/invoice-actions/invoice-actions';
+import {
+  getInvoiceTemplates as getInvoiceTemplatesApi,
+  getPrintQueue as getPrintQueueApi,
+  addToPrintQueue as addToPrintQueueApi,
+  bulkUploadInvoices as bulkUploadInvoicesApi,
+  createInvoiceSendToGib
+} from '@/api/generated/invoices/invoices';
+import {
+  getAdminInvoicesApiAdminInvoicesGet
+} from '@/api/generated/admin-invoices/admin-invoices';
 import { apiClient } from '../api/orval-mutator';
 
 
@@ -545,9 +555,10 @@ export class InvoiceService {
       if (filters?.issueDateFrom) params.issueDateFrom = filters.issueDateFrom;
       if (filters?.issueDateTo) params.issueDateTo = filters.issueDateTo;
 
-      // Call API using axios directly (Swagger spec missing)
-      const response = await apiClient.get('/api/admin/invoices', { params });
-      const data = response.data as any;
+      // Call API using Orval-generated function
+      const response = await getAdminInvoicesApiAdminInvoicesGet(params);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = response as any;
 
       // Handle various response shapes gracefully using unwrap helpers
       const items = unwrapArray<any>(data);
@@ -668,7 +679,7 @@ export class InvoiceService {
     }
 
     try {
-      await apiClient.post(`/api/invoices/${id}/send-to-gib`);
+      await createInvoiceSendToGib(Number(id));
       // Try to refresh server state
       const response = await getInvoice(Number(id));
       const serverInv = unwrapObject<any>(response);
@@ -796,8 +807,9 @@ export class InvoiceService {
   // Template Operations
   async getTemplates(): Promise<InvoiceTemplate[]> {
     try {
-      const response = await apiClient.get('/api/invoices/templates');
-      const data = response.data;
+      const response = await getInvoiceTemplatesApi();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = response as any;
       const templates = Array.isArray(data) ? data : (data?.data || []);
       return templates as InvoiceTemplate[];
     } catch (error) {
@@ -807,16 +819,12 @@ export class InvoiceService {
   }
 
   // New P1 Features
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async bulkUploadInvoices(file: File): Promise<{ processed: number; success: number; errors: any[] }> {
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await apiClient.post('/api/invoices/bulk-upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      const result = response.data;
+      const response = await bulkUploadInvoicesApi({ file });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = response as any;
       return {
         processed: result?.data?.processed || 0,
         success: result?.data?.success || 0,
@@ -828,10 +836,12 @@ export class InvoiceService {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getPrintQueue(): Promise<any[]> {
     try {
-      const response = await apiClient.get('/api/invoices/print-queue');
-      const data = response.data;
+      const response = await getPrintQueueApi();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = response as any;
       return Array.isArray(data) ? data : (data?.data || []);
     } catch (error) {
       console.error('Failed to get print queue:', error);
@@ -839,13 +849,14 @@ export class InvoiceService {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async addToPrintQueue(invoiceIds: string | string[]): Promise<any> {
     try {
       const ids = Array.isArray(invoiceIds) ? invoiceIds : [invoiceIds];
-      const response = await apiClient.post('/api/invoices/print-queue', {
-        invoice_ids: ids
-      });
-      return response.data;
+      // Convert string IDs to numbers as backend expects number[]
+      const numericIds = ids.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+      const response = await addToPrintQueueApi({ invoiceIds: numericIds });
+      return response;
     } catch (error) {
       console.error('Failed to add to print queue:', error);
       throw error;

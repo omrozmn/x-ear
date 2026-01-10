@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Frontend alias for contactPerson
+ */
 export type SupplierUpdateContactName = string | null;

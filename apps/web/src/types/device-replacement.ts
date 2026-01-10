@@ -29,10 +29,13 @@ export interface DeviceInfo {
 
 export interface DeviceReplacementRequest {
   patientId: string;
+  saleId?: string;
   oldDeviceId: string;
+  oldDeviceInfo?: Partial<DeviceInfo>;
   newInventoryId?: string;
   newDeviceInfo?: Partial<DeviceInfo>;
   replacementReason: string;
+  priceDifference?: number;
   notes?: string;
   createReturnInvoice?: boolean;
   invoiceType?: 'individual' | 'corporate' | 'e_archive';
@@ -42,6 +45,7 @@ export interface DeviceReplacementResponse {
   success: boolean;
   data?: DeviceReplacementHistory;
   error?: string;
+  warning?: string;
   timestamp: string;
 }
 

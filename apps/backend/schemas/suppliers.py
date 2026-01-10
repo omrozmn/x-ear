@@ -1,8 +1,8 @@
 """
 Supplier Schemas - Pydantic models for Supplier domain
 """
-from typing import Optional, List, Union
-from pydantic import Field, field_validator
+from typing import Optional, List, Union, Any
+from pydantic import Field, field_validator, model_validator
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 
@@ -28,7 +28,7 @@ class SupplierBase(AppBaseModel):
     rating: Optional[int] = Field(None, description="Rating 1-5")
     is_active: bool = Field(True, alias="isActive", description="Is supplier active")
     notes: Optional[str] = Field(None, description="Notes")
-    
+
     @field_validator('email', mode='before')
     @classmethod
     def empty_string_to_none(cls, v):
@@ -40,6 +40,9 @@ class SupplierBase(AppBaseModel):
 
 class SupplierCreate(AppBaseModel):
     """Schema for creating a supplier"""
+    name: Optional[str] = Field(None, description="Frontend alias for companyName")
+    code: Optional[str] = Field(None, description="Frontend alias for companyCode")
+    contact_name: Optional[str] = Field(None, alias="contactName", description="Frontend alias for contactPerson")
     company_name: str = Field(..., alias="companyName", description="Supplier company name")
     company_code: Optional[str] = Field(None, alias="companyCode")
     contact_person: Optional[str] = Field(None, alias="contactPerson")
@@ -59,9 +62,25 @@ class SupplierCreate(AppBaseModel):
             return None
         return v
 
+    @model_validator(mode='before')
+    @classmethod
+    def map_aliases_before_validation(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if 'name' in data and 'companyName' not in data:
+                data['companyName'] = data['name']
+            if 'code' in data and 'companyCode' not in data:
+                data['companyCode'] = data['code']
+            if 'contactName' in data and 'contactPerson' not in data:
+                data['contactPerson'] = data['contactName']
+        return data
+
 
 class SupplierUpdate(AppBaseModel):
     """Schema for updating a supplier"""
+    name: Optional[str] = Field(None, description="Frontend alias for companyName")
+    code: Optional[str] = Field(None, description="Frontend alias for companyCode")
+    contact_name: Optional[str] = Field(None, alias="contactName", description="Frontend alias for contactPerson")
+    
     company_name: Optional[str] = Field(None, alias="companyName")
     company_code: Optional[str] = Field(None, alias="companyCode")
     contact_person: Optional[str] = Field(None, alias="contactPerson")
@@ -89,6 +108,18 @@ class SupplierUpdate(AppBaseModel):
             return None
         return v
 
+    @model_validator(mode='before')
+    @classmethod
+    def map_aliases_before_validation(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if 'name' in data and 'companyName' not in data:
+                data['companyName'] = data['name']
+            if 'code' in data and 'companyCode' not in data:
+                data['companyCode'] = data['code']
+            if 'contactName' in data and 'contactPerson' not in data:
+                data['contactPerson'] = data['contactName']
+        return data
+
 
 class SupplierRead(SupplierBase, TimestampMixin):
     """Schema for reading a supplier - matches Supplier.to_dict() output"""
@@ -96,6 +127,9 @@ class SupplierRead(SupplierBase, TimestampMixin):
     id: Union[int, str] = Field(..., description="Supplier ID")
     tenant_id: str = Field(..., alias="tenantId")
     product_count: int = Field(0, alias="productCount", description="Number of products from supplier")
+    total_purchases: float = Field(0.0, alias="totalPurchases", description="Total purchase amount")
+    
+    name: str = Field(..., description="Frontend alias for companyName")
 
 
 # Type aliases for frontend compatibility

@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Frontend alias for companyCode
+ */
 export type SupplierUpdateCode = string | null;

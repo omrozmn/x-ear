@@ -659,21 +659,16 @@ export class PatientService {
   }
 
   // Bulk Upload (New P1 Feature)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async bulkUploadPatients(file: File): Promise<{ processed: number; success: number; errors: any[] }> {
     await this.ensureInitialized();
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      // Use Orval-generated function
+      const { bulkUploadPatients: bulkUploadPatientsApi } = await import('@/api/generated/patients/patients');
+      const response = await bulkUploadPatientsApi({ file });
 
-      // Use apiClient directly since generated hook might be missing
-      const { apiClient } = await import('../api/orval-mutator');
-      const response = await apiClient.post('/api/patients/bulk-upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      const result = response.data;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = response as any;
 
       // Refresh local cache after bulk upload
       await this.refreshFromAPI();

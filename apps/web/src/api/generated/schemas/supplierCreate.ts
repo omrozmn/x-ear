@@ -5,8 +5,11 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { SupplierCreateName } from './supplierCreateName';
 import type { SupplierCreateCode } from './supplierCreateCode';
 import type { SupplierCreateContactName } from './supplierCreateContactName';
+import type { SupplierCreateCompanyCode } from './supplierCreateCompanyCode';
+import type { SupplierCreateContactPerson } from './supplierCreateContactPerson';
 import type { SupplierCreateEmail } from './supplierCreateEmail';
 import type { SupplierCreatePhone } from './supplierCreatePhone';
 import type { SupplierCreateAddress } from './supplierCreateAddress';
@@ -19,26 +22,22 @@ import type { SupplierCreateNotes } from './supplierCreateNotes';
  * Schema for creating a supplier
  */
 export interface SupplierCreate {
-  /** Supplier name */
-  name: string;
-  /** Supplier code */
+  /** Frontend alias for companyName */
+  name?: SupplierCreateName;
+  /** Frontend alias for companyCode */
   code?: SupplierCreateCode;
-  /** Contact person name */
+  /** Frontend alias for contactPerson */
   contactName?: SupplierCreateContactName;
-  /** Email */
+  /** Supplier company name */
+  companyName: string;
+  companyCode?: SupplierCreateCompanyCode;
+  contactPerson?: SupplierCreateContactPerson;
   email?: SupplierCreateEmail;
-  /** Phone number */
   phone?: SupplierCreatePhone;
-  /** Address */
   address?: SupplierCreateAddress;
-  /** City */
   city?: SupplierCreateCity;
-  /** Tax number */
   taxNumber?: SupplierCreateTaxNumber;
-  /** Tax office */
   taxOffice?: SupplierCreateTaxOffice;
-  /** Is supplier active */
   isActive?: boolean;
-  /** Notes */
   notes?: SupplierCreateNotes;
 }

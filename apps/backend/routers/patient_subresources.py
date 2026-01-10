@@ -89,18 +89,20 @@ def get_patient_devices(
         if access.tenant_id and patient.tenant_id != access.tenant_id:
             raise HTTPException(status_code=403, detail="Access denied")
         
-        # Get all device assignments for this patient
-        assignments = db.query(DeviceAssignment).filter_by(patient_id=patient_id).all()
+        # Get all device assignments for this patient, ordered by created_at descending (newest first)
+        assignments = db.query(DeviceAssignment).filter_by(patient_id=patient_id).order_by(DeviceAssignment.created_at.desc()).all()
         
         # Map assignments to the structure expected by frontend
         mapped_devices = []
         for assignment in assignments:
+            # Get full dict from model - this includes createdAt, assignedDate, sgkScheme, paymentMethod, etc.
             d = assignment.to_dict() if hasattr(assignment, 'to_dict') else {}
             
             # Hydrate with details from linked Device or Inventory
             brand = d.get('brand')
             model = d.get('model')
             serial = d.get('serialNumber')
+            barcode = d.get('barcode')
             
             if not brand or not model:
                 # Try to find linked device
@@ -110,6 +112,7 @@ def get_patient_devices(
                         brand = brand or device.brand
                         model = model or device.model
                         serial = serial or device.serial_number
+                        barcode = barcode or getattr(device, 'barcode', None)
                 
                 # Try to find linked inventory
                 if (not brand or not model) and assignment.inventory_id:
@@ -118,22 +121,21 @@ def get_patient_devices(
                         brand = brand or inv.brand
                         model = model or inv.model
                         serial = serial or inv.serial_number
+                        barcode = barcode or inv.barcode
             
-            # Enriched data
-            mapped_devices.append({
-                **d,
+            # Merge enriched data with original dict (original dict has priority for existing fields)
+            enriched = {
                 'brand': brand or 'Bilinmiyor',
                 'model': model or 'Bilinmiyor',
                 'serialNumber': serial,
+                'barcode': barcode,
                 'status': d.get('status', 'assigned'),
                 'type': d.get('deviceType', 'hearing_aid'),
-                'deliveryStatus': d.get('deliveryStatus', 'pending'),
-                'isLoaner': d.get('isLoaner', False),
-                'loanerInventoryId': d.get('loanerInventoryId'),
-                'loanerSerialNumber': d.get('loanerSerialNumber'),
-                'loanerBrand': d.get('loanerBrand'),
-                'loanerModel': d.get('loanerModel')
-            })
+            }
+            
+            # Merge: original dict values take priority, enriched fills in missing
+            final_device = {**enriched, **d}
+            mapped_devices.append(final_device)
         
         return ResponseEnvelope(
             data=mapped_devices,

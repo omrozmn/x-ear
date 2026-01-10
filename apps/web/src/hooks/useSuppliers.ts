@@ -59,6 +59,7 @@ export interface SupplierFormData {
 // Map UI form data to API schema
 const mapFormDataToApiSchema = (formData: SupplierFormData): SupplierCreate => ({
   name: formData.companyName,
+  companyName: formData.companyName,
   code: formData.companyCode,
   taxNumber: formData.taxNumber,
   taxOffice: formData.taxOffice,

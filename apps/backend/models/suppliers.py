@@ -18,6 +18,11 @@ class Supplier(BaseModel):
     
     # Company Information
     company_name = db.Column(db.String(200), nullable=False, unique=True, index=True)
+    
+    @property
+    def name(self):
+        return self.company_name
+        
     company_code = db.Column(db.String(50), unique=True, index=True)  # Optional internal code
     tax_number = db.Column(db.String(50))
     tax_office = db.Column(db.String(100))

@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Address
- */
 export type SupplierCreateAddress = string | null;

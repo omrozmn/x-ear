@@ -25,14 +25,22 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  BatchInvoiceGenerateRequest,
+  BodyBulkUploadInvoices,
   HTTPValidationError,
+  InvoiceAddToQueueRequest,
   InvoiceCreate,
+  InvoiceTemplate,
   InvoiceUpdate,
   ListInvoicesParams,
   ResponseEnvelopeDict,
+  ResponseEnvelopeInvoicePrintQueueResponse,
   ResponseEnvelopeInvoiceRead,
+  ResponseEnvelopeInvoiceTemplate,
   ResponseEnvelopeListInvoiceRead,
-  ResponseEnvelopeNoneType
+  ResponseEnvelopeListInvoiceTemplate,
+  ResponseEnvelopeNoneType,
+  SchemasBaseResponseEnvelopeBulkUploadResponse2
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -196,6 +204,387 @@ export const useCreateInvoices = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getCreateInvoicesMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get invoices in print queue
+ * @summary Get Print Queue
+ */
+export const getPrintQueue = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeInvoicePrintQueueResponse>(
+      {url: `/api/invoices/print-queue`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetPrintQueueQueryKey = () => {
+    return [
+    `/api/invoices/print-queue`
+    ] as const;
+    }
+
+    
+export const getGetPrintQueueQueryOptions = <TData = Awaited<ReturnType<typeof getPrintQueue>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPrintQueue>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPrintQueueQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPrintQueue>>> = ({ signal }) => getPrintQueue(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPrintQueue>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetPrintQueueQueryResult = NonNullable<Awaited<ReturnType<typeof getPrintQueue>>>
+export type GetPrintQueueQueryError = unknown
+
+
+export function useGetPrintQueue<TData = Awaited<ReturnType<typeof getPrintQueue>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPrintQueue>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPrintQueue>>,
+          TError,
+          Awaited<ReturnType<typeof getPrintQueue>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetPrintQueue<TData = Awaited<ReturnType<typeof getPrintQueue>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPrintQueue>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPrintQueue>>,
+          TError,
+          Awaited<ReturnType<typeof getPrintQueue>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetPrintQueue<TData = Awaited<ReturnType<typeof getPrintQueue>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPrintQueue>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Print Queue
+ */
+
+export function useGetPrintQueue<TData = Awaited<ReturnType<typeof getPrintQueue>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPrintQueue>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetPrintQueueQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Add invoices to print queue
+ * @summary Add To Print Queue
+ */
+export const addToPrintQueue = (
+    invoiceAddToQueueRequest: InvoiceAddToQueueRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/invoices/print-queue`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: invoiceAddToQueueRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getAddToPrintQueueMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addToPrintQueue>>, TError,{data: InvoiceAddToQueueRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof addToPrintQueue>>, TError,{data: InvoiceAddToQueueRequest}, TContext> => {
+
+const mutationKey = ['addToPrintQueue'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addToPrintQueue>>, {data: InvoiceAddToQueueRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  addToPrintQueue(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddToPrintQueueMutationResult = NonNullable<Awaited<ReturnType<typeof addToPrintQueue>>>
+    export type AddToPrintQueueMutationBody = InvoiceAddToQueueRequest
+    export type AddToPrintQueueMutationError = HTTPValidationError
+
+    /**
+ * @summary Add To Print Queue
+ */
+export const useAddToPrintQueue = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addToPrintQueue>>, TError,{data: InvoiceAddToQueueRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof addToPrintQueue>>,
+        TError,
+        {data: InvoiceAddToQueueRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getAddToPrintQueueMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get available invoice templates
+ * @summary Get Invoice Templates
+ */
+export const getInvoiceTemplates = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeListInvoiceTemplate>(
+      {url: `/api/invoices/templates`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetInvoiceTemplatesQueryKey = () => {
+    return [
+    `/api/invoices/templates`
+    ] as const;
+    }
+
+    
+export const getGetInvoiceTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof getInvoiceTemplates>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceTemplates>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetInvoiceTemplatesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getInvoiceTemplates>>> = ({ signal }) => getInvoiceTemplates(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getInvoiceTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetInvoiceTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof getInvoiceTemplates>>>
+export type GetInvoiceTemplatesQueryError = unknown
+
+
+export function useGetInvoiceTemplates<TData = Awaited<ReturnType<typeof getInvoiceTemplates>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceTemplates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getInvoiceTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof getInvoiceTemplates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetInvoiceTemplates<TData = Awaited<ReturnType<typeof getInvoiceTemplates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceTemplates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getInvoiceTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof getInvoiceTemplates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetInvoiceTemplates<TData = Awaited<ReturnType<typeof getInvoiceTemplates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceTemplates>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Invoice Templates
+ */
+
+export function useGetInvoiceTemplates<TData = Awaited<ReturnType<typeof getInvoiceTemplates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoiceTemplates>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetInvoiceTemplatesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Create custom invoice template (Mock)
+ * @summary Create Invoice Template
+ */
+export const createInvoiceTemplate = (
+    invoiceTemplate: InvoiceTemplate,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeInvoiceTemplate>(
+      {url: `/api/invoices/templates`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: invoiceTemplate, signal
+    },
+      );
+    }
+  
+
+
+export const getCreateInvoiceTemplateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceTemplate>>, TError,{data: InvoiceTemplate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createInvoiceTemplate>>, TError,{data: InvoiceTemplate}, TContext> => {
+
+const mutationKey = ['createInvoiceTemplate'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createInvoiceTemplate>>, {data: InvoiceTemplate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createInvoiceTemplate(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateInvoiceTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof createInvoiceTemplate>>>
+    export type CreateInvoiceTemplateMutationBody = InvoiceTemplate
+    export type CreateInvoiceTemplateMutationError = HTTPValidationError
+
+    /**
+ * @summary Create Invoice Template
+ */
+export const useCreateInvoiceTemplate = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceTemplate>>, TError,{data: InvoiceTemplate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createInvoiceTemplate>>,
+        TError,
+        {data: InvoiceTemplate},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateInvoiceTemplateMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Generate multiple invoices at once
+ * @summary Batch Generate Invoices
+ */
+export const batchGenerateInvoices = (
+    batchInvoiceGenerateRequest: BatchInvoiceGenerateRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/invoices/batch-generate`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: batchInvoiceGenerateRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getBatchGenerateInvoicesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof batchGenerateInvoices>>, TError,{data: BatchInvoiceGenerateRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof batchGenerateInvoices>>, TError,{data: BatchInvoiceGenerateRequest}, TContext> => {
+
+const mutationKey = ['batchGenerateInvoices'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof batchGenerateInvoices>>, {data: BatchInvoiceGenerateRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  batchGenerateInvoices(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BatchGenerateInvoicesMutationResult = NonNullable<Awaited<ReturnType<typeof batchGenerateInvoices>>>
+    export type BatchGenerateInvoicesMutationBody = BatchInvoiceGenerateRequest
+    export type BatchGenerateInvoicesMutationError = HTTPValidationError
+
+    /**
+ * @summary Batch Generate Invoices
+ */
+export const useBatchGenerateInvoices = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof batchGenerateInvoices>>, TError,{data: BatchInvoiceGenerateRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof batchGenerateInvoices>>,
+        TError,
+        {data: BatchInvoiceGenerateRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getBatchGenerateInvoicesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -572,6 +961,73 @@ export const useCreateInvoiceSendToGib = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getCreateInvoiceSendToGibMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Bulk upload invoices from CSV/XLSX
+ * @summary Bulk Upload Invoices
+ */
+export const bulkUploadInvoices = (
+    bodyBulkUploadInvoices: BodyBulkUploadInvoices,
+ signal?: AbortSignal
+) => {
+      
+      const formData = new FormData();
+formData.append(`file`, bodyBulkUploadInvoices.file)
+
+      return customInstance<SchemasBaseResponseEnvelopeBulkUploadResponse2>(
+      {url: `/api/invoices/bulk-upload`, method: 'POST',
+      headers: {'Content-Type': 'multipart/form-data', },
+       data: formData, signal
+    },
+      );
+    }
+  
+
+
+export const getBulkUploadInvoicesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkUploadInvoices>>, TError,{data: BodyBulkUploadInvoices}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof bulkUploadInvoices>>, TError,{data: BodyBulkUploadInvoices}, TContext> => {
+
+const mutationKey = ['bulkUploadInvoices'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkUploadInvoices>>, {data: BodyBulkUploadInvoices}> = (props) => {
+          const {data} = props ?? {};
+
+          return  bulkUploadInvoices(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BulkUploadInvoicesMutationResult = NonNullable<Awaited<ReturnType<typeof bulkUploadInvoices>>>
+    export type BulkUploadInvoicesMutationBody = BodyBulkUploadInvoices
+    export type BulkUploadInvoicesMutationError = HTTPValidationError
+
+    /**
+ * @summary Bulk Upload Invoices
+ */
+export const useBulkUploadInvoices = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkUploadInvoices>>, TError,{data: BodyBulkUploadInvoices}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof bulkUploadInvoices>>,
+        TError,
+        {data: BodyBulkUploadInvoices},
+        TContext
+      > => {
+
+      const mutationOptions = getBulkUploadInvoicesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

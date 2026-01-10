@@ -7,6 +7,6 @@
  */
 
 /**
- * Contact person name
+ * Frontend alias for contactPerson
  */
 export type SupplierCreateContactName = string | null;

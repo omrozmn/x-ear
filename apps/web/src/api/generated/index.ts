@@ -66,8 +66,8 @@ export * from './roles/roles';
 export * from './sales/sales';
 export * from './settings/settings';
 export * from './sgk/sgk';
-export * from './sms/sms';
 export * from './sms-integration/sms-integration';
+export * from './smspackages/smspackages';
 export * from './subscriptions/subscriptions';
 export * from './suppliers/suppliers';
 export * from './tenant-users/tenant-users';
@@ -79,4 +79,7 @@ export * from './uts/uts';
 
 // Re-export schemas
 export * from './schemas';
+
+// Re-export aliases for backward compatibility
+export * from './aliases';
 

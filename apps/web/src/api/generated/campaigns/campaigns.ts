@@ -26,6 +26,7 @@ import type {
 
 import type {
   CampaignCreate,
+  CampaignSendRequest,
   CampaignUpdate,
   HTTPValidationError,
   ListAdminCampaignsParams,
@@ -415,6 +416,72 @@ export const useDeleteCampaign = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getDeleteCampaignMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Send a campaign via SMS
+ * @summary Send Campaign
+ */
+export const sendCampaign = (
+    campaignId: string,
+    campaignSendRequest: CampaignSendRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/campaigns/${campaignId}/send`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: campaignSendRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getSendCampaignMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendCampaign>>, TError,{campaignId: string;data: CampaignSendRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof sendCampaign>>, TError,{campaignId: string;data: CampaignSendRequest}, TContext> => {
+
+const mutationKey = ['sendCampaign'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendCampaign>>, {campaignId: string;data: CampaignSendRequest}> = (props) => {
+          const {campaignId,data} = props ?? {};
+
+          return  sendCampaign(campaignId,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SendCampaignMutationResult = NonNullable<Awaited<ReturnType<typeof sendCampaign>>>
+    export type SendCampaignMutationBody = CampaignSendRequest
+    export type SendCampaignMutationError = HTTPValidationError
+
+    /**
+ * @summary Send Campaign
+ */
+export const useSendCampaign = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendCampaign>>, TError,{campaignId: string;data: CampaignSendRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof sendCampaign>>,
+        TError,
+        {campaignId: string;data: CampaignSendRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getSendCampaignMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

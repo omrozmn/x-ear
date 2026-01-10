@@ -7,51 +7,78 @@
  */
 import type { SupplierReadCreatedAt } from './supplierReadCreatedAt';
 import type { SupplierReadUpdatedAt } from './supplierReadUpdatedAt';
-import type { SupplierReadCode } from './supplierReadCode';
-import type { SupplierReadContactName } from './supplierReadContactName';
+import type { SupplierReadCompanyCode } from './supplierReadCompanyCode';
+import type { SupplierReadContactPerson } from './supplierReadContactPerson';
 import type { SupplierReadEmail } from './supplierReadEmail';
 import type { SupplierReadPhone } from './supplierReadPhone';
+import type { SupplierReadMobile } from './supplierReadMobile';
+import type { SupplierReadFax } from './supplierReadFax';
+import type { SupplierReadWebsite } from './supplierReadWebsite';
 import type { SupplierReadAddress } from './supplierReadAddress';
 import type { SupplierReadCity } from './supplierReadCity';
+import type { SupplierReadCountry } from './supplierReadCountry';
+import type { SupplierReadPostalCode } from './supplierReadPostalCode';
 import type { SupplierReadTaxNumber } from './supplierReadTaxNumber';
 import type { SupplierReadTaxOffice } from './supplierReadTaxOffice';
+import type { SupplierReadPaymentTerms } from './supplierReadPaymentTerms';
+import type { SupplierReadCurrency } from './supplierReadCurrency';
+import type { SupplierReadRating } from './supplierReadRating';
 import type { SupplierReadNotes } from './supplierReadNotes';
+import type { SupplierReadId } from './supplierReadId';
 
 /**
- * Schema for reading a supplier
+ * Schema for reading a supplier - matches Supplier.to_dict() output
  */
 export interface SupplierRead {
   /** Creation timestamp */
   createdAt?: SupplierReadCreatedAt;
   /** Last update timestamp */
   updatedAt?: SupplierReadUpdatedAt;
-  /** Unique identifier for the resource */
-  id: string;
-  /** Supplier name */
-  name: string;
+  /** Supplier company name */
+  companyName: string;
   /** Supplier code */
-  code?: SupplierReadCode;
+  companyCode?: SupplierReadCompanyCode;
   /** Contact person name */
-  contactName?: SupplierReadContactName;
+  contactPerson?: SupplierReadContactPerson;
   /** Email */
   email?: SupplierReadEmail;
   /** Phone number */
   phone?: SupplierReadPhone;
+  /** Mobile number */
+  mobile?: SupplierReadMobile;
+  /** Fax number */
+  fax?: SupplierReadFax;
+  /** Website */
+  website?: SupplierReadWebsite;
   /** Address */
   address?: SupplierReadAddress;
   /** City */
   city?: SupplierReadCity;
+  /** Country */
+  country?: SupplierReadCountry;
+  /** Postal code */
+  postalCode?: SupplierReadPostalCode;
   /** Tax number */
   taxNumber?: SupplierReadTaxNumber;
   /** Tax office */
   taxOffice?: SupplierReadTaxOffice;
+  /** Payment terms */
+  paymentTerms?: SupplierReadPaymentTerms;
+  /** Currency */
+  currency?: SupplierReadCurrency;
+  /** Rating 1-5 */
+  rating?: SupplierReadRating;
   /** Is supplier active */
   isActive?: boolean;
   /** Notes */
   notes?: SupplierReadNotes;
+  /** Supplier ID */
+  id: SupplierReadId;
   tenantId: string;
   /** Number of products from supplier */
   productCount?: number;
   /** Total purchase amount */
   totalPurchases?: number;
+  /** Frontend alias for companyName */
+  name: string;
 }

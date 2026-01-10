@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Notes
- */
 export type SupplierCreateNotes = string | null;

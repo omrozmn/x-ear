@@ -123,7 +123,7 @@ export function DesktopSuppliersPage() {
   const confirmDelete = async () => {
     if (!supplierToDelete?.id) return;
     try {
-      await deleteSupplierMutation.mutateAsync(supplierToDelete.id);
+      await deleteSupplierMutation.mutateAsync(String(supplierToDelete.id));
       setSupplierToDelete(null);
     } catch (error) {
       console.error('Failed to delete supplier:', error);
@@ -183,7 +183,7 @@ export function DesktopSuppliersPage() {
     });
     */
     return filteredSuppliers;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredSuppliers, sortBy, sortOrder]);
 
   const paginatedSuppliers = useMemo(() => {

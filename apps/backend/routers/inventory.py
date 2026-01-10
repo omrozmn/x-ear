@@ -256,7 +256,7 @@ def get_units(
     from models.inventory import UNIT_TYPES
     return ResponseEnvelope(data={"units": UNIT_TYPES})
 
-@router.get("/inventory/{item_id}/activity", operation_id="listInventoryActivity", response_model=ResponseEnvelope[List[Dict[str, Any]]])
+@router.get("/inventory/{item_id}/activity", operation_id="listInventoryActivities", response_model=ResponseEnvelope[List[Dict[str, Any]]])
 def get_inventory_activities(
     item_id: str,
     access: UnifiedAccess = Depends(require_access()),

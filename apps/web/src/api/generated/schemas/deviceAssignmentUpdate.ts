@@ -14,18 +14,27 @@ import type { DeviceAssignmentUpdateSerialNumber } from './deviceAssignmentUpdat
 import type { DeviceAssignmentUpdateSerialNumberLeft } from './deviceAssignmentUpdateSerialNumberLeft';
 import type { DeviceAssignmentUpdateSerialNumberRight } from './deviceAssignmentUpdateSerialNumberRight';
 import type { DeviceAssignmentUpdateDeliveryStatus } from './deviceAssignmentUpdateDeliveryStatus';
+import type { DeviceAssignmentUpdateReportStatus } from './deviceAssignmentUpdateReportStatus';
 import type { DeviceAssignmentUpdateBasePrice } from './deviceAssignmentUpdateBasePrice';
 import type { DeviceAssignmentUpdateDiscountType } from './deviceAssignmentUpdateDiscountType';
 import type { DeviceAssignmentUpdateDiscountValue } from './deviceAssignmentUpdateDiscountValue';
 import type { DeviceAssignmentUpdateSgkScheme } from './deviceAssignmentUpdateSgkScheme';
-import type { DeviceAssignmentUpdateSgkSupportType } from './deviceAssignmentUpdateSgkSupportType';
+import type { DeviceAssignmentUpdateSgksupporttype } from './deviceAssignmentUpdateSgksupporttype';
 import type { DeviceAssignmentUpdateSalePrice } from './deviceAssignmentUpdateSalePrice';
 import type { DeviceAssignmentUpdatePatientPayment } from './deviceAssignmentUpdatePatientPayment';
 import type { DeviceAssignmentUpdateSgkReduction } from './deviceAssignmentUpdateSgkReduction';
-import type { DeviceAssignmentUpdateSgkSupport } from './deviceAssignmentUpdateSgkSupport';
+import type { DeviceAssignmentUpdateSgksupport } from './deviceAssignmentUpdateSgksupport';
+import type { DeviceAssignmentUpdateDownPayment } from './deviceAssignmentUpdateDownPayment';
 import type { DeviceAssignmentUpdatePaymentMethod } from './deviceAssignmentUpdatePaymentMethod';
 import type { DeviceAssignmentUpdateNotes } from './deviceAssignmentUpdateNotes';
 import type { DeviceAssignmentUpdateUserId } from './deviceAssignmentUpdateUserId';
+import type { DeviceAssignmentUpdateIsLoaner } from './deviceAssignmentUpdateIsLoaner';
+import type { DeviceAssignmentUpdateLoanerInventoryId } from './deviceAssignmentUpdateLoanerInventoryId';
+import type { DeviceAssignmentUpdateLoanerSerialNumber } from './deviceAssignmentUpdateLoanerSerialNumber';
+import type { DeviceAssignmentUpdateLoanerSerialNumberLeft } from './deviceAssignmentUpdateLoanerSerialNumberLeft';
+import type { DeviceAssignmentUpdateLoanerSerialNumberRight } from './deviceAssignmentUpdateLoanerSerialNumberRight';
+import type { DeviceAssignmentUpdateLoanerBrand } from './deviceAssignmentUpdateLoanerBrand';
+import type { DeviceAssignmentUpdateLoanerModel } from './deviceAssignmentUpdateLoanerModel';
 
 export interface DeviceAssignmentUpdate {
   deviceId?: DeviceAssignmentUpdateDeviceId;
@@ -37,16 +46,25 @@ export interface DeviceAssignmentUpdate {
   serialNumberLeft?: DeviceAssignmentUpdateSerialNumberLeft;
   serialNumberRight?: DeviceAssignmentUpdateSerialNumberRight;
   deliveryStatus?: DeviceAssignmentUpdateDeliveryStatus;
+  reportStatus?: DeviceAssignmentUpdateReportStatus;
   basePrice?: DeviceAssignmentUpdateBasePrice;
   discountType?: DeviceAssignmentUpdateDiscountType;
   discountValue?: DeviceAssignmentUpdateDiscountValue;
   sgkScheme?: DeviceAssignmentUpdateSgkScheme;
-  sgkSupportType?: DeviceAssignmentUpdateSgkSupportType;
+  sgksupporttype?: DeviceAssignmentUpdateSgksupporttype;
   salePrice?: DeviceAssignmentUpdateSalePrice;
   patientPayment?: DeviceAssignmentUpdatePatientPayment;
   sgkReduction?: DeviceAssignmentUpdateSgkReduction;
-  sgkSupport?: DeviceAssignmentUpdateSgkSupport;
+  sgksupport?: DeviceAssignmentUpdateSgksupport;
+  downPayment?: DeviceAssignmentUpdateDownPayment;
   paymentMethod?: DeviceAssignmentUpdatePaymentMethod;
   notes?: DeviceAssignmentUpdateNotes;
   userId?: DeviceAssignmentUpdateUserId;
+  isLoaner?: DeviceAssignmentUpdateIsLoaner;
+  loanerInventoryId?: DeviceAssignmentUpdateLoanerInventoryId;
+  loanerSerialNumber?: DeviceAssignmentUpdateLoanerSerialNumber;
+  loanerSerialNumberLeft?: DeviceAssignmentUpdateLoanerSerialNumberLeft;
+  loanerSerialNumberRight?: DeviceAssignmentUpdateLoanerSerialNumberRight;
+  loanerBrand?: DeviceAssignmentUpdateLoanerBrand;
+  loanerModel?: DeviceAssignmentUpdateLoanerModel;
 }

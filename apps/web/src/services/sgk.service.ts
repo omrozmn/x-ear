@@ -32,7 +32,8 @@ import {
   listPatientSgkDocuments,
   createSgkWorkflowCreate,
   updateSgkWorkflowStatus,
-  getSgkWorkflow
+  getSgkWorkflow,
+  listSgkEReceiptDownloadPatientForm
 } from '@/api/generated';
 import { unwrapObject } from '../utils/response-unwrap';
 
@@ -731,10 +732,14 @@ export class SGKService {
   // Hasta işlem formu indirme
   async downloadPatientForm(receiptId: string): Promise<Blob> {
     try {
-      const response = await apiClient.get(`/api/sgk/e-receipts/${receiptId}/download-patient-form`, {
-        responseType: 'blob'
-      });
-      return response.data;
+      const response = await listSgkEReceiptDownloadPatientForm(receiptId);
+      // If the response is already a Blob, return it directly
+      // Otherwise, convert the response to a Blob
+      if (response instanceof Blob) {
+        return response;
+      }
+      // Fallback: convert to blob if needed
+      return new Blob([JSON.stringify(response)], { type: 'application/json' });
     } catch (error) {
       console.error('Download form error:', error);
       throw error;
@@ -758,15 +763,15 @@ export class SGKService {
   }
 
   // SGK Workflow Management
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async createWorkflow(patientId: string, documentId?: string, workflowType: string = 'approval'): Promise<any> {
     try {
-      // Use apiClient directly to ensure compatibility
-      const response = await apiClient.post('/api/sgk/workflow/create', {
+      const response = await createSgkWorkflowCreate({
         patientId,
         documentId,
         workflowType
       });
-      return response.data;
+      return response;
     } catch (error) {
       console.error('SGK workflow creation error:', error);
       throw error;

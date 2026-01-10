@@ -78,6 +78,133 @@ def get_invoices(
         logger.error(f"Get invoices error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/invoices/print-queue", operation_id="getPrintQueue", response_model=ResponseEnvelope[InvoicePrintQueueResponse])
+def get_print_queue(
+    access: UnifiedAccess = Depends(require_access("invoices.read")),
+    db_session: Session = Depends(get_db)
+):
+    """Get invoices in print queue"""
+    try:
+        query = db_session.query(Invoice).filter(
+            Invoice.tenant_id == access.tenant_id,
+            Invoice.status == 'queued_for_print'
+        )
+        invoices = query.all()
+        
+        items = []
+        for inv in invoices:
+            items.append({
+                'id': inv.id,
+                'invoiceNumber': inv.invoice_number,
+                'patientName': inv.patient_name or (inv.patient.full_name if inv.patient else 'Unknown'),
+                'amount': inv.device_price,
+                'queuedAt': inv.updated_at.isoformat() if inv.updated_at else inv.created_at.isoformat(),
+                'priority': 'normal',
+                'copies': 1,
+                'status': inv.status
+            })
+            
+        return ResponseEnvelope(data={
+            'items': items,
+            'total': len(items),
+            'status': 'ready' if items else 'empty'
+        })
+    except Exception as e:
+        logger.error(f"Get print queue error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/invoices/print-queue", operation_id="addToPrintQueue")
+def add_to_print_queue(
+    payload: InvoiceAddToQueueRequest,
+    access: UnifiedAccess = Depends(require_access("invoices.write")),
+    db_session: Session = Depends(get_db)
+):
+    """Add invoices to print queue"""
+    try:
+        updated_count = 0
+        errors = []
+        
+        for inv_id in payload.invoice_ids:
+            inv = db_session.query(Invoice).filter(
+                Invoice.id == inv_id,
+                Invoice.tenant_id == access.tenant_id
+            ).first()
+            
+            if inv:
+                inv.status = 'queued_for_print'
+                inv.updated_at = datetime.utcnow()
+                updated_count += 1
+            else:
+                errors.append(f"Invoice {inv_id} not found")
+        
+        db_session.commit()
+        
+        return ResponseEnvelope(data={
+            'queuedCount': updated_count,
+            'errors': errors
+        })
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Add to print queue error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/invoices/templates", operation_id="getInvoiceTemplates", response_model=ResponseEnvelope[List[InvoiceTemplate]])
+def get_invoice_templates(
+    access: UnifiedAccess = Depends(require_access("invoices.read"))
+):
+    """Get available invoice templates"""
+    # Mock data as per legacy implementation
+    templates = [
+        {
+            'id': 'standard',
+            'name': 'Standard Invoice',
+            'description': 'Default invoice template with company branding',
+            'fields': ['invoiceNumber', 'date', 'customerInfo', 'items', 'totals', 'paymentTerms'],
+            'isDefault': True,
+            'isCustom': False
+        },
+        {
+            'id': 'detailed',
+            'name': 'Detailed Invoice',
+            'description': 'Comprehensive invoice with item descriptions',
+            'fields': ['invoiceNumber', 'date', 'customerInfo', 'items', 'itemDetails', 'totals', 'paymentTerms', 'notes'],
+            'isDefault': False,
+            'isCustom': False
+        },
+        {
+            'id': 'sgk',
+            'name': 'SGK Invoice',
+            'description': 'Invoice template for SGK submissions',
+            'fields': ['invoiceNumber', 'date', 'customerInfo', 'sgkInfo', 'items', 'totals', 'sgkCoverage'],
+            'isDefault': False,
+            'isCustom': False
+        },
+        {
+            'id': 'proforma',
+            'name': 'Proforma Invoice',
+            'description': 'Proforma invoice template for quotations',
+            'fields': ['proformaNumber', 'date', 'customerInfo', 'items', 'totals', 'validityPeriod'],
+            'isDefault': False,
+            'isCustom': False
+        }
+    ]
+    return ResponseEnvelope(data=templates)
+
+@router.post("/invoices/templates", operation_id="createInvoiceTemplate", response_model=ResponseEnvelope[InvoiceTemplate], status_code=201)
+def create_invoice_template(
+    template: InvoiceTemplate,
+    access: UnifiedAccess = Depends(require_access("invoices.write"))
+):
+    """Create custom invoice template (Mock)"""
+    # Just echo back for now as DB support is missing in legacy too
+    t_dict = template.model_dump()
+    t_dict['id'] = str(uuid.uuid4())
+    t_dict['created_by'] = access.principal_id
+    t_dict['created_at'] = datetime.utcnow()
+    t_dict['is_custom'] = True
+    
+    return ResponseEnvelope(data=t_dict)
+
 @router.post("/invoices/batch-generate", operation_id="batchGenerateInvoices")
 def batch_generate_invoices(
     request_data: BatchInvoiceGenerateRequest,
@@ -631,129 +758,4 @@ async def bulk_upload_invoices(
         logger.error(f"Bulk invoice upload error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/invoices/print-queue", operation_id="getPrintQueue", response_model=ResponseEnvelope[InvoicePrintQueueResponse])
-def get_print_queue(
-    access: UnifiedAccess = Depends(require_access("invoices.read")),
-    db_session: Session = Depends(get_db)
-):
-    """Get invoices in print queue"""
-    try:
-        query = db_session.query(Invoice).filter(
-            Invoice.tenant_id == access.tenant_id,
-            Invoice.status == 'queued_for_print'
-        )
-        invoices = query.all()
-        
-        items = []
-        for inv in invoices:
-            items.append({
-                'id': inv.id,
-                'invoiceNumber': inv.invoice_number,
-                'patientName': inv.patient_name or (inv.patient.full_name if inv.patient else 'Unknown'),
-                'amount': inv.device_price,
-                'queuedAt': inv.updated_at.isoformat() if inv.updated_at else inv.created_at.isoformat(),
-                'priority': 'normal',
-                'copies': 1,
-                'status': inv.status
-            })
-            
-        return ResponseEnvelope(data={
-            'items': items,
-            'total': len(items),
-            'status': 'ready' if items else 'empty'
-        })
-    except Exception as e:
-        logger.error(f"Get print queue error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/invoices/print-queue", operation_id="addToPrintQueue")
-def add_to_print_queue(
-    payload: InvoiceAddToQueueRequest,
-    access: UnifiedAccess = Depends(require_access("invoices.write")),
-    db_session: Session = Depends(get_db)
-):
-    """Add invoices to print queue"""
-    try:
-        updated_count = 0
-        errors = []
-        
-        for inv_id in payload.invoice_ids:
-            inv = db_session.query(Invoice).filter(
-                Invoice.id == inv_id,
-                Invoice.tenant_id == access.tenant_id
-            ).first()
-            
-            if inv:
-                inv.status = 'queued_for_print'
-                inv.updated_at = datetime.utcnow()
-                updated_count += 1
-            else:
-                errors.append(f"Invoice {inv_id} not found")
-        
-        db_session.commit()
-        
-        return ResponseEnvelope(data={
-            'queuedCount': updated_count,
-            'errors': errors
-        })
-    except Exception as e:
-        db_session.rollback()
-        logger.error(f"Add to print queue error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/invoices/templates", operation_id="getInvoiceTemplates", response_model=ResponseEnvelope[List[InvoiceTemplate]])
-def get_invoice_templates(
-    access: UnifiedAccess = Depends(require_access("invoices.read"))
-):
-    """Get available invoice templates"""
-    # Mock data as per legacy implementation
-    templates = [
-        {
-            'id': 'standard',
-            'name': 'Standard Invoice',
-            'description': 'Default invoice template with company branding',
-            'fields': ['invoiceNumber', 'date', 'customerInfo', 'items', 'totals', 'paymentTerms'],
-            'isDefault': True,
-            'isCustom': False
-        },
-        {
-            'id': 'detailed',
-            'name': 'Detailed Invoice',
-            'description': 'Comprehensive invoice with item descriptions',
-            'fields': ['invoiceNumber', 'date', 'customerInfo', 'items', 'itemDetails', 'totals', 'paymentTerms', 'notes'],
-            'isDefault': False,
-            'isCustom': False
-        },
-        {
-            'id': 'sgk',
-            'name': 'SGK Invoice',
-            'description': 'Invoice template for SGK submissions',
-            'fields': ['invoiceNumber', 'date', 'customerInfo', 'sgkInfo', 'items', 'totals', 'sgkCoverage'],
-            'isDefault': False,
-            'isCustom': False
-        },
-        {
-            'id': 'proforma',
-            'name': 'Proforma Invoice',
-            'description': 'Proforma invoice template for quotations',
-            'fields': ['proformaNumber', 'date', 'customerInfo', 'items', 'totals', 'validityPeriod'],
-            'isDefault': False,
-            'isCustom': False
-        }
-    ]
-    return ResponseEnvelope(data=templates)
-
-@router.post("/invoices/templates", operation_id="createInvoiceTemplate", response_model=ResponseEnvelope[InvoiceTemplate], status_code=201)
-def create_invoice_template(
-    template: InvoiceTemplate,
-    access: UnifiedAccess = Depends(require_access("invoices.write"))
-):
-    """Create custom invoice template (Mock)"""
-    # Just echo back for now as DB support is missing in legacy too
-    t_dict = template.model_dump()
-    t_dict['id'] = str(uuid.uuid4())
-    t_dict['created_by'] = access.principal_id
-    t_dict['created_at'] = datetime.utcnow()
-    t_dict['is_custom'] = True
-    
-    return ResponseEnvelope(data=t_dict)

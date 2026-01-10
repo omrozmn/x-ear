@@ -7,6 +7,6 @@
  */
 
 /**
- * Supplier code
+ * Frontend alias for companyCode
  */
 export type SupplierCreateCode = string | null;
