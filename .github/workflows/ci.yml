@@ -135,7 +135,6 @@ jobs:
         run: |
           cd apps/web
           pnpm run test --run --reporter=verbose
-        continue-on-error: true  # TODO: Remove when tests are stable
 
   build:
     name: 🏗️ Build Check
@@ -227,7 +226,6 @@ jobs:
         run: |
           cd apps/backend
           ruff check . --ignore E501,F401,F841 --exclude tests/,migrations/,__pycache__/ || echo "Lint warnings found"
-        continue-on-error: true  # TODO: Fix lint errors and make blocking
 
   backend-tests:
     name: 🧪 Backend Tests
@@ -278,7 +276,6 @@ jobs:
         run: |
           cd apps/backend
           python -m pytest tests/ -v --tb=short -x --ignore=tests/__pycache__/ || echo "Some tests failed"
-        continue-on-error: true  # TODO: Remove when tests are stable
 
   # ============================================
   # API CONTRACT CHECKS
@@ -376,7 +373,7 @@ jobs:
   ci-passed:
     name: ✅ CI Passed
     runs-on: ubuntu-latest
-    needs: [typecheck, lint, build, api-sync-check]
+    needs: [typecheck, lint, build, api-sync-check, backend-tests, frontend-tests, security-scan]
     if: always()
     steps:
       - name: Check all required jobs
@@ -395,6 +392,18 @@ jobs:
           fi
           if [ "${{ needs.api-sync-check.result }}" != "success" ]; then
             echo "❌ API sync check failed"
+            exit 1
+          fi
+          if [ "${{ needs.backend-tests.result }}" != "success" ]; then
+            echo "❌ Backend tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.frontend-tests.result }}" != "success" ]; then
+            echo "❌ Frontend tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.security-scan.result }}" != "success" ]; then
+            echo "❌ Security scan failed"
             exit 1
           fi
           echo "✅ All required CI checks passed!"
