@@ -156,7 +156,7 @@ class DeviceAssignmentCreateResponse(AppBaseModel):
     pricing: Dict[str, Any] = Field(default_factory=dict)
     warnings: List[str] = Field(default_factory=list)
 
-class DeviceAssignmentRead(IDMixin, DeviceAssignmentBase):
+class DeviceAssignmentRead(IDMixin, TimestampMixin, DeviceAssignmentBase):
     sale_id: Optional[str] = Field(None, alias="saleId")
     delivery_status: str = Field("pending", alias="deliveryStatus")
     report_status: Optional[str] = Field(None, alias="reportStatus")
@@ -166,6 +166,23 @@ class DeviceAssignmentRead(IDMixin, DeviceAssignmentBase):
     brand: Optional[str] = None
     model: Optional[str] = None
     barcode: Optional[str] = None
+    
+    # Assignment details
+    assignment_uid: Optional[str] = Field(None, alias="assignmentUid")
+    assigned_date: Optional[str] = Field(None, alias="assignedDate")
+    
+    # SGK and Payment
+    sgk_scheme: Optional[str] = Field(None, alias="sgkScheme")
+    payment_method: Optional[str] = Field(None, alias="paymentMethod")
+    discount_type: Optional[str] = Field(None, alias="discountType")
+    discount_value: Optional[float] = Field(None, alias="discountValue")
+    
+    # Loaner device details
+    loaner_inventory_id: Optional[str] = Field(None, alias="loanerInventoryId")
+    loaner_brand: Optional[str] = Field(None, alias="loanerBrand")
+    loaner_model: Optional[str] = Field(None, alias="loanerModel")
+    loaner_serial_number_left: Optional[str] = Field(None, alias="loanerSerialNumberLeft")
+    loaner_serial_number_right: Optional[str] = Field(None, alias="loanerSerialNumberRight")
     
     # Aliases for frontend compatibility
     sgk_reduction: float = Field(0.0, alias="sgkReduction")

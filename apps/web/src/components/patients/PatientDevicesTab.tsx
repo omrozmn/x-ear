@@ -650,4 +650,4 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
       />
     </div>
   );
-};;
+};
