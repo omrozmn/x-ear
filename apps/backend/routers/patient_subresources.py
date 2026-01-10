@@ -697,8 +697,9 @@ def get_patient_sales(
     """Get all sales for a specific patient - Flask parity"""
     try:
         from models.patient import Patient
-        from models.sales import Sale, DeviceAssignment, PaymentRecord
+        from models.sales import Sale, DeviceAssignment, PaymentRecord, PaymentPlan
         from models.inventory import InventoryItem
+        from models.invoice import Invoice
         
         patient = db.get(Patient, patient_id)
         if not patient:
@@ -715,9 +716,21 @@ def get_patient_sales(
         for sale in sales:
             sale_dict = sale.to_dict() if hasattr(sale, 'to_dict') else {}
             
+            # === Flask parity: Get device assignments (new method first, then legacy) ===
+            assignments = db.query(DeviceAssignment).filter_by(sale_id=sale.id).all()
+            
+            # Legacy fallback if no assignments found by sale_id
+            if not assignments:
+                linked_ids = [
+                    getattr(sale, 'right_ear_assignment_id', None),
+                    getattr(sale, 'left_ear_assignment_id', None)
+                ]
+                linked_ids = [lid for lid in linked_ids if lid]
+                if linked_ids:
+                    assignments = db.query(DeviceAssignment).filter(DeviceAssignment.id.in_(linked_ids)).all()
+            
             # Add devices from assignments
             devices = []
-            assignments = db.query(DeviceAssignment).filter_by(sale_id=sale.id).all()
             for assignment in assignments:
                 # Get inventory item details if available
                 inventory_item = None
@@ -748,15 +761,30 @@ def get_patient_sales(
                     'listPrice': float(assignment.list_price) if assignment.list_price else None,
                     'salePrice': float(assignment.sale_price) if assignment.sale_price else None,
                     'sgkCoverageAmount': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
-                    'patientResponsibleAmount': float(assignment.net_payable) if assignment.net_payable else None
+                    'patientResponsibleAmount': float(assignment.net_payable) if assignment.net_payable else None,
+                    # Legacy frontend support
+                    'sgkReduction': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
+                    'patientPayment': float(assignment.net_payable) if assignment.net_payable else None
                 }
                 devices.append(device_info)
             
             sale_dict['devices'] = devices
             
+            # === Flask parity: Add payment plan ===
+            payment_plan = db.query(PaymentPlan).filter_by(sale_id=sale.id).first()
+            if payment_plan:
+                sale_dict['paymentPlan'] = payment_plan.to_dict() if hasattr(payment_plan, 'to_dict') else {
+                    'id': payment_plan.id,
+                    'totalAmount': float(payment_plan.total_amount) if payment_plan.total_amount else 0.0,
+                    'installmentCount': payment_plan.installment_count,
+                    'status': payment_plan.status
+                }
+            else:
+                sale_dict['paymentPlan'] = None
+            
             # Add payment records
             payment_records = []
-            payments = db.query(PaymentRecord).filter_by(sale_id=sale.id).all()
+            payments = db.query(PaymentRecord).filter_by(sale_id=sale.id).order_by(PaymentRecord.payment_date.desc()).all()
             for payment in payments:
                 payment_info = {
                     'id': payment.id,
@@ -771,6 +799,25 @@ def get_patient_sales(
                 payment_records.append(payment_info)
             
             sale_dict['paymentRecords'] = payment_records
+            
+            # === Flask parity: Add invoice ===
+            invoice = db.query(Invoice).filter_by(sale_id=sale.id).first()
+            if invoice:
+                sale_dict['invoice'] = invoice.to_dict() if hasattr(invoice, 'to_dict') else {
+                    'id': invoice.id,
+                    'invoiceNumber': invoice.invoice_number,
+                    'status': invoice.status
+                }
+            else:
+                sale_dict['invoice'] = None
+            
+            # === Flask parity: SGK coverage recalculation if zero ===
+            sgk_coverage_value = float(sale.sgk_coverage) if sale.sgk_coverage else 0.0
+            if abs(sgk_coverage_value) < 0.01 and assignments:
+                # Recalculate from assignments
+                total_sgk = sum(float(a.sgk_support or 0) for a in assignments)
+                sgk_coverage_value = total_sgk
+            sale_dict['sgkCoverage'] = sgk_coverage_value
             
             sales_data.append(sale_dict)
         

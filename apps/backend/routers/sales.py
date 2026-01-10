@@ -121,6 +121,182 @@ def _build_sale_data(sale, devices, plan, payments, invoice, sgk_val):
         'invoice': invoice.to_dict() if invoice else None
     }
 
+# ============= HELPER FUNCTIONS FOR FLASK PARITY =============
+
+def _get_device_assignments_for_sale(db: Session, sale: Sale) -> List[DeviceAssignment]:
+    """Get device assignments for a sale, trying new method first, then legacy."""
+    assignments = db.query(DeviceAssignment).filter_by(sale_id=sale.id).all()
+    
+    # If no assignments found by sale_id, try legacy method
+    if not assignments:
+        linked_ids = [
+            getattr(sale, 'right_ear_assignment_id', None),
+            getattr(sale, 'left_ear_assignment_id', None)
+        ]
+        linked_ids = [lid for lid in linked_ids if lid]
+        if linked_ids:
+            assignments = db.query(DeviceAssignment).filter(DeviceAssignment.id.in_(linked_ids)).all()
+    
+    return assignments
+
+def _calculate_sgk_coverage(db: Session, sale: Sale, assignments: List[DeviceAssignment]) -> float:
+    """Calculate SGK coverage for a sale, recalculating if needed."""
+    # If stored SGK coverage is zero, recalc from assignments
+    if (not sale.sgk_coverage or abs(float(sale.sgk_coverage)) < 0.01) and assignments:
+        try:
+            # Simple recalculation from assignments
+            total_sgk = sum(float(a.sgk_support or 0) for a in assignments)
+            return total_sgk
+        except Exception as e:
+            logger.warning(f"Failed to recalculate SGK coverage: {e}")
+            return 0.0
+    return float(sale.sgk_coverage) if sale.sgk_coverage else 0.0
+
+def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment) -> Dict[str, Any]:
+    """Build device info from assignment with inventory lookup."""
+    from models.device import Device
+    
+    device_name = None
+    barcode = None
+    brand = None
+    model = None
+    serial_number = None
+    serial_number_left = None
+    serial_number_right = None
+    
+    # Try device lookup first
+    if assignment.device_id:
+        device = db.get(Device, assignment.device_id)
+        if device:
+            brand = device.brand
+            model = device.model
+            serial_number = device.serial_number
+            serial_number_left = device.serial_number_left
+            serial_number_right = device.serial_number_right
+            
+            # Get inventory details if linked
+            if device.inventory_id:
+                inv_item = db.get(InventoryItem, device.inventory_id)
+                if inv_item:
+                    device_name = inv_item.name
+                    barcode = inv_item.barcode
+    
+    # Try inventory lookup if no device
+    if not brand and assignment.inventory_id:
+        inv_item = db.get(InventoryItem, assignment.inventory_id)
+        if inv_item:
+            brand = inv_item.brand
+            model = inv_item.model
+            barcode = inv_item.barcode
+            serial_number = inv_item.serial_number
+    
+    # Fallback for loaner devices
+    if not brand:
+        brand = assignment.loaner_brand or 'Unknown'
+        model = assignment.loaner_model or 'Device'
+    
+    # Build device name
+    name_parts = []
+    if brand: name_parts.append(brand)
+    if model: name_parts.append(model)
+    formatted_name = " ".join(name_parts)
+    if not formatted_name and device_name:
+        formatted_name = device_name
+    
+    return {
+        'id': assignment.device_id or assignment.inventory_id,
+        'name': formatted_name,
+        'brand': brand,
+        'model': model,
+        'serialNumber': serial_number or assignment.serial_number,
+        'serialNumberLeft': serial_number_left or assignment.serial_number_left,
+        'serialNumberRight': serial_number_right or assignment.serial_number_right,
+        'barcode': barcode,
+        'ear': assignment.ear,
+        'listPrice': float(assignment.list_price) if assignment.list_price else None,
+        'salePrice': float(assignment.sale_price) if assignment.sale_price else None,
+        'sgk_coverage_amount': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
+        'patient_responsible_amount': float(assignment.net_payable) if assignment.net_payable else None,
+        # Backwards-compatible keys for frontend
+        'sgkReduction': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
+        'patientPayment': float(assignment.net_payable) if assignment.net_payable else None
+    }
+
+def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
+    """Build complete sale data with all enrichments - Flask parity."""
+    # Get device assignments (new + legacy method)
+    assignments = _get_device_assignments_for_sale(db, sale)
+    
+    # Build devices list
+    devices = []
+    for assignment in assignments:
+        device_info = _build_device_info_from_assignment(db, assignment)
+        if device_info:
+            devices.append(device_info)
+    
+    # Get payment plan
+    payment_plan = db.query(PaymentPlan).filter_by(sale_id=sale.id).first()
+    payment_plan_data = None
+    if payment_plan:
+        payment_plan_data = payment_plan.to_dict() if hasattr(payment_plan, 'to_dict') else {
+            'id': payment_plan.id,
+            'totalAmount': float(payment_plan.total_amount) if payment_plan.total_amount else 0.0,
+            'installmentCount': payment_plan.installment_count,
+            'status': payment_plan.status
+        }
+    
+    # Get payment records
+    payment_records = db.query(PaymentRecord).filter_by(sale_id=sale.id).order_by(desc(PaymentRecord.payment_date)).all()
+    payments_data = []
+    for p in payment_records:
+        payments_data.append({
+            'id': p.id,
+            'amount': float(p.amount) if p.amount else 0.0,
+            'paymentDate': p.payment_date.isoformat() if p.payment_date else None,
+            'paymentMethod': p.payment_method,
+            'paymentType': p.payment_type,
+            'status': p.status or 'paid',
+            'referenceNumber': p.reference_number,
+            'notes': getattr(p, 'notes', None)
+        })
+    
+    # Get invoice
+    invoice = db.query(Invoice).filter_by(sale_id=sale.id).first()
+    invoice_data = None
+    if invoice:
+        invoice_data = invoice.to_dict() if hasattr(invoice, 'to_dict') else {
+            'id': invoice.id,
+            'invoiceNumber': invoice.invoice_number,
+            'status': invoice.status
+        }
+    
+    # Calculate SGK coverage (recalc if zero)
+    sgk_coverage_value = _calculate_sgk_coverage(db, sale, assignments)
+    
+    # Get patient info
+    patient_data = None
+    if sale.patient:
+        patient_data = {
+            'id': sale.patient.id,
+            'firstName': sale.patient.first_name,
+            'lastName': sale.patient.last_name,
+            'fullName': f"{sale.patient.first_name} {sale.patient.last_name}"
+        }
+    
+    # Build complete sale data
+    sale_dict = sale.to_dict() if hasattr(sale, 'to_dict') else {}
+    sale_dict.update({
+        'devices': devices,
+        'paymentPlan': payment_plan_data,
+        'paymentRecords': payments_data,
+        'payments': payments_data,  # Alias for backwards compatibility
+        'invoice': invoice_data,
+        'sgkCoverage': sgk_coverage_value,
+        'patient': patient_data
+    })
+    
+    return sale_dict
+
 # ============= READ ENDPOINTS =============
 
 @router.get("/sales", operation_id="listSales", response_model=ResponseEnvelope[List[SaleRead]])
@@ -128,29 +304,36 @@ def get_sales(
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
     search: Optional[str] = None,
+    include_details: bool = Query(False, description="Include full sale details (devices, payments, invoice)"),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
-    """Get all sales with tenant scoping."""
+    """Get all sales with tenant scoping and optional full details."""
     query = db.query(Sale)
     
     if access.tenant_id:
         query = query.filter(Sale.tenant_id == access.tenant_id)
         
-        # Branch scoping for Tenant Users (if admin role check logic applies)
-        if access.is_tenant_admin and access.user.role == 'admin':
-             # Replicate logic: if user has branches, filter by them
-             user_branch_ids = [b.id for b in getattr(access.user, 'branches', [])]
-             if user_branch_ids:
-                 query = query.filter(Sale.branch_id.in_(user_branch_ids))
-             elif getattr(access.user, 'branches', []):
-                 # Has branches attribute but empty list? OR if user is restricted?
-                 # Should probably return empty if they are assigned branches but none match
-                 # Logic in read.py: "if user_branch_ids: filter... else: return empty"
-                 # Only if they ARE assigned branches. If branches is empty list, maybe they see all?
-                 # Flask logic: `if access.user.branches` -> filter.
-                 # So if they have branches, we constrain.
-                 pass 
+        # Branch scoping for Tenant Users with admin role
+        if access.is_tenant_admin and hasattr(access, 'user') and access.user:
+            user_role = getattr(access.user, 'role', None)
+            if user_role == 'admin':
+                user_branches = getattr(access.user, 'branches', [])
+                user_branch_ids = [b.id for b in user_branches] if user_branches else []
+                if user_branch_ids:
+                    query = query.filter(Sale.branch_id.in_(user_branch_ids))
+                elif user_branches:
+                    # User has branches attribute but empty - return empty result
+                    return ResponseEnvelope(
+                        data=[],
+                        meta={
+                            "total": 0,
+                            "page": page,
+                            "perPage": per_page,
+                            "totalPages": 0,
+                            "tenantScope": access.tenant_id
+                        }
+                    )
                  
     if search:
         query = query.join(Patient).filter(
@@ -166,13 +349,26 @@ def get_sales(
     total = query.count()
     items = query.offset((page - 1) * per_page).limit(per_page).all()
     
-    # Transform items to match schema
+    # Transform items with full details if requested
     results = []
-    for s in items:
+    for sale in items:
         try:
-            results.append(s.to_dict() if hasattr(s, 'to_dict') else s)
-        except Exception:
-            results.append(s)
+            if include_details:
+                # Full Flask-parity enrichment
+                sale_data = _build_full_sale_data(db, sale)
+            else:
+                # Basic sale data with patient info
+                sale_data = sale.to_dict() if hasattr(sale, 'to_dict') else {}
+                if sale.patient:
+                    sale_data['patient'] = {
+                        'id': sale.patient.id,
+                        'firstName': sale.patient.first_name,
+                        'lastName': sale.patient.last_name
+                    }
+            results.append(sale_data)
+        except Exception as e:
+            logger.warning(f"Error building sale data for {sale.id}: {e}")
+            results.append(sale.to_dict() if hasattr(sale, 'to_dict') else {})
 
     return ResponseEnvelope(
         data=results,
@@ -181,8 +377,23 @@ def get_sales(
             "page": page,
             "perPage": per_page,
             "totalPages": (total + per_page - 1) // per_page,
+            "tenantScope": access.tenant_id
         },
     )
+
+@router.get("/sales/{sale_id}", operation_id="getSale", response_model=ResponseEnvelope[Any])
+def get_sale(
+    sale_id: str,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Get a single sale with full details - Flask parity."""
+    sale = get_sale_or_404(db, sale_id, access)
+    
+    # Build full sale data with all enrichments
+    sale_data = _build_full_sale_data(db, sale)
+    
+    return ResponseEnvelope(data=sale_data)
 
 # Note: /patients/{patient_id}/sales endpoint moved to patients.py to avoid duplication
 
