@@ -379,7 +379,10 @@ def get_movements(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
-    """Get movements"""
+    """Get movements with patient enrichment (Flask parity)"""
+    from models.sales import DeviceAssignment, Sale
+    from models.patient import Patient
+    
     item = get_inventory_or_404(db, item_id, access)
     query = item.movements
     
@@ -395,7 +398,34 @@ def get_movements(
     total = query.count()
     movements = query.order_by(StockMovement.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
     
-    results = [m.to_dict() for m in movements]
+    # Enrich with patient info (Flask parity)
+    results = []
+    for m in movements:
+        m_dict = m.to_dict()
+        
+        # Enrich with patient info from transaction
+        if m.transaction_id:
+            try:
+                # If transaction is a device assignment, get patient info
+                if m.transaction_id.startswith('assign_'):
+                    assignment = db.get(DeviceAssignment, m.transaction_id)
+                    if assignment and assignment.patient_id:
+                        patient = db.get(Patient, assignment.patient_id)
+                        if patient:
+                            m_dict['patientId'] = patient.id
+                            m_dict['patientName'] = f"{patient.first_name} {patient.last_name}".strip()
+                # If transaction is a sale
+                elif m.transaction_id.startswith('sale_'):
+                    sale = db.get(Sale, m.transaction_id)
+                    if sale and sale.patient_id:
+                        patient = db.get(Patient, sale.patient_id)
+                        if patient:
+                            m_dict['patientId'] = patient.id
+                            m_dict['patientName'] = f"{patient.first_name} {patient.last_name}".strip()
+            except Exception as enrich_err:
+                logger.warning(f"Failed to enrich movement {m.id}: {enrich_err}")
+        
+        results.append(m_dict)
     
     return ResponseEnvelope(
         data=results,
@@ -405,3 +435,4 @@ def get_movements(
             "total": total
         }
     )
+
