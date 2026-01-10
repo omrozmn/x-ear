@@ -75,28 +75,52 @@ export interface PatientDevice {
   brand: string;
   model: string;
   serialNumber?: string;
+  serialNumberLeft?: string;
+  serialNumberRight?: string;
   side: DeviceSide;
+  ear?: string;
+  earSide?: string;
   type: DeviceType;
   status: DeviceStatus;
   purchaseDate?: string;
+  assignedDate?: string;
+  createdAt?: string;
   warrantyExpiry?: string;
   lastServiceDate?: string;
   batteryType?: string;
   price?: number;
-  sgkScheme?: string; // SGK support type like 'over18_working', 'under4_parent_retired', etc.
-  settings?: Record<string, unknown> | boolean;
-  saleId?: string;  // Sale ID for linking to sales history
   listPrice?: number;
   salePrice?: number;
   sgkReduction?: number;
+  sgkSupport?: number;
   patientPayment?: number;
+  netPayable?: number;
+  downPayment?: number;
+  sgkScheme?: string;
+  sgkSupportType?: string;
   paymentMethod?: string;
-  ear?: string;
-  assignedDate?: string;
+  discountType?: string;
+  discountValue?: number;
+  assignmentUid?: string;
+  barcode?: string;
+  deviceName?: string;
   assignedBy?: string;
   reason?: string;
   notes?: string;
+  saleId?: string;
+  inventoryId?: string;
+  deviceId?: string;
   trialEndDate?: string;
+  deliveryStatus?: string;
+  isLoaner?: boolean;
+  loanerInventoryId?: string;
+  loanerSerialNumber?: string;
+  loanerSerialNumberLeft?: string;
+  loanerSerialNumberRight?: string;
+  loanerBrand?: string;
+  loanerModel?: string;
+  reportStatus?: string;
+  settings?: Record<string, unknown> | boolean;
 }
 
 export interface PatientNote {

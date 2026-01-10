@@ -57,6 +57,7 @@ export interface PatientDevice {
   status: 'active' | 'trial' | 'returned' | 'replaced' | 'assigned' | string;
   purchaseDate?: string;
   assignedDate?: string;
+  createdAt?: string; // Backend timestamp
   warrantyExpiry?: string;
   lastServiceDate?: string;
   batteryType?: string;
@@ -66,21 +67,33 @@ export interface PatientDevice {
   listPrice?: number;
   salePrice?: number;
   sgkReduction?: number;
+  sgkSupport?: number; // Backend field (same as sgkReduction)
   patientPayment?: number;
+  netPayable?: number; // Backend field (same as patientPayment)
+  downPayment?: number; // From PaymentRecord
 
   // Payment and SGK
   sgkScheme?: string; // SGK support type like 'over18_working', 'under4_parent_retired', etc.
+  sgkSupportType?: string; // Alias for sgkScheme (Flask parity)
   paymentMethod?: 'cash' | 'card' | 'transfer' | 'installment' | string;
+  discountType?: string;
+  discountValue?: number;
 
   // Trial information
   trialStartDate?: string;
   trialEndDate?: string;
 
   // Assignment details
+  assignmentUid?: string; // User-facing assignment ID (e.g., ATM-123456)
+  barcode?: string; // Device barcode
+  deviceName?: string; // Computed: brand + model
+  category?: string; // Device category from inventory
   assignedBy?: string;
   reason?: 'new' | 'replacement' | 'upgrade' | 'trial' | 'warranty' | 'Trial' | 'Sale' | string;
   notes?: string;
   saleId?: string;  // Sale ID for linking to sales history
+  inventoryId?: string; // Link to inventory item
+  deviceId?: string; // Link to device
 
   // Delivery & Loaner
   deliveryStatus?: 'pending' | 'delivered' | string;

@@ -163,9 +163,11 @@ class DeviceAssignmentRead(IDMixin, TimestampMixin, DeviceAssignmentBase):
     
     # Device details (enriched)
     name: Optional[str] = None
+    device_name: Optional[str] = Field(None, alias="deviceName")  # Computed: brand + model
     brand: Optional[str] = None
     model: Optional[str] = None
     barcode: Optional[str] = None
+    category: Optional[str] = None  # From inventory (Flask parity)
     
     # Assignment details
     assignment_uid: Optional[str] = Field(None, alias="assignmentUid")
@@ -173,9 +175,14 @@ class DeviceAssignmentRead(IDMixin, TimestampMixin, DeviceAssignmentBase):
     
     # SGK and Payment
     sgk_scheme: Optional[str] = Field(None, alias="sgkScheme")
+    sgk_support_type: Optional[str] = Field(None, alias="sgkSupportType")  # Alias for sgkScheme (Flask parity)
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     discount_type: Optional[str] = Field(None, alias="discountType")
     discount_value: Optional[float] = Field(None, alias="discountValue")
+    down_payment: Optional[float] = Field(0.0, alias="downPayment")  # From PaymentRecord (Flask parity)
+    
+    # Ear side alias (Flask parity)
+    ear_side: Optional[str] = Field(None, alias="earSide")
     
     # Loaner device details
     loaner_inventory_id: Optional[str] = Field(None, alias="loanerInventoryId")
@@ -184,7 +191,7 @@ class DeviceAssignmentRead(IDMixin, TimestampMixin, DeviceAssignmentBase):
     loaner_serial_number_left: Optional[str] = Field(None, alias="loanerSerialNumberLeft")
     loaner_serial_number_right: Optional[str] = Field(None, alias="loanerSerialNumberRight")
     
-    # Aliases for frontend compatibility
+    # Aliases for frontend compatibility (Flask parity)
     sgk_reduction: float = Field(0.0, alias="sgkReduction")
     patient_payment: float = Field(0.0, alias="patientPayment")
     sgk_coverage_amount: float = Field(0.0, alias="sgkCoverageAmount")

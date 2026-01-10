@@ -77,7 +77,7 @@ def get_patient_devices(
     """Get all devices assigned to a specific patient"""
     try:
         from models.patient import Patient
-        from models.sales import DeviceAssignment
+        from models.sales import DeviceAssignment, Sale, PaymentRecord
         from models.device import Device
         from models.inventory import InventoryItem
         
@@ -135,6 +135,52 @@ def get_patient_devices(
             
             # Merge: original dict values take priority, enriched fills in missing
             final_device = {**enriched, **d}
+            
+            # === Flask parity: Add earSide alias ===
+            final_device['earSide'] = assignment.ear
+            
+            # === Flask parity: Add sgkSupportType alias ===
+            final_device['sgkSupportType'] = assignment.sgk_scheme
+            
+            # === Flask parity: Add deviceName (computed) ===
+            if assignment.inventory_id:
+                inv = db.get(InventoryItem, assignment.inventory_id)
+                if inv:
+                    final_device['deviceName'] = f"{inv.brand} {inv.model}"
+                    final_device['category'] = inv.category
+            if not final_device.get('deviceName'):
+                if assignment.is_loaner:
+                    final_device['deviceName'] = f"{assignment.loaner_brand or 'Unknown'} {assignment.loaner_model or 'Device'}"
+                else:
+                    final_device['deviceName'] = f"{final_device.get('brand', '')} {final_device.get('model', '')}".strip() or f"Device {assignment.device_id or ''}"
+            
+            # === Flask parity: Pricing fields with explicit float conversion ===
+            final_device['sgkReduction'] = float(assignment.sgk_support) if assignment.sgk_support is not None else 0.0
+            final_device['patientPayment'] = float(assignment.net_payable) if assignment.net_payable is not None else 0.0
+            final_device['salePrice'] = float(assignment.sale_price) if assignment.sale_price is not None else 0.0
+            final_device['listPrice'] = float(assignment.list_price) if assignment.list_price is not None else 0.0
+            
+            # === Flask parity: Fetch downPayment from PaymentRecord ===
+            final_device['downPayment'] = 0.0
+            if assignment.sale_id:
+                # Try to get explicit down payment record first
+                down_payment_record = db.query(PaymentRecord).filter_by(
+                    sale_id=assignment.sale_id,
+                    payment_type='down_payment'
+                ).first()
+                
+                if down_payment_record:
+                    final_device['downPayment'] = float(down_payment_record.amount) if down_payment_record.amount else 0.0
+                else:
+                    # Fallback to sale's paid_amount
+                    sale = db.get(Sale, assignment.sale_id)
+                    if sale and sale.paid_amount:
+                        final_device['downPayment'] = float(sale.paid_amount)
+            
+            # === Flask parity: Ensure assignedDate is set ===
+            if not final_device.get('assignedDate') and assignment.created_at:
+                final_device['assignedDate'] = assignment.created_at.isoformat()
+            
             mapped_devices.append(final_device)
         
         return ResponseEnvelope(
@@ -638,6 +684,109 @@ def delete_patient_ereceipt(
     except Exception as e:
         db.rollback()
         logger.error(f"Error deleting e-receipt: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- Patient Sales (Flask parity) ---
+
+@router.get("/patients/{patient_id}/sales", operation_id="listPatientSales")
+def get_patient_sales(
+    patient_id: str,
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db)
+):
+    """Get all sales for a specific patient - Flask parity"""
+    try:
+        from models.patient import Patient
+        from models.sales import Sale, DeviceAssignment, PaymentRecord
+        from models.inventory import InventoryItem
+        
+        patient = db.get(Patient, patient_id)
+        if not patient:
+            raise HTTPException(status_code=404, detail="Patient not found")
+        
+        # Tenant check
+        if access.tenant_id and patient.tenant_id != access.tenant_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        # Get all sales for this patient
+        sales = db.query(Sale).filter_by(patient_id=patient_id).order_by(Sale.sale_date.desc()).all()
+        
+        sales_data = []
+        for sale in sales:
+            sale_dict = sale.to_dict() if hasattr(sale, 'to_dict') else {}
+            
+            # Add devices from assignments
+            devices = []
+            assignments = db.query(DeviceAssignment).filter_by(sale_id=sale.id).all()
+            for assignment in assignments:
+                # Get inventory item details if available
+                inventory_item = None
+                if assignment.inventory_id:
+                    inventory_item = db.get(InventoryItem, assignment.inventory_id)
+                
+                # Build device info with inventory details
+                if inventory_item:
+                    device_name = f"{inventory_item.brand} {inventory_item.model}"
+                    brand = inventory_item.brand
+                    model = inventory_item.model
+                    barcode = inventory_item.barcode
+                else:
+                    # Fallback for manual/loaner devices
+                    device_name = f"{assignment.loaner_brand or 'Unknown'} {assignment.loaner_model or 'Device'}".strip()
+                    brand = assignment.loaner_brand or ''
+                    model = assignment.loaner_model or ''
+                    barcode = None
+                
+                device_info = {
+                    'id': assignment.inventory_id or assignment.device_id,
+                    'name': device_name,
+                    'brand': brand,
+                    'model': model,
+                    'serialNumber': assignment.serial_number or assignment.serial_number_left or assignment.serial_number_right,
+                    'barcode': barcode,
+                    'ear': assignment.ear,
+                    'listPrice': float(assignment.list_price) if assignment.list_price else None,
+                    'salePrice': float(assignment.sale_price) if assignment.sale_price else None,
+                    'sgkCoverageAmount': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
+                    'patientResponsibleAmount': float(assignment.net_payable) if assignment.net_payable else None
+                }
+                devices.append(device_info)
+            
+            sale_dict['devices'] = devices
+            
+            # Add payment records
+            payment_records = []
+            payments = db.query(PaymentRecord).filter_by(sale_id=sale.id).all()
+            for payment in payments:
+                payment_info = {
+                    'id': payment.id,
+                    'amount': float(payment.amount) if payment.amount else 0.0,
+                    'paymentDate': payment.payment_date.isoformat() if payment.payment_date else None,
+                    'paymentMethod': payment.payment_method,
+                    'paymentType': payment.payment_type,
+                    'status': 'paid',
+                    'referenceNumber': payment.reference_number,
+                    'notes': getattr(payment, 'notes', None)
+                }
+                payment_records.append(payment_info)
+            
+            sale_dict['paymentRecords'] = payment_records
+            
+            sales_data.append(sale_dict)
+        
+        return ResponseEnvelope(
+            data=sales_data,
+            meta={
+                'patientId': patient_id,
+                'patientName': f"{patient.first_name} {patient.last_name}",
+                'salesCount': len(sales_data)
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting patient sales: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # --- Patient Appointments ---
