@@ -99,12 +99,8 @@ export const useDeviceAssignment = ({
         // Normalize reportStatus to match dropdown options
         const rawReportStatus = String(assignment.reportStatus || (assignment as any).report_status || '').toLowerCase().trim();
 
-        console.log('🔍 [useDeviceAssignment] RELOADED DEBUG:', {
-          incomingAssignment: assignment,
-          reportStatus: assignment.reportStatus,
-          snake_report: (assignment as any).report_status,
-          rawNormalized: rawReportStatus
-        });
+        // Debug logging disabled to reduce console noise
+        // console.log('🔍 [useDeviceAssignment] RELOADED DEBUG:', {...});
 
         let normalizedReportStatus: 'received' | 'pending' | 'none' | undefined = undefined;
         if (['raporlu', 'received', 'has_report', 'true'].includes(rawReportStatus)) normalizedReportStatus = 'received';
@@ -127,15 +123,8 @@ export const useDeviceAssignment = ({
           loaner_serial_number: (assignment as any).loaner_serial_number
         };
 
-        console.log('🔍 [useDeviceAssignment] LOANER FIELDS:', {
-          raw_isLoaner: (assignment as any).isLoaner,
-          raw_is_loaner: (assignment as any).is_loaner,
-          raw_loanerBrand: (assignment as any).loanerBrand,
-          raw_loaner_brand: (assignment as any).loaner_brand,
-          raw_loanerModel: (assignment as any).loanerModel,
-          raw_loaner_model: (assignment as any).loaner_model,
-          extracted: loanerFields
-        });
+        // Debug logging disabled to reduce console noise
+        // console.log('🔍 [useDeviceAssignment] LOANER FIELDS:', {...});
 
         // Edit mode - load assignment data
         setFormData({
@@ -147,8 +136,10 @@ export const useDeviceAssignment = ({
           discountValue: (assignment as any).discountValue || (assignment as any).discount_value || 0,
           discountType: (assignment as any).discountType || (assignment as any).discount_type || 'none',
           listPrice: (assignment as any).listPrice || (assignment as any).list_price || 0,
+          paymentMethod: (assignment as any).paymentMethod || (assignment as any).payment_method || '',
+          reason: (assignment as any).reason || 'sale',
 
-          assignedDate: assignment.assignedDate?.split('T')[0] || new Date().toISOString().split('T')[0],
+          assignedDate: (assignment as any).assignedDate?.split('T')[0] || (assignment as any).createdAt?.split('T')[0] || new Date().toISOString().split('T')[0],
           reportStatus: normalizedReportStatus, // Explicitly set normalized value
           deliveryStatus: (assignment.deliveryStatus || (assignment as any).delivery_status || 'pending').toLowerCase(),
           // Ensure ear is normalized (backend might send LEFT/RIGHT uppercase)
@@ -224,7 +215,8 @@ export const useDeviceAssignment = ({
           status: (item.availableInventory || 0) > 0 ? 'available' : 'out_of_stock'
         }));
 
-        console.log('✓ Loaded inventory:', devices);
+        // Debug logging disabled to reduce console noise
+        // console.log('✓ Loaded inventory:', devices);
         setAvailableDevices(devices);
 
         // If editing and has deviceId, auto-select the device
@@ -377,17 +369,34 @@ export const useDeviceAssignment = ({
   }, [formData.listPrice, formData.sgkSupportType, formData.discountType, formData.discountValue, formData.downPayment, formData.ear, formData.paymentMethod, formData.installmentCount, sgkAmounts]);
 
   // Sync calculated pricing back into formData so UI components read the canonical values
+  // Use a ref to track if we're in the middle of a pricing sync to prevent loops
+  const pricingSyncRef = useRef(false);
+  
   useEffect(() => {
+    // Prevent re-entry during sync
+    if (pricingSyncRef.current) return;
+    
     // Only update when calculated values differ from formData to avoid loops
     setFormData(prev => {
       const updates: Partial<DeviceAssignment> = {};
-      if (prev.salePrice !== calculatedPricing.salePrice) updates.salePrice = calculatedPricing.salePrice;
-      if (prev.sgkReduction !== calculatedPricing.sgkReduction) updates.sgkReduction = calculatedPricing.sgkReduction;
-      if (prev.patientPayment !== calculatedPricing.patientPayment) updates.patientPayment = calculatedPricing.patientPayment;
-      if (prev.remainingAmount !== calculatedPricing.remainingAmount) updates.remainingAmount = calculatedPricing.remainingAmount;
-      if (prev.monthlyInstallment !== calculatedPricing.monthlyInstallment) updates.monthlyInstallment = calculatedPricing.monthlyInstallment;
+      
+      // Use tolerance for floating point comparison
+      const tolerance = 0.01;
+      const isDifferent = (a: number | undefined, b: number) => 
+        a === undefined || Math.abs((a || 0) - b) > tolerance;
+      
+      if (isDifferent(prev.salePrice, calculatedPricing.salePrice)) updates.salePrice = calculatedPricing.salePrice;
+      if (isDifferent(prev.sgkReduction, calculatedPricing.sgkReduction)) updates.sgkReduction = calculatedPricing.sgkReduction;
+      if (isDifferent(prev.patientPayment, calculatedPricing.patientPayment)) updates.patientPayment = calculatedPricing.patientPayment;
+      if (isDifferent(prev.remainingAmount, calculatedPricing.remainingAmount)) updates.remainingAmount = calculatedPricing.remainingAmount;
+      if (isDifferent(prev.monthlyInstallment, calculatedPricing.monthlyInstallment)) updates.monthlyInstallment = calculatedPricing.monthlyInstallment;
 
       if (Object.keys(updates).length === 0) return prev;
+      
+      pricingSyncRef.current = true;
+      // Reset the flag after the state update is processed
+      setTimeout(() => { pricingSyncRef.current = false; }, 0);
+      
       return { ...prev, ...updates };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -441,8 +450,10 @@ export const useDeviceAssignment = ({
       if (!formData.listPrice || formData.listPrice <= 0) {
         newErrors.listPrice = 'Liste fiyatı zorunludur';
       }
-      if (!formData.paymentMethod) {
-        newErrors.paymentMethod = 'Ödeme yöntemi seçimi zorunludur';
+      // Payment method is only required if downPayment is entered
+      const downPayment = formData.downPayment || 0;
+      if (downPayment > 0 && !formData.paymentMethod) {
+        newErrors.paymentMethod = 'Peşinat girildiğinde ödeme yöntemi seçimi zorunludur';
       }
     }
 

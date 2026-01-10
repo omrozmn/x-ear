@@ -186,6 +186,7 @@ class DeviceAssignmentUpdate(AppBaseModel):
     serial_number_right: Optional[str] = Field(None, alias="serialNumberRight")
     
     delivery_status: Optional[str] = Field(None, alias="deliveryStatus")
+    report_status: Optional[str] = Field(None, alias="reportStatus")
     
     # Pricing
     base_price: Optional[float] = Field(None, alias="basePrice")
@@ -200,9 +201,21 @@ class DeviceAssignmentUpdate(AppBaseModel):
     sgk_reduction: Optional[float] = Field(None, alias="sgkReduction")
     sgkSupport: Optional[float] = None # Alias
     
+    # Down payment
+    down_payment: Optional[float] = Field(None, alias="downPayment")
+    
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     notes: Optional[str] = None
     user_id: Optional[str] = Field(None, alias="userId") # For audit
+    
+    # Loaner device fields
+    is_loaner: Optional[bool] = Field(None, alias="isLoaner")
+    loaner_inventory_id: Optional[str] = Field(None, alias="loanerInventoryId")
+    loaner_serial_number: Optional[str] = Field(None, alias="loanerSerialNumber")
+    loaner_serial_number_left: Optional[str] = Field(None, alias="loanerSerialNumberLeft")
+    loaner_serial_number_right: Optional[str] = Field(None, alias="loanerSerialNumberRight")
+    loaner_brand: Optional[str] = Field(None, alias="loanerBrand")
+    loaner_model: Optional[str] = Field(None, alias="loanerModel")
 
 
 # ==================== SALE SCHEMAS ====================
@@ -292,3 +305,15 @@ class SaleUpdate(AppBaseModel):
     payment_method: Optional[str] = Field(None, alias="paymentMethod")
     status: Optional[str] = None
     notes: Optional[str] = None
+
+class SaleRecalcRequest(AppBaseModel):
+    patient_id: Optional[str] = Field(None, alias="patientId")
+    sale_id: Optional[str] = Field(None, alias="saleId")
+    limit: Optional[int] = None
+
+class SaleRecalcResponse(AppBaseModel):
+    success: bool
+    updated: int
+    processed: int
+    errors: List[Dict[str, Any]]
+    timestamp: datetime

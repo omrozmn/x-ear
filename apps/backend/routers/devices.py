@@ -317,43 +317,31 @@ def create_device(
         # Create DeviceAssignment if assigned to a patient
         if device.patient_id and device.patient_id != 'inventory':
             try:
-                from models.sales import DeviceAssignment
+                from services.device_assignment_service import DeviceAssignmentService
                 
-                # Map Ear Enum to Single Char
-                ear_val = 'L'
-                if device.ear == 'RIGHT': ear_val = 'R'
-                elif device.ear == 'BILATERAL': ear_val = 'B'
-                elif device.ear == 'LEFT': ear_val = 'L'
+                # Fetch patient to ensure we have the correct tenant_id for the assignment
+                assignment_tenant_id = device.tenant_id
                 
-                assignment = DeviceAssignment(
-                    tenant_id=device.tenant_id,
+                # Use the service to handle full assignment logic (stock, bilateral, etc.)
+                # Now passing the FULL device object to avoid duplication
+                assignment, error = DeviceAssignmentService.assign_device(
+                    session=db_session,
+                    tenant_id=assignment_tenant_id,
                     patient_id=device.patient_id,
-                    device_id=device.id,
-                    inventory_id=device.inventory_id,
-                    ear=ear_val,
-                    reason="Assignment", # Default reason
-                    notes=device.notes,
-                    assignment_uid=f"ATM-{datetime.now().strftime('%y%m%d')}-{random.randint(1000, 9999)}"
+                    device=device,
+                    assigned_by_user_id=access.principal_id
                 )
                 
-                # Helper to map serials if bilateral
-                if device.inventory_id and inventory_id: # Originating from inventory
-                    if device.serial_number: assignment.serial_number = device.serial_number
-                    if device.serial_number_left: assignment.serial_number_left = device.serial_number_left
-                    if device.serial_number_right: assignment.serial_number_right = device.serial_number_right
-                else:
-                    # Manual device
-                    if device.serial_number: assignment.serial_number = device.serial_number
-                    if device.serial_number_left: assignment.serial_number_left = device.serial_number_left
-                    if device.serial_number_right: assignment.serial_number_right = device.serial_number_right
+                if error:
+                    logger.error(f"Service assignment failed: {error}")
+                    # Decide if we raise or continue. Fail safe?
+                    # raise HTTPException(status_code=400, detail=error)
+                elif assignment:
+                     logger.info(f"DeviceAssignment created via service: {assignment.id}")
 
-                db_session.add(assignment)
-                db_session.commit()
-                logger.info(f"DeviceAssignment created: {assignment.id}")
             except Exception as e:
                 logger.error(f"Failed to auto-create assignment: {e}")
-                # Don't fail the request, just log it. 
-                # Or should we fail? Better to stick to robustness.
+                # Don't fail the request, just log it.
         
         return ResponseEnvelope(data=device.to_dict())
     except HTTPException:

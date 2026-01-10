@@ -115,3 +115,9 @@ class PatientSearchFilters(AppBaseModel):
     city: Optional[str] = None
     district: Optional[str] = None
     branch_id: Optional[str] = Field(None, alias="branchId")
+
+class BulkUploadResponse(AppBaseModel):
+    success: bool
+    created: int
+    updated: int
+    errors: List[Dict[str, Any]]

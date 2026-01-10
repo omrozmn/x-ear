@@ -112,23 +112,19 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
         // Usually serial number form handles selection.
       }
 
-      console.log('💾 [DeviceAssignmentForm] KAYDET BAŞLANGIÇ');
-      console.log('💾 [DeviceAssignmentForm] assignment?.id:', assignment?.id);
-      console.log('💾 [DeviceAssignmentForm] assignmentData:', assignmentData);
-      console.log('💾 [DeviceAssignmentForm] deliveryStatus in formData:', formData.deliveryStatus);
-      console.log('💾 [DeviceAssignmentForm] deliveryStatus in assignmentData:', (assignmentData as any).deliveryStatus);
+      // Debug logging disabled to reduce console noise
+      // console.log('💾 [DeviceAssignmentForm] KAYDET BAŞLANGIÇ');
+      // console.log('💾 [DeviceAssignmentForm] assignment?.id:', assignment?.id);
+      // console.log('💾 [DeviceAssignmentForm] assignmentData:', assignmentData);
 
       if (assignment?.id) {
         // Update existing assignment
-        console.log('💾 [DeviceAssignmentForm] Calling onUpdate with:', assignmentData);
         await onUpdate?.(assignmentData); // Await the update
       } else {
         // Create new assignment
-        console.log('💾 [DeviceAssignmentForm] Calling onSave with:', assignmentData);
         await onSave?.(assignmentData); // Await the save
       }
 
-      console.log('💾 [DeviceAssignmentForm] onClose() çağrılıyor...');
       onClose();
     } catch (error) {
       console.error('Cihaz ataması kaydedilirken hata:', error);

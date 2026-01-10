@@ -658,6 +658,37 @@ export class PatientService {
     }
   }
 
+  // Bulk Upload (New P1 Feature)
+  async bulkUploadPatients(file: File): Promise<{ processed: number; success: number; errors: any[] }> {
+    await this.ensureInitialized();
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Use apiClient directly since generated hook might be missing
+      const { apiClient } = await import('../api/orval-mutator');
+      const response = await apiClient.post('/api/patients/bulk-upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      const result = response.data;
+
+      // Refresh local cache after bulk upload
+      await this.refreshFromAPI();
+
+      return {
+        processed: result?.data?.processed || 0,
+        success: result?.data?.success || 0,
+        errors: result?.data?.errors || []
+      };
+    } catch (error) {
+      console.error('Bulk upload failed:', error);
+      throw error;
+    }
+  }
+
   /**
    * Calculate priority score for a patient
    */

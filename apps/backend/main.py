@@ -254,6 +254,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
+    # Log the actual error for debugging
+    import traceback
+    logger.error(f"Unhandled exception: {exc}")
+    logger.error(f"Traceback: {traceback.format_exc()}")
     # Avoid leaking internal details; log is handled elsewhere.
     return envelope_error(
         "Internal server error",
@@ -407,8 +411,9 @@ app.include_router(pos_commission.router)
 app.include_router(uts.router)
 
 # Phase 7 migrated routers - Final modules
-from routers import invoice_management, invoices_actions, communications, sms_integration
+from routers import invoice_management, invoices_actions, communications, sms_integration, sms_packages
 app.include_router(sms_integration.router)
+app.include_router(sms_packages.router, prefix="/api")
 app.include_router(invoice_management.router)
 app.include_router(invoices_actions.router)
 app.include_router(communications.router)

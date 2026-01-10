@@ -4,6 +4,7 @@ import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useDeviceReplacement } from './hooks/useDeviceReplacement';
 import { InventorySelector } from './components/InventorySelector';
 import { ReplacementSummary } from './components/ReplacementSummary';
+import { useCreatePatientReplacements } from '@/api/generated';
 import type { DeviceReplacementModalProps } from './types';
 
 export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
@@ -24,6 +25,8 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
     resetForm
   } = useDeviceReplacement(isOpen);
 
+  const createReplacementMutation = useCreatePatientReplacements();
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
@@ -37,22 +40,41 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
     updateState({ isLoading: true, error: '' });
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
       const replacementData = {
-        patientId: patient.id,
         oldDeviceId: device?.id,
-        newInventoryItemId: formData.selectedInventoryItem?.id,
-        reason: formData.replacementReason,
-        notes: formData.notes,
+        newInventoryId: formData.selectedInventoryItem?.id,
+        oldDeviceInfo: {
+          id: device?.id,
+          brand: device?.brand,
+          model: device?.model,
+          serialNumber: device?.serialNumber,
+          price: device?.price
+        },
+        newDeviceInfo: {
+          id: formData.selectedInventoryItem?.id,
+          brand: formData.selectedInventoryItem?.brand,
+          model: formData.selectedInventoryItem?.model,
+          price: formData.selectedInventoryItem?.price
+        },
+        replacementReason: formData.replacementReason,
         priceDifference: calculatePriceDifference(device),
+        notes: formData.notes
+      };
+
+      // Call real API
+      await createReplacementMutation.mutateAsync({
+        patientId: patient.id,
+        data: replacementData
+      });
+
+      // Notify parent component
+      onReplacementCreate({
+        ...replacementData,
         createReturnInvoice: formData.createReturnInvoice,
         invoiceType: formData.invoiceType,
         timestamp: new Date().toISOString()
-      };
+      });
 
-      onReplacementCreate(replacementData);
       updateState({ success: true, isLoading: false });
 
       setTimeout(() => {
@@ -60,10 +82,11 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
         resetForm();
       }, 1500);
 
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Replacement error:', error);
       updateState({
         isLoading: false,
-        error: 'Değişim işlemi sırasında hata oluştu. Lütfen tekrar deneyin.'
+        error: error?.response?.data?.detail || error?.message || 'Değişim işlemi sırasında hata oluştu. Lütfen tekrar deneyin.'
       });
     }
   };

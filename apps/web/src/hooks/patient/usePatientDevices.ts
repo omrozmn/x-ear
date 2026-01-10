@@ -61,18 +61,18 @@ export function usePatientDevices(patientId: string) {
         }
       }
 
-      console.log('📥 Patient devices from backend:', devicesData);
-
+      // Debug logging disabled to reduce console noise
+      // console.log('📥 Patient devices from backend:', devicesData);
       if (devicesData.length > 0) {
         const firstDevice = devicesData[0] as Record<string, unknown>;
-        console.log('📥 First device FULL:', JSON.stringify(firstDevice, null, 2));
+        console.log('📥 First device from backend:', JSON.stringify(firstDevice, null, 2));
       }
 
       // Map API data to PatientDevice type
       const mappedDevices: PatientDevice[] = devicesData.map((device: unknown) => {
         const d = device as Record<string, unknown>;
         return {
-          ...d, // Preserve all backend fields (ear, serialNumberLeft, notes, etc.)
+          ...d, // Preserve all backend fields (ear, serialNumberLeft, notes, createdAt, assignedDate, etc.)
           id: (d.id as string) || (d.deviceId as string) || '',
           brand: (d.brand as string) || '',
           model: (d.model as string) || '',
@@ -84,8 +84,13 @@ export function usePatientDevices(patientId: string) {
           warrantyExpiry: (d.warrantyExpiry as string) || (d.warranty_expiry as string),
           lastServiceDate: (d.lastServiceDate as string) || (d.last_service_date as string),
           price: d.price as number | undefined,
-          sgkScheme: (d.sgkScheme as boolean) || (d.sgk_scheme as boolean),
+          // sgkScheme is a string like 'over18_working', not boolean
+          sgkScheme: (d.sgkScheme as string) || (d.sgk_scheme as string) || '',
+          paymentMethod: (d.paymentMethod as string) || (d.payment_method as string) || '',
           settings: d.settings as Record<string, unknown> | undefined,
+          // Explicitly preserve date fields from backend
+          createdAt: (d.createdAt as string) || (d.created_at as string),
+          assignedDate: (d.assignedDate as string) || (d.assigned_date as string) || (d.createdAt as string) || (d.created_at as string),
         };
       });
 

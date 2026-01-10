@@ -795,37 +795,61 @@ export class InvoiceService {
 
   // Template Operations
   async getTemplates(): Promise<InvoiceTemplate[]> {
-    // Mock templates for now
-    return [
-      {
-        id: 'template-1',
-        name: 'Standart Fatura',
-        type: 'sale' as InvoiceType,
-        description: 'Genel kullanım için standart fatura şablonu',
-        category: 'general',
-        isDefault: true,
-        fields: ['customerName', 'items', 'totalAmount'],
-        templateData: {},
-        items: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: 'system'
-      },
-      {
-        id: 'template-2',
-        name: 'Proforma Fatura',
-        type: 'proforma' as InvoiceType,
-        description: 'Proforma fatura şablonu',
-        category: 'proforma',
-        isDefault: false,
-        fields: ['customerName', 'items', 'totalAmount', 'validUntil'],
-        templateData: {},
-        items: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: 'system'
-      }
-    ];
+    try {
+      const response = await apiClient.get('/api/invoices/templates');
+      const data = response.data;
+      const templates = Array.isArray(data) ? data : (data?.data || []);
+      return templates as InvoiceTemplate[];
+    } catch (error) {
+      console.warn('Failed to fetch templates from API:', error);
+      return [];
+    }
+  }
+
+  // New P1 Features
+  async bulkUploadInvoices(file: File): Promise<{ processed: number; success: number; errors: any[] }> {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await apiClient.post('/api/invoices/bulk-upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      const result = response.data;
+      return {
+        processed: result?.data?.processed || 0,
+        success: result?.data?.success || 0,
+        errors: result?.data?.errors || []
+      };
+    } catch (error) {
+      console.error('Invoice bulk upload failed:', error);
+      throw error;
+    }
+  }
+
+  async getPrintQueue(): Promise<any[]> {
+    try {
+      const response = await apiClient.get('/api/invoices/print-queue');
+      const data = response.data;
+      return Array.isArray(data) ? data : (data?.data || []);
+    } catch (error) {
+      console.error('Failed to get print queue:', error);
+      return [];
+    }
+  }
+
+  async addToPrintQueue(invoiceIds: string | string[]): Promise<any> {
+    try {
+      const ids = Array.isArray(invoiceIds) ? invoiceIds : [invoiceIds];
+      const response = await apiClient.post('/api/invoices/print-queue', {
+        invoice_ids: ids
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to add to print queue:', error);
+      throw error;
+    }
   }
 
   // Calculation Helpers
@@ -994,7 +1018,7 @@ export class InvoiceService {
           data: response
         };
       }
-
+  
       return {
         success: false,
         error: response?.message || 'PDF verisi geçerli değil'

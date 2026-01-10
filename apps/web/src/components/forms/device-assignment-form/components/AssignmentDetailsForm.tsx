@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { listInventory } from '@/api/generated';
-import { unwrapObject } from '@/utils/response-unwrap';
+import { unwrapObject, unwrapArray } from '@/utils/response-unwrap';
 import { Input, Select, Textarea } from '@x-ear/ui-web';
 import { Calendar, User, FileText, AlertCircle, CheckCircle, Clock, RotateCcw } from 'lucide-react';
 
@@ -85,10 +85,25 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             search: loanerSearch,
             category: 'hearing_aid'
           });
-          const unwrapped = unwrapObject(response);
-          const items = unwrapped || [];
-          setLoanerResults(Array.isArray(items) ? items : []);
-          setShowLoanerResults(true);
+          // Response is wrapped in ResponseEnvelope: { data: [...], meta: {...} }
+          // unwrapObject returns the inner object, but we need the data array
+          const unwrapped = unwrapObject(response) as any;
+          // If unwrapped has 'data' property (from ResponseEnvelope), use it
+          // Otherwise check if unwrapped itself is an array
+          let items: any[] = [];
+          if (unwrapped) {
+            if (Array.isArray(unwrapped)) {
+              items = unwrapped;
+            } else if (Array.isArray(unwrapped.data)) {
+              items = unwrapped.data;
+            } else if (unwrapped.items && Array.isArray(unwrapped.items)) {
+              items = unwrapped.items;
+            }
+          }
+          // Filter only items with available stock
+          items = items.filter((item: any) => (item.availableInventory || item.available_inventory || 0) > 0);
+          setLoanerResults(items);
+          setShowLoanerResults(items.length > 0);
         } catch (error) {
           console.error("Loaner search failed", error);
           setLoanerResults([]);
@@ -309,10 +324,8 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             <select
               value={formData.deliveryStatus || 'pending'}
               onChange={(e) => {
-                console.log('📦 [AssignmentDetailsForm] Teslimat durumu değişiyor:', {
-                  old: formData.deliveryStatus,
-                  new: e.target.value
-                });
+                // Debug logging disabled to reduce console noise
+                // console.log('📦 [AssignmentDetailsForm] Teslimat durumu değişiyor:', {...});
                 updateFormData('deliveryStatus', e.target.value);
               }}
               className="w-full appearance-none bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pr-8 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
@@ -383,19 +396,23 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
               {/* Results Dropdown */}
               {showLoanerResults && loanerResults.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 rounded-md shadow-lg border border-gray-200 dark:border-slate-700 max-h-60 overflow-y-auto">
-                  {loanerResults.map(device => (
-                    <div
-                      key={device.id}
-                      onClick={() => selectLoaner(device)}
-                      className="p-2 hover:bg-purple-50 dark:hover:bg-purple-900/30 cursor-pointer border-b border-gray-100 dark:border-slate-700 last:border-b-0"
-                    >
-                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{device.brand} {device.model}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        SN: {(device.availableSerials && device.availableSerials.length > 0) ? device.availableSerials.join(', ') : '-'} |
-                        Stok: {device.availableInventory}
+                  {loanerResults.map(device => {
+                    const serials = device.availableSerials || device.available_serials || [];
+                    const stock = device.availableInventory ?? device.available_inventory ?? 0;
+                    return (
+                      <div
+                        key={device.id}
+                        onClick={() => selectLoaner(device)}
+                        className="p-2 hover:bg-purple-50 dark:hover:bg-purple-900/30 cursor-pointer border-b border-gray-100 dark:border-slate-700 last:border-b-0"
+                      >
+                        <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{device.brand} {device.model}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {serials.length > 0 ? `SN: ${serials.slice(0, 3).join(', ')}${serials.length > 3 ? '...' : ''}` : 'Seri No Yok'} |
+                          Stok: {stock}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

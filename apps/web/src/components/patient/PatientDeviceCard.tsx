@@ -4,6 +4,7 @@ import { Edit, Trash2, RefreshCw } from 'lucide-react';
 
 interface PatientDeviceCardProps {
   device: PatientDevice;
+  displaySide?: 'left' | 'right';
   onEdit?: (device: PatientDevice) => void;
   onReplace?: (device: PatientDevice) => void;
   onCancel?: (device: PatientDevice) => void;
@@ -13,6 +14,7 @@ interface PatientDeviceCardProps {
 
 export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
   device,
+  displaySide,
   onEdit,
   onReplace,
   onCancel,
@@ -106,34 +108,35 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
     }
   };
 
-  const earStyle = getEarStyle((device as any).earSide || device.ear || device.side || '');
+  const earStyle = getEarStyle(displaySide || (device as any).earSide || device.ear || device.side || '');
 
   // Normalization logic for status fields (handling backend variations)
   const deliveryStatus = (device.deliveryStatus || (device as any).delivery_status || 'pending').toLowerCase();
   const reportStatus = (device.reportStatus || (device as any).report_status || 'none').toLowerCase();
   const isLoaner = device.isLoaner || (device as any).is_loaner;
 
-  // DEBUG: log incoming device payload and the values we will display
+  // DEBUG: Disabled to reduce console noise
+  // Enable by uncommenting if needed for debugging
+  /*
   try {
     const dp: any = device as any;
     const debugDisplay = {
-      patientPayment: dp.patientPayment ?? dp.patientPayment,
-      salePrice: dp.salePrice ?? dp.salePrice,
-      netPayable: dp.netPayable ?? dp.netPayable,
-      listPrice: dp.listPrice ?? dp.listPrice,
+      patientPayment: dp.patientPayment,
+      salePrice: dp.salePrice,
+      netPayable: dp.netPayable,
+      listPrice: dp.listPrice,
       serials: {
         serialNumber: dp.serialNumber || dp.serial_number,
         left: dp.serialNumberLeft || dp.serial_number_left,
         right: dp.serialNumberRight || dp.serial_number_right
       },
-      ear: dp.ear || dp.earSide || dp.side,
-      raw: dp
+      ear: dp.ear || dp.earSide || dp.side
     };
-    // use debug to avoid noise in production logs; frontend dev tooling shows console.debug
     console.debug('[PatientDeviceCard] debugDisplay:', debugDisplay);
   } catch (e) {
     console.debug('[PatientDeviceCard] debug logging failed', e);
   }
+  */
 
   return (
     <div className={`relative bg-white dark:bg-slate-800 rounded-lg border dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow ${earStyle.border} ${isCancelled ? 'opacity-50' : ''}`}>
@@ -188,8 +191,8 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
             </div>
           </div>
           <span className={`px-2 py-1 rounded text-xs font-medium border ${earStyle.badge}`}>
-            {(device as any).earSide === 'LEFT' || device.ear === 'left' ? 'Sol' :
-              (device as any).earSide === 'RIGHT' || device.ear === 'right' ? 'Sağ' : 'Bilateral'}
+            {displaySide === 'left' || (device as any).earSide === 'LEFT' || device.ear === 'left' ? 'Sol' :
+              displaySide === 'right' || (device as any).earSide === 'RIGHT' || device.ear === 'right' ? 'Sağ' : 'Bilateral'}
           </span>
         </div>
       </div>
@@ -211,7 +214,7 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
               {/* For bilateral cards, show the correct serial based on ear side */}
               {(() => {
                 const dp: any = device as any;
-                const earSide = dp.earSide || device.ear || '';
+                const earSide = displaySide || dp.earSide || device.ear || '';
                 const isRight = earSide === 'RIGHT' || earSide === 'right' || earSide === 'R';
                 const isLeft = earSide === 'LEFT' || earSide === 'left' || earSide === 'L';
 
@@ -242,7 +245,7 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
           </div>
           <div>
             <span className="text-gray-500 dark:text-gray-400">Atama Tarihi:</span>
-            <p className="font-medium text-gray-900 dark:text-gray-200">{formatDate(device.assignedDate)}</p>
+            <p className="font-medium text-gray-900 dark:text-gray-200">{formatDate((device as any).assignedDate || (device as any).createdAt || (device as any).created_at)}</p>
           </div>
 
           {/* Conditional Fields - Only show for 'sale' */}
@@ -270,20 +273,17 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
 
                     const explicitPerItem = dp.salePricePerItem ?? dp.sale_price_per_item ?? dp.perItem?.sale_price ?? null;
                     if (explicitPerItem !== null && explicitPerItem !== undefined) {
-                      console.debug('[PatientDeviceCard] display -> salePricePerItem', explicitPerItem);
                       return formatCurrency(explicitPerItem);
                     }
 
                     // Treat `salePrice` stored on the assignment as the per-item sale price.
                     if (dp.salePrice !== undefined && dp.salePrice !== null) {
-                      console.debug('[PatientDeviceCard] display -> salePrice (per-item assumed)', dp.salePrice);
                       return formatCurrency(Number(dp.salePrice));
                     }
 
                     // If only netPayable is available, and quantity>1, derive per-item from netPayable/qty.
                     if (dp.netPayable !== undefined && dp.netPayable !== null) {
                       const perUnitNet = Number(dp.netPayable) / Math.max(1, qty);
-                      console.debug('[PatientDeviceCard] display -> netPayable(perUnit)', perUnitNet, 'qty=', qty);
                       return formatCurrency(perUnitNet);
                     }
 
@@ -299,54 +299,16 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
               {/* SGK Support */}
               {(() => {
                 const dp: any = device as any;
-                // Determine quantity from ear
-                const earVal = (dp.ear || dp.earSide || dp.ear_side || '').toString().toLowerCase();
-                const qty = (earVal.startsWith('b') || earVal === 'both' || earVal === 'bilateral') ? 2 : 1;
-
-                // Prefer explicit per-item SGK if present
-                const explicitPerItemSgk = dp.sgkSupportPerItem ?? dp.sgk_support_per_item ?? dp.perItem?.sgk_support ?? null;
-                if (explicitPerItemSgk !== null && explicitPerItemSgk !== undefined) {
-                  return (
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400">SGK Desteği:</span>
-                      <p className="font-medium text-green-600 dark:text-green-400">{formatCurrency(explicitPerItemSgk)}</p>
-                    </div>
-                  );
-                }
-
-                // Fallback: take available SGK fields. The backend sometimes returns either
-                //  - total SGK for the assignment (for bilateral assignments), or
-                //  - per-item SGK already. We must detect which one we have and avoid
-                //  dividing a per-item value by the quantity (causing half values).
+                
+                // Backend stores sgkSupport as per-item (per-ear) value
+                // So we should display it directly without any division
                 const rawSgk = dp.sgkSupport ?? dp.sgk_support ?? dp.sgkReduction ?? dp.sgk_coverage_amount ?? null;
-                if (rawSgk !== null && rawSgk !== undefined) {
-                  const rawSgkNum = Number(rawSgk);
-                  console.log('[PatientDeviceCard] deviceId=', dp.id || dp.assignmentId || dp.deviceId, 'ear=', earVal, 'rawSgk=', rawSgkNum, 'qty=', qty);
-                  let perUnit: number;
-
-                  if (qty > 1) {
-                    // Try to detect whether rawSgk is a total (needs division) or already per-item.
-                    // Heuristic: if rawSgk is larger than the per-item sale/list price, it's likely a total.
-                    const compareBase = Number(dp.salePrice ?? dp.sale_price ?? dp.listPrice ?? dp.list_price ?? dp.netPayable ?? dp.net_payable ?? 0);
-                    console.log('[PatientDeviceCard] compareBase=', compareBase);
-                    if (compareBase > 0 && rawSgkNum > compareBase * 1.1) {
-                      // rawSgk appears to be a total across both ears -> divide
-                      perUnit = rawSgkNum / qty;
-                      console.log('[PatientDeviceCard] rawSgk looks like total; dividing -> perUnit=', perUnit);
-                    } else {
-                      // rawSgk looks like it's already a per-item amount -> use as-is
-                      perUnit = rawSgkNum;
-                      console.log('[PatientDeviceCard] rawSgk looks like per-item; using as-is -> perUnit=', perUnit);
-                    }
-                  } else {
-                    perUnit = rawSgkNum;
-                    console.log('[PatientDeviceCard] qty=1; perUnit=', perUnit);
-                  }
-
+                
+                if (rawSgk !== null && rawSgk !== undefined && Number(rawSgk) > 0) {
                   return (
                     <div>
                       <span className="text-gray-500 dark:text-gray-400">SGK Desteği:</span>
-                      <p className="font-medium text-green-600 dark:text-green-400">{formatCurrency(perUnit)}</p>
+                      <p className="font-medium text-green-600 dark:text-green-400">{formatCurrency(Number(rawSgk))}</p>
                     </div>
                   );
                 }
@@ -384,10 +346,11 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
                   <div>
                     <span className="text-purple-800 dark:text-purple-300 font-semibold block mb-1">Emanet Cihaz Verildi:</span>
                     <p className="text-purple-700 dark:text-purple-400">
-                      {(device as any).loanerBrand} {(device as any).loanerModel}
+                      {(device as any).loanerBrand || 'Bilinmiyor'} {(device as any).loanerModel || ''}
                       {(() => {
                         const dp: any = device as any;
-                        const side = (dp.earSide || dp.ear || '').toLowerCase();
+                        // Use displaySide prop first, then fallback to device ear
+                        const side = (displaySide || dp.earSide || dp.ear || '').toLowerCase();
                         const isRight = side === 'right' || side === 'r' || side === 'sağ';
                         const isLeft = side === 'left' || side === 'l' || side === 'sol';
 

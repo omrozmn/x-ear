@@ -14,7 +14,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { isAuthenticated, isLoading, initializeAuth, logout, clearAuth } = useAuthStore();
   const [isInitializing, setIsInitializing] = React.useState(true);
 
-  console.log('AuthProvider render - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
+  // Debug logging disabled to reduce console noise
+  // console.log('AuthProvider render - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
 
 
   useEffect(() => {
@@ -31,7 +32,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Only show loading screen during initialization, not during login/forgot-password
   if (isInitializing) {
-    console.log('AuthProvider: Showing loading screen');
+    // console.log('AuthProvider: Showing loading screen');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -45,9 +46,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // SECURITY FIX: If user is on forgot-password page, force logout and render forgot-password page directly
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
   if (currentPath === '/forgot-password') {
-    console.log('AuthProvider: On forgot-password page');
+    // console.log('AuthProvider: On forgot-password page');
     if (isAuthenticated) {
-      console.log('AuthProvider: User is authenticated, forcing logout for security');
+      // console.log('AuthProvider: User is authenticated, forcing logout for security');
       // Use TokenManager to clear tokens (single source of truth)
       tokenManager.clearTokens();
       clearAuth();
@@ -55,16 +56,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       window.location.reload();
     }
     // Render ForgotPasswordPage directly (no MainLayout)
-    console.log('AuthProvider: Rendering ForgotPasswordPage');
+    // console.log('AuthProvider: Rendering ForgotPasswordPage');
     return <ForgotPasswordPage />;
   }
 
 
   if (!isAuthenticated) {
-    console.log('AuthProvider: Showing login form');
+    // console.log('AuthProvider: Showing login form');
     return <LoginForm />;
   }
 
-  console.log('AuthProvider: Rendering children (MainLayout)');
+  // console.log('AuthProvider: Rendering children (MainLayout)');
   return <>{children}</>;
 };

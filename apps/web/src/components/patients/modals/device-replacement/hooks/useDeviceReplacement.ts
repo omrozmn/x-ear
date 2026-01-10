@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { listInventory } from '@/api/generated';
 import type { InventoryItem } from '@/types/inventory';
 import type { ReplacementFormData, ReplacementFormState, Device } from '../types';
 
@@ -44,61 +45,36 @@ export const useDeviceReplacement = (isOpen: boolean) => {
 
   const loadInventoryItems = async () => {
     try {
-      // Mock inventory data - replace with actual API call
-      const mockInventory: InventoryItem[] = [
-        {
-          id: 'INV-001',
-          name: 'Phonak Audéo Paradise P90-R',
-          brand: 'Phonak',
-          model: 'Audéo Paradise P90-R',
-          category: 'hearing_aid',
-          price: 15000,
-          availableInventory: 5,
-          totalInventory: 5,
-          usedInventory: 0,
-          reorderLevel: 2,
-          availableSerials: ['PH001', 'PH002', 'PH003'],
-          barcode: '1234567890123',
-          createdAt: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'INV-002',
-          name: 'Oticon More 1',
-          brand: 'Oticon',
-          model: 'More 1',
-          category: 'hearing_aid',
-          price: 18000,
-          availableInventory: 3,
-          totalInventory: 3,
-          usedInventory: 0,
-          reorderLevel: 2,
-          availableSerials: ['OT001', 'OT002'],
-          barcode: '1234567890124',
-          createdAt: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: 'INV-003',
-          name: 'Signia Pure Charge&Go AX',
-          brand: 'Signia',
-          model: 'Pure Charge&Go AX',
-          category: 'hearing_aid',
-          price: 16500,
-          availableInventory: 7,
-          totalInventory: 7,
-          usedInventory: 0,
-          reorderLevel: 2,
-          availableSerials: ['SG001', 'SG002', 'SG003', 'SG004'],
-          barcode: '1234567890125',
-          createdAt: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        }
-      ];
-      setState(prev => ({ ...prev, inventoryItems: mockInventory }));
+      setState(prev => ({ ...prev, isLoading: true }));
+      
+      const response = await listInventory({ page: 1, per_page: 100 });
+      const items = response?.data || [];
+      
+      // Map backend response to InventoryItem type
+      const mappedItems: InventoryItem[] = items.map((item: any) => ({
+        id: item.id,
+        name: `${item.brand || ''} ${item.model || ''}`.trim() || item.name || 'Bilinmeyen',
+        brand: item.brand || '',
+        model: item.model || '',
+        category: item.category || item.deviceType || 'hearing_aid',
+        price: item.listPrice || item.price || 0,
+        availableInventory: item.availableInventory ?? item.quantity ?? 0,
+        totalInventory: item.totalInventory ?? item.quantity ?? 0,
+        usedInventory: item.usedInventory ?? 0,
+        reorderLevel: item.reorderLevel ?? 2,
+        availableSerials: item.availableSerials || [],
+        barcode: item.barcode || '',
+        createdAt: item.createdAt || new Date().toISOString(),
+        lastUpdated: item.updatedAt || item.lastUpdated || new Date().toISOString()
+      }));
+      
+      // Filter only items with available stock
+      const availableItems = mappedItems.filter(item => item.availableInventory > 0);
+      
+      setState(prev => ({ ...prev, inventoryItems: availableItems, isLoading: false }));
     } catch (error) {
       console.error('Error loading inventory:', error);
-      setState(prev => ({ ...prev, error: 'Envanter yüklenirken hata oluştu' }));
+      setState(prev => ({ ...prev, error: 'Envanter yüklenirken hata oluştu', isLoading: false }));
     }
   };
 

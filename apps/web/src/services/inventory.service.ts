@@ -692,6 +692,20 @@ export class InventoryService {
     });
     return Array.from(suppliers).sort();
   }
+  async getUnits(): Promise<string[]> {
+    try {
+      // Use Orval mutator for auth
+      const { customInstance } = await import('../api/orval-mutator');
+      const response = await customInstance<{ data: { units: string[] } }>({
+        url: '/api/inventory/units',
+        method: 'GET'
+      });
+      return response.data?.units || [];
+    } catch (error) {
+      console.warn('Failed to fetch units, using defaults:', error);
+      return ['adet', 'kutu', 'paket', 'set'];
+    }
+  }
 }
 
 // Export singleton instance

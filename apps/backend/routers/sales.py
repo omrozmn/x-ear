@@ -1,5 +1,6 @@
 import logging
 import json
+import os
 from typing import List, Optional, Dict, Any, Union
 from datetime import datetime
 from uuid import uuid4
@@ -14,13 +15,16 @@ from models.sales import Sale, DeviceAssignment, PaymentPlan, PaymentRecord, Pay
 from models.patient import Patient
 from models.inventory import InventoryItem
 from models.invoice import Invoice
+from services.stock_service import create_stock_movement
+from services.device_assignment_service import DeviceAssignmentService
 
 from schemas.sales import (
     SaleRead, SaleCreate, SaleUpdate, 
     PaymentRecordRead, PaymentRecordCreate, 
     PaymentPlanRead, PaymentPlanCreate,
     DeviceAssignmentRead, DeviceAssignmentUpdate,
-    DeviceAssignmentCreate, DeviceAssignmentCreateResponse
+    DeviceAssignmentCreate, DeviceAssignmentCreateResponse,
+    SaleRecalcRequest, SaleRecalcResponse
 )
 from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
@@ -235,7 +239,7 @@ def record_sale_payment(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
-    access.require_resource_permission("sales", "write") # Assume write permission
+    access.require_permission("sales:write") # Assume write permission
     
     sale = get_sale_or_404(db, sale_id, access)
     
@@ -371,7 +375,7 @@ def create_sale(
     access: UnifiedAccess = Depends(require_access())
 ):
     """Create a new sale."""
-    access.require_resource_permission("sales", "create")
+    access.require_permission("sales:create")
     
     # 1. Validate Patient
     patient = db.get(Patient, sale_in.patient_id)
@@ -474,7 +478,7 @@ def create_sale(
     # 6. Update Inventory
     # Should decrease by quantity? Sales usually 1 unless bulk?
     # Monolithic logic was -1 or raw update.
-    _update_inventory_stock(db, product, 1, sale.id, access.principal_id)
+    _update_inventory_stock(db, product, 1, sale.id, access.user_id)
     
     db.commit()
 
@@ -494,7 +498,7 @@ def update_sale(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
-    access.require_resource_permission("sales", "write")
+    access.require_permission("sales:write")
     
     sale = get_sale_or_404(db, sale_id, access)
     
@@ -514,6 +518,117 @@ def update_sale(
 
     return ResponseEnvelope(data=sale.to_dict(), message="Sale updated")
 
+@router.post("/sales/recalc", operation_id="recalcSales", response_model=ResponseEnvelope[SaleRecalcResponse])
+def recalc_sales(
+    payload: SaleRecalcRequest,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Recalculate SGK and patient payment amounts for sales."""
+    from services.pricing import calculate_device_pricing
+    
+    # Get settings
+    settings = _get_settings(db, access.tenant_id)
+    
+    # Filter sales
+    query = db.query(Sale)
+    if access.tenant_id:
+        query = query.filter(Sale.tenant_id == access.tenant_id)
+        
+    if payload.sale_id:
+        query = query.filter(Sale.id == payload.sale_id)
+        
+    if payload.patient_id:
+        query = query.filter(Sale.patient_id == payload.patient_id)
+        
+    query = query.order_by(desc(Sale.sale_date))
+    
+    if payload.limit:
+        sales = query.limit(payload.limit).all()
+    else:
+        sales = query.all()
+        
+    updated = 0
+    processed = 0
+    errors = []
+    
+    for s in sales:
+        processed += 1
+        try:
+            # Get Assignments
+            assignments = db.query(DeviceAssignment).filter(DeviceAssignment.sale_id == s.id).all()
+            
+            # Legacy link check
+            if not assignments:
+                 linked_ids = [lid for lid in [s.right_ear_assignment_id, s.left_ear_assignment_id] if lid]
+                 if linked_ids:
+                     assignments = db.query(DeviceAssignment).filter(DeviceAssignment.id.in_(linked_ids)).all()
+            
+            if not assignments:
+                continue
+                
+            # Prepare payload for calculation
+            device_assignments_payload = []
+            sgk_scheme = None
+            
+            for a in assignments:
+                # Determine SGK scheme
+                if not sgk_scheme and a.sgk_scheme:
+                    sgk_scheme = a.sgk_scheme
+                    
+                device_assignments_payload.append({
+                    'device_id': a.device_id,
+                    'inventoryId': a.inventory_id,
+                    'base_price': float(a.list_price or 0),
+                    'discount_type': a.discount_type,
+                    'discount_value': float(a.discount_value or 0),
+                    'sgk_scheme': a.sgk_scheme,
+                    'ear': a.ear
+                })
+                
+            if not sgk_scheme:
+                sgk_scheme = settings.get('sgk', {}).get('default_scheme', 'standard')
+                
+            # Calculate
+            pricing_calc = calculate_device_pricing(
+                device_assignments=device_assignments_payload,
+                accessories=[],
+                services=[],
+                sgk_scheme=sgk_scheme,
+                settings=settings
+            )
+            
+            # Update Sale
+            s.list_price_total = Decimal(str(pricing_calc.get('total_amount', 0)))
+            s.total_amount = Decimal(str(pricing_calc.get('total_amount', 0)))
+            s.discount_amount = Decimal(str(pricing_calc.get('total_discount', 0)))
+            s.final_amount = Decimal(str(pricing_calc.get('sale_price_total', 0)))
+            s.sgk_coverage = Decimal(str(pricing_calc.get('sgk_coverage_amount', 0)))
+            s.patient_payment = Decimal(str(pricing_calc.get('patient_responsible_amount', 0)))
+            
+            db.add(s)
+            updated += 1
+            
+        except Exception as e:
+            errors.append({'saleId': s.id, 'error': str(e)})
+            logger.error(f"Error recalculating sale {s.id}: {e}")
+            
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Commit failed: {e}")
+        
+    return ResponseEnvelope(
+        data=SaleRecalcResponse(
+            success=True,
+            updated=updated,
+            processed=processed,
+            errors=errors,
+            timestamp=datetime.utcnow()
+        )
+    )
+
 
 # ============= DEVICE ASSIGNMENT ENDPOINTS =============
 
@@ -521,10 +636,14 @@ def _get_settings(db: Session, tenant_id: str = None) -> Dict[str, Any]:
     """Load pricing settings from database or return defaults."""
     # Try to load from settings table if exists
     try:
-        from models.settings import Settings
-        settings_record = db.query(Settings).filter_by(tenant_id=tenant_id).first()
-        if settings_record and settings_record.data:
-            return settings_record.data
+        from models.system import Settings
+        # Settings is currently system-wide
+        settings_record = db.get(Settings, 'system_settings')
+        if not settings_record:
+            settings_record = db.query(Settings).first()
+            
+        if settings_record and settings_record.settings_json:
+            return settings_record.settings_json
     except Exception:
         pass
     
@@ -745,7 +864,7 @@ def create_device_assignments(
     """
     from services.pricing import calculate_device_pricing, create_payment_plan
     
-    access.require_resource_permission("sales", "create")
+    access.require_permission("sales:create")
     
     # Validate patient
     patient = db.get(Patient, patient_id)
@@ -833,7 +952,7 @@ def create_device_assignments(
             index=i,
             tenant_id=tenant_id,
             branch_id=branch_id,
-            created_by=access.principal_id
+            created_by=access.user_id
         )
         
         if error:
@@ -894,8 +1013,25 @@ def update_device_assignment(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
-    """Update a device assignment."""
-    access.require_resource_permission("sales", "write")
+    """
+    Update a device assignment with full legacy logic:
+    - Pricing recalculation when base_price, discount, sgk_scheme change
+    - Sale totals sync after updates
+    - Delivery status change handling (stock deduction when changed to 'delivered')
+    - Report status updates
+    - Loaner device management (add/remove/swap loaner with stock tracking)
+    - Serial number updates
+    - Down payment sync to PaymentRecord
+    - Status cancellation with stock return
+    """
+    from services.device_assignment_service import (
+        ensure_loaner_serials_in_inventory,
+        load_sgk_amounts,
+        recalculate_assignment_pricing,
+        sync_sale_totals
+    )
+    
+    access.require_permission("sales:write")
     
     assignment = db.get(DeviceAssignment, assignment_id)
     if not assignment:
@@ -913,13 +1049,433 @@ def update_device_assignment(
                 detail=ApiError(message="Access denied", code="FORBIDDEN").model_dump(mode="json"),
             )
     
-    # Update fields
-    update_data = updates.model_dump(exclude_unset=True, by_alias=False)
-    for field, value in update_data.items():
-        if hasattr(assignment, field) and value is not None:
-            setattr(assignment, field, value)
+    # Convert Pydantic model to dict for easier processing
+    data = updates.model_dump(exclude_unset=True, by_alias=False)
+    logger.info(f"📝 UPDATE DEVICE {assignment_id} PAYLOAD: {json.dumps(data, default=str)}")
     
+    # Initialize defaults for bilateral logic
+    initial_ear_val = str(assignment.ear or '').upper()
+    quantity = 2 if initial_ear_val in ['B', 'BOTH', 'BILATERAL'] else 1
+    
+    # ==================== STATUS HANDLING (CANCEL/RETURN) ====================
+    if 'status' in data:
+        status_val = data['status']
+        assignment.notes = (assignment.notes or '') + f"\n[İptal edildi: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}]"
+        
+        # Stock Return Logic
+        if status_val in ['cancelled', 'returned'] and assignment.inventory_id:
+            inv_item = db.get(InventoryItem, assignment.inventory_id)
+            if inv_item:
+                # Decide if serial or quantity
+                serial_to_restore = assignment.serial_number or assignment.serial_number_left or assignment.serial_number_right
+                
+                restored = False
+                if serial_to_restore:
+                    restored = inv_item.add_serial_number(serial_to_restore)
+                else:
+                    # Quantity
+                    ear_val = str(assignment.ear or '').lower()
+                    qty = 2 if (ear_val.startswith('b') or ear_val in ['both', 'bilateral']) else 1
+                    restored = inv_item.update_inventory(qty)
+                
+                if restored:
+                    create_stock_movement(
+                        inventory_id=inv_item.id,
+                        movement_type="return",
+                        quantity=1 if serial_to_restore else qty,
+                        tenant_id=inv_item.tenant_id,
+                        serial_number=serial_to_restore,
+                        transaction_id=assignment.sale_id or assignment.id,
+                        created_by=data.get('user_id', 'system'),
+                        session=db
+                    )
+    
+    # ==================== BASIC FIELD UPDATES ====================
+    if 'ear_side' in data:
+        assignment.ear = data['ear_side']
+    
+    if 'reason' in data:
+        assignment.reason = data['reason']
+    
+    if 'device_id' in data:
+        assignment.device_id = data['device_id']
+    
+    if 'inventory_id' in data:
+        assignment.inventory_id = data['inventory_id']
+    
+    # Update pricing fields
+    if 'base_price' in data:
+        assignment.list_price = data['base_price']
+    
+    if 'discount_type' in data:
+        assignment.discount_type = data['discount_type']
+    
+    if 'discount_value' in data:
+        assignment.discount_value = data['discount_value']
+    
+    if 'payment_method' in data:
+        assignment.payment_method = data['payment_method']
+    
+    if 'notes' in data:
+        assignment.notes = data['notes']
+    
+    if 'sgk_scheme' in data:
+        assignment.sgk_scheme = data['sgk_scheme']
+    elif 'sgkSupportType' in data:
+        assignment.sgk_scheme = data['sgkSupportType']
+    
+    # ==================== PRICING RECALCULATION ====================
+    # Simple check: if any pricing field is in the request, recalculate
+    pricing_fields = ['base_price', 'discount_type', 'discount_value', 'sgk_scheme', 'sgkSupportType']
+    should_recalculate = any(key in data for key in pricing_fields)
+    
+    logger.info(f"🔢 Pricing recalculation check: {should_recalculate}, data keys: {list(data.keys())}")
+    
+    # Check for explicit pricing overrides
+    explicit_sale_price = data.get('sale_price')
+    explicit_patient_payment = data.get('patient_payment')
+    explicit_sgk = data.get('sgk_reduction') or data.get('sgkSupport')
+    
+    if explicit_sale_price is not None or explicit_patient_payment is not None or explicit_sgk is not None:
+        # Apply explicit pricing selectively
+        if explicit_sgk is not None:
+            assignment.sgk_support = Decimal(str(explicit_sgk))
+        
+        if explicit_patient_payment is not None:
+            assignment.net_payable = Decimal(str(explicit_patient_payment))
+        
+        if explicit_sale_price is not None:
+            assignment.sale_price = Decimal(str(explicit_sale_price))
+        
+        logger.info(f"✅ Selectively applied explicit pricing: sale_price={explicit_sale_price}, patient_payment={explicit_patient_payment}, sgk={explicit_sgk}")
+    elif should_recalculate:
+        recalculate_assignment_pricing(db, assignment)
+    
+    # ==================== SALE SYNC (DOWN PAYMENT & TOTALS) ====================
+    if assignment.sale_id:
+        try:
+            sale = db.get(Sale, assignment.sale_id)
+            if sale:
+                # Sync down payment
+                if 'down_payment' in data:
+                    try:
+                        down_val = float(data.get('down_payment', 0))
+                        if down_val >= 0:
+                            sale.paid_amount = down_val
+                            
+                            # Create or Update PaymentRecord for Down Payment
+                            payment = db.query(PaymentRecord).filter_by(
+                                sale_id=sale.id, 
+                                payment_type='down_payment'
+                            ).first()
+                            
+                            if payment:
+                                payment.amount = Decimal(str(down_val))
+                                payment.updated_at = datetime.utcnow()
+                                logger.info(f"✅ Updated existing down payment record: {payment.id} -> {down_val}")
+                            else:
+                                if down_val > 0:
+                                    payment = PaymentRecord(
+                                        id=f"pay_{uuid4().hex}",
+                                        tenant_id=sale.tenant_id,
+                                        branch_id=sale.branch_id,
+                                        patient_id=sale.patient_id,
+                                        sale_id=sale.id,
+                                        amount=Decimal(str(down_val)),
+                                        payment_date=datetime.utcnow(),
+                                        payment_method=assignment.payment_method or 'cash',
+                                        payment_type='down_payment',
+                                        status='paid',
+                                        notes='Peşinat (Cihaz Düzenleme)'
+                                    )
+                                    db.add(payment)
+                                    logger.info(f"✅ Created new down payment record for: {down_val}")
+                    except Exception as e:
+                        logger.error(f"Failed to sync down payment: {e}")
+                
+                # Sync sale totals
+                sync_sale_totals(db, sale.id)
+        except Exception as e:
+            logger.warning(f"Failed to sync sale record: {e}")
+    
+    # ==================== SERIAL NUMBER UPDATES ====================
+    if 'serial_number' in data:
+        assignment.serial_number = data['serial_number']
+    
+    if 'serial_number_left' in data:
+        assignment.serial_number_left = data['serial_number_left']
+    
+    if 'serial_number_right' in data:
+        assignment.serial_number_right = data['serial_number_right']
+    
+    # ==================== DELIVERY STATUS HANDLING ====================
+    if 'delivery_status' in data:
+        new_delivery_status = data.get('delivery_status')
+        old_delivery_status = assignment.delivery_status
+        
+        # If changing from pending to delivered, decrease stock
+        if old_delivery_status != 'delivered' and new_delivery_status == 'delivered':
+            if assignment.inventory_id:
+                inv_item = db.get(InventoryItem, assignment.inventory_id)
+                if inv_item:
+                    # Determine quantity based on ear
+                    ear_val = str(assignment.ear or '').upper()
+                    qty = 2 if ear_val in ['B', 'BOTH', 'BILATERAL'] else 1
+                    
+                    # Decrease stock
+                    if not inv_item.update_inventory(-qty, allow_negative=False):
+                        raise HTTPException(
+                            status_code=400,
+                            detail=ApiError(
+                                message=f'Stok yetersiz! Mevcut stok: {inv_item.available_inventory}',
+                                code="INSUFFICIENT_STOCK"
+                            ).model_dump(mode="json"),
+                        )
+                    
+                    create_stock_movement(
+                        inventory_id=inv_item.id,
+                        movement_type="delivery",
+                        quantity=-qty,
+                        tenant_id=inv_item.tenant_id,
+                        serial_number=assignment.serial_number,
+                        transaction_id=assignment.sale_id or assignment.id,
+                        created_by=data.get('user_id', 'system'),
+                        session=db
+                    )
+                    logger.info(f"📦 Delivery status changed to delivered - stock decreased by {qty}")
+        
+        assignment.delivery_status = new_delivery_status
+    
+    # ==================== REPORT STATUS ====================
+    if 'report_status' in data:
+        assignment.report_status = data.get('report_status')
+    
+    # ==================== LOANER DEVICE MANAGEMENT ====================
+    if 'is_loaner' in data:
+        new_is_loaner = data.get('is_loaner')
+        old_is_loaner = assignment.is_loaner
+        
+        # If adding loaner device
+        if not old_is_loaner and new_is_loaner:
+            loaner_inventory_id = data.get('loaner_inventory_id')
+            
+            if loaner_inventory_id:
+                loaner_item = db.get(InventoryItem, loaner_inventory_id)
+                
+                if loaner_item:
+                    # Update assignment with loaner info
+                    assignment.is_loaner = True
+                    assignment.loaner_inventory_id = loaner_item.id
+                    assignment.loaner_brand = loaner_item.brand
+                    assignment.loaner_model = loaner_item.model
+                    
+                    # Determine if bilateral
+                    ear_val = str(assignment.ear or '').lower()
+                    is_bilateral = ear_val in ['both', 'bilateral', 'b']
+                    
+                    if is_bilateral:
+                        assignment.loaner_serial_number_left = data.get('loaner_serial_number_left')
+                        assignment.loaner_serial_number_right = data.get('loaner_serial_number_right')
+                    else:
+                        assignment.loaner_serial_number = data.get('loaner_serial_number')
+                    
+                    # Ensure manual serials are in inventory
+                    ensure_loaner_serials_in_inventory(db, assignment, data.get('user_id', 'system'))
+                    
+                    # Process stock deduction
+                    qty_needed = 2 if is_bilateral else 1
+                    
+                    serials_to_process = []
+                    if is_bilateral:
+                        if assignment.loaner_serial_number_left:
+                            serials_to_process.append(assignment.loaner_serial_number_left)
+                        if assignment.loaner_serial_number_right:
+                            serials_to_process.append(assignment.loaner_serial_number_right)
+                    else:
+                        if assignment.loaner_serial_number:
+                            serials_to_process.append(assignment.loaner_serial_number)
+                    
+                    # Deduct based on serials first
+                    deducted_count = 0
+                    consumed_serials = []
+                    for s in serials_to_process:
+                        if s and loaner_item.remove_serial_number(s):
+                            deducted_count += 1
+                            consumed_serials.append(s)
+                    
+                    # Deduct remaining count from anonymous stock
+                    remaining_to_deduct = qty_needed - deducted_count
+                    if remaining_to_deduct > 0:
+                        loaner_item.update_inventory(-remaining_to_deduct, allow_negative=True)
+                    
+                    # Log movement
+                    create_stock_movement(
+                        inventory_id=loaner_item.id,
+                        movement_type="loaner_out",
+                        quantity=-qty_needed,
+                        tenant_id=loaner_item.tenant_id,
+                        serial_number=",".join(consumed_serials) if consumed_serials else None,
+                        transaction_id=assignment.id,
+                        created_by=data.get('user_id', 'system'),
+                        session=db
+                    )
+                    logger.info(f"🔄 Loaner device assigned: {loaner_item.name} (Bilateral: {is_bilateral}, Qty: {qty_needed})")
+            else:
+                # Manual assignment without inventory link
+                assignment.is_loaner = True
+        
+        # If removing loaner device (returning to stock)
+        elif old_is_loaner and not new_is_loaner:
+            if assignment.loaner_inventory_id:
+                loaner_item = db.get(InventoryItem, assignment.loaner_inventory_id)
+                
+                if loaner_item:
+                    # Determine qty
+                    ear_val = str(assignment.ear or '').lower()
+                    qty = 2 if ear_val in ['both', 'bilateral', 'b'] else 1
+                    
+                    # Return loaner to stock
+                    loaner_item.update_inventory(qty)
+                    
+                    create_stock_movement(
+                        inventory_id=loaner_item.id,
+                        movement_type="loaner_return",
+                        quantity=qty,
+                        tenant_id=loaner_item.tenant_id,
+                        serial_number=assignment.loaner_serial_number,
+                        transaction_id=assignment.id,
+                        created_by=data.get('user_id', 'system'),
+                        session=db
+                    )
+                    
+                    logger.info(f"↩️ Loaner device returned to stock: {loaner_item.brand} {loaner_item.model}")
+            
+            # Clear loaner fields
+            assignment.is_loaner = False
+            assignment.loaner_inventory_id = None
+            assignment.loaner_serial_number = None
+            assignment.loaner_serial_number_left = None
+            assignment.loaner_serial_number_right = None
+            assignment.loaner_brand = None
+            assignment.loaner_model = None
+    
+    # ==================== LOANER SWAP / FIELD UPDATES ====================
+    if assignment.is_loaner:
+        new_loaner_inventory_id = data.get('loaner_inventory_id')
+        if new_loaner_inventory_id:
+            old_loaner_inventory_id = assignment.loaner_inventory_id
+            
+            # Only process swap if loaner is actually changing
+            if old_loaner_inventory_id and old_loaner_inventory_id != new_loaner_inventory_id:
+                # 1. Return OLD loaner to stock
+                old_loaner = db.get(InventoryItem, old_loaner_inventory_id)
+                if old_loaner:
+                    ear_val = str(assignment.ear or '').lower()
+                    qty = 2 if ear_val in ['both', 'bilateral', 'b'] else 1
+                    
+                    # Get OLD serial numbers
+                    old_serials = []
+                    if ear_val in ['both', 'bilateral', 'b']:
+                        if assignment.loaner_serial_number_left:
+                            old_serials.append(assignment.loaner_serial_number_left)
+                            old_loaner.add_serial_number(assignment.loaner_serial_number_left)
+                        if assignment.loaner_serial_number_right:
+                            old_serials.append(assignment.loaner_serial_number_right)
+                            old_loaner.add_serial_number(assignment.loaner_serial_number_right)
+                    else:
+                        if assignment.loaner_serial_number:
+                            old_serials.append(assignment.loaner_serial_number)
+                            old_loaner.add_serial_number(assignment.loaner_serial_number)
+                    
+                    # If no serials, just add quantity back
+                    if not old_serials:
+                        old_loaner.update_inventory(qty)
+                    
+                    create_stock_movement(
+                        inventory_id=old_loaner.id,
+                        movement_type="loaner_return",
+                        quantity=qty,
+                        tenant_id=old_loaner.tenant_id,
+                        serial_number=",".join(old_serials) if old_serials else None,
+                        transaction_id=assignment.id,
+                        created_by=data.get('user_id', 'system'),
+                        session=db
+                    )
+                    logger.info(f"↩️ OLD loaner returned to stock: {old_loaner.name} (qty={qty}, serials={old_serials})")
+                
+                # 2. Deduct NEW loaner from stock
+                new_loaner = db.get(InventoryItem, new_loaner_inventory_id)
+                if new_loaner:
+                    ear_val = str(assignment.ear or '').lower()
+                    qty = 2 if ear_val in ['both', 'bilateral', 'b'] else 1
+                    
+                    # Get NEW serial numbers from request data
+                    new_serials = []
+                    if ear_val in ['both', 'bilateral', 'b']:
+                        new_left = data.get('loaner_serial_number_left')
+                        new_right = data.get('loaner_serial_number_right')
+                        if new_left:
+                            new_serials.append(new_left)
+                            new_loaner.remove_serial_number(new_left)
+                        if new_right:
+                            new_serials.append(new_right)
+                            new_loaner.remove_serial_number(new_right)
+                    else:
+                        new_sn = data.get('loaner_serial_number')
+                        if new_sn:
+                            new_serials.append(new_sn)
+                            new_loaner.remove_serial_number(new_sn)
+                    
+                    # If no serials consumed, deduct quantity
+                    remaining = qty - len(new_serials)
+                    if remaining > 0:
+                        new_loaner.update_inventory(-remaining, allow_negative=True)
+                    
+                    create_stock_movement(
+                        inventory_id=new_loaner.id,
+                        movement_type="loaner_out",
+                        quantity=-qty,
+                        tenant_id=new_loaner.tenant_id,
+                        serial_number=",".join(new_serials) if new_serials else None,
+                        transaction_id=assignment.id,
+                        created_by=data.get('user_id', 'system'),
+                        session=db
+                    )
+                    
+                    # Update assignment with new loaner info
+                    assignment.loaner_inventory_id = new_loaner_inventory_id
+                    assignment.loaner_brand = new_loaner.brand
+                    assignment.loaner_model = new_loaner.model
+                    logger.info(f"📦 NEW loaner assigned: {new_loaner.name} (qty={qty}, serials={new_serials})")
+            
+            elif not old_loaner_inventory_id:
+                # First time setting loaner_inventory_id on existing loaner
+                assignment.loaner_inventory_id = new_loaner_inventory_id
+        
+        # Update individual loaner fields (after swap is processed)
+        if 'loaner_serial_number' in data:
+            assignment.loaner_serial_number = data['loaner_serial_number']
+        
+        if 'loaner_brand' in data:
+            assignment.loaner_brand = data['loaner_brand']
+        
+        if 'loaner_model' in data:
+            assignment.loaner_model = data['loaner_model']
+        
+        if 'loaner_serial_number_left' in data:
+            assignment.loaner_serial_number_left = data['loaner_serial_number_left']
+        
+        if 'loaner_serial_number_right' in data:
+            assignment.loaner_serial_number_right = data['loaner_serial_number_right']
+        
+        # Ensure manual serials are in inventory if changed
+        if assignment.loaner_inventory_id:
+            ensure_loaner_serials_in_inventory(db, assignment, data.get('user_id', 'system'))
+    
+    # ==================== FINALIZE ====================
     assignment.updated_at = datetime.utcnow()
+    
+    logger.info(f"💾 COMMITTING UPDATE {assignment_id}: Report={assignment.report_status}, Delivery={assignment.delivery_status}, Loaner={assignment.is_loaner}")
     db.commit()
     
     return ResponseEnvelope(
@@ -937,7 +1493,7 @@ def return_loaner_to_stock(
     """Return a loaner device to stock."""
     from services.stock_service import create_stock_movement
     
-    access.require_resource_permission("sales", "write")
+    access.require_permission("sales:write")
     
     assignment = db.get(DeviceAssignment, assignment_id)
     if not assignment:
@@ -995,7 +1551,7 @@ def return_loaner_to_stock(
         tenant_id=loaner_item.tenant_id,
         serial_number=','.join(loaner_serials) if loaner_serials else None,
         transaction_id=assignment.id,
-        created_by=access.principal_id,
+        created_by=access.user_id,
         session=db
     )
     

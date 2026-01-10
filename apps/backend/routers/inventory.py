@@ -247,6 +247,27 @@ def get_low_stock(
     items = query.filter(InventoryItem.available_inventory <= InventoryItem.reorder_level).all()
     return ResponseEnvelope(data=[item.to_dict() for item in items])
 
+@router.get("/inventory/units", operation_id="listInventoryUnits", response_model=ResponseEnvelope[Dict[str, List[str]]])
+def get_units(
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db)
+):
+    """Get available units"""
+    from models.inventory import UNIT_TYPES
+    return ResponseEnvelope(data={"units": UNIT_TYPES})
+
+@router.get("/inventory/{item_id}/activity", operation_id="listInventoryActivity", response_model=ResponseEnvelope[List[Dict[str, Any]]])
+def get_inventory_activities(
+    item_id: str,
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db)
+):
+    """Get inventory item activity log"""
+    item = get_inventory_or_404(db, item_id, access)
+    # Placeholder for activity log implementation
+    # Future: fetch from ActivityLog where entity_id=item_id
+    return ResponseEnvelope(data=[])
+
 @router.post("/inventory", operation_id="createInventory", response_model=ResponseEnvelope[InventoryItemRead], status_code=201)
 def create_inventory(
     item_in: InventoryItemCreate,
@@ -370,17 +391,17 @@ def get_movements(
          except (ValueError, TypeError): pass
     if type: query = query.filter(StockMovement.movement_type == type)
     
-    pagination = query.order_by(StockMovement.created_at.desc()).paginate(page=page, per_page=limit, error_out=False)
     
-    # Enrich logic is simpler in frontend if we return just movement data? 
-    # Or strict schema? Let's return to_dict() equivalent for safety.
-    results = [m.to_dict() for m in pagination.items]
+    total = query.count()
+    movements = query.order_by(StockMovement.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+    
+    results = [m.to_dict() for m in movements]
     
     return ResponseEnvelope(
         data=results,
         meta={
             "page": page,
             "per_page": limit,
-            "total": pagination.total
+            "total": total
         }
     )

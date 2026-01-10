@@ -1,7 +1,7 @@
 """
 Invoice Schemas - Pydantic models for Invoice domain
 """
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Dict
 from datetime import datetime
 from enum import Enum
 from pydantic import Field
@@ -115,6 +115,50 @@ class InvoiceRead(AppBaseModel, TimestampMixin):
     birfatura_sent_at: Optional[str] = Field(None, alias="birfaturaSentAt")
     birfatura_approved_at: Optional[str] = Field(None, alias="birfaturaApprovedAt")
 
+
+
+class BatchInvoiceGenerateRequest(AppBaseModel):
+    saleIds: List[str] = Field(..., alias="saleIds")
+    invoice_type: Optional[str] = Field("standard", alias="invoiceType")
+    customer_info: Optional[Dict[str, Any]] = Field(None, alias="customerInfo")
+
+class BulkUploadResponse(AppBaseModel):
+    success: bool
+    created: int
+    updated: int
+    errors: List[Dict[str, Any]]
+    request_id: Optional[str] = Field(None, alias="requestId")
+    timestamp: Optional[datetime] = None
+
+class InvoiceTemplate(AppBaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    fields: List[str]
+    is_default: bool = Field(False, alias="isDefault")
+    is_custom: bool = Field(False, alias="isCustom")
+    created_at: Optional[datetime] = Field(None, alias="createdAt")
+    created_by: Optional[str] = Field(None, alias="createdBy")
+
+class InvoicePrintQueueItem(AppBaseModel):
+    id: int
+    invoice_number: Optional[str] = Field(None, alias="invoiceNumber")
+    patient_name: Optional[str] = Field(None, alias="patientName")
+    amount: Optional[Any] = None
+    queued_at: Optional[str] = Field(None, alias="queuedAt")
+    priority: str = "normal"
+    copies: int = 1
+    status: Optional[str] = None
+
+class InvoiceAddToQueueRequest(AppBaseModel):
+    invoice_ids: List[int] = Field(..., alias="invoiceIds")
+    priority: Optional[str] = "normal"
+    copies: Optional[int] = 1
+
+class InvoicePrintQueueResponse(AppBaseModel):
+    items: List[InvoicePrintQueueItem]
+    total: int
+    status: str
 
 # Type aliases for frontend compatibility
 Invoice = InvoiceRead

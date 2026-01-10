@@ -276,7 +276,8 @@ export default function PatientSalesTab({ patient }: PatientSalesTabProps) {
   // Listen for data change events from other tabs (like Device updates)
   useEffect(() => {
     const handleDataChange = () => {
-      console.log('🔄 [PatientSalesTab] Received xEar:dataChanged event, reloading sales...');
+      // Debug logging disabled to reduce console noise
+      // console.log('🔄 [PatientSalesTab] Received xEar:dataChanged event, reloading sales...');
       loadPatientSales();
     };
 

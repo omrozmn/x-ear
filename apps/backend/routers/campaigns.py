@@ -10,8 +10,10 @@ from sqlalchemy.orm import Session
 import logging
 
 from schemas.base import ResponseEnvelope, ApiError
-from schemas.campaigns import CampaignCreate, CampaignUpdate, CampaignRead
-from models.campaign import Campaign as CampaignModel
+from schemas.campaigns import CampaignCreate, CampaignUpdate, CampaignRead, CampaignSendRequest
+from models.campaign import Campaign as CampaignModel, SMSLog
+from models.sms_integration import SMSProviderConfig, TenantSMSCredit
+from services.sms_service import VatanSMSService
 from models.patient import Patient
 
 from middleware.unified_access import UnifiedAccess, require_access
@@ -200,6 +202,121 @@ def delete_campaign(
     except Exception as e:
         db.rollback()
         logger.error(f"Delete campaign error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/campaigns/{campaign_id}/send", operation_id="sendCampaign")
+def send_campaign(
+    campaign_id: str,
+    payload: CampaignSendRequest,
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db)
+):
+    """Send a campaign via SMS"""
+    try:
+        if not access.tenant_id:
+             raise HTTPException(status_code=400, detail="Tenant context required")
+             
+        camp = db.get(CampaignModel, campaign_id)
+        if not camp:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+            
+        if camp.tenant_id != access.tenant_id:
+            raise HTTPException(status_code=403, detail="Unauthorized")
+            
+        if camp.status in ['sending', 'sent']:
+            raise HTTPException(status_code=400, detail="Campaign already sent")
+            
+        # Check SMS Config
+        config = db.query(SMSProviderConfig).filter_by(tenant_id=access.tenant_id).first()
+        if not config or not config.api_username or not config.api_password:
+             raise HTTPException(status_code=400, detail="SMS configuration missing")
+             
+        # Check Credit (Pre-check)
+        credit = db.query(TenantSMSCredit).filter_by(tenant_id=access.tenant_id).first()
+        if not credit:
+             raise HTTPException(status_code=400, detail="No SMS credit account found")
+             
+        # Resolve Recipients
+        recipients = [] # List of {phone, name, id}
+        
+        if camp.target_segment == 'all':
+            patients = db.query(Patient).filter_by(tenant_id=access.tenant_id).all()
+            recipients = [{'phone': p.phone, 'name': f"{p.first_name} {p.last_name}", 'id': p.id} for p in patients if p.phone]
+        elif camp.target_segment == 'filter':
+            # TODO: Implement complex filtering
+             patients = db.query(Patient).filter_by(tenant_id=access.tenant_id).all()
+             recipients = [{'phone': p.phone, 'name': f"{p.first_name} {p.last_name}", 'id': p.id} for p in patients if p.phone]
+        elif camp.target_segment == 'excel':
+             criteria = camp.target_criteria_json or {}
+             numbers = criteria.get('numbers', [])
+             recipients = [{'phone': n, 'name': '', 'id': None} for n in numbers]
+             
+        if not recipients:
+             raise HTTPException(status_code=400, detail="No valid recipients found")
+             
+        # Credit Check
+        cost = len(recipients)
+        if credit.balance < cost:
+             raise HTTPException(status_code=400, detail="Insufficient SMS credit")
+             
+        # Initialize Service
+        sender_id = payload.sender_id or 'VATANSMS'
+        sms_service = VatanSMSService(config.api_username, config.api_password, sender_id)
+        
+        phones = [r['phone'] for r in recipients]
+        message = camp.message_template
+        
+        # Deduct Credit & Update Status
+        credit.balance -= cost
+        credit.total_used += cost
+        
+        camp.status = 'sending'
+        camp.sent_at = datetime.now(timezone.utc)
+        db.commit()
+        
+        try:
+             # Send SMS
+             # Note: VatanSMS 1toN blocks if large list? Usually async or fast enough.
+             # Ideally background task. Following Flask pattern (sync).
+             response = sms_service.send_sms(phones, message)
+             
+             camp.status = 'sent'
+             camp.successful_sends = len(recipients)
+             camp.actual_cost = cost
+             
+             # Log SMS
+             for r in recipients:
+                 log = SMSLog(
+                     campaign_id=camp.id,
+                     patient_id=r['id'],
+                     tenant_id=access.tenant_id,
+                     phone_number=r['phone'],
+                     message=message,
+                     status='sent',
+                     sent_at=datetime.now(timezone.utc),
+                     cost=1.0
+                 )
+                 db.add(log)
+                 
+             db.commit()
+             
+             return ResponseEnvelope(message="Campaign sent successfully")
+             
+        except Exception as e:
+             logger.error(f"SMS Service failed: {e}")
+             camp.status = 'failed'
+             # Refund credit? Or simplistic fail state?
+             # Flask logic didn't refund explicitly in catch block shown, just set failed.
+             # I'll stick to simple fail state update.
+             db.commit() 
+             raise HTTPException(status_code=500, detail=f"SMS Provider Error: {str(e)}")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Send campaign error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

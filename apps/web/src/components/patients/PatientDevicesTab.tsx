@@ -8,7 +8,8 @@ import {
   createDevices,
   deleteDevice,
   createSales,
-  useCreatePatientReplacements
+  useCreatePatientReplacements,
+  createPatientDeviceAssignments
 } from '@/api/generated';
 import { apiClient } from '@/api/orval-mutator';
 import type {
@@ -43,6 +44,7 @@ type Sale = SaleRead;
 import { DeviceAssignmentForm } from '../forms/device-assignment-form/DeviceAssignmentForm';
 import { PatientDeviceCard } from '../patient/PatientDeviceCard';
 import DeviceReplacementHistory from '../DeviceReplacementHistory';
+import { DeviceReplacementModal } from './modals/DeviceReplacementModal';
 import { usePatientDevices } from '../../hooks/patient/usePatientDevices';
 
 interface PatientDevicesTabProps {
@@ -59,7 +61,9 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
 
   const [showDeviceForm, setShowDeviceForm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showReplacementModal, setShowReplacementModal] = useState(false);
   const [editingDevice, setEditingDevice] = useState<DeviceRead | null>(null);
+  const [replacingDevice, setReplacingDevice] = useState<DeviceRead | null>(null);
   const [rightEarMode, setRightEarMode] = useState<'inventory' | 'manual'>('inventory');
   const [leftEarMode, setLeftEarMode] = useState<'inventory' | 'manual'>('manual');
   const [rightEarReason, setRightEarReason] = useState<'Trial' | 'Sale'>('Trial');
@@ -68,6 +72,23 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
   // Use the hook for patient devices
   // Cast to `any` because backend device shape has evolved (serialNumberLeft/Right etc.)
   const { data: devices, isLoading: devicesLoading, error: devicesError, refetch: refetchDevices } = usePatientDevices(patient?.id || '') as any;
+
+  // Sync editingDevice with latest data from devices array
+  // This ensures the edit modal shows the most recent values after updates
+  useEffect(() => {
+    if (editingDevice && devices && devices.length > 0 && showEditModal) {
+      const updatedDevice = devices.find((d: any) => d.id === editingDevice.id);
+      if (updatedDevice) {
+        // Deep compare to avoid unnecessary updates
+        const currentStr = JSON.stringify(editingDevice);
+        const updatedStr = JSON.stringify(updatedDevice);
+        if (currentStr !== updatedStr) {
+          // Update editingDevice with latest data without closing modal
+          setEditingDevice(updatedDevice);
+        }
+      }
+    }
+  }, [devices, editingDevice?.id, showEditModal]);
 
   // State for other API data
   const [inventoryItems, setInventoryItems] = useState<InventoryItemRead[]>([]);
@@ -112,70 +133,54 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
     try {
       setLoading(true);
 
-      if (deviceData.mode === 'inventory') {
-        // Try to get details directly from passed data first (populated by DeviceAssignmentForm)
-        // Fallback to local inventoryItems lookup only if needed
-        const passedBrand = (deviceData as any).brand;
-        const passedModel = (deviceData as any).model;
-        const passedType = (deviceData as any).deviceType || (deviceData as any).type;
+      // Use the new createPatientDeviceAssignments endpoint
+      const assignmentItem = {
+        inventoryId: deviceData.inventoryId as string,
+        ear: deviceData.ear as string || 'both',
+        reason: deviceData.reason as string || 'Assignment',
+        basePrice: deviceData.basePrice as number || deviceData.listPrice as number,
+        discountType: deviceData.discountType as string,
+        discountValue: deviceData.discountValue as number,
+        salePrice: deviceData.salePrice as number,
+        patientPayment: deviceData.patientPayment as number,
+        sgkSupport: deviceData.sgkSupport as number,
+        sgkScheme: deviceData.sgkScheme as string,
+        serialNumber: deviceData.serialNumber as string,
+        serialNumberLeft: deviceData.serialNumberLeft as string,
+        serialNumberRight: deviceData.serialNumberRight as string,
+        deliveryStatus: deviceData.deliveryStatus as string || 'pending',
+        reportStatus: deviceData.reportStatus as string,
+        isLoaner: deviceData.isLoaner as boolean || false,
+        loanerInventoryId: deviceData.loanerInventoryId as string,
+        loanerSerialNumber: deviceData.loanerSerialNumber as string,
+        loanerSerialNumberLeft: deviceData.loanerSerialNumberLeft as string,
+        loanerSerialNumberRight: deviceData.loanerSerialNumberRight as string,
+        loanerBrand: deviceData.loanerBrand as string,
+        loanerModel: deviceData.loanerModel as string,
+        paymentMethod: deviceData.paymentMethod as string || 'cash',
+        notes: deviceData.notes as string,
+        // Manual device info (when not from inventory)
+        manualBrand: deviceData.brand as string,
+        manualModel: deviceData.model as string,
+      };
 
-        let invItem: InventoryItemRead | undefined;
+      // Remove undefined values
+      const cleanedItem = Object.fromEntries(
+        Object.entries(assignmentItem).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+      );
 
-        if (!passedBrand || !passedModel) {
-          invItem = inventoryItems.find(i => i.id === deviceData.inventoryId);
-          if (!invItem) throw new Error('Seçilen envanter öğesi bulunamadı');
-        }
+      const payload = {
+        deviceAssignments: [cleanedItem],
+        sgkScheme: deviceData.sgkScheme as string,
+        paymentPlan: deviceData.paymentPlan as string || 'cash',
+        branchId: deviceData.branchId as string,
+      };
 
-        const createData: DeviceCreate = {
-          patientId: patient.id!,
-          inventoryId: String(deviceData.inventoryId),
-          brand: passedBrand || invItem?.brand || 'Unknown',
-          model: passedModel || invItem?.model || 'Unknown',
-          type: passedType || invItem?.type || invItem?.deviceType || 'Unknown',
-          ear: String(deviceData.ear),
-          status: 'assigned',
-          notes: `Assigned from Inventory: ${passedBrand || invItem?.brand || ''} ${passedModel || invItem?.model || ''}`,
-          serialNumber: (deviceData as any).serialNumber || invItem?.serialNumber || undefined
-        } as any;
-
-        if (deviceData.isLoaner) (createData as any).isLoaner = true;
-        if (deviceData.deliveryStatus) (createData as any).deliveryStatus = deviceData.deliveryStatus;
-
-        if (deviceData.deliveryStatus) (createData as any).deliveryStatus = deviceData.deliveryStatus;
-
-        console.log('🚀 [handleAssignDevice:Inventory] Payload:', JSON.stringify(createData, null, 2));
-        await createDevices(createData);
-        showSuccess('Başarılı', 'Cihaz başarıyla atandı');
-
-      } else {
-        const createData: DeviceCreate = {
-          patientId: patient.id!,
-          serialNumber: deviceData.serialNumber as string,
-          brand: deviceData.brand as string,
-          model: deviceData.model as string,
-          type: deviceData.deviceType as string,
-          ear: deviceData.ear as string,
-          status: 'assigned',
-        } as any;
-
-        if (deviceData.isLoaner) (createData as any).isLoaner = true;
-        if (deviceData.deliveryStatus) (createData as any).deliveryStatus = deviceData.deliveryStatus;
-
-        await createDevices(createData);
-      }
-
-      if (deviceData.reason === 'Sale') {
-        const saleData: SaleCreate = {
-          patientId: patient.id!,
-          productId: deviceData.inventoryId as string || 'manual',
-          amount: Number(deviceData.salePrice),
-          paymentMethod: deviceData.paymentMethod as string || 'cash',
-          notes: `${deviceData.brand} ${deviceData.model} satışı`,
-        } as any;
-
-        (saleData as any).price = Number(deviceData.salePrice);
-        await createSales(saleData);
-      }
+      // Debug logging disabled to reduce console noise
+      // console.log('🚀 [handleAssignDevice] Payload:', JSON.stringify(payload, null, 2));
+      
+      await createPatientDeviceAssignments(patient.id!, payload as any);
+      showSuccess('Başarılı', 'Cihaz başarıyla atandı');
 
       await refetchDevices();
       await loadPatientSales();
@@ -183,11 +188,7 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
       setError(null);
 
     } catch (err: any) {
-      console.error('❌ [handleAssignDevice] Error assigning device:', err);
-      if (err.response) {
-        console.error('❌ [handleAssignDevice] Response Status:', err.response.status);
-        console.error('❌ [handleAssignDevice] Response Data:', JSON.stringify(err.response.data, null, 2));
-      }
+      console.error('[handleAssignDevice] Error:', err.response?.data || err.message);
       setError('Cihaz atanırken hata oluştu: ' + (err.response?.data?.detail || err.message));
     } finally {
       setLoading(false);
@@ -209,22 +210,24 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
     setShowEditModal(true);
   };
 
+  const handleOpenReplacementModal = (device: DeviceRead) => {
+    setReplacingDevice(device);
+    setShowReplacementModal(true);
+  };
+
   const handleUpdateDevice = async (deviceId: string, updates: any) => {
     if (!deviceId) return;
 
-    console.log('📤 [handleUpdateDevice] BAŞLANGIÇ:', {
-      deviceId,
-      updates,
-      endpoint: `/api/device-assignments/${deviceId}`
-    });
+    // Debug logging disabled to reduce console noise
+    // console.log('📤 [handleUpdateDevice] BAŞLANGIÇ:', {...});
 
     try {
       setLoading(true);
 
-      // Use apiClient for manual update since hook is missing
+      // Use apiClient for manual update - PATCH method
       await apiClient({
         url: `/api/device-assignments/${deviceId}`,
-        method: 'PUT',
+        method: 'PATCH',
         data: updates
       });
 
@@ -240,9 +243,8 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
         setEditingDevice(null);
       }
       showSuccess('Başarılı', 'Cihaz güncellendi');
-      console.log('✅ [handleUpdateDevice] Tamamlandı');
     } catch (error: any) {
-      console.error('❌ [handleUpdateDevice] HATA:', error);
+      console.error('[handleUpdateDevice] Error:', error.response?.data || error.message);
       const msg = error.response?.data?.error || error.message || 'Cihaz güncellenirken hata oluştu';
       showError('Hata', msg);
       setError(msg);
@@ -443,125 +445,144 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
 
       {/* Error Message */}
       {(error || devicesError) && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="rounded-md bg-red-50 p-4 border border-red-200">
           <div className="flex">
-            <XCircle className="h-5 w-5 text-red-400" />
+            <div className="flex-shrink-0">
+              <XCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
+            </div>
             <div className="ml-3">
-              <p className="text-sm text-red-800">{error || devicesError}</p>
+              <h3 className="text-sm font-medium text-red-800">Hata</h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>{typeof error === 'string' ? error : (error as any)?.message || (devicesError as any)?.message || 'Cihazlar yüklenirken bir hata oluştu.'}</p>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Devices List - Grid Layout: Audiological view (patient facing) - Right ear on LEFT, Left ear on RIGHT */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Right Ear Column - LEFT SIDE (Audiological View) */}
-        <div className="space-y-4">
+      {/* Devices List - Row-based Layout for proper bilateral alignment */}
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           <h4 className="text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-red-500"></span>
             Sağ Kulak
           </h4>
-          {devices.filter((d: any) => {
-            const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
-            return ear === 'right' || ear === 'r' || ear === 'sağ';
-          }).length > 0 ? (
-            devices.filter((d: any) => {
-              const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
-              return ear === 'right' || ear === 'r' || ear === 'sağ';
-            }).map((device) => (
-              <PatientDeviceCard
-                key={device.id}
-                device={device as any}
-                onEdit={() => handleEditDevice(device as DeviceRead)}
-                onCancel={() => device.id && handleRemoveDevice(device.id)}
-                onReturnLoaner={async (dev) => {
-                  const id = dev.id || (dev as any).assignmentId;
-                  if (id) {
-                    await handleUpdateDevice(id, {
-                      isLoaner: false,
-                      loanerInventoryId: null,
-                      loanerSerialNumber: null
-                    } as any);
-                  }
-                }}
-              />
-            ))
-          ) : (
-            <div className="text-center py-8 text-gray-400 border-2 border-dashed border-red-200 dark:border-red-800 rounded-lg bg-red-50/50 dark:bg-red-900/10">
-              <p className="text-sm">Sağ kulak için cihaz atanmamış</p>
-            </div>
-          )}
-        </div>
-
-        {/* Left Ear Column - RIGHT SIDE (Audiological View) */}
-        <div className="space-y-4">
           <h4 className="text-sm font-medium text-blue-600 dark:text-blue-400 flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-blue-500"></span>
             Sol Kulak
           </h4>
-          {devices.filter((d: any) => {
+        </div>
+        
+        {(() => {
+          // Sort devices by createdAt descending (newest first)
+          const sortedDevices = [...devices].sort((a: any, b: any) => {
+            const dateA = new Date(a.createdAt || a.created_at || 0).getTime();
+            const dateB = new Date(b.createdAt || b.created_at || 0).getTime();
+            return dateB - dateA; // Descending - newest first
+          });
+          
+          // Group devices: bilateral devices should be in same row, single-ear devices get their own row
+          const bilateralDevices = sortedDevices.filter((d: any) => {
+            const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
+            return ear === 'bilateral' || ear === 'b' || ear === 'both';
+          });
+          
+          const rightOnlyDevices = sortedDevices.filter((d: any) => {
+            const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
+            return ear === 'right' || ear === 'r' || ear === 'sağ';
+          });
+          
+          const leftOnlyDevices = sortedDevices.filter((d: any) => {
             const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
             return ear === 'left' || ear === 'l' || ear === 'sol';
-          }).length > 0 ? (
-            devices.filter((d: any) => {
-              const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
-              return ear === 'left' || ear === 'l' || ear === 'sol';
-            }).map((device) => (
-              <PatientDeviceCard
-                key={device.id}
-                device={device as any}
-                onEdit={() => handleEditDevice(device as DeviceRead)}
-                onCancel={() => device.id && handleRemoveDevice(device.id)}
-                onReturnLoaner={async (dev) => {
-                  const id = dev.id || (dev as any).assignmentId;
-                  if (id) {
-                    await handleUpdateDevice(id, {
-                      isLoaner: false,
-                      loanerInventoryId: null,
-                      loanerSerialNumber: null
-                    } as any);
-                  }
-                }}
-              />
-            ))
-          ) : (
-            <div className="text-center py-8 text-gray-400 border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50/50 dark:bg-blue-900/10">
-              <p className="text-sm">Sol kulak için cihaz atanmamış</p>
+          });
+          
+          const rows: Array<{ right: any | null; left: any | null }> = [];
+          
+          // Add bilateral devices (same device appears in both columns)
+          bilateralDevices.forEach((device: any) => {
+            rows.push({ right: device, left: device });
+          });
+          
+          // Add single-ear devices
+          const maxSingleEar = Math.max(rightOnlyDevices.length, leftOnlyDevices.length);
+          for (let i = 0; i < maxSingleEar; i++) {
+            rows.push({
+              right: rightOnlyDevices[i] || null,
+              left: leftOnlyDevices[i] || null
+            });
+          }
+          
+          if (rows.length === 0) {
+            return (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center py-8 text-gray-400 border-2 border-dashed border-red-200 dark:border-red-800 rounded-lg bg-red-50/50 dark:bg-red-900/10">
+                  <p className="text-sm">Sağ kulak için cihaz atanmamış</p>
+                </div>
+                <div className="text-center py-8 text-gray-400 border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50/50 dark:bg-blue-900/10">
+                  <p className="text-sm">Sol kulak için cihaz atanmamış</p>
+                </div>
+              </div>
+            );
+          }
+          
+          return rows.map((row, index) => (
+            <div key={index} className="grid grid-cols-2 gap-4">
+              {/* Right Ear */}
+              <div>
+                {row.right ? (
+                  <PatientDeviceCard
+                    key={`${row.right.id}-right-${index}`}
+                    displaySide="right"
+                    device={row.right as any}
+                    onEdit={() => handleEditDevice(row.right as DeviceRead)}
+                    onReplace={() => handleOpenReplacementModal(row.right as DeviceRead)}
+                    onCancel={() => row.right.id && handleRemoveDevice(row.right.id)}
+                    onReturnLoaner={async (dev) => {
+                      const id = dev.id || (dev as any).assignmentId;
+                      if (id) {
+                        await handleUpdateDevice(id, {
+                          isLoaner: false,
+                          loanerInventoryId: null,
+                          loanerSerialNumber: null
+                        } as any);
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="h-full min-h-[100px]"></div>
+                )}
+              </div>
+              
+              {/* Left Ear */}
+              <div>
+                {row.left ? (
+                  <PatientDeviceCard
+                    key={`${row.left.id}-left-${index}`}
+                    displaySide="left"
+                    device={row.left as any}
+                    onEdit={() => handleEditDevice(row.left as DeviceRead)}
+                    onReplace={() => handleOpenReplacementModal(row.left as DeviceRead)}
+                    onCancel={() => row.left.id && handleRemoveDevice(row.left.id)}
+                    onReturnLoaner={async (dev) => {
+                      const id = dev.id || (dev as any).assignmentId;
+                      if (id) {
+                        await handleUpdateDevice(id, {
+                          isLoaner: false,
+                          loanerInventoryId: null,
+                          loanerSerialNumber: null
+                        } as any);
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="h-full min-h-[100px]"></div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
+          ));
+        })()}
       </div>
-
-      {/* Bilateral/Unknown Devices - Full Width */}
-      {devices.filter((d: any) => {
-        const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
-        return !['left', 'l', 'sol', 'right', 'r', 'sağ'].includes(ear);
-      }).length > 0 && (
-          <div className="space-y-4 mt-4">
-            <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400">Diğer Cihazlar</h4>
-            {devices.filter((d: any) => {
-              const ear = (d.ear || d.earSide || d.side || '').toLowerCase();
-              return !['left', 'l', 'sol', 'right', 'r', 'sağ'].includes(ear);
-            }).map((device) => (
-              <PatientDeviceCard
-                key={device.id}
-                device={device as any}
-                onEdit={() => handleEditDevice(device as DeviceRead)}
-                onCancel={() => device.id && handleRemoveDevice(device.id)}
-                onReturnLoaner={async (dev) => {
-                  const id = dev.id || (dev as any).assignmentId;
-                  if (id) {
-                    await handleUpdateDevice(id, {
-                      isLoaner: false,
-                      loanerInventoryId: null,
-                      loanerSerialNumber: null
-                    } as any);
-                  }
-                }}
-              />
-            ))}
-          </div>
-        )}
 
       {/* Empty State */}
       {devices.length === 0 && (
@@ -594,6 +615,37 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
           if (editingDevice?.id) {
             await handleUpdateDevice(editingDevice.id, data as any);
           }
+        }}
+      />
+
+      {/* Device Replacement Modal */}
+      <DeviceReplacementModal
+        isOpen={showReplacementModal}
+        device={replacingDevice ? {
+          id: replacingDevice.id || '',
+          brand: (replacingDevice as any).brand || '',
+          model: (replacingDevice as any).model || '',
+          serialNumber: (replacingDevice as any).serialNumber,
+          price: (replacingDevice as any).salePrice || (replacingDevice as any).listPrice || 0,
+          ear: (replacingDevice as any).ear || (replacingDevice as any).earSide
+        } : null}
+        patient={{ id: patient.id || '', name: `${patient.firstName || ''} ${patient.lastName || ''}`.trim() }}
+        onClose={() => {
+          setShowReplacementModal(false);
+          setReplacingDevice(null);
+        }}
+        onReplacementCreate={async (replacement) => {
+          if (replacingDevice?.id) {
+            await handleReplaceDevice(
+              replacingDevice.id,
+              replacement.replacementReason,
+              replacement.notes,
+              replacement.newInventoryId,
+              replacement.newDeviceInfo
+            );
+          }
+          setShowReplacementModal(false);
+          setReplacingDevice(null);
         }}
       />
     </div>

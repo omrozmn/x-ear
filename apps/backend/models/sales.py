@@ -1,6 +1,7 @@
 # Sales-related Models: Sale, PaymentPlan, PaymentInstallment, DeviceAssignment, PaymentRecord
 from .base import db, BaseModel, gen_id, gen_sale_id, JSONMixin
 from .enums import DeviceSide
+from .device import Device
 from decimal import Decimal
 import sqlalchemy as sa
 
@@ -119,12 +120,53 @@ class DeviceAssignment(BaseModel):
     notes = db.Column(db.Text)
 
     # Relationships
-    # device = db.relationship('Device', backref='assignments', lazy=True)  # Removed - device_id is not FK anymore
+    # Note: device_id is not a foreign key, we use inventory relationship instead
+    inventory = db.relationship('InventoryItem', foreign_keys=[inventory_id], backref='device_assignments', lazy=True)
+    loaner_inventory = db.relationship('InventoryItem', foreign_keys=[loaner_inventory_id], backref='loaner_assignments', lazy=True)
+    
+    # We keep 'device' relationship for Manual/Virtual assignments that don't have inventory_id
+    # FIX: Explicitly specify foreign_keys because device_id is not a DB ForeignKey
+    # AND specify primaryjoin so SQLAlchemy knows how to join despite missing FK
+    device = db.relationship(
+        'Device', 
+        foreign_keys=[device_id], 
+        primaryjoin="DeviceAssignment.device_id == Device.id",
+        backref='assignments', 
+        lazy=True
+    )
 
     def to_dict(self):
         base_dict = self.to_dict_base()
+        
+        # Fetch device details
+        brand = None
+        model = None
+        barcode = None
+        
+        # Strategy: Try specific Device record first (handles Manual/Virtual), then fallback to Inventory
+        if self.device:
+            brand = self.device.brand
+            model = self.device.model
+            barcode = getattr(self.device, 'barcode', None)
+        
+        if not brand and self.inventory:
+            brand = self.inventory.brand
+            model = self.inventory.model
+            if not barcode:
+                 barcode = self.inventory.barcode
+        
+        # Loaner logic fallback
+        if self.is_loaner and not brand:
+             brand = self.loaner_brand
+             model = self.loaner_model
+        
         assignment_dict = {
             'id': self.id,
+            'assignmentUid': self.assignment_uid,
+            'brand': brand,
+            'model': model,
+            'deviceName': f"{brand or ''} {model or ''}".strip(),
+            'barcode': barcode,
             'patientId': self.patient_id,
             'deviceId': self.device_id,
             'saleId': self.sale_id,
@@ -153,7 +195,9 @@ class DeviceAssignment(BaseModel):
             'loanerSerialNumberRight': self.loaner_serial_number_right,
             'loanerBrand': self.loaner_brand,
             'loanerModel': self.loaner_model,
-            'reportStatus': self.report_status
+            'reportStatus': self.report_status,
+            'assignedDate': self.created_at.isoformat() if self.created_at else None, # key fix
+            'createdAt': self.created_at.isoformat() if self.created_at else None 
         }
         assignment_dict.update(base_dict)
         return assignment_dict

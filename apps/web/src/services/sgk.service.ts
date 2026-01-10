@@ -728,11 +728,17 @@ export class SGKService {
   }
 
   // Hasta işlem formu indirme
-  async downloadPatientForm(_receiptId: string): Promise<Blob> {
-    // There is no direct "download form" endpoint in the generated API currently.
-    // Using a placeholder error until the correct endpoint is identified or implemented.
-    console.warn('downloadPatientForm not fully implemented in frontend API generation');
-    throw new Error('Form download not implemented');
+  // Hasta işlem formu indirme
+  async downloadPatientForm(receiptId: string): Promise<Blob> {
+    try {
+      const response = await apiClient.get(`/api/sgk/e-receipts/${receiptId}/download-patient-form`, {
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Download form error:', error);
+      throw error;
+    }
   }
 
   // Hasta hakları sorgulama
@@ -754,13 +760,13 @@ export class SGKService {
   // SGK Workflow Management
   async createWorkflow(patientId: string, documentId?: string, workflowType: string = 'approval'): Promise<any> {
     try {
-      // Gerçek API çağrısı
-      const response = await createSgkWorkflowCreate({
+      // Use apiClient directly to ensure compatibility
+      const response = await apiClient.post('/api/sgk/workflow/create', {
         patientId,
         documentId,
         workflowType
-      } as any);
-      return response;
+      });
+      return response.data;
     } catch (error) {
       console.error('SGK workflow creation error:', error);
       throw error;
