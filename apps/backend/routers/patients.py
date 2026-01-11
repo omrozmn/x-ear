@@ -238,7 +238,7 @@ def create_patient(
         logger.error(f"Create patient error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/patients/export", operation_id="exportPatients")
+@router.get("/patients/export", operation_id="listPatientExport")
 def export_patients(
     q: Optional[str] = None,
     status: Optional[str] = None,
@@ -414,7 +414,7 @@ def delete_patient(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/patients/bulk-upload", operation_id="bulkUploadPatients", response_model=ResponseEnvelope[BulkUploadResponse])
+@router.post("/patients/bulk-upload", operation_id="createPatientBulkUpload", response_model=ResponseEnvelope[BulkUploadResponse])
 async def bulk_upload_patients(
     file: UploadFile = File(...),
     access: UnifiedAccess = Depends(require_access("patients.create")),

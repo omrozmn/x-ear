@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/dashboard", tags=["Admin Dashboard"])
 
-@router.get("")
+@router.get("", operation_id="getAdminDashboard")
 def get_dashboard_metrics(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())

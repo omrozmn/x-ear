@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Building2, ChevronDown, Check, Loader2, Search, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  useListTenantsApiAdminTenantsGet,
+  useListAdminTenants,
   useCreateAdminDebugSwitchTenant,
   useCreateAdminDebugExitImpersonation,
 } from '@/api/generated';
@@ -36,7 +36,7 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
   }, [searchQuery]);
 
   // Fetch tenants with search
-  const { data: tenantsResponse, isLoading: tenantsLoading } = useListTenantsApiAdminTenantsGet(
+  const { data: tenantsResponse, isLoading: tenantsLoading } = useListAdminTenants(
     { search: debouncedSearch, limit: 50 },
     {
       query: {

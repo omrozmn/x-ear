@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
-    useGetBirFaturaStats,
-    useGetBirFaturaInvoices,
-    useGetBirFaturaLogs
+    useListAdminBirfaturaStats,
+    useListAdminBirfaturaInvoices,
+    useListAdminBirfaturaLogs
 } from '@/lib/api-client';
 import {
     FileText,
@@ -21,16 +21,16 @@ const AdminBirFaturaPage: React.FC = () => {
     const [page, setPage] = useState(1);
     const [statusFilter, setStatusFilter] = useState('');
 
-    const { data: statsData } = useGetBirFaturaStats({});
+    const { data: statsData } = useListAdminBirfaturaStats({});
 
-    const { data: invoicesData, isLoading: invoicesLoading } = useGetBirFaturaInvoices({
+    const { data: invoicesData, isLoading: invoicesLoading } = useListAdminBirfaturaInvoices({
         page,
         limit: 20,
         direction: activeTab === 'logs' ? undefined : activeTab,
         status: statusFilter || undefined
     }, { query: { enabled: activeTab !== 'logs' } });
 
-    const { data: logsData, isLoading: logsLoading } = useGetBirFaturaLogs({
+    const { data: logsData, isLoading: logsLoading } = useListAdminBirfaturaLogs({
         page,
         limit: 20
     }, { query: { enabled: activeTab === 'logs' } });

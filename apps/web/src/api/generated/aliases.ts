@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-01-10T16:06:09.706Z
+ * Generated: 2026-01-10T21:12:32.638Z
  */
 
 // ACTIVITY_LOGS
@@ -18,8 +18,8 @@ export {
 
 // ADDONS
 export {
-  useGetAddonsApiAddonsGet as useGetAddonsAddonsGet,
-  useCreateAddonApiAddonsPost as useCreateAddonAddonsPost,
+  useListAddons,
+  useCreateAddon,
   useListAddonAdmin,
   useUpdateAddon,
   useDeleteAddon,
@@ -27,8 +27,8 @@ export {
 
 // ADMIN_ADDONS
 export {
-  useListAddonsApiAdminAddonsGet as useListAddonsAdminAddonsGet,
-  useCreateAddonApiAdminAddonsPost as useCreateAddonAdminAddonsPost,
+  useListAdminAddons,
+  useCreateAdminAddon,
   useGetAdminAddon,
   useUpdateAdminAddon,
   useDeleteAdminAddon,
@@ -46,14 +46,14 @@ export {
 // ADMIN_API_KEYS
 export {
   useCreateAdminApiKeyInitDb,
-  useGetApiKeysApiAdminApiKeysGet as useGetApiKeysApiAdminKeysGet,
-  useCreateApiKeyApiAdminApiKeysPost as useCreateApiKeyApiAdminKeysPost,
+  useListAdminApiKeys,
+  useCreateAdminApiKey,
   useDeleteAdminApiKey,
 } from './admin-api-keys/admin-api-keys';
 
 // ADMIN_APPOINTMENTS
 export {
-  useGetAllAppointmentsApiAdminAppointmentsGet as useGetAllAppointmentsAdminAppointmentsGet,
+  useListAdminAppointments,
 } from './admin-appointments/admin-appointments';
 
 // ADMIN_BIRFATURA
@@ -65,13 +65,13 @@ export {
 
 // ADMIN_DASHBOARD
 export {
-  useGetDashboardMetricsApiAdminDashboardGet as useGetDashboardMetricsAdminDashboardGet,
+  useGetAdminDashboard,
   useListAdminDashboardStats,
 } from './admin-dashboard/admin-dashboard';
 
 // ADMIN_INTEGRATIONS
 export {
-  useGetIntegrationsApiAdminIntegrationsGet as useGetIntegrationsAdminIntegrationsGet,
+  useListAdminIntegrations,
   useCreateAdminIntegrationInitDb,
   useListAdminIntegrationVatanSmConfig,
   useUpdateAdminIntegrationVatanSmConfig,
@@ -81,13 +81,13 @@ export {
 
 // ADMIN_INVENTORY
 export {
-  useGetAllInventoryApiAdminInventoryGet as useGetAllInventoryAdminInventoryGet,
+  useListAdminInventory,
 } from './admin-inventory/admin-inventory';
 
 // ADMIN_INVOICES
 export {
-  useGetAdminInvoicesApiAdminInvoicesGet as useGetAdminInvoicesAdminInvoicesGet,
-  useCreateAdminInvoiceApiAdminInvoicesPost as useCreateAdminInvoiceAdminInvoicesPost,
+  useListAdminInvoices,
+  useCreateAdminInvoice,
   useGetAdminInvoice,
   useCreateAdminInvoicePayment,
   useListAdminInvoicePdf,
@@ -104,7 +104,7 @@ export {
 // ADMIN_NOTIFICATIONS
 export {
   useCreateAdminNotificationInitDb,
-  useGetNotificationsApiAdminNotificationsGet as useGetNotificationsAdminNotificationsGet,
+  useListAdminNotifications,
   useCreateAdminNotificationSend,
   useListAdminNotificationTemplates,
   useCreateAdminNotificationTemplates,
@@ -114,7 +114,7 @@ export {
 
 // ADMIN_PATIENTS
 export {
-  useGetAllPatientsApiAdminPatientsGet as useGetAllPatientsAdminPatientsGet,
+  useListAdminPatients,
   useGetAdminPatient,
   useListAdminPatientDevices,
   useListAdminPatientSales,
@@ -129,8 +129,8 @@ export {
 
 // ADMIN_PLANS
 export {
-  useListPlansApiAdminPlansGet as useListPlansAdminPlansGet,
-  useCreatePlanApiAdminPlansPost as useCreatePlanAdminPlansPost,
+  useListAdminPlans,
+  useCreateAdminPlan,
   useGetAdminPlan,
   useUpdateAdminPlan,
   useDeleteAdminPlan,
@@ -162,23 +162,23 @@ export {
 // ADMIN_SCAN_QUEUE
 export {
   useCreateAdminScanQueueInitDb,
-  useGetScanQueueApiAdminScanQueueGet as useGetScanQueueAdminScanQueueGet,
+  useListAdminScanQueue,
   useCreateAdminScanQueueRetry,
 } from './admin-scan-queue/admin-scan-queue';
 
 // ADMIN_SETTINGS
 export {
   useCreateAdminSettingInitDb,
-  useGetSettingsApiAdminSettingsGet as useGetSettingsAdminSettingsGet,
-  useUpdateSettingsApiAdminSettingsPost as useUpdateSettingsAdminSettingsPost,
+  useListAdminSettings,
+  useUpdateAdminSettings,
   useCreateAdminSettingCacheClear,
   useCreateAdminSettingBackup,
 } from './admin-settings/admin-settings';
 
 // ADMIN_SUPPLIERS
 export {
-  useGetSuppliersApiAdminSuppliersGet as useGetSuppliersAdminSuppliersGet,
-  useCreateSupplierApiAdminSuppliersPost as useCreateSupplierAdminSuppliersPost,
+  useListAdminSuppliers,
+  useCreateAdminSupplier,
   useGetAdminSupplier,
   useUpdateAdminSupplier,
   useDeleteAdminSupplier,
@@ -186,8 +186,8 @@ export {
 
 // ADMIN_TENANTS
 export {
-  useListTenantsApiAdminTenantsGet as useListTenantsAdminTenantsGet,
-  useCreateTenantApiAdminTenantsPost as useCreateTenantAdminTenantsPost,
+  useListAdminTenants,
+  useCreateAdminTenant,
   useGetAdminTenant,
   useUpdateAdminTenant,
   useDeleteAdminTenant,
@@ -253,8 +253,8 @@ export {
 
 // APPS
 export {
-  useListAppsApiAppsGet as useListAppsAppsGet,
-  useCreateAppApiAppsPost as useCreateAppAppsPost,
+  useListApps,
+  useCreateApp,
   useGetApp,
   useUpdateApp,
   useDeleteApp,
@@ -264,7 +264,7 @@ export {
 
 // AUDIT
 export {
-  useListAuditApiAuditGet as useListAuditAuditGet,
+  useListAudit,
 } from './audit/audit';
 
 // AUTH
@@ -318,7 +318,7 @@ export {
   useGetCampaign,
   useUpdateCampaign,
   useDeleteCampaign,
-  useSendCampaign,
+  useCreateCampaignSend,
   useListAdminCampaigns,
 } from './campaigns/campaigns';
 
@@ -414,7 +414,7 @@ export {
   useListInventoryStats,
   useListInventoryLowStock,
   useListInventoryUnits,
-  useListInventoryActivities,
+  useListInventoryActivity,
   useGetInventory,
   useUpdateInventory as useUpdateInventoryApiInventoryItemIdPut,
   useDeleteInventory as useDeleteInventoryApiInventoryItemIdDelete,
@@ -445,17 +445,17 @@ export {
 export {
   useListInvoices,
   useCreateInvoices,
-  useGetPrintQueue,
-  useAddToPrintQueue,
-  useGetInvoiceTemplates,
-  useCreateInvoiceTemplate,
-  useBatchGenerateInvoices,
+  useListInvoicePrintQueue,
+  useCreateInvoicePrintQueue,
+  useListInvoiceTemplates,
+  useCreateInvoiceTemplates,
+  useCreateInvoiceBatchGenerate,
   useGetInvoice,
   useUpdateInvoice,
   useDeleteInvoice,
   useListPatientInvoices,
   useCreateInvoiceSendToGib,
-  useBulkUploadInvoices,
+  useCreateInvoiceBulkUpload,
 } from './invoices/invoices';
 
 // NOTIFICATIONS
@@ -500,6 +500,7 @@ export {
   useCreatePatientEreceipts,
   useUpdatePatientEreceipt,
   useDeletePatientEreceipt,
+  useListPatientSales,
   useListPatientAppointments,
 } from './patient-subresources/patient-subresources';
 
@@ -507,12 +508,12 @@ export {
 export {
   useListPatients as useListPatientsApiPatientsGet,
   useCreatePatients,
-  useExportPatients,
+  useListPatientExport,
   useListPatientCount,
   useGetPatient,
   useUpdatePatient,
   useDeletePatient,
-  useBulkUploadPatients,
+  useCreatePatientBulkUpload,
 } from './patients/patients';
 
 // PAYMENT_INTEGRATIONS
@@ -547,8 +548,8 @@ export {
 
 // PLANS
 export {
-  useGetPlansApiPlansGet as useGetPlansPlansGet,
-  useCreatePlanApiPlansPost as useCreatePlanPlansPost,
+  useListPlans,
+  useCreatePlan,
   useListPlanAdmin,
   useUpdatePlan,
   useDeletePlan,
@@ -613,11 +614,14 @@ export {
 export {
   useListSales,
   useCreateSales,
+  useGetSale,
+  useUpdateSale,
   useListSalePayments,
   useCreateSalePayments,
   useListSalePaymentPlan,
-  useUpdateSale,
-  useRecalcSales,
+  useCreateSalePaymentPlan,
+  useCreateSaleInstallmentPay,
+  useCreateSaleRecalc,
   useCreatePatientDeviceAssignments,
   useUpdateDeviceAssignment,
   useCreateDeviceAssignmentReturnLoaner,

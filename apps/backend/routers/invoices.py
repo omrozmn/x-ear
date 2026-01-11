@@ -78,7 +78,7 @@ def get_invoices(
         logger.error(f"Get invoices error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/invoices/print-queue", operation_id="getPrintQueue", response_model=ResponseEnvelope[InvoicePrintQueueResponse])
+@router.get("/invoices/print-queue", operation_id="listInvoicePrintQueue", response_model=ResponseEnvelope[InvoicePrintQueueResponse])
 def get_print_queue(
     access: UnifiedAccess = Depends(require_access("invoices.read")),
     db_session: Session = Depends(get_db)
@@ -113,7 +113,7 @@ def get_print_queue(
         logger.error(f"Get print queue error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/invoices/print-queue", operation_id="addToPrintQueue")
+@router.post("/invoices/print-queue", operation_id="createInvoicePrintQueue")
 def add_to_print_queue(
     payload: InvoiceAddToQueueRequest,
     access: UnifiedAccess = Depends(require_access("invoices.write")),
@@ -148,7 +148,7 @@ def add_to_print_queue(
         logger.error(f"Add to print queue error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/invoices/templates", operation_id="getInvoiceTemplates", response_model=ResponseEnvelope[List[InvoiceTemplate]])
+@router.get("/invoices/templates", operation_id="listInvoiceTemplates", response_model=ResponseEnvelope[List[InvoiceTemplate]])
 def get_invoice_templates(
     access: UnifiedAccess = Depends(require_access("invoices.read"))
 ):
@@ -190,7 +190,7 @@ def get_invoice_templates(
     ]
     return ResponseEnvelope(data=templates)
 
-@router.post("/invoices/templates", operation_id="createInvoiceTemplate", response_model=ResponseEnvelope[InvoiceTemplate], status_code=201)
+@router.post("/invoices/templates", operation_id="createInvoiceTemplates", response_model=ResponseEnvelope[InvoiceTemplate], status_code=201)
 def create_invoice_template(
     template: InvoiceTemplate,
     access: UnifiedAccess = Depends(require_access("invoices.write"))
@@ -205,7 +205,7 @@ def create_invoice_template(
     
     return ResponseEnvelope(data=t_dict)
 
-@router.post("/invoices/batch-generate", operation_id="batchGenerateInvoices")
+@router.post("/invoices/batch-generate", operation_id="createInvoiceBatchGenerate")
 def batch_generate_invoices(
     request_data: BatchInvoiceGenerateRequest,
     db_session: Session = Depends(get_db),
@@ -576,7 +576,7 @@ def send_to_gib(
         logger.error(f"Send to GIB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/invoices/bulk-upload", operation_id="bulkUploadInvoices", response_model=ResponseEnvelope[BulkUploadResponse])
+@router.post("/invoices/bulk-upload", operation_id="createInvoiceBulkUpload", response_model=ResponseEnvelope[BulkUploadResponse])
 async def bulk_upload_invoices(
     file: UploadFile = File(...),
     access: UnifiedAccess = Depends(require_access("invoices.write")),

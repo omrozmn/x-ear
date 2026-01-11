@@ -5,7 +5,7 @@ import {
     useListSmPackages,
     useListSmCredit,
     useListSubscriptionCurrent,
-    useGetAddonsApiAddonsGet
+    useListAddons
 } from '@/api/generated';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -202,7 +202,7 @@ function SmsPackagesList() {
 }
 
 function AddOnsList() {
-    const { data: addonsData, isLoading, isError } = useGetAddonsApiAddonsGet();
+    const { data: addonsData, isLoading, isError } = useListAddons();
     if (isLoading) return <div className="text-gray-500">Eklentiler yükleniyor...</div>;
     if (isError) return <div className="text-gray-500">Eklentiler yüklenemedi.</div>;
 

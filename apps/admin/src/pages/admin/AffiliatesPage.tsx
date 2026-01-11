@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { useListAffiliates, Affiliate } from '@/lib/api-client';
+import { useListAffiliateList, AffiliateRead } from '@/lib/api-client';
 import AffiliateDetailModal from '../../components/admin/AffiliateDetailModal';
 import CreateAffiliateModal from '../../components/admin/CreateAffiliateModal';
 import { PlusIcon } from 'lucide-react';
 
 const AffiliatesPage: React.FC = () => {
-  const { data: affiliatesData, isLoading, error, refetch } = useListAffiliates();
+  const { data: affiliatesData, isLoading, error, refetch } = useListAffiliateList();
   const [selectedAffiliateId, setSelectedAffiliateId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -49,7 +49,7 @@ const AffiliatesPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {affiliates.map((a: Affiliate) => (
+              {affiliates.map((a: AffiliateRead) => (
                 <tr
                   key={a.id}
                   className="hover:bg-gray-50 cursor-pointer"

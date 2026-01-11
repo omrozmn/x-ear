@@ -23,7 +23,7 @@ class PatientListResponse(ResponseEnvelope):
 class PatientDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("", response_model=PatientListResponse)
+@router.get("", operation_id="listAdminPatients", response_model=PatientListResponse)
 async def get_all_patients(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),

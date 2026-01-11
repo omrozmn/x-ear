@@ -2,32 +2,33 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useUpdateTenantUser } from '@/lib/api-client';
+import { useUpdateAdminTenantUser } from '@/api/generated/admin-tenants/admin-tenants';
+import { UserRead } from '@/api/generated/schemas';
 
 interface EditUserModalProps {
     isOpen: boolean;
     onClose: () => void;
-    user: any;
+    user: UserRead;
     tenantId: string;
     onSuccess: () => void;
 }
 
 export const EditUserModal = ({ isOpen, onClose, user, tenantId, onSuccess }: EditUserModalProps) => {
     const [formData, setFormData] = useState({
-        firstName: user.first_name || '',
-        lastName: user.last_name || '',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
         email: user.email || '',
         username: user.username || '',
         role: user.role || 'tenant_user',
         password: ''
     });
     const [loading, setLoading] = useState(false);
-    const { mutateAsync: updateTenantUser } = useUpdateTenantUser();
+    const { mutateAsync: updateTenantUser } = useUpdateAdminTenantUser();
 
     useEffect(() => {
         setFormData({
-            firstName: user.first_name || '',
-            lastName: user.last_name || '',
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
             email: user.email || '',
             username: user.username || '',
             role: user.role || 'tenant_user',
@@ -40,7 +41,7 @@ export const EditUserModal = ({ isOpen, onClose, user, tenantId, onSuccess }: Ed
         setLoading(true);
         try {
             await updateTenantUser({
-
+                tenantId: tenantId,
                 userId: user.id,
                 data: {
                     first_name: formData.firstName,

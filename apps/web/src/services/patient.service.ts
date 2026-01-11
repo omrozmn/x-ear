@@ -664,8 +664,8 @@ export class PatientService {
     await this.ensureInitialized();
     try {
       // Use Orval-generated function
-      const { bulkUploadPatients: bulkUploadPatientsApi } = await import('@/api/generated/patients/patients');
-      const response = await bulkUploadPatientsApi({ file });
+      const { createPatientBulkUpload } = await import('@/api/generated/patients/patients');
+      const response = await createPatientBulkUpload({ file });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = response as any;

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { useGetAdminSettings, usePatchAdminSettings, useGetAdminPlans } from '@/lib/api-client';
+import { useListAdminSettings, useUpdateAdminSettings, useListAdminPlans } from '@/lib/api-client';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Features: React.FC = () => {
     const { user } = useAuth();
-    const { data: settingsData, isLoading: featuresLoading, refetch: refetchFeatures } = useGetAdminSettings();
-    const { data: plansData } = useGetAdminPlans();
-    const { mutateAsync: updateSettings } = usePatchAdminSettings();
+    const { data: settingsData, isLoading: featuresLoading, refetch: refetchFeatures } = useListAdminSettings();
+    const { data: plansData } = useListAdminPlans();
+    const { mutateAsync: updateSettings } = useUpdateAdminSettings();
 
     const features = ((settingsData as any)?.data?.settings as any)?.features || {};
     const plans = (plansData as any)?.data?.plans || [];

@@ -6,7 +6,7 @@ import AppHeader from "../AppHeader";
 import { Phone, AlertCircle, CheckCircle, ArrowLeft, User, Menu, Tag, Check, X } from "lucide-react";
 import { useState, useEffect, Suspense } from "react";
 // Use relative path or alias if configured
-import { apiClient } from "../../lib/api/api-client";
+import { apiClient } from "../../lib/api-client";
 
 function RegisterContent() {
     const router = useRouter();

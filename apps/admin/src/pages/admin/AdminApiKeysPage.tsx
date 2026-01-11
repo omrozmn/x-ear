@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGetApiKeys, useCreateApiKey, useRevokeApiKey } from '@/lib/api-client';
+import { useListAdminApiKeys, useCreateAdminApiKey, useDeleteAdminApiKey } from '@/lib/api-client';
 import {
     KeyIcon,
     PlusIcon,
@@ -19,9 +19,9 @@ const AdminApiKeysPage: React.FC = () => {
     const [tenantId, setTenantId] = useState('');
     const [scopes, setScopes] = useState<string[]>([]);
 
-    const { data: keysData, isLoading, refetch } = useGetApiKeys({ page, limit: 10 });
-    const createApiKeyMutation = useCreateApiKey();
-    const revokeApiKeyMutation = useRevokeApiKey();
+    const { data: keysData, isLoading, refetch } = useListAdminApiKeys({ page, limit: 10 });
+    const createApiKeyMutation = useCreateAdminApiKey();
+    const revokeApiKeyMutation = useDeleteAdminApiKey();
 
     const keys = (keysData as any)?.data?.keys || [];
     const pagination = (keysData as any)?.data?.pagination;

@@ -33,7 +33,7 @@ class RoleAssign(BaseModel):
 class OwnerTransfer(BaseModel):
     ownerUserId: str
 
-@router.get("")
+@router.get("", operation_id="listApps")
 async def list_apps(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("apps.read", admin_only=True))
@@ -42,7 +42,7 @@ async def list_apps(
     apps = db.query(App).order_by(App.name).all()
     return {"success": True, "data": [a.to_dict() for a in apps]}
 
-@router.post("")
+@router.post("", operation_id="createApp")
 async def create_app(
     data: AppCreate,
     db: Session = Depends(get_db),

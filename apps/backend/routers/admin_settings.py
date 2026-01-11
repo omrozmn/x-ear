@@ -67,7 +67,7 @@ def init_db(
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("", response_model=ResponseEnvelope)
+@router.get("", operation_id="listAdminSettings", response_model=ResponseEnvelope)
 def get_settings(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
@@ -92,7 +92,7 @@ def get_settings(
         logger.error(f"Get settings error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", response_model=ResponseEnvelope)
+@router.post("", operation_id="updateAdminSettings", response_model=ResponseEnvelope)
 def update_settings(
     request_data: List[SettingItem],
     access: UnifiedAccess = Depends(require_access()),

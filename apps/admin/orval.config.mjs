@@ -5,8 +5,8 @@ export default {
     },
     output: {
       mode: 'tags-split',
-      target: './src/lib/api',
-      schemas: './src/lib/api/schemas',
+      target: './src/api/generated',
+      schemas: './src/api/generated/schemas',
       client: 'react-query',
       httpClient: 'axios',
       mock: false,
@@ -14,7 +14,7 @@ export default {
       indexFiles: true,
       override: {
         mutator: {
-          path: './src/lib/apiMutator.ts',
+          path: './src/api/orval-mutator.ts',
           name: 'adminApi',
         },
       },

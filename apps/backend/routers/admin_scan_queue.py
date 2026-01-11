@@ -26,7 +26,7 @@ async def init_db(
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("", response_model=ResponseEnvelope)
+@router.get("", operation_id="listAdminScanQueue", response_model=ResponseEnvelope)
 async def get_scan_queue(
     status: Optional[str] = None,
     db: Session = Depends(get_db),

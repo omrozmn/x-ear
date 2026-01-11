@@ -28,7 +28,7 @@ class PlanListResponse(ResponseEnvelope):
 class PlanDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("", response_model=PlanListResponse)
+@router.get("", operation_id="listAdminPlans", response_model=PlanListResponse)
 def list_plans(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
@@ -61,7 +61,7 @@ def list_plans(
         logger.error(f"List plans error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", response_model=PlanDetailResponse)
+@router.post("", operation_id="createAdminPlan", response_model=PlanDetailResponse)
 def create_plan(
     request_data: PlanCreate,
     db_session: Session = Depends(get_db),

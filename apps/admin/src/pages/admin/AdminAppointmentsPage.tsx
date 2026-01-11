@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGetAdminAppointments } from '@/lib/api-client';
+import { useListAdminAppointments } from '@/lib/api-client';
 import {
     CalendarIcon,
     MagnifyingGlassIcon,
@@ -12,7 +12,7 @@ const AdminAppointmentsPage: React.FC = () => {
     const [page, setPage] = useState(1);
     const [statusFilter, setStatusFilter] = useState('');
 
-    const { data: appointmentsData, isLoading, refetch } = useGetAdminAppointments({
+    const { data: appointmentsData, isLoading, refetch } = useListAdminAppointments({
         page,
         limit: 10,
         search,

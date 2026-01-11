@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGetNotificationTemplates, useSendNotification } from '@/lib/api-client';
+import { useListAdminNotificationTemplates, useCreateAdminNotificationSend } from '@/lib/api-client';
 import {
     BellIcon,
     PaperAirplaneIcon,
@@ -9,8 +9,8 @@ import {
 import toast from 'react-hot-toast';
 
 const AdminNotificationsPage: React.FC = () => {
-    const { data: templatesData, isLoading: templatesLoading } = useGetNotificationTemplates({} as any);
-    const sendNotificationMutation = useSendNotification();
+    const { data: templatesData, isLoading: templatesLoading } = useListAdminNotificationTemplates({} as any);
+    const sendNotificationMutation = useCreateAdminNotificationSend();
 
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
     const [targetType, setTargetType] = useState<'user' | 'tenant' | 'all'>('all');

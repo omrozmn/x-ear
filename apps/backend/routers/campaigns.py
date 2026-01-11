@@ -205,7 +205,7 @@ def delete_campaign(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/campaigns/{campaign_id}/send", operation_id="sendCampaign")
+@router.post("/campaigns/{campaign_id}/send", operation_id="createCampaignSend")
 def send_campaign(
     campaign_id: str,
     payload: CampaignSendRequest,

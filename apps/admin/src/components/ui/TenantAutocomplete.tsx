@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Building } from 'lucide-react';
-import { useGetAdminTenants } from '../../lib/api-client';
+import { useListAdminTenants } from '../../lib/api-client';
 
 interface Tenant {
     id: string;
@@ -28,7 +28,7 @@ export function TenantAutocomplete({
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Fetch tenants with search query
-    const { data: tenantsData, isLoading } = useGetAdminTenants({
+    const { data: tenantsData, isLoading } = useListAdminTenants({
         search: searchQuery,
         limit: 10
     }, {

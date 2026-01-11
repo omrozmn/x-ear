@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
-    useGetCampaigns,
-    useCreateCampaign,
+    useListCampaigns,
+    useCreateCampaigns,
     useUpdateCampaign,
     useDeleteCampaign,
     CampaignRead,
@@ -34,7 +34,7 @@ const AdminCampaignsPage: React.FC = () => {
     const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
 
     // Queries
-    const { data: campaignsData, isLoading } = useGetCampaigns({
+    const { data: campaignsData, isLoading } = useListCampaigns({
         page,
         limit,
         search: search || undefined,
@@ -42,7 +42,7 @@ const AdminCampaignsPage: React.FC = () => {
     } as any);
 
     // Mutations
-    const createMutation = useCreateCampaign({
+    const createMutation = useCreateCampaigns({
         mutation: {
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['/admin/campaigns'] });

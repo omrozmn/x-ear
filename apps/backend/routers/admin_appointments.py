@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/admin/appointments", tags=["Admin Appointments"]
 class AppointmentListResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("", response_model=AppointmentListResponse)
+@router.get("", operation_id="listAdminAppointments", response_model=AppointmentListResponse)
 async def get_all_appointments(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),

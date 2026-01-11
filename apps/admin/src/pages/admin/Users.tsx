@@ -11,9 +11,9 @@ import * as Dialog from '@radix-ui/react-dialog';
 import toast from 'react-hot-toast';
 
 import {
-  useGetAllTenantUsers,
-  useCreateAdminUser,
-  useUpdateAnyTenantUser,
+  useListAdminUserAll,
+  useCreateAdminUsers,
+  useUpdateAdminUserAll,
 } from '@/lib/api-client';
 
 // Local type definitions (not exported from generated client)
@@ -61,7 +61,7 @@ const Users: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Fetch users (All Tenant Users)
-  const { data: usersData, isLoading, error } = useGetAllTenantUsers({
+  const { data: usersData, isLoading, error } = useListAdminUserAll({
     page,
     limit,
     search: searchTerm || undefined
@@ -71,8 +71,8 @@ const Users: React.FC = () => {
   const pagination = (usersData as any)?.data?.pagination || (usersData as any)?.pagination;
 
   // Mutations
-  const { mutateAsync: updateAnyTenantUser } = useUpdateAnyTenantUser();
-  const { mutateAsync: createAdminUser } = useCreateAdminUser();
+  const { mutateAsync: updateAnyTenantUser } = useUpdateAdminUserAll();
+  const { mutateAsync: createAdminUser } = useCreateAdminUsers();
 
   const handleStatusToggleClick = (userId: string, currentStatus: boolean | undefined) => {
     setUserToToggle({ id: userId, status: !!currentStatus });

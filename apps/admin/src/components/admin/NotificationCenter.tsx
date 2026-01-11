@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
 import { Bell, Check } from 'lucide-react';
 import * as Popover from '@radix-ui/react-popover';
-import { useGetApiNotifications, usePutApiNotificationsNotificationIdRead } from '../../lib/api-client';
+import { useListNotifications, useUpdateNotificationRead } from '../../lib/api-client';
 import { Button } from '@x-ear/ui-web';
 
 export function NotificationCenter() {
     const [isOpen, setIsOpen] = useState(false);
     const userId = 'system'; // In a real app, this would come from auth context
 
-    const { data: notificationsData, refetch } = useGetApiNotifications({
+    const { data: notificationsData, refetch } = useListNotifications({
         user_id: userId,
-        page: 1,
-        limit: 5
-    });
+        page: 1
+    } as any);
 
-    const markReadMutation = usePutApiNotificationsNotificationIdRead();
+    const markReadMutation = useUpdateNotificationRead();
 
     const handleMarkRead = async (id: string) => {
         try {

@@ -6,11 +6,11 @@ import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
 
 import {
-  useGetAdminPlans,
-  useCreatePlan,
-  useUpdatePlan,
-  useDeletePlan,
-  Plan
+  useListAdminPlans,
+  useCreateAdminPlan,
+  useUpdateAdminPlan,
+  useDeleteAdminPlan,
+  PlanRead
 } from '@/lib/api-client';
 
 import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
@@ -23,14 +23,14 @@ const Plans: React.FC = () => {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const { data: plansData, isLoading, error } = useGetAdminPlans({ page, limit } as any);
+  const { data: plansData, isLoading, error } = useListAdminPlans({ page, limit } as any);
 
   const plans = (plansData as any)?.data?.plans || [];
   const pagination = (plansData as any)?.data?.pagination;
 
-  const { mutateAsync: createPlan } = useCreatePlan();
-  const { mutateAsync: updatePlan } = useUpdatePlan();
-  const { mutateAsync: deletePlan } = useDeletePlan();
+  const { mutateAsync: createPlan } = useCreateAdminPlan();
+  const { mutateAsync: updatePlan } = useUpdateAdminPlan();
+  const { mutateAsync: deletePlan } = useDeleteAdminPlan();
 
   // Local state interface for the form, where features is an array for easier UI handling
   interface PlanFormState extends Omit<any, 'features'> {
@@ -38,11 +38,11 @@ const Plans: React.FC = () => {
   }
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+  const [editingPlan, setEditingPlan] = useState<PlanRead | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
   const [isToggleModalOpen, setIsToggleModalOpen] = useState(false);
-  const [togglingPlan, setTogglingPlan] = useState<Plan | null>(null);
+  const [togglingPlan, setTogglingPlan] = useState<PlanRead | null>(null);
 
   const [formData, setFormData] = useState<PlanFormState>({
     name: '',
@@ -56,7 +56,7 @@ const Plans: React.FC = () => {
     isActive: true
   });
 
-  const handleOpenModal = (plan?: Plan) => {
+  const handleOpenModal = (plan?: PlanRead) => {
     if (plan) {
       setEditingPlan(plan);
       // Convert features object/array to array for UI
@@ -137,7 +137,7 @@ const Plans: React.FC = () => {
     }
   };
 
-  const handleToggleActiveClick = (plan: Plan) => {
+  const handleToggleActiveClick = (plan: PlanRead) => {
     setTogglingPlan(plan);
     setIsToggleModalOpen(true);
   };

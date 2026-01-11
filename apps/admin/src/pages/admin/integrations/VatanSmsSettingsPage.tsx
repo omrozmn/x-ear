@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useGetVatanSmsConfig, useUpdateVatanSmsConfig } from '@/lib/api-client';
+import { useListAdminIntegrationVatanSmConfig, useUpdateAdminIntegrationVatanSmConfig } from '@/lib/api-client';
 import { EnvelopeIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
 const VatanSmsSettingsPage: React.FC = () => {
-    const { data: configData, isLoading } = useGetVatanSmsConfig();
-    const updateMutation = useUpdateVatanSmsConfig();
+    const { data: configData, isLoading } = useListAdminIntegrationVatanSmConfig();
+    const updateMutation = useUpdateAdminIntegrationVatanSmConfig();
 
     const [approvalEmail, setApprovalEmail] = useState('');
     const [emailSubject, setEmailSubject] = useState('');

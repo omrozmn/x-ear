@@ -23,7 +23,7 @@ class InvoiceListResponse(ResponseEnvelope):
 class InvoiceDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("", response_model=InvoiceListResponse)
+@router.get("", operation_id="listAdminInvoices", response_model=InvoiceListResponse)
 async def get_admin_invoices(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
@@ -66,7 +66,7 @@ async def get_admin_invoices(
         logger.error(f"Get invoices error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", response_model=InvoiceDetailResponse)
+@router.post("", operation_id="createAdminInvoice", response_model=InvoiceDetailResponse)
 async def create_admin_invoice(
     data: InvoiceCreate,
     db: Session = Depends(get_db),

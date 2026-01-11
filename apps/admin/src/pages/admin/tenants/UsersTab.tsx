@@ -2,9 +2,15 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, UserPlus } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useGetTenantUsers, useCreateTenantUser, useUpdateTenantUser } from '@/lib/api-client';
+import {
+    useListAdminTenantUsers,
+    useCreateAdminTenantUsers,
+    useUpdateAdminTenantUser,
+    getListAdminTenantUsersQueryKey
+} from '@/api/generated/admin-tenants/admin-tenants';
 import { EditUserModal } from './EditUserModal';
 import { ConfirmationModal } from './ConfirmationModal';
+import { UserRead } from '@/api/generated/schemas';
 
 interface UsersTabProps {
     tenantId: string;
@@ -12,28 +18,60 @@ interface UsersTabProps {
 
 export const UsersTab = ({ tenantId }: UsersTabProps) => {
     const queryClient = useQueryClient();
-    const { data: usersData, isLoading } = useGetTenantUsers(tenantId);
-    const users = (usersData as any)?.data?.users || (usersData as any)?.users || [];
+
+    // List users - Type inferred automatically from Orval
+    const { data: usersResponse, isLoading } = useListAdminTenantUsers(tenantId);
+
+    // Access users from envelope (ResponseEnvelope -> data -> users)
+    const users = usersResponse?.data?.users || [];
+
     const [isAdding, setIsAdding] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [newUser, setNewUser] = useState({ email: '', password: '', firstName: '', lastName: '', role: 'tenant_user', username: '' });
-    const { mutateAsync: createTenantUser } = useCreateTenantUser();
-    const { mutateAsync: updateTenantUser } = useUpdateTenantUser();
-    const [editingUser, setEditingUser] = useState<any>(null);
+
+    // Create mutation
+    const createUserMutation = useCreateAdminTenantUsers({
+        mutation: {
+            onSuccess: () => {
+                toast.success('Kullanıcı eklendi');
+                setIsAdding(false);
+                setNewUser({ email: '', password: '', firstName: '', lastName: '', role: 'tenant_user', username: '' });
+                queryClient.invalidateQueries({ queryKey: getListAdminTenantUsersQueryKey(tenantId) });
+            },
+            onError: (error: any) => {
+                toast.error(error.response?.data?.error?.message || 'Kullanıcı eklenemedi');
+            }
+        }
+    });
+
+    // Update mutation
+    const updateUserMutation = useUpdateAdminTenantUser({
+        mutation: {
+            onSuccess: () => {
+                // Handled in specific functions
+            },
+            onError: (error: any) => {
+                toast.error(error.response?.data?.error?.message || 'Güncelleme başarısız');
+            }
+        }
+    });
+
+    const [editingUser, setEditingUser] = useState<UserRead | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [userToToggle, setUserToToggle] = useState<any>(null);
+    const [userToToggle, setUserToToggle] = useState<UserRead | null>(null);
 
     const confirmToggle = async () => {
         if (!userToToggle) return;
         try {
-            await updateTenantUser({
+            await updateUserMutation.mutateAsync({
+                tenantId: tenantId,
                 userId: userToToggle.id,
-                data: { is_active: !userToToggle.is_active } as any
+                data: { is_active: !userToToggle.isActive } as any
             });
-            toast.success(`Kullanıcı ${!userToToggle.is_active ? 'aktifleştirildi' : 'pasife alındı'}`);
-            await queryClient.invalidateQueries({ queryKey: [`/api/admin/tenants/${tenantId}/users`] });
+            toast.success(`Kullanıcı ${!userToToggle.isActive ? 'aktifleştirildi' : 'pasife alındı'}`);
+            await queryClient.invalidateQueries({ queryKey: getListAdminTenantUsersQueryKey(tenantId) });
         } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'Durum güncellenemedi');
+            // Toast handled in onError
         } finally {
             setUserToToggle(null);
         }
@@ -43,7 +81,7 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await createTenantUser({
+            await createUserMutation.mutateAsync({
                 tenantId,
                 data: {
                     email: newUser.email,
@@ -55,12 +93,8 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
                     is_active: true
                 } as any
             });
-            toast.success('Kullanıcı eklendi');
-            setIsAdding(false);
-            setNewUser({ email: '', password: '', firstName: '', lastName: '', role: 'tenant_user', username: '' });
-            await queryClient.invalidateQueries({ queryKey: [`/api/admin/tenants/${tenantId}/users`] });
         } catch (error: any) {
-            toast.error(error.response?.data?.error?.message || 'Kullanıcı eklenemedi');
+            // Toast handled in onError
         } finally {
             setIsSubmitting(false);
         }
@@ -109,21 +143,21 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">
-                            {users.map((user: any) => (
+                            {users.map((user: UserRead) => (
                                 <tr key={user.id}>
                                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm">
-                                        <div className="font-medium text-gray-900">{user.first_name} {user.last_name}</div>
+                                        <div className="font-medium text-gray-900">{user.firstName} {user.lastName}</div>
                                         <div className="text-gray-500">{user.email}</div>
                                         <div className="text-xs text-gray-400">{user.username}</div>
                                     </td>
                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{user.role === 'tenant_admin' ? 'Yönetici' : 'Kullanıcı'}</td>
                                     <td className="whitespace-nowrap px-3 py-4 text-sm">
-                                        <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{user.is_active ? 'Aktif' : 'Pasif'}</span>
+                                        <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{user.isActive ? 'Aktif' : 'Pasif'}</span>
                                     </td>
-                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{user.created_at ? new Date(user.created_at).toLocaleDateString('tr-TR') : '-'}</td>
+                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{user.createdAt ? new Date(user.createdAt as string).toLocaleDateString('tr-TR') : '-'}</td>
                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-right">
                                         <div className="flex justify-end space-x-2">
-                                            <button onClick={() => setUserToToggle(user)} className={`text-xs font-medium px-2 py-1 rounded ${user.is_active ? 'text-red-600 bg-red-50 hover:bg-red-100' : 'text-green-600 bg-green-50 hover:bg-green-100'}`}>{user.is_active ? 'Pasife Al' : 'Aktifleştir'}</button>
+                                            <button onClick={() => setUserToToggle(user)} className={`text-xs font-medium px-2 py-1 rounded ${user.isActive ? 'text-red-600 bg-red-50 hover:bg-red-100' : 'text-green-600 bg-green-50 hover:bg-green-100'}`}>{user.isActive ? 'Pasife Al' : 'Aktifleştir'}</button>
                                             <button onClick={() => { setEditingUser(user); setIsEditModalOpen(true); }} className="text-blue-600 hover:text-blue-900 p-1" title="Düzenle"><Edit className="h-4 w-4" /></button>
                                         </div>
                                     </td>
@@ -135,10 +169,10 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
             )}
 
             {isEditModalOpen && editingUser && (
-                <EditUserModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} user={editingUser} tenantId={tenantId} onSuccess={async () => await queryClient.invalidateQueries({ queryKey: [`/api/admin/tenants/${tenantId}/users`] })} />
+                <EditUserModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} user={editingUser} tenantId={tenantId} onSuccess={async () => await queryClient.invalidateQueries({ queryKey: getListAdminTenantUsersQueryKey(tenantId) })} />
             )}
 
-            <ConfirmationModal isOpen={!!userToToggle} onClose={() => setUserToToggle(null)} onConfirm={confirmToggle} title="Durum Değişikliği" message={`Kullanıcıyı ${userToToggle?.is_active ? 'pasife almak' : 'aktifleştirmek'} istediğinize emin misiniz?`} />
+            <ConfirmationModal isOpen={!!userToToggle} onClose={() => setUserToToggle(null)} onConfirm={confirmToggle} title="Durum Değişikliği" message={`Kullanıcıyı ${userToToggle?.isActive ? 'pasife almak' : 'aktifleştirmek'} istediğinize emin misiniz?`} />
         </div>
     );
 };

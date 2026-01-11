@@ -22,7 +22,7 @@ class IntegrationListResponse(ResponseEnvelope):
 class IntegrationDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("", response_model=IntegrationListResponse)
+@router.get("", operation_id="listAdminIntegrations", response_model=IntegrationListResponse)
 async def get_integrations(
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())

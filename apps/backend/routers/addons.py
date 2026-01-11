@@ -19,7 +19,7 @@ router = APIRouter(prefix="/addons", tags=["Addons"])
 
 # --- Routes ---
 
-@router.get("", response_model=ResponseEnvelope[List[AddonRead]])
+@router.get("", operation_id="listAddons", response_model=ResponseEnvelope[List[AddonRead]])
 def get_addons(db: Session = Depends(get_db)):
     """Get all active addons (Public)"""
     try:
@@ -61,7 +61,7 @@ def get_admin_addons(
         logger.error(f"Error getting admin addons: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", status_code=201, response_model=ResponseEnvelope[AddonRead])
+@router.post("", operation_id="createAddon", status_code=201, response_model=ResponseEnvelope[AddonRead])
 def create_addon(
     request_data: AddonCreate,
     access: UnifiedAccess = Depends(require_access()),

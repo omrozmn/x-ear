@@ -20,6 +20,7 @@ from models.plan import Plan
 from models.plan import Plan
 from models.addon import AddOn
 from schemas.tenants import TenantCreate, TenantUpdate, TenantRead, TenantStatus
+from schemas.users import UserRead, UserListResponse, UserResponse
 from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
 
@@ -52,7 +53,7 @@ class UpdateTenantUserRequest(BaseModel):
     last_name: Optional[str] = None
     role: Optional[str] = None
     is_active: Optional[bool] = None
-    password: Optional[str] = None
+    password: Optional[str] = None    
 
 class AddAddonRequest(BaseModel):
     addon_id: str
@@ -66,7 +67,7 @@ class UpdateDocumentStatusRequest(BaseModel):
 
 # --- Routes ---
 
-@router.get("")
+@router.get("", operation_id="listAdminTenants")
 def list_tenants(
     page: int = 1,
     limit: int = 20,
@@ -114,7 +115,7 @@ def list_tenants(
         logger.error(f"List tenants error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", response_model=ResponseEnvelope[TenantRead])
+@router.post("", operation_id="createAdminTenant", response_model=ResponseEnvelope[TenantRead])
 def create_tenant(
     request_data: TenantCreate,
     db_session: Session = Depends(get_db),
@@ -206,7 +207,7 @@ def delete_tenant(
         logger.error(f"Delete tenant error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{tenant_id}/users", operation_id="listAdminTenantUsers")
+@router.get("/{tenant_id}/users", operation_id="listAdminTenantUsers", response_model=ResponseEnvelope[UserListResponse])
 def get_tenant_users(
     tenant_id: str,
     db_session: Session = Depends(get_db),
@@ -219,17 +220,9 @@ def get_tenant_users(
     
     users = db_session.query(User).filter_by(tenant_id=tenant_id).all()
     
-    return ResponseEnvelope(data={
-        "users": [{
-            "id": u.id, "username": u.username, "email": u.email,
-            "first_name": u.first_name, "last_name": u.last_name,
-            "role": u.role, "is_active": u.is_active,
-            "last_login": u.last_login.isoformat() if u.last_login else None,
-            "tenant_id": u.tenant_id
-        } for u in users]
-    })
+    return ResponseEnvelope(data=UserListResponse(users=users))
 
-@router.post("/{tenant_id}/users", operation_id="createAdminTenantUsers")
+@router.post("/{tenant_id}/users", operation_id="createAdminTenantUsers", response_model=ResponseEnvelope[UserResponse])
 def create_tenant_user(
     tenant_id: str,
     request_data: CreateTenantUserRequest,
@@ -258,11 +251,7 @@ def create_tenant_user(
         db_session.add(user)
         db_session.commit()
         
-        return ResponseEnvelope(data={"user": {
-            "id": user.id, "username": user.username, "email": user.email,
-            "first_name": user.first_name, "last_name": user.last_name,
-            "role": user.role, "is_active": user.is_active, "tenant_id": user.tenant_id
-        }})
+        return ResponseEnvelope(data=UserResponse(user=user))
     except HTTPException:
         raise
     except Exception as e:
@@ -270,7 +259,7 @@ def create_tenant_user(
         logger.error(f"Create tenant user error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.put("/{tenant_id}/users/{user_id}", operation_id="updateAdminTenantUser")
+@router.put("/{tenant_id}/users/{user_id}", operation_id="updateAdminTenantUser", response_model=ResponseEnvelope[UserResponse])
 def update_tenant_user(
     tenant_id: str,
     user_id: str,
@@ -312,11 +301,7 @@ def update_tenant_user(
             user.set_password(request_data.password)
         
         db_session.commit()
-        return ResponseEnvelope(data={"user": {
-            "id": user.id, "username": user.username, "email": user.email,
-            "first_name": user.first_name, "last_name": user.last_name,
-            "role": user.role, "is_active": user.is_active, "tenant_id": user.tenant_id
-        }})
+        return ResponseEnvelope(data=UserResponse(user=user))
     except HTTPException:
         raise
     except Exception as e:
@@ -501,7 +486,7 @@ def update_tenant_status(
         logger.error(f"Update tenant status error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-# --- SMS Config Endpoints (Migrated from Flask) ---
+# --- SMS Config Endpoints (Migrated from Flask - Full Implementation) ---
 
 @router.get("/{tenant_id}/sms-config", operation_id="listAdminTenantSmsConfig")
 def get_tenant_sms_config(
@@ -509,25 +494,24 @@ def get_tenant_sms_config(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
 ):
-    """Get tenant SMS configuration"""
+    """Get SMS configuration for a tenant (admin view) - Flask parity"""
     try:
+        from models.sms_integration import SMSProviderConfig
+        
         tenant = db_session.get(Tenant, tenant_id)
         if not tenant or tenant.deleted_at:
             raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
         
-        # Get SMS config from tenant settings
-        settings = tenant.settings or {}
-        sms_config = settings.get('sms_config', {})
+        config = db_session.query(SMSProviderConfig).filter_by(tenant_id=tenant_id).first()
+        if not config:
+            return ResponseEnvelope(data=None)
         
-        # Get SMS credit if available
-        try:
-            from models import TenantSMSCredit
-            credit = db_session.query(TenantSMSCredit).filter_by(tenant_id=tenant_id).first()
-            sms_config['credit'] = credit.to_dict() if credit else None
-        except Exception:
-            sms_config['credit'] = None
-        
-        return ResponseEnvelope(data=sms_config)
+        return ResponseEnvelope(data={
+            'apiUsername': config.api_username,
+            'documentsEmail': config.documents_email,
+            'documentsSubmitted': config.documents_submitted,
+            'allDocumentsApproved': config.all_documents_approved
+        })
     except HTTPException:
         raise
     except Exception as e:
@@ -540,17 +524,26 @@ def get_tenant_sms_documents(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
 ):
-    """Get tenant SMS documents"""
+    """Get SMS documents for a tenant - Flask parity"""
     try:
+        from models.sms_integration import SMSProviderConfig
+        
         tenant = db_session.get(Tenant, tenant_id)
         if not tenant or tenant.deleted_at:
             raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
         
-        # Get documents from tenant settings
-        settings = tenant.settings or {}
-        documents = settings.get('sms_documents', [])
+        config = db_session.query(SMSProviderConfig).filter_by(tenant_id=tenant_id).first()
+        if not config:
+            return ResponseEnvelope(data={'documents': [], 'documentsSubmitted': False})
         
-        return ResponseEnvelope(data={"documents": documents})
+        documents = config.documents_json or []
+        
+        return ResponseEnvelope(data={
+            'documents': documents,
+            'documentsSubmitted': config.documents_submitted or False,
+            'documentsSubmittedAt': config.documents_submitted_at.isoformat() if config.documents_submitted_at else None,
+            'allDocumentsApproved': config.all_documents_approved or False
+        })
     except HTTPException:
         raise
     except Exception as e:
@@ -558,6 +551,7 @@ def get_tenant_sms_documents(
         raise HTTPException(status_code=500, detail=str(e))
 
 from fastapi.responses import Response
+import os
 
 @router.get("/{tenant_id}/sms-documents/{document_type}/download", operation_id="listAdminTenantSmsDocumentDownload")
 def download_tenant_sms_document(
@@ -566,14 +560,32 @@ def download_tenant_sms_document(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
 ):
-    """Download tenant SMS document"""
+    """Get download URL for a tenant's SMS document - Flask parity"""
     try:
+        from models.sms_integration import SMSProviderConfig
+        
         tenant = db_session.get(Tenant, tenant_id)
         if not tenant or tenant.deleted_at:
             raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
         
-        # Mock implementation - return placeholder
-        return Response(content=b"Document content placeholder", media_type="application/pdf")
+        config = db_session.query(SMSProviderConfig).filter_by(tenant_id=tenant_id).first()
+        if not config:
+            raise HTTPException(status_code=404, detail={"message": "No SMS configuration found", "code": "NOT_FOUND"})
+        
+        docs = config.documents_json or []
+        doc = next((d for d in docs if d.get('type') == document_type), None)
+        
+        if not doc:
+            raise HTTPException(status_code=404, detail={"message": "Document not found", "code": "NOT_FOUND"})
+        
+        filepath = doc.get('filepath')
+        if not filepath:
+            raise HTTPException(status_code=404, detail={"message": "File path not found", "code": "NOT_FOUND"})
+        
+        # Return URL for static file serving (same as Flask)
+        url = f"/api/sms/documents/file/{filepath}"
+        
+        return ResponseEnvelope(data={'url': url, 'filename': doc.get('filename', 'document')})
     except HTTPException:
         raise
     except Exception as e:
@@ -581,8 +593,8 @@ def download_tenant_sms_document(
         raise HTTPException(status_code=500, detail=str(e))
 
 class DocumentStatusUpdate(BaseModel):
-    status: str
-    notes: Optional[str] = None
+    status: str  # 'approved' or 'revision_requested'
+    note: Optional[str] = None
 
 @router.put("/{tenant_id}/sms-documents/{document_type}/status", operation_id="updateAdminTenantSmsDocumentStatus")
 def update_tenant_sms_document_status(
@@ -592,60 +604,142 @@ def update_tenant_sms_document_status(
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
 ):
-    """Update tenant SMS document status"""
+    """Update SMS document status (approve/request revision) - Flask parity"""
     try:
+        from models.sms_integration import SMSProviderConfig
+        
         tenant = db_session.get(Tenant, tenant_id)
         if not tenant or tenant.deleted_at:
             raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
         
-        settings = dict(tenant.settings or {})
-        documents = list(settings.get('sms_documents', []))
+        config = db_session.query(SMSProviderConfig).filter_by(tenant_id=tenant_id).first()
+        if not config:
+            raise HTTPException(status_code=404, detail={"message": "No SMS configuration found", "code": "NOT_FOUND"})
         
-        # Find and update document
-        for doc in documents:
-            if doc.get('type') == document_type:
-                doc['status'] = request_data.status
-                if request_data.notes:
-                    doc['notes'] = request_data.notes
-                doc['updated_at'] = datetime.utcnow().isoformat()
-                break
+        if request_data.status not in ['approved', 'revision_requested']:
+            raise HTTPException(status_code=400, detail={"message": "Invalid status", "code": "INVALID_STATUS"})
         
-        settings['sms_documents'] = documents
-        tenant.settings = settings
+        docs = config.documents_json or []
+        doc = next((d for d in docs if d.get('type') == document_type), None)
+        
+        if not doc:
+            raise HTTPException(status_code=404, detail={"message": "Document not found", "code": "NOT_FOUND"})
+        
+        doc['status'] = request_data.status
+        doc['reviewedAt'] = datetime.utcnow().isoformat()
+        doc['reviewedBy'] = access.principal_id
+        
+        if request_data.status == 'revision_requested':
+            doc['revisionNote'] = request_data.note or ''
+        
+        config.documents_json = docs
+        
+        # Check if all documents are approved
+        all_approved = all(d.get('status') == 'approved' for d in docs)
+        config.all_documents_approved = all_approved
+        
         db_session.commit()
         
-        return ResponseEnvelope(message="Document status updated")
+        return ResponseEnvelope(data={
+            'document': doc,
+            'allDocumentsApproved': all_approved
+        })
     except HTTPException:
         raise
     except Exception as e:
         db_session.rollback()
-        logger.error(f"Update tenant SMS document status error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-class SendEmailRequest(BaseModel):
-    subject: str
-    body: str
-    to_email: Optional[str] = None
+        logger.error(f"Update SMS document status error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/{tenant_id}/sms-documents/send-email", operation_id="createAdminTenantSmsDocumentSendEmail")
 def send_tenant_sms_documents_email(
     tenant_id: str,
-    request_data: SendEmailRequest,
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
 ):
-    """Send email about tenant SMS documents"""
+    """Send all approved SMS documents via email - Flask parity"""
     try:
+        from models.sms_integration import SMSProviderConfig
+        from services.email_service import email_service
+        
         tenant = db_session.get(Tenant, tenant_id)
         if not tenant or tenant.deleted_at:
             raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
         
-        # Mock implementation - log email
-        logger.info(f"Email sent to tenant {tenant_id}: {request_data.subject}")
+        config = db_session.query(SMSProviderConfig).filter_by(tenant_id=tenant_id).first()
+        if not config:
+            raise HTTPException(status_code=404, detail={"message": "No SMS configuration found", "code": "NOT_FOUND"})
         
-        return ResponseEnvelope(message="Email sent successfully")
+        if not config.all_documents_approved:
+            raise HTTPException(status_code=400, detail={"message": "Not all documents are approved", "code": "NOT_APPROVED"})
+        
+        if not config.documents_email:
+            raise HTTPException(status_code=400, detail={"message": "No email address configured", "code": "NO_EMAIL"})
+        
+        docs = config.documents_json or []
+        if not docs:
+            raise HTTPException(status_code=400, detail={"message": "No documents to send", "code": "NO_DOCUMENTS"})
+        
+        # Prepare email body
+        subject = f"SMS Başvuru Belgeleri - {tenant.name}"
+        body = f"""
+Merhaba,
+
+{tenant.name} firması için SMS başvuru belgelerini ekte bulabilirsiniz.
+
+Firma Bilgileri:
+- Firma Adı: {tenant.name}
+- Yönetici Email: {tenant.owner_email}
+- API Username: {config.api_username}
+
+Belgeler:
+"""
+        for doc in docs:
+            body += f"\n- {doc.get('filename', 'Belge')} ({doc.get('type', 'unknown')})"
+        
+        body += "\n\nİyi çalışmalar."
+        
+        # Send email
+        is_dev = os.getenv('ENVIRONMENT', 'production') == 'development'
+        
+        if is_dev:
+            # Development mode - simulate email sending
+            logger.info("=" * 80)
+            logger.info("📧 EMAIL SIMULATION (Development Mode)")
+            logger.info("=" * 80)
+            logger.info(f"To: {config.documents_email}")
+            logger.info(f"Subject: {subject}")
+            logger.info("-" * 80)
+            logger.info(f"Body: {body}")
+            logger.info("=" * 80)
+            
+            return ResponseEnvelope(data={
+                'message': 'E-posta başarıyla gönderildi (Development: Simulated)',
+                'simulated': True,
+                'recipient': config.documents_email,
+                'attachments': len(docs)
+            })
+        else:
+            # Production mode - send real email
+            success = email_service.send_email(
+                to=config.documents_email,
+                subject=subject,
+                body_html=f"<html><body><pre>{body}</pre></body></html>",
+                body_text=body
+            )
+            
+            if success:
+                logger.info(f"SMS documents email sent to {config.documents_email} for tenant {tenant_id}")
+                return ResponseEnvelope(data={
+                    'message': 'E-posta başarıyla gönderildi',
+                    'simulated': False,
+                    'recipient': config.documents_email,
+                    'attachments': len(docs)
+                })
+            else:
+                raise HTTPException(status_code=500, detail={"message": "E-posta gönderilemedi", "code": "MAIL_FAILED"})
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Send tenant SMS documents email error: {e}")
+        logger.error(f"Send SMS documents email error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -29,7 +29,7 @@ class AddonListResponse(ResponseEnvelope):
 class AddonDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("", response_model=AddonListResponse)
+@router.get("", operation_id="listAdminAddons", response_model=AddonListResponse)
 def list_addons(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
@@ -59,7 +59,7 @@ def list_addons(
         logger.error(f"List addons error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", response_model=AddonDetailResponse)
+@router.post("", operation_id="createAdminAddon", response_model=AddonDetailResponse)
 def create_addon(
     request_data: AddonCreate,
     db_session: Session = Depends(get_db),

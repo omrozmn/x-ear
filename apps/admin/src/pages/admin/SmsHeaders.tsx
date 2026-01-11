@@ -10,8 +10,8 @@ import {
 } from 'lucide-react';
 import { Button, Input, Select } from '@x-ear/ui-web';
 import {
-    useGetApiAdminSmsHeaders,
-    useUpdateAdminHeaderStatus
+    useListSmAdminHeaders,
+    useUpdateSmAdminHeaderStatus
 } from '../../lib/api-client';
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -24,13 +24,13 @@ export default function SMSHeadersPage() {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
 
-    const { data: headersData, isLoading, refetch } = useGetApiAdminSmsHeaders({
+    const { data: headersData, isLoading, refetch } = useListSmAdminHeaders({
         status: statusFilter,
         page,
         limit
     } as any);
 
-    const updateStatusMutation = useUpdateAdminHeaderStatus();
+    const updateStatusMutation = useUpdateSmAdminHeaderStatus();
 
     const handleStatusUpdate = async (status: 'approved' | 'rejected') => {
         if (!selectedHeader) return;

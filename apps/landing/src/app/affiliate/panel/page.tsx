@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 import AppHeader from '../../AppHeader';
-import { getAffiliate, updateAffiliatePaymentInfo, getAffiliateCommissions, Commission } from '../../../lib/api/affiliate';
+import { getAffiliate, updateAffiliatePaymentInfo, getAffiliateCommissions, Commission } from '../../../lib/affiliate';
 import { Loader2, LogOut, Wallet, User as UserIcon, Building2, CheckCircle, AlertCircle, Copy, Link as LinkIcon, Phone, History, Banknote } from 'lucide-react';
 
 const PanelPage = () => {

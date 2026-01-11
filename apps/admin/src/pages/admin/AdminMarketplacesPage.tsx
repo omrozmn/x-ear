@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
-    useGetMarketplaceIntegrations,
-    useCreateMarketplaceIntegration,
-    useSyncMarketplaceIntegration
+    useListAdminMarketplaceIntegrations,
+    useCreateAdminMarketplaceIntegrations,
+    useCreateAdminMarketplaceIntegrationSync
 } from '@/lib/api-client';
 import {
     ShoppingBag,
@@ -25,9 +25,9 @@ const AdminMarketplacesPage: React.FC = () => {
     const [apiSecret, setApiSecret] = useState('');
     const [sellerId, setSellerId] = useState('');
 
-    const { data: integrationsData, isLoading, refetch } = useGetMarketplaceIntegrations({});
-    const createMutation = useCreateMarketplaceIntegration();
-    const syncMutation = useSyncMarketplaceIntegration();
+    const { data: integrationsData, isLoading, refetch } = useListAdminMarketplaceIntegrations({});
+    const createMutation = useCreateAdminMarketplaceIntegrations();
+    const syncMutation = useCreateAdminMarketplaceIntegrationSync();
 
     const integrations = (integrationsData as any)?.data || [];
 

@@ -21,7 +21,7 @@ from services.device_assignment_service import DeviceAssignmentService
 from schemas.sales import (
     SaleRead, SaleCreate, SaleUpdate, 
     PaymentRecordRead, PaymentRecordCreate, 
-    PaymentPlanRead, PaymentPlanCreate,
+    PaymentPlanRead, PaymentPlanCreate, InstallmentPayment,
     DeviceAssignmentRead, DeviceAssignmentUpdate,
     DeviceAssignmentCreate, DeviceAssignmentCreateResponse,
     SaleRecalcRequest, SaleRecalcResponse
@@ -50,76 +50,6 @@ def get_sale_or_404(db: Session, sale_id: str, access: UnifiedAccess) -> Sale:
             detail=ApiError(message="Sale not found", code="SALE_NOT_FOUND").model_dump(mode="json"),
         )
     return sale
-
-def _build_device_info_with_lookup(assignment: DeviceAssignment, db: Session) -> Dict[str, Any]:
-    """Build device info dict (ported from read.py)"""
-    device_name = None
-    barcode = None
-    
-    # Needs Device model? Assignment has device_id?
-    # assignment.device linked to Device model usually.
-    # In Flask read.py it did db.session.get(Device, assignment.device_id)
-    # Here we can use assignment.device relationship if loaded, or fetch.
-    
-    from models.device import Device
-    device = db.get(Device, assignment.device_id)
-    if not device:
-        return None
-        
-    if device.inventory_id:
-        inv_item = db.get(InventoryItem, device.inventory_id)
-        if inv_item:
-            device_name = inv_item.name
-            barcode = inv_item.barcode
-            
-    # Helper to format name
-    name_parts = []
-    if device.brand: name_parts.append(device.brand)
-    if device.model: name_parts.append(device.model)
-    formatted_name = " ".join(name_parts)
-    if not formatted_name and device_name: formatted_name = device_name
-    
-    return {
-        'id': device.id,
-        'name': formatted_name,
-        'brand': device.brand,
-        'model': device.model,
-        'serialNumber': device.serial_number,
-        'serialNumberLeft': device.serial_number_left,
-        'serialNumberRight': device.serial_number_right,
-        'barcode': barcode,
-        'ear': assignment.ear,
-        'listPrice': float(assignment.list_price or 0),
-        'salePrice': float(assignment.sale_price or 0),
-        'sgk_coverage_amount': float(assignment.sgk_support or 0),
-        'patient_responsible_amount': float(assignment.net_payable or 0),
-        
-        # Legacy frontend support
-        'sgkReduction': float(assignment.sgk_support or 0),
-        'patientPayment': float(assignment.net_payable or 0)
-    }
-
-def _build_sale_data(sale, devices, plan, payments, invoice, sgk_val):
-    """Build final sale response dict"""
-    return {
-        'id': sale.id,
-        'patientId': sale.patient_id,
-        'tenantId': sale.tenant_id,
-        'saleDate': sale.sale_date.isoformat() if sale.sale_date else None,
-        'status': sale.status,
-        'totalAmount': float(sale.total_amount or 0),
-        'paidAmount': float(sale.paid_amount or 0),
-        'finalAmount': float(sale.final_amount or 0),
-        'sgkCoverage': float(sgk_val or 0),
-        'discountAmount': float(sale.discount_amount or 0),
-        'notes': sale.notes,
-        'paymentMethod': sale.payment_method,
-        'reportStatus': sale.report_status,
-        'devices': devices,
-        'paymentPlan': plan, # Pydantic or dict?
-        'paymentRecords': payments, # List
-        'invoice': invoice.to_dict() if invoice else None
-    }
 
 # ============= HELPER FUNCTIONS FOR FLASK PARITY =============
 
@@ -543,6 +473,149 @@ def get_sale_payment_plan(
         }
     )
 
+# --- Payment Plan Create & Installment Pay Endpoints (Flask Parity) ---
+
+@router.post("/sales/{sale_id}/payment-plan", operation_id="createSalePaymentPlan")
+def create_sale_payment_plan(
+    sale_id: str,
+    request_data: PaymentPlanCreate,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Create payment plan for a sale - Flask parity"""
+    access.require_permission("sales:write")
+    
+    sale = get_sale_or_404(db, sale_id, access)
+    
+    # Get system settings
+    from models.system import Settings
+    settings_record = Settings.get_system_settings()
+    settings = settings_record.settings_json if settings_record else {}
+    
+    plan_type = request_data.plan_type
+    installment_count = request_data.installment_count
+    down_payment = request_data.down_payment
+    
+    from services.pricing import create_payment_plan, create_custom_payment_plan
+    
+    try:
+        if plan_type == 'custom' and request_data.installments:
+            payment_plan = create_custom_payment_plan(
+                sale_id=sale_id,
+                installments_data=request_data.installments,
+                settings=settings
+            )
+        else:
+            payment_plan = create_payment_plan(
+                sale_id=sale_id,
+                plan_type=plan_type,
+                amount=float(sale.total_amount or 0) - down_payment,
+                settings=settings,
+                tenant_id=sale.tenant_id
+            )
+        
+        if payment_plan:
+            db.add(payment_plan)
+            db.commit()
+            db.refresh(payment_plan)
+            
+            # Build response with installments
+            insts = db.query(PaymentInstallment).filter_by(payment_plan_id=payment_plan.id).order_by(PaymentInstallment.due_date).all()
+            inst_data = [
+                {
+                    'id': i.id,
+                    'installmentNumber': i.installment_number,
+                    'amount': float(i.amount),
+                    'dueDate': i.due_date.isoformat() if i.due_date else None,
+                    'status': i.status
+                }
+                for i in insts
+            ]
+            
+            return ResponseEnvelope(
+                data={
+                    'id': payment_plan.id,
+                    'planType': payment_plan.plan_type,
+                    'totalAmount': float(payment_plan.total_amount or 0),
+                    'installments': inst_data
+                },
+                message="Payment plan created successfully"
+            )
+        else:
+            raise HTTPException(status_code=500, detail="Failed to create payment plan")
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Create payment plan error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/sales/{sale_id}/installments/{installment_id}/pay", operation_id="createSaleInstallmentPay")
+def pay_installment(
+    sale_id: str,
+    installment_id: str,
+    request_data: InstallmentPayment,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Pay a specific installment - Flask parity"""
+    access.require_permission("sales:write")
+    
+    from datetime import timezone
+    from uuid import uuid4
+    from decimal import Decimal
+    
+    # Verify sale exists
+    sale = get_sale_or_404(db, sale_id, access)
+    
+    # Get installment
+    installment = db.query(PaymentInstallment).filter_by(id=installment_id).first()
+    
+    if not installment:
+        raise HTTPException(status_code=404, detail="Installment not found")
+    
+    if installment.status == 'paid':
+        raise HTTPException(status_code=400, detail="Installment already paid")
+    
+    # Validate payment data
+    amount = request_data.amount if request_data.amount is not None else float(installment.amount)
+    payment_method = request_data.payment_method
+    payment_date = request_data.payment_date or datetime.now(timezone.utc)
+    
+    # Create payment record
+    payment = PaymentRecord()
+    payment.id = f"payment_{uuid4().hex[:8]}"
+    payment.patient_id = sale.patient_id
+    payment.sale_id = sale_id
+    payment.amount = Decimal(str(amount))
+    payment.payment_method = payment_method
+    payment.payment_type = 'installment'
+    payment.status = 'paid'
+    payment.reference_number = request_data.reference_number
+    payment.notes = f"Installment {installment.installment_number} payment"
+    payment.payment_date = payment_date
+    payment.created_at = datetime.now(timezone.utc)
+    payment.updated_at = datetime.now(timezone.utc)
+    
+    # Update installment status
+    installment.status = 'paid'
+    installment.paid_date = payment.payment_date
+    installment.updated_at = datetime.now(timezone.utc)
+    
+    db.add(payment)
+    db.commit()
+    
+    return ResponseEnvelope(
+        data={
+            'paymentId': payment.id,
+            'installmentId': installment_id,
+            'amount': float(payment.amount),
+            'paymentDate': payment.payment_date.isoformat(),
+            'status': installment.status
+        },
+        message="Installment paid successfully"
+    )
+
 # ============= WRITE HELPERS =============
 
 def _calculate_product_pricing(product: InventoryItem, data: SaleCreate, override_price: float = None):
@@ -729,7 +802,7 @@ def update_sale(
 
     return ResponseEnvelope(data=sale.to_dict(), message="Sale updated")
 
-@router.post("/sales/recalc", operation_id="recalcSales", response_model=ResponseEnvelope[SaleRecalcResponse])
+@router.post("/sales/recalc", operation_id="createSaleRecalc", response_model=ResponseEnvelope[SaleRecalcResponse])
 def recalc_sales(
     payload: SaleRecalcRequest,
     db: Session = Depends(get_db),

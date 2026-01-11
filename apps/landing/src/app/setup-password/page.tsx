@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Eye, EyeOff, CheckCircle, ArrowRight } from "lucide-react";
-import { apiClient } from "@/lib/api/api-client";
+import { apiClient } from "@/lib/api-client";
 import AppHeader from "../AppHeader";
 
 export default function SetupPassword() {

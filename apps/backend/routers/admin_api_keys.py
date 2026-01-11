@@ -36,7 +36,7 @@ async def init_db(
         logger.error(f"Init DB error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("", response_model=ApiKeyListResponse)
+@router.get("", operation_id="listAdminApiKeys", response_model=ApiKeyListResponse)
 async def get_api_keys(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
@@ -70,7 +70,7 @@ async def get_api_keys(
         logger.error(f"Get API keys error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", response_model=ApiKeyDetailResponse)
+@router.post("", operation_id="createAdminApiKey", response_model=ApiKeyDetailResponse)
 async def create_api_key(
     data: ApiKeyCreate,
     db: Session = Depends(get_db),

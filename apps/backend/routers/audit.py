@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/audit", tags=["Audit"])
 
-@router.get("")
+@router.get("", operation_id="listAudit")
 async def list_audit(
     entity_type: Optional[str] = None,
     limit: int = Query(200, ge=1, le=500),

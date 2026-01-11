@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import AppHeader from '../../AppHeader';
-import { loginAffiliate } from '../../../lib/api/affiliate';
+import { loginAffiliate } from '../../../lib/affiliate';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 

@@ -19,7 +19,7 @@ router = APIRouter(prefix="/plans", tags=["Plans"])
 
 # --- Routes ---
 
-@router.get("", response_model=ResponseEnvelope[List[PlanRead]])
+@router.get("", operation_id="listPlans", response_model=ResponseEnvelope[List[PlanRead]])
 def get_plans(db: Session = Depends(get_db)):
     """Get all active plans (Public)"""
     try:
@@ -70,7 +70,7 @@ def get_admin_plans(
         logger.error(f"Error getting admin plans: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", status_code=201, response_model=ResponseEnvelope[PlanRead])
+@router.post("", operation_id="createPlan", status_code=201, response_model=ResponseEnvelope[PlanRead])
 def create_plan(
     request_data: PlanCreate,
     access: UnifiedAccess = Depends(require_access()),

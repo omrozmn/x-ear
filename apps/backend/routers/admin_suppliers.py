@@ -23,7 +23,7 @@ class SupplierListResponse(ResponseEnvelope):
 class SupplierDetailResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("", response_model=SupplierListResponse)
+@router.get("", operation_id="listAdminSuppliers", response_model=SupplierListResponse)
 async def get_suppliers(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
@@ -63,7 +63,7 @@ async def get_suppliers(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("", response_model=SupplierDetailResponse)
+@router.post("", operation_id="createAdminSupplier", response_model=SupplierDetailResponse)
 async def create_supplier(
     data: SupplierCreate,
     db: Session = Depends(get_db),

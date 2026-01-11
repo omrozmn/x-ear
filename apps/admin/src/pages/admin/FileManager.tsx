@@ -8,7 +8,7 @@ import {
     ArrowDownTrayIcon,
     XMarkIcon
 } from '@heroicons/react/24/outline';
-import { useListFiles, useGetPresignedUploadUrl, useProcessDocumentOcr, useDeleteFile } from '@/lib/api-client';
+import { useListUploadFiles, useCreateUploadPresigned, useCreateOcrProcess, useDeleteUploadFiles } from '@/lib/api-client';
 import toast from 'react-hot-toast';
 
 const FileManager: React.FC = () => {
@@ -18,18 +18,18 @@ const FileManager: React.FC = () => {
     const queryClient = useQueryClient();
 
     // Fetch files
-    const { data: filesData, isLoading } = useListFiles({ folder: currentFolder });
+    const { data: filesData, isLoading } = useListUploadFiles({ folder: currentFolder });
     // Accessing nested data structure based on the API response schema
     const files = (filesData as any)?.data?.files || [];
 
     // Get presigned URL mutation
-    const { mutateAsync: getPresignedUrl } = useGetPresignedUploadUrl();
+    const { mutateAsync: getPresignedUrl } = useCreateUploadPresigned();
 
     // OCR mutation
-    const { mutateAsync: processOcr, isPending: isOcrPending } = useProcessDocumentOcr();
+    const { mutateAsync: processOcr, isPending: isOcrPending } = useCreateOcrProcess();
 
     // Delete mutation
-    const { mutateAsync: deleteFile } = useDeleteFile();
+    const { mutateAsync: deleteFile } = useDeleteUploadFiles();
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

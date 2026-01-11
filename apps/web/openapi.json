@@ -1909,7 +1909,7 @@
           "Inventory"
         ],
         "summary": "Get Movements",
-        "description": "Get movements",
+        "description": "Get movements with patient enrichment (Flask parity)",
         "operationId": "listInventoryMovements",
         "security": [
           {
@@ -2025,7 +2025,7 @@
           "Sales"
         ],
         "summary": "Get Sales",
-        "description": "Get all sales with tenant scoping.",
+        "description": "Get all sales with tenant scoping and optional full details.",
         "operationId": "listSales",
         "security": [
           {
@@ -2071,6 +2071,18 @@
               ],
               "title": "Search"
             }
+          },
+          {
+            "name": "include_details",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include full sale details (devices, payments, invoice)",
+              "default": false,
+              "title": "Include Details"
+            },
+            "description": "Include full sale details (devices, payments, invoice)"
           }
         ],
         "responses": {
@@ -2114,6 +2126,107 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SaleCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sales/{sale_id}": {
+      "get": {
+        "tags": [
+          "Sales"
+        ],
+        "summary": "Get Sale",
+        "description": "Get a single sale with full details - Flask parity.",
+        "operationId": "getSale",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sale_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sale Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEnvelope_Any_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Sales"
+        ],
+        "summary": "Update Sale",
+        "operationId": "updateSale",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sale_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sale Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaleUpdate"
               }
             }
           }
@@ -2263,61 +2376,6 @@
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/sales/{sale_id}": {
-      "put": {
-        "tags": [
-          "Sales"
-        ],
-        "summary": "Update Sale",
-        "operationId": "updateSale",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "sale_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Sale Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SaleUpdate"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -8998,7 +9056,7 @@
           "Admin Tenants"
         ],
         "summary": "Get Tenant Sms Config",
-        "description": "Get tenant SMS configuration",
+        "description": "Get SMS configuration for a tenant (admin view) - Flask parity",
         "operationId": "listAdminTenantSmsConfig",
         "security": [
           {
@@ -9044,7 +9102,7 @@
           "Admin Tenants"
         ],
         "summary": "Get Tenant Sms Documents",
-        "description": "Get tenant SMS documents",
+        "description": "Get SMS documents for a tenant - Flask parity",
         "operationId": "listAdminTenantSmsDocuments",
         "security": [
           {
@@ -9090,7 +9148,7 @@
           "Admin Tenants"
         ],
         "summary": "Download Tenant Sms Document",
-        "description": "Download tenant SMS document",
+        "description": "Get download URL for a tenant's SMS document - Flask parity",
         "operationId": "listAdminTenantSmsDocumentDownload",
         "security": [
           {
@@ -9145,7 +9203,7 @@
           "Admin Tenants"
         ],
         "summary": "Update Tenant Sms Document Status",
-        "description": "Update tenant SMS document status",
+        "description": "Update SMS document status (approve/request revision) - Flask parity",
         "operationId": "updateAdminTenantSmsDocumentStatus",
         "security": [
           {
@@ -9210,7 +9268,7 @@
           "Admin Tenants"
         ],
         "summary": "Send Tenant Sms Documents Email",
-        "description": "Send email about tenant SMS documents",
+        "description": "Send all approved SMS documents via email - Flask parity",
         "operationId": "createAdminTenantSmsDocumentSendEmail",
         "security": [
           {
@@ -9228,16 +9286,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SendEmailRequest"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -13224,6 +13272,52 @@
         }
       }
     },
+    "/api/patients/{patient_id}/sales": {
+      "get": {
+        "tags": [
+          "PatientSubresources"
+        ],
+        "summary": "Get Patient Sales",
+        "description": "Get all sales for a specific patient - Flask parity",
+        "operationId": "listPatientSales",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/patients/{patient_id}/appointments": {
       "get": {
         "tags": [
@@ -17009,7 +17103,7 @@
           "Admin Notifications"
         ],
         "summary": "Send Notification",
-        "description": "Send a notification to tenants",
+        "description": "Send a notification to tenants - supports push, email, or both channels",
         "operationId": "createAdminNotificationSend",
         "requestBody": {
           "content": {
@@ -17056,7 +17150,7 @@
           "Admin Notifications"
         ],
         "summary": "Get Templates",
-        "description": "Get notification templates",
+        "description": "Get notification templates - Flask parity with category/channel filters",
         "operationId": "listAdminNotificationTemplates",
         "security": [
           {
@@ -17086,6 +17180,42 @@
               "default": 20,
               "title": "Limit"
             }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by template category",
+              "title": "Category"
+            },
+            "description": "Filter by template category"
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by channel (push, email)",
+              "title": "Channel"
+            },
+            "description": "Filter by channel (push, email)"
           }
         ],
         "responses": {
@@ -27198,6 +27328,32 @@
             ],
             "title": "Loanerserialnumber"
           },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat",
+            "description": "Last update timestamp"
+          },
           "id": {
             "type": "string",
             "title": "Id",
@@ -27241,6 +27397,17 @@
             ],
             "title": "Name"
           },
+          "deviceName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Devicename"
+          },
           "brand": {
             "anyOf": [
               {
@@ -27273,6 +27440,172 @@
               }
             ],
             "title": "Barcode"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "assignmentUid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignmentuid"
+          },
+          "assignedDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigneddate"
+          },
+          "sgkScheme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sgkscheme"
+          },
+          "sgkSupportType": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sgksupporttype"
+          },
+          "paymentMethod": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paymentmethod"
+          },
+          "discountType": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discounttype"
+          },
+          "discountValue": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discountvalue"
+          },
+          "downPayment": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Downpayment",
+            "default": 0.0
+          },
+          "earSide": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Earside"
+          },
+          "loanerInventoryId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Loanerinventoryid"
+          },
+          "loanerBrand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Loanerbrand"
+          },
+          "loanerModel": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Loanermodel"
+          },
+          "loanerSerialNumberLeft": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Loanerserialnumberleft"
+          },
+          "loanerSerialNumberRight": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Loanerserialnumberright"
           },
           "sgkReduction": {
             "type": "number",
@@ -28278,7 +28611,7 @@
             "type": "string",
             "title": "Status"
           },
-          "notes": {
+          "note": {
             "anyOf": [
               {
                 "type": "string"
@@ -28287,7 +28620,7 @@
                 "type": "null"
               }
             ],
-            "title": "Notes"
+            "title": "Note"
           }
         },
         "type": "object",
@@ -39924,35 +40257,6 @@
           "bodyText"
         ],
         "title": "SendEmail"
-      },
-      "SendEmailRequest": {
-        "properties": {
-          "subject": {
-            "type": "string",
-            "title": "Subject"
-          },
-          "body": {
-            "type": "string",
-            "title": "Body"
-          },
-          "to_email": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Email"
-          }
-        },
-        "type": "object",
-        "required": [
-          "subject",
-          "body"
-        ],
-        "title": "SendEmailRequest"
       },
       "SendSMS": {
         "properties": {

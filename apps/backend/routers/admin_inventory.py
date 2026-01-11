@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api/admin/inventory", tags=["Admin Inventory"])
 class InventoryListResponse(ResponseEnvelope):
     data: Optional[dict] = None
 
-@router.get("", response_model=InventoryListResponse)
+@router.get("", operation_id="listAdminInventory", response_model=InventoryListResponse)
 async def get_all_inventory(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),

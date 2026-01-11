@@ -31,14 +31,14 @@ import {
   listInvoicePdf
 } from '@/api/generated/invoice-actions/invoice-actions';
 import {
-  getInvoiceTemplates as getInvoiceTemplatesApi,
-  getPrintQueue as getPrintQueueApi,
-  addToPrintQueue as addToPrintQueueApi,
-  bulkUploadInvoices as bulkUploadInvoicesApi,
-  createInvoiceSendToGib
+  listInvoiceTemplates,
+  listInvoicePrintQueue,
+  createInvoicePrintQueue,
+  createInvoiceSendToGib,
+  createInvoiceBulkUpload
 } from '@/api/generated/invoices/invoices';
 import {
-  getAdminInvoicesApiAdminInvoicesGet
+  listAdminInvoices
 } from '@/api/generated/admin-invoices/admin-invoices';
 import { apiClient } from '../api/orval-mutator';
 
@@ -556,7 +556,7 @@ export class InvoiceService {
       if (filters?.issueDateTo) params.issueDateTo = filters.issueDateTo;
 
       // Call API using Orval-generated function
-      const response = await getAdminInvoicesApiAdminInvoicesGet(params);
+      const response = await listAdminInvoices(params);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data = response as any;
 
@@ -807,7 +807,7 @@ export class InvoiceService {
   // Template Operations
   async getTemplates(): Promise<InvoiceTemplate[]> {
     try {
-      const response = await getInvoiceTemplatesApi();
+      const response = await listInvoiceTemplates();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data = response as any;
       const templates = Array.isArray(data) ? data : (data?.data || []);
@@ -822,7 +822,7 @@ export class InvoiceService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async bulkUploadInvoices(file: File): Promise<{ processed: number; success: number; errors: any[] }> {
     try {
-      const response = await bulkUploadInvoicesApi({ file });
+      const response = await createInvoiceBulkUpload({ file });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = response as any;
       return {
@@ -839,7 +839,7 @@ export class InvoiceService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getPrintQueue(): Promise<any[]> {
     try {
-      const response = await getPrintQueueApi();
+      const response = await listInvoicePrintQueue();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data = response as any;
       return Array.isArray(data) ? data : (data?.data || []);
@@ -855,7 +855,7 @@ export class InvoiceService {
       const ids = Array.isArray(invoiceIds) ? invoiceIds : [invoiceIds];
       // Convert string IDs to numbers as backend expects number[]
       const numericIds = ids.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
-      const response = await addToPrintQueueApi({ invoiceIds: numericIds });
+      const response = await createInvoicePrintQueue({ invoiceIds: numericIds });
       return response;
     } catch (error) {
       console.error('Failed to add to print queue:', error);
