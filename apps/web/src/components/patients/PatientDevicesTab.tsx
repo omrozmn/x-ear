@@ -224,11 +224,52 @@ export const PatientDevicesTab: React.FC<PatientDevicesTabProps> = ({ patient }:
     try {
       setLoading(true);
 
+      // Transform field names from frontend (camelCase) to backend (snake_case)
+      const transformedUpdates: Record<string, any> = {};
+      
+      // Field mapping: frontend -> backend
+      const fieldMapping: Record<string, string> = {
+        sgkSupportType: 'sgk_scheme',
+        sgkScheme: 'sgk_scheme',
+        listPrice: 'base_price',
+        basePrice: 'base_price',
+        discountType: 'discount_type',
+        discountValue: 'discount_value',
+        paymentMethod: 'payment_method',
+        downPayment: 'down_payment',
+        earSide: 'ear_side',
+        ear: 'ear_side',
+        deliveryStatus: 'delivery_status',
+        reportStatus: 'report_status',
+        serialNumber: 'serial_number',
+        serialNumberLeft: 'serial_number_left',
+        serialNumberRight: 'serial_number_right',
+        salePrice: 'sale_price',
+        patientPayment: 'patient_payment',
+        sgkReduction: 'sgk_reduction',
+        sgkSupport: 'sgk_support',
+        isLoaner: 'is_loaner',
+        loanerInventoryId: 'loaner_inventory_id',
+        loanerSerialNumber: 'loaner_serial_number',
+        loanerSerialNumberLeft: 'loaner_serial_number_left',
+        loanerSerialNumberRight: 'loaner_serial_number_right',
+        loanerBrand: 'loaner_brand',
+        loanerModel: 'loaner_model',
+      };
+
+      for (const [key, value] of Object.entries(updates)) {
+        if (value === undefined || value === null) continue;
+        
+        // Use mapped field name if exists, otherwise use original
+        const backendKey = fieldMapping[key] || key;
+        transformedUpdates[backendKey] = value;
+      }
+
       // Use apiClient for manual update - PATCH method
       await apiClient({
         url: `/api/device-assignments/${deviceId}`,
         method: 'PATCH',
-        data: updates
+        data: transformedUpdates
       });
 
       // Refresh devices

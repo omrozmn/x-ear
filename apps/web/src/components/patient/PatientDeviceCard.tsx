@@ -252,10 +252,6 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
           {device.reason?.toLowerCase() === 'sale' && (
             <>
               <div>
-                <span className="text-gray-500 dark:text-gray-400">SGK Destek Türü:</span>
-                <p className="font-medium text-gray-900 dark:text-gray-200">{getSgkSupportText((device as any).sgkScheme || (device as any).sgkSupportType)}</p>
-              </div>
-              <div>
                 <span className="text-gray-500 dark:text-gray-400">Liste Fiyatı:</span>
                 <p className="font-medium text-gray-900 dark:text-gray-200">{formatCurrency(device.listPrice)}</p>
               </div>
@@ -296,19 +292,24 @@ export const PatientDeviceCard: React.FC<PatientDeviceCardProps> = ({
                 </p>
               </div>
 
-              {/* SGK Support */}
+              {/* SGK Support - Per ear amount for bilateral assignments */}
               {(() => {
                 const dp: any = device as any;
                 
-                // Backend stores sgkSupport as per-item (per-ear) value
-                // So we should display it directly without any division
+                // Backend stores sgkSupport as total (both ears combined for bilateral)
+                // We need to divide by 2 for bilateral to show per-ear amount
                 const rawSgk = dp.sgkSupport ?? dp.sgk_support ?? dp.sgkReduction ?? dp.sgk_coverage_amount ?? null;
                 
                 if (rawSgk !== null && rawSgk !== undefined && Number(rawSgk) > 0) {
+                  const earVal = (dp.ear || dp.earSide || dp.ear_side || '').toString().toLowerCase();
+                  const isBilateral = earVal.startsWith('b') || earVal === 'both' || earVal === 'bilateral';
+                  // For bilateral, divide by 2 to show per-ear SGK support
+                  const perEarSgk = isBilateral ? Number(rawSgk) / 2 : Number(rawSgk);
+                  
                   return (
                     <div>
                       <span className="text-gray-500 dark:text-gray-400">SGK Desteği:</span>
-                      <p className="font-medium text-green-600 dark:text-green-400">{formatCurrency(Number(rawSgk))}</p>
+                      <p className="font-medium text-green-600 dark:text-green-400">{formatCurrency(perEarSgk)}</p>
                     </div>
                   );
                 }

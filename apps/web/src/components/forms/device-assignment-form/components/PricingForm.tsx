@@ -59,11 +59,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
     { value: 'over18_retired', label: '18+ Yaş (Emekli)' }
   ];
 
-  // Only show 'Standard (Legacy)' if it is the currently selected value
-  // This prevents it from being a choice for new assignments, but preserves it for existing ones
-  if (formData.sgkSupportType === 'standard') {
-    sgkSupportOptions.push({ value: 'standard', label: 'Standart (Eski)' });
-  }
+  // 'standard' option removed completely - no longer supported
 
   // Map select values to settings scheme keys (settings may use PascalCase)
   const selectToSettingsKey: Record<string, string> = {
