@@ -409,9 +409,16 @@ apiClient.interceptors.response.use(
     }
 
     // Handle network errors (offline scenarios)
+    // Only queue non-GET requests - GET requests should be re-fetched by UI when online
     if (!error.response && error.code === 'ERR_NETWORK') {
-      console.warn('Network error detected, queuing request for offline processing');
-      await queueOfflineRequest(config);
+      const method = config?.method?.toUpperCase() || 'GET';
+      
+      if (method !== 'GET') {
+        console.warn('Network error detected, queuing request for offline processing');
+        await queueOfflineRequest(config);
+      } else {
+        console.warn('Network error detected for GET request, not queuing (will be re-fetched by UI)');
+      }
 
       // Return a rejected promise with offline error
       const offlineError = new Error('Request queued for offline processing');
