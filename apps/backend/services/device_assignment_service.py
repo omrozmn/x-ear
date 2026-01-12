@@ -22,9 +22,9 @@ def ensure_loaner_serials_in_inventory(session: Session, assignment: DeviceAssig
     This supports the workflow where a user enters a serial number for a loaner device
     that hasn't been explicitly added to the system yet.
     
-    IMPORTANT: We check BOTH serial_numbers (all serials ever added) AND available_serials
-    to prevent duplicate 'Manuel Eklendi' movements when a serial was previously added but
-    is currently loaned out (removed from available_serials but still in serial_numbers).
+    We check available_serials to prevent duplicate additions.
+    Note: Once a serial is loaned out, it's removed from available_serials but we still
+    want to track it was added. We use a simple check against current available_serials.
     """
     if not assignment.loaner_inventory_id:
         return
@@ -49,14 +49,18 @@ def ensure_loaner_serials_in_inventory(session: Session, assignment: DeviceAssig
         if not serials_to_check:
             return
 
-        # Check BOTH serial_numbers (all ever added) AND available_serials
-        available_serials = json.loads(loaner_item.available_serials) if loaner_item.available_serials else []
-        all_serials = json.loads(loaner_item.serial_numbers) if loaner_item.serial_numbers else []
-        known_serials = set(available_serials) | set(all_serials)
+        # Check available_serials - if serial is not there, add it
+        available_serials = []
+        if loaner_item.available_serials:
+            try:
+                available_serials = json.loads(loaner_item.available_serials)
+            except (json.JSONDecodeError, TypeError):
+                # Fallback for legacy CSV data
+                available_serials = [s.strip() for s in str(loaner_item.available_serials).split(',') if s.strip()]
         
         for serial in serials_to_check:
-            if serial not in known_serials:
-                # This is a genuinely new serial - add to inventory
+            if serial not in available_serials:
+                # This is a new serial - add to inventory
                 if hasattr(loaner_item, 'add_serial_number') and loaner_item.add_serial_number(serial):
                     create_stock_movement(
                         inventory_id=loaner_item.id,
