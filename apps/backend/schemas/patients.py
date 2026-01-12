@@ -6,10 +6,10 @@ from .base import AppBaseModel, IDMixin, TimestampMixin
 
 # Enums
 class PatientStatus(str, Enum):
-    ACTIVE = 'active'
-    PASSIVE = 'passive'
-    DECEASED = 'deceased'
-    ARCHIVED = 'archived'
+    ACTIVE = 'ACTIVE'
+    INACTIVE = 'INACTIVE'
+    DECEASED = 'DECEASED'
+    ARCHIVED = 'ARCHIVED'
 
 class Gender(str, Enum):
     MALE = 'M'
@@ -63,7 +63,12 @@ class PatientUpdate(AppBaseModel):
     phone: Optional[str] = None
     email: Optional[EmailStr] = None
     status: Optional[PatientStatus] = None
-    # ... allow updating other fields optionally
+    # CRM fields
+    segment: Optional[str] = None
+    acquisition_type: Optional[str] = Field(None, alias="acquisitionType")
+    branch_id: Optional[str] = Field(None, alias="branchId")
+    tags: Optional[List[str]] = None
+    # Address fields
     address_city: Optional[str] = Field(None, alias="addressCity")
     address_district: Optional[str] = Field(None, alias="addressDistrict")
     address_full: Optional[str] = Field(None, alias="addressFull")

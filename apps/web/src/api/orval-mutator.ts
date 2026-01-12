@@ -416,14 +416,15 @@ apiClient.interceptors.response.use(
       if (method !== 'GET') {
         console.warn('Network error detected, queuing request for offline processing');
         await queueOfflineRequest(config);
+        // Return a rejected promise with offline error for mutations
+        const offlineError = new Error('Request queued for offline processing');
+        offlineError.name = 'OfflineError';
+        return Promise.reject(offlineError);
       } else {
+        // For GET requests, just reject with the original error so react-query can retry
         console.warn('Network error detected for GET request, not queuing (will be re-fetched by UI)');
+        return Promise.reject(error);
       }
-
-      // Return a rejected promise with offline error
-      const offlineError = new Error('Request queued for offline processing');
-      offlineError.name = 'OfflineError';
-      return Promise.reject(offlineError);
     }
 
     // Handle other errors normally

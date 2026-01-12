@@ -628,7 +628,26 @@ class AppointmentService {
 
   // Utility methods
   private calculateEndTime(date: string, time: string, duration: number): string {
-    const startDateTime = new Date(`${date}T${time}:00.000Z`);
+    // Guard against undefined/invalid date or time values
+    if (!date || !time) {
+      console.warn('calculateEndTime called with invalid date/time:', { date, time });
+      return new Date().toISOString(); // Return current time as fallback
+    }
+
+    // Extract just the date part if date is in ISO datetime format (e.g., "2026-01-21T00:00:00")
+    const normalizedDate = date.includes('T') ? date.split('T')[0] : date;
+
+    // Ensure time is in HH:MM format (pad if needed)
+    const normalizedTime = time.includes(':') ? time : `${time}:00`;
+
+    const startDateTime = new Date(`${normalizedDate}T${normalizedTime}:00.000Z`);
+
+    // Check if the date is valid
+    if (isNaN(startDateTime.getTime())) {
+      console.warn('calculateEndTime created invalid date from:', { date: normalizedDate, time: normalizedTime });
+      return new Date().toISOString(); // Return current time as fallback
+    }
+
     const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
     return endDateTime.toISOString();
   }
