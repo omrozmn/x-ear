@@ -278,6 +278,252 @@ After FastAPI migration and unified access implementation, the following artefac
 
 ---
 
+## Technical Debt Prevention Policies
+
+> These policies exist to prevent "temporary" solutions from becoming permanent technical debt.
+
+### 13. Legacy Shim Sunset Policy
+
+> **Purpose:** Prevent shims from becoming permanent fixtures.
+
+| Rule | Enforcement |
+|------|-------------|
+| Every shim MUST include a hard removal date (`YYYY-MM-DD`) | Code review |
+| CI runs shim-usage scanner | Automated |
+| Warn if shim is still imported after sunset date | CI warning |
+| Fail build if shim exists 30 days past sunset date | CI block |
+| No new shim allowed without explicit sunset date | PR review |
+
+**Shim Template:**
+```python
+# legacy_shims/models.py
+# DEPRECATED: Import from core.models instead
+# SUNSET DATE: 2026-04-01
+# This shim will cause CI failure after this date
+from core.models import *  # noqa: F401, F403
+```
+
+### 14. FeatureGate Fail-Mode Policy
+
+> **Purpose:** Prevent billing/quota bypass while maintaining UX stability.
+
+| Feature Type | Fail Mode | Rationale |
+|--------------|-----------|-----------|
+| UI / UX / Navigation | `fail_open` | User experience preserved |
+| Cosmetic features | `fail_open` | Non-critical |
+| **Billing / Payments** | `fail_closed` | Financial integrity |
+| **Quota / Limits** | `fail_closed` | Cost control |
+| **AI / OCR usage** | `fail_closed` | Prevent abuse |
+| **Security features** | `fail_closed` | Safety first |
+
+**Implementation:**
+```python
+class FeatureFlag:
+    def __init__(self, name: str, fail_mode: Literal["open", "closed"]):
+        self.name = name
+        self.fail_mode = fail_mode
+    
+    def is_enabled(self, tenant_id: str) -> bool:
+        try:
+            return self._check_flag(tenant_id)
+        except Exception:
+            return self.fail_mode == "open"
+```
+
+### 15. Router-ORM Import Policy
+
+> **Purpose:** Maintain clean architecture while allowing legacy code to exist.
+
+| Rule | Status |
+|------|--------|
+| Legacy router-ORM imports are TEMPORARILY allowed | ✅ Accepted |
+| **No NEW router may import ORM models directly** | 🔴 Enforced |
+| New routers MUST use service layer | Required |
+| Phase 3: Extract service layer and migrate legacy routers | Scheduled |
+
+**New Router Template:**
+```python
+# ✅ CORRECT - New router pattern
+from services.patient_service import PatientService
+
+@router.get("/patients/{id}")
+async def get_patient(id: str, service: PatientService = Depends()):
+    return service.get_by_id(id)
+
+# ❌ FORBIDDEN - Do not add new code like this
+from models.patient import Patient  # BLOCKED
+```
+
+### 16. CI Reliability Contract
+
+> **Purpose:** CI green means "safe to merge", always.
+
+| Rule | Enforcement |
+|------|-------------|
+| No `continue-on-error` in required jobs | CI audit |
+| Flaky tests MUST be marked and skipped explicitly | `@pytest.mark.skip` |
+| Test skip MUST include reason and issue link | Code review |
+| CI green = deployable | Team policy |
+
+**Phase 1 Action Item:**
+- [ ] Remove all `continue-on-error: true` from `.github/workflows/ci.yml`
+- [ ] Mark flaky tests with `@pytest.mark.skip(reason="Flaky: #issue-123")`
+
+### 17. Data Import Safety Contract
+
+> **Purpose:** Prevent partial data states during SQLite → Postgres migration.
+
+| Rule | Enforcement |
+|------|-------------|
+| Import MUST run inside a single transaction | Script design |
+| On any error: full rollback, no partial state | Try/except block |
+| Validation BEFORE commit | Pre-commit checks |
+| Row counts per table verified | Automated |
+| FK integrity verified | Automated |
+| Checksums for critical tables | Automated |
+
+**Import Script Structure:**
+```python
+def import_data(source_db, target_db):
+    with target_db.begin() as txn:
+        try:
+            # Import all tables
+            import_tenants(txn)
+            import_users(txn)
+            import_patients(txn)
+            # ... all tables ...
+            
+            # Validate BEFORE commit
+            validate_row_counts(source_db, txn)
+            validate_fk_integrity(txn)
+            validate_checksums(txn)
+            
+            txn.commit()  # All or nothing
+        except Exception as e:
+            txn.rollback()
+            raise ImportError(f"Full rollback: {e}")
+```
+
+**Rollback Plan:**
+- If import fails: SQLite remains authoritative
+- If import succeeds but issues found: Restore from pg_dump backup
+- Point-in-time recovery available if WAL archiving enabled
+
+### 18. ProductCode Enum Contract
+
+> **Purpose:** Prevent magic strings for product identification.
+
+**Required Enum:**
+```python
+from enum import Enum
+
+class ProductCode(str, Enum):
+    XEAR_HEARING = "xear_hearing"
+    XEAR_PHARMACY = "xear_pharmacy"
+    XEAR_HOSPITAL = "xear_hospital"
+    XEAR_GENERAL = "xear_general"
+    XEAR_HOTEL = "xear_hotel"
+    XCALP = "xcalp"
+```
+
+| Rule | Enforcement |
+|------|-------------|
+| All product references use `ProductCode` enum | Code review |
+| Database stores string value | Schema design |
+| Application layer uses typed enum | Type checking |
+| New products require enum update | PR review |
+
+### 19. Git History Protection Contract
+
+> **Purpose:** Preserve blame and history during refactors.
+
+| Action | Required Method |
+|--------|-----------------|
+| File rename | `git mv` only |
+| Folder rename | `git mv` only |
+| Rename commit | MUST be sole change in commit |
+| History-breaking refactor | Requires ADR approval |
+
+**apps/backend → apps/api Rename:**
+```bash
+# ✅ CORRECT - Preserves history
+git mv apps/backend apps/api
+git commit -m "chore: rename apps/backend to apps/api"
+
+# ❌ WRONG - Loses history
+rm -rf apps/backend
+mkdir apps/api
+# ... recreate files ...
+```
+
+**Alternative (Safer):**
+Consider NOT renaming. Instead:
+- Keep `apps/backend` as-is
+- Create new structure under `apps/backend/v2/` or similar
+- Migrate incrementally
+
+### 20. Admin Role Model Contract
+
+> **Purpose:** Define clear admin authority hierarchy.
+
+**Required Model:**
+```python
+from enum import Enum
+
+class AdminRole(str, Enum):
+    SUPER_ADMIN = "super_admin"      # Full platform access
+    TENANT_ADMIN = "tenant_admin"    # Single tenant management
+    SUPPORT = "support"              # Read-only support access
+    BILLING = "billing"              # Billing operations only
+    
+class AdminPermission(str, Enum):
+    READ_TENANT = "read_tenant"
+    WRITE_TENANT = "write_tenant"
+    READ_BILLING = "read_billing"
+    WRITE_BILLING = "write_billing"
+    IMPERSONATE = "impersonate"
+```
+
+**Permission Matrix:**
+
+| Role | READ_TENANT | WRITE_TENANT | READ_BILLING | WRITE_BILLING | IMPERSONATE |
+|------|-------------|--------------|--------------|---------------|-------------|
+| SUPER_ADMIN | ✅ | ✅ | ✅ | ✅ | ✅ |
+| TENANT_ADMIN | ✅ | ✅ | ✅ | ❌ | ❌ |
+| SUPPORT | ✅ | ❌ | ✅ | ❌ | ❌ |
+| BILLING | ❌ | ❌ | ✅ | ✅ | ❌ |
+
+---
+
+## Maintenance Policies
+
+### Quarterly Cleanup Policy
+
+| Item | Action | Schedule |
+|------|--------|----------|
+| `__legacy/graveyard/` | Review and delete items > 6 months old | Quarterly |
+| `docs/archive/` | Migrate to wiki or delete outdated | Quarterly |
+| Shim usage | Audit and remove expired shims | Monthly |
+| Log files | Verify rotation working | Weekly |
+
+### .gitignore Additions Required
+
+```gitignore
+# Database files (except main dev DB)
+*.db
+!apps/backend/xear_crm.db
+
+# Log files
+*.log
+server.log*
+
+# Generated files
+*.pyc
+__pycache__/
+```
+
+---
+
 ## Risk Register
 
 | ID | Risk | Impact | Mitigation | Verification | Status |
