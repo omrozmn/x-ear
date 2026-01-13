@@ -256,8 +256,14 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 async def unhandled_exception_handler(request: Request, exc: Exception):
     # Log the actual error for debugging
     import traceback
-    logger.error(f"Unhandled exception: {exc}")
-    logger.error(f"Traceback: {traceback.format_exc()}")
+    import sys
+    error_msg = f"Unhandled exception: {exc}"
+    tb = traceback.format_exc()
+    # Print to stderr to ensure visibility
+    print(f"ERROR: {error_msg}", file=sys.stderr)
+    print(f"Traceback: {tb}", file=sys.stderr)
+    logger.error(error_msg)
+    logger.error(f"Traceback: {tb}")
     # Avoid leaking internal details; log is handled elsewhere.
     return envelope_error(
         "Internal server error",

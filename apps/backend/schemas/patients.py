@@ -6,10 +6,14 @@ from .base import AppBaseModel, IDMixin, TimestampMixin
 
 # Enums
 class PatientStatus(str, Enum):
-    ACTIVE = 'ACTIVE'
-    INACTIVE = 'INACTIVE'
-    DECEASED = 'DECEASED'
-    ARCHIVED = 'ARCHIVED'
+    ACTIVE = 'active'
+    INACTIVE = 'inactive'
+    LEAD = 'lead'
+    TRIAL = 'trial'
+    CUSTOMER = 'customer'
+    NEW = 'new'
+    DECEASED = 'deceased'
+    ARCHIVED = 'archived'
 
 class Gender(str, Enum):
     MALE = 'M'

@@ -6,7 +6,7 @@ import {
     useUpdateRole,
     useDeleteRole
 } from '../../api/generated/roles/roles';
-import { RoutersRolesRoleCreate, RoleUpdate } from '../../api/generated/schemas';
+import { RoutersRolesRoleCreate } from '../../api/generated/schemas';
 import { unwrapArray, unwrapObject } from '../../utils/response-unwrap';
 
 interface Role {

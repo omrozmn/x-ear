@@ -83,10 +83,9 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load appointments
+  // Load appointments from local storage
   const loadAppointments = useCallback(() => {
     try {
-      setLoading(true);
       setError(null);
       const filteredAppointments = appointmentService.getAppointments(currentFilters);
       setAppointments(filteredAppointments);
@@ -97,14 +96,24 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
     }
   }, [currentFilters]);
 
-  // Subscribe to appointment changes
+  // Subscribe to appointment changes and sync from server on mount
   useEffect(() => {
     const unsubscribe = appointmentService.subscribe(() => {
       loadAppointments();
     });
 
-    // Initial load
-    loadAppointments();
+    // Sync from server first, then load from local storage
+    const initializeAppointments = async () => {
+      setLoading(true);
+      try {
+        await appointmentService.triggerServerSync();
+      } catch (err) {
+        console.warn('Server sync failed, using local data:', err);
+      }
+      loadAppointments();
+    };
+
+    initializeAppointments();
 
     return unsubscribe;
   }, [loadAppointments]);
@@ -301,11 +310,10 @@ export function useAppointments(options: UseAppointmentsOptions = {}): UseAppoin
     return appointmentService['validateAppointment'](appointment);
   }, []);
 
-  // Computed stats
+  // Computed stats - recalculate when appointments change
   const stats = useMemo((): AppointmentStats => {
     return appointmentService.getAppointmentStats(currentFilters);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentFilters]); // appointments is intentionally excluded - stats come from service
+  }, [appointments, currentFilters]); // Include appointments to trigger recalculation
 
   return {
     // Data

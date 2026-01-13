@@ -6,7 +6,8 @@ import {
     useListTenantUsers,
     useCreateTenantUsers,
     useDeleteTenantUser,
-    useUpdateTenantUser
+    useUpdateTenantUser,
+    getListTenantUsersQueryKey
 } from '@/api/generated/tenant-users/tenant-users';
 import { branchService, Branch } from '../../services/branch.service';
 import { useAuthStore } from '../../stores/authStore';
@@ -186,34 +187,24 @@ export function TeamMembersTab() {
             return;
         }
 
+        const newIsActive = !user.isActive;
+        
         setConfirmationModal({
             isOpen: true,
             title: user.isActive ? 'Kullaniciyi Pasife Al' : 'Kullaniciyi Aktiflestir',
             message: `Bu kullaniciyi ${user.isActive ? 'pasife almak' : 'aktiflestirmek'} istediginize emin misiniz?`,
             type: user.isActive ? 'warning' : 'info',
             onConfirm: async () => {
-                const previousData = queryClient.getQueryData(['tenantUsersList']);
-
-                queryClient.setQueryData(['tenantUsersList'], (old: any) => {
-                    if (!old?.data?.data) return old;
-                    return {
-                        ...old,
-                        data: {
-                            ...old.data,
-                            data: old.data.data.map((u: any) =>
-                                u.id === user.id ? { ...u, isActive: !user.isActive } : u
-                            )
-                        }
-                    };
-                });
-
                 try {
-                    await updateUserMutation.mutateAsync({ userId: user.id, data: { isActive: !user.isActive } as any });
+                    console.log('[TeamMembersTab] Toggling user status:', { userId: user.id, currentIsActive: user.isActive, newIsActive });
+                    await updateUserMutation.mutateAsync({ userId: user.id, data: { isActive: newIsActive } as any });
                     toast.success(`Kullanici ${user.isActive ? 'pasife alindi' : 'aktiflestirildi'}.`);
-                    queryClient.invalidateQueries({ queryKey: ['tenantUsersList'] });
-                } catch {
-                    queryClient.setQueryData(['tenantUsersList'], previousData);
-                    toast.error('Durum guncellenemedi.');
+                    // Invalidate and refetch to ensure UI updates
+                    queryClient.invalidateQueries({ queryKey: getListTenantUsersQueryKey() });
+                    await refetch();
+                } catch (err: any) {
+                    console.error('[TeamMembersTab] Toggle status error:', err);
+                    toast.error(err?.response?.data?.error?.message || err?.message || 'Durum guncellenemedi.');
                 }
                 setConfirmationModal(prev => ({ ...prev, isOpen: false }));
             }
@@ -731,8 +722,14 @@ export function TeamMembersTab() {
                             </Button>
                             <Button
                                 onClick={confirmationModal.onConfirm}
-                                variant={confirmationModal.type === 'danger' ? 'danger' : confirmationModal.type === 'warning' ? 'default' : 'primary'}
-                                className={confirmationModal.type === 'warning' ? 'bg-amber-500 hover:bg-amber-600 text-white' : ''}
+                                variant={confirmationModal.type === 'danger' ? 'danger' : 'default'}
+                                className={
+                                    confirmationModal.type === 'warning' 
+                                        ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500' 
+                                        : confirmationModal.type === 'info'
+                                            ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+                                            : ''
+                                }
                             >
                                 Onayla
                             </Button>

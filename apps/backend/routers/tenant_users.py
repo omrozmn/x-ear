@@ -83,7 +83,7 @@ def list_tenant_users(
     db_session: Session = Depends(get_db)
 ):
     """List users belonging to the current tenant"""
-    if not access.tenant_id and not access.is_admin:
+    if not access.tenant_id and not access.is_admin and not access.is_super_admin:
         raise HTTPException(
             status_code=400,
             detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
@@ -94,7 +94,8 @@ def list_tenant_users(
     if access.tenant_id:
         query = query.filter_by(tenant_id=access.tenant_id)
         
-        if access.user and access.user.role == 'admin':
+        # Branch filtering only for non-super-admin tenant users
+        if not access.is_super_admin and access.user and access.user.role == 'admin':
             user_branch_ids = [b.id for b in access.user.branches] if access.user.branches else []
             if user_branch_ids:
                 from models.user import user_branches
@@ -118,11 +119,13 @@ def invite_tenant_user(
             detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
         )
     
-    if access.user and access.user.role not in ['tenant_admin', 'admin']:
-        raise HTTPException(
-            status_code=403,
-            detail=ApiError(message="Only admins can create users", code="FORBIDDEN").model_dump(mode="json")
-        )
+    # Super admin can always create users, tenant admins can create users
+    if not access.is_super_admin and not access.is_tenant_admin:
+        if access.user and access.user.role not in ['tenant_admin', 'admin']:
+            raise HTTPException(
+                status_code=403,
+                detail=ApiError(message="Only admins can create users", code="FORBIDDEN").model_dump(mode="json")
+            )
     
     if len(user_in.password) < 6:
         raise HTTPException(
@@ -171,17 +174,19 @@ def delete_tenant_user(
     db_session: Session = Depends(get_db)
 ):
     """Remove a user from the tenant"""
-    if not access.tenant_id and not access.is_admin:
+    if not access.tenant_id and not access.is_admin and not access.is_super_admin:
         raise HTTPException(
             status_code=400,
             detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
         )
     
-    if access.user and access.user.role not in ['tenant_admin', 'admin']:
-        raise HTTPException(
-            status_code=403,
-            detail=ApiError(message="Only admins can remove users", code="FORBIDDEN").model_dump(mode="json")
-        )
+    # Super admin can always delete users
+    if not access.is_super_admin and not access.is_tenant_admin:
+        if access.user and access.user.role not in ['tenant_admin', 'admin']:
+            raise HTTPException(
+                status_code=403,
+                detail=ApiError(message="Only admins can remove users", code="FORBIDDEN").model_dump(mode="json")
+            )
     
     user_to_delete = db_session.get(User, user_id)
     if not user_to_delete:
@@ -215,13 +220,15 @@ def update_tenant_user(
     db_session: Session = Depends(get_db)
 ):
     """Update a user in the tenant"""
-    if not access.tenant_id and not access.is_admin:
+    # Super admin can update any user
+    if access.is_super_admin:
+        pass  # Allow
+    elif not access.tenant_id and not access.is_admin:
         raise HTTPException(
             status_code=400,
             detail=ApiError(message="User does not belong to a tenant", code="NO_TENANT").model_dump(mode="json")
         )
-    
-    if access.user and access.user.role not in ['tenant_admin', 'admin']:
+    elif access.user and access.user.role not in ['tenant_admin', 'admin']:
         raise HTTPException(
             status_code=403,
             detail=ApiError(message="Only admins can update users", code="FORBIDDEN").model_dump(mode="json")
@@ -282,11 +289,20 @@ def update_tenant_user(
         user_to_update.is_active = data['is_active']
     
     if 'branch_ids' in data and data['branch_ids'] is not None:
-        branches = db_session.query(Branch).filter(
-            Branch.id.in_(data['branch_ids']),
-            Branch.tenant_id == access.tenant_id
-        ).all()
-        user_to_update.branches = branches
+        # For super admin without tenant_id, get branches from user being updated
+        effective_tenant_id = access.tenant_id or user_to_update.tenant_id
+        if effective_tenant_id:
+            branches = db_session.query(Branch).filter(
+                Branch.id.in_(data['branch_ids']),
+                Branch.tenant_id == effective_tenant_id
+            ).all()
+            user_to_update.branches = branches
+        else:
+            # If no tenant context, just assign branches by ID
+            branches = db_session.query(Branch).filter(
+                Branch.id.in_(data['branch_ids'])
+            ).all()
+            user_to_update.branches = branches
     
     db_session.commit()
     

@@ -64,12 +64,27 @@ def get_branch_or_404(db_session: Session, branch_id: str, access: UnifiedAccess
 
 @router.get("/branches", operation_id="listBranches", response_model=ResponseEnvelope[List[BranchRead]])
 def get_branches(
+    tenant_id: Optional[str] = Query(None, alias="tenantId"),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Get all branches for the current tenant"""
     try:
-        query = tenant_scoped_query(access, Branch, db_session)
+        query = db_session.query(Branch)
+        
+        # Determine which tenant to filter by
+        effective_tenant_id = access.tenant_id
+        
+        # Super admin can optionally filter by tenant_id query param
+        if access.is_super_admin and tenant_id:
+            effective_tenant_id = tenant_id
+        
+        # Always filter by tenant for non-super admins, or when tenant_id is specified
+        if effective_tenant_id:
+            query = query.filter(Branch.tenant_id == effective_tenant_id)
+        elif not access.is_super_admin:
+            # Non-super admin without tenant_id should see nothing
+            return ResponseEnvelope(data=[])
         
         # Branch filtering for tenant admins
         if access.is_tenant_admin and access.user and hasattr(access.user, 'branches'):
@@ -149,7 +164,7 @@ def create_branch(
         
         db_session.commit()
         
-        logger.info(f"Branch created: {branch.id} by {access.principal_id}")
+        logger.info(f"Branch created: {branch.id} by {access.user_id}")
         return ResponseEnvelope(data=branch.to_dict())
     except HTTPException:
         raise
@@ -187,7 +202,7 @@ def update_branch(
         
         db_session.commit()
         
-        logger.info(f"Branch updated: {branch.id} by {access.principal_id}")
+        logger.info(f"Branch updated: {branch.id} by {access.user_id}")
         return ResponseEnvelope(data=branch.to_dict())
     except HTTPException:
         raise
@@ -215,7 +230,7 @@ def delete_branch(
         db_session.delete(branch)
         db_session.commit()
         
-        logger.info(f"Branch deleted: {branch_id} by {access.principal_id}")
+        logger.info(f"Branch deleted: {branch_id} by {access.user_id}")
         return ResponseEnvelope(message="Branch deleted")
     except HTTPException:
         raise

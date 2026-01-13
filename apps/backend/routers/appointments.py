@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 import logging
 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from database import get_db
 from middleware.unified_access import UnifiedAccess, require_access
@@ -83,7 +84,7 @@ def get_appointments(
     patient_id: Optional[str] = Query(None, alias="patient_id"),
     status: Optional[str] = None,
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
+    per_page: int = Query(20, ge=1, le=1000),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
@@ -210,7 +211,7 @@ def get_appointment(
     db_session: Session = Depends(get_db)
 ):
     """Get a single appointment"""
-    appointment = get_appointment_or_404(db_session, appointment_id, ctx)
+    appointment = get_appointment_or_404(db_session, appointment_id, access)
     return ResponseEnvelope(data=appointment.to_dict())
 
 @router.put("/appointments/{appointment_id}", operation_id="updateAppointment", response_model=ResponseEnvelope[AppointmentRead])
@@ -222,7 +223,7 @@ def update_appointment(
 ):
     """Update appointment"""
     try:
-        appointment = get_appointment_or_404(db_session, appointment_id, ctx)
+        appointment = get_appointment_or_404(db_session, appointment_id, access)
         data = appointment_in.model_dump(exclude_unset=True, by_alias=False)
         
         if 'date' in data and data['date']:
@@ -259,7 +260,7 @@ def delete_appointment(
 ):
     """Delete an appointment"""
     try:
-        appointment = get_appointment_or_404(db_session, appointment_id, ctx)
+        appointment = get_appointment_or_404(db_session, appointment_id, access)
         db_session.delete(appointment)
         db_session.commit()
         return ResponseEnvelope(message="Appointment deleted")
@@ -279,7 +280,7 @@ def reschedule_appointment(
 ):
     """Reschedule an appointment"""
     try:
-        appointment = get_appointment_or_404(db_session, appointment_id, ctx)
+        appointment = get_appointment_or_404(db_session, appointment_id, access)
         
         appointment.date = parse_date(reschedule_data.date)
         appointment.time = reschedule_data.time
@@ -302,7 +303,7 @@ def cancel_appointment(
 ):
     """Cancel an appointment"""
     try:
-        appointment = get_appointment_or_404(db_session, appointment_id, ctx)
+        appointment = get_appointment_or_404(db_session, appointment_id, access)
         appointment.status = 'cancelled'
         db_session.commit()
         return ResponseEnvelope(data=appointment.to_dict())
@@ -321,7 +322,7 @@ def complete_appointment(
 ):
     """Mark appointment as completed"""
     try:
-        appointment = get_appointment_or_404(db_session, appointment_id, ctx)
+        appointment = get_appointment_or_404(db_session, appointment_id, access)
         appointment.status = AppointmentStatus.COMPLETED
         db_session.commit()
         return ResponseEnvelope(data=appointment.to_dict())
@@ -344,7 +345,7 @@ def get_availability(
         target_date = datetime.fromisoformat(date).date()
         
         query = db_session.query(Appointment).filter(
-            db.func.date(Appointment.date) == target_date,
+            func.date(Appointment.date) == target_date,
             Appointment.status.in_(['scheduled', 'confirmed'])
         )
         

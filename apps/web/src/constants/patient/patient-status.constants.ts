@@ -5,15 +5,19 @@
  */
 
 import { PatientStatus } from '@/api/generated/schemas';
-import type { 
-  PatientSegment, 
-  PatientLabel 
+import type {
+  PatientSegment,
+  PatientLabel
 } from '../../types/patient/patient-base.types';
 
 // Map backend PatientStatus values to Turkish labels
 export const PATIENT_STATUS: Record<PatientStatus, string> = {
   active: 'Aktif',
-  passive: 'Pasif',
+  inactive: 'Pasif',
+  lead: 'Potansiyel',
+  trial: 'Deneme',
+  customer: 'Müşteri',
+  new: 'Yeni',
   deceased: 'Vefat',
   archived: 'Arşivlenmiş'
 } as const;
@@ -39,7 +43,11 @@ export const PATIENT_LABEL: Record<PatientLabel, string> = {
 
 export const STATUS_COLORS: Record<PatientStatus, string> = {
   active: '#10B981',
-  passive: '#6B7280',
+  inactive: '#6B7280',
+  lead: '#8B5CF6',
+  trial: '#F59E0B',
+  customer: '#06B6D4',
+  new: '#3B82F6',
   deceased: '#EF4444',
   archived: '#9CA3AF'
 } as const;

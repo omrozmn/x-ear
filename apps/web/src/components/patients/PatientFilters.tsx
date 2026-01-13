@@ -3,6 +3,9 @@ import { Button, DatePicker } from '@x-ear/ui-web';
 import { PatientFilters as PatientFiltersType } from '../../types/patient/patient-search.types';
 import { Filter, X, ChevronUp, Users, Building, Calendar, TrendingUp } from 'lucide-react';
 import type { PatientStatus, PatientSegment } from '../../types/patient/patient-base.types';
+import { useListBranches } from '../../api/generated/branches/branches';
+import { BranchRead } from '../../api/generated/schemas';
+import { unwrapArray } from '../../utils/response-unwrap';
 
 interface PatientFiltersProps {
   filters: PatientFiltersType;
@@ -42,6 +45,10 @@ export function PatientFilters({
     });
   }, [filters, onChange]);
 
+  // Fetch dynamic branches
+  const { data: branchesData } = useListBranches();
+  const branches = unwrapArray<BranchRead>(branchesData);
+
   // Check if any filters are active
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (key === 'query') return false; // Exclude query from active filters count
@@ -71,11 +78,10 @@ export function PatientFilters({
     { value: 'advertisement', label: 'Reklam' }
   ];
 
-  const branchOptions: FilterOption[] = [
-    { value: 'branch-1', label: 'Merkez Şube' },
-    { value: 'branch-2', label: 'Kadıköy Şube' },
-    { value: 'branch-3', label: 'Beşiktaş Şube' }
-  ];
+  const branchOptions: FilterOption[] = branches.map(branch => ({
+    value: branch.id!,
+    label: branch.name!
+  }));
 
   if (showCompact && !isExpanded) {
     return (

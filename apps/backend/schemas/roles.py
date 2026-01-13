@@ -31,14 +31,12 @@ class RolePermissionsUpdate(AppBaseModel):
 
 class PermissionBase(AppBaseModel):
     """Base permission schema"""
-    code: str = Field(..., description="Permission code")
-    label: str = Field(..., description="Permission label")
+    name: str = Field(..., description="Permission name/code")
     description: Optional[str] = Field(None, description="Permission description")
-    category: Optional[str] = Field(None, description="Permission category")
 
 
-class PermissionRead(PermissionBase, IDMixin):
-    """Schema for reading a permission"""
+class PermissionRead(PermissionBase, IDMixin, TimestampMixin):
+    """Schema for reading a permission - matches Permission.to_dict() output"""
     pass
 
 
@@ -46,7 +44,7 @@ class RoleRead(IDMixin, TimestampMixin, AppBaseModel):
     """Schema for reading a role - matches Role.to_dict() output"""
     name: str = Field(..., description="Role name")
     description: Optional[str] = Field(None, description="Role description")
-    is_system_role: bool = Field(False, alias="isSystem", description="Is system role")
+    is_system: bool = Field(False, alias="isSystem", description="Is system role")
     permissions: List[PermissionRead] = Field(default_factory=list, description="Role permissions")
 
 

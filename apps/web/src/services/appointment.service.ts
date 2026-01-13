@@ -21,7 +21,6 @@ import { outbox } from '../utils/outbox';
 class AppointmentService {
   private appointments: Appointment[] = [];
   private listeners: Set<() => void> = new Set();
-  private bootstrapAttempted = false;
 
   constructor() {
     this.loadAppointments();
@@ -33,9 +32,8 @@ class AppointmentService {
 
   // Call this after login is confirmed to sync from server
   public async triggerServerSync(): Promise<void> {
-    if (this.bootstrapAttempted) return; // Only try once per session
-    this.bootstrapAttempted = true;
-
+    // Always sync from server on login - don't skip based on bootstrapAttempted
+    // This ensures fresh data after hard refresh
     await this.bootstrapFromServer();
   }
 
@@ -44,9 +42,33 @@ class AppointmentService {
     try {
       // Use the generated API client
       const { appointmentsApi } = await import('../api/appointments');
-      const items = await appointmentsApi.getAppointments({ per_page: 1000 } as any);
+      console.log('[appointment.service] bootstrapFromServer - calling API...');
+      const response = await appointmentsApi.getAppointments({ per_page: 100 } as any);
+      
+      console.log('[appointment.service] bootstrapFromServer - raw response:', response);
+      
+      // Handle both array and wrapped response formats
+      // Response is ResponseEnvelope: { success: true, data: [...], meta: {...} }
+      let items: any[] = [];
+      if (Array.isArray(response)) {
+        items = response;
+      } else if (response && typeof response === 'object') {
+        // Response is ResponseEnvelope, so .data is the array
+        const envelope = response as any;
+        if (Array.isArray(envelope.data)) {
+          items = envelope.data;
+        } else if (envelope.data && typeof envelope.data === 'object' && Array.isArray(envelope.data.data)) {
+          // Double wrapped (shouldn't happen but handle it)
+          items = envelope.data.data;
+        }
+      }
 
-      if (!Array.isArray(items) || items.length === 0) return;
+      console.log('[appointment.service] bootstrapFromServer - items count:', items.length);
+
+      if (!Array.isArray(items) || items.length === 0) {
+        console.log('[appointment.service] No appointments found from server');
+        return;
+      }
 
       // Try to fetch patient names to enrich appointments (best-effort)
       let patientMap: Record<string, string> = {};

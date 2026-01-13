@@ -20,7 +20,15 @@ class Branch(BaseModel):
             'name': self.name,
             'address': self.address,
             'phone': self.phone,
-            'email': self.email
+            'email': self.email,
+            # Default values for optional fields
+            'code': None,
+            'city': None,
+            'district': None,
+            'isActive': True,
+            'isMain': False,
+            'userCount': 0,
+            'patientCount': 0,
         }
         branch_dict.update(base_dict)
         return branch_dict

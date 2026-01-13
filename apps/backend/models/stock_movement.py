@@ -31,6 +31,7 @@ class StockMovement(BaseModel):
         mvmt_dict = {
             'id': self.id,
             'inventoryId': self.inventory_id,
+            'tenantId': self.tenant_id,
             'transactionId': self.transaction_id,
             'movementType': self.movement_type,
             'quantity': self.quantity,

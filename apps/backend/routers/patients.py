@@ -229,6 +229,24 @@ def create_patient(
         if not patient.status: 
              patient.status = 'ACTIVE'
         
+        # Default branch assignment - if no branch specified, assign to "Merkez Şube" or first branch
+        if not patient.branch_id:
+            from models.branch import Branch
+            # Try to find "Merkez Şube" first
+            default_branch = db.query(Branch).filter(
+                Branch.tenant_id == access.tenant_id,
+                Branch.name.ilike('%merkez%')
+            ).first()
+            
+            # If no "Merkez" branch, get the first branch for this tenant
+            if not default_branch:
+                default_branch = db.query(Branch).filter(
+                    Branch.tenant_id == access.tenant_id
+                ).first()
+            
+            if default_branch:
+                patient.branch_id = default_branch.id
+        
         db.add(patient)
         db.commit()
         

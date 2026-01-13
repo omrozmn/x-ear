@@ -36,8 +36,18 @@ class BranchUpdate(AppBaseModel):
     is_active: Optional[bool] = Field(None, alias="isActive")
 
 
-class BranchRead(BranchBase, IDMixin, TimestampMixin):
-    """Schema for reading a branch"""
+class BranchRead(AppBaseModel, IDMixin, TimestampMixin):
+    """Schema for reading a branch - matches Branch.to_dict() output"""
     tenant_id: str = Field(..., alias="tenantId")
+    name: str = Field(..., description="Branch name")
+    address: Optional[str] = Field(None, description="Branch address")
+    phone: Optional[str] = Field(None, description="Phone number")
+    email: Optional[str] = Field(None, description="Email")
+    # Optional fields that may be added later
+    code: Optional[str] = Field(None, description="Branch code")
+    city: Optional[str] = Field(None, description="City")
+    district: Optional[str] = Field(None, description="District")
+    is_active: bool = Field(True, alias="isActive", description="Is branch active")
+    is_main: bool = Field(False, alias="isMain", description="Is main branch")
     user_count: int = Field(0, alias="userCount", description="Number of users in branch")
     patient_count: int = Field(0, alias="patientCount", description="Number of patients in branch")
