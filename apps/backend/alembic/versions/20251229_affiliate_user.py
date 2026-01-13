@@ -16,15 +16,20 @@ depends_on = None
 
 
 def upgrade():
-    op.create_table(
-        'affiliate_user',
-        sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
-        sa.Column('email', sa.String(length=255), nullable=False, unique=True, index=True),
-        sa.Column('password_hash', sa.String(length=255), nullable=False),
-        sa.Column('iban', sa.String(length=34), nullable=False),
-        sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.sql.expression.true()),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-    )
+    # Create table check
+    connection = op.get_bind()
+    inspector = sa.inspect(connection)
+    
+    if 'affiliate_user' not in inspector.get_table_names():
+        op.create_table(
+            'affiliate_user',
+            sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
+            sa.Column('email', sa.String(length=255), nullable=False, unique=True, index=True),
+            sa.Column('password_hash', sa.String(length=255), nullable=False),
+            sa.Column('iban', sa.String(length=34), nullable=False),
+            sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.sql.expression.true()),
+            sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        )
 
 def downgrade():
     op.drop_table('affiliate_user')

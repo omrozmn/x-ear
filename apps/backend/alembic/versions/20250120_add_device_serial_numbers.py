@@ -18,12 +18,26 @@ depends_on = None
 
 def upgrade():
     # Add new serial number columns for left and right ear
-    op.add_column('devices', sa.Column('serial_number_left', sa.String(100), nullable=True))
-    op.add_column('devices', sa.Column('serial_number_right', sa.String(100), nullable=True))
+    connection = op.get_bind()
+    inspector = sa.inspect(connection)
+    existing_columns = [col['name'] for col in inspector.get_columns('devices')]
+    
+    if 'serial_number_left' not in existing_columns:
+        op.add_column('devices', sa.Column('serial_number_left', sa.String(100), nullable=True))
+    
+    if 'serial_number_right' not in existing_columns:
+        op.add_column('devices', sa.Column('serial_number_right', sa.String(100), nullable=True))
     
     # Create indexes for better query performance
-    op.create_index('ix_device_serial_left', 'devices', ['serial_number_left'], unique=False)
-    op.create_index('ix_device_serial_right', 'devices', ['serial_number_right'], unique=False)
+    try:
+        op.create_index('ix_device_serial_left', 'devices', ['serial_number_left'], unique=False)
+    except Exception:
+        pass # Index likely exists
+
+    try:
+        op.create_index('ix_device_serial_right', 'devices', ['serial_number_right'], unique=False)
+    except Exception:
+        pass # Index likely exists
     
     # Make the original serial_number nullable (since we now have left/right specific fields)
     # Note: This is a SQLite-compatible approach
