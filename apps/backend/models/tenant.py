@@ -37,6 +37,9 @@ class Tenant(db.Model):
     affiliate_id = Column(db.Integer, db.ForeignKey('affiliate_user.id'), nullable=True, index=True)
     referral_code = Column(String(50), nullable=True)
     
+    # Product (Multi-product architecture - Contract #18)
+    product_code = Column(String(50), nullable=True, default='xear_hearing', index=True)
+    
     # Status
     status = Column(String(20), default=TenantStatus.TRIAL.value, nullable=False, index=True)
     

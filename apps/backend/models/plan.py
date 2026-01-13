@@ -47,6 +47,7 @@ class Plan(db.Model):
     features = Column(JSON, nullable=True)  # Feature list and limits
     max_users = Column(Integer, nullable=True)  # null = unlimited
     max_storage_gb = Column(Integer, nullable=True)  # null = unlimited
+    retention_days = Column(Integer, nullable=True, default=365)  # Data retention period (Phase 0)
     
     # Status
     is_active = Column(Boolean, default=True, nullable=False, index=True)
