@@ -154,7 +154,7 @@ jobs:
         run: |
           cd apps/web
           pnpm run test --run --reporter=verbose
-        continue-on-error: true  # TODO: Remove when test mocks are stabilized
+        # continue-on-error: true  # TODO: Remove when test mocks are stabilized
 
   build:
     name: 🏗️ Build Check
@@ -248,13 +248,13 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd apps/backend
+          cd apps/api
           pip install -r requirements.txt
           pip install ruff
 
       - name: Run Ruff linter
         run: |
-          cd apps/backend
+          cd apps/api
           ruff check . --ignore E501,F401,F841 --exclude tests/,migrations/,__pycache__/ || echo "Lint warnings found"
 
   backend-tests:
@@ -299,7 +299,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd apps/backend
+          cd apps/api
           pip install -r requirements.txt
           pip install pytest pytest-cov pytest-asyncio
 
@@ -309,8 +309,22 @@ jobs:
           TESTING: "true"
           SECRET_KEY: test-secret-key-for-ci
         run: |
-          cd apps/backend
+          cd apps/api
           python -m pytest tests/ -v --tb=short -x --ignore=tests/__pycache__/ || echo "Some tests failed"
+
+      - name: Smoke Test - Verify Tool Scripts
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+        run: |
+          cd apps/api
+          # 1. Initialize DB for scripts
+          python -c "from database import init_db; init_db()"
+          # 2. Seed Admin (Tools usage verification)
+          python tools/dev_scripts/seed_admin_quick.py
+          # 3. Check Admin (Read verification)
+          python tools/dev_scripts/check_admin_user.py
+          # 4. Dry-run export script (Logic verification)
+          python tools/dev_scripts/export_sqlite_to_json.py
 
   # ============================================
   # API CONTRACT CHECKS
@@ -345,7 +359,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          cd apps/backend
+          cd apps/api
           pip install -r requirements.txt
 
       - name: Install web dependencies
@@ -355,7 +369,7 @@ jobs:
 
       - name: Generate OpenAPI spec
         run: |
-          cd apps/backend
+          cd apps/api
           python scripts/generate_openapi.py || echo "OpenAPI generation skipped"
 
       - name: Check if API types are in sync
@@ -394,7 +408,7 @@ jobs:
         run: |
           cd apps/web
           pnpm audit --audit-level=high || echo "Security vulnerabilities found"
-        continue-on-error: true
+        # continue-on-error: true
 
       - name: Check for secrets in code
         run: |
@@ -404,7 +418,7 @@ jobs:
           else
             echo "✅ No obvious hardcoded secrets found"
           fi
-        continue-on-error: true
+        # continue-on-error: true
 
   # ============================================
   # FINAL GATE
@@ -413,7 +427,7 @@ jobs:
   ci-passed:
     name: ✅ CI Passed
     runs-on: ubuntu-latest
-    needs: [typecheck, lint, build, backend-tests, security-scan]
+    needs: [typecheck, lint, build, backend-tests, security-scan, api-sync-check]
     if: always()
     steps:
       - name: Check all required jobs
@@ -438,5 +452,9 @@ jobs:
             echo "❌ Security scan failed"
             exit 1
           fi
+          if [ "${{ needs.api-sync-check.result }}" != "success" ]; then
+            echo "❌ API Sync check failed"
+            exit 1
+          fi
           echo "✅ All required CI checks passed!"
-          echo "⚠️ Note: frontend-tests and api-sync-check are temporarily optional"
+          echo "⚠️ Note: frontend-tests are temporarily optional"

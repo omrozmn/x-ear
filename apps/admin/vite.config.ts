@@ -78,6 +78,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@x-ear/core': path.resolve(__dirname, '../../packages/core/src'),
       '@x-ear/ui-web': path.resolve(__dirname, '../../packages/ui-web/src'),
+      'react': path.resolve(__dirname, './node_modules/react'),
+      'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
     },
   },
   server: {
