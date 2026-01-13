@@ -4,7 +4,7 @@ import os
 import sys
 import logging
 
-sys.path.append(os.path.dirname(__file__))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
 from database import SessionLocal
 from models.user import User
